@@ -1,0 +1,212 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-feature-compatibility-20260917-017af43e8043
+  scratch: /tmp/openwepp-roger-b01-wb14-feature-compatibility-20260917-017af43e8043
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:25:
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationCalendarDay {
+     pub year: i32,
+     pub julian_day: u16,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:193:
+ }
+ 
+ #[derive(Debug, Clone, PartialEq, Eq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationRunMetadata {
+     pub run_name: String,
+     pub runtime_selection: String,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:254:
+ }
+ 
+ #[derive(Debug, Clone, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationDayRow {
+     pub run_id: u64,
+     pub hillslope_id: u32,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:664:
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationClimateOperands {
+     pub precipitation_mm: f64,
+ }
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:671:
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationLiquidInputOperands {
+     pub rm_mm: f64,
+     pub irrigation_mm: f64,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:677:
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationRunoffOperands {
+     pub q_mm: f64,
+     pub qofe_mm: f64,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:687:
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationEvaporationOperands {
+     pub ep_mm: f64,
+     pub es_mm: f64,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:696:
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationSubsurfaceOperands {
+     pub dp_mm: f64,
+     pub latqcc_mm: f64,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:709:
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationTransferOperands {
+     pub upstream_surface_mm: f64,
+     pub upstream_lateral_mm: f64,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:716:
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationStorageOperands {
+     pub total_soil_mm: f64,
+     pub soil_water_total_mm: f64,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:727:
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationWaterTemperatureOperands {
+     pub meltwater_temperature_c: Option<f64>,
+ }
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:734:
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationProfileOperands {
+     pub depth_mm: Option<f64>,
+     pub porosity_cap_mm: Option<f64>,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:742:
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationInterceptionOperands {
+     pub interception_mm: f64,
+     pub interception_storage_mm: Option<f64>,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs:749:
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+-#[cfg_attr(feature = "persisted-restart-v1", derive(serde::Serialize, serde::Deserialize))]
++#[cfg_attr(
++    feature = "persisted-restart-v1",
++    derive(serde::Serialize, serde::Deserialize)
++)]
+ pub struct DirectPublicationErosionOperands {
+     pub peak_runoff_rate_m_s: Option<f64>,
+     pub runoff_duration_s: Option<f64>,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/direct_runtime/02_state_reports.rs:53:
+ }
+ 
+ #[derive(Debug, Clone, PartialEq)]
+-#[cfg_attr(any(test, feature = "restart-authority-evidence", feature = "persisted-restart-v1"), derive(serde::Serialize))]
++#[cfg_attr(
++    any(
++        test,
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ),
++    derive(serde::Serialize)
++)]
+ pub struct DirectDayForcing {
+     pub precipitation_m: f64,
+     pub effective_temperature_c: f64,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/snow_mass_transition.rs:79:
+     pub sublimation_m: f64,
+ }
+ 
+-#[cfg(any(test, feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
++#[cfg(any(
++    test,
++    feature = "restart-authority-evidence",
++    feature = "persisted-restart-v1"
++))]
+ #[allow(clippy::ref_option)]
+ fn serialize_optional_temperature_celsius<S>(
+     value: &Option<TemperatureCelsius>,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/snow_mass_transition.rs:214:
+         DirectSnowLiquidDispositionLedger,
+         DirectSnowStage3Outcome,
+     ) {
+-        (self.solid_to_liquid, self.liquid_disposition, self.stage3_outcome)
++        (
++            self.solid_to_liquid,
++            self.liquid_disposition,
++            self.stage3_outcome,
++        )
+     }
+ 
+     pub fn validate(self) -> Result<(), DirectSnowMassTransitionLedgerError> {

@@ -1,0 +1,24 @@
+Command exited with non-zero status 1
+	Command being timed: "nix develop /workdir/openWEPP --command rustfmt --edition 2024 --check crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs crates/openwepp-hillslope-orchestrator/src/direct_runtime/02_state_reports.rs crates/openwepp-hillslope-orchestrator/src/direct_runtime/decomposition.rs crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs crates/openwepp-hillslope-orchestrator/src/hydrology/08_snow_albedo.rs crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/snow_mass_transition.rs crates/openwepp-hillslope-orchestrator/src/winter_column.rs"
+	User time (seconds): 0.32
+	System time (seconds): 0.11
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.44
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 163128
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 11175
+	Voluntary context switches: 138
+	Involuntary context switches: 24
+	Swaps: 0
+	File system inputs: 32
+	File system outputs: 448
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

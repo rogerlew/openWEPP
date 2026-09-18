@@ -1,0 +1,39 @@
+{
+  "evidence_class": "Ran: actual required control FAIL; Static: exact byte identity and failure attribution",
+  "source_tree_sha256": "16614f6a1716448392c01a973aa292b80937830a0d527a002c3a1b7aebf534f4",
+  "baseline_tree_sha256": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+  "files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability.rs",
+      "terminal_sha256": "a61d1275059edec01031425641ade2d1323a023d9e2ec9797c43553a18a775e1",
+      "baseline_sha256": "a61d1275059edec01031425641ade2d1323a023d9e2ec9797c43553a18a775e1",
+      "byte_identical": true
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability_tests.rs",
+      "terminal_sha256": "24e5e610be3eab8e4a9da7653dd0d78c90595ff924dd630ece611f51e5ac3642",
+      "baseline_sha256": "24e5e610be3eab8e4a9da7653dd0d78c90595ff924dd630ece611f51e5ac3642",
+      "byte_identical": true
+    }
+  ],
+  "failed_test": "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_is_private_move_only_non_wire",
+  "receipts": [
+    "completion-terminal-none-controls-01.json",
+    "completion-terminal-none-controls-02.json"
+  ],
+  "reason": "Trusted installer includes serde_json inside an inherited opt-in cfg(test) integrated promotion audit print; guard forbids serialization in trusted installer without a cfg(test) exception.",
+  "classification": "Inherited capability/diagnostic blocker, not introduced feature-availability regression. Required control remains FAIL; no terminal approval.",
+  "disposition": "Do not relax the guard, hide serialization behind an indirect helper, or change retained promotion instrumentation within feature-availability authorization. Independent correctness and QA agree this needs separately authorized disposition.",
+  "frozen_baseline_execution": {
+    "receipt": "completion-frozen-baseline-capability-control.json",
+    "executable_source": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+    "binary_sha256": "3ee09e2d800d145494dd38280e26a89fb95447284120112041bfef3e00b65169",
+    "result": "FAIL exit101, exactly1 test, same forbidden serde_json panic",
+    "attribution": "Recorder source_tree identifies contemporaneous candidate0c99; executable is explicitly selected unchanged frozen baseline via --binary and argv. This is baseline execution, not candidate execution."
+  },
+  "final_source_tree_sha256": "d354ccc6ba947c6b0a9e3eed1cdedd0417ae1d5c2896288efbc828beca2f873b",
+  "final_receipts": [
+    "completion-terminal-none-controls-03.json",
+    "completion-terminal-both-controls-03.json"
+  ]
+}

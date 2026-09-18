@@ -1,0 +1,24 @@
+Command exited with non-zero status 101
+	Command being timed: "nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-six-owner-target CARGO_BUILD_JOBS=2 cargo test --manifest-path /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/Cargo.toml -p openwepp-hillslope-orchestrator --locked --no-default-features constructor_encoder_matches_independent_serde_and_literal_enum_names_v1 -- --nocapture"
+	User time (seconds): 0.27
+	System time (seconds): 0.13
+	Percent of CPU this job got: 74%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.54
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 162848
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 112
+	Minor (reclaiming a frame) page faults: 15338
+	Voluntary context switches: 319
+	Involuntary context switches: 28
+	Swaps: 0
+	File system inputs: 16216
+	File system outputs: 456
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 101

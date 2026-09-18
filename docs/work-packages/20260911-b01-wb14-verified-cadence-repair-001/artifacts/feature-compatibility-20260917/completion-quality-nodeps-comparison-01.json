@@ -1,0 +1,601 @@
+{
+  "evidence_class": "Ran: matched diagnostic content comparison, not strict-lint acceptance",
+  "baseline": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-quality-nodeps.stdout",
+  "candidate": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/completion-terminal-quality-nodeps.stdout",
+  "baseline_count": 2851,
+  "candidate_count": 2857,
+  "introduced_or_changed": [
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this closure is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "text": [
+            "        .map(|index| prepared.diagnostic_support_checkpoint_v2(index))"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "text": [
+            "    ) -> Result<DirectSnowStage3V11PreparedSupportRestartV2, DirectSnowStage3V11AttachmentError>"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs",
+          "text": [
+            "    ) -> Result<Vec<u8>, DirectV11RealConsumerError> {"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "error",
+      "message": "this function has too many lines (119/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "text": [
+            "fn constructor_encoder_matches_independent_serde_and_literal_enum_names_v1() {"
+          ]
+        }
+      ],
+      "count": 1
+    },
+    {
+      "code": "unused_imports",
+      "level": "error",
+      "message": "unused import: `DirectRunConstructorInputs`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+          "text": [
+            "    DirectDayFrame, DirectOfeWb14Parameters, DirectPublicationDayInput, DirectRunConstructorInputs,"
+          ]
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "removed_or_changed": [
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this closure is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "text": [
+            "        .map(|index| prepared.restart_authority_support_checkpoint_v2(index))"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs",
+          "text": [
+            "    pub fn restart_authority_complete_surface_clock_bytes(&self) -> Result<Vec<u8>, DirectV11RealConsumerError> {"
+          ]
+        }
+      ],
+      "count": 2
+    }
+  ],
+  "candidate_locations": [
+    {
+      "code": "unused_imports",
+      "level": "error",
+      "message": "unused import: `DirectRunConstructorInputs`",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+          "line": 104,
+          "text": [
+            "    DirectDayFrame, DirectOfeWb14Parameters, DirectPublicationDayInput, DirectRunConstructorInputs,"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 150,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 186,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 619,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 634,
+          "text": [
+            "    ) -> Result<DirectSnowStage3V11PreparedSupportRestartV2, DirectSnowStage3V11AttachmentError>"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 643,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 654,
+          "text": [
+            "    ) -> Result<DirectSnowStage3V11PreparedSupportRestartV2, DirectSnowStage3V11AttachmentError>"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 666,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 726,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 765,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 804,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 848,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 982,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 1172,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 1341,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs",
+          "line": 266,
+          "text": [
+            "    ) -> Result<Vec<u8>, DirectV11RealConsumerError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this closure is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "line": 1258,
+          "text": [
+            "        .map(|index| prepared.diagnostic_support_checkpoint_v2(index))"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 150,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 186,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 619,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 634,
+          "text": [
+            "    ) -> Result<DirectSnowStage3V11PreparedSupportRestartV2, DirectSnowStage3V11AttachmentError>"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 643,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 654,
+          "text": [
+            "    ) -> Result<DirectSnowStage3V11PreparedSupportRestartV2, DirectSnowStage3V11AttachmentError>"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 666,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 726,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 765,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 804,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 848,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 982,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 1172,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+          "line": 1341,
+          "text": [
+            "    ) -> Result<(), DirectSnowStage3V11AttachmentError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs",
+          "line": 266,
+          "text": [
+            "    ) -> Result<Vec<u8>, DirectV11RealConsumerError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this closure is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "line": 1258,
+          "text": [
+            "        .map(|index| prepared.diagnostic_support_checkpoint_v2(index))"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::too_many_lines",
+      "level": "error",
+      "message": "this function has too many lines (119/100)",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "line": 2023,
+          "text": [
+            "fn constructor_encoder_matches_independent_serde_and_literal_enum_names_v1() {"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "source_sha256": "f0573158bbd34ac9e0eb3d0c790aeff5902fd775626019a2fe20cd90422705dd",
+  "policy": "Every changed Rust file; formatter hunks intersecting actual baseline-to-candidate changed lines must be clean. Unchanged lines are not reformatted or claimed clean.",
+  "files": [
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 14
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/02_state_reports.rs",
+      "introduced_unformatted": [
+        {
+          "line_start": 56,
+          "line_end": 56,
+          "before": "#[cfg_attr(any(test, feature = \"restart-authority-evidence\", feature = \"persisted-restart-v1\"), derive(serde::Serialize))]\n",
+          "after": "#[cfg_attr(\n    any(\n        test,\n        feature = \"restart-authority-evidence\",\n        feature = \"persisted-restart-v1\"\n    ),\n    derive(serde::Serialize)\n)]\n"
+        }
+      ],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/decomposition.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_adjustments.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_continuity.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_enrichment.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_operands.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_seed.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/normalization.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/projection.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff_result_types.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/subsurface.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/hydrology/08_snow_albedo.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/snow_mass_transition.rs",
+      "introduced_unformatted": [
+        {
+          "line_start": 82,
+          "line_end": 82,
+          "before": "#[cfg(any(test, feature = \"restart-authority-evidence\", feature = \"persisted-restart-v1\"))]\n",
+          "after": "#[cfg(any(\n    test,\n    feature = \"restart-authority-evidence\",\n    feature = \"persisted-restart-v1\"\n))]\n"
+        },
+        {
+          "line_start": 217,
+          "line_end": 217,
+          "before": "        (self.solid_to_liquid, self.liquid_disposition, self.stage3_outcome)\n",
+          "after": "        (\n            self.solid_to_liquid,\n            self.liquid_disposition,\n            self.stage3_outcome,\n        )\n"
+        }
+      ],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_encoder.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/direct_v9_real_consumer_shadow_impl.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/frozen_litter_v4_adoption.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 31
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 5
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 21
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs",
+      "introduced_unformatted": [
+        {
+          "line_start": 1360,
+          "line_end": 1360,
+          "before": "    #[cfg(all(feature = \"persisted-restart-v1\", feature = \"restart-authority-evidence\"))]\n",
+          "after": "    #[cfg(all(\n        feature = \"persisted-restart-v1\",\n        feature = \"restart-authority-evidence\"\n    ))]\n"
+        }
+      ],
+      "unrelated_formatter_hunks": 0
+    },
+    {
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs",
+      "introduced_unformatted": [],
+      "unrelated_formatter_hunks": 37
+    }
+  ]
+}

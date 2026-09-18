@@ -1,15 +1,167 @@
 {
-  "accounted_utc": "2026-09-17T22:51:59.436964+00:00",
+  "accounted_utc": "2026-09-18T03:47:20.935327+00:00",
   "return_and_final_publication_reserve_seconds": 60,
-  "charged_seconds": 113900.204964,
-  "ceiling_seconds": 106868.925,
-  "remaining_seconds": 0,
-  "failure_floor": 268,
-  "failure_uncertainty": "At least268; six known navigation/parser failures and11 nonzero command outcomes added to251, unquantified edit/tool errors not erased",
-  "clock_gap": "No wait deduction; full observed wall time conservatively charged despite20:21-to22:49 continuation gap",
-  "status": "HARD STOP HOLD INCOMPLETE; only safe custody and return",
-  "primary_commit": "b236f01af4627c22c3cf493f38346a4f6daace4c",
-  "remote_primary_verified_files": 99,
-  "remote_primary_all_byte_equal": true,
-  "terminal_source_sha256": "68600a01f8a90f2ef036fd966cd26dceb26c936a4efad3870dd3aa1096d1e12b"
+  "charged_seconds": 119621.140327,
+  "ceiling_seconds": 128300.205,
+  "remaining_seconds": 8679.064673,
+  "failure_floor": 315,
+  "failure_uncertainty": "Conservative floor: prior268 + recorded nonzero continuation commands +4 invalid/rejected source/execution dispositions +at least10 root navigation/attribution failures +2 capacity failures. It is not a ceiling or a claim of a complete historical error census.",
+  "clock_gap": "All historical charge including previous gap and reserve carried unchanged; this continuation charges full wall time with no wait deductions.",
+  "status": "HOLD: attributable inherited required capability-control failure; authorized checks finished, publication pending",
+  "terminal_source_sha256": "d354ccc6ba947c6b0a9e3eed1cdedd0417ae1d5c2896288efbc828beca2f873b",
+  "prior_final_ledger": {
+    "accounted_utc": "2026-09-17T22:51:59.436964+00:00",
+    "return_and_final_publication_reserve_seconds": 60,
+    "charged_seconds": 113900.204964,
+    "ceiling_seconds": 106868.925,
+    "remaining_seconds": 0,
+    "failure_floor": 268,
+    "failure_uncertainty": "At least268; six known navigation/parser failures and11 nonzero command outcomes added to251, unquantified edit/tool errors not erased",
+    "clock_gap": "No wait deduction; full observed wall time conservatively charged despite20:21-to22:49 continuation gap",
+    "status": "HARD STOP HOLD INCOMPLETE; only safe custody and return",
+    "primary_commit": "b236f01af4627c22c3cf493f38346a4f6daace4c",
+    "remote_primary_verified_files": 99,
+    "remote_primary_all_byte_equal": true,
+    "terminal_source_sha256": "68600a01f8a90f2ef036fd966cd26dceb26c936a4efad3870dd3aa1096d1e12b"
+  },
+  "anchor_utc": "2026-09-18T02:12:00+00:00",
+  "deadline_utc": "2026-09-18T06:12:00+00:00",
+  "carried_seconds": 113900.205,
+  "worker_state": "Both independent reviewers completed HOLD; sole writer idle; no build/test jobs running; root scoped publication",
+  "continuation_nonzero_commands": [
+    {
+      "receipt": "completion-final-changed-format-01.json",
+      "exit_code": 1
+    },
+    {
+      "receipt": "completion-final-plain-state-format-check-01.json",
+      "exit_code": 1
+    },
+    {
+      "receipt": "completion-frozen-baseline-capability-control.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-format-check-01.json",
+      "exit_code": 1
+    },
+    {
+      "receipt": "completion-impl-format-check-02.json",
+      "exit_code": 1
+    },
+    {
+      "receipt": "completion-impl-no-default-01.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-no-default-02.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-no-default-03.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-no-default-05.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-no-default-06.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-no-default-07.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-no-default-08.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-no-default-09.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-no-default-10.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-no-default-12.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-persisted-only-01.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-persisted-only-02.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-standalone-lib-01.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-standalone-lib-02.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-impl-targeted-format-01.json",
+      "exit_code": 1
+    },
+    {
+      "receipt": "completion-impl-test-encoder-parity-02.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-terminal-both-controls-03.json",
+      "exit_code": 100
+    },
+    {
+      "receipt": "completion-terminal-none-controls-01.json",
+      "exit_code": 100
+    },
+    {
+      "receipt": "completion-terminal-none-controls-02.json",
+      "exit_code": 100
+    },
+    {
+      "receipt": "completion-terminal-none-controls-03.json",
+      "exit_code": 100
+    },
+    {
+      "receipt": "completion-terminal-quality-nodeps-02.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-terminal-quality-nodeps-03.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-terminal-quality-nodeps.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-terminal-quality-strict-02.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-terminal-quality-strict-03.json",
+      "exit_code": 101
+    },
+    {
+      "receipt": "completion-terminal-quality-strict.json",
+      "exit_code": 101
+    }
+  ],
+  "additional_failed_source_dispositions": [
+    "cut04 rejected C1/C2 semantic omissions despite compilation PASS",
+    "parity01 invalid zero-test selection despite exit0",
+    "c7-covered-control-01 invalid zero-test selection",
+    "c7-snow-free-control-01 invalid zero-test selection"
+  ],
+  "running_jobs": [],
+  "continuation_elapsed_seconds": 5720.935327,
+  "publication_status": "Scoped current-main commit, authorized push and exact remote verification pending",
+  "reserve_charged": false
 }

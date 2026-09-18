@@ -1,0 +1,10 @@
+Reviewer: /root/feature_qa, independent Terra/medium QA; interim response before writer correction.
+Findings (Static; no commands run by QA):
+
+- Medium — targeted formatting failure: completion-changed-format-result.json identifies four introduced rustfmt hunks in direct_runtime/02_state_reports.rs:56; hydrology/support_helpers_mod/snow_mass_transition.rs:82,217; v9_real_consumer_shadow_tests.rs:1360. This blocks the required targeted-format acceptance. Same-reviewer verification required after correction.
+- Medium — representation-test gap (C6, corroborated): snow_stage3_v11_current_context_capture.rs:2023 validates the new private encoder against a single constructor fixture and action enums, but does not exhaustively exercise both active-context enums or DirectErosionHydrographShapeAuthority. The encoder hard-codes these wire strings in snow_stage3_v11_constructor_encoder.rs:126,200,446; exhaustive parity coverage is needed before accepting the field-complete representation claim.
+- Pending acceptance evidence: ordinary recorder output, refusal/capability/restoration execution, final mode-specific membership inventory including all14 promotion selectors, and quality attribution are not yet present in the inspected external evidence directory. Terminal approval is therefore withheld.
+
+Static source custody: every one of the747 entries in completion-final-targeted-format-check-01-source.json matched the actual detached source. The final build/parity/format receipts inspected all declare f0573158. C3 is corrected in the actual source: public checkpoint methods are persisted-only and the evidence helpers are pub(crate).
+
+Attribution note: the reviewer initially read historical published F artifacts, then explicitly corrected source attribution by verifying the actual absolute detached source and current RAW receipts. This response applies to f0573158, not historical F.

@@ -1,0 +1,4 @@
+
+thread 'v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_is_private_move_only_non_wire' (4118813) panicked at crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/accepted_publication_support_capability_tests.rs:732:9:
+trusted installer contains forbidden operation serde_json
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

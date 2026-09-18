@@ -1,0 +1,97 @@
+{
+  "utc": "2026-09-18T02:26:38.598437+00:00",
+  "scope": "Reuse only for identical candidate command and pinned Nix route; independent standalone checks required",
+  "baselines": [
+    {
+      "label": "closure-quality-nodeps",
+      "source": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+      "exit_code": 101,
+      "argv": [
+        "nix",
+        "develop",
+        "/workdir/openWEPP",
+        "--command",
+        "env",
+        "CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-six-owner-target",
+        "CARGO_BUILD_JOBS=2",
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/Cargo.toml",
+        "-p",
+        "openwepp-hillslope-orchestrator",
+        "-p",
+        "openwepp-persisted-restart-v1",
+        "--all-targets",
+        "--no-deps",
+        "--features",
+        "persisted-restart-v1,restart-authority-evidence,fixtures",
+        "--locked",
+        "--message-format=json",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "pinned_toolchain_route_unchanged": [
+        {
+          "path": "/workdir/openWEPP/flake.nix",
+          "sha256": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9"
+        },
+        {
+          "path": "/workdir/openWEPP/flake.lock",
+          "sha256": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6"
+        },
+        {
+          "path": "/workdir/openWEPP/tools/dev/openwepp-env",
+          "sha256": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+        }
+      ],
+      "source_unchanged": true
+    },
+    {
+      "label": "closure-quality-strict",
+      "source": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+      "exit_code": 101,
+      "argv": [
+        "nix",
+        "develop",
+        "/workdir/openWEPP",
+        "--command",
+        "env",
+        "CARGO_TARGET_DIR=/tmp/openwepp-b01-wb14-six-owner-target",
+        "CARGO_BUILD_JOBS=2",
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "/home/roger/openwepp-experiments/b01-wb14-integrated-promotion-20260917/Cargo.toml",
+        "-p",
+        "openwepp-hillslope-orchestrator",
+        "-p",
+        "openwepp-persisted-restart-v1",
+        "--all-targets",
+        "--features",
+        "persisted-restart-v1,restart-authority-evidence,fixtures",
+        "--locked",
+        "--message-format=json",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "pinned_toolchain_route_unchanged": [
+        {
+          "path": "/workdir/openWEPP/flake.nix",
+          "sha256": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9"
+        },
+        {
+          "path": "/workdir/openWEPP/flake.lock",
+          "sha256": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6"
+        },
+        {
+          "path": "/workdir/openWEPP/tools/dev/openwepp-env",
+          "sha256": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+        }
+      ],
+      "source_unchanged": true
+    }
+  ]
+}

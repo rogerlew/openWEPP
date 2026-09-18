@@ -16,7 +16,8 @@ HERE = Path(__file__).resolve().parent
 SOURCE = Path('/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917')
 BASE = Path('/workdir/openwepp-experiments/b01-wb14-cadence/six-owner-restoration-20260917')
 LOGS = Path('/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917')
-DEADLINE = dt.datetime.fromisoformat('2026-09-17T20:55:48+00:00')
+DEADLINE = dt.datetime.fromisoformat('2026-09-18T06:12:00+00:00')
+PRESERVATION_RESERVE_SECONDS = 360
 SPEC = importlib.util.spec_from_file_location(
     'snapshot_tool',
     Path('/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/execution-discretion-20260915/run-recorded.py'),
@@ -40,6 +41,13 @@ def limits():
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
 
 
+def remaining_execution_seconds():
+    remaining = (DEADLINE - dt.datetime.now(dt.timezone.utc)).total_seconds() - PRESERVATION_RESERVE_SECONDS
+    if remaining <= 0:
+        raise SystemExit('Review/preservation reserve reached; command launch refused')
+    return remaining
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('label')
@@ -50,6 +58,7 @@ def main():
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
     if not command or args.timeout <= 0:
         parser.error('explicit command and positive timeout required; options precede label')
+    remaining_execution_seconds()
     LOGS.mkdir(exist_ok=True)
     receipt_path = LOGS / (args.label + '.json')
     if receipt_path.exists():
@@ -69,12 +78,11 @@ def main():
     source_receipt = LOGS / (args.label + '-source.json')
     save(source_receipt, dict(source=str(SOURCE), entries=before, tree_sha256=source_hash, base=str(BASE), incremental_patch=str(patch_path), incremental_patch_sha256=sha(patch_path)))
     pinned = {str(path): sha(path) for path in (Path(__file__), Path('/workdir/openWEPP/flake.nix'), Path('/workdir/openWEPP/flake.lock'), Path('/workdir/openWEPP/tools/dev/openwepp-env'))}
-    timeout = min(args.timeout, (DEADLINE - dt.datetime.now(dt.timezone.utc)).total_seconds() - 360)
-    if timeout <= 0:
-        raise SystemExit('Review/preservation reserve reached')
+    timeout = min(args.timeout, remaining_execution_seconds())
     executed = ['/usr/bin/time', '-v', '-o', str(LOGS / (args.label + '.resources')), *command]
     receipt = dict(label=args.label, argv=command, executed_argv=executed, cwd=str(SOURCE), source_tree_sha256=source_hash,
                    source_receipt=str(source_receipt), pinned_files=pinned, start_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
+                   deadline_utc=DEADLINE.isoformat(), preservation_reserve_seconds=PRESERVATION_RESERVE_SECONDS,
                    timeout_seconds=timeout, address_space_bytes=16 * 1024**3, output_file_limit_bytes=1024**3,
                    automatic_retries=0, binary=str(args.binary) if args.binary else None,
                    binary_sha256=sha(args.binary) if args.binary else None,
@@ -84,6 +92,8 @@ def main():
     env = {k: v for k, v in os.environ.items() if not k.startswith('OPENWEPP_')}
     start = time.monotonic()
     with (LOGS / (args.label + '.stdout')).open('xb') as out, (LOGS / (args.label + '.stderr')).open('xb') as err:
+        timeout = min(timeout, remaining_execution_seconds())
+        receipt['timeout_seconds'] = timeout
         process = subprocess.Popen(executed, cwd=SOURCE, env=env, stdout=out, stderr=err, preexec_fn=limits, start_new_session=True)
         receipt['process_group'] = process.pid
         save(receipt_path, receipt)

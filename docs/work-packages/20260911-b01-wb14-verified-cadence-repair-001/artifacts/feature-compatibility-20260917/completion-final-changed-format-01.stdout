@@ -1,0 +1,5 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-feature-compatibility-20260917-017af43e8043
+  scratch: /tmp/openwepp-roger-b01-wb14-feature-compatibility-20260917-017af43e8043
+  cache:   /workdir/.cache/openwepp
+{"changed_rust_files": 33, "introduced_unformatted": [["crates/openwepp-hillslope-orchestrator/src/direct_runtime/02_state_reports.rs", 1], ["crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/snow_mass_transition.rs", 2], ["crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs", 1]]}

@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Ran: matched diagnostic content comparison, not strict-lint acceptance",
+  "baseline": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-quality-strict.stdout",
+  "candidate": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/completion-terminal-quality-strict.stdout",
+  "baseline_count": 27,
+  "candidate_count": 27,
+  "introduced_or_changed": [],
+  "removed_or_changed": [],
+  "candidate_locations": []
+}

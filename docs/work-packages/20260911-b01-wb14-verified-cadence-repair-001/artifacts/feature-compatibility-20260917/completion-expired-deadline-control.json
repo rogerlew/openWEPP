@@ -1,0 +1,7 @@
+{
+  "control": "expired recorder main with harmless /usr/bin/true",
+  "refused": true,
+  "message": "Review/preservation reserve reached; command launch refused",
+  "spawned": false,
+  "utc": "2026-09-18T02:15:02.117344+00:00"
+}

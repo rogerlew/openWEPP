@@ -1,0 +1,74 @@
+{
+  "source_tree_sha256": "d354ccc6ba947c6b0a9e3eed1cdedd0417ae1d5c2896288efbc828beca2f873b",
+  "declared_utc": "2026-09-18T03:35:51.628595+00:00",
+  "modes": [
+    {
+      "mode": "none",
+      "features": null,
+      "selectors": [
+        "direct_runtime::stage3_committed_publication::tests::committed_capability_rejects_missing_incomplete_and_poisoned_frames",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_rotation_invalidates_pre_rotation_support_capability",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_is_private_move_only_non_wire",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_rejects_stale_foreign_replayed_and_restart_revisions_atomically",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_validates_once_and_appends_by_exact_live_tail",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_forbidden_append_work_audit_is_non_vacuous",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_tail_revision_poison_matrix_is_exhaustive",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_untrusted_restore_revalidates_every_support_and_never_restores_capability",
+        "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_covered_producer_recorder_controls_are_independently_selectable",
+        "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_first_snow_free_producer_recorder_controls_are_independently_selectable",
+        "v9_real_consumer_shadow::tests::snow_free_publication_reseal_mints_one_fresh_validated_support_capability",
+        "snow_stage3_v11_current_context_capture::constructor_encoder_matches_independent_serde_and_literal_enum_names_v1",
+        "snow_stage3_v11_current_context_capture::b01_pre_child_selector_requires_every_exact_coordinate"
+      ]
+    },
+    {
+      "mode": "both",
+      "features": "persisted-restart-v1,restart-authority-evidence",
+      "selectors": [
+        "direct_runtime::stage3_committed_publication::tests::committed_capability_rejects_missing_incomplete_and_poisoned_frames",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_rotation_invalidates_pre_rotation_support_capability",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_is_private_move_only_non_wire",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_rejects_stale_foreign_replayed_and_restart_revisions_atomically",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_validates_once_and_appends_by_exact_live_tail",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_forbidden_append_work_audit_is_non_vacuous",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_tail_revision_poison_matrix_is_exhaustive",
+        "v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_untrusted_restore_revalidates_every_support_and_never_restores_capability",
+        "v9_real_consumer_shadow::deferred_composite_capability_traits::deferred_capabilities_are_non_wire_and_non_copyable",
+        "v9_real_consumer_shadow::direct_v10_soil_thermal_v2_tests::native_soil_restart_proof_constructor_and_both_restore_hooks_preserve_exact_custody",
+        "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_covered_producer_recorder_controls_are_independently_selectable",
+        "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::actual_first_snow_free_producer_recorder_controls_are_independently_selectable",
+        "v9_real_consumer_shadow::tests::b01_current_context_importer_restores_fixture_without_physics",
+        "v9_real_consumer_shadow::tests::snow_free_publication_reseal_mints_one_fresh_validated_support_capability",
+        "v9_real_consumer_shadow::v3_publication_retention_tests::native_restart_full_exact_adoption_rejects_resealed_initial_carry",
+        "snow_stage3_v11_current_context_capture::constructor_encoder_matches_independent_serde_and_literal_enum_names_v1",
+        "snow_stage3_v11_current_context_capture::b01_pre_child_selector_requires_every_exact_coordinate"
+      ]
+    },
+    {
+      "mode": "evidence",
+      "features": "restart-authority-evidence",
+      "selectors": [
+        "snow_stage3_v11_current_context_capture::constructor_encoder_matches_independent_serde_and_literal_enum_names_v1",
+        "snow_stage3_v11_current_context_capture::b01_pre_child_selector_requires_every_exact_coordinate"
+      ]
+    },
+    {
+      "mode": "persisted",
+      "features": "persisted-restart-v1",
+      "selectors": [
+        "v9_real_consumer_shadow::deferred_composite_capability_traits::deferred_capabilities_are_non_wire_and_non_copyable",
+        "v9_real_consumer_shadow::direct_v10_soil_thermal_v2_tests::native_soil_restart_proof_constructor_and_both_restore_hooks_preserve_exact_custody",
+        "v9_real_consumer_shadow::v3_publication_retention_tests::native_restart_full_exact_adoption_rejects_resealed_initial_carry",
+        "snow_stage3_v11_current_context_capture::constructor_encoder_matches_independent_serde_and_literal_enum_names_v1",
+        "snow_stage3_v11_current_context_capture::b01_pre_child_selector_requires_every_exact_coordinate"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "selector": "v9_real_consumer_shadow::tests::native_recorder_file_owned_reader_restores_local_fixture",
+      "reason": "Explicit owner exclusion of multi-day replay: this local fixture physically stages four archived days and targetday4; retain membership/no-run only"
+    }
+  ],
+  "policy": "Exact named selection; no retries; no fail-fast so known inherited guard failure cannot suppress the other required controls. No original corpus input, captured successor, or complete scientific matrix."
+}

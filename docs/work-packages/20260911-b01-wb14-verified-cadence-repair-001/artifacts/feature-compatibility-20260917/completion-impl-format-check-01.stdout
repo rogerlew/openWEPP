@@ -1,0 +1,1889 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-feature-compatibility-20260917-017af43e8043
+  scratch: /tmp/openwepp-roger-b01-wb14-feature-compatibility-20260917-017af43e8043
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_encoder.rs:4:
+ //! decode catalog in `snow_stage3_v11_constructor_inverse.rs`.
+ use serde_json::{Map, Value};
+ 
+-impl Encode for crate::DirectSnowMassTransitionLedgers { fn encode(&self) -> Value { let (solid_to_liquid, liquid_disposition, stage3_outcome) = self.diagnostic_parts_v1(); serde_json::json!({"solid_to_liquid": solid_to_liquid.encode(), "liquid_disposition": liquid_disposition.encode(), "stage3_outcome": stage3_outcome.encode()}) } }
++impl Encode for crate::DirectSnowMassTransitionLedgers {
++    fn encode(&self) -> Value {
++        let (solid_to_liquid, liquid_disposition, stage3_outcome) = self.diagnostic_parts_v1();
++        serde_json::json!({"solid_to_liquid": solid_to_liquid.encode(), "liquid_disposition": liquid_disposition.encode(), "stage3_outcome": stage3_outcome.encode()})
++    }
++}
+ 
+ pub(super) trait Encode {
+     fn encode(&self) -> Value;
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_encoder.rs:11:
+ }
+-impl Encode for f64 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for bool { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for u8 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for u16 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for u32 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for u64 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for usize { fn encode(&self) -> Value { Value::from(*self as u64) } }
+-impl Encode for i8 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for i16 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for i32 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for i64 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for String { fn encode(&self) -> Value { Value::from(self.clone()) } }
+-impl Encode for (f64, f64, f64) { fn encode(&self) -> Value { Value::Array(vec![self.0.encode(),self.1.encode(),self.2.encode()]) } }
+-impl<T: Encode> Encode for Option<T> { fn encode(&self) -> Value { self.as_ref().map_or(Value::Null, Encode::encode) } }
+-impl<T: Encode> Encode for Box<T> { fn encode(&self) -> Value { (**self).encode() } }
+-impl<T: Encode> Encode for Vec<T> { fn encode(&self) -> Value { Value::Array(self.iter().map(Encode::encode).collect()) } }
+-impl<T: Encode, const N: usize> Encode for [T; N] { fn encode(&self) -> Value { Value::Array(self.iter().map(Encode::encode).collect()) } }
+-impl Encode for openwepp_unit_boundary::TemperatureCelsius { fn encode(&self) -> Value { self.as_celsius().encode() } }
++impl Encode for f64 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for bool {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for u8 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for u16 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for u32 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for u64 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for usize {
++    fn encode(&self) -> Value {
++        Value::from(*self as u64)
++    }
++}
++impl Encode for i8 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for i16 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for i32 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for i64 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for String {
++    fn encode(&self) -> Value {
++        Value::from(self.clone())
++    }
++}
++impl Encode for (f64, f64, f64) {
++    fn encode(&self) -> Value {
++        Value::Array(vec![self.0.encode(), self.1.encode(), self.2.encode()])
++    }
++}
++impl<T: Encode> Encode for Option<T> {
++    fn encode(&self) -> Value {
++        self.as_ref().map_or(Value::Null, Encode::encode)
++    }
++}
++impl<T: Encode> Encode for Box<T> {
++    fn encode(&self) -> Value {
++        (**self).encode()
++    }
++}
++impl<T: Encode> Encode for Vec<T> {
++    fn encode(&self) -> Value {
++        Value::Array(self.iter().map(Encode::encode).collect())
++    }
++}
++impl<T: Encode, const N: usize> Encode for [T; N] {
++    fn encode(&self) -> Value {
++        Value::Array(self.iter().map(Encode::encode).collect())
++    }
++}
++impl Encode for openwepp_unit_boundary::TemperatureCelsius {
++    fn encode(&self) -> Value {
++        self.as_celsius().encode()
++    }
++}
+ macro_rules! captured_struct { ($ty:path { $($name:ident),* $(,)? }) => { impl Encode for $ty { fn encode(&self) -> Value { let mut out=Map::new(); $(out.insert(stringify!($name).to_owned(), self.$name.encode());)* Value::Object(out) } } }; }
+ macro_rules! active_context { ($ty:path) => { impl Encode for $ty { fn encode(&self) -> Value { match self { Self::Inactive=>Value::String("inactive".into()), Self::Missing=>Value::String("missing".into()), Self::Ambiguous=>Value::String("ambiguous".into()), Self::AnnualOrFallow { active_slot_index, active_crop_slot_index, runtime_day_of_year } => serde_json::json!({"annual_or_fallow":{"active_slot_index":active_slot_index,"active_crop_slot_index":active_crop_slot_index,"runtime_day_of_year":runtime_day_of_year}}), Self::Perennial { active_slot_index, active_crop_slot_index, runtime_day_of_year } => serde_json::json!({"perennial":{"active_slot_index":active_slot_index,"active_crop_slot_index":active_crop_slot_index,"runtime_day_of_year":runtime_day_of_year}}), } } } }; }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_encoder.rs:33:
+-impl Encode for crate::direct_runtime::DirectDecompositionAction { fn encode(&self)->Value { Value::String(match self { Self::None=>"none",Self::Herbicide=>"herbicide",Self::Burn=>"burn",Self::Silage=>"silage",Self::Cut=>"cut",Self::Remove=>"remove",Self::Grazing=>"grazing" }.into()) } }
+-impl Encode for crate::direct_runtime::DirectErosionHydrographShapeAuthority { fn encode(&self)->Value { Value::String(match self { Self::Dc01SourceShape=>"dc01_source_shape",Self::RoutedHydrograph=>"routed_hydrograph" }.into()) } }
+-impl Encode for crate::direct_runtime::DirectGrowthAction { fn encode(&self)->Value { Value::String(match self { Self::None=>"none",Self::PrePlantSkip=>"pre_plant_skip",Self::PlantingReset=>"planting_reset",Self::HarvestReset=>"harvest_reset",Self::StopReset=>"stop_reset",Self::Cut=>"cut",Self::Grazing=>"grazing",Self::TypedStateOverride=>"typed_state_override" }.into()) } }
+-impl Encode for crate::hydrology::SnowAlbedoModel { fn encode(&self)->Value { Value::String("brock2000_temperature_age_v1".into()) } }
++impl Encode for crate::direct_runtime::DirectDecompositionAction {
++    fn encode(&self) -> Value {
++        Value::String(
++            match self {
++                Self::None => "none",
++                Self::Herbicide => "herbicide",
++                Self::Burn => "burn",
++                Self::Silage => "silage",
++                Self::Cut => "cut",
++                Self::Remove => "remove",
++                Self::Grazing => "grazing",
++            }
++            .into(),
++        )
++    }
++}
++impl Encode for crate::direct_runtime::DirectErosionHydrographShapeAuthority {
++    fn encode(&self) -> Value {
++        Value::String(
++            match self {
++                Self::Dc01SourceShape => "dc01_source_shape",
++                Self::RoutedHydrograph => "routed_hydrograph",
++            }
++            .into(),
++        )
++    }
++}
++impl Encode for crate::direct_runtime::DirectGrowthAction {
++    fn encode(&self) -> Value {
++        Value::String(
++            match self {
++                Self::None => "none",
++                Self::PrePlantSkip => "pre_plant_skip",
++                Self::PlantingReset => "planting_reset",
++                Self::HarvestReset => "harvest_reset",
++                Self::StopReset => "stop_reset",
++                Self::Cut => "cut",
++                Self::Grazing => "grazing",
++                Self::TypedStateOverride => "typed_state_override",
++            }
++            .into(),
++        )
++    }
++}
++impl Encode for crate::hydrology::SnowAlbedoModel {
++    fn encode(&self) -> Value {
++        Value::String("brock2000_temperature_age_v1".into())
++    }
++}
+ // Source fields: direct_runtime/00_core_frames.rs:508
+ captured_struct!(crate::direct_runtime::DirectDayConstructorInputs {
+     forcing,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_encoder.rs:766:
+     prior_shear_last,
+     prior_transport_last
+ });
+-
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_encoder.rs:4:
+ //! decode catalog in `snow_stage3_v11_constructor_inverse.rs`.
+ use serde_json::{Map, Value};
+ 
+-impl Encode for crate::DirectSnowMassTransitionLedgers { fn encode(&self) -> Value { let (solid_to_liquid, liquid_disposition, stage3_outcome) = self.diagnostic_parts_v1(); serde_json::json!({"solid_to_liquid": solid_to_liquid.encode(), "liquid_disposition": liquid_disposition.encode(), "stage3_outcome": stage3_outcome.encode()}) } }
++impl Encode for crate::DirectSnowMassTransitionLedgers {
++    fn encode(&self) -> Value {
++        let (solid_to_liquid, liquid_disposition, stage3_outcome) = self.diagnostic_parts_v1();
++        serde_json::json!({"solid_to_liquid": solid_to_liquid.encode(), "liquid_disposition": liquid_disposition.encode(), "stage3_outcome": stage3_outcome.encode()})
++    }
++}
+ 
+ pub(super) trait Encode {
+     fn encode(&self) -> Value;
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_encoder.rs:11:
+ }
+-impl Encode for f64 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for bool { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for u8 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for u16 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for u32 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for u64 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for usize { fn encode(&self) -> Value { Value::from(*self as u64) } }
+-impl Encode for i8 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for i16 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for i32 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for i64 { fn encode(&self) -> Value { Value::from(*self) } }
+-impl Encode for String { fn encode(&self) -> Value { Value::from(self.clone()) } }
+-impl Encode for (f64, f64, f64) { fn encode(&self) -> Value { Value::Array(vec![self.0.encode(),self.1.encode(),self.2.encode()]) } }
+-impl<T: Encode> Encode for Option<T> { fn encode(&self) -> Value { self.as_ref().map_or(Value::Null, Encode::encode) } }
+-impl<T: Encode> Encode for Box<T> { fn encode(&self) -> Value { (**self).encode() } }
+-impl<T: Encode> Encode for Vec<T> { fn encode(&self) -> Value { Value::Array(self.iter().map(Encode::encode).collect()) } }
+-impl<T: Encode, const N: usize> Encode for [T; N] { fn encode(&self) -> Value { Value::Array(self.iter().map(Encode::encode).collect()) } }
+-impl Encode for openwepp_unit_boundary::TemperatureCelsius { fn encode(&self) -> Value { self.as_celsius().encode() } }
++impl Encode for f64 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for bool {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for u8 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for u16 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for u32 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for u64 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for usize {
++    fn encode(&self) -> Value {
++        Value::from(*self as u64)
++    }
++}
++impl Encode for i8 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for i16 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for i32 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for i64 {
++    fn encode(&self) -> Value {
++        Value::from(*self)
++    }
++}
++impl Encode for String {
++    fn encode(&self) -> Value {
++        Value::from(self.clone())
++    }
++}
++impl Encode for (f64, f64, f64) {
++    fn encode(&self) -> Value {
++        Value::Array(vec![self.0.encode(), self.1.encode(), self.2.encode()])
++    }
++}
++impl<T: Encode> Encode for Option<T> {
++    fn encode(&self) -> Value {
++        self.as_ref().map_or(Value::Null, Encode::encode)
++    }
++}
++impl<T: Encode> Encode for Box<T> {
++    fn encode(&self) -> Value {
++        (**self).encode()
++    }
++}
++impl<T: Encode> Encode for Vec<T> {
++    fn encode(&self) -> Value {
++        Value::Array(self.iter().map(Encode::encode).collect())
++    }
++}
++impl<T: Encode, const N: usize> Encode for [T; N] {
++    fn encode(&self) -> Value {
++        Value::Array(self.iter().map(Encode::encode).collect())
++    }
++}
++impl Encode for openwepp_unit_boundary::TemperatureCelsius {
++    fn encode(&self) -> Value {
++        self.as_celsius().encode()
++    }
++}
+ macro_rules! captured_struct { ($ty:path { $($name:ident),* $(,)? }) => { impl Encode for $ty { fn encode(&self) -> Value { let mut out=Map::new(); $(out.insert(stringify!($name).to_owned(), self.$name.encode());)* Value::Object(out) } } }; }
+ macro_rules! active_context { ($ty:path) => { impl Encode for $ty { fn encode(&self) -> Value { match self { Self::Inactive=>Value::String("inactive".into()), Self::Missing=>Value::String("missing".into()), Self::Ambiguous=>Value::String("ambiguous".into()), Self::AnnualOrFallow { active_slot_index, active_crop_slot_index, runtime_day_of_year } => serde_json::json!({"annual_or_fallow":{"active_slot_index":active_slot_index,"active_crop_slot_index":active_crop_slot_index,"runtime_day_of_year":runtime_day_of_year}}), Self::Perennial { active_slot_index, active_crop_slot_index, runtime_day_of_year } => serde_json::json!({"perennial":{"active_slot_index":active_slot_index,"active_crop_slot_index":active_crop_slot_index,"runtime_day_of_year":runtime_day_of_year}}), } } } }; }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_encoder.rs:33:
+-impl Encode for crate::direct_runtime::DirectDecompositionAction { fn encode(&self)->Value { Value::String(match self { Self::None=>"none",Self::Herbicide=>"herbicide",Self::Burn=>"burn",Self::Silage=>"silage",Self::Cut=>"cut",Self::Remove=>"remove",Self::Grazing=>"grazing" }.into()) } }
+-impl Encode for crate::direct_runtime::DirectErosionHydrographShapeAuthority { fn encode(&self)->Value { Value::String(match self { Self::Dc01SourceShape=>"dc01_source_shape",Self::RoutedHydrograph=>"routed_hydrograph" }.into()) } }
+-impl Encode for crate::direct_runtime::DirectGrowthAction { fn encode(&self)->Value { Value::String(match self { Self::None=>"none",Self::PrePlantSkip=>"pre_plant_skip",Self::PlantingReset=>"planting_reset",Self::HarvestReset=>"harvest_reset",Self::StopReset=>"stop_reset",Self::Cut=>"cut",Self::Grazing=>"grazing",Self::TypedStateOverride=>"typed_state_override" }.into()) } }
+-impl Encode for crate::hydrology::SnowAlbedoModel { fn encode(&self)->Value { Value::String("brock2000_temperature_age_v1".into()) } }
++impl Encode for crate::direct_runtime::DirectDecompositionAction {
++    fn encode(&self) -> Value {
++        Value::String(
++            match self {
++                Self::None => "none",
++                Self::Herbicide => "herbicide",
++                Self::Burn => "burn",
++                Self::Silage => "silage",
++                Self::Cut => "cut",
++                Self::Remove => "remove",
++                Self::Grazing => "grazing",
++            }
++            .into(),
++        )
++    }
++}
++impl Encode for crate::direct_runtime::DirectErosionHydrographShapeAuthority {
++    fn encode(&self) -> Value {
++        Value::String(
++            match self {
++                Self::Dc01SourceShape => "dc01_source_shape",
++                Self::RoutedHydrograph => "routed_hydrograph",
++            }
++            .into(),
++        )
++    }
++}
++impl Encode for crate::direct_runtime::DirectGrowthAction {
++    fn encode(&self) -> Value {
++        Value::String(
++            match self {
++                Self::None => "none",
++                Self::PrePlantSkip => "pre_plant_skip",
++                Self::PlantingReset => "planting_reset",
++                Self::HarvestReset => "harvest_reset",
++                Self::StopReset => "stop_reset",
++                Self::Cut => "cut",
++                Self::Grazing => "grazing",
++                Self::TypedStateOverride => "typed_state_override",
++            }
++            .into(),
++        )
++    }
++}
++impl Encode for crate::hydrology::SnowAlbedoModel {
++    fn encode(&self) -> Value {
++        Value::String("brock2000_temperature_age_v1".into())
++    }
++}
+ // Source fields: direct_runtime/00_core_frames.rs:508
+ captured_struct!(crate::direct_runtime::DirectDayConstructorInputs {
+     forcing,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_constructor_encoder.rs:766:
+     prior_shear_last,
+     prior_transport_last
+ });
+-
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2031:
+     day.decomposition_inputs.active_action = crate::DirectDecompositionAction::Herbicide;
+     let encoded = capture_direct_run_constructor_inputs(&inputs);
+     let independent = capture_test_direct_run_constructor_inputs_raw(&inputs);
+-    assert_eq!(encoded, independent, "private encoder must match Serde's existing wire representation");
++    assert_eq!(
++        encoded, independent,
++        "private encoder must match Serde's existing wire representation"
++    );
+     let day = &encoded["lanes"][0]["day_inputs"][0];
+-    assert_eq!(day["annual_growth_inputs"]["active_action"], serde_json::json!("planting_reset"));
+-    assert_eq!(day["decomposition_inputs"]["active_action"], serde_json::json!("herbicide"));
+     assert_eq!(
+-        constructor_encoder::Encode::encode(&crate::hydrology::SnowAlbedoModel::Brock2000TemperatureAgeV1),
++        day["annual_growth_inputs"]["active_action"],
++        serde_json::json!("planting_reset")
++    );
++    assert_eq!(
++        day["decomposition_inputs"]["active_action"],
++        serde_json::json!("herbicide")
++    );
++    assert_eq!(
++        constructor_encoder::Encode::encode(
++            &crate::hydrology::SnowAlbedoModel::Brock2000TemperatureAgeV1
++        ),
+         serde_json::json!("brock2000_temperature_age_v1")
+     );
+     for action in [
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2043:
+-        crate::DirectGrowthAction::None, crate::DirectGrowthAction::PrePlantSkip,
+-        crate::DirectGrowthAction::PlantingReset, crate::DirectGrowthAction::HarvestReset,
+-        crate::DirectGrowthAction::StopReset, crate::DirectGrowthAction::Cut,
+-        crate::DirectGrowthAction::Grazing, crate::DirectGrowthAction::TypedStateOverride,
+-    ] { assert_eq!(constructor_encoder::Encode::encode(&action), serde_json::to_value(action).expect("growth serde")); }
+-    for action in [crate::DirectDecompositionAction::None, crate::DirectDecompositionAction::Herbicide,
+-        crate::DirectDecompositionAction::Burn, crate::DirectDecompositionAction::Silage,
+-        crate::DirectDecompositionAction::Cut, crate::DirectDecompositionAction::Remove,
+-        crate::DirectDecompositionAction::Grazing] {
+-        assert_eq!(constructor_encoder::Encode::encode(&action), serde_json::to_value(action).expect("decomposition serde"));
++        crate::DirectGrowthAction::None,
++        crate::DirectGrowthAction::PrePlantSkip,
++        crate::DirectGrowthAction::PlantingReset,
++        crate::DirectGrowthAction::HarvestReset,
++        crate::DirectGrowthAction::StopReset,
++        crate::DirectGrowthAction::Cut,
++        crate::DirectGrowthAction::Grazing,
++        crate::DirectGrowthAction::TypedStateOverride,
++    ] {
++        assert_eq!(
++            constructor_encoder::Encode::encode(&action),
++            serde_json::to_value(action).expect("growth serde")
++        );
+     }
++    for action in [
++        crate::DirectDecompositionAction::None,
++        crate::DirectDecompositionAction::Herbicide,
++        crate::DirectDecompositionAction::Burn,
++        crate::DirectDecompositionAction::Silage,
++        crate::DirectDecompositionAction::Cut,
++        crate::DirectDecompositionAction::Remove,
++        crate::DirectDecompositionAction::Grazing,
++    ] {
++        assert_eq!(
++            constructor_encoder::Encode::encode(&action),
++            serde_json::to_value(action).expect("decomposition serde")
++        );
++    }
+ }
+ 
+ #[cfg(test)]
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2599:
+ ) -> Result<V11ParentTransaction, String> {
+     let checkpoint: openwepp_vegetation::V11ParentTransactionCheckpoint =
+         serde_json::from_slice(bytes).map_err(|error| error.to_string())?;
+-    let scope = crate::v9_real_consumer_shadow::direct_v11_bgc_debit_scope(
+-        &vegetation.imported_v10,
+-        lse,
+-    )
+-    .map_err(|error| error.to_string())?;
++    let scope =
++        crate::v9_real_consumer_shadow::direct_v11_bgc_debit_scope(&vegetation.imported_v10, lse)
++            .map_err(|error| error.to_string())?;
+     V11ParentTransaction::restore_with_bgc_scope(vegetation, checkpoint, Some(&scope))
+         .map_err(|error| error.to_string())
+ }
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs:628:
+ 
+ impl ValidatedPreparedStage3V11DayV1 {
+     #[cfg(feature = "persisted-restart-v1")]
+-    pub fn restart_authority_support_checkpoint_v2(&self, support_index: usize) -> Result<DirectSnowStage3V11PreparedSupportRestartV2, DirectSnowStage3V11AttachmentError> { self.diagnostic_support_checkpoint_v2(support_index) }
++    pub fn restart_authority_support_checkpoint_v2(
++        &self,
++        support_index: usize,
++    ) -> Result<DirectSnowStage3V11PreparedSupportRestartV2, DirectSnowStage3V11AttachmentError>
++    {
++        self.diagnostic_support_checkpoint_v2(support_index)
++    }
+ 
+     #[cfg(feature = "persisted-restart-v1")]
+-    pub fn restart_authority_validate_support_checkpoint_v2(&self, checkpoint: &DirectSnowStage3V11PreparedSupportRestartV2) -> Result<(), DirectSnowStage3V11AttachmentError> { self.diagnostic_validate_support_checkpoint_v2(checkpoint) }
++    pub fn restart_authority_validate_support_checkpoint_v2(
++        &self,
++        checkpoint: &DirectSnowStage3V11PreparedSupportRestartV2,
++    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
++        self.diagnostic_validate_support_checkpoint_v2(checkpoint)
++    }
+ 
+-    #[cfg(any(feature = "persisted-restart-v1", feature = "restart-authority-evidence"))]
+-    pub(crate) fn diagnostic_support_checkpoint_v2(&self, support_index: usize) -> Result<DirectSnowStage3V11PreparedSupportRestartV2, DirectSnowStage3V11AttachmentError> { DirectSnowStage3V11PreparedSupportRestartV2::project(self, support_index) }
++    #[cfg(any(
++        feature = "persisted-restart-v1",
++        feature = "restart-authority-evidence"
++    ))]
++    pub(crate) fn diagnostic_support_checkpoint_v2(
++        &self,
++        support_index: usize,
++    ) -> Result<DirectSnowStage3V11PreparedSupportRestartV2, DirectSnowStage3V11AttachmentError>
++    {
++        DirectSnowStage3V11PreparedSupportRestartV2::project(self, support_index)
++    }
+ 
+-    #[cfg(any(feature = "persisted-restart-v1", feature = "restart-authority-evidence"))]
+-    pub(crate) fn diagnostic_validate_support_checkpoint_v2(&self, checkpoint: &DirectSnowStage3V11PreparedSupportRestartV2) -> Result<(), DirectSnowStage3V11AttachmentError> { checkpoint.validate_against(self) }
++    #[cfg(any(
++        feature = "persisted-restart-v1",
++        feature = "restart-authority-evidence"
++    ))]
++    pub(crate) fn diagnostic_validate_support_checkpoint_v2(
++        &self,
++        checkpoint: &DirectSnowStage3V11PreparedSupportRestartV2,
++    ) -> Result<(), DirectSnowStage3V11AttachmentError> {
++        checkpoint.validate_against(self)
++    }
+ }
+ 
+ #[cfg(feature = "persisted-restart-v1")]
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:3:
+ //! This module owns only isolated shadow state. It has no production commit,
+ //! selector, publication, or output API.
+ 
+-use std::collections::{BTreeMap, BTreeSet};
+-use std::fmt::Write as _;
+ #[cfg(test)]
+ use crate::v11_vegetation_consumer::{accept_direct_v11_segment, execute_direct_v11_segment};
+ use openwepp_biogeochemistry::{BiogeochemistryError, BiogeochemistryState, available_by_key};
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:47:
+ };
+ use serde::{Deserialize, Serialize};
+ use sha2::{Digest, Sha256};
++use std::collections::{BTreeMap, BTreeSet};
++use std::fmt::Write as _;
+ use thiserror::Error;
+ 
+ use crate::hydrology::{
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:101:
+     RealHydrologyLaneLayerMap, RealHydrologyShadowAdapter, RealHydrologyShadowError,
+ };
+ use crate::{
+-    DirectRunConstructorInputs, DirectDayFrame, DirectOfeWb14Parameters, DirectPublicationDayInput, DirectRunFrame,
+-    DirectSurfaceLiquidConfiguration,
++    DirectDayFrame, DirectOfeWb14Parameters, DirectPublicationDayInput, DirectRunConstructorInputs,
++    DirectRunFrame, DirectSurfaceLiquidConfiguration,
+ };
+ 
+-use std::sync::Arc;
+ #[cfg(test)]
+ use crate::vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId;
++use std::sync::Arc;
+ 
+ #[path = "canonical_owner_bytes.rs"]
+ mod canonical_owner_bytes;
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:666:
+     soil_thermal: DirectSoilThermalResident,
+     biogeochemistry: BiogeochemistryState,
+     hydrology_frame: DirectRunFrame,
+-        hydrology_constructor_inputs: Option<Arc<crate::DirectRunConstructorInputs>>,
++    hydrology_constructor_inputs: Option<Arc<crate::DirectRunConstructorInputs>>,
+     next_day_index: usize,
+     accepted_interval_count: u64,
+     wb14_parent_working_state: Option<crate::direct_runtime::DirectWb14ParentWorkingState>,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:787:
+     ) -> Result<serde_json::Value, DirectV10RealConsumerError> {
+         let surface_configuration_canonical_json =
+             self.inner.surface_configuration.canonical_bytes()?;
+-        let gsi_owner_state =
+-            crate::runtime_inputs::direct_gsi_state(&self.gsi_state)?;
++        let gsi_owner_state = crate::runtime_inputs::direct_gsi_state(&self.gsi_state)?;
+         let provider_static_configuration = crate::snow_stage3_v11_current_context_capture::
+             ProviderStaticConfigurationCaptureV1::capture(&self.provider_static_configuration)?;
+         let provider_cursor_canonical_json = self.provider_cursor.to_json_bytes()?;
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1482:
+         Ok(())
+     }
+ 
+-    #[cfg(all(test, any(feature = "restart-authority-evidence", feature = "persisted-restart-v1")))]
++    #[cfg(all(
++        test,
++        any(
++            feature = "restart-authority-evidence",
++            feature = "persisted-restart-v1"
++        )
++    ))]
+     fn diagnostic_restore_frozen_litter_residents_v1(
+         &mut self,
+         frozen: DiagnosticFrozenLitterResidentsV1,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1498:
+         Ok(())
+     }
+ 
+-    #[cfg(all(test, any(feature = "restart-authority-evidence", feature = "persisted-restart-v1")))]
++    #[cfg(all(
++        test,
++        any(
++            feature = "restart-authority-evidence",
++            feature = "persisted-restart-v1"
++        )
++    ))]
+     fn diagnostic_decode_validate_frozen_litter_residents_v1(
+         frozen: DiagnosticFrozenLitterResidentsV1,
+         pinned_frozen_litter_lse_configuration: &LandSurfaceEnergyConfiguration,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:4205:
+     }
+ 
+     #[must_use]
+-    pub(crate) const fn diagnostic_hydrology_frame_v1(&self) -> &DirectRunFrame { self.inner.hydrology_frame() }
++    pub(crate) const fn diagnostic_hydrology_frame_v1(&self) -> &DirectRunFrame {
++        self.inner.hydrology_frame()
++    }
+ 
+-    #[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
+     #[must_use]
+-    pub const fn restart_authority_hydrology_frame(&self) -> &DirectRunFrame { self.diagnostic_hydrology_frame_v1() }
++    pub const fn restart_authority_hydrology_frame(&self) -> &DirectRunFrame {
++        self.diagnostic_hydrology_frame_v1()
++    }
+ 
+-        #[must_use]
++    #[must_use]
+     pub(crate) fn diagnostic_hydrology_constructor_inputs_v1(
+         &self,
+     ) -> Option<&std::sync::Arc<crate::DirectRunConstructorInputs>> {
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:4218:
+         self.inner.hydrology_constructor_inputs.as_ref()
+     }
+ 
+-        pub(crate) fn diagnostic_install_hydrology_constructor_inputs_v1(
++    pub(crate) fn diagnostic_install_hydrology_constructor_inputs_v1(
+         &mut self,
+         pinned: std::sync::Arc<crate::DirectRunConstructorInputs>,
+     ) {
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs:262:
+         }
+         Some(DirectSoilThermalAtomicInstallAuthorityV2::PendingParentFinalization(authority)) => {
+             if authority.validate_install_candidate(candidate).is_err()
+-                || authority.physical_transaction_authority().source_transaction_id
++                || authority
++                    .physical_transaction_authority()
++                    .source_transaction_id
+                     != source_transaction_id
+                 || authority
+                     .physical_transaction_authority()
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs:1244:
+ 
+ impl DirectV10SoilThermalResidentV2 {
+     pub(crate) fn diagnostic_validate_against_authority_v1(
+-        &self, configuration: &LandSurfaceEnergyConfiguration, owner_id: &ResourceOwnerId,
++        &self,
++        configuration: &LandSurfaceEnergyConfiguration,
++        owner_id: &ResourceOwnerId,
+         configuration_sha256: &Sha256Digest,
+     ) -> Result<(), DirectV9RealConsumerError> {
+         self.validate()?;
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs:1251:
+-        if &self.owner.state.owner_id != owner_id || &self.owner.state.configuration_sha256 != configuration_sha256 {
+-            return Err(DirectV9RealConsumerError::Identity("native soil external owner/configuration"));
++        if &self.owner.state.owner_id != owner_id
++            || &self.owner.state.configuration_sha256 != configuration_sha256
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native soil external owner/configuration",
++            ));
+         }
+         validate_v2_beginning_configuration(&self.owner, configuration)?;
+-        if let Some(custody) = &self.latest_accepted { custody.expected_sources.validate(&custody.predecessor, configuration)?; }
++        if let Some(custody) = &self.latest_accepted {
++            custody
++                .expected_sources
++                .validate(&custody.predecessor, configuration)?;
++        }
+         Ok(())
+     }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs:1259:
+-    #[cfg(any(test, feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+-    pub fn restart_authority_validate(&self, configuration: &LandSurfaceEnergyConfiguration, owner_id: &ResourceOwnerId, configuration_sha256: &Sha256Digest) -> Result<(), DirectV9RealConsumerError> {
++    #[cfg(any(
++        test,
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
++    pub fn restart_authority_validate(
++        &self,
++        configuration: &LandSurfaceEnergyConfiguration,
++        owner_id: &ResourceOwnerId,
++        configuration_sha256: &Sha256Digest,
++    ) -> Result<(), DirectV9RealConsumerError> {
+         self.diagnostic_validate_against_authority_v1(configuration, owner_id, configuration_sha256)
+     }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs:1496:
+                     "unpublished aggregate extension V2 transaction overflow",
+                 ))?;
+             beginning.transaction_id == next_transaction
+-                && beginning.expected_predecessor_transaction_id
+-                    == Some(self.owner.transaction_id)
++                && beginning.expected_predecessor_transaction_id == Some(self.owner.transaction_id)
+                 && beginning.state.last_accepted_transaction_id == Some(self.owner.transaction_id)
+         };
+-        let prior_custody_join = if let Some(unpublished) =
+-            prior_trial.unpublished_predecessor_trial_sha256()
+-        {
+-            !unpublished.as_str().is_empty()
+-                && prior_trial
+-                    .accepted_predecessor_receipt_chain_sha256()
+-                    .is_none()
+-        } else {
+-            prior_trial.accepted_predecessor_receipt_chain_sha256()
+-                == Some(&prior_original.receipt_chain_sha256)
+-        };
++        let prior_custody_join =
++            if let Some(unpublished) = prior_trial.unpublished_predecessor_trial_sha256() {
++                !unpublished.as_str().is_empty()
++                    && prior_trial
++                        .accepted_predecessor_receipt_chain_sha256()
++                        .is_none()
++            } else {
++                prior_trial.accepted_predecessor_receipt_chain_sha256()
++                    == Some(&prior_original.receipt_chain_sha256)
++            };
+         if beginning.owner_tag != self.owner.owner_tag
+             || beginning.schema_sha256 != self.owner.schema_sha256
+             || beginning.exact_carry_definition_sha256 != self.owner.exact_carry_definition_sha256
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2.rs:2817:
+             authority.prepared_beginning(),
+             authority.accepted(),
+         )?;
+-        let accepted_resident = authoritative_resident
+-            .accepted_from_unpublished_continuation(
+-                authority.continuation(),
+-                authority.prepared_beginning(),
+-                authority.accepted().clone(),
+-                authority.seals().clone(),
+-            )?;
++        let accepted_resident = authoritative_resident.accepted_from_unpublished_continuation(
++            authority.continuation(),
++            authority.prepared_beginning(),
++            authority.accepted().clone(),
++            authority.seals().clone(),
++        )?;
+         self.install_validated_soil_thermal_resident_v2(
+             accepted_resident,
+-            Some(
+-                DirectSoilThermalAtomicInstallAuthorityV2::PendingParentFinalization(authority),
+-            ),
++            Some(DirectSoilThermalAtomicInstallAuthorityV2::PendingParentFinalization(authority)),
+             false,
+         )?;
+         authority.mark_consumed();
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:1:
+ /// Exact selected position of a private native restart candidate.
+ #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+ pub enum NativeSoilRestartPositionV1 {
+-    Committed, PendingCandidate, InProgressDayCandidate, InProgressSupportCurrent,
++    Committed,
++    PendingCandidate,
++    InProgressDayCandidate,
++    InProgressSupportCurrent,
+ }
+ 
+ /// Process-local proof; private fields and no serde/Clone construction path.
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:32:
+         next_day: usize,
+         run_id: u64,
+     ) -> Result<Self, DirectV9RealConsumerError> {
+-        if openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().identity() != Some(14) {
+-            return Err(DirectV9RealConsumerError::Identity("native soil proof policy"));
++        if openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().identity()
++            != Some(14)
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native soil proof policy",
++            ));
+         }
+-        resident.diagnostic_validate_against_authority_v1(lse_configuration, expected_owner, expected_configuration)?;
+-        bootstrap.diagnostic_validate_against_authority_v1(lse_configuration, expected_owner, expected_configuration)?;
+-        let actual = DirectSoilThermalResident::V2(resident.clone()).canonical_active_owner_bytes()?;
+-        let mut views = clock.owners().iter().filter(|owner| owner.owner_id() == "soil_thermal");
+-        let view = views.next().ok_or(DirectV9RealConsumerError::Identity("native soil proof missing clock owner"))?;
++        resident.diagnostic_validate_against_authority_v1(
++            lse_configuration,
++            expected_owner,
++            expected_configuration,
++        )?;
++        bootstrap.diagnostic_validate_against_authority_v1(
++            lse_configuration,
++            expected_owner,
++            expected_configuration,
++        )?;
++        let actual =
++            DirectSoilThermalResident::V2(resident.clone()).canonical_active_owner_bytes()?;
++        let mut views = clock
++            .owners()
++            .iter()
++            .filter(|owner| owner.owner_id() == "soil_thermal");
++        let view = views.next().ok_or(DirectV9RealConsumerError::Identity(
++            "native soil proof missing clock owner",
++        ))?;
+         if views.next().is_some() || view.state_bytes() != actual {
+-            return Err(DirectV9RealConsumerError::Identity("native soil proof exact unique clock owner"));
++            return Err(DirectV9RealConsumerError::Identity(
++                "native soil proof exact unique clock owner",
++            ));
+         }
+         let owner = resident.owner();
+-        if owner.run_id != expected_soil_run_id || bootstrap.owner().run_id != expected_soil_run_id {
+-            return Err(DirectV9RealConsumerError::Identity("native soil proof independent run identity"));
++        if owner.run_id != expected_soil_run_id || bootstrap.owner().run_id != expected_soil_run_id
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native soil proof independent run identity",
++            ));
+         }
+-        let initial = clock.accepted_until().get() == 0 && next_day == 0
+-            && owner.support_start_ns == 0 && resident.latest_accepted().is_none()
++        let initial = clock.accepted_until().get() == 0
++            && next_day == 0
++            && owner.support_start_ns == 0
++            && resident.latest_accepted().is_none()
+             && resident.receipt_free_seals().is_some()
+-            && bootstrap.latest_accepted().is_none() && bootstrap.receipt_free_seals().is_some()
+-            && serde_json::to_vec(resident).map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?
+-                == serde_json::to_vec(bootstrap).map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
+-        if !initial && (resident.latest_accepted().is_none()
+-            || owner.support_end_ns != clock.accepted_until().get()) {
+-            return Err(DirectV9RealConsumerError::Identity("native soil proof accepted support or exact bootstrap"));
++            && bootstrap.latest_accepted().is_none()
++            && bootstrap.receipt_free_seals().is_some()
++            && serde_json::to_vec(resident)
++                .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?
++                == serde_json::to_vec(bootstrap)
++                    .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
++        if !initial
++            && (resident.latest_accepted().is_none()
++                || owner.support_end_ns != clock.accepted_until().get())
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native soil proof accepted support or exact bootstrap",
++            ));
+         }
+-        Ok(Self { inactive_scheduler: None, resident: actual, clock: clock.clone(), position, logical_revision,
+-            next_day, run_id, lse_configuration_sha256: lse_configuration.configuration_sha256.clone() })
++        Ok(Self {
++            inactive_scheduler: None,
++            resident: actual,
++            clock: clock.clone(),
++            position,
++            logical_revision,
++            next_day,
++            run_id,
++            lse_configuration_sha256: lse_configuration.configuration_sha256.clone(),
++        })
+     }
+ 
+     /// Minted only by the complete deferred-context diagnostic admission.  The
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:80:
+         next_day: usize,
+         run_id: u64,
+     ) -> Result<Self, DirectV9RealConsumerError> {
+-        if openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().identity() != Some(14) {
+-            return Err(DirectV9RealConsumerError::Identity("native deferred proof policy"));
++        if openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().identity()
++            != Some(14)
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native deferred proof policy",
++            ));
+         }
+-        resident.diagnostic_validate_against_authority_v1(lse_configuration, expected_owner, expected_configuration)?;
+-        bootstrap.diagnostic_validate_against_authority_v1(lse_configuration, expected_owner, expected_configuration)?;
+-        let actual = DirectSoilThermalResident::V2(resident.clone()).canonical_active_owner_bytes()?;
+-        let mut views = clock.owners().iter().filter(|owner| owner.owner_id() == "soil_thermal");
+-        let view = views.next().ok_or(DirectV9RealConsumerError::Identity("native deferred proof missing clock owner"))?;
++        resident.diagnostic_validate_against_authority_v1(
++            lse_configuration,
++            expected_owner,
++            expected_configuration,
++        )?;
++        bootstrap.diagnostic_validate_against_authority_v1(
++            lse_configuration,
++            expected_owner,
++            expected_configuration,
++        )?;
++        let actual =
++            DirectSoilThermalResident::V2(resident.clone()).canonical_active_owner_bytes()?;
++        let mut views = clock
++            .owners()
++            .iter()
++            .filter(|owner| owner.owner_id() == "soil_thermal");
++        let view = views.next().ok_or(DirectV9RealConsumerError::Identity(
++            "native deferred proof missing clock owner",
++        ))?;
+         if views.next().is_some() || view.state_bytes() != actual {
+-            return Err(DirectV9RealConsumerError::Identity("native deferred proof exact unique clock owner"));
++            return Err(DirectV9RealConsumerError::Identity(
++                "native deferred proof exact unique clock owner",
++            ));
+         }
+         let owner = resident.owner();
+-        if owner.run_id != expected_soil_run_id || bootstrap.owner().run_id != expected_soil_run_id {
+-            return Err(DirectV9RealConsumerError::Identity("native deferred proof independent run identity"));
++        if owner.run_id != expected_soil_run_id || bootstrap.owner().run_id != expected_soil_run_id
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native deferred proof independent run identity",
++            ));
+         }
+         // A deferred admission is never an initial/bootstrap admission.  Its
+         // candidate is separately replayed by the enclosing phase custody.
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:100:
+         if clock.accepted_until().get() == 0 || next_day == 0 {
+-            return Err(DirectV9RealConsumerError::Identity("native deferred proof original accepted resident"));
++            return Err(DirectV9RealConsumerError::Identity(
++                "native deferred proof original accepted resident",
++            ));
+         }
+-        Ok(Self { inactive_scheduler: None, resident: actual, clock: clock.clone(), position, logical_revision,
+-            next_day, run_id, lse_configuration_sha256: lse_configuration.configuration_sha256.clone() })
++        Ok(Self {
++            inactive_scheduler: None,
++            resident: actual,
++            clock: clock.clone(),
++            position,
++            logical_revision,
++            next_day,
++            run_id,
++            lse_configuration_sha256: lse_configuration.configuration_sha256.clone(),
++        })
+     }
+ 
+     /// Bind the original receipt-free physical counter before private calendar admission.
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:108:
+     /// Native envelope validation precedes this binding; full retained history replay
+     /// remains mandatory before the enclosing restored resident becomes usable.
+-    pub fn bind_inactive_scheduler(mut self, count: u64,
+-        configuration: &crate::DirectSurfaceLiquidConfiguration, surface_bytes: &[u8],
+-        wb14_bytes: Option<&[u8]>, validated_native_surface_bytes: Option<&[u8]>,
+-        native_configuration: Option<&crate::SurfaceLiquidConfigurationV2>, native_wb14_bytes: Option<&[u8]>,
++    pub fn bind_inactive_scheduler(
++        mut self,
++        count: u64,
++        configuration: &crate::DirectSurfaceLiquidConfiguration,
++        surface_bytes: &[u8],
++        wb14_bytes: Option<&[u8]>,
++        validated_native_surface_bytes: Option<&[u8]>,
++        native_configuration: Option<&crate::SurfaceLiquidConfigurationV2>,
++        native_wb14_bytes: Option<&[u8]>,
+     ) -> Result<Self, DirectV9RealConsumerError> {
+         if self.inactive_scheduler.is_some() {
+-            return Err(DirectV9RealConsumerError::Identity("native inactive scheduler count or WB14"));
++            return Err(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler count or WB14",
++            ));
+         }
+-        self.inactive_scheduler = Some(Self::validate_inactive_scheduler_v1(count, configuration,
+-            surface_bytes, wb14_bytes, validated_native_surface_bytes, native_configuration,
+-            native_wb14_bytes, &self.clock, self.run_id)?);
++        self.inactive_scheduler = Some(Self::validate_inactive_scheduler_v1(
++            count,
++            configuration,
++            surface_bytes,
++            wb14_bytes,
++            validated_native_surface_bytes,
++            native_configuration,
++            native_wb14_bytes,
++            &self.clock,
++            self.run_id,
++        )?);
+         Ok(self)
+     }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:124:
+     #[allow(clippy::too_many_arguments)]
+     #[cfg(test)]
+-    pub(crate) fn diagnostic_validate_inactive_scheduler_v1(count: u64,
+-        configuration: &crate::DirectSurfaceLiquidConfiguration, surface_bytes: &[u8],
+-        wb14_bytes: Option<&[u8]>, validated_native_surface_bytes: Option<&[u8]>,
+-        native_configuration: Option<&crate::SurfaceLiquidConfigurationV2>, native_wb14_bytes: Option<&[u8]>,
+-        clock: &openwepp_coupled_time::CoupledClockStateV1, expected_run_id: u64,
++    pub(crate) fn diagnostic_validate_inactive_scheduler_v1(
++        count: u64,
++        configuration: &crate::DirectSurfaceLiquidConfiguration,
++        surface_bytes: &[u8],
++        wb14_bytes: Option<&[u8]>,
++        validated_native_surface_bytes: Option<&[u8]>,
++        native_configuration: Option<&crate::SurfaceLiquidConfigurationV2>,
++        native_wb14_bytes: Option<&[u8]>,
++        clock: &openwepp_coupled_time::CoupledClockStateV1,
++        expected_run_id: u64,
+     ) -> Result<(), DirectV9RealConsumerError> {
+-        Self::validate_inactive_scheduler_v1(count, configuration, surface_bytes, wb14_bytes,
+-            validated_native_surface_bytes, native_configuration, native_wb14_bytes, clock,
+-            expected_run_id).map(|_| ())
++        Self::validate_inactive_scheduler_v1(
++            count,
++            configuration,
++            surface_bytes,
++            wb14_bytes,
++            validated_native_surface_bytes,
++            native_configuration,
++            native_wb14_bytes,
++            clock,
++            expected_run_id,
++        )
++        .map(|_| ())
+     }
+ 
+     #[allow(clippy::too_many_arguments)]
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:138:
+-    fn validate_inactive_scheduler_v1(count: u64,
+-        configuration: &crate::DirectSurfaceLiquidConfiguration, surface_bytes: &[u8],
+-        wb14_bytes: Option<&[u8]>, validated_native_surface_bytes: Option<&[u8]>,
+-        native_configuration: Option<&crate::SurfaceLiquidConfigurationV2>, native_wb14_bytes: Option<&[u8]>,
+-        clock: &openwepp_coupled_time::CoupledClockStateV1, expected_run_id: u64,
++    fn validate_inactive_scheduler_v1(
++        count: u64,
++        configuration: &crate::DirectSurfaceLiquidConfiguration,
++        surface_bytes: &[u8],
++        wb14_bytes: Option<&[u8]>,
++        validated_native_surface_bytes: Option<&[u8]>,
++        native_configuration: Option<&crate::SurfaceLiquidConfigurationV2>,
++        native_wb14_bytes: Option<&[u8]>,
++        clock: &openwepp_coupled_time::CoupledClockStateV1,
++        expected_run_id: u64,
+     ) -> Result<NativeInactiveSchedulerCustodyV1, DirectV9RealConsumerError> {
+-        if count != 0 || wb14_bytes.is_some() || native_wb14_bytes.is_some()
+-            || configuration.run_id != expected_run_id {
+-            return Err(DirectV9RealConsumerError::Identity("native inactive scheduler count or WB14"));
++        if count != 0
++            || wb14_bytes.is_some()
++            || native_wb14_bytes.is_some()
++            || configuration.run_id != expected_run_id
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler count or WB14",
++            ));
+         }
+-        let surface = crate::DirectSurfaceLiquidOwnedState::from_canonical_bytes(configuration,surface_bytes)
+-            .map_err(|_| DirectV9RealConsumerError::Identity("native inactive scheduler surface"))?;
+-        if surface.canonical_bytes(configuration).map_err(|_| DirectV9RealConsumerError::Identity("native inactive scheduler canonical surface"))? != surface_bytes
++        let surface = crate::DirectSurfaceLiquidOwnedState::from_canonical_bytes(
++            configuration,
++            surface_bytes,
++        )
++        .map_err(|_| DirectV9RealConsumerError::Identity("native inactive scheduler surface"))?;
++        if surface.canonical_bytes(configuration).map_err(|_| {
++            DirectV9RealConsumerError::Identity("native inactive scheduler canonical surface")
++        })? != surface_bytes
+             || surface.continuations.is_empty()
+             || surface.continuations.len() != configuration.ofe_topology.len()
+-            || surface.continuations.iter().zip(&configuration.ofe_topology).any(|(value,ofe)|
+-                &value.ofe_id != ofe || value.day_index != 0 || value.next_interval_index != 0
+-                || value.last_accepted_transaction_id.is_some()
+-                || value.cumulative_supply_m.to_bits() != 0
+-                || value.cumulative_infiltration_m.to_bits() != 0) {
+-            return Err(DirectV9RealConsumerError::Identity("native inactive scheduler exact continuation"));
++            || surface
++                .continuations
++                .iter()
++                .zip(&configuration.ofe_topology)
++                .any(|(value, ofe)| {
++                    &value.ofe_id != ofe
++                        || value.day_index != 0
++                        || value.next_interval_index != 0
++                        || value.last_accepted_transaction_id.is_some()
++                        || value.cumulative_supply_m.to_bits() != 0
++                        || value.cumulative_infiltration_m.to_bits() != 0
++                })
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler exact continuation",
++            ));
+         }
+-        let mut clock_surfaces = clock.owners().iter().filter(|value| value.owner_id()=="surface_liquid");
+-        let clock_surface = clock_surfaces.next().ok_or(DirectV9RealConsumerError::Identity("native inactive scheduler missing surface clock"))?;
++        let mut clock_surfaces = clock
++            .owners()
++            .iter()
++            .filter(|value| value.owner_id() == "surface_liquid");
++        let clock_surface = clock_surfaces
++            .next()
++            .ok_or(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler missing surface clock",
++            ))?;
+         if clock_surfaces.next().is_some() {
+-            return Err(DirectV9RealConsumerError::Identity("native inactive scheduler duplicate surface clock"));
++            return Err(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler duplicate surface clock",
++            ));
+         }
+         let clock_value: serde_json::Value = serde_json::from_slice(clock_surface.state_bytes())
+             .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:167:
+-        let native_configuration = native_configuration.ok_or(DirectV9RealConsumerError::Identity("native inactive scheduler native configuration absent"))?;
++        let native_configuration =
++            native_configuration.ok_or(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler native configuration absent",
++            ))?;
+         if native_configuration.parent() != configuration {
+-            return Err(DirectV9RealConsumerError::Identity("native inactive scheduler native parent configuration"));
++            return Err(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler native parent configuration",
++            ));
+         }
+-        let native_bytes = validated_native_surface_bytes.ok_or(DirectV9RealConsumerError::Identity("native inactive scheduler native surface absent"))?;
+-        let native = crate::SurfaceLiquidOwnerEnvelopeV2::from_canonical_bytes(configuration,Some(native_configuration),native_bytes)
+-            .map_err(|_| DirectV9RealConsumerError::Identity("native inactive scheduler native envelope"))?;
+-        let state = native.v2_state().ok_or(DirectV9RealConsumerError::Identity("native inactive scheduler surface downgrade"))?;
+-        if native.canonical_bytes(configuration,Some(native_configuration))
+-            .map_err(|_| DirectV9RealConsumerError::Identity("native inactive scheduler native canonical bytes"))? != native_bytes
+-            || state.continuations() != surface.continuations.as_slice() {
+-            return Err(DirectV9RealConsumerError::Identity("native inactive scheduler native continuation correspondence"));
++        let native_bytes = validated_native_surface_bytes.ok_or(
++            DirectV9RealConsumerError::Identity("native inactive scheduler native surface absent"),
++        )?;
++        let native = crate::SurfaceLiquidOwnerEnvelopeV2::from_canonical_bytes(
++            configuration,
++            Some(native_configuration),
++            native_bytes,
++        )
++        .map_err(|_| {
++            DirectV9RealConsumerError::Identity("native inactive scheduler native envelope")
++        })?;
++        let state = native
++            .v2_state()
++            .ok_or(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler surface downgrade",
++            ))?;
++        if native
++            .canonical_bytes(configuration, Some(native_configuration))
++            .map_err(|_| {
++                DirectV9RealConsumerError::Identity(
++                    "native inactive scheduler native canonical bytes",
++                )
++            })?
++            != native_bytes
++            || state.continuations() != surface.continuations.as_slice()
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler native continuation correspondence",
++            ));
+         }
+-        let matches = if clock_value.get("version").and_then(serde_json::Value::as_str)==Some("v2") {
++        let matches = if clock_value
++            .get("version")
++            .and_then(serde_json::Value::as_str)
++            == Some("v2")
++        {
+             native_bytes == clock_surface.state_bytes()
+         } else {
+             let persistent: serde_json::Value = serde_json::from_slice(surface_bytes)
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:184:
+                 .map_err(|error| DirectV9RealConsumerError::Serialization(error.to_string()))?;
+-            clock_value == serde_json::json!({"schema":"OPENWEPP_SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V2",
++            clock_value
++                == serde_json::json!({"schema":"OPENWEPP_SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V2",
+                 "persistent_owner":persistent,"wb14_parent_working_state":serde_json::Value::Null})
+         };
+-        if !matches { return Err(DirectV9RealConsumerError::Identity("native inactive scheduler exact clock custody")); }
++        if !matches {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler exact clock custody",
++            ));
++        }
+         Ok(NativeInactiveSchedulerCustodyV1 {
+-            count, surface_bytes: surface_bytes.to_vec(), configuration_sha256: configuration.configuration_sha256.clone(),
++            count,
++            surface_bytes: surface_bytes.to_vec(),
++            configuration_sha256: configuration.configuration_sha256.clone(),
+         })
+     }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:194:
+-    fn validate_constructor_context(&self, resident: &DirectSoilThermalResident,
++    fn validate_constructor_context(
++        &self,
++        resident: &DirectSoilThermalResident,
+         lse_configuration: &LandSurfaceEnergyConfiguration,
+         clock: &openwepp_coupled_time::CoupledClockStateV1,
+         position: NativeSoilRestartPositionV1,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:198:
+-        logical_revision: u128, next_day: usize, run_id: u64,
++        logical_revision: u128,
++        next_day: usize,
++        run_id: u64,
+     ) -> Result<(), DirectV9RealConsumerError> {
+-        if self.clock != *clock || self.position != position
+-            || self.lse_configuration_sha256 != lse_configuration.configuration_sha256 {
+-            return Err(DirectV9RealConsumerError::Identity("native soil proof foreign constructor context"));
++        if self.clock != *clock
++            || self.position != position
++            || self.lse_configuration_sha256 != lse_configuration.configuration_sha256
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native soil proof foreign constructor context",
++            ));
+         }
+         self.validate_private_owner(resident, logical_revision, next_day, run_id)
+     }
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:206:
+ 
+-    fn validate_private_owner(&self, resident: &DirectSoilThermalResident,
+-        logical_revision: u128, next_day: usize, run_id: u64,
++    fn validate_private_owner(
++        &self,
++        resident: &DirectSoilThermalResident,
++        logical_revision: u128,
++        next_day: usize,
++        run_id: u64,
+     ) -> Result<(), DirectV9RealConsumerError> {
+         if !matches!(resident, DirectSoilThermalResident::V2(_))
+             || self.resident != resident.canonical_active_owner_bytes()?
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:212:
+-            || self.logical_revision != logical_revision || self.next_day != next_day || self.run_id != run_id {
+-            return Err(DirectV9RealConsumerError::Identity("native soil proof substituted private owner"));
++            || self.logical_revision != logical_revision
++            || self.next_day != next_day
++            || self.run_id != run_id
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native soil proof substituted private owner",
++            ));
+         }
+         Ok(())
+     }
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:223:
+ 
+ /// Private-admission projection only: callers validate original and resulting
+ /// owners and retain every physical coordinate. Never publish this projection.
+-pub fn restart_authority_vegetation_for_predecessor_admission(value: &V10CoupledOwnedState,
+-    predecessor: u128) -> V10CoupledOwnedState {
++pub fn restart_authority_vegetation_for_predecessor_admission(
++    value: &V10CoupledOwnedState,
++    predecessor: u128,
++) -> V10CoupledOwnedState {
+     let mut normalized = value.clone();
+     normalized.0.last_transaction_id = predecessor;
+-    for stratum in normalized.0.strata.values_mut() { stratum.last_transaction_id = predecessor; }
++    for stratum in normalized.0.strata.values_mut() {
++        stratum.last_transaction_id = predecessor;
++    }
+     for occupancy in normalized.0.occupancies.values_mut() {
+         occupancy.last_accepted_transaction_id = (predecessor != 0).then_some(predecessor);
+     }
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:243:
+ }
+ 
+ impl DirectV10RealConsumerShadow {
+-    #[cfg(any(feature="restart-authority-evidence",feature="persisted-restart-v1"))]
+-    pub fn restart_authority_install_native_inactive_scheduler_position(&mut self,
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
++    pub fn restart_authority_install_native_inactive_scheduler_position(
++        &mut self,
+         proof: &NativeSoilRestartAdmissionV1,
+         clock: &openwepp_coupled_time::CoupledClockStateV1,
+         position: NativeSoilRestartPositionV1,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:251:
+     ) -> Result<(), DirectV10RealConsumerError> {
+-        proof.validate_constructor_context(&self.inner.soil_thermal,&self.lse_configuration,
+-            clock,position,self.vegetation_state.0.last_transaction_id,self.inner.next_day_index,
+-            self.inner.hydrology_frame.identity.run_id)?;
+-        let custody = proof.inactive_scheduler.as_ref().ok_or(DirectV9RealConsumerError::Identity("native inactive scheduler proof absent"))?;
+-        let surface = self.inner.hydrology_frame.surface_liquid_shadow.as_ref()
+-            .ok_or(DirectV9RealConsumerError::Identity("native inactive scheduler installed surface absent"))?;
+-        if custody.count != 0 || custody.count > u64::from(u32::MAX) * INTERVALS_PER_DAY as u64
++        proof.validate_constructor_context(
++            &self.inner.soil_thermal,
++            &self.lse_configuration,
++            clock,
++            position,
++            self.vegetation_state.0.last_transaction_id,
++            self.inner.next_day_index,
++            self.inner.hydrology_frame.identity.run_id,
++        )?;
++        let custody =
++            proof
++                .inactive_scheduler
++                .as_ref()
++                .ok_or(DirectV9RealConsumerError::Identity(
++                    "native inactive scheduler proof absent",
++                ))?;
++        let surface = self
++            .inner
++            .hydrology_frame
++            .surface_liquid_shadow
++            .as_ref()
++            .ok_or(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler installed surface absent",
++            ))?;
++        if custody.count != 0
++            || custody.count > u64::from(u32::MAX) * INTERVALS_PER_DAY as u64
+             || self.inner.surface_configuration.configuration_sha256 != custody.configuration_sha256
+-            || surface.canonical_bytes(&self.inner.surface_configuration)
+-                .map_err(|_| DirectV9RealConsumerError::Identity("native inactive scheduler installed surface"))? != custody.surface_bytes
+-            || self.inner.wb14_parent_working_state.is_some() {
+-            return Err(DirectV9RealConsumerError::Identity("native inactive scheduler installed custody mismatch").into());
++            || surface
++                .canonical_bytes(&self.inner.surface_configuration)
++                .map_err(|_| {
++                    DirectV9RealConsumerError::Identity(
++                        "native inactive scheduler installed surface",
++                    )
++                })?
++                != custody.surface_bytes
++            || self.inner.wb14_parent_working_state.is_some()
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native inactive scheduler installed custody mismatch",
++            )
++            .into());
+         }
+         self.inner.accepted_interval_count = custody.count;
+         Ok(())
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention/accepted_snow_liquid_output_tests.rs:78:
+     );
+ }
+ 
+-
+ #[test]
+ fn native_retained_donor_lookup_selects_exact_history_without_weakening_chronology() {
+     let first = output(0.25, 0.0);
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention/accepted_snow_liquid_output_tests.rs:85:
+     let mut second = output(0.5, 1.0);
+-    second.support = TimeSupport::new(openwepp_coupled_time::ModelTimeNs::new(60_000_000_000),
+-        openwepp_coupled_time::ModelTimeNs::new(120_000_000_000)).unwrap();
++    second.support = TimeSupport::new(
++        openwepp_coupled_time::ModelTimeNs::new(60_000_000_000),
++        openwepp_coupled_time::ModelTimeNs::new(120_000_000_000),
++    )
++    .unwrap();
+     second.receipt_sha256 = second.digest().unwrap();
+-    let first_values = vec![first.clone()]; let second_values = vec![second.clone()];
+-    let history = [(first.support, first_values.as_slice()), (second.support, second_values.as_slice())];
+-    assert_eq!(retained_snow_liquid_outputs_v1(history, first.support).unwrap(), first_values);
+-    assert_eq!(retained_snow_liquid_outputs_v1(history, second.support).unwrap(), second_values);
++    let first_values = vec![first.clone()];
++    let second_values = vec![second.clone()];
++    let history = [
++        (first.support, first_values.as_slice()),
++        (second.support, second_values.as_slice()),
++    ];
++    assert_eq!(
++        retained_snow_liquid_outputs_v1(history, first.support).unwrap(),
++        first_values
++    );
++    assert_eq!(
++        retained_snow_liquid_outputs_v1(history, second.support).unwrap(),
++        second_values
++    );
+     assert!(retained_snow_liquid_outputs_v1([history[1]], first.support).is_err());
+     assert!(retained_snow_liquid_outputs_v1([history[0], history[0]], first.support).is_err());
+-    assert!(retained_snow_liquid_outputs_v1([(first.support, second_values.as_slice())], first.support).is_err());
+-    let mut poisoned = first_values.clone(); poisoned[0].mass_kg_m2_ofe_ground = 1.0;
+-    assert!(retained_snow_liquid_outputs_v1([(first.support, poisoned.as_slice())], first.support).is_err());
+-    assert!(retained_snow_liquid_outputs_v1([(first.support, &[][..])], first.support).unwrap().is_empty());
++    assert!(
++        retained_snow_liquid_outputs_v1([(first.support, second_values.as_slice())], first.support)
++            .is_err()
++    );
++    let mut poisoned = first_values.clone();
++    poisoned[0].mass_kg_m2_ofe_ground = 1.0;
++    assert!(
++        retained_snow_liquid_outputs_v1([(first.support, poisoned.as_slice())], first.support)
++            .is_err()
++    );
++    assert!(
++        retained_snow_liquid_outputs_v1([(first.support, &[][..])], first.support)
++            .unwrap()
++            .is_empty()
++    );
+ }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1378:
+         })
+     }
+ 
+-    #[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+-    pub fn restart_authority_accepted_publication_rotation_canonical_bytes_v3(&self) -> Result<Vec<u8>, DirectV10RealConsumerError> { self.diagnostic_accepted_publication_rotation_canonical_bytes_v3() }
+-
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
++    pub fn restart_authority_accepted_publication_rotation_canonical_bytes_v3(
++        &self,
++    ) -> Result<Vec<u8>, DirectV10RealConsumerError> {
++        self.diagnostic_accepted_publication_rotation_canonical_bytes_v3()
++    }
+ 
+     #[cfg(any(
+         feature = "restart-authority-evidence",
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:257:
+         Ok(())
+     }
+ 
+-    #[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+-    pub fn restart_authority_complete_surface_clock_bytes(&self) -> Result<Vec<u8>, DirectV11RealConsumerError> {
+-        self.canonical_v11_parent_owner_state_bytes()?.remove("surface_liquid")
+-            .ok_or(DirectV11RealConsumerError::Identity("native restored surface clock projection"))
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
++    pub fn restart_authority_complete_surface_clock_bytes(
++        &self,
++    ) -> Result<Vec<u8>, DirectV11RealConsumerError> {
++        self.canonical_v11_parent_owner_state_bytes()?
++            .remove("surface_liquid")
++            .ok_or(DirectV11RealConsumerError::Identity(
++                "native restored surface clock projection",
++            ))
+     }
+ 
+     pub(crate) fn diagnostic_wb14_parent_canonical_bytes_v1(
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:271:
+             .map_err(DirectV10RealConsumerError::from)
+     }
+ 
+-    #[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+-    pub fn restart_authority_wb14_parent_canonical_bytes(&self) -> Result<Option<Vec<u8>>, DirectV10RealConsumerError> { self.diagnostic_wb14_parent_canonical_bytes_v1() }
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
++    pub fn restart_authority_wb14_parent_canonical_bytes(
++        &self,
++    ) -> Result<Option<Vec<u8>>, DirectV10RealConsumerError> {
++        self.diagnostic_wb14_parent_canonical_bytes_v1()
++    }
+ 
+-
+     #[cfg(any(
+         feature = "restart-authority-evidence",
+         feature = "persisted-restart-v1"
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:286:
+         self.restore_wb14_parent_with_native_admission(bytes, None)
+     }
+ 
+-    #[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+-    pub fn restart_authority_restore_native_wb14_parent_canonical_bytes(&mut self, bytes: Option<&[u8]>,
+-        proof: &NativeSoilRestartAdmissionV1, clock: &openwepp_coupled_time::CoupledClockStateV1,
+-        position: NativeSoilRestartPositionV1) -> Result<(), DirectV10RealConsumerError> {
+-        proof.validate_constructor_context(&self.inner.soil_thermal, &self.lse_configuration, clock, position,
+-            self.vegetation_state.0.last_transaction_id, self.inner.next_day_index, self.inner.hydrology_frame.identity.run_id)?;
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
++    pub fn restart_authority_restore_native_wb14_parent_canonical_bytes(
++        &mut self,
++        bytes: Option<&[u8]>,
++        proof: &NativeSoilRestartAdmissionV1,
++        clock: &openwepp_coupled_time::CoupledClockStateV1,
++        position: NativeSoilRestartPositionV1,
++    ) -> Result<(), DirectV10RealConsumerError> {
++        proof.validate_constructor_context(
++            &self.inner.soil_thermal,
++            &self.lse_configuration,
++            clock,
++            position,
++            self.vegetation_state.0.last_transaction_id,
++            self.inner.next_day_index,
++            self.inner.hydrology_frame.identity.run_id,
++        )?;
+         self.restore_wb14_parent_with_native_admission(bytes, Some(proof))
+     }
+ 
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:298:
+-    #[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+-    fn restore_wb14_parent_with_native_admission(&mut self, bytes: Option<&[u8]>,
+-        native_proof: Option<&NativeSoilRestartAdmissionV1>) -> Result<(), DirectV10RealConsumerError> {
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
++    fn restore_wb14_parent_with_native_admission(
++        &mut self,
++        bytes: Option<&[u8]>,
++        native_proof: Option<&NativeSoilRestartAdmissionV1>,
++    ) -> Result<(), DirectV10RealConsumerError> {
+         let mut candidate = self.clone();
+         candidate
+             .inner
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:328:
+     ) -> Result<(), DirectV10RealConsumerError> {
+         self.restart_authority_restore_surface_bytes_with_soil(bytes, false)
+     }
+-    #[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
+     pub fn restart_authority_restore_native_surface_liquid_canonical_bytes(
+-        &mut self, bytes: &[u8],
++        &mut self,
++        bytes: &[u8],
+     ) -> Result<(), DirectV10RealConsumerError> {
+-        if openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().identity() != Some(14) {
+-            return Err(DirectV9RealConsumerError::Identity("native surface restore policy").into());
++        if openwepp_land_surface_energy::snow_accuracy_policy::Policy::current().identity()
++            != Some(14)
++        {
++            return Err(
++                DirectV9RealConsumerError::Identity("native surface restore policy").into(),
++            );
+         }
+         self.restart_authority_restore_surface_bytes_with_soil(bytes, true)
+     }
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:340:
+-    #[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
+     fn restart_authority_restore_surface_bytes_with_soil(
+-        &mut self, bytes: &[u8], native_soil: bool,
++        &mut self,
++        bytes: &[u8],
++        native_soil: bool,
+     ) -> Result<(), DirectV10RealConsumerError> {
+         let restored = crate::DirectSurfaceLiquidOwnedState::from_canonical_bytes(
+             &self.inner.surface_configuration,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:389:
+         let is_native = matches!(soil_thermal, DirectSoilThermalResident::V2(_));
+         match soil_thermal {
+             DirectSoilThermalResident::V1(owner) => owner.validate()?,
+-            DirectSoilThermalResident::V2(resident) if native_soil => resident.restart_authority_validate(
+-                &inner.lse_configuration, &inner.lse_configuration.soil_thermal_configuration.owner_id,
+-                &inner.lse_configuration.soil_thermal_configuration.configuration_sha256)?,
+-            _ => return Err(DirectV9RealConsumerError::Identity("ordinary surface restore native soil refusal").into()),
++            DirectSoilThermalResident::V2(resident) if native_soil => resident
++                .restart_authority_validate(
++                    &inner.lse_configuration,
++                    &inner.lse_configuration.soil_thermal_configuration.owner_id,
++                    &inner
++                        .lse_configuration
++                        .soil_thermal_configuration
++                        .configuration_sha256,
++                )?,
++            _ => {
++                return Err(DirectV9RealConsumerError::Identity(
++                    "ordinary surface restore native soil refusal",
++                )
++                .into());
++            }
+         }
+         let transaction_id = TransactionId(inner.vegetation_state.0.last_transaction_id);
+         if inner
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:404:
+                 DirectV9RealConsumerError::Identity("restart V9 vegetation/LSE lineage"),
+             ));
+         }
+-        if !is_native && soil_thermal
+-            .last_accepted_transaction_id()
+-            .is_some_and(|value| value != transaction_id)
++        if !is_native
++            && soil_thermal
++                .last_accepted_transaction_id()
++                .is_some_and(|value| value != transaction_id)
+         {
+             return Err(DirectV10RealConsumerError::Runtime(
+                 DirectV9RealConsumerError::Identity("restart V9 vegetation/soil lineage"),
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:420:
+         }
+         if inner.accepted_interval_count != 0
+             && (inner.lse_state.last_accepted_transaction_id != Some(transaction_id)
+-                || (!is_native && soil_thermal.last_accepted_transaction_id() != Some(transaction_id)))
++                || (!is_native
++                    && soil_thermal.last_accepted_transaction_id() != Some(transaction_id)))
+         {
+             return Err(DirectV10RealConsumerError::Runtime(
+                 DirectV9RealConsumerError::Identity("restart V9 accepted physical lineage"),
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:463:
+         finalized_vegetation: V10CoupledOwnedState,
+         finalized_biogeochemistry: BiogeochemistryState,
+     ) -> Result<(), DirectV10RealConsumerError> {
+-        self.restore_parent_finalization_with_native_admission(finalized_vegetation, finalized_biogeochemistry, None)
++        self.restore_parent_finalization_with_native_admission(
++            finalized_vegetation,
++            finalized_biogeochemistry,
++            None,
++        )
+     }
+ 
+-    #[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+-    pub fn restart_authority_restore_native_parent_finalization_logical_owners(&mut self,
+-        finalized_vegetation: V10CoupledOwnedState, finalized_biogeochemistry: BiogeochemistryState,
+-        proof: &NativeSoilRestartAdmissionV1, clock: &openwepp_coupled_time::CoupledClockStateV1,
+-        position: NativeSoilRestartPositionV1) -> Result<(), DirectV10RealConsumerError> {
+-        proof.validate_constructor_context(&self.inner.soil_thermal, &self.lse_configuration, clock, position,
+-            self.vegetation_state.0.last_transaction_id, self.inner.next_day_index, self.inner.hydrology_frame.identity.run_id)?;
+-        self.restore_parent_finalization_with_native_admission(finalized_vegetation, finalized_biogeochemistry, Some(proof))
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
++    pub fn restart_authority_restore_native_parent_finalization_logical_owners(
++        &mut self,
++        finalized_vegetation: V10CoupledOwnedState,
++        finalized_biogeochemistry: BiogeochemistryState,
++        proof: &NativeSoilRestartAdmissionV1,
++        clock: &openwepp_coupled_time::CoupledClockStateV1,
++        position: NativeSoilRestartPositionV1,
++    ) -> Result<(), DirectV10RealConsumerError> {
++        proof.validate_constructor_context(
++            &self.inner.soil_thermal,
++            &self.lse_configuration,
++            clock,
++            position,
++            self.vegetation_state.0.last_transaction_id,
++            self.inner.next_day_index,
++            self.inner.hydrology_frame.identity.run_id,
++        )?;
++        self.restore_parent_finalization_with_native_admission(
++            finalized_vegetation,
++            finalized_biogeochemistry,
++            Some(proof),
++        )
+     }
+ 
+-    #[cfg(any(feature = "restart-authority-evidence", feature = "persisted-restart-v1"))]
+-    fn restore_parent_finalization_with_native_admission(&mut self,
+-        finalized_vegetation: V10CoupledOwnedState, finalized_biogeochemistry: BiogeochemistryState,
+-        native_proof: Option<&NativeSoilRestartAdmissionV1>) -> Result<(), DirectV10RealConsumerError> {
++    #[cfg(any(
++        feature = "restart-authority-evidence",
++        feature = "persisted-restart-v1"
++    ))]
++    fn restore_parent_finalization_with_native_admission(
++        &mut self,
++        finalized_vegetation: V10CoupledOwnedState,
++        finalized_biogeochemistry: BiogeochemistryState,
++        native_proof: Option<&NativeSoilRestartAdmissionV1>,
++    ) -> Result<(), DirectV10RealConsumerError> {
+         finalized_vegetation
+             .validate(&self.vegetation_configuration)
+             .map_err(DirectV10RealConsumerError::V10)?;
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:500:
+             ));
+         }
+         let mut normalized_vegetation = if native_proof.is_some() {
+-            restart_authority_vegetation_for_predecessor_admission(&finalized_vegetation, predecessor_transaction)
+-        } else { finalized_vegetation.clone() };
++            restart_authority_vegetation_for_predecessor_admission(
++                &finalized_vegetation,
++                predecessor_transaction,
++            )
++        } else {
++            finalized_vegetation.clone()
++        };
+         normalized_vegetation.0.last_transaction_id = predecessor_transaction;
+         normalized_vegetation.0.state_sha256 = normalized_vegetation.0.canonical_sha256();
+         let mut normalized_biogeochemistry = finalized_biogeochemistry.clone();
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:966:
+     }
+ 
+     pub(crate) fn accepted_snow_liquid_outputs_for_retained_support(
+-        &self, support: TimeSupport,
++        &self,
++        support: TimeSupport,
+     ) -> Result<Vec<Stage3AcceptedSnowLiquidOutputV1>, DirectV11RealConsumerError> {
+-        retained_snow_liquid_outputs_v1(self.accepted_publication_history.supports().iter()
+-            .map(|retained| (retained.support(), retained.accepted_snow_liquid_outputs())), support)
++        retained_snow_liquid_outputs_v1(
++            self.accepted_publication_history
++                .supports()
++                .iter()
++                .map(|retained| (retained.support(), retained.accepted_snow_liquid_outputs())),
++            support,
++        )
+     }
+ 
+     #[track_caller]
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:1198:
+     }
+ }
+ 
+-
+ fn retained_snow_liquid_outputs_v1<'a>(
+     retained: impl IntoIterator<Item = (TimeSupport, &'a [Stage3AcceptedSnowLiquidOutputV1])>,
+     support: TimeSupport,
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:1205:
+ ) -> Result<Vec<Stage3AcceptedSnowLiquidOutputV1>, DirectV11RealConsumerError> {
+-    let mut matching = retained.into_iter().filter(|(bounds, _)| *bounds == support);
+-    let (_, outputs) = matching.next().ok_or(DirectV11RealConsumerError::Identity("native retained donor support missing"))?;
++    let mut matching = retained
++        .into_iter()
++        .filter(|(bounds, _)| *bounds == support);
++    let (_, outputs) = matching.next().ok_or(DirectV11RealConsumerError::Identity(
++        "native retained donor support missing",
++    ))?;
+     if matching.next().is_some() {
+-        return Err(DirectV11RealConsumerError::Identity("native retained donor support duplicate"));
++        return Err(DirectV11RealConsumerError::Identity(
++            "native retained donor support duplicate",
++        ));
+     }
+     for output in outputs {
+         output.validate()?;
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:1213:
+         if output.support != support {
+-            return Err(DirectV11RealConsumerError::Identity("native retained donor output support"));
++            return Err(DirectV11RealConsumerError::Identity(
++                "native retained donor output support",
++            ));
+         }
+     }
+-    Ok(outputs.iter().filter(|output| output.mass_kg_m2_ofe_ground() > 0.0).cloned().collect())
++    Ok(outputs
++        .iter()
++        .filter(|output| output.mass_kg_m2_ofe_ground() > 0.0)
++        .cloned()
++        .collect())
+ }
+ 
+-
+ /// Independent provider-prefix position prepared from the authenticated run
+ /// beginning and repository climate. No serialized construction authority.
+ #[cfg(feature = "persisted-restart-v1")]
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:1236:
+         &self.inner.provider_gsi_receipt_sha256
+     }
+     pub fn restart_authority_native_provider_prefix(
+-        &self, climate: &crate::runtime_inputs::HillslopeClimateRuntimeRequest, days: usize,
++        &self,
++        climate: &crate::runtime_inputs::HillslopeClimateRuntimeRequest,
++        days: usize,
+     ) -> Result<Vec<NativeProviderExpectedPositionV1>, DirectV10RealConsumerError> {
+         if self.inner.next_day_index != 0 {
+-            return Err(DirectV9RealConsumerError::Identity("native provider expected prefix requires authenticated bootstrap").into());
++            return Err(DirectV9RealConsumerError::Identity(
++                "native provider expected prefix requires authenticated bootstrap",
++            )
++            .into());
+         }
+-        self.provider_cursor.validate_for_configuration(&self.provider_static_configuration, 0)?;
++        self.provider_cursor
++            .validate_for_configuration(&self.provider_static_configuration, 0)?;
+         let mut gsi = self.gsi_state.clone();
+         let mut cursor = self.provider_cursor.clone();
+-        let position = |next_day_index, gsi: &GsiState, cursor: &SnowFreeHalfHourProviderCursor, receipt_sha256: String|
+-            NativeProviderExpectedPositionV1 {next_day_index, gsi:gsi.clone(), cursor:cursor.clone(),
+-                provider_configuration:self.provider_static_configuration.clone(),
+-                gsi_configuration:self.gsi_owner_configuration.clone(), receipt_sha256};
+-        let mut result = vec![position(0, &gsi, &cursor, self.inner.provider_gsi_receipt_sha256.clone())];
++        let position =
++            |next_day_index,
++             gsi: &GsiState,
++             cursor: &SnowFreeHalfHourProviderCursor,
++             receipt_sha256: String| NativeProviderExpectedPositionV1 {
++                next_day_index,
++                gsi: gsi.clone(),
++                cursor: cursor.clone(),
++                provider_configuration: self.provider_static_configuration.clone(),
++                gsi_configuration: self.gsi_owner_configuration.clone(),
++                receipt_sha256,
++            };
++        let mut result = vec![position(
++            0,
++            &gsi,
++            &cursor,
++            self.inner.provider_gsi_receipt_sha256.clone(),
++        )];
+         for day in 0..days {
+-            let prepared = climate.prepare_snow_free_gsi_day_from_repository(day,
+-                &self.provider_static_configuration, &self.gsi_owner_configuration, &gsi, &cursor)?;
++            let prepared = climate.prepare_snow_free_gsi_day_from_repository(
++                day,
++                &self.provider_static_configuration,
++                &self.gsi_owner_configuration,
++                &gsi,
++                &cursor,
++            )?;
+             let digest = prepared.gsi_receipt().receipt_sha256.clone();
+             prepared.commit(&mut gsi, &mut cursor)?;
+-            let next = day.checked_add(1).ok_or(DirectV9RealConsumerError::Identity("native provider day overflow"))?;
++            let next = day
++                .checked_add(1)
++                .ok_or(DirectV9RealConsumerError::Identity(
++                    "native provider day overflow",
++                ))?;
+             cursor.validate_for_configuration(&self.provider_static_configuration, next)?;
+             result.push(position(next, &gsi, &cursor, digest));
+         }
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:1261:
+         Ok(result)
+     }
+     pub fn restart_authority_validate_native_provider_receipt(
+-        &self, receipt: &str, expected: &[NativeProviderExpectedPositionV1],
++        &self,
++        receipt: &str,
++        expected: &[NativeProviderExpectedPositionV1],
+     ) -> Result<(), DirectV10RealConsumerError> {
+-        let position = expected.get(self.inner.next_day_index)
+-            .ok_or(DirectV9RealConsumerError::Identity("native provider expected position absent"))?;
++        let position =
++            expected
++                .get(self.inner.next_day_index)
++                .ok_or(DirectV9RealConsumerError::Identity(
++                    "native provider expected position absent",
++                ))?;
+         if position.next_day_index != self.inner.next_day_index
+-            || position.gsi != self.gsi_state || position.cursor != self.provider_cursor
++            || position.gsi != self.gsi_state
++            || position.cursor != self.provider_cursor
+             || position.provider_configuration != self.provider_static_configuration
+             || position.gsi_configuration != self.gsi_owner_configuration
+-            || position.receipt_sha256 != receipt {
+-            return Err(DirectV9RealConsumerError::Identity("native provider exact independent prefix join").into());
++            || position.receipt_sha256 != receipt
++        {
++            return Err(DirectV9RealConsumerError::Identity(
++                "native provider exact independent prefix join",
++            )
++            .into());
+         }
+         Ok(())
+     }
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:1277:
+     pub fn restart_authority_install_native_provider_receipt(
+-        &mut self, receipt: &str, expected: &[NativeProviderExpectedPositionV1],
++        &mut self,
++        receipt: &str,
++        expected: &[NativeProviderExpectedPositionV1],
+     ) -> Result<(), DirectV10RealConsumerError> {
+         self.restart_authority_validate_native_provider_receipt(receipt, expected)?;
+         self.inner.provider_gsi_receipt_sha256 = receipt.to_owned();
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:1292:
+         let receipt = original.inner.provider_gsi_receipt_sha256.clone();
+         let position = NativeProviderExpectedPositionV1 {
+             next_day_index: original.inner.next_day_index,
+-            gsi: original.gsi_state.clone(), cursor: original.provider_cursor.clone(),
++            gsi: original.gsi_state.clone(),
++            cursor: original.provider_cursor.clone(),
+             provider_configuration: original.provider_static_configuration.clone(),
+-            gsi_configuration: original.gsi_owner_configuration.clone(), receipt_sha256: receipt.clone(),
++            gsi_configuration: original.gsi_owner_configuration.clone(),
++            receipt_sha256: receipt.clone(),
+         };
+         let mut receiver = original.clone();
+-        assert!(receiver.restart_authority_install_native_provider_receipt(&receipt, &[]).is_err());
++        assert!(
++            receiver
++                .restart_authority_install_native_provider_receipt(&receipt, &[])
++                .is_err()
++        );
+         assert_eq!(receiver, original);
+         for index in 0..4 {
+             let mut poison = position.clone();
+Diff in /home/roger/openwepp-experiments/b01-wb14-feature-compatibility-20260917/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs:1307:
+                 2 => poison.provider_configuration.run_id.push_str("-foreign"),
+                 _ => poison.gsi_configuration.owner_id.push_str("-foreign"),
+             }
+-            assert!(receiver.restart_authority_install_native_provider_receipt(&receipt, &[poison]).is_err());
++            assert!(
++                receiver
++                    .restart_authority_install_native_provider_receipt(&receipt, &[poison])
++                    .is_err()
++            );
+             assert_eq!(receiver, original);
+         }
+-        assert!(receiver.restart_authority_install_native_provider_receipt(&"e".repeat(64), &[position.clone()]).is_err());
++        assert!(
++            receiver
++                .restart_authority_install_native_provider_receipt(
++                    &"e".repeat(64),
++                    &[position.clone()]
++                )
++                .is_err()
++        );
+         assert_eq!(receiver, original);
+         receiver.inner.provider_gsi_receipt_sha256 = "0".repeat(64);
+-        receiver.restart_authority_install_native_provider_receipt(&receipt, &[position]).unwrap();
++        receiver
++            .restart_authority_install_native_provider_receipt(&receipt, &[position])
++            .unwrap();
+         assert_eq!(receiver, original);
+     }
+ }

@@ -1,0 +1,14 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+error: couldn't read `/tmp/openwepp-roger-b01-wb14-feature-compatibility-20260917-017af43e8043/tmp2mvl_l7z/snow_stage3_v11_constructor_encoder.rs`: No such file or directory (os error 2)
+  --> /tmp/openwepp-roger-b01-wb14-feature-compatibility-20260917-017af43e8043/tmp2mvl_l7z/snow_stage3_v11_current_context_capture.rs:21:1
+   |
+21 | mod constructor_encoder;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+Error writing files: failed to resolve mod `constructor_encoder`: /tmp/openwepp-roger-b01-wb14-feature-compatibility-20260917-017af43e8043/tmp2mvl_l7z/snow_stage3_v11_constructor_encoder.rs does not exist
+Traceback (most recent call last):
+  File "/tmp/b01_targeted_format.py", line 20, in <module>
+    subprocess.run(['rustfmt','--edition','2024',str(tmp)],check=True)
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['rustfmt', '--edition', '2024', '/tmp/openwepp-roger-b01-wb14-feature-compatibility-20260917-017af43e8043/tmp2mvl_l7z/snow_stage3_v11_current_context_capture.rs']' returned non-zero exit status 1.

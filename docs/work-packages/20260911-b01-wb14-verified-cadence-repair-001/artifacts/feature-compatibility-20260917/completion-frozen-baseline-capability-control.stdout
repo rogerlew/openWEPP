@@ -1,0 +1,11 @@
+
+running 1 test
+test v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_is_private_move_only_non_wire ... FAILED
+
+failures:
+
+failures:
+    v9_real_consumer_shadow::accepted_publication_support_capability_tests::accepted_publication_support_capability_is_private_move_only_non_wire
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1517 filtered out; finished in 0.00s
+

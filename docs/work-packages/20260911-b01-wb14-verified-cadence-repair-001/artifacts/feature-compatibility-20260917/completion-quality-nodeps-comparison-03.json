@@ -1,0 +1,83 @@
+{
+  "evidence_class": "Ran: matched diagnostic content comparison, not strict-lint acceptance",
+  "baseline": "/home/roger/openwepp-experiments/b01-wb14-integrated-completion-evidence-20260917/closure-quality-nodeps.stdout",
+  "candidate": "/home/roger/openwepp-experiments/b01-wb14-feature-compatibility-evidence-20260917/completion-terminal-quality-nodeps-03.stdout",
+  "baseline_count": 2851,
+  "candidate_count": 2849,
+  "introduced_or_changed": [
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs",
+          "text": [
+            "    ) -> Result<Vec<u8>, DirectV11RealConsumerError> {"
+          ]
+        }
+      ],
+      "count": 2
+    }
+  ],
+  "removed_or_changed": [
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this closure is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+          "text": [
+            "        .map(|index| prepared.restart_authority_support_checkpoint_v2(index))"
+          ]
+        }
+      ],
+      "count": 2
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs",
+          "text": [
+            "    pub fn restart_authority_complete_surface_clock_bytes(&self) -> Result<Vec<u8>, DirectV11RealConsumerError> {"
+          ]
+        }
+      ],
+      "count": 2
+    }
+  ],
+  "candidate_locations": [
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs",
+          "line": 266,
+          "text": [
+            "    ) -> Result<Vec<u8>, DirectV11RealConsumerError> {"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "clippy::result_large_err",
+      "level": "error",
+      "message": "the `Err`-variant returned from this function is very large",
+      "spans": [
+        {
+          "file": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs",
+          "line": 266,
+          "text": [
+            "    ) -> Result<Vec<u8>, DirectV11RealConsumerError> {"
+          ]
+        }
+      ]
+    }
+  ]
+}

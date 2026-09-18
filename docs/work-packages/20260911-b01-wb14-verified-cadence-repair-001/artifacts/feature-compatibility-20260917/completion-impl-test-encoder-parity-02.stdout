@@ -1,0 +1,15 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/b01-wb14-feature-compatibility-20260917-017af43e8043
+  scratch: /tmp/openwepp-roger-b01-wb14-feature-compatibility-20260917-017af43e8043
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test snow_stage3_v11_current_context_capture::constructor_encoder_matches_independent_serde_and_literal_enum_names_v1 ... FAILED
+
+failures:
+
+failures:
+    snow_stage3_v11_current_context_capture::constructor_encoder_matches_independent_serde_and_literal_enum_names_v1
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1474 filtered out; finished in 0.00s
+

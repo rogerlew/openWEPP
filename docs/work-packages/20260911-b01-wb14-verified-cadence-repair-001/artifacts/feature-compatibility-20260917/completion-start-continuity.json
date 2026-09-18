@@ -1,0 +1,17 @@
+{
+  "utc": "2026-09-18T02:14:15.328867+00:00",
+  "source_sha256": "68600a01f8a90f2ef036fd966cd26dceb26c936a4efad3870dd3aa1096d1e12b",
+  "entry_count": 746,
+  "baseline_sha256": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+  "patch_sha256": "48a54e35dd7ddb4c77fa93d64e4e7c442bb2c07716bcc26b106a416bdb2b1abd",
+  "reconstructed_changed_files": [
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs",
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/evapotranspiration.rs",
+    "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v10_soil_thermal_v2_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/v3_publication_retention_tests.rs",
+    "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs"
+  ],
+  "actual_reconstruction_verified": true
+}

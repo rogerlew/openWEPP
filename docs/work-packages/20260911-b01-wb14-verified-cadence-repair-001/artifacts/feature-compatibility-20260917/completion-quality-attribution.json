@@ -1,0 +1,40 @@
+{
+  "evidence_class": "Ran: matched compiler diagnostics; Static: content/meaning attribution with independent correctness review",
+  "terminal_source_tree_sha256": "d354ccc6ba947c6b0a9e3eed1cdedd0417ae1d5c2896288efbc828beca2f873b",
+  "baseline_source_tree_sha256": "e93175d626081d52219c5053ff7899521f7ce3010a720335bec8b462095ee1e7",
+  "comparison": "completion-quality-nodeps-comparison-03.json",
+  "baseline_count": 2851,
+  "candidate_count": 2849,
+  "strict_clippy": "FAIL",
+  "candidate_nodeps": "FAIL exit101",
+  "equivalent_relocations": [
+    {
+      "lint": "clippy::result_large_err",
+      "count": 2,
+      "path": "crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_v10_accessors.rs",
+      "function": "restart_authority_complete_surface_clock_bytes",
+      "baseline_source": "    pub fn restart_authority_complete_surface_clock_bytes(&self) -> Result<Vec<u8>, DirectV11RealConsumerError> {\n        self.canonical_v11_parent_owner_state_bytes()?.remove(\"surface_liquid\")\n            .ok_or(DirectV11RealConsumerError::Identity(\"native restored surface clock projection\"))\n    }",
+      "candidate_source": "    pub fn restart_authority_complete_surface_clock_bytes(\n        &self,\n    ) -> Result<Vec<u8>, DirectV11RealConsumerError> {\n        self.canonical_v11_parent_owner_state_bytes()?\n            .remove(\"surface_liquid\")\n            .ok_or(DirectV11RealConsumerError::Identity(\n                \"native restored surface clock projection\",\n            ))\n    }",
+      "format_only_function_difference": true,
+      "normalization": "Whitespace and optional trailing argument commas before closing parentheses only; exact before/after retained for review. No tuple expressions occur in this function.",
+      "reason": "Same pre-existing public function, concrete error enum, feature predicates and body; signature formatting changes primary diagnostic span."
+    }
+  ],
+  "removed": [
+    {
+      "lint": "clippy::result_large_err",
+      "count": 2,
+      "path": "crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs",
+      "reason": "Private forwarding uses the same concrete typed error boxed at the private boundary; public wrappers unbox exact errors. No suppression or error-variant change."
+    }
+  ],
+  "new_relevant_diagnostics": 0,
+  "claim": "Bounded no-new-relevant-diagnostics criterion PASS with distinct correctness and QA review; strict-quality remains FAIL.",
+  "attribution_attempt_history": "Initial whitespace-only equality assertion failed because rustfmt adds two optional trailing argument commas; exact snippets inspected before explicit format-only normalization.",
+  "strict_comparison": "completion-quality-strict-comparison-03.json",
+  "strict_baseline_and_candidate_count": 27,
+  "independent_reviewers": [
+    "completion-correctness-final-review.md",
+    "completion-qa-final-review.md"
+  ]
+}
