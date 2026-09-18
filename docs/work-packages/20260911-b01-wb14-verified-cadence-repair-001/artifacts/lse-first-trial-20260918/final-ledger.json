@@ -1,0 +1,21 @@
+{
+  "utc": "2026-09-18T23:57:44.399664+00:00",
+  "anchor_utc": "2026-09-18T23:18:30+00:00",
+  "carried_seconds": 122884.93,
+  "elapsed_concurrent_wall_seconds": 2354.399664,
+  "final_publication_return_reserve_seconds": 60.0,
+  "charged_seconds": 125299.329664,
+  "ceiling_seconds": 128300.205,
+  "remaining_seconds": 3000.875336,
+  "wait_deductions": 0,
+  "failure_floor_at_least": 352,
+  "uncertainty": "Historical mixed outcomes and uncounted early build multiplicity retained; not a correction-cycle count.",
+  "primary_commit": "403cc822a656dac309ec75f3c6061d0ad1f00204",
+  "primary_remote_verified_files": 103,
+  "primary_remote_verified_bytes": 4635058,
+  "diagnostic_disposition": "First-refusal cause established; final independent correctness closure HOLD (agent thread limit).",
+  "reader": "NOT REACHED",
+  "original_E008": "HOLD/unresolved",
+  "further_execution": "None authorized by this disposition; frozen artifacts available for missing review.",
+  "external_final_receipt": "/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/final-remote-verification.json"
+}
