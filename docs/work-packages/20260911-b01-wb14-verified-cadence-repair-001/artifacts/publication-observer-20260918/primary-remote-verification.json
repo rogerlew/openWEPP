@@ -1,0 +1,1210 @@
+{
+  "utc": "2026-09-18T18:38:42.782756+00:00",
+  "commit": "33e3a64e4bc3aacaf5b77f46c4cdec59b723f872",
+  "parent": "4a4e415c653385b57e18d1636e4443ecc42a8bb7",
+  "method": "independent exact-commit HTTPS raw fetch; byte-for-byte comparison to git show",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/affected-command-selection.json",
+      "bytes": 20364,
+      "sha256": "a5faa24920a6087e2959a470840c26b3fc82301e7e08d8272a5dd174fec3a314"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/all-recorded-command-outcomes.json",
+      "bytes": 7491,
+      "sha256": "800701d677c42c28e33c689da1140b5b0c4613d8b0804693b695c4a9b6745d00"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/compare_diagnostics.py",
+      "bytes": 2291,
+      "sha256": "fcbf99635d1f28480ef1641164355b0988baf594776bc3f603cbc10b963e0a48"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/correctness-initial-review.md",
+      "bytes": 4959,
+      "sha256": "69ea01b881161f8e1b17829e2139533e1a3feb04e6538553e328ad4aa289e08d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/correctness-review.md",
+      "bytes": 9069,
+      "sha256": "df492708ca12238e0e7c9b8f70182d077fc26d1a32324d44e48ce65c763d7cf4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/cut02-recovery-apply.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/cut02-recovery-apply.stdout",
+      "bytes": 419,
+      "sha256": "ae559a594be34e32d0e6f876dd5125da2ebf827782fc897f646f5e8643be7479"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/disabled-cut01-observation.json",
+      "bytes": 324,
+      "sha256": "7ce663632f882606d8eaca898b61731c8fee647dc551881d643649ec21ba1689"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/expired-launch-control-incremental-from-T.patch",
+      "bytes": 209884,
+      "sha256": "f44bdab8f74f37021279a4252dc75915e71d326cd7f24237860d3d1776570b59"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/expired-launch-control-source.json",
+      "bytes": 109450,
+      "sha256": "c1e0246ce4b2b87f86e74e1de477ceced5afb7b9c99ed2e305f73a6ef03b6817"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/expired-launch-refusal-result.json",
+      "bytes": 191,
+      "sha256": "ebf93fa75b0d0f018910c294872a6f74e90a0d438c1bdfdfb020f7c68827af87"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/format-cut01-result.json",
+      "bytes": 1385,
+      "sha256": "a20734442deb52715abe60da80fd6f007aa236ab7ca4cd20de3c3b210a2e7dba"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/format-cut02-result.json",
+      "bytes": 1063,
+      "sha256": "14735b87059a7a513d63297bfe3beafde9b385e67c4a4d3cc1158a7aa2c1a963"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/frozen-binary-cut02.json",
+      "bytes": 543,
+      "sha256": "35cdbaa9c694dd643d99c3dc87bba4ab1b9c17dc42811b57ff7ec106214fb2f7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/implementation-return.txt",
+      "bytes": 1242,
+      "sha256": "f4f8216259fd010b3b81214f1697688365226f8bd5e30bcbf1c3e3dc1d48b23e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/membership-reconciliation-02.json",
+      "bytes": 10390,
+      "sha256": "ffa4f0408c7e076d43a3213b33f1ab239d1992364040a251296a55b7760af243"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-both-controls-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-both-controls-02-source.json",
+      "bytes": 109453,
+      "sha256": "676c65ba209723c6f3138b240082a2ebe736a31ddf6b2a019277aea4d710e721"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-both-controls-02.json",
+      "bytes": 8469,
+      "sha256": "39f955074e8b72a316d4e931572d5e9060922816e1be629967a0d0edcd43625c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-both-controls-02.resources",
+      "bytes": 3724,
+      "sha256": "687c72364b8dc2341e82e959a2ad63c0ca0a4ab99768f0c919ac427dd3c6e429"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-both-controls-02.stderr.gz",
+      "bytes": 18557,
+      "sha256": "6c69133166e2cd33ed6b362c6c339226112c7e52d4718679cc1c1f70acc1432b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-both-controls-02.stdout",
+      "bytes": 236,
+      "sha256": "d401b20eddf311f126a937a0e5c74aeacfec400086cc59c139b1201dc9c5cea9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-corruption-result-02.json",
+      "bytes": 6918,
+      "sha256": "26ecb668e646d8db5073e5bc9b80991eb1f03eb0897d86087b2f9509459f7147"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-credits-result-02.json",
+      "bytes": 27193,
+      "sha256": "0366911fca690da15ba19d01be0258edf344fca2c271b5914d241926e31a1538"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-cut01-from-start.patch",
+      "bytes": 8016,
+      "sha256": "e737b9c92897dce75a94f56673f78bb5f53371553cec2dc3cca2589adec1b71c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-cut02-from-start.patch",
+      "bytes": 11963,
+      "sha256": "8571f75af138eb6b960f80ad3947bb802c6f3377c7587822a228dc183b6d918d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-donors-result-02.json",
+      "bytes": 10367,
+      "sha256": "6a3b99b617f5317e16a099556b2cfd299b54f90bcc487e342c8a5c8fca3bfc6a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-error-measurement-refusal-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-error-measurement-refusal-02-source.json",
+      "bytes": 109465,
+      "sha256": "cdb3c2649ae013df3509c265dc8140ae0f3a40aa679b9536abbbcd3326dc7e93"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-error-measurement-refusal-02.json",
+      "bytes": 2897,
+      "sha256": "da748e9344fc422505adfb4f4046eab71dbe0a38b4fed054d61ba5b2f5dfccb4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-error-measurement-refusal-02.resources",
+      "bytes": 1178,
+      "sha256": "c72e81aca1d8639bc0cc35ff5d29f3f4d6a7a684b25c0172c93e367d5312ebac"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-error-measurement-refusal-02.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-error-measurement-refusal-02.stdout",
+      "bytes": 247,
+      "sha256": "8b7ad66ffe4eec89d40aa3f85bb97810b0c4741841d8592ba662f46605e0e045"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-error-measurement-result-02.json",
+      "bytes": 255,
+      "sha256": "d9edb55427d85a9ee61d4bfe214c50ebff667c3c4e0e3df5046196ddf58442e3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-controls-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-controls-02-source.json",
+      "bytes": 109457,
+      "sha256": "b31fa751b95089d3ff7b22d16f7964cebf3fd5f6f6143e2d736bba7377d4cdfb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-controls-02.json",
+      "bytes": 4029,
+      "sha256": "c833512d37f6e09dd0982ed6dcf2021876825223bed2b16fd576e22ca2262ed7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-controls-02.resources",
+      "bytes": 1489,
+      "sha256": "171f03c0e296d0204ed6d4d7b6ff2f7ce76822b2efa301e8e531c462d1de219c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-controls-02.stderr",
+      "bytes": 19875,
+      "sha256": "3d5cd317e45c039b44a6fdb08011ae4dc1a4c0daa191bebfba197a7101c09565"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-controls-02.stdout",
+      "bytes": 236,
+      "sha256": "d401b20eddf311f126a937a0e5c74aeacfec400086cc59c139b1201dc9c5cea9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-tests-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-tests-02-source.json",
+      "bytes": 109454,
+      "sha256": "d5d0e38feff4d68dee31bdde649507421b8c743dcce932607995eeb029cbb20a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-tests-02.json",
+      "bytes": 2959,
+      "sha256": "db7d6e37c2e21059ab2eff82973b90666802d6b8fa97b755485baa53e200a3db"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-tests-02.resources",
+      "bytes": 1099,
+      "sha256": "798dc126d999ce919277b846c928e7b93516e9b1857a29a2fc2e2c0dab962ee1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-tests-02.stderr",
+      "bytes": 285,
+      "sha256": "e633c6bab485f160f8f9329d9fc755d61d0a1df89f250bded8fdeb2b897901b5"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-evidence-tests-02.stdout",
+      "bytes": 146507,
+      "sha256": "7d957d6192f3b4b1f9c854ae2fc6ef940addb97f97c9524a5f558f6477b2c69f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut01-incremental-from-T.patch",
+      "bytes": 214266,
+      "sha256": "a48765309c8d80461947590e4a7293c91a95f303b68213a72fcfec6f0d7051f3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut01-source.json",
+      "bytes": 109449,
+      "sha256": "522b3239162c320d8a1c1cbe244c530ada79ee56ee1745900598563282c9fe5d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut01.json",
+      "bytes": 2872,
+      "sha256": "24a874f3e76dd310aaa3fb64ec4a8807155ef165e7811c81b852c95820a547cf"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut01.resources",
+      "bytes": 1174,
+      "sha256": "5fed1709c2d73ab55d4eab5fdeed2f16e3d46e471c84bacf442ff79011db8d45"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut01.stderr",
+      "bytes": 47,
+      "sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut01.stdout",
+      "bytes": 386,
+      "sha256": "79c2d11d2ca0ed771a3344b80412fe03e989daf187ae6baf41fc3f32cf638487"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut02-source.json",
+      "bytes": 109449,
+      "sha256": "5303a775edafa8a099fa3adc8b827765993999542a60944daf2330f8187f4cd7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut02.json",
+      "bytes": 2864,
+      "sha256": "52e833bdbdd5b18cd6c2874938b2a005ccd379b57cb0f0113c0225fe8c4cfa58"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut02.resources",
+      "bytes": 1134,
+      "sha256": "1f746849a0ac041c0e27e21f6976a3ad35bf86afb5129fc6beffa773e038ec58"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut02.stderr",
+      "bytes": 47,
+      "sha256": "be8abd52f6f487cd72a0d222996ad0d780bb97a10563ca2e89e419ac16c8cbf8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-format-cut02.stdout",
+      "bytes": 292,
+      "sha256": "2d3fe549f087daadabcce9a5f8ebb6e8ed65e3847292c97b6ff9678f9c23372b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-install-result-02.json",
+      "bytes": 694,
+      "sha256": "d01af51737c92af3e2adc0f6128081a8737eaf7dd4d35d8ea7eeeacc7dd03aa6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-both-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-both-02-source.json",
+      "bytes": 109448,
+      "sha256": "5a01b093d9a8adeada65d5d843a2c4a1c9bab9aa4ef0fba72f09041a0b51d656"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-both-02.json",
+      "bytes": 2980,
+      "sha256": "3efddc70c70283aa73bb4e444ef4b95f257a06dab505e7f79bd6a1eed1c1a5e6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-both-02.resources",
+      "bytes": 1117,
+      "sha256": "94ebd504d4e95dbc8a811a7ab21bb0a6c0e735ec6106265654ecc11f3a9fdbbc"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-both-02.stderr",
+      "bytes": 285,
+      "sha256": "fb359cc8a8e43a127acf4cb564e7d45d01bcd4f68dcffc5cb0bc61630133ca69"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-both-02.stdout",
+      "bytes": 85248,
+      "sha256": "b11c12559f8bc68276903bd7ba7bfc6d7a082cf9d48668126e3dfeca0738cf97"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-evidence-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-evidence-02-source.json",
+      "bytes": 109452,
+      "sha256": "2eec6601146e50e84ae1f5353c71427929a2961da6a7173df8ca5acc0f627567"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-evidence-02.json",
+      "bytes": 2949,
+      "sha256": "a0d1ee1442b28da496db7505fa97eea3d266a04173c9154332391bb70bcf5030"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-evidence-02.resources",
+      "bytes": 1096,
+      "sha256": "50d6faf212c8e36cf99a91cfb3e6ff73fef1c55af79b9044b20c460f3bd42af2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-evidence-02.stderr",
+      "bytes": 285,
+      "sha256": "5ac6c4919f307609f3173095014cb42d3fec50993d1b54e9819ea98159389a82"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-evidence-02.stdout",
+      "bytes": 97335,
+      "sha256": "ca3b27e1a899b23a5534ccc83e152bdb9de0af0d1a6b402af1f7fa23f9bbb2be"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-persisted-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-persisted-02-source.json",
+      "bytes": 109453,
+      "sha256": "65c0691b94a8ea94ad742faf4a837e6eaf2e7f1848cff131872204c5af2ba4bb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-persisted-02.json",
+      "bytes": 2940,
+      "sha256": "bb1f41138bbd4f3607a7b7ceadfd5c5825c229da15de24c4b4c853299c385f78"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-persisted-02.resources",
+      "bytes": 1090,
+      "sha256": "5febdb555d625f06302cadbf0864c27890fd0b4ff82b1252131dad2044893c5c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-persisted-02.stderr",
+      "bytes": 285,
+      "sha256": "7967dcef7c1e04f22d640ee9d5249519b8a1b07de4bf0a52da936103fc171f49"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-lib-persisted-02.stdout",
+      "bytes": 85219,
+      "sha256": "350f73897c6b8cc61b06f26e5b01a3f7ead891f6d9741d2aec3b582d870b2956"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-both-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-both-02-source.json",
+      "bytes": 109449,
+      "sha256": "b74cb6fb3590ec3ee4bfbd8d24c1d20aecabd8e40fd5b50b57165c7041b56ed6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-both-02.json",
+      "bytes": 3061,
+      "sha256": "a47778c5f5c4faddbfaa56ea293d66e6c23423cb42bbb618e856ca9e97da1959"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-both-02.resources",
+      "bytes": 1136,
+      "sha256": "a9f4943477d9edac6cf9b2e198ee23e139261b809d80e04e2bc2c7c4f70b469b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-both-02.stderr",
+      "bytes": 8178,
+      "sha256": "343fdad4ca61bb21a5f93a8082c3aa223a19797c40d95fb10491b217ca1d2271"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-both-02.stdout",
+      "bytes": 287564,
+      "sha256": "99cb2c4676890a7f419cc7d6c6ed6eb7a3194178c7ba778b156681f3e00c7e3c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-evidence-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-evidence-02-source.json",
+      "bytes": 109453,
+      "sha256": "88d3d7872c3f855b3189ad8c195c61b2924d6a97a9aa9dfc72adfe90784ef21c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-evidence-02.json",
+      "bytes": 3029,
+      "sha256": "49762c8a6c017788dacb22004be6d87a52637c343434f0cf15c66000ee7263aa"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-evidence-02.resources",
+      "bytes": 1132,
+      "sha256": "b97026ed1e31182237a600b8b769757ddbabfa0412cf45daf0348e66eb68c60a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-evidence-02.stderr",
+      "bytes": 18904,
+      "sha256": "64e70a1df1d2ea9e49d04c368998e08cafbec27cc7ea0e7a15279db92abd275c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-evidence-02.stdout",
+      "bytes": 279572,
+      "sha256": "05ee43cfefb7183a41a8356743e8a228e13d33eb55007d4704497005a740255c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-none-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-none-02-source.json",
+      "bytes": 109449,
+      "sha256": "4e30a561ade95de2f882ef971264828eec90431757a4b30cbe2666b931557585"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-none-02.json",
+      "bytes": 2915,
+      "sha256": "d76f0ee218960b2e90ea173dd69d4d50d7791eaece52abf16c5243a1c84fa6a9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-none-02.resources",
+      "bytes": 1094,
+      "sha256": "edf77bec0df517354180689897d5975580d3bce9b2be64d000e33b94b9a40a28"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-none-02.stderr",
+      "bytes": 15070,
+      "sha256": "86a31b6af6ad64cd071e66d0410b6e088cb57fcb3874c56f333bc1f3e27775f2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-none-02.stdout",
+      "bytes": 278595,
+      "sha256": "98de41b1a91c9570fc6f12184e0ec774a820424bd5c8c9a5db5a4182becdcd2c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-persisted-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-persisted-02-source.json",
+      "bytes": 109454,
+      "sha256": "9dfe07412dc94aed9b611da73864e082c9440281b243832c2ed24c9a015e7918"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-persisted-02.json",
+      "bytes": 3022,
+      "sha256": "517d3cb33399ef8fda39e7c394acd2f57fb1216bc9425d69188580b75dcdd66f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-persisted-02.resources",
+      "bytes": 1126,
+      "sha256": "6ecccbaa764231a94c32d61fec48096235920e8543b4b54d83f3fe27858e85cc"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-persisted-02.stderr",
+      "bytes": 15429,
+      "sha256": "f5680a2e426cb96ebd14214012c6a6e0997a83573ca88fa4b5dd9f3d457c26c4"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-list-persisted-02.stdout",
+      "bytes": 286264,
+      "sha256": "971ecbf88200bf45a1df9d84096df9f1ed945e2fa74336d2d9bcc70e27690d16"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-measurement-failure-disposition-02.json",
+      "bytes": 781,
+      "sha256": "a7d068dcbf7de00580abd47b56c64cbcc8131c2f5eb6ea3a7aac7961d41afd81"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-positive-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-positive-02-source.json",
+      "bytes": 109455,
+      "sha256": "d54fbc82f9ebf1818cfb3a0bfa739e60d0b50ffe6059ad48245b5e99ef90bc49"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-positive-02.json",
+      "bytes": 2695,
+      "sha256": "bce44e2617e0bbc221821cdc70801f8d343570e2a02e35efe8e99a776e3f9df5"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-positive-02.resources",
+      "bytes": 979,
+      "sha256": "a8f8a4209994894bcfd3f8e766f6b99a560c6d9a7850764bcb0d573e2d2cb56a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-positive-02.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-positive-02.stdout.gz",
+      "bytes": 2051563,
+      "sha256": "702ae89ce8306e3e52c3bc682bb2256cd931e43f2b251020971270082282bd40"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-refusal-n2-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-refusal-n2-02-source.json",
+      "bytes": 109457,
+      "sha256": "b74ef7f7d634a82e8daaa8370008fb9fa0999bd857f4f1a97fdc1afdf5b123ca"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-refusal-n2-02.json",
+      "bytes": 2718,
+      "sha256": "07a17ce046f2d922872a7a1b79ad815746c5257d158963d2375c748dc72454bd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-refusal-n2-02.resources",
+      "bytes": 984,
+      "sha256": "020a886ce2fdee41a0528499172f1932aa2676b71b3457aaea3c8c7b9c250181"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-refusal-n2-02.stderr",
+      "bytes": 238,
+      "sha256": "edbaa3366b4ec865a060ca3f82753a9915361e3bae9b83f38493a04116cbac0c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-refusal-n2-02.stdout.gz",
+      "bytes": 208317,
+      "sha256": "5ce6fdb84705444dddb8398abf325901c1f606c32e12ab49890e61afdfd89975"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-rollback-n12-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-rollback-n12-02-source.json",
+      "bytes": 109459,
+      "sha256": "a289d9a06e90b82b0cf031689dbaa41095c0024a4d2a887ce644d8d3cd015df7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-rollback-n12-02.json",
+      "bytes": 2697,
+      "sha256": "e117d19ce868f2f2acd99ab7f6821e6c83c289c50ef71353e21a10e4c6fb03d6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-rollback-n12-02.resources",
+      "bytes": 972,
+      "sha256": "fc5d748a083a7dffcee10e1a1ec204c3236f5483d9b7f28d09685628cf1b79cd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-rollback-n12-02.stderr",
+      "bytes": 251,
+      "sha256": "20b787b56d253195838ad627ad30c65b345a278b57040b90da6961ae5031d174"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-rollback-n12-02.stdout.gz",
+      "bytes": 119712,
+      "sha256": "e502e5eb9905c96e3d50c4516486460ad5bbc75532b88b00afecc8bbba8e8ae7"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-write-error-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-write-error-02-source.json",
+      "bytes": 109458,
+      "sha256": "877a5060cbf11223e753fc88dd7142ef9bc9972f95d5141e42b5c3e862b8cc8f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-write-error-02.json",
+      "bytes": 2718,
+      "sha256": "7cc83fa3720ca92a019fac664e93b75520686ad212a242b41967688984724097"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-write-error-02.resources",
+      "bytes": 985,
+      "sha256": "479b8f9af000a186255709c3798f3c7d2450dbe4c28cc0743405efe4a5631901"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-write-error-02.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-native-write-error-02.stdout.gz",
+      "bytes": 2040928,
+      "sha256": "3780afad91ffd8cd8354ea1cdfc317a3d75d3d22b0e067dd32e05b06af70ccdf"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-no-default-tests-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-no-default-tests-02-source.json",
+      "bytes": 109456,
+      "sha256": "16a19142e0126e8b1b3cbe7a5be68b1a2b29fd746495e0af79d38c85b7b201c2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-no-default-tests-02.json",
+      "bytes": 2861,
+      "sha256": "92eab165e21002572263aaf881e2d59b41f46c8774df2187866505305ed03ca2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-no-default-tests-02.resources",
+      "bytes": 1061,
+      "sha256": "ba053d333f3fc0917d6842aa816f33653974a7ccddd93c4093aaf5f8ede0746a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-no-default-tests-02.stderr",
+      "bytes": 285,
+      "sha256": "890df4a2d1c47e63c554c3033adc92f16fba5d08b158e42a6be96cffbaff63e3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-no-default-tests-02.stdout",
+      "bytes": 126864,
+      "sha256": "520a3d76292f4ffefaf35411921c467a8f8f3999532cbf3d53ebace2c244655f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-01-incremental-from-T.patch",
+      "bytes": 214266,
+      "sha256": "a48765309c8d80461947590e4a7293c91a95f303b68213a72fcfec6f0d7051f3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-01-source.json",
+      "bytes": 109453,
+      "sha256": "695206804bd23afd8dd5d054bce1d0dca7749380aaa3e7c307aebb4fe6b2b8bb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-01.json",
+      "bytes": 7301,
+      "sha256": "0b9e134295390438335c1fed279db1e2656584f17580e8a670e67aca53c67b7d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-01.resources",
+      "bytes": 3163,
+      "sha256": "11e760bf87e2c032d055709e84d37010278c1332049b64ff3828d12de5cf3c37"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-01.stderr.gz",
+      "bytes": 19205,
+      "sha256": "f160b4ad394cbe66118f53eb10992cfa7943fc907fe5c0a371715f0cd59b264d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-01.stdout",
+      "bytes": 236,
+      "sha256": "d401b20eddf311f126a937a0e5c74aeacfec400086cc59c139b1201dc9c5cea9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-02-source.json",
+      "bytes": 109453,
+      "sha256": "cd3607312b0ea0846e0b037780702ee267d4939c0fd84eb137f438c76019de79"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-02.json",
+      "bytes": 7301,
+      "sha256": "247476d8cafa29aab82e12e05ffe8999255fea774b2ac0778c5a998ef1dc374a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-02.resources",
+      "bytes": 3154,
+      "sha256": "0e064cd6a913d45342187139b2354e574893be38f1dd236f5b7cba2a4f4e9fcb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-02.stderr.gz",
+      "bytes": 19153,
+      "sha256": "05d6f111682faeba3aec1b1b27b8cf066e27a9ca5b54cccab04e3759db18f53a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-none-controls-02.stdout",
+      "bytes": 236,
+      "sha256": "d401b20eddf311f126a937a0e5c74aeacfec400086cc59c139b1201dc9c5cea9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-parent-result-02.json",
+      "bytes": 4590,
+      "sha256": "19abc87179686446be54f6026d5cb9329f738d1ce5aa09fad2dff20e508ade31"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-controls-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-controls-02-source.json",
+      "bytes": 109458,
+      "sha256": "3740acb976b2d4bdc78bb94ae6bd0d7d8fa38b06fd3422f255d58db2665c2b4a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-controls-02.json",
+      "bytes": 4835,
+      "sha256": "262dd1c23e637235921a01c081a26ce4f83ed938bd791e9c80477637c1956040"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-controls-02.resources",
+      "bytes": 1889,
+      "sha256": "6e0fe2b818de4f3884f5a0aa799088454c459a729eda7cb7ab7452137493aee0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-controls-02.stderr",
+      "bytes": 17828,
+      "sha256": "dafbfa893f6cd87285d3ec6d3dc695593b54ca55c700d67c0850d255c3f2ae6d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-controls-02.stdout",
+      "bytes": 236,
+      "sha256": "d401b20eddf311f126a937a0e5c74aeacfec400086cc59c139b1201dc9c5cea9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-tests-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-tests-02-source.json",
+      "bytes": 109455,
+      "sha256": "103719527191eb41c2ede2bd0fa30dd28fbb61f5a296f41428321e26a13a719e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-tests-02.json",
+      "bytes": 2950,
+      "sha256": "0f5a42eaa6873c9ec6c324f23d118c5f9e8de2d1dcb034883ee0f71655da0b96"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-tests-02.resources",
+      "bytes": 1093,
+      "sha256": "b941573f98ef4256d7252fcd6ea3f54b518af794ff6876730fa3433708abd13b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-tests-02.stderr",
+      "bytes": 285,
+      "sha256": "ab543b63e8f18cd8e9a58e28516f742241abd9718e1b00474372084ab74ad875"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-persisted-tests-02.stdout",
+      "bytes": 111625,
+      "sha256": "a2f4ebf4b10fb231f082ed607f4e30aefe852e2e2c153e9df227f0e38068c73a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-01-incremental-from-T.patch",
+      "bytes": 214266,
+      "sha256": "a48765309c8d80461947590e4a7293c91a95f303b68213a72fcfec6f0d7051f3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-01-source.json",
+      "bytes": 109454,
+      "sha256": "ebde9c64a41f08e94b7f9627d45b35cb70cbff79081588e5d835487ae5fe7b36"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-01.json",
+      "bytes": 3177,
+      "sha256": "0e4bf5a561d263f8727668487ca86fe866e782f08a2f0c696ba04eca3f46e5c6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-01.resources",
+      "bytes": 1219,
+      "sha256": "e080df2a4570d1b9262fed0d37494488ee7a5e11422878fac1ecb4553874c145"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-01.stderr",
+      "bytes": 2417,
+      "sha256": "ecc19fdec72df8e49d71544155a5f702b9f4ee3b956d57fefa1ebb3f6fbf35ed"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-01.stdout.gz",
+      "bytes": 553525,
+      "sha256": "ff84e670dbd3ed2a30170a303ca1c7af769ac0adf6109f5a3bdc65a43a25f04d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-02-source.json",
+      "bytes": 109454,
+      "sha256": "0e39f5832ef25e9060bdf7fe0b0beeb466bc2a5edeaed14666b3cc6b00be920e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-02.json",
+      "bytes": 3178,
+      "sha256": "3c70e1c436cac2471e3216bba11ea21ebccf05ebb440fd8dc43f97a753f2516d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-02.resources",
+      "bytes": 1217,
+      "sha256": "6a64a90746e45aaafe50c8ff7147ec44c0ebe54b0938127f7748f4e7d3510293"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-02.stderr",
+      "bytes": 463,
+      "sha256": "8c46204bc8841ad1cc150fcf1a153ea9ebc36133b1c6948cf7ddf9b866ee5a28"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-nodeps-02.stdout.gz",
+      "bytes": 553502,
+      "sha256": "021f25db7458dcee2ee5ebdff49db90e0e915584b2967daae236143e80585fc3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-strict-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-strict-02-source.json",
+      "bytes": 109454,
+      "sha256": "a8b53507314b258cd568cb1dd19eac546523c38ee91d5cc370447f670a797f2c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-strict-02.json",
+      "bytes": 3143,
+      "sha256": "dd96c7596f98697212db263f8015927431461d9f02dbad187726eb82827e7c9d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-strict-02.resources",
+      "bytes": 1204,
+      "sha256": "68cd91cef2e1b414ef01716b662a34dee0766a9f904c270875e40e638e9ae940"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-strict-02.stderr",
+      "bytes": 2089,
+      "sha256": "5b475dc509a6802b895471fa10b628e0728fc0d4777d3160a535ac3d98614098"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-quality-strict-02.stdout",
+      "bytes": 131123,
+      "sha256": "ecbfa74d5867fc3cff3d5173371236d73f3373d113b968a41b1872e64b211174"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-corruption-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-corruption-02-source.json",
+      "bytes": 109462,
+      "sha256": "eb4ca98a523e7fb7b7292238efcc23efb068e04db59885cba53de951259b768b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-corruption-02.json",
+      "bytes": 2887,
+      "sha256": "71a3b5977935a110a333e59ed2c9f5557cc675246d995bedda5ed3c5bd64aed0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-corruption-02.resources",
+      "bytes": 1147,
+      "sha256": "af760108fb1f5941d276e15f83068418dfb11a5e5541ce6606bdeafe3a1df546"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-corruption-02.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-corruption-02.stdout",
+      "bytes": 46,
+      "sha256": "dfa92ff5cd264994bbb8eb993ac2b59062ed7fe18875589281fe6916c80d2e4e"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-credits-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-credits-02-source.json",
+      "bytes": 109459,
+      "sha256": "f7e211a70cfeacd7229482fe0c5da966d579cb403d57a50b8730e341d7f227b9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-credits-02.json",
+      "bytes": 2855,
+      "sha256": "f89dff788bbdd7bdcb2df13f4b37204329261b012cfe1b5f8099db5629ba49dd"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-credits-02.resources",
+      "bytes": 1128,
+      "sha256": "7c48267d0443000ea9fef4bb6fb7effa0f69f303236985ebe8235f62fe400efb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-credits-02.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-credits-02.stdout",
+      "bytes": 697,
+      "sha256": "89e4690e437c7a9019376bf151007df814ebaa208a94efe5f7f6bb1ccaa8ea63"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-donors-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-donors-02-source.json",
+      "bytes": 109458,
+      "sha256": "89ff845c9f20f91ef2166924a126928e9f7b021f170f60173d406b16c02b0a99"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-donors-02.json",
+      "bytes": 2847,
+      "sha256": "bd4892cdae3b38f5578ac53028374b17b726ca338c0f67f857fd7564978e6b75"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-donors-02.resources",
+      "bytes": 1129,
+      "sha256": "3bf516bf44db34b02b1f62e2af2438615f65edf0640f1cdc688fb5fb77fac675"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-donors-02.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-donors-02.stdout",
+      "bytes": 807,
+      "sha256": "ea3078e4b911ad30bec9252fc5a96ec7acdf143de677a31284185048964bd060"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-install-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-install-02-source.json",
+      "bytes": 109459,
+      "sha256": "7c25ec5ee894fd29fd62ed6b8faf82abfa83a896abd7a3fb95b84b0793c22a32"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-install-02.json",
+      "bytes": 2855,
+      "sha256": "94cc9e8e637e10d00af10786fba6f79f3a804baa3f3b74045310ab655832272f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-install-02.resources",
+      "bytes": 1129,
+      "sha256": "9e06fca1f853f632b00cdb80447e1a5c8e19edcf0d77b6da5787fff238bdb5bb"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-install-02.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-install-02.stdout",
+      "bytes": 670,
+      "sha256": "48db1b1eb5dd9145efce16893e384033b9db89273d2fb12467dc746fba20e645"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-parent-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-parent-02-source.json",
+      "bytes": 109458,
+      "sha256": "195afe3cce2e3271928fce28ab75db3c659b4d830551f2eed2ee786db48c101a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-parent-02.json",
+      "bytes": 2883,
+      "sha256": "2366f1212256a8c12de2c19a04eb6ea4a151b82ea05a09dced7c81cdd3f61caf"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-parent-02.resources",
+      "bytes": 1146,
+      "sha256": "7ada6052ea62cb1fbe996eedc22f14a9591359bbbf0736e9906b7437af094c91"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-parent-02.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-reconstruct-parent-02.stdout",
+      "bytes": 807,
+      "sha256": "bbe05fa4b86e3486186bca920bf66b26d46d0d76125e1be6dea37b7e9bcc5fc0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-record-correspondence-02.json",
+      "bytes": 1749,
+      "sha256": "f8761147db0f30b65e6d28687ecfc4532287cb349d412839c9525e468dc27823"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-selected-no-run-01-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-selected-no-run-01-source.json",
+      "bytes": 109455,
+      "sha256": "149f256c77e1c2d8df1b803a09c7c4593e58d05ef1d9267bbc6837826d9976d0"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-selected-no-run-01.json",
+      "bytes": 2946,
+      "sha256": "37c8664b667fb2635680658b1e9e1d911cf00c7456f8d22d893c526721f8d9fa"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-selected-no-run-01.resources",
+      "bytes": 1108,
+      "sha256": "86bd5316469c992bb0fc2cabc87b95ae82ce8b1aa5890ffc5533e9cea0bd7187"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-selected-no-run-01.stderr",
+      "bytes": 8481,
+      "sha256": "5b12ec84a74a35c07540c033c9a946e4598af9a7614fabf024588ce6414ab522"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-selected-no-run-01.stdout",
+      "bytes": 236,
+      "sha256": "d401b20eddf311f126a937a0e5c74aeacfec400086cc59c139b1201dc9c5cea9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-standalone-lib-02-incremental-from-T.patch",
+      "bytes": 216743,
+      "sha256": "40bc203de3ed8b362edf2d58ecd9b095bab35034a0b3f0b73ee69f2d71ddc14a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-standalone-lib-02-source.json",
+      "bytes": 109454,
+      "sha256": "7228e8393ea8bb211c3df5db949636968c0918ae9ed911ef67459be6c38051e3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-standalone-lib-02.json",
+      "bytes": 2850,
+      "sha256": "6d320829da9019cbcd6310f6fed7593bd32fee0c899e91dee3a25a45a6ca0198"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-standalone-lib-02.resources",
+      "bytes": 1058,
+      "sha256": "75ce68b294c849f07176e51bd948996fb7e4f5ff5fbab6ea08e1742ccdfa0dbc"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-standalone-lib-02.stderr",
+      "bytes": 285,
+      "sha256": "67f42cdf7e95573ac8dac21648814dff719fe08f3efafa2633a57614f64e82ba"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/observer-standalone-lib-02.stdout",
+      "bytes": 80899,
+      "sha256": "959736feea3d653b39280d722b8c01d5187039835350b82e2c86362d595d4fd3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/prepublication-ledger.json",
+      "bytes": 1034,
+      "sha256": "f5363b46dd4503a45d86a5f6fc2d30816397c06041369a36a71fc5b03ce184b3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/publication-manifest.json",
+      "bytes": 113335,
+      "sha256": "51c5be1d9337e896eb4c52f538e97fccd0f5a7831500958fa25d8bc6275ef76d"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/publication-scope-check.json",
+      "bytes": 591,
+      "sha256": "5d57bc300c4a25cf411718a0144b5dc9d3917114c9f88f37891988923f353041"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/publish_evidence.py",
+      "bytes": 1714,
+      "sha256": "13372b5256fff095d1ad86ebef247146d64782040e095228f9e1abe47aa4af24"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/qa-review.md",
+      "bytes": 3198,
+      "sha256": "9a361b7433d554924c36fe279e23c376fa2b306b5672a8b8ca3741654de9b7c8"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/quality-cut01-attribution.json",
+      "bytes": 4662,
+      "sha256": "ce22c1b1cf4242c3bdc63385ea07c42f2d1d9887ba9f2053d69170a1efb7e115"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/quality-nodeps-attribution-02.json",
+      "bytes": 4662,
+      "sha256": "954625c5e5a87ab2995a767e037721dc2517658edc3a98531692c7e261c9fe33"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/quality-reconciliation-02.json",
+      "bytes": 1094,
+      "sha256": "91b0a12ebb7a8b213dc221223952e5ab04ceac9ce30b094e04f2b1b8913ca70c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/quality-strict-attribution-02.json",
+      "bytes": 511,
+      "sha256": "74ef5f6e6c60e4954afeb4c69910236a96485ce9c84092f3aad25789350f1bf3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/reconstruction-reconciliation-02.json",
+      "bytes": 992,
+      "sha256": "a1bf85a58a02cd4466f276cf72ceb8eb50a4e541ebe80e1c320ce6d34f24f5c6"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/reconstruction-tools-before.json",
+      "bytes": 874,
+      "sha256": "42d910f9e863264a9d5787712170268c3be3915604da76d942ef7791138c36db"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/resumption-ledger.json",
+      "bytes": 378,
+      "sha256": "dcf37a7e78a9026a01c89f3d9fceabd6c0f1b5c18fcb5b3a236f5d70b704e5a2"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/run_recorded.py",
+      "bytes": 6133,
+      "sha256": "2d6e8bda585f8bc9bbce9c06eb2713d2423b209285327d3dd1c5b98c2f45e279"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/source-custody-cut02.json",
+      "bytes": 110075,
+      "sha256": "e192fb10ca80bd352dd5d21980367109a432b7aff32d763959a227ef98bd08f3"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/starting-custody.json",
+      "bytes": 718,
+      "sha256": "273a64b8c0cca434513d15f5ee906b98a4b96cd84be4a354f937550c259ad06b"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/terminal-command-audit-02.json",
+      "bytes": 49249,
+      "sha256": "53afff93f4b4c47f937047fa62db8ab0473a8595615b25bd2e259c1f961b8751"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/terminal-execution-results-02.json",
+      "bytes": 6733,
+      "sha256": "dbc8680ba17cf7e0dfb78b06cffe8b5839d7de3244f84f4b8f6f040b241ca4e9"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/unchanged-capability-guard-cut01.json",
+      "bytes": 325,
+      "sha256": "321a163ade2adbb42f72c703353adb287e9438730ef6f034c00b0c954761a426"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/unchanged-guard-and-disabled-observer-02.json",
+      "bytes": 400,
+      "sha256": "7fa72daa2ee2c8da5d0e3430b7f3c7cdc434ac8557208b3540e281046274eeda"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/verify_observer_format.py",
+      "bytes": 2315,
+      "sha256": "0524b96de5236f23d1d46538766ba40b6b2221193c401ad2d810cb965a3f0c49"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/verify_remote_evidence.py",
+      "bytes": 1685,
+      "sha256": "81544bedace25a9142a3754fe0fba390d028eedfacb7b555e05add5a9328481c"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 645329,
+      "sha256": "433ba5b3a1d74240df06552186d88e2a0250ebb14f39b67dcd66bbee1d70b59d"
+    }
+  ],
+  "all_match": true,
+  "scope": "Published package/evidence/patch files only; external source trees, frozen binaries and large corpus remain local custody."
+}

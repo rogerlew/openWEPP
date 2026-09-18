@@ -2142,6 +2142,33 @@
       "published_bytes": 1685,
       "published_sha256": "81544bedace25a9142a3754fe0fba390d028eedfacb7b555e05add5a9328481c",
       "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/primary-remote-verification.json",
+      "raw_bytes": 66807,
+      "raw_sha256": "ae538942ebe2a984b70f116225f6c0581cd3221e9ebc66aa726775de7f2e272a",
+      "published_path": "primary-remote-verification.json",
+      "published_bytes": 66807,
+      "published_sha256": "ae538942ebe2a984b70f116225f6c0581cd3221e9ebc66aa726775de7f2e272a",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/final-ledger.json",
+      "raw_bytes": 1834,
+      "raw_sha256": "f4f232e88fa27d0d30d05542cbcf46cda19a03b45a9d4919e8e296aab8fbb4fe",
+      "published_path": "final-ledger.json",
+      "published_bytes": 1834,
+      "published_sha256": "f4f232e88fa27d0d30d05542cbcf46cda19a03b45a9d4919e8e296aab8fbb4fe",
+      "gzip": false
+    },
+    {
+      "raw_path": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/publication-custody.json",
+      "raw_bytes": 701,
+      "raw_sha256": "d9de0a6edbf7c5e04317e2185d42028ca67e440bcd52d5b91f103d77652a4091",
+      "published_path": "publication-custody.json",
+      "published_bytes": 701,
+      "published_sha256": "d9de0a6edbf7c5e04317e2185d42028ca67e440bcd52d5b91f103d77652a4091",
+      "gzip": false
     }
   ]
 }

@@ -1,0 +1,12 @@
+{
+  "primary_commit": "33e3a64e4bc3aacaf5b77f46c4cdec59b723f872",
+  "primary_parent": "4a4e415c653385b57e18d1636e4443ecc42a8bb7",
+  "remote_primary_files": 240,
+  "remote_primary_bytes": 19690493,
+  "all_remote_primary_bytes_equal": true,
+  "source_recovery": "source-custody-cut02.json",
+  "source_recovery_verified_entries": 747,
+  "scope": "Scoped package/evidence/patch publication only; complete detached source/binaries and original corpus remain in verified local custody. Main Rust not adopted.",
+  "last_remote_receipt_external": "/home/roger/openwepp-experiments/b01-wb14-publication-observer-evidence-20260918/final-remote-verification.json",
+  "unrelated_untracked_logs_preserved": true
+}
