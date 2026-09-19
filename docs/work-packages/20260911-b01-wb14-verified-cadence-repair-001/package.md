@@ -5925,3 +5925,26 @@ preserved, while maintained-package whitespace passes. Carry failure floor
 retaining earlier uncertainty. No source correction cycle occurred. No scientific/model process was launched. Authorized scoped
 current-main commit/push and exact remote-byte verification follow; source and
 binary remain in their established external custody.
+
+
+### Diagnosis-closure publication and final ledger
+
+Primary commit `b9b987c5569910bd2cc6ce3e330060c7bbe40547` was pushed to existing
+main. [Exact-commit remote verification](artifacts/lse-diagnosis-closure-20260919/primary-remote-verification.json)
+retrieved all6 changed files /731172 bytes independently over HTTPS and matched
+committed bytes. The source/binary and existing recovery remain in their prior
+external custody; no production source was adopted.
+
+At **2026-09-19T03:52:00.134696+00:00**, [final ledger](artifacts/lse-diagnosis-closure-20260919/final-ledger.json)
+charges **126079.464696 /128300.205 seconds**, leaving
+**2220.740304 seconds**. This carries125299.330s, charges720.134696s
+concurrent wall once plus60s for final publication/return, and deducts no waits
+or historical reserves. Failure floor **at least356 mixed outcomes**; no new
+physical/numerical execution or source correction cycle. Independent correctness
+APPROVE and reused QA PASS complete only the bounded first-trial diagnosis;
+the fixed-grid experiment and presentation work remain proposals, while the
+reader/E008/RQ1/A-001/science/restart/production/cadence gaps above remain.
+
+The final accounting/publication supplement is committed and pushed next. Its
+external exact-byte receipt is `/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/diagnosis-closure-final-remote-verification-20260919.json`; any observed overrun of the charged
+return reserve must be added before return. No automatic follow-on execution.

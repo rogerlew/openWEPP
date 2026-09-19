@@ -1,0 +1,40 @@
+{
+  "utc": "2026-09-19T03:51:21.098576+00:00",
+  "commit": "b9b987c5569910bd2cc6ce3e330060c7bbe40547",
+  "method": "Independent exact-commit HTTPS raw fetch compared byte-for-byte with git show",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/lse-diagnosis-closure-20260919/adopted-authorization.txt",
+      "bytes": 13388,
+      "sha256": "e0d4e944be0461781fed046efc85315f12fa91464cf431d69fd7b118f78b6c0a"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/lse-diagnosis-closure-20260919/document-checks.json",
+      "bytes": 1096,
+      "sha256": "dcefd6a59a1df4b8797a3a77b40e6479d7ed2b0b2a56a4c77cdc630168fc469f"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/lse-diagnosis-closure-20260919/evidence-checks.json",
+      "bytes": 2139,
+      "sha256": "1dbb59742979b4af6f31f3771cc7e4825b10813750cb7b95aa15f21a18c539d1"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/lse-diagnosis-closure-20260919/reviewer-accounting.txt",
+      "bytes": 488,
+      "sha256": "2dfca9d68b4d7d54c0cd864a3aed85b9395918158fad65d1bb4fb1eb3b982950"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/lse-diagnosis-closure-20260919/terminal-correctness-review.md",
+      "bytes": 6820,
+      "sha256": "64bb639d516f7013f5f90b74c3499decdea25b624af41cd7845ab5dca7963827"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 707241,
+      "sha256": "39127117de6a2eb979af9413460a0825ef309f421abe4b25055eec1b3bb91df0"
+    }
+  ],
+  "all_match": true,
+  "total_bytes": 731172,
+  "scope": "Scoped diagnostic review/proposal evidence only; frozen source/binary remain existing local custody."
+}
