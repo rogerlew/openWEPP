@@ -1,0 +1,38 @@
+{
+  "utc": "2026-09-19T06:39:19.716846+00:00",
+  "scope": "Frozen predecessor/build supports unchanged; no replay or launch approval",
+  "original_freeze": "/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/root-freeze.json",
+  "original_freeze_sha256": "39463f378083627d4866e1a1451e260da54614d6ea6023ec8f2d0aabe196e5ec",
+  "original_source_sha256": "8cd4866f66b06d6cf96403753cdb3d41ba75f6ca87652341ebe082a86a1b4bc5",
+  "original_binary": "/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/final-diagnostic.frozen",
+  "original_binary_sha256": "551738aa5123cffa9b24f3e7e7b193cfaa95f2c16a803df5f2eb278ed9c12ba0",
+  "external_build_inputs": {
+    "/workdir/openWEPP/docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/openwepp_c3_woody_v9_vectors.json": "f86770cce11235ba282b47e81de2fa5dc9af19c29dc3bd91c62256957c590633",
+    "/workdir/openWEPP/docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/runtime_descriptor.json": "e0d05e49eabe43340e9fc7e251b319bcd08305d59af522298001b3c4f6bf951f",
+    "/workdir/openWEPP/docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/candidate-v22-hermite-gauss-matrix.json": "b3127ff0cb5ccbde794a82c5417b5ca0fdc814a995ddd39159151f3857354681",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs": "5bd1ed07e3712bb1bc023de5eb1a47677806fc0a7d9d197dea420f4d42d4a47e",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs": "6e0bd56d8c5a9fb2bd2fd548908b69fa2abe44263daa532a4e8bff8bfd3b2f14",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs": "7d24fce2c50728c2e5ca21c7f2af199dd15cddfbc4b5b0bcff01249583c92f60",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/sealed_receiver_context_tests.rs": "80cca7061a4bdee3554ce9b95f4ef3d6407c89c8ee2b69e5b494b65838294c7f",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/source_binding_tests.rs": "a8ef32be64016c54fff0039aaa940ffca9a186c0ec8797f77ebada2c4764088a",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs": "afc499fa26c946c9a1122ed08c49aee7f270d0b646ee8c935d414cf2aa375e62",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/finalization_test_support.rs": "e56808b51a74f2476f2a8a873a221a4aa4d882d5e65046d85aecda37a0c7ed66",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/fixtures/disturbed_native_route_coefficients/p1.man": "fb79e94b9d44d53e1d4d2bf2044a1dd3b0d996fb96fb1ef93226656184916490",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/snow_preflight_tests.rs": "fd9beed5817a08b29292f3e47a2db98884f5b67819e41d297cb539f26dfb9672",
+    "/workdir/openWEPP/docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json": "3fb57d7c637abba20659a59e6eb1487f9f4130f909e17b61c8a6f2eb70f4c711",
+    "/workdir/openWEPP/docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_lse_rust_failure_diagnostics_v1.json": "bdf18078cede6895d25146b6feb9fa7c90aadc436532d4485c43de7ae9b26211",
+    "/workdir/openWEPP/docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/nighttime-ci-vectors.json": "18704e36b4c994a54ea857cb2a784e9c0a3eb28437f3e19c3083fdb6b2495f30",
+    "/workdir/openWEPP/docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/lse-support-admissibility-baseline.json": "e0d07718ab779d15130e3a908e9c38e45fc9d7ba6f5fcdc79a495648b5ef2512",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openWEPP/tools/dev/openwepp-env": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+  },
+  "support_links": {
+    "docs": "/workdir/openWEPP/docs",
+    "tests": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests",
+    ".config": "/workdir/openWEPP/.config",
+    "src": "/workdir/openWEPP/src",
+    "tools": "/workdir/openWEPP/tools"
+  },
+  "all_19_external_inputs_and_5_links_match": true
+}

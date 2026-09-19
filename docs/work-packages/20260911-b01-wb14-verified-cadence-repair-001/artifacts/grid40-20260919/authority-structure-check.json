@@ -1,0 +1,13 @@
+{
+  "utc": "2026-09-19T05:17:56.307266+00:00",
+  "command": ".venv/bin/python: ContractSet(SC-LANDSURFACEENERGY-001.md)",
+  "status": "PASS",
+  "documents": 21,
+  "sha256": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "6e7aa6ab9bba722767a38fe2da6759cfb7f796ffd05919282a2d8888a6fdb9c5",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md": "16a830434df1fb2bf1aaf45aa70b0043e856b439c6a6da66377681a9bfe9e1f7",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "e278d61cf63697238791d91e38f247d243e5b4339f9677bb2b7fcde4a513dd90"
+  },
+  "prior_failure": "Initial BEI row separated by blank line, corrected and same checker passes.",
+  "limitation": "Structure only, substantive correctness pending; QA same-reviewer PASS"
+}

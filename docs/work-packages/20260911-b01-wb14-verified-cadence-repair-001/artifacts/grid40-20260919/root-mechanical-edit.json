@@ -1,0 +1,11 @@
+{
+  "utc": "2026-09-19T07:22:54.486604+00:00",
+  "scope": "Root small mechanical integration cleanup; no equations, ranges, event data/order, guards or acceptance changes",
+  "calls_paired": 17,
+  "preserved_preimages": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-mechanical-before-20260919T0722Z",
+  "post_sha256": {
+    "solver_covered_solve.rs": "0e6ea5c2a5c92ff6267d7581eeaf97fb2988f0606acf06a6a744f58a4ab87d4a",
+    "grid40_experimental_tests.rs": "5f045ed0bc073a5da87ad4e47fcb1e66c6ba828ad21d99a21bde968469ef63e2",
+    "lse_first_trial_diagnosis.rs": "7c3da86d1eb4ed12e3d701d529ed4c3e0b7f41c6833f094c0c5488967c1a78fa"
+  }
+}

@@ -62,6 +62,10 @@ chapter's Dependencies and introduction. Uncertainty expands reading.
 
 <a id="change-log"></a>
 ## Change Log
+2026-09-19: non-versioned isolated B01 original-start grid40 experiment in
+solve-boundary.md; prospective independent dual review, unchanged production
+authority and no-update acceptance.
+
 2026-09-08 v34: isolated owner-approved zero-input-area sun/shade affine-column
 experiment with complete dependency proof, coordinate-aware assembly and
 candidate-independent resolution routes. See inactive-jacobian.md. Production

@@ -1,0 +1,18 @@
+Reviewer: /root/grid40_correctness (Sol/high); response transcription, file link rendered as path:line.
+
+Static correctness review — **GO** for the corrected experimental authority.
+
+- **Medium, resolved — ambiguous domain-count boundary.** solve-boundary.md:217 now charges every `covered_trial_is_valid` entry, excludes its scalar subcomparisons, and preserves separate constitutive and nested limits. Same-reviewer fix verification: **PASS**.
+- No unresolved correctness findings.
+
+Static inspection confirmed:
+
+- Only covered strict-decrease search changes from b0..20 to b0..40.
+- Shared `MAX_BACKTRACKING_HALVINGS`, no-update b0/b1..20 behavior, scaling, stencil, and acceptance-before-iteration-limit order remain unchanged.
+- Cost ceilings reconcile: treatment `2201 + 2900 = 5101`; baseline `1201 + 2900 = 4101`. The conservative maximum named predicate count is 18,352, below 20,000.
+- The trace hash matches; it contains the original 29-coordinate input, bases 0–6, and the iteration-6 `BacktrackingLimit`.
+- Binding-index exposure and nonproduction confinement are adequate.
+
+Residual risk: contract-derived expected-red tests, confinement checks, implementation review, matched replay evidence, and terminal operand reconstruction remain pending as expected for this phase. No Rust build/test or model/evaluator run was performed.
+
+Inspection failures: **2** malformed `jq` structure queries; both were recovered without missing evidence.

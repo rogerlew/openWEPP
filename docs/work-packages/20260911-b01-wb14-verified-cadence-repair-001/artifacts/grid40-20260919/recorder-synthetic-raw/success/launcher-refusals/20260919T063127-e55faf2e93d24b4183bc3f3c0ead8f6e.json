@@ -1,0 +1,12 @@
+{
+  "evidence_class": "Launcher refusal/failure; inspect arm receipt to determine whether a child started",
+  "utc": "2026-09-19T06:31:27.820217+00:00",
+  "arguments": [
+    "baseline"
+  ],
+  "error": "FileExistsError(17, 'File exists')",
+  "freeze_sha256": "33d8c4b4bfe1114df81f5be36ee0694236ca449bf206bf55e945db9e63a93042",
+  "existing_arm_receipts": {
+    "baseline": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/success/baseline/receipt.json"
+  }
+}

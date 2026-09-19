@@ -1,0 +1,12 @@
+{
+  "evidence_class": "Launcher refusal/failure; inspect arm receipt to determine whether a child started",
+  "utc": "2026-09-19T06:31:27.840148+00:00",
+  "arguments": [
+    "baseline"
+  ],
+  "error": "RuntimeError('arm incomplete/invalid; identity consumed')",
+  "freeze_sha256": "d0d6d7e2000e063252fd4ec21287670a98c26901a95b3d9d754e3d5d4f0f6a9a",
+  "existing_arm_receipts": {
+    "baseline": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/failure/baseline/receipt.json"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "evidence_class": "Ran: offline recorder helper checks only; no child process/arm/solver launch",
+  "checks": [
+    {
+      "case": "known output count",
+      "pass": true
+    },
+    {
+      "case": "unknown output refuses",
+      "pass": true
+    },
+    {
+      "case": "symlink refuses",
+      "pass": true
+    },
+    {
+      "case": "partition guarantees aggregate",
+      "pass": true
+    },
+    {
+      "case": "atomic receipt",
+      "pass": true
+    }
+  ]
+}

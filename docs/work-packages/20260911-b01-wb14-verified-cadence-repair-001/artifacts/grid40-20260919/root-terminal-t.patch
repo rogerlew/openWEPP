@@ -1,0 +1,2801 @@
+--- a/crates/openwepp-land-surface-energy/src/grid40_experimental_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/grid40_experimental_tests.rs
+@@ -0,0 +1,686 @@
++//! Contract-derived controls for EXP-B01-LSE-GRID40-20260919.
++//!
++//! These controls intentionally contain no captured original-start evaluation.
++
++use crate::solver::{
++    CoveredColumnInputs, CoveredColumnSolveOutcome, Grid40BudgetClassForTest,
++    Grid40SignedProbeOutcomeForTest, Grid40StrictDecreaseGrid, covered_trial_is_valid,
++    grid40_begin_call_counts, grid40_begin_interrupted_evaluation_for_test,
++    grid40_begin_replay_for_test, grid40_force_class_denial_for_test,
++    grid40_force_complete_cap_denial_before_ordinary_start_for_test, grid40_force_denial_for_test,
++    grid40_force_evaluation_class_denial_for_test,
++    grid40_force_ordinary_cap_denial_before_complete_start_for_test,
++    grid40_install_strict_decrease_grid, grid40_interrupt_signed_probe_during_unwind_for_test,
++    grid40_record_evaluator_lifecycle_for_test, grid40_record_signed_probe_lifecycle_for_test,
++    grid40_record_strict_fault_for_test, grid40_set_event_path_for_test,
++    grid40_strict_decrease_exponents, solve_covered_column,
++};
++use sha2::Digest;
++
++const GRID40_ORIGINAL_TRACE_SHA256: &str =
++    "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd";
++
++fn grid40_admit_original_trace_bytes(bytes: Vec<u8>) -> Result<Vec<u8>, &'static str> {
++    if format!("{:x}", sha2::Sha256::digest(&bytes)) != GRID40_ORIGINAL_TRACE_SHA256 {
++        return Err("grid40 original trace sha256");
++    }
++    Ok(bytes)
++}
++
++fn grid40_read_admitted_original_trace(path: &std::path::Path) -> Result<Vec<u8>, &'static str> {
++    let bytes = std::fs::read(path).map_err(|_| "grid40 original trace read")?;
++    grid40_admit_original_trace_bytes(bytes)
++}
++
++fn grid40_arm_grid(arm: &str) -> Option<Grid40StrictDecreaseGrid> {
++    match arm {
++        "baseline" => Some(Grid40StrictDecreaseGrid::Baseline),
++        "treatment" => Some(Grid40StrictDecreaseGrid::Treatment),
++        _ => None,
++    }
++}
++
++fn grid40_write_sidecar(
++    sidecar: &std::path::Path,
++    value: &serde_json::Value,
++) -> Result<(), crate::solver::Grid40EvidenceFailure> {
++    let bytes =
++        serde_json::to_vec_pretty(value).map_err(|error| crate::solver::Grid40EvidenceFailure {
++            channel: "sidecar_serialize",
++            detail: error.to_string(),
++        })?;
++    std::fs::write(sidecar, bytes).map_err(|error| crate::solver::Grid40EvidenceFailure {
++        channel: "sidecar_write",
++        detail: error.to_string(),
++    })
++}
++
++fn grid40_write_invalid_measurement_sidecar(
++    arm: &str,
++    sidecar: &std::path::Path,
++    counters: &crate::solver::Grid40CallCounts,
++    failure: &crate::solver::Grid40EvidenceFailure,
++) -> Result<(), crate::solver::Grid40EvidenceFailure> {
++    grid40_write_sidecar(
++        sidecar,
++        &serde_json::json!({
++            "schema": "openwepp.grid40.sidecar.v1",
++            "arm": arm,
++            "terminal": {"kind": "EvidenceFailure", "channel": failure.channel,
++                "detail": failure.detail, "incomplete": true},
++            "counts": counters,
++            "measurement_valid": false,
++        }),
++    )
++}
++
++fn grid40_abort_invalid_measurement(
++    arm: &str,
++    sidecar: &std::path::Path,
++    counters: &crate::solver::Grid40CallCounts,
++    failure: &crate::solver::Grid40EvidenceFailure,
++) -> ! {
++    if let Err(report_failure) =
++        grid40_write_invalid_measurement_sidecar(arm, sidecar, counters, failure)
++    {
++        panic!("grid40 evidence failure and invalid sidecar write: {report_failure:?}");
++    }
++    panic!("grid40 evidence failure invalidates this measurement");
++}
++
++fn grid40_trace_write_failure() -> Option<crate::solver::Grid40EvidenceFailure> {
++    crate::lse_first_trial_diagnosis::take_write_failure().map(|detail| {
++        crate::solver::Grid40EvidenceFailure {
++            channel: "trace_write",
++            detail,
++        }
++    })
++}
++
++#[test]
++fn grid40_private_replay_rejects_every_non_arm_before_trace_or_evaluator_access() {
++    assert_eq!(
++        grid40_arm_grid("baseline"),
++        Some(Grid40StrictDecreaseGrid::Baseline)
++    );
++    assert_eq!(
++        grid40_arm_grid("treatment"),
++        Some(Grid40StrictDecreaseGrid::Treatment)
++    );
++    for wrong in ["", "original", "full-case", "treatment ", "BASELINE"] {
++        assert_eq!(
++            grid40_arm_grid(wrong),
++            None,
++            "wrong private replay arm {wrong:?}"
++        );
++    }
++}
++
++#[test]
++fn grid40_wrong_trace_bytes_refuse_before_deserialization_or_evaluation() {
++    let rejected = grid40_admit_original_trace_bytes(b"wrong trace bytes".to_vec());
++    assert_eq!(rejected, Err("grid40 original trace sha256"));
++}
++
++#[test]
++fn grid40_preserves_the_original_strict_grid_and_extends_only_the_private_grid() {
++    assert_eq!(
++        grid40_strict_decrease_exponents(Grid40StrictDecreaseGrid::Baseline),
++        0..=20
++    );
++    assert_eq!(
++        grid40_strict_decrease_exponents(Grid40StrictDecreaseGrid::Treatment),
++        0..=40
++    );
++}
++
++#[test]
++fn grid40_failure_count_uses_the_actual_last_strict_exponent() {
++    assert_eq!(
++        crate::solver::grid40_backtracking_failure_increment(Grid40StrictDecreaseGrid::Baseline),
++        20
++    );
++    assert_eq!(
++        crate::solver::grid40_backtracking_failure_increment(Grid40StrictDecreaseGrid::Treatment),
++        40
++    );
++}
++
++#[test]
++fn grid40_treatment_selection_is_scoped_and_cannot_change_other_tests() {
++    assert_eq!(
++        grid40_strict_decrease_exponents(Grid40StrictDecreaseGrid::Baseline),
++        0..=20
++    );
++    {
++        let _grid = grid40_install_strict_decrease_grid(Grid40StrictDecreaseGrid::Treatment);
++        assert_eq!(
++            grid40_strict_decrease_exponents(Grid40StrictDecreaseGrid::Treatment),
++            0..=40
++        );
++    }
++    assert_eq!(
++        grid40_strict_decrease_exponents(Grid40StrictDecreaseGrid::Baseline),
++        0..=20
++    );
++}
++
++#[test]
++fn grid40_beyond20_is_a_treatment_only_strict_choice_and_exhaustion_is_fixed() {
++    let first_lawful =
++        |grid| grid40_strict_decrease_exponents(grid).find(|exponent| *exponent == 21);
++    assert_eq!(first_lawful(Grid40StrictDecreaseGrid::Baseline), None);
++    assert_eq!(first_lawful(Grid40StrictDecreaseGrid::Treatment), Some(21));
++    for grid in [
++        Grid40StrictDecreaseGrid::Baseline,
++        Grid40StrictDecreaseGrid::Treatment,
++    ] {
++        assert_eq!(
++            grid40_strict_decrease_exponents(grid).find(|_| false),
++            None,
++            "a fixed grid must preserve backtracking refusal when no trial strictly decreases"
++        );
++    }
++}
++
++#[test]
++fn grid40_domain_counter_is_charged_at_the_actual_predicate_entry() {
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    assert!(!covered_trial_is_valid(&[], 0, false));
++    let counts = session.finish();
++    assert_eq!(counts.domain_predicate, 1);
++    assert_eq!(counts.base, 0);
++    assert_eq!(counts.witness, 0);
++    assert_eq!(counts.strict, 0);
++    assert_eq!(counts.signed_probe, 0);
++    assert_eq!(counts.denied, 0);
++}
++
++#[test]
++fn grid40_budget_denies_before_the_operation_and_preserves_the_partial_counts() {
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    let stop = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++        grid40_force_denial_for_test();
++    }))
++    .expect_err("a denied operation must stop before execution");
++    let stop = stop
++        .downcast::<crate::solver::Grid40BudgetStop>()
++        .expect("only the private typed budget payload is admitted here");
++    assert_eq!(stop.operation, "synthetic_denial");
++    let counts = session.finish();
++    assert_eq!(counts.base, 0, "denied operation was not incremented");
++    assert_eq!(counts.denied, 1);
++    assert_eq!(counts.budget_stop, Some("synthetic_denial"));
++    assert_eq!(counts.inflight, 0);
++    assert_eq!(counts.events.len(), 1);
++    assert!(!counts.events[0].admitted);
++    assert_eq!(counts.events[0].operation, "synthetic_denial");
++}
++
++#[test]
++fn grid40_every_budget_class_denies_before_incrementing_its_real_counter() {
++    for (class, operation) in [
++        (Grid40BudgetClassForTest::Ordinary, "ordinary_evaluator"),
++        (
++            Grid40BudgetClassForTest::Complete,
++            "complete_residual_evaluator",
++        ),
++        (Grid40BudgetClassForTest::Domain, "domain_predicate"),
++        (Grid40BudgetClassForTest::Probe, "signed_jacobian_probe"),
++    ] {
++        let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++        let payload = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++            grid40_force_class_denial_for_test(class);
++        }))
++        .expect_err("each budget class must reject its denied operation");
++        assert_eq!(
++            payload
++                .downcast::<crate::solver::Grid40BudgetStop>()
++                .expect("only the typed private stop is admissible")
++                .operation,
++            operation
++        );
++        let counts = session.finish();
++        assert_eq!(counts.denied, 1);
++        assert_eq!(counts.ordinary, 0);
++        assert_eq!(counts.complete, 0);
++        assert_eq!(counts.domain_predicate, 0);
++        assert_eq!(counts.signed_probe, 0);
++        assert_eq!(counts.inflight, 0);
++        assert_eq!(counts.events.len(), 1);
++        assert!(!counts.events[0].admitted);
++    }
++}
++
++#[test]
++fn grid40_complete_cap_denial_cannot_leave_an_ordinary_start() {
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    let payload = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++        grid40_force_complete_cap_denial_before_ordinary_start_for_test();
++    }))
++    .expect_err("complete-cap denial must occur before ordinary admission");
++    assert_eq!(
++        payload
++            .downcast::<crate::solver::Grid40BudgetStop>()
++            .expect("typed private stop")
++            .operation,
++        "atomic_complete_denial"
++    );
++    let counts = session.finish();
++    assert_eq!(counts.ordinary, 0);
++    assert_eq!(counts.complete, 4_101);
++    assert_eq!(counts.denied, 1);
++}
++
++#[test]
++fn grid40_ordinary_cap_denial_cannot_leave_a_complete_start() {
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    let payload = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++        grid40_force_ordinary_cap_denial_before_complete_start_for_test();
++    }))
++    .expect_err("ordinary-cap denial must occur before complete admission");
++    assert_eq!(
++        payload
++            .downcast::<crate::solver::Grid40BudgetStop>()
++            .expect("typed private stop")
++            .operation,
++        "atomic_ordinary_denial"
++    );
++    let counts = session.finish();
++    assert_eq!(counts.ordinary, 1_201);
++    assert_eq!(counts.complete, 0);
++    assert_eq!(counts.denied, 1);
++}
++
++#[test]
++fn grid40_strict_fault_is_one_shot_and_records_the_typed_error() {
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    assert_eq!(grid40_record_strict_fault_for_test(7), (true, true));
++    let counts = session.finish();
++    assert_eq!(counts.strict, 2);
++    assert_eq!(counts.errors, 1);
++    assert!(counts.events.iter().any(|event| {
++        event.counter_class == "strict"
++            && event.phase == "error"
++            && event.strict_exponent == Some(7)
++            && event
++                .typed_error
++                .as_deref()
++                .is_some_and(|error| error.contains("NumericalAcceptedResidual"))
++    }));
++}
++
++#[test]
++fn grid40_replay_and_strict_fault_are_mutually_exclusive_in_both_directions() {
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    {
++        let _replay = grid40_begin_replay_for_test();
++        assert!(
++            std::panic::catch_unwind(|| {
++                let _fault = crate::solver::grid40_force_strict_evaluator_error_for_test(0);
++            })
++            .is_err()
++        );
++    }
++    {
++        let fault = crate::solver::grid40_force_strict_evaluator_error_for_test(0);
++        assert!(
++            std::panic::catch_unwind(|| {
++                let _replay = grid40_begin_replay_for_test();
++            })
++            .is_err()
++        );
++        drop(fault);
++    }
++    let counts = session.finish();
++    assert_eq!(counts.strict, 0);
++}
++
++#[test]
++fn grid40_class_cap_denials_leave_every_other_evaluator_counter_unchanged() {
++    for class in [
++        Grid40BudgetClassForTest::Base,
++        Grid40BudgetClassForTest::Witness,
++        Grid40BudgetClassForTest::Strict,
++    ] {
++        let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++            grid40_force_evaluation_class_denial_for_test(class);
++        }));
++        let counts = session.finish();
++        assert_eq!(counts.ordinary, 0);
++        assert_eq!(counts.complete, 0);
++        assert_eq!(counts.inflight, 0);
++        assert_eq!(counts.denied, 1);
++    }
++}
++
++#[test]
++fn grid40_interrupted_evaluator_retains_a_single_identifiable_inflight_operation() {
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    grid40_begin_interrupted_evaluation_for_test();
++    let counts = session.finish();
++    assert_eq!(counts.inflight, 1);
++    assert_eq!(counts.inflight_operation_ids, vec![1]);
++    assert!(counts.events.iter().all(|event| event.phase == "started"));
++    assert!(counts.events.iter().all(|event| event.operation_id == 1));
++}
++
++#[test]
++fn grid40_session_refuses_a_grid_that_was_not_installed() {
++    let _treatment = grid40_install_strict_decrease_grid(Grid40StrictDecreaseGrid::Treatment);
++    let mismatch = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++        let _ = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    }));
++    assert!(mismatch.is_err());
++}
++
++#[test]
++fn grid40_event_journal_open_failure_is_distinct_evidence_failure() {
++    let missing = std::env::temp_dir().join(format!(
++        "openwepp-grid40-missing-journal-{}/events.jsonl",
++        std::process::id()
++    ));
++    grid40_set_event_path_for_test(Some(missing));
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    let payload = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++        let _ = covered_trial_is_valid(&[], 0, false);
++    }))
++    .expect_err("journal open failure must invalidate evidence");
++    grid40_set_event_path_for_test(None);
++    let failure = payload
++        .downcast::<crate::solver::Grid40EvidenceFailure>()
++        .expect("journal failure must not be a Grid40BudgetStop");
++    assert_eq!(failure.channel, "event_journal_write");
++    let counts = session.finish();
++    assert_eq!(counts.domain_predicate, 1);
++    assert_eq!(counts.denied, 0);
++    assert_eq!(counts.inflight, 0);
++}
++
++#[test]
++fn grid40_invalid_measurement_reporting_preserves_the_prior_journal_prefix() {
++    let root = std::env::temp_dir().join(format!(
++        "openwepp-grid40-invalid-report-{}",
++        std::process::id()
++    ));
++    std::fs::create_dir_all(&root).expect("synthetic report root");
++    let journal = root.join("events.jsonl");
++    std::fs::write(&journal, b"prior-prefix\n").expect("synthetic journal prefix");
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    let counts = session.finish();
++    let failure = crate::solver::Grid40EvidenceFailure {
++        channel: "event_journal_write",
++        detail: "synthetic closure failure".into(),
++    };
++    let sidecar = root.join("missing/sidecar.json");
++    let report_failure =
++        grid40_write_invalid_measurement_sidecar("baseline", &sidecar, &counts, &failure)
++            .expect_err("an unwritable invalid sidecar remains externally invalid");
++    assert_eq!(report_failure.channel, "sidecar_write");
++    assert_eq!(
++        std::fs::read(&journal).expect("prior journal remains readable"),
++        b"prior-prefix\n"
++    );
++    assert!(!sidecar.exists());
++    std::fs::remove_dir_all(root).expect("synthetic report cleanup");
++}
++
++#[test]
++fn grid40_evaluator_lifecycle_counts_complete_and_error_outcomes_without_inflight_leaks() {
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    grid40_record_evaluator_lifecycle_for_test(false);
++    grid40_record_evaluator_lifecycle_for_test(true);
++    let counts = session.finish();
++    assert_eq!(counts.ordinary, 2);
++    assert_eq!(counts.complete, 2);
++    assert_eq!(counts.errors, 1);
++    assert_eq!(counts.inflight, 0);
++    assert_eq!(counts.denied, 0);
++    assert_eq!(
++        counts.events.iter().filter(|event| event.admitted).count(),
++        12,
++        "each evaluator operation records class, ordinary, complete start and matching terminal phases"
++    );
++    for id in [1_u64, 2] {
++        let rows = counts
++            .events
++            .iter()
++            .filter(|event| event.operation_id == id)
++            .collect::<Vec<_>>();
++        assert_eq!(rows.len(), 6);
++        assert!(rows.iter().any(|event| event.counter_class == "complete"));
++        assert!(rows.iter().any(|event| event.phase == "started"));
++    }
++    assert!(counts.events.iter().any(|event| {
++        event.operation_id == 2 && event.phase == "error" && event.typed_error.is_some()
++    }));
++}
++
++#[test]
++fn grid40_signed_probe_lifecycle_links_the_actual_parent_and_child_operations() {
++    for (outcome, parent_terminal, child_terminal) in [
++        (
++            Grid40SignedProbeOutcomeForTest::Full,
++            "full_evaluation_complete",
++            "completed",
++        ),
++        (
++            Grid40SignedProbeOutcomeForTest::Error,
++            "full_evaluation_error",
++            "error",
++        ),
++    ] {
++        let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++        grid40_record_signed_probe_lifecycle_for_test(outcome);
++        let counts = session.finish();
++        assert_eq!(counts.signed_probe, 1);
++        assert_eq!(counts.complete, 1);
++        assert_eq!(counts.inflight, 0);
++        assert_eq!(
++            counts.errors,
++            u32::from(matches!(outcome, Grid40SignedProbeOutcomeForTest::Error))
++        );
++        let parent = counts
++            .events
++            .iter()
++            .filter(|event| event.operation_id == 1)
++            .collect::<Vec<_>>();
++        assert!(parent.iter().any(|event| event.phase == parent_terminal));
++        assert!(parent.iter().any(|event| {
++            event.phase == "child_complete_evaluation_started"
++                && event.related_operation_id == Some(2)
++        }));
++        assert!(counts.events.iter().any(|event| {
++            event.operation_id == 2
++                && event.related_operation_id == Some(1)
++                && event.phase == child_terminal
++        }));
++
++        let starts = counts
++            .events
++            .iter()
++            .filter(|event| event.phase == "started")
++            .count();
++        let terminals = counts
++            .events
++            .iter()
++            .filter(|event| {
++                matches!(
++                    event.phase,
++                    "completed" | "error" | "full_evaluation_complete" | "full_evaluation_error"
++                )
++            })
++            .count();
++        assert_eq!(starts, terminals, "raw started/terminal recount must close");
++    }
++}
++
++#[test]
++fn grid40_signed_probe_identity_and_interruption_preserve_their_own_ids() {
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    grid40_record_signed_probe_lifecycle_for_test(Grid40SignedProbeOutcomeForTest::Identity);
++    let counts = session.finish();
++    assert_eq!(counts.signed_probe, 1);
++    assert_eq!(counts.complete, 0);
++    assert_eq!(counts.inflight, 0);
++    assert!(
++        counts
++            .events
++            .iter()
++            .any(|event| { event.operation_id == 1 && event.phase == "identity_anchor_complete" })
++    );
++
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    grid40_record_signed_probe_lifecycle_for_test(Grid40SignedProbeOutcomeForTest::Interrupted);
++    let counts = session.finish();
++    assert_eq!(counts.signed_probe, 1);
++    assert_eq!(counts.complete, 0);
++    assert_eq!(counts.inflight, 1);
++    assert_eq!(counts.inflight_operation_ids, vec![1]);
++    assert!(
++        counts
++            .events
++            .iter()
++            .any(|event| { event.operation_id == 1 && event.phase == "interrupted" })
++    );
++}
++
++#[test]
++fn grid40_signed_probe_unwind_never_replaces_the_primary_panic_with_a_journal_failure() {
++    let missing = std::env::temp_dir().join(format!(
++        "openwepp-grid40-unwind-journal-{}/events.jsonl",
++        std::process::id()
++    ));
++    let session = grid40_begin_call_counts(Grid40StrictDecreaseGrid::Baseline);
++    let payload = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++        // The start remains in the in-memory prefix. Installing an invalid
++        // journal only for Drop proves the unwind guard cannot double-panic.
++        grid40_interrupt_signed_probe_during_unwind_for_test(missing.clone());
++    }))
++    .expect_err("the synthetic primary interruption must propagate");
++    grid40_set_event_path_for_test(None);
++    assert_eq!(
++        *payload
++            .downcast::<&str>()
++            .expect("primary panic must survive"),
++        "grid40 primary interruption"
++    );
++    let counts = session.finish();
++    assert_eq!(counts.signed_probe, 1);
++    assert_eq!(counts.inflight_operation_ids, vec![1]);
++    assert_eq!(counts.events.len(), 1, "no fake terminal event was emitted");
++    assert_eq!(counts.events[0].phase, "started");
++}
++
++fn grid40_read_original_input() -> (CoveredColumnInputs, Vec<f64>) {
++    let trace_path =
++        std::env::var("OPENWEPP_GRID40_TRACE").expect("explicit immutable trace path is required");
++    let trace_bytes = grid40_read_admitted_original_trace(std::path::Path::new(&trace_path))
++        .expect("exact original trace bytes before deserialize");
++    let trace: serde_json::Value = serde_json::from_slice(&trace_bytes).expect("trace JSON");
++    let capture = &trace["records"][0]["value"];
++    let inputs: CoveredColumnInputs =
++        serde_json::from_value(capture["inputs"].clone()).expect("captured covered inputs");
++    let initial_trial: Vec<f64> =
++        serde_json::from_value(capture["initial_trial"].clone()).expect("captured initial trial");
++    assert_eq!(initial_trial.len(), 29);
++    (inputs, initial_trial)
++}
++
++#[test]
++#[ignore = "the immutable original-start capture may run only as the explicit baseline or treatment arm"]
++fn grid40_original_start_replay_is_explicit_and_single_arm_only() {
++    let arm = std::env::var("OPENWEPP_GRID40_ARM")
++        .expect("explicit baseline or treatment arm is required");
++    let grid =
++        grid40_arm_grid(&arm).expect("only the one baseline or one treatment arm is admitted");
++    let _replay = grid40_begin_replay_for_test();
++    let (inputs, initial_trial) = grid40_read_original_input();
++    let sidecar = std::env::var("OPENWEPP_GRID40_SIDECAR")
++        .expect("explicit external sidecar path is required");
++    let _grid = grid40_install_strict_decrease_grid(grid);
++    let counters = grid40_begin_call_counts(grid);
++    let outcome = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++        solve_covered_column(&inputs, None, initial_trial)
++    })) {
++        Ok(outcome) => outcome,
++        Err(payload) => match payload.downcast::<crate::solver::Grid40BudgetStop>() {
++            Ok(stop) => {
++                let counters = counters.finish();
++                if let Some(failure) = grid40_trace_write_failure() {
++                    grid40_abort_invalid_measurement(
++                        &arm,
++                        std::path::Path::new(&sidecar),
++                        &counters,
++                        &failure,
++                    );
++                }
++                let terminal = serde_json::json!({
++                    "kind": "BudgetStop", "operation": stop.operation,
++                });
++                std::fs::write(
++                    &sidecar,
++                    serde_json::to_vec_pretty(&serde_json::json!({
++                        "schema": "openwepp.grid40.sidecar.v1", "arm": arm,
++                        "terminal": terminal, "counts": counters,
++                    }))
++                    .expect("sidecar serialization"),
++                )
++                .expect("sidecar write");
++                return;
++            }
++            Err(payload) => match payload.downcast::<crate::solver::Grid40EvidenceFailure>() {
++                Ok(failure) => {
++                    let counters = counters.finish();
++                    grid40_abort_invalid_measurement(
++                        &arm,
++                        std::path::Path::new(&sidecar),
++                        &counters,
++                        &failure,
++                    );
++                }
++                Err(other) => std::panic::resume_unwind(other),
++            },
++        },
++    };
++    let counters = counters.finish();
++    if let Some(failure) = grid40_trace_write_failure() {
++        grid40_abort_invalid_measurement(&arm, std::path::Path::new(&sidecar), &counters, &failure);
++    }
++    let terminal = match &outcome {
++        Ok(CoveredColumnSolveOutcome::Accepted(candidate)) => serde_json::json!({
++            "kind": "Accepted", "iterations": candidate.iterations,
++            "backtracking_count": candidate.backtracking_count,
++            "candidate_identity": "covered_column_candidate",
++            "coordinates": &candidate.solution,
++            "raw_residuals": &candidate.evaluation.raw_residuals,
++            "normalizers": &candidate.evaluation.tolerances,
++            "normalized_residuals": &candidate.evaluation.normalized_residuals,
++            "step_norms": candidate.step_norms.diagnostics(),
++            "step_origin": "last_accepted_strict_or_no_update_witness",
++        }),
++        Ok(CoveredColumnSolveOutcome::Rejected(failure)) => serde_json::json!({
++            "kind": "Rejected", "failure_kind": format!("{:?}", failure.kind),
++            "iterations": failure.iterations, "backtracking_count": failure.backtracking_count,
++            "current_base_coordinates": &failure.failed_solution,
++            "ordered_residuals": &failure.ordered_residuals,
++            "normalized_residuals": &failure.normalized_residuals,
++            "step_norms": &failure.step_norms,
++            "step_origin": "last_domain_valid_rejected_trial_or_previous_accepted_step",
++            "pivot_magnitude": failure.pivot_magnitude, "matrix_norm": failure.matrix_norm,
++        }),
++        Err(error) => serde_json::json!({"kind": "Error", "error": format!("{error:?}")}),
++    };
++    std::fs::write(
++        sidecar,
++        serde_json::to_vec_pretty(&serde_json::json!({
++            "schema": "openwepp.grid40.sidecar.v1",
++            "arm": arm,
++            "terminal": terminal,
++            "counts": counters,
++        }))
++        .expect("sidecar serialization"),
++    )
++    .expect("sidecar write");
++}
+--- a/crates/openwepp-land-surface-energy/src/lib.rs
++++ b/crates/openwepp-land-surface-energy/src/lib.rs
+@@ -93,6 +93,12 @@
+ 
+ #[cfg(test)]
+ mod covered_oracle_conformance_tests;
++
++// The isolated original-start replay is deliberately only compiled into the
++// crate's test binary.  Its one ignored test is the two-arm measurement entry;
++// ordinary unit tests use synthetic controls and never evaluate that capture.
++#[cfg(test)]
++mod grid40_experimental_tests;
+ 
+ #[cfg(test)]
+ mod authority_schema_tests {
+--- a/crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs
++++ b/crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs
+@@ -13,9 +13,11 @@
+ 
+ thread_local! {
+     static ACTIVE: RefCell<Option<(PathBuf, Trace)>> = const { RefCell::new(None) };
++    static LAST_WRITE_FAILURE: RefCell<Option<String>> = const { RefCell::new(None) };
+ }
+ 
+ pub(crate) fn begin_if_requested() {
++    LAST_WRITE_FAILURE.with(|failure| *failure.borrow_mut() = None);
+     ACTIVE.with(|active| {
+         if active.borrow().is_none() {
+             if let Some(path) = std::env::var_os("OPENWEPP_LSE_FIRST_TRIAL_TRACE") {
+@@ -31,16 +33,28 @@
+     });
+ }
+ 
+-pub(crate) fn enabled() -> bool {
+-    ACTIVE.with(|active| active.borrow().is_some())
+-}
+-
+ pub(crate) fn record(kind: &'static str, build: impl FnOnce() -> serde_json::Value) {
+     ACTIVE.with(|active| {
+-        if let Some((_, trace)) = active.borrow_mut().as_mut() {
++        if let Some((path, trace)) = active.borrow_mut().as_mut() {
+             trace
+                 .records
+                 .push(serde_json::json!({"kind": kind, "value": build()}));
++            // A resource stop can prevent `finish`; leave the complete prefix
++            // recoverable without changing solver control flow or record shape.
++            match serde_json::to_vec_pretty(trace)
++                .map_err(|error| error.to_string())
++                .and_then(|bytes| {
++                    let partial = path.with_extension("partial");
++                    let next = path.with_extension("partial.next");
++                    fs::write(&next, bytes)
++                        .and_then(|()| fs::rename(&next, partial))
++                        .map_err(|error| error.to_string())
++                }) {
++                Ok(()) => {}
++                Err(error) => {
++                    LAST_WRITE_FAILURE.with(|failure| *failure.borrow_mut() = Some(error));
++                }
++            }
+         }
+     });
+ }
+@@ -51,10 +65,86 @@
+             return;
+         };
+         if let Ok(bytes) = serde_json::to_vec_pretty(&trace) {
+-            let temporary = path.with_extension("partial");
++            let temporary = path.with_extension("partial.next");
+             if fs::write(&temporary, bytes).is_ok() {
+-                let _ = fs::rename(temporary, path);
++                if let Err(error) = fs::rename(&temporary, path) {
++                    LAST_WRITE_FAILURE
++                        .with(|failure| *failure.borrow_mut() = Some(error.to_string()));
++                }
++            } else {
++                LAST_WRITE_FAILURE.with(|failure| {
++                    *failure.borrow_mut() = Some("final trace replacement write failed".into());
++                });
+             }
++        } else {
++            LAST_WRITE_FAILURE.with(|failure| {
++                *failure.borrow_mut() = Some("final trace serialization failed".into());
++            });
+         }
+     });
+ }
++
++#[cfg(test)]
++pub(crate) fn take_write_failure() -> Option<String> {
++    LAST_WRITE_FAILURE.with(|failure| failure.borrow_mut().take())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn recorder_write_failure_is_retained_and_cannot_be_silently_cleared() {
++        let missing_parent = std::env::temp_dir().join(format!(
++            "openwepp-grid40-recorder-missing-{}",
++            std::process::id()
++        ));
++        let path = missing_parent.join("trace.json");
++        ACTIVE.with(|active| {
++            *active.borrow_mut() = Some((
++                path,
++                Trace {
++                    schema: "openwepp.lse-first-trial-diagnosis.v1",
++                    records: Vec::new(),
++                },
++            ));
++        });
++        record("io_failure_control", || serde_json::json!({"fixed": true}));
++        assert!(take_write_failure().is_some());
++        ACTIVE.with(|active| {
++            active.borrow_mut().take();
++        });
++    }
++
++    #[test]
++    fn failed_partial_replacement_preserves_the_last_complete_prefix() {
++        let root = std::env::temp_dir().join(format!(
++            "openwepp-grid40-recorder-prefix-{}",
++            std::process::id()
++        ));
++        fs::create_dir_all(&root).expect("synthetic recorder root");
++        let path = root.join("trace.json");
++        let partial = path.with_extension("partial");
++        fs::write(&partial, b"{\"complete\":true}").expect("prior complete prefix");
++        fs::create_dir(path.with_extension("partial.next")).expect("replacement blocker");
++        ACTIVE.with(|active| {
++            *active.borrow_mut() = Some((
++                path,
++                Trace {
++                    schema: "openwepp.lse-first-trial-diagnosis.v1",
++                    records: Vec::new(),
++                },
++            ));
++        });
++        record("replacement_failure", || serde_json::json!({"fixed": true}));
++        assert!(take_write_failure().is_some());
++        assert_eq!(
++            fs::read(&partial).expect("retained prefix"),
++            b"{\"complete\":true}"
++        );
++        ACTIVE.with(|active| {
++            active.borrow_mut().take();
++        });
++        fs::remove_dir_all(root).expect("synthetic recorder cleanup");
++    }
++}
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
+@@ -321,35 +321,62 @@
+ }
+ impl NativeSnowExchangeV1 {
+     pub fn reconstructed_sha256(&self) -> Result<Sha256Digest, LandSurfaceEnergyError> {
+-        let bytes = serde_json::to_vec(&("OPENWEPP_NATIVE_SNOW_EXCHANGE_V1", self.policy_id,
+-            &self.ofe_id, &self.tile_id, self.start_ns, self.end_ns,
+-            self.snow_temperature_k, self.snow_saturation_specific_humidity, self.pressure_pa,
+-            self.heat_conductance_m_s, self.vapor_conductance_m_s,
+-            &self.forcing_sha256, &self.exposure_sha256))
+-            .map_err(|_| LandSurfaceEnergyError::StateLineage("native snow exchange encoding"))?;
++        let bytes = serde_json::to_vec(&(
++            "OPENWEPP_NATIVE_SNOW_EXCHANGE_V1",
++            self.policy_id,
++            &self.ofe_id,
++            &self.tile_id,
++            self.start_ns,
++            self.end_ns,
++            self.snow_temperature_k,
++            self.snow_saturation_specific_humidity,
++            self.pressure_pa,
++            self.heat_conductance_m_s,
++            self.vapor_conductance_m_s,
++            &self.forcing_sha256,
++            &self.exposure_sha256,
++        ))
++        .map_err(|_| LandSurfaceEnergyError::StateLineage("native snow exchange encoding"))?;
+         Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes)))
+     }
+     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+-        if self.policy_id != 14 || self.start_ns >= self.end_ns
++        if self.policy_id != 14
++            || self.start_ns >= self.end_ns
+             || !(200.0..=350.0).contains(&self.snow_temperature_k)
+             || !(0.0..=1.0).contains(&self.snow_saturation_specific_humidity)
+-            || !self.pressure_pa.is_finite() || self.pressure_pa <= 0.0
+-            || !self.heat_conductance_m_s.is_finite() || self.heat_conductance_m_s <= 0.0
+-            || !self.vapor_conductance_m_s.is_finite() || self.vapor_conductance_m_s <= 0.0
+-            || self.payload_sha256 != self.reconstructed_sha256()? {
+-            return Err(LandSurfaceEnergyError::StateLineage("native snow exchange domain/seal"));
++            || !self.pressure_pa.is_finite()
++            || self.pressure_pa <= 0.0
++            || !self.heat_conductance_m_s.is_finite()
++            || self.heat_conductance_m_s <= 0.0
++            || !self.vapor_conductance_m_s.is_finite()
++            || self.vapor_conductance_m_s <= 0.0
++            || self.payload_sha256 != self.reconstructed_sha256()?
++        {
++            return Err(LandSurfaceEnergyError::StateLineage(
++                "native snow exchange domain/seal",
++            ));
+         }
+         Ok(())
+     }
+     /// Surface-to-node fluxes at the actual shared node; all participants use
+     /// the existing LSE density and heat-capacity convention.
+-    pub fn outward_fluxes(&self, temperature_k: f64, humidity: f64) -> Result<(f64, f64), LandSurfaceEnergyError> {
++    pub fn outward_fluxes(
++        &self,
++        temperature_k: f64,
++        humidity: f64,
++    ) -> Result<(f64, f64), LandSurfaceEnergyError> {
+         if !(200.0..=350.0).contains(&temperature_k) || !(0.0..=1.0).contains(&humidity) {
+-            return Err(LandSurfaceEnergyError::ConstitutiveDomain("native snow shared node"));
++            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
++                "native snow shared node",
++            ));
+         }
+         let rho = self.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * temperature_k);
+-        Ok((rho * AIR_HEAT_CAPACITY_J_KG_K * self.heat_conductance_m_s * (self.snow_temperature_k - temperature_k),
+-            rho * self.vapor_conductance_m_s * (self.snow_saturation_specific_humidity - humidity)))
++        Ok((
++            rho * AIR_HEAT_CAPACITY_J_KG_K
++                * self.heat_conductance_m_s
++                * (self.snow_temperature_k - temperature_k),
++            rho * self.vapor_conductance_m_s * (self.snow_saturation_specific_humidity - humidity),
++        ))
+     }
+ }
+ 
+@@ -528,8 +555,11 @@
+         if let Some(exchange) = &self.native_snow_exchange {
+             exchange.validate()?;
+             if exchange.snow_temperature_k.to_bits() != self.snow_temperature_k.to_bits()
+-                || exchange.forcing_sha256 != self.forcing_receipt_sha256 {
+-                return Err(LandSurfaceEnergyError::StateLineage("native snow boundary constitutive join"));
++                || exchange.forcing_sha256 != self.forcing_receipt_sha256
++            {
++                return Err(LandSurfaceEnergyError::StateLineage(
++                    "native snow boundary constitutive join",
++                ));
+             }
+         }
+         if [
+@@ -998,6 +1028,10 @@
+     let mut d = b - a;
+     let mut mflag = true;
+     for _ in 3..=64 {
++        // Private GRID40 accounting observes only labels 3..=64 in the real
++        // Ci bracket loop. Endpoint setup/repeats, dark bracketing, and final
++        // carbon evaluations remain outside this inventory and are not charged.
++        crate::solver::grid40_count_ci_bracket_loop_iteration();
+         let mut s = if fa != fc && fb != fc {
+             a * fb * fc / ((fa - fb) * (fa - fc))
+                 + b * fa * fc / ((fb - fa) * (fb - fc))
+@@ -1575,7 +1609,9 @@
+         }
+     }));
+     let liquid = crate::covered_liquid::finalize_covered_liquid_for_column(
+-        column, occupancy, context.liquid,
++        column,
++        occupancy,
++        context.liquid,
+         wet_e * column.interval_s,
+         twet,
+         if context.caps.is_some() {
+@@ -1739,6 +1775,7 @@
+     occupancy_count: usize,
+     ground_uses_liquid_vapor_phase_domain: bool,
+ ) -> bool {
++    crate::solver::grid40_count_domain_predicate();
+     if trial.len() < 10 * occupancy_count + 4 || trial.iter().any(|value| !value.is_finite()) {
+         return false;
+     }
+@@ -1984,20 +2021,37 @@
+                 LandSurfaceEnergyError::StateLineage("missing Stage-3 covered lower boundary"),
+             )?;
+             boundary.validate()?;
+-            match (&boundary.native_snow_exchange, crate::snow_accuracy_policy::Policy::current().identity()) {
++            match (
++                &boundary.native_snow_exchange,
++                crate::snow_accuracy_policy::Policy::current().identity(),
++            ) {
+                 (Some(exchange), Some(14)) => {
+                     if exchange.pressure_pa.to_bits() != column.pressure_pa.to_bits()
+-                        || ((exchange.end_ns - exchange.start_ns) as f64 / 1e9).to_bits() != column.interval_s.to_bits() {
+-                        return Err(LandSurfaceEnergyError::StateLineage("native snow pressure/support"));
++                        || ((exchange.end_ns - exchange.start_ns) as f64 / 1e9).to_bits()
++                            != column.interval_s.to_bits()
++                    {
++                        return Err(LandSurfaceEnergyError::StateLineage(
++                            "native snow pressure/support",
++                        ));
+                     }
+                 }
+-                (None, Some(14)) | (Some(_), _) => return Err(LandSurfaceEnergyError::Identity {
+-                    field:"native snow constitutive policy/posture",expected:"policy14 authenticated covered exchange".into(),
+-                    found:format!("policy={:?}; occupancies={:?}; optical={:?}; boundary={:?}",
+-                        crate::snow_accuracy_policy::Policy::current().identity(),
+-                        column.occupancies.iter().map(|o| &o.occupancy_id).collect::<Vec<_>>(),
+-                        column.stage3_optical,boundary),
+-                }),
++                (None, Some(14)) | (Some(_), _) => {
++                    return Err(LandSurfaceEnergyError::Identity {
++                        field: "native snow constitutive policy/posture",
++                        expected: "policy14 authenticated covered exchange".into(),
++                        found: format!(
++                            "policy={:?}; occupancies={:?}; optical={:?}; boundary={:?}",
++                            crate::snow_accuracy_policy::Policy::current().identity(),
++                            column
++                                .occupancies
++                                .iter()
++                                .map(|o| &o.occupancy_id)
++                                .collect::<Vec<_>>(),
++                            column.stage3_optical,
++                            boundary
++                        ),
++                    });
++                }
+                 (None, _) => {}
+             }
+             let optical =
+@@ -2007,8 +2061,12 @@
+                     .ok_or(LandSurfaceEnergyError::StateLineage(
+                         "missing Stage-3 snow optical boundary",
+                     ))?;
+-            if boundary.native_snow_exchange.as_ref().is_some_and(|exchange|
+-                exchange.ofe_id != optical.ofe_id || exchange.tile_id != optical.tile_id)
++            if boundary
++                .native_snow_exchange
++                .as_ref()
++                .is_some_and(|exchange| {
++                    exchange.ofe_id != optical.ofe_id || exchange.tile_id != optical.tile_id
++                })
+                 || optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
+                 || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
+                 || optical.stage3_albedo_state_sha256 != boundary.stage3_albedo_state_sha256
+@@ -2120,7 +2178,9 @@
+             frozen,
+         )?;
+         let liquid = crate::covered_liquid::finalize_covered_liquid_for_column(
+-            column, occupancy, preparation,
++            column,
++            occupancy,
++            preparation,
+             wet_flux * column.interval_s,
+             block[8],
+             if caps.is_some() {
+@@ -2310,7 +2370,10 @@
+     let (lower_boundary_sensible, lower_boundary_vapor) = match stage3_boundary {
+         Some(boundary) => match &boundary.native_snow_exchange {
+             Some(exchange) => exchange.outward_fluxes(canopy_temperature, canopy_q)?,
+-            None => (boundary.sensible_to_canopy_air_w_m2, boundary.vapor_to_canopy_air_kg_m2_s),
++            None => (
++                boundary.sensible_to_canopy_air_w_m2,
++                boundary.vapor_to_canopy_air_kg_m2_s,
++            ),
+         },
+         None => (ground_sensible, final_ground_vapor),
+     };
+@@ -2329,9 +2392,18 @@
+         .sum();
+     let shared_heat = canopy_sensible + lower_boundary_sensible - reference_heat;
+     let shared_vapor = canopy_vapor + lower_boundary_vapor - reference_vapor;
+-    let native_node = stage3_boundary.is_some_and(|boundary| boundary.native_snow_exchange.is_some());
+-    let scale_sensible = if native_node { lower_boundary_sensible } else { ground_sensible };
+-    let scale_vapor = if native_node { lower_boundary_vapor } else { final_ground_vapor };
++    let native_node =
++        stage3_boundary.is_some_and(|boundary| boundary.native_snow_exchange.is_some());
++    let scale_sensible = if native_node {
++        lower_boundary_sensible
++    } else {
++        ground_sensible
++    };
++    let scale_vapor = if native_node {
++        lower_boundary_vapor
++    } else {
++        final_ground_vapor
++    };
+     let shared_heat_scale =
+         (canopy_sensible.abs() + scale_sensible.abs() + reference_heat.abs()).max(1.0);
+     let shared_vapor_scale = canopy_vapor
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+@@ -16,7 +16,7 @@
+             && self.humidity_kg_kg <= 1.0e-12
+     }
+ 
+-    fn diagnostics(self) -> StepNorms {
++    pub(crate) fn diagnostics(self) -> StepNorms {
+         StepNorms {
+             temperature_k: Some(self.temperature_k),
+             humidity_kg_kg: Some(self.humidity_kg_kg),
+@@ -54,6 +54,981 @@
+     DomainInvalid,
+     EvaluationIncomplete,
+     Complete(CoveredStepNorms),
++}
++
++/// Test-only selection for the adopted fixed-grid diagnostic experiment.
++///
++/// Normal crate execution always retains the canonical `0..=20` grid.  The
++/// treatment value can only be installed by the private ignored libtest entry.
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize)]
++pub(crate) enum Grid40StrictDecreaseGrid {
++    Baseline,
++    Treatment,
++}
++
++#[cfg(test)]
++std::thread_local! {
++    static GRID40_STRICT_GRID: std::cell::Cell<Grid40StrictDecreaseGrid> =
++        const { std::cell::Cell::new(Grid40StrictDecreaseGrid::Baseline) };
++}
++
++#[cfg(test)]
++pub(crate) struct Grid40StrictDecreaseGridGuard {
++    previous: Grid40StrictDecreaseGrid,
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_install_strict_decrease_grid(
++    grid: Grid40StrictDecreaseGrid,
++) -> Grid40StrictDecreaseGridGuard {
++    let previous = GRID40_STRICT_GRID.with(|active| {
++        let previous = active.get();
++        active.set(grid);
++        previous
++    });
++    Grid40StrictDecreaseGridGuard { previous }
++}
++
++#[cfg(test)]
++impl Drop for Grid40StrictDecreaseGridGuard {
++    fn drop(&mut self) {
++        GRID40_STRICT_GRID.with(|active| active.set(self.previous));
++    }
++}
++
++/// Test-only accounting for the fixed experiment.  It is inert unless the
++/// private ignored replay installs a session, so ordinary tests and production
++/// selection cannot observe it.
++#[cfg(test)]
++#[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize)]
++pub(crate) struct Grid40CallCounts {
++    pub numerical_identity: &'static str,
++    pub base: u32,
++    pub jacobian_assembly: u32,
++    pub updates: u32,
++    pub witness: u32,
++    pub strict: u32,
++    pub signed_probe: u32,
++    /// Actual leaf-Ci bracket-loop iterations (labels 3 through 64 only).
++    /// It excludes endpoint setup/repeats, dark bracketing, and final carbon
++    /// evaluations; it is inventory only, never a residual admission or budget.
++    pub ci_bracket_loop_iterations: u32,
++    pub domain_predicate: u32,
++    pub ordinary: u32,
++    pub complete: u32,
++    pub errors: u32,
++    pub inflight: u32,
++    pub denied: u32,
++    pub next_operation_id: u64,
++    pub inflight_operation_ids: Vec<u64>,
++    pub budget_stop: Option<&'static str>,
++    /// Exponents of installed strict-decrease trials, in solver order.  This
++    /// is private experiment evidence and never enters the ordinary trace.
++    pub accepted_strict_exponents: Vec<u32>,
++    /// Every real strict-search candidate, recorded before its existing
++    /// domain guard. This distinguishes an attempted invalid candidate from
++    /// a complete evaluator call.
++    pub strict_attempted_exponents: Vec<u32>,
++    pub strict_attempted_trial_bits: Vec<Vec<u64>>,
++    /// Ordered private accounting events for independent replay-side recount.
++    /// These never enter the established ordinary diagnostic trace.
++    pub events: Vec<Grid40OperationEvent>,
++}
++
++#[cfg(test)]
++#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
++pub(crate) struct Grid40OperationEvent {
++    pub operation_id: u64,
++    pub strict_exponent: Option<u32>,
++    /// The signed Jacobian probe that caused this complete evaluator call.
++    /// Counter classes retain their own operation IDs; this is the only
++    /// private parent/child join and never enters the ordinary trace.
++    pub related_operation_id: Option<u64>,
++    pub operation: &'static str,
++    pub counter_class: &'static str,
++    pub admitted: bool,
++    pub phase: &'static str,
++    pub typed_error: Option<String>,
++}
++
++/// Private unwind payload for the ignored original-start replay only.  This is
++/// deliberately not a `LandSurfaceEnergyError`: canonical/public solver error
++/// behavior must remain unchanged when no test session is installed.
++#[cfg(test)]
++#[derive(Debug)]
++pub(crate) struct Grid40BudgetStop {
++    pub operation: &'static str,
++}
++
++/// Private evidence-channel failure.  This never represents numerical
++/// nonconvergence or a resource budget disposition.
++#[cfg(test)]
++#[derive(Debug)]
++pub(crate) struct Grid40EvidenceFailure {
++    pub channel: &'static str,
++    pub detail: String,
++}
++
++#[cfg(test)]
++std::thread_local! {
++    static GRID40_COUNTS: std::cell::RefCell<Option<Grid40CallCounts>> = const { std::cell::RefCell::new(None) };
++    static GRID40_EVENT_PATH_FOR_TEST: std::cell::RefCell<Option<std::path::PathBuf>> = const { std::cell::RefCell::new(None) };
++    static GRID40_STRICT_FAULT_EXPONENT: std::cell::Cell<Option<u32>> = const { std::cell::Cell::new(None) };
++    static GRID40_REPLAY_ACTIVE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
++    static GRID40_ACTIVE_STRICT_EXPONENT: std::cell::Cell<Option<u32>> = const { std::cell::Cell::new(None) };
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_set_event_path_for_test(path: Option<std::path::PathBuf>) {
++    GRID40_EVENT_PATH_FOR_TEST.with(|value| *value.borrow_mut() = path);
++}
++
++#[cfg(test)]
++pub(crate) struct Grid40StrictFaultGuard(Option<u32>);
++
++#[cfg(test)]
++struct Grid40ActiveStrictExponentGuard(Option<u32>);
++
++#[cfg(test)]
++impl Grid40ActiveStrictExponentGuard {
++    fn install(exponent: u32) -> Self {
++        Self(GRID40_ACTIVE_STRICT_EXPONENT.with(|active| {
++            let previous = active.get();
++            active.set(Some(exponent));
++            previous
++        }))
++    }
++}
++
++#[cfg(test)]
++impl Drop for Grid40ActiveStrictExponentGuard {
++    fn drop(&mut self) {
++        GRID40_ACTIVE_STRICT_EXPONENT.with(|active| active.set(self.0));
++    }
++}
++
++#[cfg(test)]
++pub(crate) struct Grid40ReplayGuard;
++
++#[cfg(test)]
++pub(crate) fn grid40_begin_replay_for_test() -> Grid40ReplayGuard {
++    GRID40_REPLAY_ACTIVE.with(|replay| {
++        assert!(!replay.get(), "grid40 replay already active");
++        assert!(
++            GRID40_STRICT_FAULT_EXPONENT.with(|fault| fault.get().is_none()),
++            "grid40 replay and strict fault are mutually exclusive"
++        );
++        replay.set(true);
++    });
++    Grid40ReplayGuard
++}
++
++#[cfg(test)]
++impl Drop for Grid40ReplayGuard {
++    fn drop(&mut self) {
++        GRID40_REPLAY_ACTIVE.with(|replay| replay.set(false));
++    }
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_force_strict_evaluator_error_for_test(
++    exponent: u32,
++) -> Grid40StrictFaultGuard {
++    let previous = GRID40_STRICT_FAULT_EXPONENT.with(|value| {
++        assert!(
++            !GRID40_REPLAY_ACTIVE.with(std::cell::Cell::get),
++            "grid40 replay and strict fault are mutually exclusive"
++        );
++        assert!(
++            GRID40_COUNTS.with(|counts| counts.borrow().is_some()),
++            "grid40 strict fault requires an active counter session"
++        );
++        let previous = value.get();
++        value.set(Some(exponent));
++        previous
++    });
++    Grid40StrictFaultGuard(previous)
++}
++
++#[cfg(test)]
++impl Drop for Grid40StrictFaultGuard {
++    fn drop(&mut self) {
++        GRID40_STRICT_FAULT_EXPONENT.with(|value| value.set(self.0));
++    }
++}
++
++#[cfg(test)]
++pub(crate) struct Grid40CallCountSession;
++
++#[cfg(test)]
++pub(crate) fn grid40_begin_call_counts(grid: Grid40StrictDecreaseGrid) -> Grid40CallCountSession {
++    GRID40_COUNTS.with(|counts| {
++        assert!(
++            counts.borrow().is_none(),
++            "grid40 counter session already active"
++        );
++        assert_eq!(
++            GRID40_STRICT_GRID.with(std::cell::Cell::get),
++            grid,
++            "grid40 session policy must be installed before counter admission"
++        );
++        let session = Grid40CallCounts {
++            numerical_identity: match grid {
++            Grid40StrictDecreaseGrid::Baseline => {
++                "EXP-B01-LSE-GRID40-20260919;strict=0..20;witness=0..20;updates=50"
++            }
++            Grid40StrictDecreaseGrid::Treatment => {
++                "EXP-B01-LSE-GRID40-20260919;strict=0..40;witness=0..20;updates=50"
++            }
++            },
++            ..Grid40CallCounts::default()
++        };
++        *counts.borrow_mut() = Some(session);
++    });
++    Grid40CallCountSession
++}
++
++#[cfg(test)]
++impl Grid40CallCountSession {
++    pub(crate) fn finish(self) -> Grid40CallCounts {
++        let _ = self;
++        GRID40_COUNTS.with(|counts| counts.borrow_mut().take().expect("active grid40 counters"))
++    }
++}
++
++#[cfg(test)]
++fn grid40_increment(
++    operation: &'static str,
++    select: impl FnOnce(&mut Grid40CallCounts) -> &mut u32,
++    ceiling: u32,
++) {
++    GRID40_COUNTS.with(|counts| {
++        let denied = if let Some(counts) = counts.borrow_mut().as_mut() {
++            let operation_id = grid40_next_operation_id(counts);
++            let value = select(counts);
++            if *value >= ceiling {
++                counts.denied += 1;
++                counts.budget_stop = Some(operation);
++                grid40_event(counts, operation_id, (operation, operation), false, "denied", None, None);
++                true
++            } else {
++                *value += 1;
++                grid40_event(counts, operation_id, (operation, operation), true, "started", None, None);
++                false
++            }
++        } else {
++            false
++        };
++        if denied {
++            std::panic::panic_any(Grid40BudgetStop { operation });
++        }
++    });
++}
++
++#[cfg(test)]
++fn grid40_event(
++    counts: &mut Grid40CallCounts,
++    operation_id: u64,
++    (operation, counter_class): (&'static str, &'static str),
++    admitted: bool,
++    phase: &'static str,
++    typed_error: Option<String>,
++    related_operation_id: Option<u64>,
++) {
++    let event = Grid40OperationEvent {
++        operation_id,
++        strict_exponent: GRID40_ACTIVE_STRICT_EXPONENT.with(std::cell::Cell::get),
++        related_operation_id,
++        operation,
++        counter_class,
++        admitted,
++        phase,
++        typed_error,
++    };
++    let path = GRID40_EVENT_PATH_FOR_TEST
++        .with(|value| value.borrow().clone())
++        .or_else(|| std::env::var_os("OPENWEPP_GRID40_EVENTS").map(Into::into));
++    if let Some(path) = path {
++        let line = match serde_json::to_vec(&event) {
++            Ok(mut line) => {
++                line.push(b'\n');
++                line
++            }
++            Err(error) => std::panic::panic_any(Grid40EvidenceFailure {
++                channel: "event_journal_serialize",
++                detail: error.to_string(),
++            }),
++        };
++        let write = std::fs::OpenOptions::new()
++            .create(true)
++            .append(true)
++            .open(path)
++            .and_then(|mut file| std::io::Write::write_all(&mut file, &line));
++        if let Err(error) = write {
++            std::panic::panic_any(Grid40EvidenceFailure {
++                channel: "event_journal_write",
++                detail: error.to_string(),
++            });
++        }
++    }
++    counts.events.push(event);
++}
++
++#[cfg(test)]
++fn grid40_next_operation_id(counts: &mut Grid40CallCounts) -> u64 {
++    counts.next_operation_id = counts
++        .next_operation_id
++        .checked_add(1)
++        .expect("grid40 operation id overflow");
++    counts.next_operation_id
++}
++
++#[derive(Clone, Copy)]
++enum Grid40EvaluationClass {
++    Base,
++    Witness,
++    #[cfg(test)]
++    Strict,
++    Other,
++}
++
++impl Grid40EvaluationClass {
++    #[cfg(test)]
++    const fn name(self) -> &'static str {
++        match self {
++            Self::Base => "base",
++            Self::Witness => "witness",
++            #[cfg(test)]
++            Self::Strict => "strict",
++            Self::Other => "jacobian",
++        }
++    }
++}
++
++#[cfg(test)]
++fn grid40_admit_evaluation(
++    operation: &'static str,
++    class: Grid40EvaluationClass,
++    ordinary: bool,
++    ordinary_ceiling: u32,
++    complete_ceiling: u32,
++    signed_parent_id: Option<u64>,
++) -> Option<u64> {
++    GRID40_COUNTS.with(|counts| {
++        let denied = if let Some(counts) = counts.borrow_mut().as_mut() {
++            let operation_id = grid40_next_operation_id(counts);
++            // Both category limits are checked before either start is
++            // committed: a complete-cap denial must not leave an ordinary
++            // evaluator attempt that never entered the canonical evaluator.
++            let class_at_cap = match class {
++                Grid40EvaluationClass::Base => counts.base >= 51,
++                Grid40EvaluationClass::Witness => counts.witness >= 100,
++                Grid40EvaluationClass::Strict => {
++                    let limit = if matches!(
++                        GRID40_STRICT_GRID.with(std::cell::Cell::get),
++                        Grid40StrictDecreaseGrid::Baseline
++                    ) {
++                        1_050
++                    } else {
++                        2_050
++                    };
++                    counts.strict >= limit
++                }
++                Grid40EvaluationClass::Other => false,
++            };
++            if class_at_cap
++                || (ordinary && counts.ordinary >= ordinary_ceiling)
++                || counts.complete >= complete_ceiling
++            {
++                counts.denied += 1;
++                counts.budget_stop = Some(operation);
++                grid40_event(counts, operation_id, (operation, class.name()), false, "denied", None, signed_parent_id);
++                if let Some(parent_id) = signed_parent_id {
++                    grid40_finish_signed_probe(
++                        counts,
++                        parent_id,
++                        "child_complete_evaluation_denied",
++                        Some(format!("child_operation_id={operation_id}")),
++                    );
++                }
++                true
++            } else {
++                match class {
++                    Grid40EvaluationClass::Base => counts.base += 1,
++                    Grid40EvaluationClass::Witness => counts.witness += 1,
++                    Grid40EvaluationClass::Strict => counts.strict += 1,
++                    Grid40EvaluationClass::Other => {}
++                }
++                grid40_event(counts, operation_id, (operation, class.name()), true, "started", None, signed_parent_id);
++                if ordinary {
++                    counts.ordinary += 1;
++                    grid40_event(counts, operation_id, (operation, "ordinary"), true, "started", None, signed_parent_id);
++                }
++                counts.complete += 1;
++                grid40_event(counts, operation_id, (operation, "complete"), true, "started", None, signed_parent_id);
++                counts.inflight += 1;
++                counts.inflight_operation_ids.push(operation_id);
++                if let Some(parent_id) = signed_parent_id {
++                    grid40_event(counts, parent_id, ("signed_jacobian_probe", "signed_jacobian_probe"), true, "child_complete_evaluation_started", Some(format!("child_operation_id={operation_id}")), Some(operation_id));
++                }
++                return Some(operation_id);
++            }
++        } else {
++            false
++        };
++        if denied {
++            std::panic::panic_any(Grid40BudgetStop { operation });
++        }
++        None
++    })
++}
++
++#[cfg(test)]
++fn grid40_evaluate_with_parent<T>(
++    operation: &'static str,
++    class: Grid40EvaluationClass,
++    ordinary: bool,
++    signed_parent_id: Option<u64>,
++    call: impl FnOnce() -> Result<T, LandSurfaceEnergyError>,
++) -> Result<T, LandSurfaceEnergyError> {
++    let grid = GRID40_STRICT_GRID.with(std::cell::Cell::get);
++    let ordinary_ceiling = match grid {
++        Grid40StrictDecreaseGrid::Baseline => 1_201,
++        Grid40StrictDecreaseGrid::Treatment => 2_201,
++    };
++    let complete_ceiling = match grid {
++        Grid40StrictDecreaseGrid::Baseline => 4_101,
++        Grid40StrictDecreaseGrid::Treatment => 5_101,
++    };
++    let operation_id = grid40_admit_evaluation(
++        operation,
++        class,
++        ordinary,
++        ordinary_ceiling,
++        complete_ceiling,
++        signed_parent_id,
++    );
++    let result = call();
++    GRID40_COUNTS.with(|counts| {
++        if let Some(counts) = counts.borrow_mut().as_mut() {
++            let operation_id = operation_id.expect("admitted grid40 evaluator has id");
++            counts.inflight -= 1;
++            counts
++                .inflight_operation_ids
++                .retain(|id| *id != operation_id);
++            if result.is_err() {
++                counts.errors += 1;
++                let detail = result.as_ref().err().map(|error| format!("{error:?}"));
++                grid40_event(counts, operation_id, (operation, class.name()), true, "error", detail.clone(), signed_parent_id);
++                if ordinary {
++                    grid40_event(counts, operation_id, (operation, "ordinary"), true, "error", detail.clone(), signed_parent_id);
++                }
++                grid40_event(counts, operation_id, (operation, "complete"), true, "error", detail, signed_parent_id);
++            } else {
++                grid40_event(counts, operation_id, (operation, class.name()), true, "completed", None, signed_parent_id);
++                if ordinary {
++                    grid40_event(counts, operation_id, (operation, "ordinary"), true, "completed", None, signed_parent_id);
++                }
++                grid40_event(counts, operation_id, (operation, "complete"), true, "completed", None, signed_parent_id);
++            }
++        }
++    });
++    result
++}
++
++#[cfg(test)]
++fn grid40_evaluate<T>(
++    operation: &'static str,
++    class: Grid40EvaluationClass,
++    ordinary: bool,
++    call: impl FnOnce() -> Result<T, LandSurfaceEnergyError>,
++) -> Result<T, LandSurfaceEnergyError> {
++    grid40_evaluate_with_parent(operation, class, ordinary, None, call)
++}
++
++#[cfg(test)]
++fn grid40_evaluate_strict<T>(
++    exponent: u32,
++    call: impl FnOnce() -> Result<T, LandSurfaceEnergyError>,
++) -> Result<T, LandSurfaceEnergyError> {
++    let _exponent = Grid40ActiveStrictExponentGuard::install(exponent);
++    grid40_evaluate(
++        "strict_evaluation",
++        Grid40EvaluationClass::Strict,
++        true,
++        || {
++            let result = call();
++            let inject = result.is_ok()
++                && GRID40_STRICT_FAULT_EXPONENT.with(|fault| {
++                    if fault.get() == Some(exponent) {
++                        fault.set(None);
++                        true
++                    } else {
++                        false
++                    }
++                });
++            if inject {
++                Err(LandSurfaceEnergyError::NumericalAcceptedResidual)
++            } else {
++                result
++            }
++        },
++    )
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_record_strict_fault_for_test(exponent: u32) -> (bool, bool) {
++    let _fault = grid40_force_strict_evaluator_error_for_test(exponent);
++    let first = grid40_evaluate_strict(exponent, || Ok(())).is_err();
++    let second = grid40_evaluate_strict(exponent, || Ok(())).is_ok();
++    (first, second)
++}
++
++#[cfg(not(test))]
++fn grid40_evaluate_strict<T>(
++    _: u32,
++    call: impl FnOnce() -> Result<T, LandSurfaceEnergyError>,
++) -> Result<T, LandSurfaceEnergyError> {
++    call()
++}
++
++#[cfg(not(test))]
++fn grid40_evaluate_with_parent<T>(
++    _: &'static str,
++    _: Grid40EvaluationClass,
++    _: bool,
++    _: Option<u64>,
++    call: impl FnOnce() -> Result<T, LandSurfaceEnergyError>,
++) -> Result<T, LandSurfaceEnergyError> {
++    call()
++}
++
++#[cfg(not(test))]
++fn grid40_evaluate<T>(
++    _: &'static str,
++    _: Grid40EvaluationClass,
++    _: bool,
++    call: impl FnOnce() -> Result<T, LandSurfaceEnergyError>,
++) -> Result<T, LandSurfaceEnergyError> {
++    call()
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_count_domain_predicate() {
++    grid40_increment(
++        "domain_predicate",
++        |counts| &mut counts.domain_predicate,
++        20_000,
++    );
++}
++#[cfg(not(test))]
++pub(crate) fn grid40_count_domain_predicate() {}
++
++#[cfg(test)]
++pub(crate) fn grid40_count_ci_bracket_loop_iteration() {
++    GRID40_COUNTS.with(|counts| {
++        if let Some(counts) = counts.borrow_mut().as_mut() {
++            counts.ci_bracket_loop_iterations = counts
++                .ci_bracket_loop_iterations
++                .checked_add(1)
++                .expect("grid40 Ci bracket-loop iteration counter overflow");
++        }
++    });
++}
++#[cfg(not(test))]
++pub(crate) fn grid40_count_ci_bracket_loop_iteration() {}
++
++#[cfg(test)]
++struct Grid40SignedProbe {
++    operation_id: Option<u64>,
++}
++
++#[cfg(test)]
++fn grid40_finish_signed_probe(
++    counts: &mut Grid40CallCounts,
++    operation_id: u64,
++    phase: &'static str,
++    typed_error: Option<String>,
++) {
++    if let Some(index) = counts
++        .inflight_operation_ids
++        .iter()
++        .position(|id| *id == operation_id)
++    {
++        counts.inflight_operation_ids.remove(index);
++        counts.inflight -= 1;
++        grid40_event(counts, operation_id, ("signed_jacobian_probe", "signed_jacobian_probe"), true, phase, typed_error, None);
++    }
++}
++
++#[cfg(test)]
++impl Grid40SignedProbe {
++    fn begin() -> Self {
++        let operation_id = GRID40_COUNTS.with(|counts| {
++            let denied = if let Some(counts) = counts.borrow_mut().as_mut() {
++                let operation_id = grid40_next_operation_id(counts);
++                if counts.signed_probe >= 2_900 {
++                    counts.denied += 1;
++                    counts.budget_stop = Some("signed_jacobian_probe");
++                    grid40_event(counts, operation_id, ("signed_jacobian_probe", "signed_jacobian_probe"), false, "denied", None, None);
++                    true
++                } else {
++                    counts.signed_probe += 1;
++                    counts.inflight += 1;
++                    counts.inflight_operation_ids.push(operation_id);
++                    grid40_event(counts, operation_id, ("signed_jacobian_probe", "signed_jacobian_probe"), true, "started", None, None);
++                    return Some(operation_id);
++                }
++            } else {
++                false
++            };
++            if denied {
++                std::panic::panic_any(Grid40BudgetStop {
++                    operation: "signed_jacobian_probe",
++                });
++            }
++            None
++        });
++        Self { operation_id }
++    }
++
++    fn operation_id(&self) -> Option<u64> {
++        self.operation_id
++    }
++
++    fn finish(&mut self, phase: &'static str, typed_error: Option<String>) {
++        if let Some(operation_id) = self.operation_id.take() {
++            GRID40_COUNTS.with(|counts| {
++                if let Some(counts) = counts.borrow_mut().as_mut() {
++                    grid40_finish_signed_probe(counts, operation_id, phase, typed_error);
++                }
++            });
++        }
++    }
++}
++
++#[cfg(test)]
++impl Drop for Grid40SignedProbe {
++    fn drop(&mut self) {
++        // An unwind can interrupt a real probe after its signed helper began.
++        // Retain it as inflight.  Do not write an interrupted row while an
++        // outer panic is active: a failed journal write there would become a
++        // second panic and obscure the typed primary failure.
++        if let Some(operation_id) = self.operation_id.take() {
++            if std::thread::panicking() {
++                return;
++            }
++            GRID40_COUNTS.with(|counts| {
++                if let Some(counts) = counts.borrow_mut().as_mut() {
++                    if counts.inflight_operation_ids.contains(&operation_id) {
++                        grid40_event(counts, operation_id, ("signed_jacobian_probe", "signed_jacobian_probe"), true, "interrupted", None, None);
++                    }
++                }
++            });
++        }
++    }
++}
++
++#[cfg(test)]
++fn grid40_begin_signed_probe() -> Grid40SignedProbe {
++    Grid40SignedProbe::begin()
++}
++#[cfg(not(test))]
++struct Grid40SignedProbe {
++    operation_id: Option<u64>,
++}
++
++#[cfg(not(test))]
++impl Grid40SignedProbe {
++    const fn operation_id(&self) -> Option<u64> {
++        self.operation_id
++    }
++    fn finish(&mut self, _: &'static str, _: Option<String>) {
++        self.operation_id = None;
++    }
++}
++
++#[cfg(not(test))]
++fn grid40_begin_signed_probe() -> Grid40SignedProbe {
++    Grid40SignedProbe { operation_id: None }
++}
++#[cfg(test)]
++fn grid40_count_jacobian_assembly() {
++    grid40_increment(
++        "jacobian_assembly",
++        |counts| &mut counts.jacobian_assembly,
++        50,
++    );
++}
++#[cfg(not(test))]
++fn grid40_count_jacobian_assembly() {}
++#[cfg(test)]
++fn grid40_count_update() {
++    grid40_increment("newton_update", |counts| &mut counts.updates, 50);
++}
++#[cfg(not(test))]
++fn grid40_count_update() {}
++
++#[cfg(test)]
++fn grid40_note_installed_strict_exponent(exponent: u32) {
++    GRID40_COUNTS.with(|counts| {
++        if let Some(counts) = counts.borrow_mut().as_mut() {
++            counts.accepted_strict_exponents.push(exponent);
++        }
++    });
++}
++
++#[cfg(not(test))]
++fn grid40_note_installed_strict_exponent(_: u32) {}
++
++#[cfg(test)]
++fn grid40_note_strict_attempt(exponent: u32, trial: &[f64]) {
++    GRID40_COUNTS.with(|counts| {
++        if let Some(counts) = counts.borrow_mut().as_mut() {
++            counts.strict_attempted_exponents.push(exponent);
++            counts
++                .strict_attempted_trial_bits
++                .push(trial.iter().map(|value| value.to_bits()).collect());
++        }
++    });
++}
++
++#[cfg(not(test))]
++fn grid40_note_strict_attempt(_: u32, _: &[f64]) {}
++
++#[cfg(test)]
++pub(crate) fn grid40_force_denial_for_test() {
++    grid40_increment("synthetic_denial", |counts| &mut counts.base, 0);
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug)]
++pub(crate) enum Grid40BudgetClassForTest {
++    Base,
++    Witness,
++    Strict,
++    Ordinary,
++    Complete,
++    Domain,
++    Probe,
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_force_class_denial_for_test(class: Grid40BudgetClassForTest) {
++    match class {
++        Grid40BudgetClassForTest::Base
++        | Grid40BudgetClassForTest::Witness
++        | Grid40BudgetClassForTest::Strict => {
++            unreachable!("evaluator classes use atomic admission")
++        }
++        Grid40BudgetClassForTest::Ordinary => {
++            grid40_increment("ordinary_evaluator", |counts| &mut counts.ordinary, 0);
++        }
++        Grid40BudgetClassForTest::Complete => {
++            grid40_increment(
++                "complete_residual_evaluator",
++                |counts| &mut counts.complete,
++                0,
++            );
++        }
++        Grid40BudgetClassForTest::Domain => {
++            grid40_increment("domain_predicate", |counts| &mut counts.domain_predicate, 0);
++        }
++        Grid40BudgetClassForTest::Probe => {
++            grid40_increment(
++                "signed_jacobian_probe",
++                |counts| &mut counts.signed_probe,
++                0,
++            );
++        }
++    }
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_force_complete_cap_denial_before_ordinary_start_for_test() {
++    GRID40_COUNTS.with(|counts| {
++        counts
++            .borrow_mut()
++            .as_mut()
++            .expect("active grid40 counters")
++            .complete = 4_101;
++    });
++    grid40_admit_evaluation(
++        "atomic_complete_denial",
++        Grid40EvaluationClass::Base,
++        true,
++        1_201,
++        4_101,
++        None,
++    );
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_force_ordinary_cap_denial_before_complete_start_for_test() {
++    GRID40_COUNTS.with(|counts| {
++        counts
++            .borrow_mut()
++            .as_mut()
++            .expect("active grid40 counters")
++            .ordinary = 1_201;
++    });
++    grid40_admit_evaluation(
++        "atomic_ordinary_denial",
++        Grid40EvaluationClass::Base,
++        true,
++        1_201,
++        4_101,
++        None,
++    );
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_force_evaluation_class_denial_for_test(class: Grid40BudgetClassForTest) {
++    GRID40_COUNTS.with(|counts| {
++        let mut counts = counts.borrow_mut();
++        let counts = counts.as_mut().expect("active grid40 counters");
++        match class {
++            Grid40BudgetClassForTest::Base => counts.base = 51,
++            Grid40BudgetClassForTest::Witness => counts.witness = 100,
++            Grid40BudgetClassForTest::Strict => counts.strict = 1_050,
++            _ => unreachable!("only evaluator classes"),
++        }
++    });
++    let class = match class {
++        Grid40BudgetClassForTest::Base => Grid40EvaluationClass::Base,
++        Grid40BudgetClassForTest::Witness => Grid40EvaluationClass::Witness,
++        Grid40BudgetClassForTest::Strict => Grid40EvaluationClass::Strict,
++        _ => unreachable!(),
++    };
++    grid40_admit_evaluation("class_cap_denial", class, true, 1_201, 4_101, None);
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_begin_interrupted_evaluation_for_test() {
++    let _ = grid40_admit_evaluation(
++        "interrupted_evaluator",
++        Grid40EvaluationClass::Base,
++        true,
++        1_201,
++        4_101,
++        None,
++    );
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_record_evaluator_lifecycle_for_test(error: bool) {
++    let result = grid40_evaluate(
++        "synthetic_evaluator",
++        Grid40EvaluationClass::Other,
++        true,
++        || {
++            if error {
++                Err(LandSurfaceEnergyError::NumericalAcceptedResidual)
++            } else {
++                Ok(())
++            }
++        },
++    );
++    assert_eq!(result.is_err(), error);
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug)]
++pub(crate) enum Grid40SignedProbeOutcomeForTest {
++    Identity,
++    Full,
++    Error,
++    Interrupted,
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_record_signed_probe_lifecycle_for_test(
++    outcome: Grid40SignedProbeOutcomeForTest,
++) {
++    let mut signed_probe = grid40_begin_signed_probe();
++    match outcome {
++        Grid40SignedProbeOutcomeForTest::Identity => {
++            signed_probe.finish("identity_anchor_complete", None);
++        }
++        Grid40SignedProbeOutcomeForTest::Full | Grid40SignedProbeOutcomeForTest::Error => {
++            let result = grid40_evaluate_with_parent(
++                "jacobian_full_residual",
++                Grid40EvaluationClass::Other,
++                false,
++                signed_probe.operation_id(),
++                || {
++                    if matches!(outcome, Grid40SignedProbeOutcomeForTest::Error) {
++                        Err(LandSurfaceEnergyError::NumericalAcceptedResidual)
++                    } else {
++                        Ok(())
++                    }
++                },
++            );
++            let error = result.as_ref().err().map(|value| format!("{value:?}"));
++            signed_probe.finish(
++                if error.is_some() {
++                    "full_evaluation_error"
++                } else {
++                    "full_evaluation_complete"
++                },
++                error,
++            );
++        }
++        Grid40SignedProbeOutcomeForTest::Interrupted => {
++            // Drop records an interrupted terminal phase but intentionally
++            // preserves the pending signed operation in the partial ledger.
++        }
++    }
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_interrupt_signed_probe_during_unwind_for_test(event_path: std::path::PathBuf) {
++    let _signed_probe = grid40_begin_signed_probe();
++    grid40_set_event_path_for_test(Some(event_path));
++    std::panic::panic_any("grid40 primary interruption");
++}
++
++#[cfg(test)]
++pub(crate) fn grid40_strict_decrease_exponents(
++    grid: Grid40StrictDecreaseGrid,
++) -> std::ops::RangeInclusive<u32> {
++    match grid {
++        Grid40StrictDecreaseGrid::Baseline => 0..=MAX_BACKTRACKING_HALVINGS,
++        Grid40StrictDecreaseGrid::Treatment => 0..=40,
++    }
++}
++
++#[cfg(test)]
++pub(crate) const fn grid40_backtracking_failure_increment(grid: Grid40StrictDecreaseGrid) -> u32 {
++    match grid {
++        Grid40StrictDecreaseGrid::Baseline => MAX_BACKTRACKING_HALVINGS,
++        Grid40StrictDecreaseGrid::Treatment => 40,
++    }
++}
++
++fn covered_strict_decrease_exponents() -> std::ops::RangeInclusive<u32> {
++    #[cfg(test)]
++    {
++        #[allow(clippy::needless_return)]
++        return GRID40_STRICT_GRID.with(|grid| grid40_strict_decrease_exponents(grid.get()));
++    }
++    #[cfg(not(test))]
++    {
++        0..=MAX_BACKTRACKING_HALVINGS
++    }
++}
++
++fn covered_strict_decrease_failure_increment() -> u32 {
++    #[cfg(test)]
++    {
++        #[allow(clippy::needless_return)]
++        return GRID40_STRICT_GRID.with(|grid| grid40_backtracking_failure_increment(grid.get()));
++    }
++    #[cfg(not(test))]
++    {
++        MAX_BACKTRACKING_HALVINGS
++    }
+ }
+ 
+ fn covered_complete_residuals_pass(residuals: &[f64]) -> bool {
+@@ -240,7 +1215,12 @@
+     ) -> Result<Self, LandSurfaceEnergyError> {
+         Ok(Self {
+             validated,
+-            evaluation: evaluate_covered_column_validated(validated, trial, None, None)?,
++            evaluation: grid40_evaluate(
++                "base_evaluation",
++                Grid40EvaluationClass::Base,
++                true,
++                || evaluate_covered_column_validated(validated, trial, None, None),
++            )?,
+         })
+     }
+ 
+@@ -295,6 +1275,7 @@
+     probe: &[f64],
+     column_index: usize,
+ ) -> Result<Vec<f64>, LandSurfaceEnergyError> {
++    let mut signed_probe = grid40_begin_signed_probe();
+     let _cost = if !force_complete_covered_jacobian_probes()
+         && base
+             .validated
+@@ -309,8 +1290,13 @@
+     };
+     let mut observation =
+         crate::solver_mechanism_audit::Scope::new(crate::solver_mechanism_audit::Kind::Probe);
+-    let result =
+-        covered_jacobian_probe_residuals_observed(base, probe, column_index, &mut observation);
++    let result = covered_jacobian_probe_residuals_observed(
++        base,
++        probe,
++        column_index,
++        &mut observation,
++        &mut signed_probe,
++    );
+     observation.finish(result)
+ }
+ 
+@@ -319,6 +1305,7 @@
+     probe: &[f64],
+     column_index: usize,
+     observation: &mut crate::solver_mechanism_audit::Scope,
++    signed_probe: &mut Grid40SignedProbe,
+ ) -> Result<Vec<f64>, LandSurfaceEnergyError> {
+     let validated = base.validated;
+     let current = &base.evaluation;
+@@ -330,9 +1317,23 @@
+             crate::solver_mechanism_audit::ProbeClass::Complete,
+         );
+         record_covered_jacobian_full_probe_audit();
+-        return Ok(
+-            evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals,
++        let evaluation = grid40_evaluate_with_parent(
++            "jacobian_full_residual",
++            Grid40EvaluationClass::Other,
++            false,
++            signed_probe.operation_id(),
++            || evaluate_covered_column_validated(validated, probe, frozen, None),
+         );
++        let error = evaluation.as_ref().err().map(|value| format!("{value:?}"));
++        signed_probe.finish(
++            if error.is_some() {
++                "full_evaluation_error"
++            } else {
++                "full_evaluation_complete"
++            },
++            error,
++        );
++        return Ok(evaluation?.normalized_residuals);
+     }
+     if probe.iter().enumerate().any(|(index, value)| {
+         index != column_index && value.to_bits() != base.trial[index].to_bits()
+@@ -343,9 +1344,23 @@
+             crate::solver_mechanism_audit::ProbeClass::Complete,
+         );
+         record_covered_jacobian_full_probe_audit();
+-        return Ok(
+-            evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals,
++        let evaluation = grid40_evaluate_with_parent(
++            "jacobian_full_residual",
++            Grid40EvaluationClass::Other,
++            false,
++            signed_probe.operation_id(),
++            || evaluate_covered_column_validated(validated, probe, frozen, None),
+         );
++        let error = evaluation.as_ref().err().map(|value| format!("{value:?}"));
++        signed_probe.finish(
++            if error.is_some() {
++                "full_evaluation_error"
++            } else {
++                "full_evaluation_complete"
++            },
++            error,
++        );
++        return Ok(evaluation?.normalized_residuals);
+     }
+     if !force_complete_covered_jacobian_probes() {
+         if let Some(anchor_k) = validated.stage3_identity_anchor_k(column_index) {
+@@ -357,6 +1372,7 @@
+             let mut residuals = current.normalized_residuals.clone();
+             let raw_residual = probe[column_index] - anchor_k;
+             residuals[column_index] = raw_residual / STAGE3_COVERED_IDENTITY_TOLERANCE_K;
++            signed_probe.finish("identity_anchor_complete", None);
+             return Ok(residuals);
+         }
+     }
+@@ -366,7 +1382,23 @@
+         crate::solver_mechanism_audit::ProbeClass::Complete,
+     );
+     record_covered_jacobian_full_probe_audit();
+-    Ok(evaluate_covered_column_validated(validated, probe, frozen, None)?.normalized_residuals)
++    let evaluation = grid40_evaluate_with_parent(
++        "jacobian_full_residual",
++        Grid40EvaluationClass::Other,
++        false,
++        signed_probe.operation_id(),
++        || evaluate_covered_column_validated(validated, probe, frozen, None),
++    );
++    let error = evaluation.as_ref().err().map(|value| format!("{value:?}"));
++    signed_probe.finish(
++        if error.is_some() {
++            "full_evaluation_error"
++        } else {
++            "full_evaluation_complete"
++        },
++        error,
++    );
++    Ok(evaluation?.normalized_residuals)
+ }
+ 
+ pub(crate) fn covered_failure_residuals(
+@@ -521,7 +1553,13 @@
+                 "snow_accuracy_policy": format!("{:?}", crate::snow_accuracy_policy::Policy::current()),
+         })
+     });
+-    solve_covered_column_impl(beginning, caps, initial_trial, false)
++    let outcome = solve_covered_column_impl(beginning, caps, initial_trial, false);
++    // Keep the established ordinary trace schema and record count byte-for-byte
++    // comparable.  GRID40 terminal/candidate metadata belongs only in its
++    // separate sidecar after the ignored replay boundary.
++    #[cfg(any(test, feature = "test-support"))]
++    crate::lse_first_trial_diagnosis::finish();
++    outcome
+ }
+ 
+ pub(crate) fn solve_v10_full_supply_final(
+@@ -651,6 +1689,7 @@
+             }));
+         }
+         let jacobian_base = iteration_map.into_jacobian_base(&x);
++        grid40_count_jacobian_assembly();
+         crate::solver_mechanism_audit::compact_cost::sweep();
+         let cost_assembly = crate::solver_mechanism_audit::compact_cost::scope(
+             crate::solver_mechanism_audit::compact_cost::Bucket::Assembly,
+@@ -903,11 +1942,18 @@
+             })
+         });
+         if complete_current_residuals_pass && full_trial_is_valid {
+-            let prospective_detail = evaluate_covered_column_validated(
+-                &validated_evaluation_inputs,
+-                &prospective,
+-                None,
+-                None,
++            let prospective_detail = grid40_evaluate(
++                "witness_evaluation",
++                Grid40EvaluationClass::Witness,
++                true,
++                || {
++                    evaluate_covered_column_validated(
++                        &validated_evaluation_inputs,
++                        &prospective,
++                        None,
++                        None,
++                    )
++                },
+             )?;
+             let prospective_steps = covered_step_norms(
+                 &delta,
+@@ -947,11 +1993,18 @@
+                 ) {
+                     return CoveredHalvedTrialProbe::DomainInvalid;
+                 }
+-                let Ok(trial_detail) = evaluate_covered_column_validated(
+-                    &validated_evaluation_inputs,
+-                    &trial,
+-                    None,
+-                    None,
++                let Ok(trial_detail) = grid40_evaluate(
++                    "witness_evaluation",
++                    Grid40EvaluationClass::Witness,
++                    true,
++                    || {
++                        evaluate_covered_column_validated(
++                            &validated_evaluation_inputs,
++                            &trial,
++                            None,
++                            None,
++                        )
++                    },
+                 ) else {
+                     return CoveredHalvedTrialProbe::EvaluationIncomplete;
+                 };
+@@ -976,13 +2029,14 @@
+         }
+         let mut accepted = None;
+         let mut rejected_step_norms = None;
+-        for exponent in 0..=MAX_BACKTRACKING_HALVINGS {
++        for exponent in covered_strict_decrease_exponents() {
+             let factor = 0.5_f64.powf(f64::from(exponent));
+             let trial: Vec<f64> = x
+                 .iter()
+                 .zip(delta.iter())
+                 .map(|(value, change)| value + factor * change)
+                 .collect();
++            grid40_note_strict_attempt(exponent, &trial);
+             if !covered_trial_is_valid(
+                 &trial,
+                 beginning.occupancies.len(),
+@@ -999,9 +2053,9 @@
+                 });
+                 continue;
+             }
+-            let Ok(trial_detail) =
++            let Ok(trial_detail) = grid40_evaluate_strict(exponent, || {
+                 evaluate_covered_column_validated(&validated_evaluation_inputs, &trial, None, None)
+-            else {
++            }) else {
+                 #[cfg(any(test, feature = "test-support"))]
+                 crate::lse_first_trial_diagnosis::record("line_search_attempt", || {
+                     serde_json::json!({
+@@ -1039,6 +2093,8 @@
+             }
+         }
+         if let Some((trial, steps, exponent)) = accepted {
++            grid40_count_update();
++            grid40_note_installed_strict_exponent(exponent);
+             x = trial;
+             last_steps = Some(steps);
+             backtracking_count += exponent;
+@@ -1052,7 +2108,8 @@
+                 occupancy_id,
+                 active_bounds,
+                 failed_solution: x,
+-                backtracking_count: backtracking_count + MAX_BACKTRACKING_HALVINGS,
++                backtracking_count: backtracking_count
++                    + covered_strict_decrease_failure_increment(),
+                 step_norms: rejected_step_norms
+                     .or(last_steps)
+                     .map_or_else(empty_step_norms, CoveredStepNorms::diagnostics),
+@@ -1061,61 +2118,10 @@
+             };
+             #[cfg(any(test, feature = "test-support"))]
+             {
+-                // These are opt-in post-refusal observations.  They are not
+-                // canonical line-search candidates and never affect `failure`.
+-                if crate::lse_first_trial_diagnosis::enabled() {
+-                    for exponent in MAX_BACKTRACKING_HALVINGS + 1..=MAX_BACKTRACKING_HALVINGS + 3 {
+-                        let factor = 0.5_f64.powf(f64::from(exponent));
+-                        let trial: Vec<f64> = failure
+-                            .failed_solution
+-                            .iter()
+-                            .zip(delta.iter())
+-                            .map(|(value, change)| value + factor * change)
+-                            .collect();
+-                        let domain_valid = covered_trial_is_valid(
+-                            &trial,
+-                            beginning.occupancies.len(),
+-                            ground_uses_liquid_vapor_phase_domain,
+-                        );
+-                        let frozen_evaluation = domain_valid
+-                            .then(|| {
+-                                evaluate_covered_column_validated(
+-                                    &validated_evaluation_inputs,
+-                                    &trial,
+-                                    Some(&jacobian_base.frozen),
+-                                    None,
+-                                )
+-                            })
+-                            .transpose();
+-                        let unfrozen_evaluation = (exponent == MAX_BACKTRACKING_HALVINGS + 1
+-                            && domain_valid)
+-                            .then(|| {
+-                                evaluate_covered_column_validated(
+-                                    &validated_evaluation_inputs,
+-                                    &trial,
+-                                    None,
+-                                    None,
+-                                )
+-                            })
+-                            .transpose();
+-                        crate::lse_first_trial_diagnosis::record(
+-                            "diagnostic_directional_probe",
+-                            || {
+-                                serde_json::json!({
+-                                    "frozen_canonical_evaluator_calls": u64::from(domain_valid),
+-                                    "unfrozen_canonical_evaluator_calls": u64::from(
+-                                        exponent == MAX_BACKTRACKING_HALVINGS + 1 && domain_valid),
+-                                    "iteration": iteration, "exponent": exponent, "factor": factor,
+-                                    "coordinates": trial, "domain_valid": domain_valid,
+-                                    "base_normalized_residuals": &detail.normalized_residuals,
+-                                    "applied_direction": delta.iter().map(|value| factor * value).collect::<Vec<_>>(),
+-                                    "frozen_evaluation": frozen_evaluation.as_ref().ok(),
+-                                    "unfrozen_evaluation": unfrozen_evaluation.as_ref().ok(),
+-                                })
+-                            },
+-                        );
+-                    }
+-                }
++                // GRID40 deliberately performs no diagnostic post-refusal
++                // evaluations.  The retained terminal trace below is enough
++                // to classify the first obstruction without spending outside
++                // the frozen ordinary-evaluator envelope.
+                 crate::lse_first_trial_diagnosis::record("terminal_failure", || {
+                     serde_json::json!({
+                         "failure": {
+@@ -1131,7 +2137,6 @@
+                         "terminal_step_state": "last_domain-valid_rejected_trial_or_previous_accepted_step",
+                     })
+                 });
+-                crate::lse_first_trial_diagnosis::finish();
+             }
+             return Ok(CoveredColumnSolveOutcome::Rejected(failure));
+         }
+--- a/crates/openwepp-land-surface-energy/src/solver_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_tests.rs
+@@ -694,8 +694,61 @@
+     assert_eq!(capped.water.branch, WaterBranch::AuthorizationActiveOrTie);
+ }
+ 
+-#[test]
+-fn covered_v8_block_matches_frozen_joint_solution() {
++fn grid40_noncaptured_v10_vector(column: CoveredColumnInputs) -> (CoveredColumnInputs, Vec<f64>) {
++    grid40_noncaptured_v10_vector_at_exponent(column, -26)
++}
++
++fn grid40_noncaptured_v10_vector_at_exponent(
++    mut column: CoveredColumnInputs,
++    temperature_offset_exponent: i32,
++) -> (CoveredColumnInputs, Vec<f64>) {
++    let t = 273.15 + 2.0_f64.powi(temperature_offset_exponent);
++    let longwave = crate::physics::STEFAN_BOLTZMANN_W_M2_K4 * t.powi(4) - 1.0;
++    column.authority = CoveredColumnAuthority::V10NonpositiveAssimilation;
++    column.air_temperature_k = t;
++    column.air_specific_humidity_kg_kg = 0.001;
++    column.atmospheric_downward_longwave_w_m2 = longwave;
++    column.top_rain_kg_m2_tile = 0.0;
++    column.ground.terminal_shortwave_w_m2_tile = BandDirectionalFluxes::default();
++    column.ground.air_temperature_k = t;
++    column.ground.air_specific_humidity_kg_kg = 0.001;
++    column.ground.atmospheric_downward_longwave_w_m2 = longwave;
++    column.ground.surface_liquid_kg_m2_tile = 0.0;
++    column.ground.surface_enthalpy_j_m2_tile = 3_235.68 * (t - 273.15);
++    column.ground.surface_temperature_warm_start_k = t;
++    for node in &mut column.ground.soil_nodes {
++        node.beginning_temperature_k = t;
++    }
++    let occupancy = &mut column.occupancies[0];
++    occupancy.sun.leaf_area_m2_m2_tile = 0.0;
++    occupancy.shade.leaf_area_m2_m2_tile = 0.0;
++    occupancy.stem_area_m2_m2_tile = 0.0;
++    occupancy.lai = 0.0;
++    occupancy.sai = 0.0;
++    occupancy.beginning_canopy_liquid_kg_m2_tile = 0.0;
++    occupancy.sun.absorbed_shortwave_w_m2_tile = 0.0;
++    occupancy.shade.absorbed_shortwave_w_m2_tile = 0.0;
++    occupancy.stem_absorbed_shortwave_w_m2_tile = 0.0;
++    occupancy.sun.absorbed_par_w_m2_leaf = 0.0;
++    occupancy.shade.absorbed_par_w_m2_leaf = 0.0;
++    column.shortwave = CoveredColumnShortwaveInputs {
++        incident_w_m2_tile: BandDirectionalFluxes::default(),
++        top_reflected_w_m2_tile: BandDirectionalFluxes::default(),
++        ground_absorbed_by_incident_w_m2_tile: BandDirectionalFluxes::default(),
++        occupancies: vec![CoveredOccupancyShortwaveInputs {
++            occupancy_id: column.occupancies[0].occupancy_id.clone(),
++            sun_leaf_absorbed_w_m2_tile: BandDirectionalFluxes::default(),
++            shade_leaf_absorbed_w_m2_tile: BandDirectionalFluxes::default(),
++            stem_absorbed_w_m2_tile: BandDirectionalFluxes::default(),
++        }],
++    };
++    (
++        column,
++        vec![0.0, 0.0, 0.0, 0.0, 1.0, 1.0, t, t, t, t, t, 0.001, t, t, t],
++    )
++}
++
++fn covered_v8_fixture() -> (CoveredColumnInputs, CoveredOccupancyInputs) {
+     let ground = OpenSurfaceProblem {
+         interval_s: 1_800.0,
+         tile_fraction: 0.38,
+@@ -746,7 +799,7 @@
+             },
+         ],
+     };
+-    let mut column = CoveredColumnInputs {
++    let column = CoveredColumnInputs {
+         transparent_liquid_boundary: None,
+         authority: CoveredColumnAuthority::HistoricalV8,
+         interval_s: 1_800.0,
+@@ -889,6 +942,307 @@
+             },
+         ],
+     };
++    (column, occupancy)
++}
++
++fn covered_v8_assembled_column() -> CoveredColumnInputs {
++    let (mut column, occupancy) = covered_v8_fixture();
++    column.occupancies = vec![occupancy];
++    column.shortwave = bound_shortwave(
++        &column.occupancies,
++        column.ground.terminal_shortwave_w_m2_tile,
++        column.ground.surface_vis_albedo,
++        column.ground.surface_nir_albedo,
++    );
++    column.occupancies[0].sun.absorbed_shortwave_w_m2_tile = column.shortwave.occupancies[0]
++        .sun_leaf_absorbed_w_m2_tile
++        .total();
++    column.occupancies[0].shade.absorbed_shortwave_w_m2_tile = column.shortwave.occupancies[0]
++        .shade_leaf_absorbed_w_m2_tile
++        .total();
++    column.occupancies[0].stem_absorbed_shortwave_w_m2_tile = column.shortwave.occupancies[0]
++        .stem_absorbed_w_m2_tile
++        .total();
++    column
++}
++
++#[test]
++fn grid40_shared_strict_fault_control_remains_within_b20() {
++    let column = covered_v8_assembled_column();
++    // This shared control stays inside b0..=20.  It verifies the real
++    // evaluator-fault lifecycle without relying on the treatment-only b21
++    // admission: at 2^-24 the fixed vector first admits b19, and an injected
++    // b19 evaluator error is followed by the ordinary b20 strict candidate.
++    let (shared_fault_column, shared_fault_trial) =
++        grid40_noncaptured_v10_vector_at_exponent(column.clone(), -24);
++    let _grid = crate::solver::grid40_install_strict_decrease_grid(
++        crate::solver::Grid40StrictDecreaseGrid::Treatment,
++    );
++    let shared_session =
++        crate::solver::grid40_begin_call_counts(crate::solver::Grid40StrictDecreaseGrid::Treatment);
++    let shared_fault_guard = crate::solver::grid40_force_strict_evaluator_error_for_test(19);
++    let shared_outcome = solve_covered_column(&shared_fault_column, None, shared_fault_trial);
++    let shared_counts = shared_session.finish();
++    assert!(shared_outcome.is_ok());
++    assert_eq!(shared_counts.errors, 1);
++    assert_eq!(shared_counts.accepted_strict_exponents.first(), Some(&20));
++    let shared_terminals = shared_counts
++        .events
++        .iter()
++        .filter(|event| {
++            event.counter_class == "strict" && matches!(event.phase, "error" | "completed")
++        })
++        .map(|event| (event.phase, event.strict_exponent))
++        .collect::<Vec<_>>();
++    let shared_error = shared_terminals
++        .iter()
++        .position(|terminal| *terminal == ("error", Some(19)))
++        .expect("the shared b19 injected error is terminally recorded");
++    let shared_complete = shared_terminals
++        .iter()
++        .position(|terminal| *terminal == ("completed", Some(20)))
++        .expect("the shared b20 completion follows the injected error");
++    assert!(shared_error < shared_complete);
++    assert!(shared_counts.events.iter().any(|event| {
++        event.counter_class == "strict"
++            && event.phase == "error"
++            && event.strict_exponent == Some(19)
++            && event
++                .typed_error
++                .as_deref()
++                .is_some_and(|error| error.contains("NumericalAcceptedResidual"))
++    }));
++    drop(shared_fault_guard);
++}
++
++#[test]
++fn grid40_no_update_witness_preserves_current_base() {
++    let column = covered_v8_assembled_column();
++    let (grid40_column, _grid40_trial) = grid40_noncaptured_v10_vector(column);
++    // A fixed positive no-update witness: its passing residual belongs to the
++    // current base, while the full Newton trial moves outward from the lower
++    // temperature bound.  The first valid halving may establish the step
++    // predicate but must never install its coordinates.
++    let witness_t = 273.15 + 2.0_f64.powi(-40);
++    let mut witness_column = grid40_column.clone();
++    witness_column.air_temperature_k = witness_t;
++    witness_column.atmospheric_downward_longwave_w_m2 =
++        crate::physics::STEFAN_BOLTZMANN_W_M2_K4 * witness_t.powi(4) - 2.0_f64.powi(-21);
++    witness_column.ground.air_temperature_k = witness_t;
++    witness_column.ground.atmospheric_downward_longwave_w_m2 =
++        witness_column.atmospheric_downward_longwave_w_m2;
++    witness_column.ground.surface_enthalpy_j_m2_tile = 3_235.68 * (witness_t - 273.15);
++    witness_column.ground.surface_temperature_warm_start_k = witness_t;
++    for node in &mut witness_column.ground.soil_nodes {
++        node.beginning_temperature_k = witness_t;
++    }
++    let witness_trial = vec![
++        0.0, 0.0, 0.0, 0.0, 1.0, 1.0, witness_t, witness_t, witness_t, witness_t, witness_t, 0.001,
++        witness_t, witness_t, witness_t,
++    ];
++    let witness_base = evaluate_covered_column(&witness_column, &witness_trial, None, None)
++        .expect("fixed positive-witness base evaluates");
++    assert!(
++        normalized_infinity_norm(&witness_base.normalized_residuals) <= 1.0,
++        "the fixed witness base must pass complete residuals"
++    );
++    let _grid = crate::solver::grid40_install_strict_decrease_grid(
++        crate::solver::Grid40StrictDecreaseGrid::Treatment,
++    );
++    let witness_session =
++        crate::solver::grid40_begin_call_counts(crate::solver::Grid40StrictDecreaseGrid::Treatment);
++    let witness_outcome = solve_covered_column(&witness_column, None, witness_trial.clone())
++        .expect("fixed positive witness solve completes");
++    let witness_counts = witness_session.finish();
++    let CoveredColumnSolveOutcome::Accepted(witness_candidate) = witness_outcome else {
++        panic!("first valid no-update witness must accept the current base");
++    };
++    assert_eq!(witness_candidate.solution, witness_trial);
++    assert_eq!(witness_counts.updates, 0);
++    assert!(witness_counts.witness >= 1);
++}
++
++#[test]
++fn grid40_treatment_extension_vectors_cover_b21_and_b40() {
++    let column = covered_v8_assembled_column();
++    // Fixed noncaptured EXP-B01-LSE-GRID40 vector from the science adviser.
++    // It retains this V8 fixture's thermal geometry/capacities while making
++    // every canopy physical area inactive under V10.  Its only initial
++    // energy imbalance is -1 W m-2 at the ground, so the actual Newton path
++    // distinguishes b20 exhaustion from the admitted b21 strict trial.
++    let (grid40_column, grid40_trial) = grid40_noncaptured_v10_vector(column.clone());
++    let initial = evaluate_covered_column(&grid40_column, &grid40_trial, None, None)
++        .expect("fixed noncaptured vector evaluates at its base");
++    assert_eq!(
++        initial
++            .raw_residuals
++            .iter()
++            .filter(|value| **value != 0.0)
++            .count(),
++        1,
++        "fixed-vector residuals={:?}",
++        initial.raw_residuals
++    );
++    assert_eq!(initial.raw_residuals[12].to_bits(), (-1.0_f64).to_bits());
++    let _grid = crate::solver::grid40_install_strict_decrease_grid(
++        crate::solver::Grid40StrictDecreaseGrid::Treatment,
++    );
++    let session =
++        crate::solver::grid40_begin_call_counts(crate::solver::Grid40StrictDecreaseGrid::Treatment);
++    let _outcome = solve_covered_column(&grid40_column, None, grid40_trial.clone());
++    let counts = session.finish();
++    assert!(
++        counts.accepted_strict_exponents.contains(&21),
++        "the real covered callsite must install the fixed vector's first b21 trial: {counts:?}"
++    );
++
++    // A private one-shot fault is injected only inside the actual strict
++    // evaluator wrapper after b21 passed the existing trial-domain guard. The
++    // next ordered strict candidate remains available to the unchanged solver.
++    let fault_session =
++        crate::solver::grid40_begin_call_counts(crate::solver::Grid40StrictDecreaseGrid::Treatment);
++    let fault_guard = crate::solver::grid40_force_strict_evaluator_error_for_test(21);
++    let fault_outcome = solve_covered_column(&grid40_column, None, grid40_trial.clone());
++    let fault_counts = fault_session.finish();
++    assert!(
++        fault_outcome.is_ok(),
++        "the ordered strict search must continue"
++    );
++    assert_eq!(fault_counts.errors, 1);
++    assert!(
++        fault_counts.strict > counts.strict,
++        "b22 follows the injected b21 error"
++    );
++    assert_eq!(fault_counts.accepted_strict_exponents.first(), Some(&22));
++    assert!(fault_counts.events.iter().any(|event| {
++        event.counter_class == "strict"
++            && event.phase == "error"
++            && event.strict_exponent == Some(21)
++    }));
++    assert!(fault_counts.events.iter().any(|event| {
++        event.counter_class == "strict"
++            && event.phase == "completed"
++            && event.strict_exponent == Some(22)
++    }));
++    let strict_terminals = fault_counts
++        .events
++        .iter()
++        .filter(|event| {
++            event.counter_class == "strict" && matches!(event.phase, "error" | "completed")
++        })
++        .map(|event| (event.phase, event.strict_exponent))
++        .collect::<Vec<_>>();
++    let error_21 = strict_terminals
++        .iter()
++        .position(|terminal| *terminal == ("error", Some(21)))
++        .expect("the injected b21 error is terminally recorded");
++    let complete_22 = strict_terminals
++        .iter()
++        .position(|terminal| *terminal == ("completed", Some(22)))
++        .expect("b22 completion follows the injected error");
++    assert!(error_21 < complete_22);
++    assert!(fault_counts.events.iter().any(|event| {
++        event.counter_class == "strict"
++            && event.phase == "error"
++            && event
++                .typed_error
++                .as_deref()
++                .is_some_and(|error| error.contains("NumericalAcceptedResidual"))
++    }));
++    drop(fault_guard);
++
++    // At the exact lower bound, the outward direction is invalid and b40
++    // rounds back to the base.  Strict decrease must therefore refuse while
++    // retaining the base state and the treatment exhaustion contribution.
++    let exact_t = 273.15;
++    let mut exact_bound_column = grid40_column.clone();
++    exact_bound_column.air_temperature_k = exact_t;
++    exact_bound_column.atmospheric_downward_longwave_w_m2 =
++        crate::physics::STEFAN_BOLTZMANN_W_M2_K4 * exact_t.powi(4) - 1.0;
++    exact_bound_column.ground.air_temperature_k = exact_t;
++    exact_bound_column.ground.atmospheric_downward_longwave_w_m2 =
++        exact_bound_column.atmospheric_downward_longwave_w_m2;
++    exact_bound_column.ground.surface_enthalpy_j_m2_tile = 0.0;
++    exact_bound_column.ground.surface_temperature_warm_start_k = exact_t;
++    for node in &mut exact_bound_column.ground.soil_nodes {
++        node.beginning_temperature_k = exact_t;
++    }
++    let exact_trial = vec![
++        0.0, 0.0, 0.0, 0.0, 1.0, 1.0, exact_t, exact_t, exact_t, exact_t, exact_t, 0.001, exact_t,
++        exact_t, exact_t,
++    ];
++    let exact_session =
++        crate::solver::grid40_begin_call_counts(crate::solver::Grid40StrictDecreaseGrid::Treatment);
++    let exact_outcome = solve_covered_column(&exact_bound_column, None, exact_trial.clone());
++    let exact_counts = exact_session.finish();
++    let Ok(CoveredColumnSolveOutcome::Rejected(exact_failure)) = exact_outcome else {
++        panic!("exact lower-bound vector must refuse through b40");
++    };
++    assert_eq!(exact_failure.kind, NumericalFailureKind::BacktrackingLimit);
++    assert_eq!(exact_failure.backtracking_count, 40);
++    assert_eq!(exact_failure.failed_solution, exact_trial);
++    assert!(exact_counts.accepted_strict_exponents.is_empty());
++    assert_eq!(
++        exact_counts.strict, 1,
++        "only the duplicate b40 reaches evaluation"
++    );
++    assert_eq!(
++        exact_counts.strict_attempted_exponents,
++        (0..=40).collect::<Vec<_>>(),
++        "the exact-bound treatment exhausts every fixed-grid candidate"
++    );
++    assert!(
++        exact_counts.strict_attempted_trial_bits[..40]
++            .iter()
++            .all(|bits| bits[12] < exact_trial[12].to_bits()),
++        "b0..39 move the decisive bounded temperature outward"
++    );
++    assert_eq!(
++        exact_counts.strict_attempted_trial_bits.last(),
++        Some(&exact_trial.iter().map(|value| value.to_bits()).collect()),
++        "b40 rounds to the current exact-bound trial bits"
++    );
++    assert!(
++        exact_failure
++            .normalized_residuals
++            .iter()
++            .any(|residual| residual.abs() > 1.0),
++        "a duplicate tiny-step trial cannot repair the failing complete residual"
++    );
++    for step in [
++        exact_failure.step_norms.hydraulic_mm,
++        exact_failure.step_norms.beta,
++        exact_failure.step_norms.temperature_k,
++        exact_failure.step_norms.humidity_kg_kg,
++    ] {
++        assert!(step.is_some_and(f64::is_finite));
++    }
++    assert!(
++        exact_failure
++            .step_norms
++            .hydraulic_mm
++            .is_some_and(|value| value <= 1.0e-7)
++    );
++    assert!(
++        exact_failure
++            .step_norms
++            .beta
++            .is_some_and(|value| value <= 1.0e-10)
++    );
++    assert!(exact_failure.step_norms.temperature_k.is_some_and(|value| {
++        value <= crate::snow_accuracy_policy::Policy::current().temperature_step()
++    }));
++    assert!(
++        exact_failure
++            .step_norms
++            .humidity_kg_kg
++            .is_some_and(|value| value <= 1.0e-12)
++    );
++}
++
++#[test]
++fn covered_v8_block_matches_frozen_joint_solution() {
++    let (mut column, occupancy) = covered_v8_fixture();
+     let block = [
+         -17_238.603_315_214_05,
+         -17_192.416_581_301_524,
+@@ -986,6 +1340,27 @@
+         ],
+     ]
+     .concat();
++    // EXP-B01-LSE-GRID40 control: this is the existing noncaptured covered
++    // fixture, passed through the actual covered-solver callsite under both
++    // private grids.  It proves the confined selection does not perturb a
++    // trajectory which never needs a factor beyond the canonical range.
++    let baseline_outcome = {
++        let _grid = crate::solver::grid40_install_strict_decrease_grid(
++            crate::solver::Grid40StrictDecreaseGrid::Baseline,
++        );
++        solve_covered_column(&column, None, full_trial.clone())
++    };
++    let treatment_outcome = {
++        let _grid = crate::solver::grid40_install_strict_decrease_grid(
++            crate::solver::Grid40StrictDecreaseGrid::Treatment,
++        );
++        solve_covered_column(&column, None, full_trial.clone())
++    };
++    assert_eq!(
++        baseline_outcome, treatment_outcome,
++        "the private grid must not change a covered solve that never reaches b21"
++    );
++
+     let full =
+         evaluate_covered_column(&column, &full_trial, None, None).expect("full covered column");
+     let mut exact_beta_one_trial = full_trial.clone();

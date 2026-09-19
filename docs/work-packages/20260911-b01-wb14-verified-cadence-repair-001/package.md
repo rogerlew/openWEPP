@@ -2,6 +2,14 @@
 
 **Status: INCOMPLETE / HOLD; private diagnostic admission remains unaccepted.**
 
+**2026-09-19 fixed-grid study: INCOMPLETE / BLOCKED before measurement.**
+Prospective authority has distinct correctness/QA approval; immutable preparation
+has independent correctness GO. Mandatory final QA is unavailable after bounded
+reviewer recovery. Baseline0/1, treatment0/1; no new captured solve or scientific
+outcome. Source, binary, full raw preparation and exact recovery are preserved;
+no experimental Rust is adopted in main. Current disposition and ledger:
+[fixed-grid experiment](#fixed-grid-original-start-experiment--2026-09-19).
+
 **2026-09-18 feature continuation: HOLD with an attributable inherited capability-control blocker.** All eight terminal build checks, named membership, real ordinary recorder controls and representation fixes pass; both independent reviewers withhold feature approval because the required non-wire source guard fails on both baseline and candidate. The terminal disposition and evidence links are below.
 Prior authority-domain attribution remains complete. The bounded original-bootstrap
 provider prefix now authenticates the prior committed GSI receipt independently;
@@ -5948,3 +5956,626 @@ reader/E008/RQ1/A-001/science/restart/production/cadence gaps above remain.
 The final accounting/publication supplement is committed and pushed next. Its
 external exact-byte receipt is `/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/diagnosis-closure-final-remote-verification-20260919.json`; any observed overrun of the charged
 return reserve must be added before return. No automatic follow-on execution.
+
+## Fixed-grid original-start experiment — 2026-09-19
+
+Owner execution of `/tmp/openwepp_b01_wb14_lse_grid40_experiment_authorization.md`
+adopts the pinned d574b65b proposal under A-001. Intent before edits: prospective
+experiment-only LSE authority with distinct correctness/QA review; contract-first
+checks; one private mutable experiment copy; matched baseline b0..20 then treatment
+b0..40 original-start pair; independent operand/cost assessment and disposition.
+Only the strict-decrease range and corresponding failure-count contribution may
+change; shared constant, no-update b0/b1..20,50-update order, equations, derivative
+policy, all tolerances/bounds/guards, original numerical configuration/wire and
+production selection remain unchanged. No production Rust adoption, fallback,
+input tuning, later solve/day/reader, owner installation or cadence release.
+
+Carry **126079.464696 seconds**, new fixed cumulative ceiling
+**140479.464696 seconds**: **14400 additional seconds only**, without stacking the
+old remainder. The final external receipt was read once and establishes no greater
+charge. Conservative adopted-resumption anchor **2026-09-19T05:04:00Z** includes
+initial reading; hard deadline **2026-09-19T09:04:00Z**. Charge concurrent wall once,
+no wait deductions; reserve at least1200s for independent review, preservation and
+return. Failure floor **at least356 mixed outcomes**, not a cycle ceiling. Two
+unsuccessful corrections or60 charged minutes trigger internal reassessment.
+Owner stop, cumulative ceiling, uncontained integrity/missing indispensable input
+after recovery, completed bounded disposition or indispensable excluded change
+stops work. A valid treatment refusal ends this fixed experiment.
+
+Exact immutable source remains8cd4866f (748 entries), baseline85b8314e, complete
+baseline-relative214a3236 patch, frozen binary551738aa, five links and19 external
+inputs as already recorded. Input is full527208c3 final trace solver_input and
+original29-vector, R0/V11SnowCovered represented-snow uncapped Potential,
+transaction41/ofe-1/forest/[0,60000000000)ns. Verify source/recovery/input identity
+before copying; do not edit frozen predecessors. One result-bearing baseline and
+one treatment only, no retries or extra evaluator probes, with the pinned limits:
+50 updates/51 bases/50 Jacobians/2900 signed probes, baseline1201 ordinary/4101
+complete calls, treatment2201 ordinary/5101 complete calls,20000 domain checks,
+120s/16GiB/64MiB stack/1GiB output per arm. Baseline mismatch prevents treatment.
+All outcomes and interruption partials must be retained. A rejected numerical
+outcome inside Ok is not acceptance.
+
+Astra owns canonical wording/integration and record; one Terra implementer will
+own only detached test/implementation/tooling after authority review. Distinct
+Sol correctness and Terra QA reviewers assess new authority, then affected
+implementation/fixes/results; prior diagnostic acceptance is reused, not reopened.
+Prospective selected validation: directory-contract structural/binding checks and
+A0 admission; expected-red contract vectors before numerical edits; affected
+LSE component/contract/guard tests and scoped rustfmt/strict Clippy with explicit
+matched inherited-debt assessment only if reviewers accept bounded applicability;
+source/consumer confinement scans; exact baseline trajectory; complete treatment
+outcome and independently reconstructed decisive operands/counters. A1 touched
+INV108/112/138/139 and accepted-candidate guards remain mandatory. A3 constitutive
+formulas/fixtures are unchanged; affected LSE conformance vectors are retained,
+and concrete additional obligations discovered from the diff must run. No global
+owner-conservation/restart/campaign/production claim is made. A shared primitive
+or ambiguous production effect would require critical escalation, not narrowing.
+No suite posture/cohort/required-case binding change is planned. Documentation,
+recovery and remote-byte checks complete publication. Current-branch scoped
+commit/push is authorized; unrelated historical untracked logs remain untouched.
+Calibration and identifiability are NOT_APPLICABLE; all data are DIAGNOSTIC_ONLY.
+
+Authority preparation: directory structure initially failed on a blank line
+before the new BEI row; removing the separator made the same checker PASS21
+modules. A0 admission passed49 contracts with0 changed production science
+surfaces against d574b65 (worktree authority hash recorded in tool evidence).
+These are structural/admission checks, not substantive approval. Correctness
+reviewer resumption failed before work with model-at-capacity; no completed
+diagnostic review is reopened and no independent approval inferred. QA completed
+its first prospective review independently: GO WITH AMENDMENTS. Findings
+G40-QA-1 (medium, counting categories/error attempts), G40-QA-2 (medium,
+non-publishable wording ambiguously forbidding evidence publication) and
+G40-QA-3 (low, singular replay wording) are accepted. The canonical amendment
+now derives category ceilings, charges errored pre-attempts and reconciles
+identity/nested counters; allows evidence publication while prohibiting runtime
+candidate use; and explicitly states one case/two processes. Same-QA fix
+verification is pending; numerical implementation has not started. QA reported3
+inspection-tool non-successes. Carry floor at least361 so far (356+structural
+check1+capacity1+QA inspection3), with no physical result-bearing dispatch.
+
+Same QA verified G40-QA-1/2/3 **PASS/GO**; [review and fix verification](artifacts/grid40-20260919/qa-authority-review.txt)
+retain its independent scope. The original correctness resumption then failed
+with a thread-limit error; one distinct replacement `/root/grid40_correctness`
+(Sol/high) was successfully dispatched for this new authority, without reopening
+prior diagnosis or changing model routes. No further capacity loop is planned.
+[Directory structure](artifacts/grid40-20260919/authority-structure-check.json)
+and [A0 admission](artifacts/grid40-20260919/authority-admission.json) pass on the
+corrected wording; neither replaces substantive correctness approval.
+
+Terra `/root/grid40_impl` completed preparation only: exact frozen source,
+baseline and complete patch dry-run/recovery, five links,19 external inputs,
+452610288-byte frozen binary and original29-vector/trace were verified. The sole
+mutable copy is `/home/roger/openwepp-experiments/b01-wb14-grid40-source-20260919`,
+initially the same8cd4866f source; symlinks are preserved. Evidence lives in
+`/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919`, with immutable
+`preparation-custody.md` as its raw preparation report. No Rust edit/build/test
+or solve has run. Host preflight: home262GiB available, approximately27GiB memory
+available, workdir only273MiB; builds/logs remain outside workdir. Worker reported2
+resolved navigation failures. Cumulative failure floor is now **at least364**
+(356 carry + structure1 + model-capacity1 + thread-limit1 + QA3 + worker2),
+retaining mixed-outcome uncertainty.
+
+Prospective amendment readiness (science-contract-spec logical schema; existing
+physical definitions remain in the declared normative set):
+
+| Obligation | Status/evidence at preparation |
+| --- | --- |
+| Scope/purpose/authority (1–3) | PASS Static: experiment subsection binds owner adoption, frozen case and scientific exclusions; existing equations/provenance unchanged. |
+| Units/state/algorithm/guards/invariants/producer-consumer (4–9) | PASS structural specification: shared interface plus solve-boundary experimental input, two grids, guard map and non-runtime result; behavioral verification remains BLOCKED pending implementation/tests/reviews. |
+| Aliases/constants/unit governance/tolerances (10–13) | PASS unchanged physical definitions; b40 is dimensionless engineering study limit, not a physical parameter or tolerance. No public dimensional surface/conversion introduced. |
+| Calibration/identifiability (14) | NOT_APPLICABLE: no empirically estimated parameter, observation operator or calibration claim; input is DIAGNOSTIC_ONLY. |
+| Test obligations (15) | Defined canonically; execution BLOCKED until authority reviews, tests-before-code evidence and implementation. |
+| Binding exposure/gaps/change log (16–18) | PASS structural check21 documents; explicit BEI mapping and no-production/HOLD boundaries; correctness approval still pending, QA PASS. |
+
+Current experimental implementation status NOT_IMPLEMENTED; calibration evidence
+NOT_APPLICABLE; identifiability NOT_APPLICABLE. Kernel-profile production change
+trigger is not activated by a private isolated study; its applicable invariant,
+unit and typed-failure substance remains binding and will be checked on the
+actual detached diff. This matrix does not waive any current test or review.
+
+Correctness replacement identified G40-C-1 (medium): unnamed domain-predicate
+count permits inconsistent accounting. Accepted and amended canonical text to
+name every `covered_trial_is_valid` function entry (initial/base, stencil/
+observation/probe, witness and strict callers), not each scalar comparison;
+all other constitutive guards/nested limits remain unchanged/separate. Same
+correctness and affected QA verification requested before implementation.
+
+Prospective authority gate **GO**: distinct replacement correctness
+`/root/grid40_correctness` verified G40-C-1 resolved and returned GO with no
+remaining finding; [terminal correctness record](artifacts/grid40-20260919/correctness-authority-review.txt).
+Same QA rechecked the affected count boundary and retained PASS/GO. Neither
+reviewer authored the method. Finding dispositions: G40-QA-1/2/3 and G40-C-1
+accepted, amended in canonical solve-boundary, and verified closed by their
+reviewers; no rejected/deferred finding. Correctness statically reconstructed
+counter ceilings and a conservative18352 named-domain-call upper count below20000.
+Its2 recovered jq inspection errors raise the mixed-outcome floor to **at least366**.
+
+Authority review now permits contract-derived tests and recorded expected-red
+pre-implementation evidence, then private implementation in the sole mutable
+copy. Terra owns this next phase; result-bearing baseline/treatment launch is
+still withheld pending focused prerequisites, exact freeze and affected reviewer
+inspection. No original-case evaluator call may hide in a unit test. Original
+input bit identity (including signed zero), explicit numerical trajectory
+comparison, cost guards and complete terminal/partial traces are acceptance
+requirements. Same reviewers will assess this implementation and results.
+
+Implementation preparation remains PARTIAL, with no captured-case evaluation or
+pair launch. Terra preserved an unintended test-module import failure, then the
+meaningful missing-controls expected-red compile (both exit101), followed by
+four passing synthetic focused controls and one ignored explicit-arm replay.
+These two nonzero outcomes raise the mixed floor to **at least368**; an expected
+red is evidence, not an unsuccessful corrective cycle. Remaining required
+behavioral vectors, real-callsite budget guards, source confinement and complete
+terminal/partial reporting must pass and receive affected independent review
+before source freezing and either arm. The existing ordinary-record schema is
+preserved; added experimental metadata must be explicit.
+
+Root prepared an offline [baseline comparator](artifacts/grid40-20260919/compare_baseline.py)
+and [input bit manifest](artifacts/grid40-20260919/original-input-bits.json).
+The comparator checks every original ordinary record recursively, float bits
+including signed zero, typed values, list order and shape, and rejects unapproved
+added fields/record kinds or old diagnostic-probe records. Six offline helper
+checks pass, including one-ULP and signed-zero mismatches; these execute no
+scientific evaluator. Correctness is independently checking this evidence tool;
+its approval cannot stand in for the eventual real baseline comparison.
+
+Internal correction reassessment: Terra paused after the second correction cycle
+(test-module routing and a let-else block syntax error). Astra inspected the
+preserved compiler diagnostic and compiler-prescribed parentheses correction;
+CONTINUE within existing scope is supported by a concrete mechanical fix.
+No numerical method or budget changed. The unvalidated source stays withheld
+from result-bearing launch. This compile failure plus one root path-navigation
+failure raised the floor to370.
+
+Comparator correctness review found fail-open Python assertions (high), overly
+broad metadata allowances (medium), and omitted top-level schema validation
+(medium). All accepted: explicit exceptions replace assertions, arbitrary
+allowances are removed, and top-level keys/schema plus all95 ordinary records
+must match exactly. New baseline metadata belongs in a separately reviewed
+sidecar. Ten offline full-CLI checks pass in normal and optimized Python,
+including eight deliberate rejected mutations; conservatively counting those
+nonzero child outcomes raises the mixed floor to **at least378**. These expected
+negative checks are not failed correction cycles or scientific solves.
+Same correctness reviewer is verifying the fixes. Its independent bit-manifest
+review matched all311 binary64 paths and the original29-vector, with no
+inspection failure. No original-case evaluator call or pair has occurred.
+
+Comparator same-reviewer fix verification **GO**, with no inspection failure;
+[attributable record](artifacts/grid40-20260919/correctness-comparator-review.md).
+This approval is comparator-only, not source or launch approval.
+
+Implementation reassessment identified substantive incomplete prerequisites:
+range-iterator API tests do not prove actual covered-search behavior; observing
+limit overruns does not enforce denied operations; complete/error/in-flight and
+identity-versus-evaluator accounting remain missing. Root instructed completion
+of real-path synthetic vectors and recorded original20 behavioral-red control
+before enabling40, preserving chronology of the earlier incomplete scaffolding.
+No claim is made that all required tests preceded those exploratory edits.
+The private typed budget-stop unwind/catch route is allowed solely at the test
+replay boundary, with partial evidence; it must never become canonical Error.
+
+After repeated non-progress returns, Terra `/root/grid40_impl` explicitly reported
+exhausted execution context. Its source and failed/passing command evidence are
+preserved, with no captured-case evaluation or pair. At this internal reassessment
+root reassigned sole source/evidence writing to fresh Terra implementer
+`/root/grid40_impl2`; the old writer is inactive. Scope, cumulative clock,
+allowance and original independent reviewers continue unchanged. Conservatively
+carry **at least379 mixed outcomes**, including that context-exhaustion outcome;
+no new result-bearing attempt exists. This is attributable implementation
+replacement, not a fresh verifier wave or authorization reset.
+
+Replacement implementation first bounded checkpoint: private pre-operation
+budget guards and a distinguished caught budget-stop payload are implemented;
+six focused synthetic tests pass with the original-case test ignored. Current
+source remains PARTIAL/not launch-ready: full behavioral vectors, independently
+recountable raw operation events, reliable serialization/all-outcome completion
+and frozen process recorder still require completion/review. One unavailable
+host-cargo attempt (resolved by existing Nix environment) raises the floor to
+**at least380**. This is no captured-case execution. The [QA frozen-test map](artifacts/grid40-20260919/qa-existing-test-map.md)
+identifies reusable controls and explicit gaps without claiming full-path
+coverage from helper tests. Root relocated that artifact from the reviewer's
+mistaken repo-root artifact directory to the maintained package directory.
+
+Correctness assessed the prospective sequencing correction: sufficient only
+with a recoverable hashed control C whose actual live strict-search callsite
+cannot reach b21+, even when the treatment enum is selected. Preserve the
+exploratory E cut separately and exclude it from candidate/result lineage;
+reconstruct C from the frozen source plus its explicit instrumentation patch.
+All preservation/counter vectors must pass on C, while lawful-b21 fails for the
+actual b20 exhaustion reason. Freeze C/red evidence, derive T with reconciled
+strict-range/exhaustion/necessary-recorder diff, then show b21 green and b40
+exhaustion. Earlier missing-API compile-red is not full preimplementation proof.
+No extra method is introduced. Same correctness reviewer reports zero failures.
+
+Evidence-handling incident: replacement Terra reused its focused stdout path,
+overwriting the earlier six-pass raw log with a later eight-pass accounting run.
+The earlier result is retained only as its attributable worker report, not as
+independently inspectable raw evidence, and cannot supply final acceptance.
+Root directed immediate preservation of the current log under a unique name and
+unique non-overwriting identities for every future check. This is contained
+preparatory-test evidence loss; no captured case or result-bearing arm occurred.
+Conservatively carry **at least381 mixed outcomes** including this incident.
+The latest synthetic accounting checks cover ordinary/complete/domain/probe
+denial before increment, and Ok/Err completion with zero final in-flight work;
+these still do not replace required real-path vectors or reviewer inspection.
+
+Root split bounded work: replacement Terra continues private Rust/event/terminal
+reporting and real-path tests; root owns prospective external
+[arm recorder](artifacts/grid40-20260919/run_pair_arm.py). Five offline helper and
+five isolated synthetic-process/admission checks pass (ordinary Python children,
+no Rust solver/evaluator); two expected child failures are retained in the
+summary. Synthetic source-snapshot substitution is explicitly labelled; these
+checks do not validate a scientific freeze or arm. Recorder remains provisional
+pending independent QA, actual binary/env binding and endpoint prerequisites.
+It reserves1200s, refuses expired/reused arms, binds input/source/build/binary,
+requires baseline comparison/admission before treatment, and applies process
+wall/AS/stack/output bounds. The prospective output partition allows at most8
+fixed child files, each below1/8GiB, reserving2MiB for receipts; this conservative
+mechanical subdivision must be reviewed before launch, never adjusted afterward.
+
+Terra added a genuine full covered V8 fixture trajectory-preservation comparison,
+which passes but does not satisfy beyond20 discrimination. Because actual Newton
+directions arise only from the full finite-difference Jacobian/linear solve,
+root escalated the concrete b21 fixture-design blocker to bounded read-only
+science adviser `/root/grid40_vector_advisor`. It may advise a fixed lawful
+noncaptured vector, not run the original case, sweep/tune that case or approve
+its own design. Original correctness/QA reviewers retain independent acceptance.
+No alternate scientific method is authorized. Meanwhile Terra implemented
+persistent private JSONL operation events, pre-install update charging and
+identity-anchor classification; focused tests pass. One zero-selected test
+attempt is preserved as zero coverage, not PASS. Current mixed floor is
+**at least384** (381 + zero-selected1 + expected synthetic process failures2).
+No captured-case evaluator or result-bearing arm has run; deadline/allowance
+remain unchanged.
+
+Adviser resolved the named fixture-design blocker with a fixed inactive V10
+thermal vector: T=273.15+2^-26, zero physical canopy area/liquid and ground water,
+consistent zero shortwave, uniform temperature, longwave sigma*T^4-1. Positive
+configured aerodynamic LAI remains unchanged. Reduced thermal reconstruction
+predicts b20 below the ground bound and lawful strict decrease at b21; exact-bound
+variant predicts outward refusal and duplicate rounding at b40. [Advice](artifacts/grid40-20260919/vector-advice.md)
+and [calculation](artifacts/grid40-20260919/vector_advice_reconstruction.py) are
+method-design evidence only, not the Rust evaluator or acceptance review. Its
+two recovered path errors raise the mixed floor to **at least386**.
+
+Internal reassessment: Terra2 repeatedly returned the next action without
+executing the now-concrete fixture work. Existing source, branch-counter,
+sidecar and command evidence remain retained; no result-bearing work occurred.
+Root reassigned sole Rust writing to fresh Terra `/root/grid40_impl3`, with the
+exact adviser fixture, corrected C/red-to-T/green protocol and remaining checks.
+Previous writer is inactive; no budget/allowance reset. The original QA reviewer
+is independently assessing root's provisional process recorder while Terra3
+implements the vector. Adviser is finished and cannot approve its design.
+
+Concrete real-path C/T proof delivered: retained C patch
+`impl3-control-c-base-relative-20260919T055747Z.patch` binds a live hard20 control;
+with Treatment selected it performs zero strict complete evaluations/updates
+and intentionally fails the b21 assertion. T patch
+`impl3-treatment-t-final-base-relative-20260919T060017Z.patch` installs actual b21
+on the fixed noncaptured vector. The exact-bound variant refuses through40 with
+unchanged failed solution and backtracking40. Focused vector1/1, Grid40 controls
+8 passed/1 ignored, full LSE176 passed/7 ignored, and rustfmt pass. These are
+preparatory synthetic tests, never the captured-case pair. Remaining C
+preservation-order evidence, specific missing controls and independent assessment
+must be reconciled before readiness.
+
+Matched strict Clippy is still RED: candidate84 vs frozen baseline73 errors.
+No inherited-debt waiver covers the introduced delta. Terra3 owns only necessary
+new-findings fixes and missing controls; correctness is reviewing the immutable
+C/T evidence and actual contract/counter confinement. Raw patches span six files
+relative to frozen source; the worker's three-file statement described its own
+latest writes, not the cumulative experiment diff. Final normalized complete
+recovery and hash verification remain pending.
+
+At this internal reassessment, concrete progress supports CONTINUE within the
+same scope/clock: real vector discrimination and full crate execution now exist;
+quality and full evidence are still unmet. Terra3 reconciled9 additional mixed
+outcomes (zero-selected1, signed-zero/diagnostic/dereference3, intentional C-red1,
+lifecycle1, non-test missing no-op compile1, candidate/baseline Clippy2).
+A root admission-tool path lookup failed once. Current floor **at least396**
+(386+9+1), retaining uncertainty. No original-case call has occurred.
+
+Root recorder same-QA fix verification PASS at code level. Actual launch remains
+HOLD pending exhaustive source-specific writer/no-subprocess review, concrete
+normalized output environment, full source/binary/input/build freeze and all
+scientific prerequisite reviews. Independent static source proof is accepted
+for the complete output boundary; no unrelated OS sandbox machinery is required.
+
+At 2026-09-19T06:05:55.305515+00:00, the first60-minute [internal reassessment](artifacts/grid40-20260919/first-hour-reassessment.json)
+charges 129794.770211/140479.464696s, leaving 10684.694485s
+with at least1200s reserved. CONTINUE: real C/T discrimination and176-test PASS
+support concrete progress; introduced lint, missing controls and independent
+source/freeze evidence remain pending. No waits deducted, no budget reset,
+zero captured-case arms. Failure floor remains at least396.
+
+Independent [correctness implementation review](artifacts/grid40-20260919/correctness-implementation-review.md)
+returns HOLD on immutable earlier C/T, with accepted blocking findings: overlapping
+class/ordinary/complete admission was not atomic; journal failure could appear
+as ordinary BudgetStop; raw categories/lifecycle/error taxonomy were not fully
+reconcilable; mandatory vectors/final C were incomplete. Additional accepted
+findings require session/grid identity binding and unchanged nested component
+work/limit reporting. Its4 recovered inspection failures raise the floor to
+**at least400**, pending the writer's next command reconciliation.
+
+Fixing these requirements changes only private instrumentation/tests, not
+scientific acceptance. Real positive no-update coverage now passes on a second
+fixed noncaptured vector (T=273.15+2^-40, longwave sigma*T^4-2^-21): current base
+is accepted unchanged, updates0. Wrong-arm and missing-parent trace-write tests
+also pass; wrong-case hash rejection is a distinct pending control. New Clippy
+findings were corrected to the matched frozen baseline lib22/test73 posture;
+exact fingerprints and affected final reviews remain required, so strict Clippy
+is not labelled PASS. Counter category/common-cap atomicity, session policy
+binding and unique evaluator operation IDs are being completed and tested;
+interruption, journal integrity, strict-fault confinement and nested reporting
+remain before final reconstruction C and narrow T. No source freeze/launch yet.
+
+Root retained [branch-aware original-case row dimensions](artifacts/grid40-20260919/original-case-row-dimensions.json)
+from unchanged evaluator equations and offline inspection of all7 old bases.
+The29 rows include inactive-sun hydraulic mm/temperature K anchors, beta
+identities, physical water/energy balances and represented-snow ground/soil
+K identities. Applied normalizers remain per-frame actual values. New-arm
+branches must be rechecked; these labels neither alter public diagnostics nor
+claim global energy closure or finalized Potential fluxes.
+
+QA reviewer resumption for final write-boundary preparation failed once with a
+thread-limit error; no retry loop was used. Prior attributable QA findings/fix
+verification remain retained, but final source QA is still mandatory. Root will
+use an attributable replacement if that reviewer remains unavailable. This
+raises the mixed floor to at least401 before pending writer command counts.
+
+Further private fixes delivered by Terra3: atomic class/common admission,
+requested-versus-installed grid binding, unique evaluator IDs with typed-error
+phases, category denial and interruption controls (focused13 pass/1 ignored),
+and distinct journal EvidenceFailure with an invalid/incomplete sidecar and
+nonzero private replay outcome. The actual journal-open negative test passes.
+Signed-probe parent/child reconciliation, shared reporting-boundary failure
+coverage, confined strict-fault control and nested work observations still
+require completion; nothing is frozen or launch-ready.
+
+Internal reassessment: Terra3 stopped without implementing the necessary
+signed-probe metadata refactor after identifying its cross-helper scope. That
+private instrumentation refactor is within the already reviewed requirements,
+not an excluded scientific-method change. Root reassigned sole Rust ownership
+to fresh Terra `/root/grid40_impl4`; the old writer is inactive and current source
+is preserved before changes. Carry floor at least402 including this stalled
+implementation outcome, pending complete command reconciliation. No allowance,
+clock, independent requirement or original-start input has changed; both
+result-bearing slots remain unused.
+
+Terra4 delivered linked signed-probe parent/evaluator-child lifecycles, explicit
+terminals/in-flight preservation, unwind-safe journal failure handling, thread-local
+writer injection for parallel-safe negative tests, and the private invalid-sidecar
+reporting path. Focused controls18 passed/1 original replay ignored; owning crate
+187 passed/7 ignored. These are interim checks, not final implementation acceptance.
+The remaining fault/nested-work/admission/vector C-to-T and quality checks continue.
+
+Root's final reproducible dummy-child recorder checks passed5, retaining success,
+exit3, timeout kill, duplicate claim and expired-launch receipts in
+`/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg`.
+See [driver](artifacts/grid40-20260919/check_arm_recorder.py) and
+[results](artifacts/grid40-20260919/arm-recorder-final-process-checks.json).
+No Rust evaluator ran in these tooling checks. Two intentionally failing child
+outcomes plus Terra4's repaired token-scope compile error raise the mixed floor
+from402 to at least405, pending further writer reconciliation.
+
+One attributable QA replacement assignment also failed at the session thread
+limit. No retry loop was used; the [availability record](artifacts/grid40-20260919/review-availability.json)
+binds this unmet requirement. Floor is now at least406. Final independent QA is
+unavailable, so both original-start arms remain BLOCKED and unused. Available
+correctness review and coherent preparatory preservation continue; neither root
+nor a method author substitutes for QA. This is an infrastructure/review blocker,
+not a scientific outcome or a completed negative experiment.
+
+Root recovered a failed prior-publication path lookup and a `/workdir` ENOSPC
+copy failure (mixed floor at least408 before pending writer reconciliation).
+With no cargo/rustc process active, the unused main `target/debug/examples`
+build-cache directory was moved intact to
+`/tmp/openwepp-grid40-preserved-main-debug-examples-20260919`, retaining the
+original path as a symlink. This recovered3.47GB without deleting unique source
+or evidence; [relocation receipt](artifacts/grid40-20260919/cache-relocation.json).
+The interrupted custody copy was recopied from its untouched external source;
+synthetic recorder raw receipts are now retained in the package artifact tree.
+
+Available correctness review verifies substantial counter/lifecycle fixes but
+identifies remaining requirements: checked Ci counting instead of saturation,
+invalid-sidecar routing for trace-write failure, ordinary/common-cap atomicity
+coverage, confined strict-wrapper fault, and explicit b40 duplicate/tiny-step
+residual/sequence assertions. These are accepted in-scope fixes assigned to
+Terra4. No implementation or launch approval is claimed.
+
+[Raw-command reconciliation](artifacts/grid40-20260919/failure-reconciliation-preparation.json)
+adds three previously uncounted Terra3 expected-red/lint commands, Terra4's
+parallel environment-race focused command and test-support ENOSPC command,
+and a reported rustfmt correction. Mixed floor is now **at least414**, retaining
+uncertainty; failing leaf tests are not additionally double-counted here.
+The test writer now uses thread-local injection and build target export is inside
+the Nix shell. Initial default/test-support cargo-check exits0 are compilation
+only; final executed test and lint/source evidence remain required.
+
+Internal [preparation reassessment](artifacts/grid40-20260919/preparation-reassessment.json):
+CONTINUE preparation only with the available writer/reviewer. Two failed test
+corrections and an incomplete writer checkpoint do not renew scope or budget.
+The real synthetic b21 fault check has passed, but its earlier total-count2
+assertion incorrectly described a whole solve; that failure is retained and
+first-iteration ordering must instead be asserted from explicit exponent events.
+Correctness additionally requires mutual exclusion between fault hooks and the
+original replay entry, in both directions, before deserialization/solve. The
+ordinary patch-context mismatch is recoverable; the same writer resumes.
+Mixed floor is **at least419**, retaining uncertainty. No original-case call,
+scientific result or independent QA substitute has occurred.
+
+Later preparatory corrections: strict events now carry their actual exponent;
+the synthetic b21 typed evaluator error and subsequent b22 completion are
+explicit. Replay/fault RAII guards exclude each other in both directions before
+trace reading/deserialization; fault installation requires an active counter
+session. A failing fixture guard-order test was corrected by installing the
+session first, raising the mixed floor to **at least420**. Strict-exponent TLS
+now restores its prior value on unwind. These remain moving-source fixes, not
+final source acceptance; b40 attempt/duplicate details and final C/T are pending.
+
+The writer briefly created and edited an extra reconstruction copy, then reverted
+the two control substitutions. Root bound it as a [historical reconstruction-only copy](artifacts/grid40-20260919/historical-reconstruction-copy.json),
+not final control proof; all further authoring/testing uses the sole mutable
+Grid40 source. The copy predates the latest RAII fix and remains preserved.
+File-name timestamp labels on earlier writer logs are not exact clock evidence;
+final C/T receipts must record actual UTC and source hashes.
+
+Correctness identified a further accepted evidence-integrity defect: rewriting
+`trace.partial` with `fs::write` could truncate the last recoverable JSON prefix
+on a kill during write. Terra4 is correcting the private recorder to serialize
+into same-directory `trace.partial.next` and atomically rename over the prior
+partial; begin must reset prior write failure. This changes recorder mechanics,
+not numerical equations. The prospective eight child slots now explicitly name
+`stdout`, `stderr`, `trace.json`, `trace.partial`, `trace.partial.next`,
+`sidecar.json`, `events.jsonl`, `reserved-2`; the temporary consumes one previously
+unused reserved slot. The reviewed fixed eight-file/per-file/aggregate limits
+remain unchanged, and no real freeze or arm exists. Final source review/test
+coverage remains mandatory; this is not a post-outcome adjustment.
+
+Prospective shared-control vector (before execution): root proposes the same
+fixed noncaptured inactive thermal fixture with `T=273.15+2^-24` and unchanged
+`LW=sigma*T^4-1`. Independent correctness accepts the static basis: fourfold
+headroom relative to the +2^-26/b21 fixture predicts first valid b19. A one-shot
+synthetic evaluator error at b19 must be followed by completed b20 and first
+installed update20 under both control and treatment; errors1, ordered event and
+domain evidence are required. Final full-solve terminal outcomes need not match
+after the deliberately injected error. This fixed contract-control input is not
+original-case tuning or a substitute for either unrun original-start arm.
+
+Second-hour [internal reassessment](artifacts/grid40-20260919/second-hour-reassessment.json) at 2026-09-19T07:04:42.579851+00:00: CONTINUE preparation only. Charged **133322.044547/140479.464696s**, remaining **7157.420149s**, with1200s reserve. No clock reset, wait deduction, captured evaluator call or used arm. Final QA remains unavailable; finalC/T/source-bound checks remain unmet. Mixed floor at least420 pending further commands.
+
+Terra4 reports separated V8 preservation, shared b19/b20 fault, unchanged witness,
+and treatment b21/b40 tests; moving T focused25 pass/1 ignored and owning crate
+195 pass/7 ignored. It reports a C sequence with three selected preservation
+tests green and the intended b21 red. Root has **not accepted that sequence**:
+all shared counter/error/confinement controls need C-green evidence, and complete
+raw logs, recoverable C patch and narrow C-to-T diff must be retained, not solely
+reported in tool messages. The same writer continues final evidence/quality work.
+
+Current portable T patch `impl4-final-cumulative-portable.patch`, SHA256
+`9f8bec62229916c3932281276641b13d1f09cfd4c9d1862f9df68315441e9bb1`,
+is statically checked by correctness: six expected LSE files and clean
+`git apply --check` against the exact frozen first-trial source. This is not
+source-bound execution approval. New disclosed mixed outcomes comprise shared
+guard1, fixture extraction compilation3, witness guard1, b40-coordinate
+assertion1 (inactive sun index6 was not the decisive ground index12), and
+intentional C-red1, moving the floor from420 to427. Correctness then recovered
+three path-relative inspection failures; floor **at least430**, uncertainty kept.
+
+Root and correctness inspected raw `final-c-green.stdout`: **FAIL**,20 passed,
+4 failed,1 ignored, exit101. It cannot be called green. The writer changed helper
+expectations rather than implementing the previously specified stronger control.
+The failed cut/logs remain retained. The v2 correction keeps helper Treatment40
+but hard-caps the actual covered strict loop and exhaustion at20; it reports
+all shared controls green and the real b21 assertion red before restoring T.
+Full final raw/source reconciliation remains pending.
+
+Root also rejected the claimed matched Clippy evidence: the log named
+`final-frozen-clippy.stderr` actually resolves the **candidate** source and
+contains Grid40-only diagnostics. Comparing it with the candidate is not an
+inherited-debt attribution. Correctness explicitly withdrew its initial
+log-equality observation after root identified the wrong source. The same writer
+must use explicit frozen/candidate manifest paths, repair the introduced Grid40
+findings and the test-support-only `take_write_failure` warning, then preserve
+exact diagnostic fingerprints. No lint waiver or implementation acceptance has
+been granted. See [rejected evidence](artifacts/grid40-20260919/preparation-evidence-rejections.json).
+The failed C command, its expected-red, two Clippy commands, and v2 expected-red
+raise the mixed floor from430 to **at least435**; the mislabeled baseline command
+is not counted twice. Both original-start arms remain unused.
+
+After repeated routine refactor stalls, root took temporary sole writing ownership
+for a small mechanical integration cleanup allowed by role-orchestration.md;
+Terra4 became inactive. Root retained three exact preimages, paired the adjacent
+operation/class arguments in17 private event calls, removed redundant syntax,
+restored the non-test probe interface with its None observation, extracted the
+ignored entry's input reader without changing guard order, and scoped the
+trace-failure reader to tests. The same independent correctness reviewer inspected
+the exact preimages/diff and accepted these mechanical fixes. No equations,
+search choices, scientific guards, event fields/order or test assertions changed.
+
+The [offline lint comparator](artifacts/grid40-20260919/compare_clippy.py) checks
+Cargo JSON manifest roots and diagnostic multisets (code/message/exact highlighted
+source/multiplicity). It ignores positions, indentation and unhighlighted line
+context. The only initial full-line difference was rustfmt wrapping after an
+unchanged inherited cast expression, independently verified by correctness.
+Final default95/95 and test-support100/100 occurrences match with **zero new or
+changed diagnostics**. Strict warnings-denied Clippy remains RED on inherited
+debt; this is bounded attribution, not a strict lint PASS or scientific waiver.
+
+Root executed the terminal preparation sequence directly with explicit manifests,
+actual UTC/argv/source hashes, complete stdout/stderr/exit records and unchanged
+source checks. Final control source
+`94fa481fb76fead1a8d217c46dcdd27690ae2385cca06b9fd929f0cc1204a25a`
+keeps the Treatment envelope/helper40 while hard-capping only the actual strict
+loop and failure contribution20. It is a non-result control, not a b0..20
+measurement receipt. Its full preservation suite passed194, ignored7, excluded
+only the named treatment vector; that vector then failed at the real b21 assertion.
+The final treatment source
+`fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be`
+restores those actual helper calls and passed195/ignored7 under both default and
+`test-support`, plus formatting and both compile checks. The complete final tests
+were present before this final C-red-to-T-green sequence. Earlier exploratory
+cuts and failed sequences remain historical evidence, never relabeled.
+
+[Terminal source recovery](artifacts/grid40-20260919/terminal-source-recovery.json)
+verifies all749 source entries: exact frozen base plus final C patch then narrow
+C-to-T patch, and exact frozen base plus direct T patch, both reproduce final T.
+Six LSE files differ; no production Rust is adopted in main. Original input5272…
+and frozen source8cd4…, all19 external build inputs/five links, and the historical
+reconstruction copy remain intact. The final test binary is preserved externally
+as `root-terminal-grid40-tests.frozen`,55,908,800 bytes, SHA256
+`e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272`.
+No original replay or evaluator probe was executed; no real pair freeze exists.
+The [terminal failure reconciliation](artifacts/grid40-20260919/terminal-failure-reconciliation.json)
+carries **at least447** mixed outcomes with uncertainty preserved.
+
+### Terminal disposition: incomplete study; preserved preparation
+
+The [immutable correctness review](artifacts/grid40-20260919/correctness-final-preparation-review.md)
+returns **implementation/preparation correctness GO** for T `fae897fe…c4be`,
+with no remaining blocking implementation or science-contract finding. It
+independently inspected exact source/recovery, all final test/check receipts,
+matched lint fingerprints, counting/guard/confinement, atomic evidence writes,
+and binary custody. Its three recovered inspection failures were already included
+in the ledger. Authority correctness and QA approval remain valid in their
+prospective scope; prior QA also verified the process-recorder code fixes.
+
+**Study: INCOMPLETE / BLOCKED before measurement.** Mandatory final independent
+QA could not be assigned after the original reviewer and one attributable
+replacement encountered the session thread limit. No retry loop or author-as-QA
+substitution was used. This is the sole remaining launch blocker; the correct
+response is to preserve the completed preparation, not dispatch an unreviewed
+baseline. Under the amendment's disposition clause, experimental authority
+expires for new execution here. The unused two-arm allowance does not renew
+execution authority or the fixed budget/deadline.
+
+| Required study evidence | Disposition |
+| --- | --- |
+| Prospective canonical authority and distinct reviews | PASS; unchanged reviewed authority bytes/A0 |
+| Final C-red/T-green controls, owning tests, feature checks, recovery | PASS; source-bound final receipts |
+| Final implementation correctness | GO, immutable T |
+| Final independent QA/write-boundary acceptance | UNMET; unavailable reviewer |
+| Original b0..20 baseline and exact trajectory comparison | NOT RUN;0/1 |
+| Original b0..40 treatment first-solve outcome | NOT RUN;0/1 |
+| Original-case residual/step/domain/cost and decisive primitive reconstruction | NOT MEASURED/NOT RUN |
+| Scientific success or valid negative experimental result | Neither established |
+
+The complete retained [raw preparation archive](artifacts/grid40-20260919/preparation-raw-evidence.tar.gz)
+contains316 files, including failed/mislabeled attempts and final raw command
+receipts; [member hashes](artifacts/grid40-20260919/preparation-archive.json)
+were independently re-read and verified. Final [C](artifacts/grid40-20260919/root-terminal-c.patch),
+[narrow C-to-T](artifacts/grid40-20260919/root-terminal-c-to-t.patch),
+and [T recovery patches](artifacts/grid40-20260919/root-terminal-t.patch)
+are published as evidence only. The externally preserved binary is non-executable
+read-only custody; its build path/recipe and exact identity are retained. No
+real pair-freeze, original arm receipt, owner install, physical interval advance,
+fixed-final solve, day staging, reader, model/capture or downstream run occurred.
+
+The existing five-day reader, original day-4 E008, RQ1/A-001, full scientific,
+conservation/restart qualification, production and cadence HOLDs remain.
+No second numerical experiment, greater grid, new warm start or new method was
+performed or authorized. Scoped current-branch publication covers only the
+reviewed authority, package/evidence and recovery artifacts; unrelated untracked
+logs and all frozen predecessors remain preserved.
+
+[Final ledger](artifacts/grid40-20260919/final-ledger.json) at 2026-09-19T07:37:54.811524+00:00: actual cumulative **135314.276220s**, plus300s precharged publication/return, yields **135614.276220/140479.464696s**, remaining **4865.188476s**. Mixed failure floor **at least447**, uncertainty retained; no wait deductions, allowance reset or reclaimed prior reserve. Final remote-byte verification and any greater terminal charge are retained in the named external publication receipt.

@@ -1,0 +1,40 @@
+{
+  "schema": "openwepp.grid40.arm-receipt.v1",
+  "arm": "baseline",
+  "freeze_sha256": "d0d6d7e2000e063252fd4ec21287670a98c26901a95b3d9d754e3d5d4f0f6a9a",
+  "argv": [
+    "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/bin/python3.12",
+    "-c",
+    "raise SystemExit(3)"
+  ],
+  "environment": {},
+  "source_sha256": "synthetic-tooling-source",
+  "binary_sha256": "59234be299f9d095852500c6a82abb68a718a65768e9a5b109e996c3fc2878ce",
+  "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+  "start_utc": "2026-09-19T06:31:27.821604+00:00",
+  "limits": {
+    "seconds": 0.2,
+    "address_space": 17179869184,
+    "stack": 67108864,
+    "output": 1073741824,
+    "per_file": 133955584
+  },
+  "automatic_retries": 0,
+  "stop_reason": null,
+  "process_exit": 3,
+  "integrity_unchanged": true,
+  "process_group": 1673929,
+  "elapsed_seconds": 0.017165155615657568,
+  "end_utc": "2026-09-19T06:31:27.838837+00:00",
+  "output_bytes": 865,
+  "files": {
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
+}

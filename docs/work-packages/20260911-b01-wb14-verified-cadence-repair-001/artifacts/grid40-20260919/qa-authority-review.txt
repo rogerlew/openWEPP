@@ -1,0 +1,37 @@
+Reviewer: /root/grid40_qa (Terra/medium), response transcription (Markdown file links rendered as path:line)
+
+Static review — **GO WITH AMENDMENTS** before implementation.
+
+Findings:
+
+- **Medium — solve-boundary.md:209: frozen cost accounting is not fully canonical.** The amendment supplies ceilings but not the frozen category derivation that makes them enforceable: `51 + 50×41 + 100 = 2201` ordinary treatment calls; plus 2900 Jacobian starts gives 5101, with the b0..20 equivalent for baseline. It also calls the ceiling “complete-residual calls” while requiring attempted/completed/error counts, leaving an error attempt able to be classified ambiguously. The historical proposal has this derivation in package text, but package-local material must not become hidden canonical authority. Amend the contract to define the counted pre-attempt event and category mapping, state that errored attempts consume the applicable ceiling, and reconcile ordinary/total/Jacobian/identity-anchor/nested counters without double counting.
+
+- **Medium — solve-boundary.md:151: “non-publishable diagnostic evidence” conflicts with required preservation/publication.** The authority and package require retained raw evidence, source/recovery records, and scoped publication, while this phrase can prohibit publishing the evidence itself. Replace it with wording that permits publication of diagnostic evidence but prohibits persistence, runtime consumption, receipt resealing, or representation as production-policy output.
+
+- **Low — solve-boundary.md:132: “One immutable private replay” is imprecise beside the mandatory two-arm pair.** Say one immutable replay case/input authorizes exactly one baseline and one treatment process. This prevents an avoidable reading that only one execution is permitted.
+
+Non-blocking debt/follow-up:
+
+- The required non-production confinement test should demonstrate both wrong-case rejection and absence of a production-reachable call path or build target. The current authority requires confinement vectors and source/consumer scans, so this is suitable as an implementation acceptance detail.
+- The binding-index row and parent change log accurately expose the new active experimental authority and retain its non-production status.
+- The amendment otherwise adequately confines the case, preserves b0..20 witness semantics and baseline blocking, freezes b0..40 treatment and resource limits, requires every terminal outcome/partial evidence, preserves source/input identity, and separates study results from production, qualification, cadence, conservation, and restart claims.
+- The trace SHA-256 was independently checked and matches `527208…482dfd`. The detached source directory is intentionally not a Git checkout; no source mutation or model/evaluator run occurred.
+
+QA pass statement: With the two medium amendments incorporated and verified by this same review scope, the prospective experimental authority is suitable to proceed to contract-derived tests and private implementation.
+
+Inspection tooling: 3 auxiliary nonzero probes (one incorrect binding-index path and two Git probes against the detached non-Git source directory); no substantive evidence was unavailable.
+
+Same-reviewer fix verification:
+
+Static same-reviewer fix verification: **PASS / GO** for G40-QA-1, G40-QA-2, and G40-QA-3.
+
+- solve-boundary.md:219 now defines pre-attempt charging, error consumption, category arithmetic, Jacobian/identity treatment, interruption reconciliation, nested-work separation, and denied-operation reporting.
+- solve-boundary.md:153 now permits publication of evidence while forbidding runtime/persisted candidate use, receipt resealing, and production-policy representation.
+- solve-boundary.md:132 now unambiguously authorizes one immutable case with exactly one baseline and one treatment process.
+
+No remaining QA blocker in the corrected scope. This does not satisfy the still-pending independent correctness approval or authorize numerical implementation by itself. No numerical/model runs occurred. Follow-up inspection-tool failures: 0.
+
+Affected boundary clarification verification:
+Static same-QA verification: **PASS / GO retained.**
+solve-boundary.md:217 now names `covered_trial_is_valid` as the sole 20,000-cap event, charges it at function entry across every listed caller, excludes internal scalar comparisons, and keeps other guards/nested limits separate. This closes the G40-C-1 accounting ambiguity without weakening the fixed resource boundary or prior QA requirements.
+No new QA defect found. No implementation or numerical/result run occurred. Inspection-tool failures: 0.

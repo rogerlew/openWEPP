@@ -1,0 +1,14 @@
+{
+  "utc": "2026-09-19T05:21:55.220315+00:00",
+  "argv": [
+    "bash",
+    "tools/release/check_science_contract_admission.sh",
+    "--base-ref",
+    "d574b65b5b11948a48a7be1bc51da964c34fca59",
+    "--worktree"
+  ],
+  "exit_code": 0,
+  "stdout": "A0_ADMITTED contracts=49 science_surfaces=0 base=d574b65b5b11948a48a7be1bc51da964c34fca59 head=WORKTREE authority_sha256=b301ff7b623027aa4ccb4f3513cf5099d9242b833d6bbc9c679243d6e01dc5e5\n",
+  "stderr": "",
+  "scope": "Final reviewed main experimental authority; not detached implementation admission or empirical acceptance"
+}

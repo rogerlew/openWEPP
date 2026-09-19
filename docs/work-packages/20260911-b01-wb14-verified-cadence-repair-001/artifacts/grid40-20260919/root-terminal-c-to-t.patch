@@ -1,0 +1,20 @@
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_solve.rs
+@@ -2029,7 +2029,7 @@
+         }
+         let mut accepted = None;
+         let mut rejected_step_norms = None;
+-        for exponent in 0..=MAX_BACKTRACKING_HALVINGS {
++        for exponent in covered_strict_decrease_exponents() {
+             let factor = 0.5_f64.powf(f64::from(exponent));
+             let trial: Vec<f64> = x
+                 .iter()
+@@ -2109,7 +2109,7 @@
+                 active_bounds,
+                 failed_solution: x,
+                 backtracking_count: backtracking_count
+-                    + MAX_BACKTRACKING_HALVINGS,
++                    + covered_strict_decrease_failure_increment(),
+                 step_norms: rejected_step_norms
+                     .or(last_steps)
+                     .map_or_else(empty_step_norms, CoveredStepNorms::diagnostics),

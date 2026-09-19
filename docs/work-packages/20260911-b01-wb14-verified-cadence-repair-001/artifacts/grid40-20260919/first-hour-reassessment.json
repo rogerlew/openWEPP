@@ -1,0 +1,15 @@
+{
+  "utc": "2026-09-19T06:05:55.305515+00:00",
+  "anchor_utc": "2026-09-19T05:04:00+00:00",
+  "carry_seconds": 126079.464696,
+  "elapsed_concurrent_wall_seconds": 3715.305515,
+  "charged_seconds": 129794.770211,
+  "ceiling_seconds": 140479.464696,
+  "remaining_seconds": 10684.694485000015,
+  "wait_deductions_seconds": 0,
+  "reserve_seconds": 1200,
+  "failure_floor": 396,
+  "result_bearing_baseline_runs": 0,
+  "result_bearing_treatment_runs": 0,
+  "decision": "CONTINUE after 60-minute reassessment: actual C/T discrimination and176-test PASS provide progress; introduced lint and independent source/evidence gates pending; no allowance reset"
+}

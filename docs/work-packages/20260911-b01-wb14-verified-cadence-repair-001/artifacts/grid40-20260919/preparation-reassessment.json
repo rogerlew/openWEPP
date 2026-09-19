@@ -1,0 +1,16 @@
+{
+  "utc": "2026-09-19T06:45:40.705204+00:00",
+  "disposition": "CONTINUE_PREPARATION_ONLY",
+  "reason": "Available writer and correctness reviewer can still finish recoverable scoped preparation; mandatory independent QA unavailable blocks both original arms",
+  "cumulative_charged_seconds": 132180.1699,
+  "fixed_ceiling_seconds": 140479.464696,
+  "remaining_seconds": 8299.294796000002,
+  "reserve_seconds": 1200,
+  "budget_reset": false,
+  "captured_case_evaluations": 0,
+  "baseline_runs": 0,
+  "treatment_runs": 0,
+  "failure_floor": 419,
+  "new_mixed_outcomes_since414": "moved-vector compile1; zero-selected selector1; incorrect whole-solve count assertion1; patch context mismatch1; stopped incomplete writer checkpoint1",
+  "uncertainty_preserved": true
+}

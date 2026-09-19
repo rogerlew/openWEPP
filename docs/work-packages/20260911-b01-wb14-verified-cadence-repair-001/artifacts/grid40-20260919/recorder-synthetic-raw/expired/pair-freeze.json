@@ -1,0 +1,72 @@
+{
+  "schema": "openwepp.grid40.pair-freeze.v1",
+  "prerequisites": {
+    "correctness": "GO",
+    "qa": "GO",
+    "focused_checks": "PASS"
+  },
+  "recorder_sha256": "512235ed92811adf76e7c98e7d28a8e44db9af58993a90bec5f0027e7b9f5290",
+  "snapshot_tool_sha256": "90fd8f6d218ac1e2234e527c2700a1e50eafea6631f78b62107ec484fe2f9e7d",
+  "source_sha256": "synthetic-tooling-source",
+  "binary": "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/bin/python3.12",
+  "binary_sha256": "59234be299f9d095852500c6a82abb68a718a65768e9a5b109e996c3fc2878ce",
+  "input": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/lse-first-trial-20260918/final-first-failure-trace.json",
+  "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+  "bound_files": {},
+  "external_build_inputs": {
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-0": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-1": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-2": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-3": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-4": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-5": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-6": "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-7": "7902699be42c8a8e46fbbb4501726517e86b22c56a189f7625a6da49081b2451",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-8": "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-9": "19581e27de7ced00ff1ce50b2047e7a567c76b1cbaebabe5ef03f7c3017bb5b7",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-10": "4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-11": "4fc82b26aecb47d2868c4efbe3581732a3e7cbcc6c2efb32062c08170a05eeb8",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-12": "6b51d431df5d7f141cbececcf79edf3dd861c3b4069f0b11661a3eefacbba918",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-13": "3fdba35f04dc8c462986c992bcf875546257113072a909c162f7e470e581e278",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-14": "8527a891e224136950ff32ca212b45bc93f69fbb801c3b1ebedac52775f99e61",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-15": "e629fa6598d732768f7c726b4b621285f9c3b85303900aa912017db7617d8bdb",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-16": "b17ef6d19c7a5b1ee83b907c595526dcb1eb06db8227d650d5dda0a9f4ce8cd9",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-17": "4523540f1504cd17100c4835e85b7eefd49911580f8efff0599a8f283be6b9e3",
+    "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-18": "4ec9599fc203d176a301536c2e091a19bc852759b255bd6818810a42c5fed14a"
+  },
+  "support_links": {
+    "link-0": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-0",
+    "link-1": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-1",
+    "link-2": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-2",
+    "link-3": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-3",
+    "link-4": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/external-4"
+  },
+  "output_filenames": [
+    "stdout",
+    "stderr",
+    "trace.json",
+    "trace.partial",
+    "sidecar.json",
+    "events.jsonl",
+    "reserved-1",
+    "reserved-2"
+  ],
+  "environment": {},
+  "binary_arguments": [
+    "-c",
+    "raise SystemExit(99)"
+  ],
+  "write_boundary": {
+    "source_sha256": "synthetic-tooling-source",
+    "binary_sha256": "59234be299f9d095852500c6a82abb68a718a65768e9a5b109e996c3fc2878ce",
+    "entry_arguments": [
+      "-c",
+      "raise SystemExit(99)"
+    ],
+    "no_subprocess": true,
+    "no_other_destinations": true,
+    "review": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/synthetic-only-review.txt",
+    "review_sha256": "63e59d6b48e372a2df812c00e8a0fe9e72d036882169fab2b11ae94da20f69c9",
+    "output_environment": {}
+  }
+}

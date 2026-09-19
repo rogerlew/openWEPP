@@ -1,0 +1,21 @@
+{
+  "utc": "2026-09-19T07:04:42.579851+00:00",
+  "cumulative_charged_seconds": 133322.044547,
+  "ceiling_seconds": 140479.464696,
+  "remaining_seconds": 7157.420149,
+  "preservation_review_return_reserve_seconds": 1200,
+  "disposition": "CONTINUE_PREPARATION_ONLY",
+  "progress": "Atomic trace fix independently closed; actual b40 duplicate/tiny-step/bad-residual and ordered fault controls now explicit; fixture helper and shared b19/b20 control being separated before final C/T",
+  "blockers": [
+    "mandatory final QA unavailable after one replacement failed",
+    "final independent C-green/new-behavior-red and T-green receipts pending",
+    "final source-bound quality/recovery and correctness disposition pending"
+  ],
+  "baseline_runs": 0,
+  "treatment_runs": 0,
+  "new_captured_case_evaluator_calls": 0,
+  "failure_floor": 420,
+  "failure_uncertainty_retained": true,
+  "budget_reset": false,
+  "wait_deductions": 0
+}

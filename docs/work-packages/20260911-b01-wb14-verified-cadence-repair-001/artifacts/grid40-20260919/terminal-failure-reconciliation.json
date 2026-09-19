@@ -1,0 +1,18 @@
+{
+  "utc": "2026-09-19T07:31:04.038220+00:00",
+  "prior_floor": 435,
+  "additional_mixed_outcomes": {
+    "writer_reporting_patch_context_mismatch": 1,
+    "actual_frozen_candidate_json_clippy_default_and_test_support_nonzero": 4,
+    "reverted_event_helper_rewrite_attempt": 1,
+    "root_missing_nonexistent_nested_agents_lookup": 1,
+    "root_intermediate_inherited_clippy_nonzero": 1,
+    "root_full_line_context_comparison_refusal_on_rustfmt_wrap": 1,
+    "root_final_expected_c_red": 1,
+    "root_final_inherited_clippy_default_and_test_support_nonzero": 2
+  },
+  "failure_floor": 447,
+  "uncertainty_retained": true,
+  "classification": "Mixed outcomes, including intentional C-red and inherited lint; not a numerical-cycle count",
+  "note": "Candidate-vs-candidate mislabeled baseline already counted earlier; no double charge here. Passing negative assertions within a successful command are not additionally expanded."
+}

@@ -1,0 +1,30 @@
+{
+  "utc": "2026-09-19T06:42:05.590085+00:00",
+  "prior_floor": 408,
+  "additional_raw_command_failures": [
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/impl3-control-c-real-callsite-b21-red-20260919T060450Z.exit",
+      "exit": "101"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/impl3-lse-clippy-introduced-fix-20260919T060316Z.exit",
+      "exit": "101"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/impl3-lse-clippy-delta-fixed-20260919T060354Z.exit",
+      "exit": "101"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/impl4-grid40-focused-20260919T2330Z.exit",
+      "exit": "101"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/impl4-test-support-tests-20260919T0641Z.exit",
+      "exit": "101"
+    }
+  ],
+  "additional_reported_failure": "impl4 rustfmt let-chain correction, one",
+  "failure_floor": 414,
+  "classification": "mixed outcomes; expected-reds, inherited lint, tooling and infrastructure included; not a correction-cycle count",
+  "uncertainty": "Inherited floor and further in-progress commands; initial impl4 compile already counted in408; focused two failing leaf tests counted as one failed command here"
+}

@@ -1,0 +1,11 @@
+{
+  "utc": "2026-09-19T07:16:11.631429+00:00",
+  "c_v1": "FAIL: final-c-green.stdout 20 passed,4 failed,1 ignored,exit101; helperrange waschangedinstead of actualcallsite-only strongercontrol",
+  "c_v2": "Reportedclean actualcallsite20 withhelper40; independent/rawbindingreviewpending",
+  "mislabeled_lint_baseline": "final-frozen-clippy.stderr resolves all crates from candidate grid40-source and reports Grid40-only code; candidate-vs-candidate, invalid inheritance evidence",
+  "reviewer_correction": "/root/grid40_correctness withdrew matched-Clippy observation after checking source provenance",
+  "required_correction": "Explicit frozen/candidate --manifest-path, same flags, exactdiagnosticfingerprints; repairintroduceddiagnostics thenrefreshfinalC/T",
+  "result_bearing_runs": 0,
+  "failure_floor": 435,
+  "count_note": "434 plus intended v2 C-red; mislabeled baseline command was already one of two counted Clippy failures; no duplicate arithmetic charge"
+}

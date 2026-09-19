@@ -1,0 +1,20 @@
+{
+  "evidence_class": "Ran: offline comparison of retained Cargo JSON only",
+  "normalization": "Ignore source-root prefixes, line/column positions, indentation and unhighlighted line context; retain code, message, exact primary highlighted source and multiplicity",
+  "limitation": "Source identity, exact flags and build provenance require independent review; strict Clippy remains failed if inherited diagnostics exist",
+  "baseline": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/clippy-json-frozen-test_support.stdout",
+  "candidate": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-t-clippy-test-support.stdout",
+  "verified_manifest_roots": [
+    "/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-source-20260918",
+    "/home/roger/openwepp-experiments/b01-wb14-grid40-source-20260919"
+  ],
+  "input_sha256": {
+    "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/clippy-json-frozen-test_support.stdout": "a8fcc019effb4f2a1e0af2dca9aca92177c3c27d12ad614b86457bfc0787970d",
+    "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-t-clippy-test-support.stdout": "231db7adb4eaf6568d2d71af09c9665efd4035d1d1df2a75c1ce30090ccfc998"
+  },
+  "baseline_diagnostic_occurrences": 100,
+  "candidate_diagnostic_occurrences": 100,
+  "candidate_only": [],
+  "baseline_only": [],
+  "no_new_or_changed_diagnostics": true
+}

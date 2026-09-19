@@ -1,0 +1,89 @@
+{
+  "utc": "2026-09-19T07:29:36.215914+00:00",
+  "evidence_class": "Ran: byte/hash checks and patch reconstruction only; no solver/evaluator",
+  "frozen_base_sha256": "8cd4866f66b06d6cf96403753cdb3d41ba75f6ca87652341ebe082a86a1b4bc5",
+  "control_source_sha256": "94fa481fb76fead1a8d217c46dcdd27690ae2385cca06b9fd929f0cc1204a25a",
+  "treatment_source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+  "source_entries": 749,
+  "changed_paths": [
+    "crates/openwepp-land-surface-energy/src/grid40_experimental_tests.rs",
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs",
+    "crates/openwepp-land-surface-energy/src/solver_tests.rs"
+  ],
+  "recovery_checks": [
+    {
+      "patch": "root-terminal-c.patch",
+      "patch_sha256": "95f6b0c3bcfb59b7db07aed10f5ace2341f5622f7f049f00ea80ee3e0e1d3f3e",
+      "argv": [
+        "patch",
+        "--batch",
+        "--forward",
+        "-p1",
+        "--input",
+        "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-c.patch"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-recovery-c-then-t",
+      "exit": 0,
+      "stdout": "patching file crates/openwepp-land-surface-energy/src/grid40_experimental_tests.rs\npatching file crates/openwepp-land-surface-energy/src/lib.rs\npatching file crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs\npatching file crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs\npatching file crates/openwepp-land-surface-energy/src/solver_covered_solve.rs\npatching file crates/openwepp-land-surface-energy/src/solver_tests.rs\n",
+      "stderr": "",
+      "recovered_full_source_sha256": "94fa481fb76fead1a8d217c46dcdd27690ae2385cca06b9fd929f0cc1204a25a",
+      "expected_match": true
+    },
+    {
+      "patch": "root-terminal-c-to-t.patch",
+      "patch_sha256": "e0a45653ac26fb5ab3f3adc78975623f645845c20b1a91a384cd0c693c08447d",
+      "argv": [
+        "patch",
+        "--batch",
+        "--forward",
+        "-p1",
+        "--input",
+        "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-c-to-t.patch"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-recovery-c-then-t",
+      "exit": 0,
+      "stdout": "patching file crates/openwepp-land-surface-energy/src/solver_covered_solve.rs\n",
+      "stderr": "",
+      "recovered_full_source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+      "expected_match": true
+    },
+    {
+      "patch": "root-terminal-t.patch",
+      "patch_sha256": "ae2478a9238f3e3f9753c0607bd4129b86a3ca240f59ad44a457a7163d8200b9",
+      "argv": [
+        "patch",
+        "--batch",
+        "--forward",
+        "-p1",
+        "--input",
+        "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-t.patch"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-recovery-direct-t",
+      "exit": 0,
+      "stdout": "patching file crates/openwepp-land-surface-energy/src/grid40_experimental_tests.rs\npatching file crates/openwepp-land-surface-energy/src/lib.rs\npatching file crates/openwepp-land-surface-energy/src/lse_first_trial_diagnosis.rs\npatching file crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs\npatching file crates/openwepp-land-surface-energy/src/solver_covered_solve.rs\npatching file crates/openwepp-land-surface-energy/src/solver_tests.rs\n",
+      "stderr": "",
+      "recovered_full_source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+      "expected_match": true
+    }
+  ],
+  "binary": {
+    "utc": "2026-09-19T07:28:01.745641+00:00",
+    "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+    "built_binary": "/home/roger/openwepp-experiments/cache/impl4-target/debug/deps/openwepp_land_surface_energy-d5efd685a3babbfa",
+    "frozen_binary": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-grid40-tests.frozen",
+    "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+    "bytes": 55908800,
+    "original_replay_executions": 0,
+    "launch_approval": false
+  },
+  "original_input": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/lse-first-trial-20260918/final-first-failure-trace.json",
+  "original_input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+  "all_19_external_inputs_and_5_links_match": true,
+  "historical_reconstruction_copy_unchanged": true,
+  "result_bearing_replays": 0,
+  "pair_freeze_exists": false,
+  "launch_approval": false
+}

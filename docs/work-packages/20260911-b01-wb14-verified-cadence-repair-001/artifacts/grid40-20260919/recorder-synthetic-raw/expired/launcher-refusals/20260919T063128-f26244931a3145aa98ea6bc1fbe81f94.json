@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Launcher refusal/failure; inspect arm receipt to determine whether a child started",
+  "utc": "2026-09-19T06:31:28.047226+00:00",
+  "arguments": [
+    "baseline"
+  ],
+  "error": "RuntimeError('expired launch / preservation reserve')",
+  "freeze_sha256": "b2490bf868a75b71063786f33d87c1081fb3aebcf2c1447e735cbbddaef363ba",
+  "existing_arm_receipts": {}
+}

@@ -1,0 +1,36 @@
+{
+  "evidence_class": "Ran: synthetic Python child processes only, no Rust/evaluator/experiment-arm invocation",
+  "overrides": "source snapshot replaced by fixed synthetic identity; deadline/time/output fixture paths isolated; original input hashed only, never evaluated",
+  "checks": [
+    {
+      "case": "success",
+      "pass": true,
+      "process_exit": 0,
+      "synthetic_only": true
+    },
+    {
+      "case": "duplicate arm refused before spawn",
+      "pass": true,
+      "synthetic_only": true
+    },
+    {
+      "case": "failure",
+      "pass": true,
+      "process_exit": 3,
+      "synthetic_only": true
+    },
+    {
+      "case": "timeout",
+      "pass": true,
+      "process_exit": -9,
+      "synthetic_only": true
+    },
+    {
+      "case": "expired",
+      "pass": true,
+      "process_exit": null,
+      "synthetic_only": true
+    }
+  ],
+  "nonzero_child_outcomes": 2
+}

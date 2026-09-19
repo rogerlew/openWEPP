@@ -1,0 +1,67 @@
+{
+  "evidence_class": "Ran: offline comparison CLI checks, including optimized Python; no evaluator calls",
+  "synthetic_copies_only": true,
+  "checks": [
+    {
+      "case": "normal-exact_copy",
+      "expected_accept": true,
+      "exit_code": 0,
+      "pass": true
+    },
+    {
+      "case": "normal-changed_float",
+      "expected_accept": false,
+      "exit_code": 1,
+      "pass": true
+    },
+    {
+      "case": "normal-added_field",
+      "expected_accept": false,
+      "exit_code": 1,
+      "pass": true
+    },
+    {
+      "case": "normal-added_record",
+      "expected_accept": false,
+      "exit_code": 1,
+      "pass": true
+    },
+    {
+      "case": "normal-changed_schema",
+      "expected_accept": false,
+      "exit_code": 1,
+      "pass": true
+    },
+    {
+      "case": "optimized-exact_copy",
+      "expected_accept": true,
+      "exit_code": 0,
+      "pass": true
+    },
+    {
+      "case": "optimized-changed_float",
+      "expected_accept": false,
+      "exit_code": 1,
+      "pass": true
+    },
+    {
+      "case": "optimized-added_field",
+      "expected_accept": false,
+      "exit_code": 1,
+      "pass": true
+    },
+    {
+      "case": "optimized-added_record",
+      "expected_accept": false,
+      "exit_code": 1,
+      "pass": true
+    },
+    {
+      "case": "optimized-changed_schema",
+      "expected_accept": false,
+      "exit_code": 1,
+      "pass": true
+    }
+  ],
+  "raw_directory": "/home/roger/openwepp-experiments/b01-wb14-grid40-rootchecks-20260919"
+}

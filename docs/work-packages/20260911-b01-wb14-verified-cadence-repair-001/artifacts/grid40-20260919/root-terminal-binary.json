@@ -1,0 +1,10 @@
+{
+  "utc": "2026-09-19T07:28:01.745641+00:00",
+  "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+  "built_binary": "/home/roger/openwepp-experiments/cache/impl4-target/debug/deps/openwepp_land_surface_energy-d5efd685a3babbfa",
+  "frozen_binary": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-grid40-tests.frozen",
+  "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+  "bytes": 55908800,
+  "original_replay_executions": 0,
+  "launch_approval": false
+}

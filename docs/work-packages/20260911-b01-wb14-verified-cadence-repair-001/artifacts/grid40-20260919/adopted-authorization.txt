@@ -1,0 +1,78 @@
+# B01 WB14: one fixed-grid, original-start LSE experiment
+
+DRAFT FOR ROGER'S ADOPTION. No execution authority is granted until adopted.
+
+## One active checkpoint, exact source, changes, acceptance, runs and stops
+
+**Checkpoint:** `B01-WB14-CURRENT-CONTEXT-CAPTURE / A-001`, maintained in `docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md`. The first-trial diagnosis is COMPLETE in its reviewed scope. Authorize one connected effort: prospective experiment-only authority, contract-derived checks, private implementation, a matched original-start baseline/treatment pair, independent reconstruction and disposition. The question is whether expanding only strict-decrease factors to b0..40 suffices for the complete captured first Potential solve. Passing the formerly failing iteration alone is not success. Do not reopen completed diagnostic reviews.
+
+**Evidence and protocol:** repository `rogerlew/openWEPP`, immutable commit `d574b65b5b11948a48a7be1bc51da964c34fca59`. Adopt the technical proposal under `Proposed next experiment: one fixed strict-decrease grid extension` in that revision, subject to the prospective authority/review gates and boundaries below. Its method and per-arm cost limits are frozen; its previous proposal-only status is not historical execution or approval.
+
+**Exact source:** preserve `/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-source-20260918`, tree SHA-256 `8cd4866f66b06d6cf96403753cdb3d41ba75f6ca87652341ebe082a86a1b4bc5`, and diagnostic binary `551738aa5123cffa9b24f3e7e7b193cfaa95f2c16a803df5f2eb278ed9c12ba0`. The original observer baseline is `85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963`. Recovery is that baseline plus `artifacts/lse-first-trial-20260918/final-from-baseline-relative.patch`, SHA-256 `214a32362cd53708330843120a3bd59c1ee025928738ce201dae74ff82058fde`, not a patch on main/T/an already patched cut. The existing freeze additionally binds five support links and nineteen external build inputs; 748 snapshot entries alone are not a complete build recipe. Verify the existing recovery and use one mutable experiment copy and established caches. Preserve all frozen predecessors, binaries and raw evidence.
+
+**Input:** `artifacts/lse-first-trial-20260918/final-first-failure-trace.json`, SHA-256 `527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd`. Replay its complete `solver_input` and original 29-coordinate `initial_trial`: R0, V11SnowCovered, represented snow, uncapped Potential, transaction 41, ofe-1/forest, [0,60000000000) ns, two occupancies and six soil nodes. Preserve exact binary64 bits, signed zeros, topology, owner/configuration identities and warm start. No reconstructed iteration-6 warm start or new synthetic input substitutes for the original-start case.
+
+**Permitted changes:** the narrow canonical experimental amendment and necessary binding/test references; contract-derived test and private replay/confinement code; replacement of only the covered strict-decrease range and its corresponding failure-count contribution in the disposable experimental build; private outcome/trace/cost reporting and necessary mechanical build/tool corrections. Preserve the shared `MAX_BACKTRACKING_HALVINGS`, generic solvers, production selection, public configuration/wire, numerical identity of the original inputs, no-update implementation, equations, derivatives, scales, pivots, physical bounds, residual/step tolerances and owner guards. No fallback, domain-aware alternative, coordinate clamp, extra support, input tuning or post-outcome cap adjustment is authorized.
+
+**Acceptance:** completed prospective authority gates; matched baseline proof; a complete, source-bound first-solve treatment outcome under the fixed policy and cost bounds; all applicable component/contract checks and independent correctness/QA assessment. Scientific success requires the existing accepted-candidate constructor to succeed, all residuals finite with normalized absolute values <=1, all unchanged governed step/domain/branch/identity requirements, and independent decisive-operand reconstruction. A smaller norm, b21 acceptance, tiny steps or an `Ok` enclosing a rejected numerical outcome is not success. A valid typed refusal is a negative experimental result, not proof that no admissible root exists. Missing evidence, infrastructure/counter/time abort or a failed required gate remains incomplete/invalid as applicable. Study disposition and production/qualification readiness stay separate.
+
+**Result-bearing run allowance:** one matched baseline replay at b0..20 and one treatment replay at b0..40, both from the original start. First freeze the source/build/input/protocol and complete focused prerequisite checks. A baseline mismatch invalidates the comparison and blocks treatment. No automatic retries, silent replacement pair or unplanned evaluator probes. Ordinary build, contract-vector and tooling corrections before result-bearing dispatch stay within Astra's discretion. Preserve any invalid run; investigate it without treating the two-arm allowance as renewable. Each arm ends at the first solve's Accepted, Rejected, Error or resource stop. No final-fixed-cap solve, native owner install, physical interval advancement, day staging, reader execution, model/capture run or downstream continuation.
+
+**Prospective budget:** grant at most **14,400 additional charged seconds**, carrying **126,079.464696 seconds** including all prior overruns and return reserves. Fixed new cumulative ceiling: **140,479.464696 seconds**. Do not stack the old 2,220.740304-second remainder onto this supplement. Carry failure floor **at least 356 mixed outcomes**, preserving uncertainty; it is not a cycle ceiling. Read the current final external publication receipt once for any greater established charge, which reduces the new balance. Anchor at actual adopted resumption; charge concurrent wall time once for reading, implementation, commands, reviews, preservation, publication and return, without new wait deductions. Use the existing expired-launch refusal, live timeout bounds and a review/preservation reserve. This proposal does not retrospectively authorize any past overrun.
+
+**Stops:** owner stop; hard cumulative time; uncontained integrity issue; indispensable unavailable input after bounded recovery; completed bounded disposition; or indispensable excluded scientific/authority change. Two unsuccessful corrections or 60 charged minutes trigger internal Astra reassessment, not owner micro-handoffs or renewed allowance. A valid treatment refusal ends this fixed-policy experiment: no b41/b60, different warm start or second method follows. Preserve the first downstream numerical obstruction. In-scope preparatory corrections remain Astra's responsibility.
+
+## Contract first, then implementation and the matched pair
+
+The proposal is not yet canonical authority. Amend the owning `SC-LANDSURFACEENERGY-001/solve-boundary.md` experimental applicability, deterministic counting and confinement before implementation. Follow `science-contract-authoring-procedure.md`: distinct independent correctness and QA review of the substantive experimental authority, contract-derived tests and recorded pre-implementation evidence, then the diagnostic implementation. Reuse those reviewers for affected implementation/fix verification and final results; do not add an automatic fresh verifier wave. Approval of the prior diagnosis is not approval of this new method.
+
+Read applicable root/nearest/package/standards instructions, the LSE shared interface, numerical-method/admission dependencies and numerical-solver architecture. Preserve INV-108/112/138/139 and every applicable owner/acceptance obligation. A narrow experiment-only canonical amendment is permitted; changing production numerical authority, promoting the deferred-composite draft or adopting production Rust is not.
+
+Freeze the two distinct grids explicitly:
+
+| Policy | Baseline | Treatment |
+| --- | --- | --- |
+| Strict-decrease factors | b0..20 | b0..40 |
+| Full/halved no-update witness | existing b0, then first-valid b1..20 | unchanged |
+| Completed Newton updates | 50 | 50 |
+
+After update 50, evaluate the final base and retain the existing acceptance-before-iteration-limit order. Do not add another Jacobian/update. Change neither finite-difference perturbations nor inactive-coordinate handling. The generic/shared constant has other regime and witness consumers: inventory the actual detached callers and keep them unchanged. Use one existing solver implementation with a confined experimental-build variation, not a second production solver or failure-triggered dispatch.
+
+Name the experimental numerical identity separately from R0 and the original input/configuration provenance. Do not reseal an original b0..20 policy receipt or report treatment output as execution of that unchanged policy. The prospective amendment must explicitly authorize private solve-input replay and define its non-publishable result boundary. Reject any other input case at the private entry; do not expose the treatment to the real runner.
+
+Required focused tests are those in the pinned proposal: preserved earlier choices; lawful strict decrease beyond20; failure through40; exact-bound outward direction; nonfinite/evaluation failure; duplicate-rounded trials; unacceptable residuals despite small steps; unchanged first-valid no-update witness and no installation of its trial; wrong-case and non-production confinement. Do not weaken or drop a test after observing an outcome. Record exact applicable A0/A1/A3 and quality obligations; inherited diagnostic/lint exceptions are not blanket acceptance of a numerical change. Missing required evidence stays unmet; unrelated lint cleanup is not added to this effort.
+
+## Complete and trustworthy experiment output
+
+Disable the old four post-refusal probes in BOTH replay arms: extra diagnostic evaluator calls are zero. Baseline replay must reproduce the canonical six-update/iteration-6 E034 outcome, original inputs and ordinary numerical trajectory, with explicit comparison of relevant numerical fields; new harness metadata is not solver-state equality. Do not alter expected values to repair a mismatched baseline.
+
+The retained observation patch finalizes its trace in the backtracking-refusal branch. Complete the private harness so every first-solve terminal outcome, including successful return, iteration/pivot/domain error and resource stop, retains its evidence. Preserve a partial trace on interruption and mark incomplete output honestly. A missing or failed serialization cannot become a successful measurement. Use the existing recorder/trace format where adequate; no general recorder framework is needed.
+
+Report branch-aware row dimensions, actual normalizers, current-base iteration, and the exact origin of step norms in private experimental evidence. Preserve public/persisted diagnostics and raw historical bytes. The broader public residual-label/provenance repair remains separate. Ordinary trace timing/hash/metadata differences must not conceal changes to arithmetic, evaluation order, branch decisions or accepted state.
+
+Retain the full original-start trajectory, accepted exponents, final coordinates and distances to bounds, complete residuals/steps, candidate-construction result, first obstruction and cost. Independent reviewers must assess the accepted endpoint or decisive refusal using actual primitive operands, not merely the producer's PASS flag. Potential rates/requests are not finalized fluxes; no global conservation, native installation or fresh-process restart claim follows from this solve.
+
+## Fixed computation limits
+
+Adopt the pinned proposal's limits without increasing them after results:
+
+- Per arm: at most50 updates,51 base evaluations,50 Jacobian assemblies,29 coordinates and2900 signed Jacobian probe starts; existing nested component limits remain unchanged.
+- Baseline: at most1201 ordinary and4101 total complete-residual evaluator calls. Treatment: at most2201 ordinary and5101 total, including at most2050 strict-search and100 witness calls. Identity shortcuts reduce actual work; these are ceilings, not predictions.
+- At most20000 domain-predicate invocations per arm. Count attempted/completed/error evaluator calls, Jacobian/identity-anchor work and nested work without double counting. Additional post-refusal diagnostic probes:0.
+- At most120 seconds per result-bearing process,240 seconds for the pair,16GiB address-space limit,64MiB test stack and1GiB output per arm. Check current host disk/memory, and keep large output away from constrained `/workdir`.
+
+Count inspection before each attempted operation consistently. Resource exhaustion is a private budget disposition, never a canonical convergence result or permission to raise a cap. Verify the count mapping against the real call sites before measurement; if the fixed envelope cannot be enforced without an excluded change, return that issue rather than silently substituting a looser experiment.
+
+## Ownership, reuse and publication
+
+Astra owns the complete authorized effort. Use the canonical implementation route, one source writer and at most two concurrent children, no nested spawning. Reuse available independent reviewers or attributable replacements without a thread-limit retry loop. This adviser and the method author cannot supply either independent acceptance review.
+
+Keep the approved first-trial diagnosis, observer/feature work and original local promotion evidence closed on their frozen source-specific scopes. Do not redo their reviews just because this new experiment is authorized. Necessary new control/review work applies to the experimental authority, replay entry and altered search behavior.
+
+Keep package.md as the sole maintained narrative. Carry scoped current-branch commit/push and exact remote-byte verification for the experimental authority, evidence and recovery patches; do not adopt experimental Rust into main, switch branches or delete unique evidence. Keep the disposable entry inaccessible to production at disposition and preserve its source for reproduction.
+
+Return one compact result: authority/check disposition; exact baseline/treatment sources and input identity; baseline correspondence; complete treatment Accepted/Rejected/Error/budget outcome; residual/step/domain and cost evidence; both independent scopes; remaining risks and ledger. An adequate negative result can complete the bounded study, but neither success nor failure releases the five-day reader, original day-4 E008, RQ1/A-001, full scientific/conservation/restart qualification, production or cadence. No second numerical experiment is authorized.
+
+## Adviser evidence boundary
+
+Inspected at d574b65b5b11948a48a7be1bc51da964c34fca59: full fixed-grid proposal and closure/disposition, terminal correctness review, complete retained three-file instrumentation patch, governing solve-boundary and contract-authoring procedure, pinned repository solver loop/acceptance/witness paths, current Pro role, and supplied diagnosis-closure handoff. Previously read root/package/bounded/testing and solver-architecture rules were reused after matching blob identities. The pinned repository implementation is navigation source, not a replacement for the detached experiment. Full execution-host source, complete numerical trace arrays, binary and final external ledger were not accessed or rehashed here. No Rust, model, canonical evaluator or independent acceptance review ran in this adviser conversation; only this draft and its arithmetic were checked.

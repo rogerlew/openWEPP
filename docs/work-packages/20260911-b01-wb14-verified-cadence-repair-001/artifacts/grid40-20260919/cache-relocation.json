@@ -1,0 +1,8 @@
+{
+  "utc": "2026-09-19T06:38:15.514062+00:00",
+  "reason": "Recover /workdir ENOSPC for scoped evidence publication",
+  "original": "/workdir/openWEPP/target/debug/examples",
+  "preserved_destination": "/tmp/openwepp-grid40-preserved-main-debug-examples-20260919",
+  "operation": "Move unused build-cache directory; retain original path as symlink; no unique evidence deletion",
+  "free_bytes_after": 3473416192
+}

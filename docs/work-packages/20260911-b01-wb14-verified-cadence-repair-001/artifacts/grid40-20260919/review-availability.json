@@ -1,0 +1,13 @@
+{
+  "utc": "2026-09-19T06:36:47.079781+00:00",
+  "original_qa": "/root/grid40_qa",
+  "original_resumption": "thread limit; previously recorded; no retry",
+  "replacement_attempt": "/root/grid40_qa_replacement",
+  "replacement_result": "collab spawn failed: agent thread limit reached",
+  "additional_replacement_attempts": 0,
+  "mandatory_final_qa": "UNMET",
+  "result_bearing_launch": "BLOCKED",
+  "baseline_runs": 0,
+  "treatment_runs": 0,
+  "disposition": "Preparatory implementation and available correctness review continue; no independent QA substitution"
+}

@@ -1,0 +1,210 @@
+{
+  "evidence_class": "Static source-derived dimensions plus Ran offline retained-trace branch checks; no evaluator call",
+  "input_trace_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+  "case": "original R0 V11SnowCovered Potential",
+  "rows": [
+    {
+      "index": 0,
+      "occupancy_id": "stratum-z-upper::forest",
+      "name": "sun hydraulic identity",
+      "raw_unit": "mm water potential",
+      "effective_normalizer_unit": "mm water potential"
+    },
+    {
+      "index": 1,
+      "occupancy_id": "stratum-z-upper::forest",
+      "name": "shade hydraulic balance",
+      "raw_unit": "kg m^-2 tile s^-1",
+      "effective_normalizer_unit": "kg m^-2 tile s^-1"
+    },
+    {
+      "index": 2,
+      "occupancy_id": "stratum-z-upper::forest",
+      "name": "sun beta identity",
+      "raw_unit": "dimensionless",
+      "effective_normalizer_unit": "dimensionless"
+    },
+    {
+      "index": 3,
+      "occupancy_id": "stratum-z-upper::forest",
+      "name": "shade beta identity",
+      "raw_unit": "dimensionless",
+      "effective_normalizer_unit": "dimensionless"
+    },
+    {
+      "index": 4,
+      "occupancy_id": "stratum-z-upper::forest",
+      "name": "stem hydraulic balance",
+      "raw_unit": "kg m^-2 tile s^-1",
+      "effective_normalizer_unit": "kg m^-2 tile s^-1"
+    },
+    {
+      "index": 5,
+      "occupancy_id": "stratum-z-upper::forest",
+      "name": "root hydraulic balance",
+      "raw_unit": "kg m^-2 tile s^-1",
+      "effective_normalizer_unit": "kg m^-2 tile s^-1"
+    },
+    {
+      "index": 6,
+      "occupancy_id": "stratum-z-upper::forest",
+      "name": "inactive sun temperature anchor",
+      "raw_unit": "K",
+      "effective_normalizer_unit": "K"
+    },
+    {
+      "index": 7,
+      "occupancy_id": "stratum-z-upper::forest",
+      "name": "shade energy balance",
+      "raw_unit": "W m^-2 tile",
+      "effective_normalizer_unit": "W m^-2 tile"
+    },
+    {
+      "index": 8,
+      "occupancy_id": "stratum-z-upper::forest",
+      "name": "wet energy balance",
+      "raw_unit": "W m^-2 tile",
+      "effective_normalizer_unit": "W m^-2 tile"
+    },
+    {
+      "index": 9,
+      "occupancy_id": "stratum-z-upper::forest",
+      "name": "stem energy balance",
+      "raw_unit": "W m^-2 tile",
+      "effective_normalizer_unit": "W m^-2 tile"
+    },
+    {
+      "index": 10,
+      "occupancy_id": "stratum-a-lower::forest",
+      "name": "sun hydraulic identity",
+      "raw_unit": "mm water potential",
+      "effective_normalizer_unit": "mm water potential"
+    },
+    {
+      "index": 11,
+      "occupancy_id": "stratum-a-lower::forest",
+      "name": "shade hydraulic balance",
+      "raw_unit": "kg m^-2 tile s^-1",
+      "effective_normalizer_unit": "kg m^-2 tile s^-1"
+    },
+    {
+      "index": 12,
+      "occupancy_id": "stratum-a-lower::forest",
+      "name": "sun beta identity",
+      "raw_unit": "dimensionless",
+      "effective_normalizer_unit": "dimensionless"
+    },
+    {
+      "index": 13,
+      "occupancy_id": "stratum-a-lower::forest",
+      "name": "shade beta identity",
+      "raw_unit": "dimensionless",
+      "effective_normalizer_unit": "dimensionless"
+    },
+    {
+      "index": 14,
+      "occupancy_id": "stratum-a-lower::forest",
+      "name": "stem hydraulic balance",
+      "raw_unit": "kg m^-2 tile s^-1",
+      "effective_normalizer_unit": "kg m^-2 tile s^-1"
+    },
+    {
+      "index": 15,
+      "occupancy_id": "stratum-a-lower::forest",
+      "name": "root hydraulic balance",
+      "raw_unit": "kg m^-2 tile s^-1",
+      "effective_normalizer_unit": "kg m^-2 tile s^-1"
+    },
+    {
+      "index": 16,
+      "occupancy_id": "stratum-a-lower::forest",
+      "name": "inactive sun temperature anchor",
+      "raw_unit": "K",
+      "effective_normalizer_unit": "K"
+    },
+    {
+      "index": 17,
+      "occupancy_id": "stratum-a-lower::forest",
+      "name": "shade energy balance",
+      "raw_unit": "W m^-2 tile",
+      "effective_normalizer_unit": "W m^-2 tile"
+    },
+    {
+      "index": 18,
+      "occupancy_id": "stratum-a-lower::forest",
+      "name": "wet energy balance",
+      "raw_unit": "W m^-2 tile",
+      "effective_normalizer_unit": "W m^-2 tile"
+    },
+    {
+      "index": 19,
+      "occupancy_id": "stratum-a-lower::forest",
+      "name": "stem energy balance",
+      "raw_unit": "W m^-2 tile",
+      "effective_normalizer_unit": "W m^-2 tile"
+    },
+    {
+      "index": 20,
+      "name": "shared canopy heat balance",
+      "raw_unit": "W m^-2 tile",
+      "effective_normalizer_unit": "W m^-2 tile"
+    },
+    {
+      "index": 21,
+      "name": "shared canopy vapor balance",
+      "raw_unit": "kg m^-2 tile s^-1",
+      "effective_normalizer_unit": "kg m^-2 tile s^-1"
+    },
+    {
+      "index": 22,
+      "name": "represented-snow ground temperature identity",
+      "raw_unit": "K",
+      "effective_normalizer_unit": "K"
+    },
+    {
+      "index": 23,
+      "name": "represented-snow soil temperature identity",
+      "layer_id": "thermal-1",
+      "raw_unit": "K",
+      "effective_normalizer_unit": "K"
+    },
+    {
+      "index": 24,
+      "name": "represented-snow soil temperature identity",
+      "layer_id": "thermal-2",
+      "raw_unit": "K",
+      "effective_normalizer_unit": "K"
+    },
+    {
+      "index": 25,
+      "name": "represented-snow soil temperature identity",
+      "layer_id": "soil-1",
+      "raw_unit": "K",
+      "effective_normalizer_unit": "K"
+    },
+    {
+      "index": 26,
+      "name": "represented-snow soil temperature identity",
+      "layer_id": "soil-2",
+      "raw_unit": "K",
+      "effective_normalizer_unit": "K"
+    },
+    {
+      "index": 27,
+      "name": "represented-snow soil temperature identity",
+      "layer_id": "soil-dry",
+      "raw_unit": "K",
+      "effective_normalizer_unit": "K"
+    },
+    {
+      "index": 28,
+      "name": "represented-snow soil temperature identity",
+      "layer_id": "soil-frozen",
+      "raw_unit": "K",
+      "effective_normalizer_unit": "K"
+    }
+  ],
+  "normalizer_values": "Use each current accepted_base.value.applied_normalizers, never a frozen scalar copied from a different iteration; dimensionless normalized residual = raw / applied normalizer.",
+  "scope": "These branch labels are established for all seven retained original bases. Recheck each new arm frame against actual gas/area/wet branch evidence; do not silently reuse labels if a branch changes.",
+  "public_diagnostics": "Unchanged; inherited public field labels are not row-dimension authority. Ground/soil rows are temperature anchors, not energy closure. Potential requests are not finalized fluxes."
+}

@@ -1,0 +1,38 @@
+{
+  "evidence_class": "Ran: isolated Python tooling children; no Rust/evaluator/scientific arm",
+  "recorder_sha256": "512235ed92811adf76e7c98e7d28a8e44db9af58993a90bec5f0027e7b9f5290",
+  "driver_sha256": "936092896b2154276b77046fd605d0a4715ecb7dbb37d8da08b678ba694ef872",
+  "raw_directory": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg",
+  "overrides": "Synthetic source hash, review fixture, run paths, deadline and 0.2-second time cap; original input only hashed, never evaluated.",
+  "checks": [
+    {
+      "case": "success",
+      "pass": true,
+      "expected_process_exit": 0,
+      "receipt": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/success/baseline/receipt.json"
+    },
+    {
+      "case": "duplicate claim refused and recorded",
+      "pass": true
+    },
+    {
+      "case": "failure",
+      "pass": true,
+      "expected_process_exit": 3,
+      "receipt": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/failure/baseline/receipt.json"
+    },
+    {
+      "case": "timeout",
+      "pass": true,
+      "expected_process_exit": -9,
+      "receipt": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/timeout/baseline/receipt.json"
+    },
+    {
+      "case": "expired",
+      "pass": true,
+      "expected_process_exit": null,
+      "receipt": null
+    }
+  ],
+  "nonzero_child_outcomes": 2
+}
