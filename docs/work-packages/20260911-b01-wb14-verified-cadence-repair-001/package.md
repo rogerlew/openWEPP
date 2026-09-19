@@ -5622,3 +5622,306 @@ Primary commit `403cc822a656dac309ec75f3c6061d0ad1f00204` was pushed to existing
 At **2026-09-18T23:57:44.399664+00:00**, [final ledger](artifacts/lse-first-trial-20260918/final-ledger.json) charges **125299.329664 /128300.205 seconds**, leaving **3000.875336 seconds**. This includes 2354.399664s concurrent wall time once and a charged60s final publication/return reserve; no historical-reserve or wait deductions. Failure floor **at least352**, retaining mixed-outcome uncertainty. Scientific first-refusal interpretation is established, QA evidence/disposition checks pass, and terminal independent correctness closure remains **HOLD** because actual agent-tool limits prevented required reviewer resumption/replacement. Reader remains **NOT REACHED**; original E008 and broader qualifications remain unresolved.
 
 The custody/accounting supplement is committed/pushed and exact-byte verified next. Its external receipt is `/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/final-remote-verification.json`, avoiding circular self-verification. Any observed reserve overrun is added before return. No automatic follow-on model execution.
+
+## First-trial diagnosis closure and numerical direction — 2026-09-19
+
+Owner execution of `/tmp/openwepp_b01_wb14_lse_diagnosis_closure_authorization.md`
+adopts diagnostic closure and proposal preparation at
+**B01-WB14-CURRENT-CONTEXT-CAPTURE / A-001**. Intent before edits: obtain the
+missing independent terminal correctness assessment on the unchanged final
+private observation source and recorded execution, reuse unchanged QA and
+scientific reconstruction, clarify evidence if needed, and prepare one bounded
+contract-first numerical experiment proposal. Package/evidence documentation
+and small offline evidence-tool corrections only; no Rust/runtime-input or
+canonical-authority mutation, build/test, evaluator call, solver/model/reader
+execution, acquisition, or physical evolution. Existing recovery is reused;
+no corpus copy or binary build. The evidence revision is
+`31349413e69bbcbfee98b64f216b41a3b45d4128`; executable source remains the detached
+`/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-source-20260918`,
+SHA-256 `8cd4866f66b06d6cf96403753cdb3d41ba75f6ca87652341ebe082a86a1b4bc5`.
+
+The published final ledger and external verification were read once. The latter
+completed within its charged reserve; no greater charge was found. Carry
+**125299.330 / 128300.205 seconds**, at most **3000.875 seconds** remaining,
+failure floor **at least352**, with mixed-outcome uncertainty unchanged.
+Conservative resumption anchor **2026-09-19T03:40:00Z** includes initial reading;
+hard deadline **2026-09-19T04:30:00.875Z**. Charge concurrent wall time once,
+including coordination, review, preservation, publication and return, with no
+wait/reserve deductions or budget renewal. Stops: owner stop, hard ceiling,
+uncontained integrity issue, indispensable missing evidence after bounded
+recovery, completed bounded disposition, or necessary excluded scientific/source
+change. Two failed corrections or60 charged minutes are internal reassessment,
+not allowance resets.
+
+Selected validation: primary source/patch/input/trace identity and noninterference
+inspection; permitted offline array arithmetic; attributable independent
+correctness review and unchanged QA reuse; document links, evidence JSON/hash,
+scoped whitespace and exact terminal diff. No production/authority change is
+planned, so no new Rust or campaign gates are selected or authorized. A proposal
+is not active authority or an accepted numerical correction. Scoped current-branch
+commit/push and exact remote-byte verification are authorized. Three preexisting
+untracked historical Clippy logs remain untouched. The prior correctness agent
+is absent from this session; one independent replacement is assigned, with no
+implementation worker or runner and no repeated capacity loop.
+
+### Terminal independent disposition
+
+**Static:** final private source/patch, contracts and recorded execution reviewed.
+**Ran:** read-only hash/byte/symlink/trace checks and offline retained-array
+arithmetic; **zero new builds, tests, evaluator calls, solver/model/reader runs,
+acquisitions or physical evolution**. The original three diagnostic executions
+and eight separately counted evaluator calls remain historical consumption.
+
+Independent replacement `/root/lse_terminal_correctness`, assigned through the
+Sol/high correctness role, inspected the actual frozen source and decisive
+primary evidence and returned **APPROVE for bounded diagnostic closure only**.
+It did not author the observation/evidence or design the proposed next method.
+[Original terminal review](artifacts/lse-diagnosis-closure-20260919/terminal-correctness-review.md)
+is retained verbatim; its source references are to the detached cut, not main.
+The reviewer reconstructed748 source entries at
+`8cd4866f66b06d6cf96403753cdb3d41ba75f6ca87652341ebe082a86a1b4bc5`,
+747 baseline entries at85b8314e, the complete three-file214a3236 patch, five
+support links, nineteen external-input original/copy pairs and frozen executable
+`551738aa5123cffa9b24f3e7e7b193cfaa95f2c16a803df5f2eb278ed9c12ba0`.
+It verified private opt-in noninterference, effective R0,95 unchanged ordinary
+records, original typed refusal and eight noninstalled diagnostic evaluator
+calls. No blocking finding or source/evidence correction was needed. The earlier
+scientific/linear/hydraulic assessment in
+[correctness-primary-evidence.txt](artifacts/lse-first-trial-20260918/correctness-primary-evidence.txt)
+remains reused within its original limits.
+
+Distinct `/root/reader_qa`'s
+[terminal PASS](artifacts/lse-first-trial-20260918/qa-review.txt) and
+[disposition check](artifacts/lse-first-trial-20260918/qa-disposition-check.txt)
+are reused unchanged for final-source/evidence QA. The replacement found no
+material evidence change affecting that verdict; no QA wave or new physical run
+was needed. Its historical observation that correctness was unavailable remains
+true for the earlier disposition and is superseded only by this new independent
+review. This closes the **first-trial diagnosis acceptance gap**, not A-001.
+
+[Current offline checks](artifacts/lse-diagnosis-closure-20260919/evidence-checks.json)
+reconfirm trace/patch hashes,95-record equality, effective R0 and the bound
+calculation without invoking the evaluator. Supported conclusions remain separate:
+
+| Question | Supported disposition |
+| --- | --- |
+| Proximate refusal | At iteration6, coordinate7 is273.1500099353981K with direction−11.264912352652773K and lower bound273.15K. Maximum feasible factor8.819774002945046e−7 is below2^-20; all21 permitted factors fail domain admission before residual evaluation. This refusal follows current authority. |
+| Local descent | Recorded b21/b22/b23 probes decrease the norm; b21 frozen/natural evaluations agree. The b21 norm is still10502492293.095144. No probe was installed. |
+| Convergence/global correctness | Unproved. Accurate solves of the captured scaled matrices are not complete nonlinear-method qualification. Exponents[1,2,5,5,12,20] motivate boundary-approach investigation, not inevitable stagnation or infeasibility. |
+| Presentation | Branch anchors are mislabeled as flux/energy rows; the dominant ground row is10.502497301076119K divided by1e−9K. Terminal steps belong to the prior accepted iteration5 update because the final search evaluates no trial. Neither issue changes the refusal. |
+
+The first two reconstructed command receipts remain reconstructed; the first
+no-probe run still lacks a separately retained complete source cut. The incomplete
+historical `from-baseline.patch` remains invalid. Complete contemporary final
+bindings and existing observer-baseline-relative recovery are retained without
+another source-corpus copy or binary build. Reported rollback hashes are not
+independent global rollback/conservation evidence. Inherited strict Clippy stays
+FAIL with27 matched diagnostics. No source/policy/input/authority amendment is
+made in this continuation.
+
+### Proposed next experiment: one fixed strict-decrease grid extension
+
+**PROPOSAL ONLY — not executed, adopted, independently accepted, or active
+canonical authority.** Astra owns this direction; the terminal correctness
+replacement did not design or accept it. The question is whether a single fixed
+change to step selection solves the **complete original first Potential solve**
+under unchanged scientific acceptance, or instead reveals boundary approach,
+backtracking exhaustion, another typed obstruction, or a cost limit. Passing
+iteration6 is only a local observation.
+
+| Candidate policy | Rationale and limitation |
+| --- | --- |
+| Extend only the strict-decrease grid once to `2^-b`, `b=0..40` | Retains all earlier choices until the old grid exhausts. Tests the sufficiency of search range without new bound arithmetic, merit function, or derivative policy. Forty is a prospective engineering limit:41 trials are less than twice the existing21, giving20 additional binary scales. It is not inferred as a convergent cap from b21, a physical tolerance, or a recommended production constant. |
+| Domain-aware initial factor/range, followed by bounded halving | Derive the ray's admissible factor from all existing coordinate bounds, with explicit binary64 endpoint handling and unchanged full domain/evaluator guards. This can avoid known-invalid large trials, but introduces new ratio/rounding/zero-direction rules and may change earlier accepted steps; a fraction-to-boundary rule can itself sustain boundary approach. It does not establish coupled constitutive admissibility or a root. |
+
+Recommend **only the first policy for this experiment**, frozen at b0..40 for
+the entire solve. Keep the existing full no-update witness and its first-valid
+halved witness at **b1..20**, with unchanged residual and governed-step tests.
+Extending that witness too would be a second acceptance relaxation and is not
+proposed. Retain50 completed Newton updates; after update50 evaluate the final
+base and apply the existing acceptance/iteration-limit order. No cap escalation,
+input tuning, alternate direction, clamping, new merit function, relaxed bound,
+threshold or pivot, Jacobian experiment, support change, or fallback follows any
+outcome. Rounded duplicate trials cannot pass strict decrease merely because
+their steps are tiny.
+
+**Prospective authority and exact scope.** The owning amendment is
+[SC-LANDSURFACEENERGY-001/solve-boundary.md](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md#solve),
+with explicit isolated-experiment applicability and deterministic failure/count
+semantics under INV108. Its
+[numerical-methods](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md)
+and [accepted-solve admission](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md)
+bind unchanged INV112/138/139, inactive-coordinate rules, FullSupply limits and
+all acceptance obligations. Name the experiment separately from physical
+`snow_accuracy_policy=R0`: source/build/experiment identity must state
+`strict_decrease_grid=0..40; no_update_grid=0..20; updates=50`. Original
+configuration/support receipts remain original provenance, not a false claim
+that the treatment executes their unchanged b0..20 policy. The amendment must
+explicitly permit this private solve-input replay with a separate experimental
+numerical identity; any future receipt-bearing consumer needs the corresponding
+[terminal-support policy binding](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md#support)
+before use. No current receipt is forged/resealed and no production policy or
+public configuration is relaxed by this proposal.
+
+Use one disposable diagnostic executable/entry around the existing covered
+solver, replacing its strict-decrease bound in that experimental build only.
+Do not change the shared `MAX_BACKTRACKING_HALVINGS`. Source at the frozen
+8cd4866f cut and main31349413 was inspected: the shared constant controls
+`numerics::backtracked_trial` and its failure count; covered strict-decrease
+search and failure count; `covered_first_domain_valid_halved_no_update_witness`;
+the exact-bound test; and, in the detached observer, post-refusal probe exponents
+and natural-probe selection. The generic numerical engine serves
+`solve_open_surface`, `solve_v3_phase_free_covered_column`, and detached
+`solve_v3_phase_free_open_surface` (the last is absent from main). Covered
+consumers include HistoricalV8, V10NonpositiveAssimilation, V11SnowCovered,
+Potential, FixedFinal and FullSupply final entry, with their existing
+positive-/nonpositive-assimilation branches. `config.rs` freezes exponents0..20;
+`support.rs` embeds that grid in numerical-policy identity. Generic-solver
+unit tests, covered oracle/natural-limit tests and exact-bound tests also bind
+old behavior. A shared-constant edit would broaden behavior across this inventory
+and require a different scope and critical validation; it is excluded.
+The experimental executable must reject entry outside the named captured case
+and terminate at its first solve result, with no production selector or retry
+path. Preserve canonical failure kind and count semantics using the treatment's
+actual examined strict-search exponent; distinguish count from trial attempts.
+
+**Case and controls.** Replay the complete `solver_input` and original29-element
+`initial_trial` from
+[final-first-failure-trace.json](artifacts/lse-first-trial-20260918/final-first-failure-trace.json),
+SHA-256 `527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd`.
+This is the first call from
+`v9_real_consumer_shadow::tests::native_recorder_file_owned_reader_restores_local_fixture`:
+R0, V11SnowCovered, represented snow, uncapped Potential, transaction41,
+`ofe-1/forest`, admitted `[0,60000000000)`ns, original warm start, two occupancies
+and six soil nodes. Authenticate all input binary64 bits and owner/configuration
+identities against the capture before evaluation; no independently invented
+fixture, warm start, forcing or soil state. The full original fixture/source
+and nineteen external inputs stay bound by the prior freeze. No physical
+preparation or day staging is needed to replay the captured first solve.
+
+One matched baseline replay with b0..20 verifies the new replay entry against
+the recorded original six-update/iteration6 refusal and ordinary trajectory;
+one candidate replay uses b0..40. Baseline mismatch invalidates the comparison
+and blocks candidate launch. Both use the same canonical evaluator, build
+features, binary64 arithmetic, derivative/scaling rules and opt-in trace posture.
+Disable the old four post-refusal probes in both arms: their diagnostic question
+already has evidence. The stored iteration6 state may support offline local
+factor checks; no additional local solver/evaluator run is proposed. One control
+and one treatment are the entire result-bearing allowance proposed here, with
+zero retries, acquisitions, reader runs, fixed-final solves or later calls.
+This is a first-solve numerical endpoint, not a successful original test run.
+
+**Fixed cost envelope, to be adopted before implementation/measurement.** Per
+arm: at most50 updates/51 base evaluations/50 Jacobian assemblies,29 coordinates
+per assembly and at most2900 signed Jacobian probe starts. Per iteration the
+candidate permits41 strict-search domain trials; the baseline permits21.
+The unchanged no-update path permits one full witness plus at most20 halved
+domain trials, evaluating at most the full trial and first valid halved trial.
+Thus the candidate permits at most2050 strict-search evaluator calls,
+100 witness evaluator calls and51 base calls: **2201 ordinary calls**, separately
+from at most2900 Jacobian evaluator calls (**5101 total complete-residual calls**
+as a conservative ceiling; identity columns reduce actual calls). Baseline
+ceilings are1201 ordinary and4101 total. Count attempted/completed/error calls,
+identity-anchor probes and LU/Jacobian work separately; do not add nested work
+counters as if independent. Cap actual domain-predicate invocations at20000 per
+arm, including repeated validation/stencil checks, separately from evaluator
+counts. Preserve existing component-solver limits. Extra diagnostic probes=0.
+Each executable process has120s wall limit,16GiB address-space limit,64MiB test
+stack and1GiB output limit; two arms together have240s result-bearing wall cap.
+These are engineering stops, not changed scientific acceptance. Counter/time
+exhaustion returns a private diagnostic budget disposition, no candidate and
+no canonical success; record the reached canonical state/error without
+pretending an uncompleted solve converged. Compilation, validation, independent
+review and publication require an explicitly adopted allowance within the
+then-remaining owner ledger; these proposed per-run ceilings add no time to
+this continuation and do not reserve or renew any historical allowance.
+
+**Endpoints and validation.** Success requires the treatment's complete
+original-start solve to return an accepted candidate with the complete residual
+vector finite and every normalized absolute value at most1, unchanged governed hydraulic/beta/temperature/
+humidity steps, exact no-update provenance when used, all current branch/domain,
+identity and applicable accepted-candidate checks, and the cost envelope.
+Independently reconstruct the decisive residuals/normalizers and component
+balances from retained primitives; distinguish Potential rates/requests from
+finalized fluxes and any unexecuted global owner closure. Reaching b21 or a lower
+norm is not success. A valid run ending in backtracking/iteration/pivot/domain
+refusal is a negative result for this fixed policy on this case. Boundary
+approach with unacceptable residuals remains negative/inconclusive about root
+existence; budget/recording/integrity failure is incomplete or invalid evidence.
+Report final norm, branch-aware dominant rows, distance to bounds, accepted
+exponents, actual steps and first typed obstruction. No post-outcome retuning.
+
+Before any candidate measurement, prospective contract amendment and independent
+correctness/QA review must precede contract-derived expected-red tests and
+implementation. Required tests cover unchanged b0..20 choices, a first lawful
+strict decrease beyond20, no decrease through40, exact-bound outward direction,
+nonfinite/failed evaluation, duplicate-rounded trial, residual failure despite
+tiny steps, unchanged first-valid b1..20 witness/no trial installation, and
+wrong-case/non-production confinement. Source/consumer scans must prove no
+shared-constant, other-regime, owner or public-wire change. Apply all touched
+A0/A1/A3 and selected quality requirements directly under the testing strategy;
+unknown/shared production impact triggers critical regression or scope
+reassessment, never silent narrowing. This proposal supplies no executed gates
+or independent approval. The current terminal reviewer may later review a
+separately authored implementation only if they remain independent of its
+method design; Astra as this proposal's designer cannot accept it independently.
+
+**Separate presentation write set.** A later behavior-preserving diagnostic
+change may report actual branch-specific residual identity, raw value, units,
+applied normalizer and normalized value, plus base iteration and exact step
+origin (accepted update, prospective witness, evaluable rejected trial or absent).
+Target `covered_failure_residuals` and private reporting first. Keep existing
+public/persisted diagnostics intact until schema/consumer compatibility is
+explicitly designed and tested: strict decoders cannot be assumed to tolerate
+added fields. A private versioned rendering can show corrected labels beside
+unchanged raw legacy diagnostics; it must not relabel raw historical bytes.
+Compatibility tests must cover represented-snow ground/soil anchors, inactive
+potential/beta/temperature anchors, active energy/water rows, an all-domain-
+invalid final search and the unchanged serialized legacy failure. Any eventual
+public semantic/schema change needs its own canonical wording and required
+critical checks. This presentation work does not change numerical acceptance.
+
+At disposition preserve experimental source/patch and evidence, then remove or
+leave unreachable the disposable experimental entry under the authorized cleanup
+boundary; never install a second production solver. Even first-solve success
+releases no later day, reader, original E008 successor, RQ1/A-001 acceptance,
+scientific/global-conservation/restart qualification, production installation
+or cadence. Paused Jacobian/replay experiments remain paused.
+
+### Current closure boundaries and terminal reconciliation
+
+| Boundary | Status after this continuation |
+| --- | --- |
+| First-trial diagnosis | COMPLETE within the negative-diagnostic scope; independent terminal correctness APPROVE and unchanged QA PASS. |
+| Numerical experiment/authority | PROPOSED only; no implementation, canonical promotion, acceptance or new run. |
+| File-owned reader | NOT REACHED; no completed day, observations file or missing-litter negative control. |
+| Original day4 E008 | UNRESOLVED; this synthetic day0 first solve is not its correction or reproduction. |
+| WB14-RQ1 | OPEN/HOLD; existing quality/compatibility and physical acceptance gaps remain. |
+| A-001 | INCOMPLETE/HOLD; diagnostic closure does not complete native physical promotion or input correspondence. |
+| Scientific/conservation qualification | UNQUALIFIED; no admissible root, finalized physical endpoint or independent global closure. |
+| Fresh-process restart | UNQUALIFIED; reader/restored physical continuation was not reached. |
+| Production/cadence | HOLD; no deployment, installed solver, successor execution or cadence release. |
+
+Exact terminal diff is confined to this package record and new raw authorization,
+review, offline-check and publication/accounting evidence in
+`artifacts/lse-diagnosis-closure-20260919/`. Main and detached Rust, runtime inputs,
+canonical contracts, manifests, features, dependencies, tests and old evidence
+are unchanged. Impact classification: evidence clarification plus unadopted
+method proposal, with required independent diagnostic review completed; no
+executable or active authority change. No new Rust/campaign/A0/A1/A3 execution is
+selected or authorized; their source-specific historical results and unqualified
+broader obligations are unchanged. No external-authority suite/cohort or
+required-case binding is touched, so anti-evasion execution is not triggered.
+Document links, JSON/hashes, scoped whitespace and this exact diff are checked
+for publication. One unsuccessful path lookup referenced nonexistent
+`solver_covered_inputs.rs`; symbol discovery resolved it without a correction
+cycle. The same reviewer reported two resolved inspection/tooling non-successes
+(a jq precedence/count query and an absolute-path search against relative
+dependency paths); [its accounting](artifacts/lse-diagnosis-closure-20260919/reviewer-accounting.txt)
+is retained verbatim. The all-staged whitespace check also flagged the original reviewer response's
+two-space Markdown line break; those raw response bytes are intentionally
+preserved, while maintained-package whitespace passes. Carry failure floor
+**at least356 mixed outcomes**,
+retaining earlier uncertainty. No source correction cycle occurred. No scientific/model process was launched. Authorized scoped
+current-main commit/push and exact remote-byte verification follow; source and
+binary remain in their established external custody.

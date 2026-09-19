@@ -1,0 +1,6 @@
+No top-level shell command exited nonzero. For the conservative mixed-outcome failure floor, count **+2 inspection/tooling non-successes**:
+
+1. A `jq` precedence mistake reported external-input count as `0`; a corrected query verified `19`.
+2. An `rg` search expected absolute `/workdir/...` paths in the dependency file, but the file used relative paths, so it returned no matches; direct inspection and the retained manifest resolved it.
+
+Neither affected evidence, source, or verdict.

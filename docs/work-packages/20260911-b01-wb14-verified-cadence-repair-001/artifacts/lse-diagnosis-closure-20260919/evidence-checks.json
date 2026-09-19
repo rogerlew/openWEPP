@@ -1,0 +1,56 @@
+{
+  "evidence_class": "Ran: offline retained-array arithmetic and byte checks only; zero evaluator/model calls",
+  "utc": "2026-09-19T03:44:21.831690+00:00",
+  "checked_hashes": {
+    "final-first-failure-trace.json": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+    "final-from-baseline-relative.patch": "214a32362cd53708330843120a3bd59c1ee025928738ce201dae74ff82058fde"
+  },
+  "ordinary_records": 95,
+  "ordinary_records_identical": true,
+  "effective_policy": "R0",
+  "iteration6_domain_invalid_factors": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "coordinate7_temperature_k": 273.1500099353981,
+  "coordinate7_direction_k": -11.264912352652773,
+  "maximum_feasible_factor_from_binary64_operands": "8.8197740029450463111949661956501125701063806475625909485271447035290873818175596E-7",
+  "minimum_current_factor": 9.5367431640625e-07,
+  "base_norm": 10502497301.076118,
+  "recorded_probe_norms": {
+    "b21": 10502492293.095144,
+    "b22": 10502494797.085602,
+    "b23": 10502496049.080889
+  },
+  "recorded_b21_frozen_natural_equal": true,
+  "interpretation": "Finite-grid/domain obstruction and local descent; no root/convergence/global-Jacobian qualification. No new trajectory computed.",
+  "qa_reused_files": {
+    "qa-review.txt": "b9d7c43ada03bfe31c588c48cd3c81fe3fc3ef5199b40f9f23b7d75bb5948824",
+    "qa-disposition-check.txt": "61c1fc048c11c5f77ca7c3afeae134c20530f8a22eea04835408c65a3116db8a",
+    "correctness-primary-evidence.txt": "36a3b556255b7637b4f4052db205972c526aed7dd892c8b2fe989fb3358de950"
+  },
+  "new_builds_tests_evaluator_calls_model_runs": 0,
+  "root_navigation_failure": "One rg referenced nonexistent solver_covered_inputs.rs; corrected by source-symbol discovery, no source mutation or scientific run.",
+  "failure_floor_at_least": 356,
+  "reviewer_tooling_non_successes": 2,
+  "raw_evidence_whitespace_check": "git diff --cached --check exited2 on preserved original reviewer Markdown hard line break; not a source/evidence defect; maintained record passes."
+}

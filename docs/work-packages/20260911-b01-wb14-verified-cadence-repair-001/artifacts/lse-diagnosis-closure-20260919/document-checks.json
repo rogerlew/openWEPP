@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: documentation/evidence checks only",
+  "utc": "2026-09-19T03:50:51.052936+00:00",
+  "new_section_links_checked": 11,
+  "links_exist": true,
+  "new_json_valid": true,
+  "scoped_package_whitespace": "PASS",
+  "tracked_diff_paths": [
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md"
+  ],
+  "old_first_trial_evidence_diff_empty": true,
+  "production_runtime_authority_diff_empty": true,
+  "checks_not_run": "Rust builds/tests, evaluator/model/reader runs: prohibited and not performed",
+  "new_artifact_hashes": {
+    "adopted-authorization.txt": "e0d4e944be0461781fed046efc85315f12fa91464cf431d69fd7b118f78b6c0a",
+    "evidence-checks.json": "1dbb59742979b4af6f31f3771cc7e4825b10813750cb7b95aa15f21a18c539d1",
+    "reviewer-accounting.txt": "2dfca9d68b4d7d54c0cd864a3aed85b9395918158fad65d1bb4fb1eb3b982950",
+    "terminal-correctness-review.md": "64bb639d516f7013f5f90b74c3499decdea25b624af41cd7845ab5dca7963827"
+  },
+  "all_staged_whitespace": "FAIL: preserved original reviewer hard line break; raw artifact intentionally unchanged"
+}

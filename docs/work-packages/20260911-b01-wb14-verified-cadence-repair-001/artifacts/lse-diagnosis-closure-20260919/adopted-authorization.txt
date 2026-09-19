@@ -1,0 +1,69 @@
+# B01 WB14: close the first-trial diagnosis and prepare the numerical decision
+
+DRAFT FOR ROGER'S ADOPTION. This document does not authorize itself.
+
+## One active checkpoint, exact source, work, acceptance, runs and stops
+
+**Checkpoint:** `B01-WB14-CURRENT-CONTEXT-CAPTURE / A-001`, first-trial LSE diagnosis, maintained in `docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md`. Complete the missing terminal independent correctness assessment of the frozen diagnosis. Use the same bounded continuation to prepare the next contract-first numerical-experiment proposal. This is diagnostic closure and direction preparation, not numerical correction, reader completion or original E008 repair.
+
+**Evidence revision:** `31349413e69bbcbfee98b64f216b41a3b45d4128`, repository `rogerlew/openWEPP`; primary diagnostic publication `403cc822a656dac309ec75f3c6061d0ad1f00204`. Read the current first-trial section and `artifacts/lse-first-trial-20260918/`. The evidence commit is not the detached executable source.
+
+**Frozen source:** `/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-source-20260918`, SHA-256 `8cd4866f66b06d6cf96403753cdb3d41ba75f6ca87652341ebe082a86a1b4bc5`. Frozen executable: `/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-evidence-20260918/final-diagnostic.frozen`, SHA-256 `551738aa5123cffa9b24f3e7e7b193cfaa95f2c16a803df5f2eb278ed9c12ba0`. Final trace: `final-first-failure-trace.json`, SHA-256 `527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd`.
+
+**Recovery:** immutable observer baseline `85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963` plus `final-from-baseline-relative.patch`, SHA-256 `214a32362cd53708330843120a3bd59c1ee025928738ce201dae74ff82058fde`. This patch is observer-baseline-relative, not main-, T- or integrated-relative. `root-freeze.json`, `final-reconciliation.json` and `external-build-input-copies.json` bind 748 snapshot entries, five support links and 19 external build inputs. The source manifest alone is not the complete historical build identity. Preserve all components; reuse existing recovery without another corpus copy or binary build.
+
+**Authorized work:** read-only source/trace/contract inspection, independent offline numerical arithmetic, terminal review and evidence clarification, small offline evidence-tool corrections, and a compact numerical-method/diagnostic-presentation proposal in package.md. No Rust or runtime-input mutation, canonical authority amendment/promotion, new canonical evaluator call, solver execution or model run is released. Proposed contract text or an experiment protocol does not become active authority through inclusion in the package.
+
+**Acceptance:** an attributable terminal correctness disposition on final private observation source and recorded execution; reuse of the independent QA verdict within its unchanged scope; exact separation of proximate refusal, local descent, unproven convergence and diagnostic presentation; and one actionable, bounded next-experiment proposal with scientific predicates, authority changes, full-solve endpoint, cost limits and exclusions. Approval cannot be promised. Do not call the diagnostic accepted while its required correctness review remains unavailable.
+
+**Run allowance:** ZERO Rust builds/tests, canonical evaluator calls, numerical continuations, reader runs, acquisitions or physical evolution. Read-only calculations over retained arrays, source/hash comparisons and document/evidence checks are permitted. The previous three diagnostic executions and eight separately counted evaluator calls remain historical consumption, not a renewable allowance.
+
+**Budget:** add NO time. Carry conservative charge **125,299.330 seconds**, including historical overruns and publication/return reserves, under the unchanged **128,300.205-second** ceiling; at most **3,000.875 seconds** remain. Carry failure floor **at least 352**, preserving mixed-outcome uncertainty rather than treating it as a correction-cycle count. Read the published final ledger and its external verification record once for any greater verified charge; greater charge reduces this balance. On adoption, reanchor only the documented paused balance at actual resumption. No new wait deduction, reserve reclamation or ceiling increase. Charge concurrent reading, reasoning, arithmetic, coordination, review, preservation, publication and return once. Check the deadline before dispatch and after interruptions.
+
+**Stops/reassessment:** owner stop, hard cumulative ceiling, uncontained integrity issue, indispensable missing evidence after bounded recovery, completed bounded disposition, or a necessary source/scientific change outside this scope. Two failed corrections or 60 charged minutes remain internal Astra reassessment points, not automatic owner handoffs or resource resets. Supported in-scope document/tool corrections remain Astra's responsibility.
+
+## Finish the missing review without replaying the diagnosis
+
+Use an available trusted repository session. Resume `/root/reader_correctness` only if genuinely available; otherwise obtain one attributable independent correctness replacement, independent of this adviser and the source/evidence authors. The closure record already documents four follow-up attempts, one message and one replacement attempt failing at the thread limit. Do not repeat that capacity loop or claim a fresh session necessarily resolves it. No implementation worker or additional runner is needed initially.
+
+`correctness-primary-evidence.txt` already supplies scientific/operand assessment, independent linear reconstruction, hydraulic decomposition and explicit limits. Reuse those unchanged portions. The missing assessment concerns final private source, source/input/build identity, recorded correction execution and inference boundaries. Inspect the actual final delta and decisive primary records, not only the package summary. Replacement alone is not a reason for another physical run.
+
+Verify the private observation boundary and noninterference; explicit effective R0 policy; complete patch including the new module; separately bound external inputs; preservation of the 95 ordinary trace records and original typed refusal; and eight diagnostic-only evaluator calls with no installed points. Keep the first two reconstructed command receipts and incomplete historical patch as limitations. Do not relabel them as contemporaneous evidence.
+
+Retain `/root/reader_qa`'s terminal PASS for its unchanged scope. Reopen QA only if corrected evidence materially affects its conclusion, not as a fresh review wave. Neither adviser nor orchestrator supplies an independent approval. A reviewer who materially designs the next method cannot later independently accept that design or its implementation.
+
+## Preserve the supported conclusion and correct its presentation
+
+The actual call is R0, V11SnowCovered, represented snow, uncapped Potential, transaction 41, ofe-1/forest, with original admitted 60-second support and original warm start. Do not infer policy14 from the package name.
+
+At iteration 6, coordinate 7 is the active shaded-leaf temperature: 273.1500099353981 K, proposed direction -11.264912352652773 K, lower bound 273.15 K. The maximum feasible factor is approximately 8.819774e-7, below 2^-20. All 21 permitted factors fail domain checks before final residual evaluation. Read-only b21/b22/b23 probes decrease the norm, and b21 frozen/natural-branch evaluations agree. This identifies this decision's finite-factor/domain obstruction, not an admissible root, eventual convergence or globally correct Jacobian.
+
+The linear checks assess the captured scaled system, not the complete nonlinear method. The b21 decrease leaves a norm near 1.05e10. The accepted exponent sequence [1,2,5,5,12,20] motivates investigation of continued boundary approach, but proves neither inevitable stagnation nor infeasibility. Current code follows existing b0..20 authority. Do not label its contract-conforming refusal an implementation bug or choose a new cap solely because b21 passes one decision.
+
+Keep the presentation defects separate. Branch-specific anchors are mislabeled as flux/energy rows, and terminal step norms refer to the prior accepted iteration-5 update because the final search has no evaluable trial. The dominant represented-snow ground row is a 10.502497301076119 K temperature anchor divided by 1e-9 K, not a ground-energy imbalance. Proposed diagnostics must identify actual branch, dimensions, applied normalizer and base/step provenance while accounting for public-wire compatibility. Do not silently change diagnostic schemas or numerical acceptance.
+
+## Prepare one contract-first next experiment, not successive cap increases
+
+After addressing the missing terminal review, use the remaining balance for a decision-ready proposal. Its question is whether one prospectively fixed step-selection change can solve this unchanged first-trial problem within preserved scientific acceptance and bounded computational cost, or instead exposes boundary stalling or another obstruction. Getting past iteration 6 alone is not success.
+
+Compare the rationale for a bounded extension of the existing halving grid with a domain-aware initial factor or admissible factor range. This is a design comparison, not permission to implement both, change the merit function, clamp coordinates, relax domain bounds or introduce fallback solvers. Recommend one experiment and identify its owning canonical amendment. A shared `MAX_BACKTRACKING_HALVINGS` change must inventory every actual consumer, including no-update witnesses and other regimes; narrow declared scope must not conceal a global behavior change.
+
+Name the original full warm-start/input case, justified controls, fixed search/update/evaluator limits, precise success/failure outcomes and disposable diagnostic result boundary. Preserve current equations, scales, derivative policy, admissibility, strict decrease, final residual plus governed-step criteria and typed failure unless a separately justified prospective proposal explicitly identifies a needed change. Do not smuggle a second relaxation into the initial experiment. Count domain checks, ordinary evaluator calls, Jacobian work and extra diagnostic probes separately.
+
+The future experiment must evaluate the complete first solve from its original starting problem, not substitute one accepted b21 probe for a repaired trajectory. A stored iteration-6 state may supply a local decision check but cannot replace that endpoint. Continued boundary approach with unacceptable residuals remains negative/inconclusive evidence. No repeated cap escalation or input tuning after observing outcomes. First-solve success would still not release later days, the reader, original E008 successor, production installation or cadence.
+
+The proposal may include branch-aware residual/step-provenance diagnostics as a separate behavior-preserving write set with compatibility tests. Implementation and canonical promotion remain outside this continuation. No new general solver framework, acceptance planner or archive/recorder project.
+
+## Governance, publication and return
+
+Apply current root/nearest/package/Pro/bounded/testing guidance and numerical-solver architecture. Read the LSE shared interface, solve-boundary, numerical-methods and admission dependencies before judging a new algorithm. Existing contract-first sequencing governs future numerical changes. Other solvers or literature supply background, not openWEPP authority. Preserve the single-canonical-solver rule and paused Jacobian experiments.
+
+Keep package.md the sole maintained narrative and link the frozen evidence. Carry scoped current-branch evidence/proposal commit, push and exact remote-byte verification permission. No branch switch, deletion of unique evidence, production source adoption, acquisition, original-input run, authority promotion or cadence release.
+
+Return terminal correctness verdict and exact reviewed source; QA reuse or affected findings; final diagnostic limitations; one numerical experiment/prospective authority proposal, explicitly not executed/adopted; separate reader/E008/RQ1/A-001/scientific/restart/cadence gaps; actual final ledger. Missing reviewer capacity cannot be converted into approval or a reset.
+
+## Adviser evidence boundary
+
+Inspected at the pinned revision: first-trial package section, primary scientific correctness report, terminal QA report, closure status, final source/trace reconciliation, contemporaneous final command receipt, supplied diagnosis authorization and governing solve-boundary text. Root/package/bounded guidance was reused after matching current blob identities. The complete detached source, three-file patch, full numerical trace arrays, binaries and execution-host state were not independently inspected or rehashed here. These published artifacts remain available to the local reviewer; this adviser's access does not establish executor evidence loss. Only arithmetic on reported values and this handoff's creation/checks ran here. This is adviser direction, not either required independent review.
+
+Evidence revision: https://github.com/rogerlew/openWEPP/tree/31349413e69bbcbfee98b64f216b41a3b45d4128/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/lse-first-trial-20260918
