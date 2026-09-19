@@ -1,0 +1,158 @@
+{
+  "utc": "2026-09-19T07:39:26.486712+00:00",
+  "commit": "44a8eb88be0e624bf624a7eef6156242e79d0c89",
+  "complete_diff_check_exit": 2,
+  "stdout": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/authority-draft.patch:6: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/authority-draft.patch:25: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/authority-draft.patch:26: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:693: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:702: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:708: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:713: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:722: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:922: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:1080: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:2066: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:2081: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:2105: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:2197: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:2212: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch:2388: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:693: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:702: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:708: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:713: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:722: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:922: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:1080: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:2066: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:2081: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:2105: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:2197: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:2212: trailing whitespace.\n+ \ndocs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch:2396: trailing whitespace.\n+ \n",
+  "stderr": "",
+  "adjudication": "All findings are exactly one ASCII space required as a unified-diff blank context marker. Preserve patch bytes and reviewed hashes; do not trim recovery evidence.",
+  "findings": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/authority-draft.patch",
+      "line": 6,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/authority-draft.patch",
+      "line": 25,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/authority-draft.patch",
+      "line": 26,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 693,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 702,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 708,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 713,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 722,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 922,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 1080,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 2066,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 2081,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 2105,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 2197,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 2212,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-c.patch",
+      "line": 2388,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 693,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 702,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 708,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 713,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 722,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 922,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 1080,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 2066,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 2081,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 2105,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 2197,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 2212,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch",
+      "line": 2396,
+      "bytes": "20 hex: required unified-diff blank context marker"
+    }
+  ],
+  "non_patch_diff_check_exit": 0,
+  "failure_floor": 448,
+  "earlier_document_check_scope": "Earlier git diff --check was unstaged tracked content only; this record covers the committed complete diff"
+}

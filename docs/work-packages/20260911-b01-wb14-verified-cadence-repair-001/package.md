@@ -6579,3 +6579,16 @@ reviewed authority, package/evidence and recovery artifacts; unrelated untracked
 logs and all frozen predecessors remain preserved.
 
 [Final ledger](artifacts/grid40-20260919/final-ledger.json) at 2026-09-19T07:37:54.811524+00:00: actual cumulative **135314.276220s**, plus300s precharged publication/return, yields **135614.276220/140479.464696s**, remaining **4865.188476s**. Mixed failure floor **at least447**, uncertainty retained; no wait deductions, allowance reset or reclaimed prior reserve. Final remote-byte verification and any greater terminal charge are retained in the named external publication receipt.
+
+### Publication reconciliation
+
+Primary commit `44a8eb88be0e624bf624a7eef6156242e79d0c89` is pushed;
+[remote verification](artifacts/grid40-20260919/primary-remote-verification.json)
+compares all101 changed paths against exact commit-addressed HTTPS bytes, all equal.
+The complete committed whitespace check returned nonzero on29 required single-space
+unified-diff context markers in preserved recovery patches; all other paths pass.
+[Adjudication](artifacts/grid40-20260919/publication-whitespace-check.json) retains
+the failure and exact patch hashes without editing recovery evidence. Mixed failure
+floor is now **at least448**, with uncertainty retained.
+
+Updated ledger at 2026-09-19T07:43:10.518882+00:00: actual cumulative **135629.983578s**, charged **135809.983578/140479.464696s**, remaining **4669.481118s**, including 180.000000s publication/return precharge. No earlier charge is refunded. Final receipt publication and any greater terminal charge remain recorded in the named external receipt. Study remains INCOMPLETE/BLOCKED; both original arms and original-case evaluator calls remain zero.
