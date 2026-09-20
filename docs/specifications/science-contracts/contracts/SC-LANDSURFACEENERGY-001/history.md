@@ -16,6 +16,7 @@ Original revision history is retained below. It does not override current effect
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-09-20 | 35 | Codex | Current canonical entry: clarified the existing liquid-only canopy component domain, temperature/release roles, per-seam guard distinctions, and the cross-contract cold-canopy gap. No equation, historical model-definition byte, runtime selector, solver, phase law, or acceptance changed; the original rows below remain historical. |
 | 2026-09-08 | 34 | Codex | Authorized isolated inactive-leaf affine-column construction, coordinate-aware assembly and bounded independent resolution routes; v33 remains historical, production HOLD. |
 | 2026-09-08 | 33 | Codex | Authorized a package-bounded, non-production active dry-stem residual/Jacobian derivative representation, including derivative-through-normalization, complete cross-occupancy row coverage, smooth-branch admission, independent multistep FD/Taylor authority, explicit local/broad cost criteria, and unchanged primal/controller/custody semantics. |
 | 2026-09-04 | 31 | Codex | Corrected the contract-first component-temperature dependency-replay feasibility after full production revert: replaced impossible every-node poisons with a normative fallibility/crossability matrix, source-real first-error/rollback evidence, one shared canonical evaluator implementation, complete direct-edge/custody/audit obligations, and retained canonical physics, complete hydraulic/beta/shared-air probes, dense solver behavior, errors, outputs, and rollback. |

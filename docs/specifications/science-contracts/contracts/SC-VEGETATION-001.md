@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 31
+contract_version: 32
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-08-29
+last_reviewed: 2026-09-20
 supersedes: []
 superseded_by: []
 ---
@@ -1046,13 +1046,13 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
 | `INV-VEGETATION-015` | candidate-state atomicity/rollback test | test | `VEG-E-032/041` | future implementation package |
 | `INV-VEGETATION-020` | canopy-water operand reconstruction | test | `VEG-E-012/032` | future implementation package |
 | `INV-VEGETATION-021` | all-distinct operand poison vectors | test | `VEG-E-011/032` | operand-lineage artifact |
-| `INV-VEGETATION-022` | canopy-snow ownership/gap assertion | governance | `VEG-E-040` | canopy-snow disposition |
+| `INV-VEGETATION-022` | canopy-snow ownership/gap assertion | governance | `VEG-E-040` | canopy-snow disposition; [support seams and checks](#liquid-canopy-guard-check-references) |
 | `INV-VEGETATION-030` | transfer custody assertion | test | `VEG-E-032` | focused test + residue amendment |
 | `INV-VEGETATION-031` | independent donor/receiver reconstruction | test | `VEG-E-032` | future implementation package |
 | `INV-VEGETATION-040` | reduction-receipt assertion | test | `VEG-E-050` | future adapter package |
 | `INV-VEGETATION-041` | real-consumer and no-feedback gate | governance | blocked cutover | future cutover package |
 | `INV-VEGETATION-050` | digest-bound firewall review | governance | blocked promotion | compliance review |
-| `INV-VEGETATION-051` | gap-label assertion | governance | `NON_PROMOTABLE` | focused test + gap register |
+| `INV-VEGETATION-051` | gap-label assertion | governance | `NON_PROMOTABLE` | focused test + gap register; [support seams and checks](#liquid-canopy-guard-check-references) |
 | `INV-VEGETATION-052` | strict definition/schema/alias validator | runtime/test | `VEG-E-003/060`; implementation missing | exhaustive v5 schema + focused test |
 | `INV-VEGETATION-053` | local-byte identity validator | runtime/test | `VEG-E-003`; implementation missing | `GAP-VEGETATION-001/008` |
 | `INV-VEGETATION-054` | raw/resolved object separation and round-trip vector | runtime/test | `VEG-E-003`; implementation missing | `GAP-VEGETATION-001/008` |
@@ -1063,20 +1063,20 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
 | `INV-VEGETATION-059` | native-forest component ledger and prohibited-path guard | governance/runtime/test | `VEG-E-061`; implementation missing | `GAP-VEGETATION-004/023` |
 | `INV-VEGETATION-060` | independent component reconstruction and canopy-loss poison vector | test | `VEG-E-061`; implementation missing | `GAP-VEGETATION-004/023` |
 | `INV-VEGETATION-061` | fixture metadata/claim guard and layer-response vectors | test/governance | blocked promotion on overclaim | future implementation package |
-| `INV-VEGETATION-062` | model-version member/schema guard | runtime/test | `VEG-E-062` | coupled package oracle |
+| `INV-VEGETATION-062` | model-version member/schema guard | runtime/test | `VEG-E-062` | coupled package oracle; [support seams and checks](#liquid-canopy-guard-check-references) |
 | `INV-VEGETATION-063` | band/direction/stratum reconstruction | test | `VEG-E-032` | coupled package oracle |
 | `INV-VEGETATION-064` | coupled gas-exchange causal vectors | test | `VEG-E-063` | coupled package oracle |
-| `INV-VEGETATION-065` | finite-store closure vectors | test | `VEG-E-032` | coupled package oracle |
-| `INV-VEGETATION-066` | independent component poison vectors | test | `VEG-E-061` | coupled package oracle |
-| `INV-VEGETATION-067` | hydraulic/root-profile vectors | test | `VEG-E-063` | coupled package oracle |
+| `INV-VEGETATION-065` | finite-store closure vectors | test | `VEG-E-032` | coupled package oracle; [support seams and checks](#liquid-canopy-guard-check-references) |
+| `INV-VEGETATION-066` | independent component poison vectors | test | `VEG-E-061` | coupled package oracle; [support seams and checks](#liquid-canopy-guard-check-references) |
+| `INV-VEGETATION-067` | hydraulic/root-profile vectors | test | `VEG-E-063` | coupled package oracle; [support seams and checks](#liquid-canopy-guard-check-references) |
 | `INV-VEGETATION-068` | C/N ledger reconstruction | test | `VEG-E-032` | coupled package oracle |
 | `INV-VEGETATION-069` | leaf-C/SLA/GSI ownership vector | test | `VEG-E-065` | coupled package oracle |
 | `INV-VEGETATION-070` | BGC receipt/atomicity vectors | test | `VEG-E-032/065` | `SC-BIOGEOCHEM-001` |
 | `INV-VEGETATION-071` | exhaustive schema/state validation | governance/test | `VEG-E-003/065` | parameter manifest |
 | `INV-VEGETATION-072` | convergence and rollback vectors | test | `VEG-E-064` | numerical-solver artifact |
-| `INV-VEGETATION-073` | exact occupancy-lane schema/digest validator | runtime/test | `VEG-E-070/071/077` | V2 definition + schema vectors |
+| `INV-VEGETATION-073` | exact occupancy-lane schema/digest validator | runtime/test | `VEG-E-070/071/077` | V2 definition + schema vectors; [support seams and checks](#liquid-canopy-guard-check-references) |
 | `INV-VEGETATION-074` | local/stand area-basis and nonlinear-preaggregation poisons | runtime/test | `VEG-E-072/074` | V2 independent oracle |
-| `INV-VEGETATION-075` | same-tile top-to-bottom routing validator | runtime/test | `VEG-E-073` | V2 routing vectors |
+| `INV-VEGETATION-075` | same-tile top-to-bottom routing validator | runtime/test | `VEG-E-073` | V2 routing vectors; [support seams and checks](#liquid-canopy-guard-check-references) |
 | `INV-VEGETATION-076` | independent occupancy, tile-column, and weighted-stand water reconstruction | test | `VEG-E-032/073` | V2 oracle + owner ledger |
 | `INV-VEGETATION-077` | typed occupancy water request/authorization/final-use validator | runtime/test | `VEG-E-072/075` | `SC-WATBAL-001` join vectors |
 | `INV-VEGETATION-078` | occupancy warm-start equivalence and byte rollback | runtime/test | `VEG-E-064/071` | V2 convergence/rollback vectors |
@@ -1485,6 +1485,7 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
 | `BEI-VEGETATION-015` | V11 segmented-support amendment | `active` | `maps-to-existing-INV` | `INV-VEGETATION-121, INV-VEGETATION-122, INV-VEGETATION-123, INV-VEGETATION-124, INV-VEGETATION-125, INV-VEGETATION-126, INV-VEGETATION-127, INV-VEGETATION-128` | `flagged-binding-addition` | Immutable V10 import, common slab duration, staged resources/materials, additive restart, exact compatibility, and atomic parent finalization. |
 | `BEI-VEGETATION-016` | V9 SHA-256 provider-equivalence correction | `active` | `maps-to-existing-INV` | `INV-VEGETATION-116, INV-VEGETATION-133` | `flagged-binding-addition` | Preserves exact V9 generation-host provenance while admitting a one-object SHA-256 provider substitution only under known-answer, remaining-runtime, protected-byte, and complete-output equality proofs. |
 | `BEI-VEGETATION-017` | Validated In-Memory Vegetation-State Handoff Amendment below | `active` | `maps-to-existing-INV` | `INV-VEGETATION-134, OBL-VEGETATION-C-006` | `flagged-binding-addition` | Private immutable revision-bound typestate may remove duplicate trusted in-process validation; every mutation and restart/external/untrusted boundary retains full validation. |
+| `BEI-VEGETATION-018` | [Liquid-canopy support clarification](#liquid-canopy-supported-domain-clarification) | `active` | `maps-to-existing-INV` | `INV-VEGETATION-022, INV-VEGETATION-051, INV-VEGETATION-062, INV-VEGETATION-065, INV-VEGETATION-066, INV-VEGETATION-067, INV-VEGETATION-073, INV-VEGETATION-075, INV-VEGETATION-110, INV-VEGETATION-111, INV-VEGETATION-114, INV-VEGETATION-118, INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `none` | Existing liquid-only component-domain, ownership, release-enthalpy, shared-air, represented-snow, and refusal authority is clarified; no cold-canopy phase model or runtime selector is admitted. |
 | `BEI-VEGETATION-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `flagged-binding-addition` | Shared canopy-air carrier, sealed exposure, exact-once canopy fluxes, and event-bounded snow regime. |
 
 ## Gap Register and Promotability Labels
@@ -1495,7 +1496,7 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
 | `GAP-VEGETATION-002` | Layer root/hydraulic law was missing. | Version 5 selects CLM5 hydraulic nodes/vulnerability and explicit layer requests; implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-003` | Stage B competition/fairness/priority policy was unspecified. | Version 5 selects equal-status proportional per-layer arbitration with exact zero and oversubscription branches; implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-004` | Coupled constitutive stack was missing. | Version 5 selects the complete indivisible stack; production implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
-| `GAP-VEGETATION-005` | Canopy snow has a single-owner boundary but no admitted constitutive law or atomic amendment with snow/frost. | Independent authority plus joint vegetation/snow/LSE contract and mass-energy vectors. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-005` | Canopy snow has a single-owner boundary but no admitted constitutive law or atomic amendment with snow/frost; cold active-leaf behavior, supercooled intercepted liquid, and intercepted canopy ice/mixed phase are outside the current liquid-only model. | Separately adopted phase/state/physiology authority with complete initial liquid/ice mass and thermodynamic-state obligations, then joint vegetation/snow/LSE mass-energy, custody, conservation, restart, and refusal vectors. Vegetation science owns the gap; LSE energy/custody review is required. | `AUTHORITY_MISSING`, `OUTSIDE_CURRENT_MODEL`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-006` | Elemental/dead-material receiver was missing. | `SC-BIOGEOCHEM-001` admits N and litter/CWD receiving transactions; soil transformations remain explicit dependency. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-007` | Every compatibility reduction except exact tile-union cover lacks reviewed operator/cutover evidence. | Field-specific reductions, unit helpers, real consumers, negative old-path proof. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-008` | The vegetation crate and default-off diagnostic scaffolding exist, but the public V3 transaction, complete typed numerical failures, owner candidates, atomic commit, output, and real consumer remain incomplete/fail-closed. | Resume the existing implementation package against immutable V3, pass both column solves and independent ledgers, then require direct-consumer evidence before cutover. | `IMPLEMENTATION_INCOMPLETE`, `NON_PROMOTABLE` |
@@ -3023,6 +3024,73 @@ intercepted snow path, selector, default, publication, or production
 consumer. The actual V11/Stage 3 consumer remains a later default-off
 implementation package.
 
+<a id="liquid-canopy-supported-domain-clarification"></a>
+### Liquid-canopy supported-domain clarification
+
+Represented ground snow does not extend the imported vegetation constitutive
+domain. The V1 [liquid-interception sequence](#algorithm-specification-with-step-sequence),
+including its equations 2, 5, and 6, retains the liquid saturation law and
+component-temperature domain for active sun/shade vapor and ordinary
+intercepted-liquid wet surfaces. Canopy-air and reference-air temperatures are
+not substituted for those component temperatures. Dry stems retain their
+separate zero-latent energy equation.
+
+Intercepted canopy ice/snow, active supercooled-liquid exchange, mixed phase,
+freezing/melting, deposition, and sublimation remain unsupported. No
+leaf-tissue freezing state or cold physiological shutdown is inferred from
+external water phase. Warm-start temperatures and potentials are numerical
+state only, not stored sensible energy or phase history. Existing liquid stores
+and signed liquid vapor transfers remain vegetation-owned and unchanged on any
+refusal. The explicitly authorized transparent zero-area, zero-beginning-store
+passage is transport of supplied liquid with its source enthalpy, not active
+wet-canopy physics or phase conversion.
+
+This clarification retains `INV-VEGETATION-022`, `INV-VEGETATION-051`,
+`INV-VEGETATION-062`, `INV-VEGETATION-065`, `INV-VEGETATION-066`,
+`INV-VEGETATION-067`, `INV-VEGETATION-073`, `INV-VEGETATION-075`,
+`INV-VEGETATION-110`, `INV-VEGETATION-111`, `INV-VEGETATION-114`,
+`INV-VEGETATION-118`, and `INV-VEGETATION-129` through
+`INV-VEGETATION-132`: their guard positions, equations, historical
+model-definition bytes, and acceptance remain unchanged. In particular, V8's
+[component/shared-air/release-enthalpy rules](#openwepp_c3_woody_v8-coupled-ground-energy-amendment)
+and the [V10](#openwepp_c3_woody_v10-nonpositive-assimilation-amendment)/[V11](#openwepp_c3_woody_v11-segmented-support-amendment)
+inherited domains remain effective. The transport exception retains its complete
+[transparent-passage eligibility](SC-LANDSURFACEENERGY-001/water-vapor.md#isolated-b01-transparent-canopy-liquid);
+positive area or beginning storage cannot acquire that exception.
+
+Unsupported model/process admission retains `VEG-E-062`; an ordinary admitted
+liquid interception surface below its reference retains the V1/`VEG-E-040`
+`VegetationError::Unsupported("CANOPY_SNOW")` seam; missing constitutive
+authority retains the `INV-VEGETATION-051` non-promotable hold and `VEG-E-060`;
+and a FvCB/Medlyn/energy/hydraulic operand-domain violation retains `VEG-E-063`.
+These are distinct seams, not an ordered fallback list or an air-temperature
+classifier. Future positive/refusal and error-order checks remain specified,
+not run, through the existing applicable V1/V8/V10/V11 obligations and
+[represented-snow obligation](SC-LANDSURFACEENERGY-001/terminal-support.md#OBL-LANDSURFACEENERGY-C-009).
+
+<a id="liquid-canopy-guard-check-references"></a>
+### Liquid-canopy guard and check references
+
+Static existing-rule mapping, not new execution evidence. Every check below is
+specified and **NOT RUN** in the documentation-only adoption. Existing V2--V7
+canopy-snow governance remains `VEG-E-040` under INV-022; it is not rewritten as
+the later model-admission seam. The helper's `CANOPY_SNOW` label is not evidence
+of observed ice. All original first-error positions and rollback duties remain.
+
+| Existing invariant(s) | Existing enforcement seam | Existing failure / retained requirement | Positive and refusal check reference |
+|---|---|---|---|
+| `INV-VEGETATION-022`, `INV-VEGETATION-051`, `INV-VEGETATION-062` | Historical phase ownership; current unsupported model/process admission; separate missing-authority governance | Historical `VEG-E-040`; model admission `VEG-E-062`; missing authority `VEG-E-060` / non-promotable HOLD; unknown wire fields retain earlier schema rejection | Warm admitted family versus unsupported canopy phase; never infer phase from cold air |
+| `INV-VEGETATION-065`, `INV-VEGETATION-066`, `INV-VEGETATION-067` | Ordinary liquid interception; component vapor/energy and hydraulic operand domains | Interception-surface `VEG-E-040` / `Unsupported("CANOPY_SNOW")`; constitutive `VEG-E-063`; finite-store/component closure errors unchanged | Warm leaf/wet surface with cold air; cold dry stem versus cold active leaf; signed evaporation/condensation, store caps, g0 and hydraulic continuity |
+| `INV-VEGETATION-073`, `INV-VEGETATION-075`, `INV-VEGETATION-114` | Occupancy stores, same-tile liquid routing and release enthalpy | Original schema/custody/enthalpy guards; [ordinary versus transparent release](SC-LANDSURFACEENERGY-001/water-vapor.md#liquid-canopy-release-clarification) | Independent local/weighted mass and enthalpy reconstruction, both drainage terms and stemflow; positive-area/store transparent poisons |
+| `INV-VEGETATION-110`, `INV-VEGETATION-111`, `INV-VEGETATION-118`, `INV-VEGETATION-129`, `INV-VEGETATION-130`, `INV-VEGETATION-131`, `INV-VEGETATION-132` | Component radiation, single shared air, nighttime gas/hydraulics and represented-snow joins | Original owner, support, event and complete residual guards; [LSE component-domain seams](SC-LANDSURFACEENERGY-001/numerical-methods.md#liquid-canopy-temperature-roles); no phase or solver selected by failure | Preserve prescribed/native snow boundary as supplied, exact-one snow exchange, inactive litter and numerical anchors; restart/rollback and combined-error poisons |
+
+No supplied liquid amount is relabeled as ice. Warm starts supply no physical
+enthalpy, phase history, thermal reservoir or migration default. Ground snow
+receives no implicit canopy fusion mass or energy. This support clarification
+makes no exact-root, finite-tolerance/binary64 feasibility or cold-model claim;
+the package's reviewed exact-real-root conclusion remains confined to its
+captured equations and domain.
+
 ## V11 amendment change log
 
 ### Positive-support adoption amendment
@@ -3061,6 +3129,7 @@ constitutive behavior unchanged.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-09-20 | 32 | Codex | Owner-adopted existing-domain liquid-canopy clarification: distinguished active component, shared-air, dry-stem, ground-snow, and transparent-passage temperature roles; preserved existing guard/error seams and expanded the non-promotable cold-canopy authority gap. No equation, historical model-definition byte, guard position, acceptance, runtime selector, or phase law changed. |
 | 2026-08-29 | 30 | Codex | Bound accepted terminal composition to every exact physical child's ordered resource/material custody, canonical same-key enclosing debit folds, the exact sequential BGC ending, and an audit-only one-ULP binary64 regrouping bound with one-bit-over rejection. |
 | 2026-09-02 | 31 | Codex | Admitted only private immutable nonserializable validation-once handoffs for unchanged trusted in-process V10/V11 state revisions; retained fresh full validation after mutation and at every restart, external, durable, and untrusted-executor boundary. |
 | 2026-08-27 | 29 owner amendment | Codex | Replaced the provisional 0.6-second positive-support floor with exactly 60 seconds (`60_000_000_000 ns`). Vegetation physics, conservation/custody, phase/topology, receipt, rollback, and fail-closed obligations remain unchanged; stable ordinary supports must accept substantially larger steps. Prior floor-dependent evidence is superseded and awaits rerun. |

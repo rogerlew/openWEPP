@@ -7536,3 +7536,177 @@ after publication, avoiding circular self-verification. No remote-execution,
 corpus-publication or production-deployment claim follows from this receipt.
 
 [Final charged ledger](artifacts/cold-canopy-authority-20260920/final-ledger.json) at **2026-09-20T04:01:40.564237+00:00**: actual cumulative **139382.403259 s**, plus **120 s** publication/return precharge, charged **139502.403259 / 140479.464696 s**, remaining **977.061437 s**. No wait deduction, historical refund or new allowance. Mixed-outcome floor **at least 462**, uncertainty retained. The external publication receipt records any greater actual terminal charge; unused precharge is not reclaimed.
+
+### Owner-adopted canonical liquid-canopy clarification integration (2026-09-20)
+
+**Intent / adopted scope:** Owner execution of
+`/tmp/openwepp_b01_wb14_canopy_support_clarification_adoption_authorization.md`
+adopts only the reviewed existing-domain clarification at checkpoint
+`B01-WB14-CURRENT-CONTEXT-CAPTURE / A-001`. Starting branch HEAD is exactly
+`83f79e7b63e51213a5be3bfeb7e19f3a35480f62`; no intervening tracked delta exists.
+The three unrelated untracked Clippy logs remain untouched. Intended writes:
+SC-VEGETATION-001, affected SC-LANDSURFACEENERGY-001 normative chapters and
+metadata/index, and this package's evidence. Historical model identities,
+equations, guards, error order, acceptance and all runtime/test source are frozen.
+The amendment remains pending until canonical checks and independent correctness
+and QA reviews of the actual delta pass. No new science binding is authorized.
+
+**Allowance:** conservatively reanchor adopted resumption at
+`2026-09-20T05:30:00Z` (including initial reading). Read the preceding final ledger
+and named external publication receipt once: neither exceeds the carried
+**139502.403259 / 140479.464696 s**, leaving **977.061437 s** and an absolute
+resumption deadline of **2026-09-20T05:46:17.061437Z**. Concurrent wall time is
+charged once with no wait deductions, reserve reclamation or new allowance.
+Mixed outcomes remain an uncertain floor of **at least 462**. ZERO Rust
+builds/tests, physical evaluators/solves/model/reader runs, acquisitions or Grid40
+arms. Both arms remain spent; recovery/source permissions and provenance
+limitations remain unchanged.
+
+**Selected acceptance:** documentation-only under testing strategy §6.2;
+run applicable existing contract schema/structure, reference, authority-admission
+and whitespace checks, inspect exact diff and historical-byte preservation,
+and obtain distinct independent correctness and QA with same-reviewer fix
+verification. No executable invariant, suite posture, fixture or required-case
+binding is to change. If a substantive new binding or independently applicable
+unavailable check is exposed, retain HOLD. All original failed workflows,
+strict lint, reader/E008, RQ1/A-001, scientific/conservation/restart, production
+and cadence obligations retain their previous unresolved status. Future behavior
+checks above remain specified and unexecuted; current static acceptance cannot
+satisfy them. Commit/push and exact remote-byte verification remain authorized.
+
+**Check selection refinement (Static):** This is an equivalent existing-domain
+clarification, not a change to scientific predicates, fixtures, required-case
+bindings, executable guards or external-authority suite posture. A1/A3 runtime
+execution, anti-evasion Rust tests, scientific reconstruction and restart remain
+unexecuted future implementation/qualification obligations; no prior FAIL is
+reclassified. Catalog generation is not triggered by adding/moving a document:
+no canonical file, document inventory, schema coverage route or generated input
+is added or moved. Existing strict Binding Exposure checks cover the complete LSE
+directory structure/definitions and vegetation mappings; SC unit lint checks
+unchanged unit governance; A0 checks current authority admission. Exact changed
+links/anchors and frozen definitions are checked separately. `markdown-doc` is
+unavailable (PATH invocation exit 127; bounded standard-path and retained-toolkit
+search found no executable), as already reported in the historical package.
+No build/acquisition is permitted. No named markdown-doc mandate applies to this
+increment under §6.2; this is disclosed tool unavailability, never a claimed
+markdown-doc PASS. Independent reviewers assess sufficiency of the selected
+existing checks for the actual amendment.
+
+#### Canonical integration, checks and independent disposition
+
+**Static:** Final canonical delta is SC-VEGETATION-001 **v32** and
+SC-LANDSURFACEENERGY-001 **v35**, its `audit-details.md`, `binding-index.md`,
+`history.md`, `numerical-methods.md`, `terminal-support.md`, `water-vapor.md`,
+and lifecycle `index.md`. Vegetation's
+[owning clarification](../../specifications/science-contracts/contracts/SC-VEGETATION-001.md#liquid-canopy-supported-domain-clarification)
+and [guard/check references](../../specifications/science-contracts/contracts/SC-VEGETATION-001.md#liquid-canopy-guard-check-references)
+are the single support definition and existing-seam map. Both BEIs use
+`maps-to-existing-INV`; LSE retains OBL-C-009. Existing GAP-VEGETATION-005 is
+expanded, not duplicated: vegetation-science ownership, LSE energy/custody
+review, AUTHORITY_MISSING / OUTSIDE_CURRENT_MODEL / NON_PROMOTABLE, separately
+adopted physical-authority and complete-initial-state next gate. LSE's actual
+gap register links that gap without reopening warm-surface authority.
+
+**Ran:** [Exact command results](artifacts/canopy-clarification-adoption-20260920/checks.json)
+record strict vegetation BEI **19 rows**, strict LSE directory schema/structure
+and BEI **21 rows / 104 definitions**, SC unit compliance, **A0_ADMITTED 49
+contracts / 0 executable science surfaces**, and `git diff --check`, all exit 0.
+The JSON binds the canonical diff SHA-256 and exact argv/cwd.
+[Reference and preservation results](artifacts/canopy-clarification-adoption-20260920/reference-preservation.json)
+pass all **29 changed local references/anchors**, nine complete historical
+model/algorithm sections, every existing canonical fenced block, and the entire
+prior package prefix. Static inspection confirms all changes are documentation;
+no runtime, behavioral-test, external-suite, fixture or required-case binding
+source changed. No generated inventory changed. `markdown-doc` remains NOT RUN,
+unavailable; no pass is claimed for it. Both reviewers found the selected
+existing checks sufficient for this exact documentation-only delta.
+
+| Schema/readiness obligation | Disposition and evidence |
+|---|---|
+| Purpose, scope, authority/provenance (sections 1–3) | PASS: existing authority preserved; owning clarification and gap reviewed independently. |
+| Variables/units, state, algorithm, branches (4–7) | PASS: existing sections/definitions unchanged; unit lint and frozen-section comparisons pass. No runtime qualification follows. |
+| Invariants/guard maps, producer/consumer duties (8–9) | PASS: existing INV/OBL mappings and seam/check cross-references; strict BEI/structure plus independent review. |
+| Aliases, constants, units, tolerances (10–13) | PASS: no change to symbols/constants/domains/tolerances; unit and preservation checks. |
+| Calibration and test-vector duties (14–15) | PASS for documentation preservation: no calibration claim; future positive/refusal, conservation, restart and error-order duties remain specified and NOT RUN. |
+| BEI, gaps, change logs (16–18) | PASS: strict maps-to-existing-INV indexes, expanded existing gap, both contract versions/review dates and LSE entry/history logs reconciled. |
+| New kernel profile/runtime or suite-posture changes | NOT_APPLICABLE to this equivalent clarification; all original failed runtime/qualification obligations remain unchanged, not waived. |
+
+The implementer `/root/clarification_author` authored the first canonical draft;
+Astra made bounded integration corrections. Neither supplied independent
+acceptance. Distinct reviewers `/root/cold_correctness` and `/root/cold_qa`
+reviewed the actual delta and their affected corrections. The originally named
+prior-turn reviewer sessions were unavailable in this thread; these are
+attributable independent replacements with the repository's correctness/QA roles.
+
+| finding_id | source | severity | decision | action_taken | artifact_ref | rationale |
+|---|---|---|---|---|---|---|
+| C3 | agent_a / cold_correctness | medium | accepted | Added/fixed owning BEI and V1/V8/V10/V11/transparent links, guard/check references, actual LSE gap-register placement and restored unrelated Markdown spacing; original reviewer verified all parts closed. | Canonical delta; review below | Required integration traceability, no scientific change. |
+
+Prior C1/C2 remain closed. No rejected, deferred or open current-scope finding.
+One transient QA model-capacity failure was retried on the same reviewer/role;
+no fallback reviewer, extra verifier wave or independent-review substitution.
+
+##### Independent correctness review — `/root/cold_correctness` (verbatim)
+
+**Evidence:** Static review of the final canonical delta from `83f79e7b63e51213a5be3bfeb7e19f3a35480f62`. `git diff --check` passed. No Rust tests, evaluators, solves, model/reader runs, or research ran.
+
+**Findings:** No open findings.
+
+- **C3 — Medium, closed.** Final corrections provide stable owning anchors, complete INV/OBL guard references, correct gap-register placement, exact BEI links, a valid V1 algorithm link, and restored unrelated Markdown spacing.
+- Prior **C1/C2 remain closed**. Exact vegetation and LSE error seams, variants, classes, and ordering remain distinct and unchanged.
+
+The amendment preserves the existing liquid-only domain, ownership, transparent-passage eligibility, rollback, equations, tolerances, solver policy, acceptance, and historical model bytes. It introduces no cold-canopy physics, phase selector, numerical fallback, or generalized cold-weather refusal.
+
+Future behavioral, conservation, restart, error-order, and cold-model checks remain truthfully **NOT RUN**. The unavailable `markdown-doc` tool is not independently required by the governing documentation-only validation rules or package selection.
+
+**Verdict: GO / PASS.** No correctness or authority blocker remains.
+
+##### Final QA evidence verification — `/root/cold_qa` (verbatim)
+
+**Ran: documentation/schema/unit/authority checks only.**
+
+No findings.
+
+- Strict BEI checks pass: Vegetation 19 rows; directory-v1 LSE 21 rows and 104 definitions.
+- Unit lint, A0 admission (49 contracts / 0 science surfaces), and diff whitespace checks pass.
+- Reference preservation passes: all 29 changed references resolve; nine historical model sections, fenced blocks, and the historical package prefix are exact.
+- The LSE BEI now directly targets `terminal-support.md#liquid-canopy-represented-snow-clarification`; the restored blank line is formatting-only.
+- `markdown-doc` remains accurately recorded as **NOT RUN** due to exit 127; no prohibited runtime work occurred.
+
+**Supplemental QA PASS / GO.**
+
+Evidence attribution: QA inspected the root-executed command/reference JSONs;
+its own executed check was `git diff --check`. Its supplied `Ran` header above
+refers to inspected execution evidence, not independent reruns of every tool.
+Its initial and correction assessments were Static, with no QA findings.
+
+#### Bounded adoption disposition and retained holds
+
+**COMPLETE / ADOPTED:** the reviewed existing-domain support clarification is
+now canonical in vegetation v32 and LSE v35 after required checks and both
+independent reviews pass. This completes only this clarification increment.
+It supplies no new cold-canopy law, initial phase/enthalpy state, admission
+classifier, guard execution, reader completion or successful physical simulation.
+Both captured amounts remain supplied liquid; warm starts remain numerical.
+The transparent exception still requires its complete original zero-area and
+zero-beginning-store proof. Ground snow keeps its original prescribed exchange
+and ownership. Exact-real-root absence remains confined to the captured problem;
+finite-tolerance/binary64 infeasibility and universal cold-weather rejection are
+not inferred.
+
+**Unresolved and unchanged:** original file-owned reader remains unreached by
+the authentic captured path; E008 remains unresolved; RQ1 and A-001 are not
+complete; strict Clippy remains FAIL; scientific, conservation, restart,
+production and cadence qualifications retain their separate HOLD/unmet status.
+Grid40 remains COMPLETE/valid negative, both arms 1/1 spent and authority expired.
+All recovery/input permissions and historical provenance limitations remain.
+Original reader fixture, E008 regression, numerical evidence and historical
+proof/review bytes are untouched. Cold support requires a separately adopted
+physical-model package and budget; remaining time grants no successor scope.
+
+Only the nine canonical/registry paths, this appended package record and new
+raw evidence are scoped for current-main commit/push. The three unrelated
+Clippy logs stay untracked. The final charged ledger below and external exact-
+commit publication receipt distinguish local evidence from verified remote bytes.
+
+[Final charged ledger](artifacts/canopy-clarification-adoption-20260920/final-ledger.json), 2026-09-20T05:43:20.815981+00:00: actual cumulative **140303.219240 s**, plus **60 s** publication/return precharge, charged **140363.219240 / 140479.464696 s**, remaining **116.245456 s**. No refund or new allowance; mixed-outcome floor **at least 468**, uncertainty retained. The named external publication receipt records any greater actual terminal charge; unused precharge is never reclaimed.

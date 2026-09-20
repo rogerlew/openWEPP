@@ -74,6 +74,10 @@ the inward derivative rule is not scaling authority for any other solve.
 |---|---|---|
 | `INV-LANDSURFACEENERGY-138` | Every covered potential/final Jacobian retains centered differences for two valid probes and uses the unique inward one-sided difference only when a valid current iterate has exactly one inadmissible canonical probe. | beta lower/upper, active/zero-area canopy and liquid-bearing-ground vapor lower bound, interior centered, potential/final, invalid-current, and neither-probe poisons; typed `covered_jacobian_bound` rejection |
 
+<a id="liquid-canopy-temperature-roles"></a>
+The [owning vegetation support clarification](../SC-VEGETATION-001.md#liquid-canopy-supported-domain-clarification) applies here.
+For this existing component-temperature domain, active leaf and ordinary wet surface temperatures are distinct from reference air, shared canopy air, dry stems, ground snow, and zero-area numerical anchors. The anchor rule in `INV-LANDSURFACEENERGY-131` remains a zero-area representational rule only. An invalid initial coupled coordinate retains `LandSurfaceEnergyError::ConstitutiveDomain("covered_initial_trial")` before Jacobian work; an invalid liquid-saturation operand retains `LandSurfaceEnergyError::ConstitutiveDomain("liquid_saturation_polynomial")`; a rejected trial retains existing trial/line-search handling. These `Domain` seams are not interchangeable with the ordinary-release unsupported-domain seam and do not classify air temperature or select ice, supercooling, a solver, or a fallback.
+
 <a id="version-33-experimental-residual-jacobian-representation"></a>
 ## Version 33 experimental residual/Jacobian representation
 

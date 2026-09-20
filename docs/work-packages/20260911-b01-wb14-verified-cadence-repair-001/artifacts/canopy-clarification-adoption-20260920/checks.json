@@ -1,0 +1,72 @@
+{
+  "evidence_class": "Ran: documentation/schema/unit/authority checks only",
+  "utc": "2026-09-20T05:40:52.162995+00:00",
+  "base": "83f79e7b63e51213a5be3bfeb7e19f3a35480f62",
+  "canonical_diff_sha256": "c3aee54ab10e26443caf8ac9ceabaae5c9db30372a9d271aa22f697ff48c43de",
+  "commands": [
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "--strict",
+        "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit": 0,
+      "stdout": "PASS docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md: 19 binding exposure row(s) fully consolidated\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "--strict",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit": 0,
+      "stdout": "PASS docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md: directory-v1, 21 binding exposure row(s), 104 actual definition(s); structural evidence only\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/release/check_sc_unit_compliance.py",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit": 0,
+      "stdout": "PASS: SC unit compliance lint found no findings\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "tools/release/check_science_contract_admission.sh",
+        "--base-ref",
+        "83f79e7b63e51213a5be3bfeb7e19f3a35480f62",
+        "--worktree"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit": 0,
+      "stdout": "A0_ADMITTED contracts=49 science_surfaces=0 base=83f79e7b63e51213a5be3bfeb7e19f3a35480f62 head=WORKTREE authority_sha256=998f80d2dbcf999d24f6373b34078a6e574b8ccbe26b8b3f406dfd5687c172dd\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "markdown_doc": "NOT RUN: executable unavailable; attempted help exit 127; no build/acquisition",
+  "prohibited_runs": 0
+}

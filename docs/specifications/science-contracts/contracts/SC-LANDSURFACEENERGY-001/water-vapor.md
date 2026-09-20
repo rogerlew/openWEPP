@@ -201,6 +201,10 @@ representation rule, not a tolerance relaxation: it does not change liquid
 mass, wet fraction, solver residuals, accepted support, storage arithmetic,
 phase ownership, or any non-reference temperature.
 
+<a id="liquid-canopy-release-clarification"></a>
+The [owning vegetation support clarification](../SC-VEGETATION-001.md#liquid-canopy-supported-domain-clarification) applies here.
+The ordinary covered-canopy release remains distinct from the authenticated transparent zero-area, zero-beginning-store passage. Ordinary finalization with `T_wet` below its reference and without complete transparent-passage proof retains `LandSurfaceEnergyError::UnsupportedDomain("covered_canopy_snow")`, class `Unsupported`, in the existing `LSEB-E-030` unsupported-domain family. The transparent passage transports supplied liquid with its source enthalpy; it does not admit active wet-canopy physics, phase conversion, a positive area, or beginning storage. These release seams preserve the existing guard position, first-error order, acceptance, and signed liquid/enthalpy custody. A numerical failure cannot select an ice law or another solver.
+
 | ID | Binding rule | Guard/failure |
 |---|---|---|
 | `INV-LANDSURFACEENERGY-130` | Only the exact first upward binary64 neighbor of `273.15 K` is canonicalized to the exact liquid enthalpy reference before covered-canopy ledger/release or Stage 3 terminal-liquid publication. | exact-bit runtime guard plus below/at/above boundary vectors; existing typed closure/domain failure otherwise |

@@ -205,6 +205,9 @@ the existing typed LSE/surface-custody error and byte-exact rollback. This
 amendment changes no equation, continuous tolerance, eight-map budget, temporal
 floor, or exact receipt comparison.
 
+<a id="liquid-canopy-represented-snow-clarification"></a>
+The represented-snow map imports the restricted active-canopy domain of [the owning vegetation clarification](../SC-VEGETATION-001.md#liquid-canopy-supported-domain-clarification). Preserve current component bounds, inactive anchors, complete energy/shared-air/hydraulic residuals, and all existing acceptance tolerances. Ground snow, dry stem, shared air, active leaf, ordinary wet surface, and authenticated transparent release have distinct temperature roles. No failed trial, convergence diagnostic, air-temperature threshold, or iteration limit selects another physical phase. Keep the original lower-boundary representation and exactly one snow exchange; the canopy may not debit or credit the ground-snow store as an implicit phase reservoir. `INV-LANDSURFACEENERGY-154` and `OBL-LANDSURFACEENERGY-C-009` therefore retain their existing regime classifier, charged-map identity/receipt join, inactive-owner validator, terminal split, and specified-not-run classification/rollback obligations.
+
 `OBL-LANDSURFACEENERGY-C-009` — Prove typed represented-snow classification,
 one charged standard covered map, zero under-snow V3/V4 phase/storage/ingress/
 WB14 calls, exact optical and lower-boundary receipt retention, absence of a

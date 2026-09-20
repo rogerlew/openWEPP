@@ -1,0 +1,260 @@
+{
+  "evidence_class": "Ran: static changed-link/anchor and historical-byte comparison; no physical workflow",
+  "utc": "2026-09-20T05:40:11.285568+00:00",
+  "base": "83f79e7b63e51213a5be3bfeb7e19f3a35480f62",
+  "canonical_paths": [
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+    "docs/specifications/science-contracts/index.md"
+  ],
+  "references": [
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+      "target": "../SC-VEGETATION-001.md#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+      "target": "../SC-VEGETATION-001.md#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+      "target": "../SC-VEGETATION-001.md#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+      "target": "../SC-VEGETATION-001.md#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+      "target": "../SC-VEGETATION-001.md#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+      "target": "../SC-VEGETATION-001.md#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+      "target": "../SC-VEGETATION-001.md#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+      "target": "../SC-VEGETATION-001.md#gap-register-and-promotability-labels",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+      "target": "terminal-support.md#liquid-canopy-represented-snow-clarification",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "target": "../SC-VEGETATION-001.md#liquid-canopy-supported-domain-clarification",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+      "target": "../SC-VEGETATION-001.md#liquid-canopy-supported-domain-clarification",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+      "target": "../SC-VEGETATION-001.md#liquid-canopy-supported-domain-clarification",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#liquid-canopy-guard-check-references",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#liquid-canopy-supported-domain-clarification",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#algorithm-specification-with-step-sequence",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#openwepp_c3_woody_v8-coupled-ground-energy-amendment",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#openwepp_c3_woody_v10-nonpositive-assimilation-amendment",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "#openwepp_c3_woody_v11-segmented-support-amendment",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "SC-LANDSURFACEENERGY-001/water-vapor.md#isolated-b01-transparent-canopy-liquid",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "SC-LANDSURFACEENERGY-001/terminal-support.md#OBL-LANDSURFACEENERGY-C-009",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "SC-LANDSURFACEENERGY-001/water-vapor.md#liquid-canopy-release-clarification",
+      "pass_": true
+    },
+    {
+      "source": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "target": "SC-LANDSURFACEENERGY-001/numerical-methods.md#liquid-canopy-temperature-roles",
+      "pass_": true
+    }
+  ],
+  "fenced_blocks": [
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+      "fenced_blocks": 0,
+      "exact": true
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+      "fenced_blocks": 1,
+      "exact": true
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+      "fenced_blocks": 0,
+      "exact": true
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md",
+      "fenced_blocks": 0,
+      "exact": true
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "fenced_blocks": 5,
+      "exact": true
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+      "fenced_blocks": 0,
+      "exact": true
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+      "fenced_blocks": 5,
+      "exact": true
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "fenced_blocks": 15,
+      "exact": true
+    },
+    {
+      "path": "docs/specifications/science-contracts/index.md",
+      "fenced_blocks": 0,
+      "exact": true
+    }
+  ],
+  "historical_model_sections": [
+    {
+      "section": "Algorithm Specification with Step Sequence",
+      "exact": true,
+      "sha256": "ccee384dd12dcbf90f37cc1885b562d2ff803e39b98696a83fe3be278fc67ceb"
+    },
+    {
+      "section": "`OPENWEPP_C3_WOODY_V4`",
+      "exact": true,
+      "sha256": "84b65f1f5c6f18b4b068c465a6f07d8559e1eb24e569ab4f2f892801055dcaaf"
+    },
+    {
+      "section": "`OPENWEPP_C3_WOODY_V5`",
+      "exact": true,
+      "sha256": "4d5567be0ae68f6ec8af50728047b4c73059819180df0fda76bab1b75afc970f"
+    },
+    {
+      "section": "`OPENWEPP_C3_WOODY_V6`",
+      "exact": true,
+      "sha256": "6281bad17e885255732b932e8cb87dd8c82f6a7ee5f5a1ffdaab22593d4c4abf"
+    },
+    {
+      "section": "`OPENWEPP_C3_WOODY_V7`",
+      "exact": true,
+      "sha256": "87f3dc6765053f24186fee68e96dd25d4d40b0478b62710bbb74b21a004c5718"
+    },
+    {
+      "section": "`OPENWEPP_C3_WOODY_V8`",
+      "exact": true,
+      "sha256": "50e09597c94e589124f87b25b6dd01a3aecbc9d7dc1872801038ba187a6e1051"
+    },
+    {
+      "section": "`OPENWEPP_C3_WOODY_V9`",
+      "exact": true,
+      "sha256": "2505fb1a1a8baf811836a02e9b3120696c16c4d0decd1cee3feeb70f962588cf"
+    },
+    {
+      "section": "`OPENWEPP_C3_WOODY_V10`",
+      "exact": true,
+      "sha256": "9a14857d3cd3c4bebff9b85c65341fca121afa6bd594114888ec328804d63ffb"
+    },
+    {
+      "section": "`OPENWEPP_C3_WOODY_V11`",
+      "exact": true,
+      "sha256": "29203160fa413a9b82042be93fea5c6e5eda68a937e61f3b7becf92ec627a326"
+    }
+  ],
+  "historical_package_prefix_unchanged": true,
+  "failures": [],
+  "pass_": true
+}

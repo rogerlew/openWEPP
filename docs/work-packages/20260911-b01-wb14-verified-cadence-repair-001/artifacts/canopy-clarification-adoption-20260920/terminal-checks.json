@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Ran: final package links, JSON, diff and exact checked canonical-diff reconciliation",
+  "utc": "2026-09-20T05:43:20.815981+00:00",
+  "package_links": 5,
+  "canonical_diff_sha256": "c3aee54ab10e26443caf8ac9ceabaae5c9db30372a9d271aa22f697ff48c43de",
+  "canonical_diff_matches_checks": true,
+  "all_json_parse": true,
+  "git_diff_check_exit": 0,
+  "correctness": "PASS",
+  "qa": "PASS"
+}
