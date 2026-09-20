@@ -1,0 +1,14 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs:363:
+         }
+     };
+ 
+[31m-    for top_liquid_specific_enthalpy_j_kg in
+[m[31m-        [None, Some(-1.0), Some(f64::NAN), Some(f64::INFINITY)]
+[m[32m+    for top_liquid_specific_enthalpy_j_kg in [None, Some(-1.0), Some(f64::NAN), Some(f64::INFINITY)]
+[m     {
+         let error = evaluate_m1_coupled_column(
+             &positive_top_rain(top_liquid_specific_enthalpy_j_kg),

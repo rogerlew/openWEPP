@@ -1,0 +1,16 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find value `rs` in this scope
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:673:29
+    |
+673 |     let vapor = rho / (rb + rs) * (1.0 - wet_fraction) * inputs.leaf_area_m2_m2_tile * (qsurface - canopy_q);
+    |                             ^^
+    |
+help: a local variable with a similar name exists
+    |
+673 -     let vapor = rho / (rb + rs) * (1.0 - wet_fraction) * inputs.leaf_area_m2_m2_tile * (qsurface - canopy_q);
+673 +     let vapor = rho / (rb + gs) * (1.0 - wet_fraction) * inputs.leaf_area_m2_m2_tile * (qsurface - canopy_q);
+    |
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error

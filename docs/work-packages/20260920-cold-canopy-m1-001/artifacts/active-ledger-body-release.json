@@ -1,0 +1,15 @@
+{
+  "observed_utc": "2026-09-20T20:28:33.115587+00:00",
+  "active_anchor_utc": "2026-09-20T16:07:00+00:00",
+  "carry_seconds": 141047.416433,
+  "ceiling_seconds": 169163.21924,
+  "charged_seconds": 156740.53202,
+  "remaining_seconds": 12422.687219999993,
+  "deadline_utc": "2026-09-20T23:55:35.802807+00:00",
+  "launch_reserve_seconds": 1800,
+  "wait_deductions_seconds": 0,
+  "historical_outcome_floor": 492,
+  "decision": "CONTINUE",
+  "reason": "Both same reviewers release completed coupled/envelope test cut. Typed body plumbing and local dependency are written; same implementer resumed to complete actual physical evaluator/solve/receiver. No scientific blocker or completed M1 support.",
+  "next_reassessment": "At two unsuccessful body corrections or 60 charged minutes, whichever first."
+}

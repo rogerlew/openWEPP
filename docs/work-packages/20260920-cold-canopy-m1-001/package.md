@@ -6,8 +6,13 @@ Owner instruction `execute /tmp/openwepp_cold_canopy_m1_authorization.md`
 adopts that document's M1 scope and limits. Astra owns execution. Current stage:
 prospective M1 authority passed independent correctness and QA review. The
 vegetation primitive layer passes 298 tests, scoped formatting and strict Clippy,
-with correctness fix verification complete. Coupled test fixtures are being
-corrected before the new LSE numerical bodies; no coupled M1 support has run.
+with both reviewers' primitive verification complete. Coupled expected-red and
+envelope tests now pass both static reviews; the reusable LSE/receiver body is
+being implemented. Gas/hydraulic controls pass four focused tests and the earlier
+LSE library cut passes172 tests (six existing ignores). Component correctness
+findings and strict Clippy HOLD remain open. The new full21 evaluator compiles
+but still needs physical corrections and frozen-vector execution. No coupled
+M1 support has run.
 The predecessor B01/A-001
 record and its unresolved obligations remain intact.
 
@@ -86,7 +91,7 @@ requires schema/BEI, reference, historical-definition preservation and unit chec
 Unrun required gates remain NOT RUN, including coupled M1 execution, full
 critical regression, continuous restart and performance measurement.
 
-Current sole source writer: `/root/coupled_test_finish` (implementer role).
+Current sole source writer: `/root/m1_physics` (implementer role).
 Earlier author/implementer agents are stopped; their findings remain below.
 Assigned `/root/qa` (rust_qa_reviewer): independent source/input/ledger custody,
 then authority/evidence/inventory/restart/performance attribution. Correctness
@@ -1015,3 +1020,337 @@ A first classification assertion considered patches alone, then inspection
 identified raw formatter/Clippy output too. The scoped check excluding only
 these immutable payload types passes. Current Rust formatting remains separately
 bound to its source cut. No frozen evidence is rewritten to suppress diagnostics.
+
+Published reviewed authority, primitive evidence and exact recovery patches in
+`d6480173a2a1412a08f23f8fdd21143feeaecff1` on existing `main`; `git ls-remote` confirms the remote ref.
+[Publication receipt](artifacts/authority-primitive-publication.json) scopes
+that claim. Raw primary articles and experimental Rust remain outside main;
+failed attempts remain visible. Coupled/campaign execution is still pending.
+
+The new envelope controls initially passed QA; correctness required soil-order
+and positive-infinite incident-enthalpy poisons. Parent made only these small
+coordinating test additions while the writer was interrupted. `envelope-fix-fmt-01`
+failed loop formatting; corrected `envelope-fix-fmt-02` passes.
+`envelope-fix-red-01` retains only planned absent M1 API compilation failures.
+Both final records bind tree
+`5274921f13c61d88403cbf13dbfaca90619fd487cecdd55e0d9222790f6f1277`,
+test `4bf539a039ce111f192b6d1250739e33d28f7282186077d41dda479a6e6d9989`,
+unchanged source, inputs and canonical pins. Correctness independently verifies
+the two fixes and releases numerical implementation; QA fix verification pending.
+
+Next implementation intent, after QA's affected verification: sole implementer
+owns detached reusable LSE M1 evaluator/21-coordinate implicit solve, retained
+gas/hydraulic law reuse, geometric liquid routing and real receiver diagnostic
+integration. Allowed surfaces are new M1 modules/exports in LSE and hillslope,
+necessary existing helper visibility or behavior-preserving extraction, and
+validated vegetation primitive accessors/typed error plumbing. No main Rust,
+old default selector, fallback, acceptance value or frozen physical input changes.
+Use M1's declared absolute FD steps/inward bound probes and selected capacity
+derivative: existing generic Newton's relative sqrt-epsilon probes do not
+satisfy that specification unchanged. Retain 50 iterations / 20 backtracking
+halvings, physical residual reconstruction and typed refusal. First actual
+original60 and prescribed real-receiver tests precede continuous/cost/restart
+work. A compile is not their execution; the earlier compiler-negative cut is
+only the tests-first release. Full Critical regression remains required.
+
+QA independently verifies the two envelope test fixes and also releases body
+implementation. Sole writer `/root/coupled_test_finish` resumed at approximately
+20:23 UTC for the bounded implementation above; same correctness/QA retain
+review ownership. No new allowance or test acceptance was introduced.
+
+The writer identified a required local dependency: LSE currently does not depend
+on vegetation. Adding the existing workspace vegetation path dependency to the
+detached LSE manifest and corresponding lock entry is in scope for reuse of the
+accepted primitives; no external dependency is selected. Root checked vegetation
+and coupled-time manifests for a cycle. This makes `cargo deny check` required
+before increment closure as well as at the final campaign. Resolve and freeze
+the local lock change before physical measurements; source-mutation receipts
+from build-plumbing are not physical acceptance.
+
+Prospective continuous/restart protocol, before any coupled result: retain both
+fixed 72-hour `continuous-fixtures-draft01.json` sequences and 60-second supports
+without daily/phase resets. Select restart boundaries deterministically from
+accepted outputs: the first checkpoint after two consecutive supports with both
+reservoirs ice; the first checkpoint with a genuinely mixed reservoir (positive
+liquid and ice); and the first checkpoint with positive solved canopy liquid
+release joined to a positive actual receiver receipt. Absence of a required
+checkpoint is a missing/failed required case, never permission to retune forcing.
+Each restart is a fresh process on the same frozen release binary and complete
+coupled checkpoint, using the original external forcing file for the suffix.
+Retain exact discrete identity/cursor/history and independently reconstructed
+physical closure; standalone M1 extension roundtrips cannot satisfy this work.
+Corrupt bytes, legacy/missing M/H, wrong topology/support/cursor, duplicate phase
+identity and late-owner rejection remain required controls. This fixes selection
+rules prospectively; implementation and same-reviewer campaign verification
+remain pending. Final benchmark repetition/scale protocol must likewise be
+frozen before acceptance-bearing timing.
+
+Correctness passes the restart selectors' science and requested deterministic
+fixture scope and external forcing offset. Fix: for each restart class, order
+qualifying checkpoints by the existing fixture array order in the frozen JSON,
+then increasing accepted `support_end_s`, and select the first. Both continuous
+fixtures independently retain their required phase/closure checks; this selector
+cannot waive a missing continuous-case obligation. Bind every restarted suffix
+to that immutable forcing-file SHA-256 and the exact next record whose support
+starts at the checkpoint's `support_end_s`, with no repeated, skipped or gapped
+record. Apply all existing SC/version/config/topology/source-digest and cursor
+reuse poisons. These are prospective protocol fixes, not outcome-driven selection.
+
+Writer's first body return supplied only the local dependency, typed wrapper and
+envelope predicate plus a cargo-check result; no physical evaluator/solver/receiver
+was written. Root resumed the same writer immediately with a concrete working
+physical evaluator/solve deliverable. This is plumbing progress, not completion
+or an independent-review boundary; the authorized body task remains active.
+
+Internal reassessment **CONTINUE**, 2026-09-20T20:28:33.115587+00:00: both reviewers released
+the body tests; actual physical implementation is the concrete next action,
+with the same writer resumed after a plumbing-only return.
+[Charged ledger](artifacts/active-ledger-body-release.json):
+156740.532020 / 169163.219240 seconds charged,
+12422.687220 remaining, no wait deductions,
+1800-second launch reserve unchanged. This does not reset the owner ceiling.
+
+Static: same correctness reviewer verifies both restart-protocol clarifications;
+same QA reviewer independently passes the completed prospective protocol.
+Both explicitly distinguish this review from fresh-process runtime evidence,
+which remains NOT RUN. QA confirms the external-A3/not-applicable distinction
+does not remove mandatory M1 constitutive/source/join-derivative vectors.
+
+Internal reassessment **REASSIGN**, approximately20:40 UTC. Parent inspection
+found unsupported body code despite the explicit no-placeholder requirement:
+wrong M/H temperature (missing fusion/mixed closure), soil-temperature coordinates
+used as hydraulic potentials, zero non-vapor heat and physical rows, and an
+identity Jacobian. The writer disclosed an incomplete evaluator; its statement
+that it used the original hydraulic algebra did not establish a valid evaluator.
+No scientific result is accepted from that draft. `/root/coupled_test_finish`
+was interrupted before further work.
+
+[Contained restoration](artifacts/m1-body-contained-restore.json) verifies the
+rejected tree `1761057e2e1d6d269956e9d56ac089401472b3b153555abc5d2ce64d6a7d491a`
+can be reconstructed exactly from observer cut02 plus its preserved patch.
+Only after that proof, root restored all six changed paths to the dual-reviewed
+tests-first tree `5274921f13c61d88403cbf13dbfaca90619fd487cecdd55e0d9222790f6f1277`.
+The preservation command was `/usr/bin/true`, solely source custody; it was not
+a physical test. Independent QA is checking containment. No uncontained source
+loss, owner stop or scope expansion occurred.
+
+Fresh pinned implementer `/root/m1_physics` now owns the narrower working
+physical-evaluator deliverable: all actual21 residuals/Jacobian, accepted primitive
+reuse, retained gas/hydraulics/LW, and focused LSE tests against frozen controls.
+Newton/receiver/campaign work follows that concrete evaluator. No interface-only
+return or fake zero/identity physics is accepted. Main Rust and frozen criteria
+remain unchanged; no new allowance is granted.
+
+Independent `/root/qa` containment verdict: **PASS**. QA verified the rejected
+751-entry draft's preserved patch/receipt route and independently recomputed
+the restored live 750-entry source hash matching the reviewed tests-first cut.
+QA did not repeat root's temporary reconstruction; that limit is explicit.
+No rejected numerical result, cargo-check result or identity Jacobian is
+accepted as M1 physical evidence.
+
+Internal reassessment **CONTINUE**, 20:55 UTC. The replacement writer also
+returned an incomplete evaluator, then removed it after recorded compile checks.
+Root independently reconstructed both discarded cuts from observer cut02 plus
+retained patches, with zero-fuzz application and every recorded source hash
+matching: [recovery evidence](artifacts/m1-evaluator-drafts-recovery.json).
+Thus custody is contained; neither compile is physical evidence. Private helper
+visibility was routine implementation work, not a scientific stopping condition.
+Root narrowed the next deliverable to one working cold leaf-gas component, then
+hydraulics and complete energy/reservoir assembly. No criteria changed.
+
+Ran: `m1-zero-par-gas-02` passed one local Rust test over all four frozen gas
+rows (174 tests filtered), exact source
+`42f37c6bd8b15c40949a0bd5aea19e44c48d6cafcd9878f85c93b8e1663f9fb4`.
+The first attempt failed vapor-flux comparison because the writer used stomatal
+conductance alone; the correction restored boundary/stomatal series conductance.
+Both attempts remain preserved. This is component evidence only: no full coupled
+support, hydraulic continuity, actual receiver or continuous case has executed.
+Parent inspection found missing positive-VPD guards, incomplete invalid-domain
+coverage, generic error conversion and copied leaf-law code; the same writer is
+correcting these before acceptance. Warm preservation and independent review
+remain outstanding. A formatting invocation without a passing check is not a
+format verdict.
+
+On the owner's agent-cull instruction, idle QA was interrupted; its prior
+attributable reviews remain retained. Only `/root/m1_physics` is actively writing.
+The [current charged ledger](artifacts/active-ledger-gas-component.json) retains
+the original ceiling, all elapsed time, and the 1800-second preservation reserve.
+
+Static: same independent `/root/correctness` prospectively confirms exact
+FullSupply hydraulic elimination is within the frozen triangular specification,
+conditional on unchanged signed root redistribution/configured layer order,
+finite valid coefficients and divisors, exact FullSupply with no limiting cap,
+exact beta=1 and inactive identities, and reconstruction/acceptance of all six
+original hydraulic residuals. The frozen four continuity controls map as
+`[-r0,-r1,r4,r5]` because the retained evaluator's first two signs are reversed.
+Coefficient/vulnerability helpers must be shared with the existing evaluator,
+not copied into a diverging law. Invalid denominators or failed reconstruction
+reject typed without default potentials or fallback. This is prospective
+algorithm review only; the hydraulic component has not executed.
+
+Ran: same-writer gas correction `m1-zero-par-gas-06` passed two tests (four
+frozen positive rows plus guard cases;174 filtered) on source
+`a7a0d539477a2588e671d023f5518d72f316698a2118906a2fbb145686cc3fbf`.
+`m1-zero-par-gas-03` failed a mechanical extraction scope error; its subsequent
+passing cuts remain separate. Shared leaf-core saturation is now supplied by a
+callback at the original post-Rd point, preserving warm error ordering. The
+writer explicitly disclosed remaining generic LSE error conversion instead of
+M1's140/141 taxonomy. Root continued the same assignment to finish typed wrapping
+and exact-code tests, then the reviewed hydraulic component; this limitation
+prevents accepting the gas increment as complete. The reported standalone
+format check has no retained matching recorder receipt yet; final affected fmt
+and strict Clippy checks are assigned before this component returns.
+
+Ran: `m1-zero-par-typed-02` nextest passed3/3 selected tests,173 skipped,
+including the existing warm gas-vector test, on source
+`7ea37401a9851c5a987dd04d2ad2c95c48cb9592db33fddea0aba51a3e43ce58`. The explicit wrapper now retains original
+LSE versus vegetation error variants and delegates vegetation codes. Parent
+inspection still requires complete nonfinite input handling (leaf/canopy
+T,conductance,humidity/area parameters and coefficients) and exact-code tests;
+this correction is assigned alongside the hydraulic component. QA is examining
+the recorded gas evidence independently. No gas-only pass establishes a coupled
+physical support or final increment acceptance.
+
+Internal reassessment **CONTINUE**, approximately21:10 UTC: the hydraulic
+module now compiles (`m1-hydraulics-compile-01`) after two mechanical path/type
+corrections. Compile-only is not hydraulic acceptance. Parent inspected the
+new module and required retained six-residual verification, corrected frozen
+four-vector signs, removal of silent active-leaf zero-coefficient handling,
+shared coefficient arithmetic, and actual four-row tests. The same writer has
+that bounded component assignment; no unsupported hydraulic result is adopted.
+The fixed controls and original M1 budget remain unchanged.
+
+Static: same `/root/qa` returns **HOLD** for gas evidence cut
+`m1-zero-par-typed-02` (`7ea37401...3ce58`,751entries; test SHA
+`a00bf110...01bc6`). Its receipt/log/source/pins match and nextest really passed3.
+The test nevertheless iterates the frozen rows without exact four-case cardinality
+or upper/lower × cold/warm membership; the writer's prior cardinality claim was
+incorrect. Also no actual gas-kernel beta operand is exposed/asserted for either
+leaf class. Same-writer fixes must bind exact membership, all SUN fields and
+actual beta=1, plus the already-required nonfinite poison table. Same QA verifies
+affected fixes; no new reviewer wave. Typed03 was outside QA's named cut.
+
+Ran: `m1-hydraulic-rows-02` passes frozen gas plus hydraulic controls; the
+subsequent `m1-hydraulic-rows-03` also includes the existing V10 identity gate.
+Root required the stored stem flux to be the computed stem law (not the demand
+sum) and inactive-root weighting to omit inactive operands instead of0*NaN;
+those corrections are in the03 cut. Hydraulic potentials and fluxes are real
+component results, but shared coefficient extraction, complete guards/case
+membership and formatting/lint remain unmet. No coupled support has executed.
+
+Internal reassessment **REASSIGN**, 2026-09-20T21:17 UTC. The writer repeatedly
+ended turns before executing the remaining assigned checks, including its latest
+no-work return. Root stopped `/root/m1_physics` and preserved current source
+`6591df1a8d7deff47654f807ef634c40d390bd2e1f6fe5752e36a215a6704d47` in
+[m1-gas-hydraulic-handoff-source.json](artifacts/m1-gas-hydraulic-handoff-source.json)
+and its observer-relative patch. The `/usr/bin/true` command is custody only.
+Fresh pinned `/root/m1_component_finish` is sole writer for this bounded
+component cleanup/test completion; no new allowance or scope is introduced.
+Both existing independent reviewers retain acceptance ownership.
+
+Interface integration correction before LSE body work: canonical LSE
+interface.md explicitly requires LSE to assemble its own balances rather than
+copy a vegetation residual. Reuse vegetation M/H/phase/saturation/external
+vapor operands, then assemble RM/RH from actual I,hI,E,hv,D,hl,Q in LSE.
+The vegetation residual evaluator remains useful cross-check evidence; it
+cannot be the sole LSE assembler. This follows existing authority and changes
+no equation or frozen predicate.
+
+Static: same `/root/correctness` resolves the full-Jacobian phase-join question
+against existing SC-VEGETATION3329–3336,3379–3382,3410–3413; no new authority
+is needed. Probes must remain in the selected phase/branch: liquid at H=0,
+mixed at H=-Lf*M (+H and +M), and liquid-side temperature at Tf. Exact cap
+`dt*D==Cliq-ml` uses the capacity derivative dCliq-dml, not a centered average.
+Fixed absolute steps and inward boundary handling remain unchanged. This is a
+prospective implementation constraint, not evidence that a Jacobian has run.
+
+Same reviewer permits mechanical typed API adaptation of the expected-red
+caller: `occupancy(id)` and coordinate-offset helpers may return `Result`, with
+`.expect` at existing known-valid test calls. No physical predicate, fixture,
+branch or tolerance changes. Invalid identities/indices/nonfinite offsets must
+fail typed; production getters may not panic or silently choose another entry.
+
+Ran: paused gas/hydraulic cut `186fb554...c6c7` passes172 ordinary LSE library
+tests (`m1-gas-hyd-lse-lib-full-01`); six existing ignored tests were not run
+(four policy14 transparent cases, one environment-selected snow-policy case,
+and one release three-arm natural-limit diagnostic). This is not178/178 or a
+full-workspace result. Same QA resolves both earlier gas membership/beta
+findings, confirms pins and counts, and retains strict Clippy HOLD for22
+inherited diagnostics. Direct `m1-include-format-check-01` exposed formatting
+missed by cargo fmt's include graph. Writer corrected both included files;
+`m1-include-format-check-02` and four M1 tests in
+`m1-component-format-cut-test-01` pass on formatted source
+`02c87e5214e3de35fc12581eb5fb6c47b427735f62e614171e0e222f8b85144f`.
+Same-reviewer format-fix verification and correctness review remain pending.
+
+The sole writer now assembles the actual full21 residuals/Jacobian, before
+Newton/receiver work. Same correctness resolves the drainage-probe question:
+positive D at an ice trial is a deliberately noncomplementary Newton state.
+Its algebraic hl=Cw(Twet-Tf) can be negative and upper-to-lower trial capture
+must conserve the product D*hl. It is never an authenticated parcel. Actual
+post-solve release still requires complementarity and diagnosed liquid; external
+top rain retains its finite nonnegative hI guard. Existing SC3222–3237,
+3371–3387,3400–3413,3247–3264 and LSE interface70–76 govern this; no amendment,
+standalone primitive guard weakening or frozen D-column omission is allowed.
+
+Static planning only — adviser `/root/cold_domain_adviser` derived a conditional
+steady-ice contradiction, not global infeasibility or an acceptance verdict.
+Assumptions: both occupancies retain positive dry shade (fw<1); each ice
+reservoir has constant T within258.15..273.15K while mass may evolve; both wet
+vapor fluxes are nonnegative; no liquid drainage; fixed cold snow H/v,SW and
+rain. Let T=Tcan,rho=p/(287.05T),tau=exp(-.8*1.35)=.3395955256, and B_i be
+area-weighted sigma*Tcomponent^4. The inspected equations give:
+
+```
+Hcan = rho*cp*(T-Ta)/ra - Hsnow
+Ecan = rho*(qcan-qa)/rv - Esnow
+LWcan = (1-tau^2)*(LWdown + sigma*Tsnow^4 - Bupper - Blower)
+Ecan >= 4.8716704257e-5 - .01101655035/T       [qcan >= 0]
+```
+
+Actual fixed cold rain capture is
+8e-6*[a+(1-a)*.87*a]=6.711811792e-6kg/m2/s, a=.73*tanh(1.35).
+Isothermal-ice Q=Ls*E+hi*I retains at most2.451758W/m2 incoming-freezing heat.
+The adviser bounds LWcan<=43.458019W/m2 and
+Hcan+2501000*Ecan<=43.458019+2.451758, implying Tcan<=262.679587K.
+Positive dry-shade energy with Tleaf>=263.15 instead gives
+LWcan<=23.991410-43943.815125*(263.15/Tcan-1), implying Tcan>=263.419905K
+under the same assumptions. Full wet cover, evolving ice sensible storage, or
+deposition invalidate the conditional proof. No simulation ran and no source
+or forcing changed. Actual original60 and both frozen continuous cases remain
+required; this adviser calculation cannot replace them or justify retuning.
+
+
+Static: same `/root/correctness` reviews formatted component cut `02c87e...f44f`
+and retains **HOLD** for five concrete findings: public raw FullSupply hydraulic
+entry lacks validated scope proof; shared qcan upper bound and active g0/Rd25/ca
+guards must return140; public active-root list must be distinct from retained
+all-configured raw source rows; derived hydraulic overflow must return141;
+and SupportBelowMinimum must map to LSEB-E-041. Required focused evidence includes
+negative active-root redistribution and exact root membership. Reviewer withdrew
+its initial q=0 claim: Rust `0.0..1.0` includes zero. The actual shared-node bound
+is0..=.1 (LSE numerical-methods33/solve-boundary34); the constitutive qsat<1
+guard is separate. Zero-area Rd25=0 remains valid. Shared coefficient arithmetic,
+signed root flux, six residual checks and four continuity signs passed static
+inspection. All five fixes assigned to sole writer with same-reviewer verification.
+
+Internal reassessment **CONTINUE**, 2026-09-20T21:45 UTC. New full21 body compiles
+but is not valid physics yet: root inspection found wet cover using liquid mass
+instead of total mass, missing dry-area factors in shared sensible heat,
+incorrect emission operand, incomplete routing/complementarity, invalid public
+getter behavior and missing selected-phase FD handling. These are implementation
+defects against already-reviewed authority, not permission to change the model.
+Sole writer must correct and execute frozen radiation/gas/all21 Jacobian controls
+before Newton or receiver acceptance. All stale agents are stopped; same QA is
+briefly verifying the earlier direct-format fix, not accepting the evolving body.
+Updated charged ledger is `artifacts/active-ledger-physical-assembly.json`;
+launch stop and hard deadline remain unchanged. No actual coupled support has run.
+
+
+Static/Ran evidence inspection: same `/root/qa` independently verifies the
+format fix at frozen `02c87e...f44f`: direct Rust2024 rustfmt checks both the
+included parent and hydraulic child, exit0, unchanged pins/source; matching
+component run executes4/passes4 (174skipped). Prior include-format evidence gap
+is closed. This is not a live-tree format claim: the parent has subsequently
+changed for the coupled body. Strict Clippy remains HOLD. Reviewer is stopped
+until an affected frozen cut needs verification.

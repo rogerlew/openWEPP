@@ -1,0 +1,20 @@
+{
+  "observed_utc": "2026-09-20T20:55:16.950910+00:00",
+  "records": [
+    {
+      "label": "m1-eval-check-01",
+      "tree_sha256": "aa844d580a23e1cb569aaa4e0c0d93dfd621e9945d6ca4a868ff5424d37e85a7",
+      "entries": 751,
+      "exact_reconstruction": true,
+      "patch_exit": 0
+    },
+    {
+      "label": "m1-eval-check-02",
+      "tree_sha256": "ca44fc74172f829aba137964d88b83b4770b91ab4418aee2b5768a68b47a3142",
+      "entries": 751,
+      "exact_reconstruction": true,
+      "patch_exit": 0
+    }
+  ],
+  "scope": "Discarded temporary evaluator recovery only; no physical validation"
+}

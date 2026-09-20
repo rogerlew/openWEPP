@@ -1,0 +1,6 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.05s
+     Running unittests src/lib.rs (/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-6930b921f1500e71)
+error: test failed, to rerun pass `-p openwepp-land-surface-energy --lib`

@@ -1,0 +1,18 @@
+{
+  "observed_utc": "2026-09-20T20:39:59.343429+00:00",
+  "rejected_tree_sha256": "1761057e2e1d6d269956e9d56ac089401472b3b153555abc5d2ce64d6a7d491a",
+  "rejected_exact_recovery_verified": true,
+  "restored_tree_sha256": "5274921f13c61d88403cbf13dbfaca90619fd487cecdd55e0d9222790f6f1277",
+  "restored_source_verified": true,
+  "changed_paths": [
+    "Cargo.lock",
+    "crates/openwepp-land-surface-energy/Cargo.toml",
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/m1_coupled.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+    "crates/openwepp-vegetation/src/cold_canopy_m1.rs"
+  ],
+  "reason": "Contained unsupported numerical draft: wrong M/H temperature, soil coordinates used as hydraulic potentials, placeholder dry/shared/ground/soil rows, zero Q, identity Jacobian. No accepted physical result.",
+  "rejected_source_receipt": "m1-body-rejected-draft-preservation-source.json",
+  "restored_source_receipt": "envelope-fix-red-01-source.json"
+}

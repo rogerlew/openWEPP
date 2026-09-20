@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-09-20T20:55:39.158554+00:00",
+  "resumption_anchor": "2026-09-20T16:07:00+00:00",
+  "carry_seconds": 141047.416433,
+  "ceiling_seconds": 169163.21924,
+  "charged_seconds": 158366.574987,
+  "remaining_seconds": 10796.644253000006,
+  "wait_deductions": 0,
+  "preservation_reserve_seconds": 1800,
+  "decision": "CONTINUE: correct gas component then hydraulic and physical residual assembly; no new allowance"
+}

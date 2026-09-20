@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-09-20T21:45:35.437887+00:00",
+  "resumption_anchor": "2026-09-20T16:07:00+00:00",
+  "carry_seconds": 141047.416433,
+  "ceiling_seconds": 169163.21924,
+  "charged_seconds": 161362.85432,
+  "remaining_seconds": 7800.364919999993,
+  "wait_deductions": 0,
+  "preservation_reserve_seconds": 1800,
+  "decision": "CONTINUE: correct complete physical residual/Jacobian and component guards, then frozen vectors; no new allowance"
+}

@@ -1,0 +1,9 @@
+{
+  "observed_utc": "2026-09-20T20:17:29.510023+00:00",
+  "commit": "d6480173a2a1412a08f23f8fdd21143feeaecff1",
+  "remote_ref": "origin refs/heads/main",
+  "verified_remote_sha": "d6480173a2a1412a08f23f8fdd21143feeaecff1",
+  "scope": "Reviewed canonical M1 authority, primitive and compiler-negative coupled evidence, exact recovery patches. Detached Rust not adopted; M1 coupled/campaign acceptance remains pending.",
+  "source_recovery_verified_receipt": "coupled-finish-recovery-check.json",
+  "raw_primary_articles_published": false
+}

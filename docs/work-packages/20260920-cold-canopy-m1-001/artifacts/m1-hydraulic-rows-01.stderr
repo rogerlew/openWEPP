@@ -1,0 +1,18 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0502]: cannot borrow `column` as immutable because it is also borrowed as mutable
+   --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:132:13
+    |
+ 41 |           let occupancy = column
+    |  _________________________-
+ 42 | |             .occupancies
+    | |________________________- mutable borrow occurs here
+...
+132 |               &column,
+    |               ^^^^^^^ immutable borrow occurs here
+133 |               occupancy,
+    |               --------- mutable borrow later used here
+
+For more information about this error, try `rustc --explain E0502`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101

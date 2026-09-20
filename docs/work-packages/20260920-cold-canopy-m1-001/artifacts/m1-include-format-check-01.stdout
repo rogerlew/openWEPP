@@ -1,0 +1,672 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:65:
+                 layer.gravity_head_mm,
+             ]
+             .iter()
+[31m-            .any(|x| !x.is_finite()) {
+[m[31m-                return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into());
+[m[32m+            .any(|x| !x.is_finite())
+[m[32m+            {
+[m[32m+                return Err(
+[m[32m+                    openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into(),
+[m[32m+                );
+[m             }
+             if [layer.z3_m, layer.dxroot_m, layer.ksoil_m2_s]
+                 .iter()
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:76:
+             }
+             let k = root_hydraulic_coefficient(occupancy, layer);
+             if !k.is_finite() {
+[31m-                return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into());
+[m[32m+                return Err(
+[m[32m+                    openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into(),
+[m[32m+                );
+[m             }
+             if k <= 0.0 {
+                 return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:83:
+             }
+             coefficients.push(Some(k));
+[31m-        } else { coefficients.push(None); }
+[m[32m+        } else {
+[m[32m+            coefficients.push(None);
+[m[32m+        }
+[m     }
+     let total: f64 = coefficients.iter().flatten().sum();
+     if !total.is_finite() {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:92:
+         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+     }
+     let sum_demand = demand[0] + demand[1];
+[31m-    let psi_root = (occupancy.root_layers.iter().zip(&coefficients).filter_map(|(l,k)| k.map(|value| value * (l.soil_potential_mm + l.gravity_head_mm))).sum::<f64>() - sum_demand) / total;
+[m[32m+    let psi_root = (occupancy
+[m[32m+        .root_layers
+[m[32m+        .iter()
+[m[32m+        .zip(&coefficients)
+[m[32m+        .filter_map(|(l, k)| k.map(|value| value * (l.soil_potential_mm + l.gravity_head_mm)))
+[m[32m+        .sum::<f64>()
+[m[32m+        - sum_demand)
+[m[32m+        / total;
+[m     let stem_k = stem_hydraulic_coefficient(occupancy, psi_root);
+     if !stem_k.is_finite() {
+         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into());
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:101:
+         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+     }
+     let psi_stem = psi_root - 1000.0 * occupancy.height_m - sum_demand / stem_k;
+[31m-    let ks = leaf_hydraulic_coefficient(occupancy.k1_sun_max_s1, occupancy.sun.leaf_area_m2_m2_tile, occupancy, psi_stem);
+[m[31m-    let kh = leaf_hydraulic_coefficient(occupancy.k1_shade_max_s1, occupancy.shade.leaf_area_m2_m2_tile, occupancy, psi_stem);
+[m[32m+    let ks = leaf_hydraulic_coefficient(
+[m[32m+        occupancy.k1_sun_max_s1,
+[m[32m+        occupancy.sun.leaf_area_m2_m2_tile,
+[m[32m+        occupancy,
+[m[32m+        psi_stem,
+[m[32m+    );
+[m[32m+    let kh = leaf_hydraulic_coefficient(
+[m[32m+        occupancy.k1_shade_max_s1,
+[m[32m+        occupancy.shade.leaf_area_m2_m2_tile,
+[m[32m+        occupancy,
+[m[32m+        psi_stem,
+[m[32m+    );
+[m     if !ks.is_finite() || !kh.is_finite() {
+         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into());
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:109:
+     if (occupancy.sun.leaf_area_m2_m2_tile > 0.0 && ks <= 0.0)
+[31m-        || (occupancy.shade.leaf_area_m2_m2_tile > 0.0 && kh <= 0.0) {
+[m[32m+        || (occupancy.shade.leaf_area_m2_m2_tile > 0.0 && kh <= 0.0)
+[m[32m+    {
+[m         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+     }
+[31m-    let psi_sun = if ks == 0.0 { psi_stem } else { psi_stem - demand[0] / ks };
+[m[31m-    let psi_shade = if kh == 0.0 { psi_stem } else { psi_stem - demand[1] / kh };
+[m[31m-    if [psi_sun,psi_shade,psi_stem,psi_root].iter().any(|x|!x.is_finite()) { return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into()); }
+[m[31m-    let block=[psi_sun,psi_shade,psi_stem,psi_root,1.0,1.0,0.0,0.0,0.0,0.0];
+[m[31m-    let checked=evaluate_covered_hydraulics(column,None,None,occupancy,&block,demand[0],demand[1],demand[0],demand[1],branches)?;
+[m[31m-    if checked.residuals.iter().zip(checked.tolerances).any(|(r,t)|!r.is_finite()||r.abs()>t) { return Err(LandSurfaceEnergyError::NumericalAcceptedResidual.into()); }
+[m[31m-    let roots=checked.source_water;
+[m[31m-    let stem_flux=stem_k*(psi_root-psi_stem-1000.0*occupancy.height_m);
+[m[31m-    Ok(M1FullSupplyHydraulics { potentials_mm:[psi_sun,psi_shade,psi_stem,psi_root], root_layer_ids:roots.iter().map(|x|x.layer_id.clone()).collect(), root_fluxes_kg_m2_tile_s:roots.iter().map(|x|x.final_kg_m2_tile_s).collect(), stem_flux_kg_m2_tile_s:stem_flux, continuity_residuals_kg_m2_tile_s:[-checked.residuals[0],-checked.residuals[1],checked.residuals[4],checked.residuals[5]] })
+[m[32m+    let psi_sun = if ks == 0.0 {
+[m[32m+        psi_stem
+[m[32m+    } else {
+[m[32m+        psi_stem - demand[0] / ks
+[m[32m+    };
+[m[32m+    let psi_shade = if kh == 0.0 {
+[m[32m+        psi_stem
+[m[32m+    } else {
+[m[32m+        psi_stem - demand[1] / kh
+[m[32m+    };
+[m[32m+    if [psi_sun, psi_shade, psi_stem, psi_root]
+[m[32m+        .iter()
+[m[32m+        .any(|x| !x.is_finite())
+[m[32m+    {
+[m[32m+        return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+[m[32m+    }
+[m[32m+    let block = [
+[m[32m+        psi_sun, psi_shade, psi_stem, psi_root, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+[m[32m+    ];
+[m[32m+    let checked = evaluate_covered_hydraulics(
+[m[32m+        column, None, None, occupancy, &block, demand[0], demand[1], demand[0], demand[1], branches,
+[m[32m+    )?;
+[m[32m+    if checked
+[m[32m+        .residuals
+[m[32m+        .iter()
+[m[32m+        .zip(checked.tolerances)
+[m[32m+        .any(|(r, t)| !r.is_finite() || r.abs() > t)
+[m[32m+    {
+[m[32m+        return Err(LandSurfaceEnergyError::NumericalAcceptedResidual.into());
+[m[32m+    }
+[m[32m+    let roots = checked.source_water;
+[m[32m+    let stem_flux = stem_k * (psi_root - psi_stem - 1000.0 * occupancy.height_m);
+[m[32m+    Ok(M1FullSupplyHydraulics {
+[m[32m+        potentials_mm: [psi_sun, psi_shade, psi_stem, psi_root],
+[m[32m+        root_layer_ids: roots.iter().map(|x| x.layer_id.clone()).collect(),
+[m[32m+        root_fluxes_kg_m2_tile_s: roots.iter().map(|x| x.final_kg_m2_tile_s).collect(),
+[m[32m+        stem_flux_kg_m2_tile_s: stem_flux,
+[m[32m+        continuity_residuals_kg_m2_tile_s: [
+[m[32m+            -checked.residuals[0],
+[m[32m+            -checked.residuals[1],
+[m[32m+            checked.residuals[4],
+[m[32m+            checked.residuals[5],
+[m[32m+        ],
+[m[32m+    })
+[m }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:325:
+ }
+ impl NativeSnowExchangeV1 {
+     pub fn reconstructed_sha256(&self) -> Result<Sha256Digest, LandSurfaceEnergyError> {
+[31m-        let bytes = serde_json::to_vec(&("OPENWEPP_NATIVE_SNOW_EXCHANGE_V1", self.policy_id,
+[m[31m-            &self.ofe_id, &self.tile_id, self.start_ns, self.end_ns,
+[m[31m-            self.snow_temperature_k, self.snow_saturation_specific_humidity, self.pressure_pa,
+[m[31m-            self.heat_conductance_m_s, self.vapor_conductance_m_s,
+[m[31m-            &self.forcing_sha256, &self.exposure_sha256))
+[m[31m-            .map_err(|_| LandSurfaceEnergyError::StateLineage("native snow exchange encoding"))?;
+[m[32m+        let bytes = serde_json::to_vec(&(
+[m[32m+            "OPENWEPP_NATIVE_SNOW_EXCHANGE_V1",
+[m[32m+            self.policy_id,
+[m[32m+            &self.ofe_id,
+[m[32m+            &self.tile_id,
+[m[32m+            self.start_ns,
+[m[32m+            self.end_ns,
+[m[32m+            self.snow_temperature_k,
+[m[32m+            self.snow_saturation_specific_humidity,
+[m[32m+            self.pressure_pa,
+[m[32m+            self.heat_conductance_m_s,
+[m[32m+            self.vapor_conductance_m_s,
+[m[32m+            &self.forcing_sha256,
+[m[32m+            &self.exposure_sha256,
+[m[32m+        ))
+[m[32m+        .map_err(|_| LandSurfaceEnergyError::StateLineage("native snow exchange encoding"))?;
+[m         Sha256Digest::try_new(format!("{:x}", Sha256::digest(bytes)))
+     }
+     pub fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:337:
+[31m-        if self.policy_id != 14 || self.start_ns >= self.end_ns
+[m[32m+        if self.policy_id != 14
+[m[32m+            || self.start_ns >= self.end_ns
+[m             || !(200.0..=350.0).contains(&self.snow_temperature_k)
+             || !(0.0..=1.0).contains(&self.snow_saturation_specific_humidity)
+[31m-            || !self.pressure_pa.is_finite() || self.pressure_pa <= 0.0
+[m[31m-            || !self.heat_conductance_m_s.is_finite() || self.heat_conductance_m_s <= 0.0
+[m[31m-            || !self.vapor_conductance_m_s.is_finite() || self.vapor_conductance_m_s <= 0.0
+[m[31m-            || self.payload_sha256 != self.reconstructed_sha256()? {
+[m[31m-            return Err(LandSurfaceEnergyError::StateLineage("native snow exchange domain/seal"));
+[m[32m+            || !self.pressure_pa.is_finite()
+[m[32m+            || self.pressure_pa <= 0.0
+[m[32m+            || !self.heat_conductance_m_s.is_finite()
+[m[32m+            || self.heat_conductance_m_s <= 0.0
+[m[32m+            || !self.vapor_conductance_m_s.is_finite()
+[m[32m+            || self.vapor_conductance_m_s <= 0.0
+[m[32m+            || self.payload_sha256 != self.reconstructed_sha256()?
+[m[32m+        {
+[m[32m+            return Err(LandSurfaceEnergyError::StateLineage(
+[m[32m+                "native snow exchange domain/seal",
+[m[32m+            ));
+[m         }
+         Ok(())
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:348:
+     /// Surface-to-node fluxes at the actual shared node; all participants use
+     /// the existing LSE density and heat-capacity convention.
+[31m-    pub fn outward_fluxes(&self, temperature_k: f64, humidity: f64) -> Result<(f64, f64), LandSurfaceEnergyError> {
+[m[32m+    pub fn outward_fluxes(
+[m[32m+        &self,
+[m[32m+        temperature_k: f64,
+[m[32m+        humidity: f64,
+[m[32m+    ) -> Result<(f64, f64), LandSurfaceEnergyError> {
+[m         if !(200.0..=350.0).contains(&temperature_k) || !(0.0..=1.0).contains(&humidity) {
+[31m-            return Err(LandSurfaceEnergyError::ConstitutiveDomain("native snow shared node"));
+[m[32m+            return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+[m[32m+                "native snow shared node",
+[m[32m+            ));
+[m         }
+         let rho = self.pressure_pa / (DRY_AIR_GAS_CONSTANT_J_KG_K * temperature_k);
+[31m-        Ok((rho * AIR_HEAT_CAPACITY_J_KG_K * self.heat_conductance_m_s * (self.snow_temperature_k - temperature_k),
+[m[31m-            rho * self.vapor_conductance_m_s * (self.snow_saturation_specific_humidity - humidity)))
+[m[32m+        Ok((
+[m[32m+            rho * AIR_HEAT_CAPACITY_J_KG_K
+[m[32m+                * self.heat_conductance_m_s
+[m[32m+                * (self.snow_temperature_k - temperature_k),
+[m[32m+            rho * self.vapor_conductance_m_s * (self.snow_saturation_specific_humidity - humidity),
+[m[32m+        ))
+[m     }
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:532:
+         if let Some(exchange) = &self.native_snow_exchange {
+             exchange.validate()?;
+             if exchange.snow_temperature_k.to_bits() != self.snow_temperature_k.to_bits()
+[31m-                || exchange.forcing_sha256 != self.forcing_receipt_sha256 {
+[m[31m-                return Err(LandSurfaceEnergyError::StateLineage("native snow boundary constitutive join"));
+[m[32m+                || exchange.forcing_sha256 != self.forcing_receipt_sha256
+[m[32m+            {
+[m[32m+                return Err(LandSurfaceEnergyError::StateLineage(
+[m[32m+                    "native snow boundary constitutive join",
+[m[32m+                ));
+[m             }
+         }
+         if [
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:635:
+     pub gas_branch: V10LeafGasBranch,
+ }
+ #[derive(Clone, Debug, PartialEq)]
+[31m-pub enum M1CoupledError { LandSurfaceEnergy(LandSurfaceEnergyError), Vegetation(openwepp_vegetation::cold_canopy_m1::M1Error) }
+[m[32m+pub enum M1CoupledError {
+[m[32m+    LandSurfaceEnergy(LandSurfaceEnergyError),
+[m[32m+    Vegetation(openwepp_vegetation::cold_canopy_m1::M1Error),
+[m[32m+}
+[m impl M1CoupledError {
+     #[must_use]
+     pub fn code(&self) -> &str {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:642:
+         match self {
+             Self::Vegetation(error) => error.code(),
+             Self::LandSurfaceEnergy(error) => match error {
+[31m-                LandSurfaceEnergyError::UnsupportedDomain(_) | LandSurfaceEnergyError::SupportBelowMinimum { .. } => "LSEB-E-030",
+[m[31m-                LandSurfaceEnergyError::MalformedSerialization(_) | LandSurfaceEnergyError::Identity { .. } | LandSurfaceEnergyError::Topology { .. } | LandSurfaceEnergyError::StateLineage(_) | LandSurfaceEnergyError::OwnerEnvelope(_) | LandSurfaceEnergyError::FrozenLitterV3Identity(_) | LandSurfaceEnergyError::FrozenLitterTransaction(_) => "LSEB-E-031",
+[m[31m-                LandSurfaceEnergyError::NonFinite(_) | LandSurfaceEnergyError::ConstitutiveDomain(_) => "LSEB-E-032",
+[m[32m+                LandSurfaceEnergyError::UnsupportedDomain(_)
+[m[32m+                | LandSurfaceEnergyError::SupportBelowMinimum { .. } => "LSEB-E-030",
+[m[32m+                LandSurfaceEnergyError::MalformedSerialization(_)
+[m[32m+                | LandSurfaceEnergyError::Identity { .. }
+[m[32m+                | LandSurfaceEnergyError::Topology { .. }
+[m[32m+                | LandSurfaceEnergyError::StateLineage(_)
+[m[32m+                | LandSurfaceEnergyError::OwnerEnvelope(_)
+[m[32m+                | LandSurfaceEnergyError::FrozenLitterV3Identity(_)
+[m[32m+                | LandSurfaceEnergyError::FrozenLitterTransaction(_) => "LSEB-E-031",
+[m[32m+                LandSurfaceEnergyError::NonFinite(_)
+[m[32m+                | LandSurfaceEnergyError::ConstitutiveDomain(_) => "LSEB-E-032",
+[m                 LandSurfaceEnergyError::WaterIdentityOrBound { .. } => "LSEB-E-033",
+[31m-                LandSurfaceEnergyError::NumericalSingular { .. } | LandSurfaceEnergyError::NumericalBacktrackingLimit { .. } | LandSurfaceEnergyError::NumericalIterationLimit { .. } | LandSurfaceEnergyError::NumericalAcceptedResidual => "LSEB-E-034",
+[m[31m-                LandSurfaceEnergyError::ComponentClosure(_) | LandSurfaceEnergyError::ControlVolumeClosure(_) => "LSEB-E-035",
+[m[31m-                LandSurfaceEnergyError::LatentJoin(_) | LandSurfaceEnergyError::FrozenLitterVapor(_) | LandSurfaceEnergyError::FrozenLitterPhaseClosure(_) => "LSEB-E-036",
+[m[32m+                LandSurfaceEnergyError::NumericalSingular { .. }
+[m[32m+                | LandSurfaceEnergyError::NumericalBacktrackingLimit { .. }
+[m[32m+                | LandSurfaceEnergyError::NumericalIterationLimit { .. }
+[m[32m+                | LandSurfaceEnergyError::NumericalAcceptedResidual => "LSEB-E-034",
+[m[32m+                LandSurfaceEnergyError::ComponentClosure(_)
+[m[32m+                | LandSurfaceEnergyError::ControlVolumeClosure(_) => "LSEB-E-035",
+[m[32m+                LandSurfaceEnergyError::LatentJoin(_)
+[m[32m+                | LandSurfaceEnergyError::FrozenLitterVapor(_)
+[m[32m+                | LandSurfaceEnergyError::FrozenLitterPhaseClosure(_) => "LSEB-E-036",
+[m                 LandSurfaceEnergyError::GroundHeatJoin(_) => "LSEB-E-037",
+                 LandSurfaceEnergyError::SupportReceipt(_) => "LSEB-E-038",
+             },
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:655:
+         }
+     }
+ }
+[31m-impl From<LandSurfaceEnergyError> for M1CoupledError { fn from(value: LandSurfaceEnergyError) -> Self { Self::LandSurfaceEnergy(value) } }
+[m[31m-impl From<openwepp_vegetation::cold_canopy_m1::M1Error> for M1CoupledError { fn from(value: openwepp_vegetation::cold_canopy_m1::M1Error) -> Self { Self::Vegetation(value) } }
+[m[32m+impl From<LandSurfaceEnergyError> for M1CoupledError {
+[m[32m+    fn from(value: LandSurfaceEnergyError) -> Self {
+[m[32m+        Self::LandSurfaceEnergy(value)
+[m[32m+    }
+[m[32m+}
+[m[32m+impl From<openwepp_vegetation::cold_canopy_m1::M1Error> for M1CoupledError {
+[m[32m+    fn from(value: openwepp_vegetation::cold_canopy_m1::M1Error) -> Self {
+[m[32m+        Self::Vegetation(value)
+[m[32m+    }
+[m[32m+}
+[m 
+ /// M1's liquid-internal-saturation version of the existing V10 exact-zero-PAR
+ /// leaf calculation.  It retains the existing peaked respiration and diffusion
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:674:
+     g0_umol_m2_s: f64,
+     wet_fraction: f64,
+ ) -> Result<M1ZeroParLeafState, M1CoupledError> {
+[31m-    if [temperature_k, canopy_temperature_k, canopy_q, pressure_pa, ca_pa, gb_leaf_m_s, g0_umol_m2_s, wet_fraction, inputs.leaf_area_m2_m2_tile, inputs.absorbed_par_w_m2_leaf, inputs.rd25].iter().any(|x| !x.is_finite())
+[m[31m-        || !(80_000.0..=110_000.0).contains(&pressure_pa) {
+[m[32m+    if [
+[m[32m+        temperature_k,
+[m[32m+        canopy_temperature_k,
+[m[32m+        canopy_q,
+[m[32m+        pressure_pa,
+[m[32m+        ca_pa,
+[m[32m+        gb_leaf_m_s,
+[m[32m+        g0_umol_m2_s,
+[m[32m+        wet_fraction,
+[m[32m+        inputs.leaf_area_m2_m2_tile,
+[m[32m+        inputs.absorbed_par_w_m2_leaf,
+[m[32m+        inputs.rd25,
+[m[32m+    ]
+[m[32m+    .iter()
+[m[32m+    .any(|x| !x.is_finite())
+[m[32m+        || !(80_000.0..=110_000.0).contains(&pressure_pa)
+[m[32m+    {
+[m         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into());
+     }
+     if !(263.15..=373.15).contains(&temperature_k)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:688:
+     {
+         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+     }
+[31m-    let qsurface = openwepp_vegetation::cold_canopy_m1::m1_qsat_internal(temperature_k, pressure_pa)
+[m[31m-        ?
+[m[31m-        .specific_humidity_kg_kg;
+[m[31m-    if inputs.leaf_area_m2_m2_tile > 0.0 && qsurface <= canopy_q { return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into()); }
+[m[31m-    if inputs.absorbed_par_w_m2_leaf != 0.0 { return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into()); }
+[m[31m-    let environment = LeafGasEnvironment { authority: CoveredColumnAuthority::V11SnowCovered, pressure_pa, ca_pa };
+[m[31m-    let state = leaf_trial_state_with_surface_q(inputs, p, temperature_k, canopy_q, 1.0, environment, gb_leaf_m_s, g0_umol_m2_s, 0.0, || Ok(qsurface))?;
+[m[32m+    let qsurface =
+[m[32m+        openwepp_vegetation::cold_canopy_m1::m1_qsat_internal(temperature_k, pressure_pa)?
+[m[32m+            .specific_humidity_kg_kg;
+[m[32m+    if inputs.leaf_area_m2_m2_tile > 0.0 && qsurface <= canopy_q {
+[m[32m+        return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+[m[32m+    }
+[m[32m+    if inputs.absorbed_par_w_m2_leaf != 0.0 {
+[m[32m+        return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+[m[32m+    }
+[m[32m+    let environment = LeafGasEnvironment {
+[m[32m+        authority: CoveredColumnAuthority::V11SnowCovered,
+[m[32m+        pressure_pa,
+[m[32m+        ca_pa,
+[m[32m+    };
+[m[32m+    let state = leaf_trial_state_with_surface_q(
+[m[32m+        inputs,
+[m[32m+        p,
+[m[32m+        temperature_k,
+[m[32m+        canopy_q,
+[m[32m+        1.0,
+[m[32m+        environment,
+[m[32m+        gb_leaf_m_s,
+[m[32m+        g0_umol_m2_s,
+[m[32m+        0.0,
+[m[32m+        || Ok(qsurface),
+[m[32m+    )?;
+[m     let gs = 1.0 / state.rs_s_m;
+     let rb = 1.0 / gb_leaf_m_s;
+     let rho = pressure_pa / (287.05 * canopy_temperature_k);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:701:
+[31m-    let vapor = rho / (rb + state.rs_s_m) * (1.0 - wet_fraction) * inputs.leaf_area_m2_m2_tile * (qsurface - canopy_q);
+[m[31m-    if !vapor.is_finite() { return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into()); }
+[m[31m-    Ok(M1ZeroParLeafState { beta:1.0, internal_specific_humidity_kg_kg:qsurface, conductance_m_s:gs, ci_pa:state.ci_pa, gross_assimilation_umol_co2_m2_leaf_s:state.gross_assimilation_umol_co2_m2_leaf_s, net_assimilation_umol_co2_m2_leaf_s:state.net_assimilation_umol_co2_m2_leaf_s, dark_respiration_umol_co2_m2_leaf_s:state.dark_respiration_umol_co2_m2_leaf_s, vapor_kg_m2_tile_s:vapor, gas_branch:state.gas_branch })
+[m[32m+    let vapor = rho / (rb + state.rs_s_m)
+[m[32m+        * (1.0 - wet_fraction)
+[m[32m+        * inputs.leaf_area_m2_m2_tile
+[m[32m+        * (qsurface - canopy_q);
+[m[32m+    if !vapor.is_finite() {
+[m[32m+        return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into());
+[m[32m+    }
+[m[32m+    Ok(M1ZeroParLeafState {
+[m[32m+        beta: 1.0,
+[m[32m+        internal_specific_humidity_kg_kg: qsurface,
+[m[32m+        conductance_m_s: gs,
+[m[32m+        ci_pa: state.ci_pa,
+[m[32m+        gross_assimilation_umol_co2_m2_leaf_s: state.gross_assimilation_umol_co2_m2_leaf_s,
+[m[32m+        net_assimilation_umol_co2_m2_leaf_s: state.net_assimilation_umol_co2_m2_leaf_s,
+[m[32m+        dark_respiration_umol_co2_m2_leaf_s: state.dark_respiration_umol_co2_m2_leaf_s,
+[m[32m+        vapor_kg_m2_tile_s: vapor,
+[m[32m+        gas_branch: state.gas_branch,
+[m[32m+    })
+[m }
+ 
+ #[cfg(test)]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:877:
+     record_covered_leaf_trial_audit();
+     crate::solver_mechanism_audit::leaf_call();
+     leaf_trial_state_with_surface_q(
+[31m-        inputs, p, temperature, qcan, beta, environment, gb_leaf, g0_umol_m2_s,
+[m[31m-        medlyn_g1_kpa_sqrt, || canopy_saturation_q(temperature, environment.pressure_pa),
+[m[32m+        inputs,
+[m[32m+        p,
+[m[32m+        temperature,
+[m[32m+        qcan,
+[m[32m+        beta,
+[m[32m+        environment,
+[m[32m+        gb_leaf,
+[m[32m+        g0_umol_m2_s,
+[m[32m+        medlyn_g1_kpa_sqrt,
+[m[32m+        || canopy_saturation_q(temperature, environment.pressure_pa),
+[m     )
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:895:
+     medlyn_g1_kpa_sqrt: f64,
+     saturation: F,
+ ) -> Result<LeafTrialState, LandSurfaceEnergyError>
+[31m-where F: FnOnce() -> Result<f64, LandSurfaceEnergyError> {
+[m[32m+where
+[m[32m+    F: FnOnce() -> Result<f64, LandSurfaceEnergyError>,
+[m[32m+{
+[m     let vcmax_factor = peaked(
+         temperature,
+         p.ha_vcmax_j_mol,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:1709:
+         }
+     }));
+     let liquid = crate::covered_liquid::finalize_covered_liquid_for_column(
+[31m-        column, occupancy, context.liquid,
+[m[32m+        column,
+[m[32m+        occupancy,
+[m[32m+        context.liquid,
+[m         wet_e * column.interval_s,
+         twet,
+         if context.caps.is_some() {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:2118:
+                 LandSurfaceEnergyError::StateLineage("missing Stage-3 covered lower boundary"),
+             )?;
+             boundary.validate()?;
+[31m-            match (&boundary.native_snow_exchange, crate::snow_accuracy_policy::Policy::current().identity()) {
+[m[32m+            match (
+[m[32m+                &boundary.native_snow_exchange,
+[m[32m+                crate::snow_accuracy_policy::Policy::current().identity(),
+[m[32m+            ) {
+[m                 (Some(exchange), Some(14)) => {
+                     if exchange.pressure_pa.to_bits() != column.pressure_pa.to_bits()
+[31m-                        || ((exchange.end_ns - exchange.start_ns) as f64 / 1e9).to_bits() != column.interval_s.to_bits() {
+[m[31m-                        return Err(LandSurfaceEnergyError::StateLineage("native snow pressure/support"));
+[m[32m+                        || ((exchange.end_ns - exchange.start_ns) as f64 / 1e9).to_bits()
+[m[32m+                            != column.interval_s.to_bits()
+[m[32m+                    {
+[m[32m+                        return Err(LandSurfaceEnergyError::StateLineage(
+[m[32m+                            "native snow pressure/support",
+[m[32m+                        ));
+[m                     }
+                 }
+[31m-                (None, Some(14)) | (Some(_), _) => return Err(LandSurfaceEnergyError::Identity {
+[m[31m-                    field:"native snow constitutive policy/posture",expected:"policy14 authenticated covered exchange".into(),
+[m[31m-                    found:format!("policy={:?}; occupancies={:?}; optical={:?}; boundary={:?}",
+[m[31m-                        crate::snow_accuracy_policy::Policy::current().identity(),
+[m[31m-                        column.occupancies.iter().map(|o| &o.occupancy_id).collect::<Vec<_>>(),
+[m[31m-                        column.stage3_optical,boundary),
+[m[31m-                }),
+[m[32m+                (None, Some(14)) | (Some(_), _) => {
+[m[32m+                    return Err(LandSurfaceEnergyError::Identity {
+[m[32m+                        field: "native snow constitutive policy/posture",
+[m[32m+                        expected: "policy14 authenticated covered exchange".into(),
+[m[32m+                        found: format!(
+[m[32m+                            "policy={:?}; occupancies={:?}; optical={:?}; boundary={:?}",
+[m[32m+                            crate::snow_accuracy_policy::Policy::current().identity(),
+[m[32m+                            column
+[m[32m+                                .occupancies
+[m[32m+                                .iter()
+[m[32m+                                .map(|o| &o.occupancy_id)
+[m[32m+                                .collect::<Vec<_>>(),
+[m[32m+                            column.stage3_optical,
+[m[32m+                            boundary
+[m[32m+                        ),
+[m[32m+                    });
+[m[32m+                }
+[m                 (None, _) => {}
+             }
+             let optical =
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:2141:
+                     .ok_or(LandSurfaceEnergyError::StateLineage(
+                         "missing Stage-3 snow optical boundary",
+                     ))?;
+[31m-            if boundary.native_snow_exchange.as_ref().is_some_and(|exchange|
+[m[31m-                exchange.ofe_id != optical.ofe_id || exchange.tile_id != optical.tile_id)
+[m[32m+            if boundary
+[m[32m+                .native_snow_exchange
+[m[32m+                .as_ref()
+[m[32m+                .is_some_and(|exchange| {
+[m[32m+                    exchange.ofe_id != optical.ofe_id || exchange.tile_id != optical.tile_id
+[m[32m+                })
+[m                 || optical.snow_vis_albedo.to_bits() != boundary.snow_vis_albedo.to_bits()
+                 || optical.snow_nir_albedo.to_bits() != boundary.snow_nir_albedo.to_bits()
+                 || optical.stage3_albedo_state_sha256 != boundary.stage3_albedo_state_sha256
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:2254:
+             frozen,
+         )?;
+         let liquid = crate::covered_liquid::finalize_covered_liquid_for_column(
+[31m-            column, occupancy, preparation,
+[m[32m+            column,
+[m[32m+            occupancy,
+[m[32m+            preparation,
+[m             wet_flux * column.interval_s,
+             block[8],
+             if caps.is_some() {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:2444:
+     let (lower_boundary_sensible, lower_boundary_vapor) = match stage3_boundary {
+         Some(boundary) => match &boundary.native_snow_exchange {
+             Some(exchange) => exchange.outward_fluxes(canopy_temperature, canopy_q)?,
+[31m-            None => (boundary.sensible_to_canopy_air_w_m2, boundary.vapor_to_canopy_air_kg_m2_s),
+[m[32m+            None => (
+[m[32m+                boundary.sensible_to_canopy_air_w_m2,
+[m[32m+                boundary.vapor_to_canopy_air_kg_m2_s,
+[m[32m+            ),
+[m         },
+         None => (ground_sensible, final_ground_vapor),
+     };
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:2463:
+         .sum();
+     let shared_heat = canopy_sensible + lower_boundary_sensible - reference_heat;
+     let shared_vapor = canopy_vapor + lower_boundary_vapor - reference_vapor;
+[31m-    let native_node = stage3_boundary.is_some_and(|boundary| boundary.native_snow_exchange.is_some());
+[m[31m-    let scale_sensible = if native_node { lower_boundary_sensible } else { ground_sensible };
+[m[31m-    let scale_vapor = if native_node { lower_boundary_vapor } else { final_ground_vapor };
+[m[32m+    let native_node =
+[m[32m+        stage3_boundary.is_some_and(|boundary| boundary.native_snow_exchange.is_some());
+[m[32m+    let scale_sensible = if native_node {
+[m[32m+        lower_boundary_sensible
+[m[32m+    } else {
+[m[32m+        ground_sensible
+[m[32m+    };
+[m[32m+    let scale_vapor = if native_node {
+[m[32m+        lower_boundary_vapor
+[m[32m+    } else {
+[m[32m+        final_ground_vapor
+[m[32m+    };
+[m     let shared_heat_scale =
+         (canopy_sensible.abs() + scale_sensible.abs() + reference_heat.abs()).max(1.0);
+     let shared_vapor_scale = canopy_vapor
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:65:
+                 layer.gravity_head_mm,
+             ]
+             .iter()
+[31m-            .any(|x| !x.is_finite()) {
+[m[31m-                return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into());
+[m[32m+            .any(|x| !x.is_finite())
+[m[32m+            {
+[m[32m+                return Err(
+[m[32m+                    openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into(),
+[m[32m+                );
+[m             }
+             if [layer.z3_m, layer.dxroot_m, layer.ksoil_m2_s]
+                 .iter()
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:76:
+             }
+             let k = root_hydraulic_coefficient(occupancy, layer);
+             if !k.is_finite() {
+[31m-                return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into());
+[m[32m+                return Err(
+[m[32m+                    openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into(),
+[m[32m+                );
+[m             }
+             if k <= 0.0 {
+                 return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:83:
+             }
+             coefficients.push(Some(k));
+[31m-        } else { coefficients.push(None); }
+[m[32m+        } else {
+[m[32m+            coefficients.push(None);
+[m[32m+        }
+[m     }
+     let total: f64 = coefficients.iter().flatten().sum();
+     if !total.is_finite() {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:92:
+         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+     }
+     let sum_demand = demand[0] + demand[1];
+[31m-    let psi_root = (occupancy.root_layers.iter().zip(&coefficients).filter_map(|(l,k)| k.map(|value| value * (l.soil_potential_mm + l.gravity_head_mm))).sum::<f64>() - sum_demand) / total;
+[m[32m+    let psi_root = (occupancy
+[m[32m+        .root_layers
+[m[32m+        .iter()
+[m[32m+        .zip(&coefficients)
+[m[32m+        .filter_map(|(l, k)| k.map(|value| value * (l.soil_potential_mm + l.gravity_head_mm)))
+[m[32m+        .sum::<f64>()
+[m[32m+        - sum_demand)
+[m[32m+        / total;
+[m     let stem_k = stem_hydraulic_coefficient(occupancy, psi_root);
+     if !stem_k.is_finite() {
+         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into());
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:101:
+         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+     }
+     let psi_stem = psi_root - 1000.0 * occupancy.height_m - sum_demand / stem_k;
+[31m-    let ks = leaf_hydraulic_coefficient(occupancy.k1_sun_max_s1, occupancy.sun.leaf_area_m2_m2_tile, occupancy, psi_stem);
+[m[31m-    let kh = leaf_hydraulic_coefficient(occupancy.k1_shade_max_s1, occupancy.shade.leaf_area_m2_m2_tile, occupancy, psi_stem);
+[m[32m+    let ks = leaf_hydraulic_coefficient(
+[m[32m+        occupancy.k1_sun_max_s1,
+[m[32m+        occupancy.sun.leaf_area_m2_m2_tile,
+[m[32m+        occupancy,
+[m[32m+        psi_stem,
+[m[32m+    );
+[m[32m+    let kh = leaf_hydraulic_coefficient(
+[m[32m+        occupancy.k1_shade_max_s1,
+[m[32m+        occupancy.shade.leaf_area_m2_m2_tile,
+[m[32m+        occupancy,
+[m[32m+        psi_stem,
+[m[32m+    );
+[m     if !ks.is_finite() || !kh.is_finite() {
+         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::saturation_error().into());
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:109:
+     if (occupancy.sun.leaf_area_m2_m2_tile > 0.0 && ks <= 0.0)
+[31m-        || (occupancy.shade.leaf_area_m2_m2_tile > 0.0 && kh <= 0.0) {
+[m[32m+        || (occupancy.shade.leaf_area_m2_m2_tile > 0.0 && kh <= 0.0)
+[m[32m+    {
+[m         return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+     }
+[31m-    let psi_sun = if ks == 0.0 { psi_stem } else { psi_stem - demand[0] / ks };
+[m[31m-    let psi_shade = if kh == 0.0 { psi_stem } else { psi_stem - demand[1] / kh };
+[m[31m-    if [psi_sun,psi_shade,psi_stem,psi_root].iter().any(|x|!x.is_finite()) { return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into()); }
+[m[31m-    let block=[psi_sun,psi_shade,psi_stem,psi_root,1.0,1.0,0.0,0.0,0.0,0.0];
+[m[31m-    let checked=evaluate_covered_hydraulics(column,None,None,occupancy,&block,demand[0],demand[1],demand[0],demand[1],branches)?;
+[m[31m-    if checked.residuals.iter().zip(checked.tolerances).any(|(r,t)|!r.is_finite()||r.abs()>t) { return Err(LandSurfaceEnergyError::NumericalAcceptedResidual.into()); }
+[m[31m-    let roots=checked.source_water;
+[m[31m-    let stem_flux=stem_k*(psi_root-psi_stem-1000.0*occupancy.height_m);
+[m[31m-    Ok(M1FullSupplyHydraulics { potentials_mm:[psi_sun,psi_shade,psi_stem,psi_root], root_layer_ids:roots.iter().map(|x|x.layer_id.clone()).collect(), root_fluxes_kg_m2_tile_s:roots.iter().map(|x|x.final_kg_m2_tile_s).collect(), stem_flux_kg_m2_tile_s:stem_flux, continuity_residuals_kg_m2_tile_s:[-checked.residuals[0],-checked.residuals[1],checked.residuals[4],checked.residuals[5]] })
+[m[32m+    let psi_sun = if ks == 0.0 {
+[m[32m+        psi_stem
+[m[32m+    } else {
+[m[32m+        psi_stem - demand[0] / ks
+[m[32m+    };
+[m[32m+    let psi_shade = if kh == 0.0 {
+[m[32m+        psi_stem
+[m[32m+    } else {
+[m[32m+        psi_stem - demand[1] / kh
+[m[32m+    };
+[m[32m+    if [psi_sun, psi_shade, psi_stem, psi_root]
+[m[32m+        .iter()
+[m[32m+        .any(|x| !x.is_finite())
+[m[32m+    {
+[m[32m+        return Err(openwepp_vegetation::cold_canopy_m1::M1Error::condition_error().into());
+[m[32m+    }
+[m[32m+    let block = [
+[m[32m+        psi_sun, psi_shade, psi_stem, psi_root, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+[m[32m+    ];
+[m[32m+    let checked = evaluate_covered_hydraulics(
+[m[32m+        column, None, None, occupancy, &block, demand[0], demand[1], demand[0], demand[1], branches,
+[m[32m+    )?;
+[m[32m+    if checked
+[m[32m+        .residuals
+[m[32m+        .iter()
+[m[32m+        .zip(checked.tolerances)
+[m[32m+        .any(|(r, t)| !r.is_finite() || r.abs() > t)
+[m[32m+    {
+[m[32m+        return Err(LandSurfaceEnergyError::NumericalAcceptedResidual.into());
+[m[32m+    }
+[m[32m+    let roots = checked.source_water;
+[m[32m+    let stem_flux = stem_k * (psi_root - psi_stem - 1000.0 * occupancy.height_m);
+[m[32m+    Ok(M1FullSupplyHydraulics {
+[m[32m+        potentials_mm: [psi_sun, psi_shade, psi_stem, psi_root],
+[m[32m+        root_layer_ids: roots.iter().map(|x| x.layer_id.clone()).collect(),
+[m[32m+        root_fluxes_kg_m2_tile_s: roots.iter().map(|x| x.final_kg_m2_tile_s).collect(),
+[m[32m+        stem_flux_kg_m2_tile_s: stem_flux,
+[m[32m+        continuity_residuals_kg_m2_tile_s: [
+[m[32m+            -checked.residuals[0],
+[m[32m+            -checked.residuals[1],
+[m[32m+            checked.residuals[4],
+[m[32m+            checked.residuals[5],
+[m[32m+        ],
+[m[32m+    })
+[m }
+ 

@@ -1,0 +1,22 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test m1_zero_par_tests::m1_internal_liquid_zero_par_rows_match_frozen_gas_controls ... FAILED
+
+failures:
+
+---- m1_zero_par_tests::m1_internal_liquid_zero_par_rows_match_frozen_gas_controls stdout ----
+
+thread 'm1_zero_par_tests::m1_internal_liquid_zero_par_rows_match_frozen_gas_controls' (4173088) panicked at crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:23:5:
+0.00000000025745422262592265 != 0.0000000002574482744076253
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    m1_zero_par_tests::m1_internal_liquid_zero_par_rows_match_frozen_gas_controls
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 174 filtered out; finished in 0.00s
+

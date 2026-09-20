@@ -1,0 +1,11 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+
+running 2 tests
+test m1_zero_par_tests::m1_zero_par_leaf_rejects_vpd_area_humidity_and_pressure_domain_poison ... ok
+test m1_zero_par_tests::m1_internal_liquid_zero_par_rows_match_frozen_gas_controls ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 174 filtered out; finished in 0.00s
+

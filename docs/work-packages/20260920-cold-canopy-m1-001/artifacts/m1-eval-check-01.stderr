@@ -1,0 +1,65 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0615]: attempted to take value of method `liquid_mass_kg_m2` on type `M1PhaseReservoir`
+  --> crates/openwepp-land-surface-energy/src/m1_coupled.rs:47:1756
+   |
+47 | ...erature_k:wet,diagnosed_liquid_mass_kg_m2:res.liquid_mass_kg_m2,liquid_capacity_kg_m2:cap,wet_fraction:fw,emission_w_m2:0.0,wet_l...
+   |                                                  ^^^^^^^^^^^^^^^^^ method, not a field
+   |
+help: use parentheses to call the method
+   |
+47 |  for i in 0..2 { let o=&input.column.occupancies[i]; let base=&input.reservoirs[i]; let j=i*6; let res=M1PhaseReservoir::from_mass_enthalpy(t.x[j+3],t.x[j+4]).map_err(|_|M1CoupledError::Vegetation("VEG-E-142"))?; let wet=res.wet_temperature_k(); let plant=o.sun.leaf_area_m2_m2_tile+o.shade.leaf_area_m2_m2_tile+o.stem_area_m2_m2_tile; let cap=o.liquid_capacity_kg_m2_plant*plant; let fw=if res.mass_kg_m2()==0.0 {0.0} else {(res.liquid_mass_kg_m2()/cap).powf(2.0/3.0).min(1.0)}; let tw=wet.unwrap_or(TF); let qsat=m1_qsat_external(tw,input.column.pressure_pa,if tw<TF {M1ExternalPhase::Ice}else{M1ExternalPhase::Liquid}).map_err(|_|M1CoupledError::Vegetation("VEG-E-141"))?.specific_humidity_kg_kg; let rho=input.column.pressure_pa/(RD*t.x[12]); let e=rho*o.gb_wet_m_s*fw*plant*(qsat-t.x[13]); let sensible=rho*CP*o.gb_wet_m_s*fw*plant*(tw-t.x[12]); let sw=fw*(o.sun.absorbed_shortwave_w_m2_tile+o.shade.absorbed_shortwave_w_m2_tile+o.stem_absorbed_shortwave_w_m2_tile); let q=sw-sensible; let inc=if i==0 {input.column.top_rain_kg_m2_tile/dt}else{0.0}; let hi=input.top_liquid_specific_enthalpy_j_kg.unwrap_or(0.0); let hv=2_501_000.0+1849.0*(tw-TF); let hl=CW*(tw-TF); let rm=t.x[j+3]-base.mass_kg_m2-dt*(inc-e-t.x[j+5]); let rh=t.x[j+4]-base.enthalpy_j_m2-dt*(q+inc*hi-e*hv-t.x[j+5]*hl); let rc=(dt*t.x[j+5]).min(cap-res.liquid_mass_kg_m2()); r.extend([t.x[j]-t.x[12],t.x[j+1]-t.x[12],t.x[j+2]-t.x[12],rm,rh,rc]); ro.push(M1ReservoirOperands{beginning_mass_kg_m2:base.mass_kg_m2,beginning_enthalpy_j_m2:base.enthalpy_j_m2,ending_mass_kg_m2:t.x[j+3],ending_enthalpy_j_m2:t.x[j+4],incident_liquid_kg_m2_s:inc,incident_enthalpy_j_kg:hi,vapor_kg_m2_s:e,drainage_kg_m2_s:t.x[j+5],non_vapor_heat_w_m2:q,wet_temperature_k:wet,diagnosed_liquid_mass_kg_m2:res.liquid_mass_kg_m2(),liquid_capacity_kg_m2:cap,wet_fraction:fw,emission_w_m2:0.0,wet_longwave_w_m2:0.0,wet_sensible_w_m2:sensible,mass_residual_kg_m2:rm,enthalpy_residual_j_m2:rh}); let leaf=M1LeafEvaluation{gas_branch:"ExactZeroPar".into(),beta:1.0,internal_specific_humidity_kg_kg:qsat,dark_respiration:0.0,net_assimilation:0.0,gross_assimilation:0.0,conductance_m_s:0.0,ci_pa:input.column.ca_pa,vapor_kg_m2_tile_s:0.0}; oe.push(M1OccupancyEvaluation{occupancy_id:o.occupancy_id.clone(),sun:leaf.clone(),shade:leaf,hydraulics:M1Hydraulics{potentials_mm:vec![0.0;4],root_layer_ids:o.root_layers.iter().map(|x|x.layer_id.clone()).collect(),root_fluxes_kg_m2_tile_s:vec![0.0;o.root_layers.len()],stem_flux_kg_m2_tile_s:0.0,total_leaf_demand_kg_m2_tile_s:0.0,continuity_residuals_kg_m2_tile_s:vec![0.0;4]}}); }
+   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             ++
+
+error[E0507]: cannot move out of `*t` which is behind a shared reference
+  --> crates/openwepp-land-surface-energy/src/m1_coupled.rs:50:291
+   |
+50 | ...hi=raw(input,&t.with_coordinate_offset(c,h))?.0;let lo=if matches!(c,5|11){r.clone()}else{raw(input,&t.with_coordinate_offset(c,-...
+   |                  ^ --------------------------- `*t` moved due to this method call
+   |                  |
+   |                  move occurs because `*t` has type `M1CoupledColumnTrial`, which does not implement the `Copy` trait
+   |
+note: `M1CoupledColumnTrial::with_coordinate_offset` takes ownership of the receiver `self`, which moves `*t`
+  --> crates/openwepp-land-surface-energy/src/m1_coupled.rs:30:145
+   |
+30 | ...>Self {Self{x}} #[must_use] pub fn with_coordinate_offset(mut self,i:usize,d:f64)->Self {self.x[i]+=d;self} }
+   |                                                                  ^^^^
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+   |
+50 | pub fn evaluate_m1_coupled_column(input:&M1CoupledColumnInput,t:&M1CoupledColumnTrial)->Result<M1CoupledEvaluation,M1CoupledError>{let (r,ro,oe)=raw(input,t)?;let mut j=vec![vec![0.0;21];21];for c in 0..21 {let h=match c{3|9=>1e-8,4|10=>1e-3,5|11=>1e-10,13=>1e-8,_=>1e-4};let hi=raw(input,&<M1CoupledColumnTrial as Clone>::clone(&t).with_coordinate_offset(c,h))?.0;let lo=if matches!(c,5|11){r.clone()}else{raw(input,&t.with_coordinate_offset(c,-h))?.0};let d=if matches!(c,5|11){h}else{2.0*h};for row in 0..21{j[row][c]=(hi[row]-lo[row])/d;}}Ok(M1CoupledEvaluation{residuals:r,jacobian:j,reservoirs:ro,occupancies:oe})}
+   |                                                                                                                                                                                                                                                                                                   ++++++++++++++++++++++++++++++++++++++++ +
+help: consider cloning the value if the performance cost is acceptable
+   |
+50 | pub fn evaluate_m1_coupled_column(input:&M1CoupledColumnInput,t:&M1CoupledColumnTrial)->Result<M1CoupledEvaluation,M1CoupledError>{let (r,ro,oe)=raw(input,t)?;let mut j=vec![vec![0.0;21];21];for c in 0..21 {let h=match c{3|9=>1e-8,4|10=>1e-3,5|11=>1e-10,13=>1e-8,_=>1e-4};let hi=raw(input,&t.clone().with_coordinate_offset(c,h))?.0;let lo=if matches!(c,5|11){r.clone()}else{raw(input,&t.with_coordinate_offset(c,-h))?.0};let d=if matches!(c,5|11){h}else{2.0*h};for row in 0..21{j[row][c]=(hi[row]-lo[row])/d;}}Ok(M1CoupledEvaluation{residuals:r,jacobian:j,reservoirs:ro,occupancies:oe})}
+   |                                                                                                                                                                                                                                                                                                    ++++++++
+
+error[E0507]: cannot move out of `*t` which is behind a shared reference
+  --> crates/openwepp-land-surface-energy/src/m1_coupled.rs:50:378
+   |
+50 | ...se{raw(input,&t.with_coordinate_offset(c,-h))?.0};let d=if matches!(c,5|11){h}else{2.0*h};for row in 0..21{j[row][c]=(hi[row]-lo[...
+   |                  ^ ---------------------------- `*t` moved due to this method call
+   |                  |
+   |                  move occurs because `*t` has type `M1CoupledColumnTrial`, which does not implement the `Copy` trait
+   |
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+   |
+50 | pub fn evaluate_m1_coupled_column(input:&M1CoupledColumnInput,t:&M1CoupledColumnTrial)->Result<M1CoupledEvaluation,M1CoupledError>{let (r,ro,oe)=raw(input,t)?;let mut j=vec![vec![0.0;21];21];for c in 0..21 {let h=match c{3|9=>1e-8,4|10=>1e-3,5|11=>1e-10,13=>1e-8,_=>1e-4};let hi=raw(input,&t.with_coordinate_offset(c,h))?.0;let lo=if matches!(c,5|11){r.clone()}else{raw(input,&<M1CoupledColumnTrial as Clone>::clone(&t).with_coordinate_offset(c,-h))?.0};let d=if matches!(c,5|11){h}else{2.0*h};for row in 0..21{j[row][c]=(hi[row]-lo[row])/d;}}Ok(M1CoupledEvaluation{residuals:r,jacobian:j,reservoirs:ro,occupancies:oe})}
+   |                                                                                                                                                                                                                                                                                                                                                                                          ++++++++++++++++++++++++++++++++++++++++ +
+help: consider cloning the value if the performance cost is acceptable
+   |
+50 | pub fn evaluate_m1_coupled_column(input:&M1CoupledColumnInput,t:&M1CoupledColumnTrial)->Result<M1CoupledEvaluation,M1CoupledError>{let (r,ro,oe)=raw(input,t)?;let mut j=vec![vec![0.0;21];21];for c in 0..21 {let h=match c{3|9=>1e-8,4|10=>1e-3,5|11=>1e-10,13=>1e-8,_=>1e-4};let hi=raw(input,&t.with_coordinate_offset(c,h))?.0;let lo=if matches!(c,5|11){r.clone()}else{raw(input,&t.clone().with_coordinate_offset(c,-h))?.0};let d=if matches!(c,5|11){h}else{2.0*h};for row in 0..21{j[row][c]=(hi[row]-lo[row])/d;}}Ok(M1CoupledEvaluation{residuals:r,jacobian:j,reservoirs:ro,occupancies:oe})}
+   |                                                                                                                                                                                                                                                                                                                                                                                           ++++++++
+
+warning: unused variable: `o`
+  --> crates/openwepp-land-surface-energy/src/m1_coupled.rs:51:142
+   |
+51 | ...t x=[0.0;21];for i in 0..2{let o=&input.column.occupancies[i];let j=i*6;x[j]=input.column.air_temperature_k;x[j+1]=x[j];x[j+2]=x[...
+   |                                   ^ help: if this is intentional, prefix it with an underscore: `_o`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0507, E0615.
+For more information about an error, try `rustc --explain E0507`.
+warning: `openwepp-land-surface-energy` (lib) generated 1 warning
+error: could not compile `openwepp-land-surface-energy` (lib) due to 3 previous errors; 1 warning emitted
