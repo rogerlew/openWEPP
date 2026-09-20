@@ -1,0 +1,33 @@
+{
+  "evidence_class": "Ran: concurrent wall-clock accounting; no wait deductions or historical refunds",
+  "utc": "2026-09-20T04:01:40.564237+00:00",
+  "resumption_anchor_utc": "2026-09-20T03:47:00+00:00",
+  "carried_charged_seconds": 138501.839022,
+  "elapsed_seconds": 880.564237,
+  "actual_cumulative_seconds": 139382.403259,
+  "publication_return_precharge_seconds": 120,
+  "cumulative_charged_seconds": 139502.403259,
+  "ceiling_seconds": 140479.464696,
+  "remaining_seconds": 977.0614369999967,
+  "deadline_utc": "2026-09-20T04:19:57.625674+00:00",
+  "mixed_outcome_floor": 462,
+  "uncertainty_retained": true,
+  "new_mixed_outcomes": [
+    "nonexistent errors.rs lookup",
+    "first C2 static correction incomplete, then fixed and independently verified"
+  ],
+  "correctness": "PASS / GO; C1 C2 CLOSED",
+  "qa": "PASS; supplemental PASS",
+  "new_rust_builds_tests": 0,
+  "new_evaluator_domain_calls": 0,
+  "new_fd_samples": 0,
+  "new_nonlinear_physical_model_reader_runs": 0,
+  "grid40_arms_consumed": [
+    1,
+    1
+  ],
+  "grid40_authority_expired": true,
+  "canonical_files_changed": false,
+  "disposition": "COMPLETE bounded support clarification proposal; not active authority or cold-model implementation",
+  "final_external_publication_receipt": "/home/roger/openwepp-experiments/b01-wb14-cold-canopy-authority-20260920/final-publication.json"
+}

@@ -1,0 +1,44 @@
+{
+  "evidence_class": "Ran: read-only source/input hashes, parsed retained input, historical-prefix and documentation-link checks; no physics execution",
+  "utc": "2026-09-20T03:54:39.655869+00:00",
+  "repository_base": "1594cca33104dc2a5530ab184889effd8d6eebce",
+  "historical_package_prefix_unchanged": true,
+  "local_links_checked": [
+    "../../specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+    "../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+    "../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
+    "../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+    "../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+    "../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+    "../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+    "../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md"
+  ],
+  "selected_detached_source_hashes_match_prior_manifest": {
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs": "a5f9d2006057e9e57236e1f8d72189e6607ca1bb453f8f98400bfdf7e955ca58",
+    "crates/openwepp-land-surface-energy/src/covered_liquid.rs": "5101c08b413031019631e9957c975e3349b946761f579fceab83d0e06bfe38b0",
+    "crates/openwepp-land-surface-energy/src/physics.rs": "24663224a9620421c60ac1337f355fdbf9d3df6ffd51c4934c29373689959435",
+    "crates/openwepp-vegetation/src/interception.rs": "e71e5fb62506c551b5b35cb89028cc01e10ea69e312274166d96d39bd22d245f",
+    "crates/openwepp-land-surface-energy/src/error.rs": "1eb2e0e9226dda943b05c94ea6ff576ebdc7d2045c162b1ee4f4f7bb7159e8ef",
+    "crates/openwepp-land-surface-energy/src/solver_covered_solve.rs": "0e6ea5c2a5c92ff6267d7581eeaf97fb2988f0606acf06a6a744f58a4ab87d4a"
+  },
+  "full_749_entry_recovery": "REUSED prior verified evidence; not rebuilt or recopied",
+  "original_trace_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+  "captured_native_snow_exchange": "key absent, source optional default None",
+  "captured_canopy_liquid_kg_m2_tile": [
+    0.018,
+    0.018
+  ],
+  "clm5_primary_source_retrieval": {
+    "url": "https://escomp.github.io/CTSM/release-clm5.0/tech_note/Fluxes/CLM50_Tech_Note_Fluxes.html",
+    "sha256": "7f12c0858fd53934886f22f1c547029b178b72dd147669c0c1f44be677f1ef9b",
+    "retained_path": "/home/roger/openwepp-experiments/b01-wb14-cold-canopy-authority-20260920/clm5-fluxes.html",
+    "purpose": "read-only cited source retrieval, not constitutive acquisition/adoption"
+  },
+  "rust_builds_tests": 0,
+  "evaluator_domain_calls": 0,
+  "fd_samples": 0,
+  "nonlinear_physical_model_reader_runs": 0,
+  "new_grid40_arms": 0,
+  "supplement": "Two error-mapping source files additionally hash-checked after correctness feedback; no physical execution."
+}

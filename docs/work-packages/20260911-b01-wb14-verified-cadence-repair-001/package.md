@@ -7044,3 +7044,495 @@ or waived. Prior unchanged runtime evidence is retained only for its old scope.
 [Charged final ledger](artifacts/bound-feasibility-20260920/final-ledger.json) at 2026-09-20T02:50:30.399146+00:00: actual cumulative **138381.839022s**, plus **120s** publication/return precharge, charged **138501.839022 / 140479.464696s**, remaining **1977.625674s**. No new time, wait deductions or refunded prior reserves; mixed-outcome floor **at least460** with uncertainty. Scoped current-branch commit/push and exact remote bytes are the remaining publication steps. The named external final receipt records any greater actual charge through return.
 
 Publication: primary commit `6dfd1d19f607bcf85f9b8f8a84da45f8009deb22` is pushed on existing `main`; [remote-byte verification](artifacts/bound-feasibility-20260920/primary-remote-verification.json) matches all ten changed files exactly. Final receipt-commit verification and any greater terminal charge are recorded at `/home/roger/openwepp-experiments/b01-wb14-bound-feasibility-final-publication-20260920.json`. Both final reviews PASS; all broader HOLDs and the at-least460 uncertain outcome floor remain unchanged.
+
+### Owner-adopted cold-canopy authority reconciliation, 2026-09-20
+
+**Static / intent before edits:** owner instruction to execute
+`/tmp/openwepp_b01_wb14_cold_canopy_authority_authorization.md` adopts this
+bounded continuation of `B01-WB14-CURRENT-CONTEXT-CAPTURE / A-001`.
+Starting published evidence is `1594cca33104dc2a5530ab184889effd8d6eebce`;
+it is not the detached executable source. Preserve the completed equation/domain
+proof, reviews and Grid40 evidence unchanged. Deliver one source-backed domain
+and ownership decision, minimum proposed canonical wording here, future checks,
+and independent correctness and QA reviews. Only this record and necessary raw
+citation/check/publication evidence may change; canonical files stay unchanged.
+No Rust, fixture, numerical policy, production/public/wire change, build/test,
+evaluator/domain call, finite-difference sample, nonlinear/physical/model/reader
+run, acquisition or new arm is authorized. Read-only source retrieval is allowed.
+Both Grid40 arms remain 1/1 spent; execution authority remains expired.
+
+The predecessor final ledger and its named external publication receipt were
+read once; the receipt establishes no greater charge. Carry **138501.839022 s**
+under the unchanged **140479.464696 s** ceiling, leaving **1977.625674 s**.
+Conservative actual-resumption anchor **2026-09-20T03:47:00Z** includes initial
+reading; deadline **2026-09-20T04:19:57.625674Z**. Charge concurrent work once,
+including review, publication and return, with no waits or prior reserves
+refunded. Preserve at least 600 s for reviews/publication/return. Carry **at
+least 460 mixed outcomes**, uncertain and not a correction-cycle ceiling.
+Stops are owner stop, hard ceiling, indispensable unavailable evidence or
+independence after bounded recovery, integrity failure, excluded indispensable
+action, or completed bounded decision.
+
+Selected checks: targeted effective-contract/source/reference inspection;
+source citations and documentation links; unchanged historical-prefix and
+canonical/source diff checks; two independent static reviews of this new scope;
+scoped current-branch commit/push and exact remote-byte verification. Rust and
+runtime gates are NOT RUN by the explicit zero-run allowance and unchanged
+production scope, not passed or waived for future implementation. Strict Clippy
+remains FAIL and broader qualification statuses remain separate.
+
+#### Cold-canopy decision: retain and clarify the restricted liquid model
+
+**Static [DIRECT + INFERENCE]:** recommend a **support restriction/clarification**,
+not a cold-canopy successor implementation. The admitted stack intentionally
+omits intercepted canopy ice/snow and cold active liquid-vapor constitutive
+support. The minimum next canonical change is to make that inherited boundary
+explicit at the V11 represented-snow join, including the distinct temperature
+roles and transparent-passage exception. It is not a missing coefficient in an
+otherwise complete freeze/melt model. This decision does not supply all-weather
+forest modeling or make the captured transaction executable. The proposed text
+below is **NOT ACTIVE AUTHORITY**; canonical adoption and any implementation
+require separate authorization. No new early-refusal classifier is proposed.
+
+The exact captured problem is **an admitted numerical warm start of an active,
+liquid-only canopy model over represented ground snow whose fixed real-valued
+equilibrium equations have no root in their declared domain**. This reuses the
+closed proof above; it does not reproduce or extend it. The physical phase of
+the intercepted water cannot be inferred from that result. Calling the input
+"known canopy ice," "frozen foliage," or "invalid because air is subfreezing"
+would exceed the evidence. The failed liquid trial is not a phase observation.
+Finite-tolerance and binary64 infeasibility remain unproved. Existing numerical
+failure/error ordering stands; this analysis does not relabel a historical
+backtracking failure as an executed preflight phase refusal.
+
+#### Effective authority and primary-reference reconciliation
+
+Canonical references below are at the starting published commit unless a later
+prospective adoption is explicitly stated. `SC-VEGETATION-001` means
+[the vegetation contract](../../specifications/science-contracts/contracts/SC-VEGETATION-001.md).
+The LSE [shared interface](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md),
+[common physical rules](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md),
+[surface energy](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md),
+[water/vapor](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md),
+[solve boundary](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md),
+[admission](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md),
+[numerical-domain clauses](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md)
+and [represented-snow boundary](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md)
+provide the coupled context, not a second vegetation phase law.
+
+| Effective inheritance | Retained rule and actual supersession |
+| --- | --- |
+| V1 equations 2, 5, 6; scope; VEG-E-040/062/063 | Finite liquid interception, subfreezing interception refusal, water saturation polynomial, separate leaf/wet/stem energy and hydraulic continuity. Canopy snow/ice excluded; future intercepted snow belongs to vegetation, ground snow to snow/frost. |
+| V2 and V3 amendments | V2 moves liquid into occupancy/tile lanes and routes it down the same tile. V3 changes radiation partition, neutral wind, common-root hydraulics, potential coupling and respiration; unchanged liquid constitutive rules remain imported. Warm starts are initialization, not physical heat stores. |
+| V4 through V7 amendments | Shared C/N/area state, capped hydraulic complementarity, diagnostic portability and seasonal C/N transfers respectively; none admits external canopy ice or changes the water saturation fit. |
+| V8 equations and INV-110..114 | Reciprocal component longwave, one shared tile air node and coupled solve replace prescribed boundaries/local air nodes. Every other gas/interception/hydraulic equation remains. Ordinary canopy liquid releases use accepted Twet and liquid enthalpy; no persistent liquid-temperature lane is added. |
+| V9, V10, V11 | V9 changes oracle identity only. V10 changes nonpositive-assimilation gas/hydraulics: zero PAR still has gs=g0, beta=1 and Egas=q1. V11 imports complete V10 constitutive domains and changes chronology/custody/restart. None is a cold physiology or phase extension. |
+| V11 Child 2C, LSE INV-154 | Ground snow joins shared air and longwave and selects the represented-snow map. It does not admit intercepted snow or relax active canopy vapor domains. Under-snow litter phase/storage/ingress remains inactive. |
+| LSE INV-131/138 and isolated transparent passage | Sun/shade/wet numerical coordinates remain 273.15..350 K, even at zero area; dry-stem/shared-air coordinates have 200..350 K bounds. A zero-area numerical anchor is not a physical surface. Authenticated zero-area/zero-store transparent liquid passage can carry below-reference liquid enthalpy in its distinct release temperature; it does not freeze it. Positive area or beginning store excludes that exception. |
+
+The inherited phrase "subfreezing canopy temperature" therefore must not be
+read as reference-air or shared-canopy-air temperature. On the captured route,
+active leaf vapor laws use their own leaf temperatures and ordinary interception
+uses its wet-surface temperature. Dry stems have no vapor term. Shared air can
+be cold while a radiatively heated leaf is warm; ground snow is a different
+owner. Historical standalone vegetation air-forcing validation is not an early
+phase selector for the coupled V11SnowCovered problem.
+
+**External primary model reference [DIRECT]:** release-CLM5.0 Technical Note,
+[§2.5.5, equations 2.5.154–157 and Tables 2.5.2–3](https://escomp.github.io/CTSM/release-clm5.0/tech_note/Fluxes/CLM50_Tech_Note_Fluxes.html#saturation-vapor-pressure).
+It gives separate eighth-order water (0..100 °C) and ice (-75..0 °C, excluding
+0 °C) fits and the pressure conversion to saturation specific humidity. The
+water coefficients match vegetation equation 5 and its fixed-constant list;
+openWEPP imports that water branch only. Table 2.5.3 separately fits derivatives;
+this decision imports neither those derivatives nor an ice branch.
+The same release's equation 2.5.128 uses a steady canopy energy balance, and its
+equations 2.5.152–153 retain vaporization latent heat for vegetation while
+selecting a separate ground latent term. Thus copying its saturation branch
+alone would not define a conserved intercepted-water freeze/melt extension.
+Those are external reference-model choices, not additional adopted openWEPP
+authority. No additional external constitutive family is needed to justify the
+selected restriction; supercooling, nucleation and tissue-freezing laws remain
+unselected. The citation is release-specific HTML, not a claim that its bytes
+are identical to REF-VEGETATION-027's separately hash-bound reviewed document.
+
+| Physical component/process | Current support and missing authority |
+| --- | --- |
+| Dry, nontranspiring stem below 273.15 K | Its radiative/sensible equation can be evaluated within 200..350 K; this is component support, not a guarantee the coupled canopy has a root. No external-water phase or tissue injury is inferred. |
+| Positive-area dry leaf below 273.15 K | Unsupported by the inherited leaf vapor function, even with no intercepted water. Leaf internal water/physiology is distinct from external wetness. Cold FvCB/Medlyn/hydraulic applicability is not established by choosing ice saturation. |
+| Active liquid-wet surface at/above 273.15 K | Supported only within all existing temperature, phase, finite-store, constitutive, owner and acceptance guards; evaporation and liquid condensation retain their signed mass/energy laws. |
+| Supercooled intercepted liquid on active foliage | No admitted constitutive domain or metastability/nucleation rule. A supplied liquid mass does not authorize below-range extrapolation. The transparent-passage exception is transport only. |
+| Ice-covered foliage, mixed external phase, freezing/melting, deposition/sublimation | Excluded; require new phase mass/energy, surface partition and transition authority. These cannot alias liquid condensation/evaporation or ground-snow exchange. |
+| Zero-area leaf/wet coordinate | Numerical anchor only; no energy, water or latent reservoir. Existing INV-113 small-store wet-anchor conditions remain separate and are inapplicable to these captured stores. |
+
+#### Exact captured application and state/owner decision
+
+Primary [retained input](artifacts/lse-first-trial-20260918/final-first-failure-trace.json), `solver_input.inputs`,
+confirms R0/V11SnowCovered, uncapped Potential, two occupancies each beginning
+with **0.018 kg/m² tile liquid**, positive leaf/stem area, zero top rain, zero
+PAR/SW, air **266.85496453757526 K**, snow **265.15 K**, reference humidity
+**0.0013506651734953076 kg/kg**, pressure **87633.52548751776 Pa** and downward
+longwave **272.50372519089217 W/m²**. Transaction 41, `ofe-1/forest`, six soil
+nodes and `[0,60000000000)` ns retain the original bindings. Neither occupancy
+is transparent. The original trace omits `native_snow_exchange`; its optional
+source field defaults absent. The actual lower boundary therefore prescribes
+**-169.6149611357895 W/m²** sensible exchange and
+**-4.871670425672764e-5 kg/m²/s** vapor exchange into canopy air. These are not
+recomputed from the warm start or replaced by a native-exchange bundle.
+
+Source inspected in exact retained T:
+`crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:779–807`
+(liquid polynomial), `:1773–1812` (component-specific trial bounds),
+`:2358–2416` (prescribed versus native lower exchange),
+`crates/openwepp-land-surface-energy/src/covered_liquid.rs:225–242`
+(ordinary below-reference refusal and explicit transparent exception), and
+`crates/openwepp-vegetation/src/interception.rs:36–61` (liquid-domain guard).
+These observations explain the effective rules; source is not new authority.
+The retained proof and source bindings, rather than a new evaluator invocation,
+establish the exact-root result. All 749-entry recovery, five support links,
+nineteen external build inputs and writable-baseline/unchanged-bytes limitation
+remain as previously verified; this continuation does not duplicate the corpus.
+
+**State decision:** retain both amounts as the supplied liquid beginning state;
+do not relabel, discard, initialize ice, or install any ending state. Their
+mass is known; a thermodynamic initial enthalpy, metastability history,
+ice fraction, nucleation condition and frozen-tissue state are not supplied
+as authoritative physical state by this capture. The numerical Twet=295.6 K
+and leaf starts do not supply those facts. Current equations intentionally
+neglect component sensible thermal storage; the selected restriction adds no
+heat capacity, enthalpy lane or storage residual. V8's release enthalpy does
+not turn its warm start into stored heat. Likewise the warm soil and litter
+state cannot donate heat through an inactive represented-snow interface.
+
+Retaining liquid under the existing model needs an accepted within-domain
+coupled solution and all original closure checks; that exact solution does not
+exist for this fixed problem. Permitting supercooling instead would require an
+adopted liquid law over the subzero range, metastability/transition selection
+and applicable physiological/hydraulic authority. Permitting freezing, ice or
+mixed phase would require a state/energy extension, not a one-line law switch.
+At minimum that separate future scope would need authoritative initial liquid
+and ice masses per occupancy, a consistent enthalpy datum and either actual
+initial water enthalpy or an explicitly justified thermodynamic initialization,
+phase-specific exposed areas and capacities, and deterministic phase-transition
+rules. If plant sensible storage is represented, its heat capacities and
+initial thermal state must also be authoritative; if neglected, that
+approximation must be explicitly justified over the admitted regime. No such
+extension is selected or authorized here.
+
+First-law obligations for any later extension are already constraining: liquid
+and ice changes must reconstruct every incoming/outgoing mass; freezing and
+melting exchange equal/opposite mass with fusion energy; evaporation/
+condensation use their liquid pathway and sublimation/deposition their ice
+pathway, with outward vapor removing energy and inward vapor adding it under
+one consistent reference convention. At a common reference, latent enthalpy
+differences must satisfy the vaporization/fusion/sublimation relation; a
+fusion term must not be counted again if already included in stored enthalpy.
+Finite-store caps must apply to the actual donor phase inside the active energy
+balance. Every release binds its actual phase, amount and enthalpy to exactly
+one receiver, with tile weighting once and atomic rollback. These are physical
+conservation requirements, not a selected discretization or new coefficients.
+
+Vegetation would own intercepted canopy phase/state and physiology; LSE would
+assemble all active component energies and the shared air balances; ground snow
+would retain its separate surface store and boundary flux. The captured
+prescribed snow H/v and snow radiative temperature stay fixed in attribution.
+A future canopy extension would have to reconcile its vapor/heat contributions
+with that same single boundary owner before any separate native-carrier study.
+Neither ground snow nor the air node may absorb an invented canopy fusion
+reservoir. Zero PAR does not authorize zero transpiration: V10 retains g0 and
+hydraulic continuity. No inactive-leaf, no-transpiration or ice fallback may be
+selected by failed iteration, residual pattern or a liquid-domain trial failure.
+
+#### Minimum proposed amendment text (inactive proposal only)
+
+**SC-VEGETATION-001:** add one consolidated supported-domain paragraph to the
+V11/Child 2C boundary, explicitly cross-referencing scope, V1 equations 2/5/6,
+V8 INV-110..114 and V10 INV-118. Preserve historical model-definition bytes:
+
+> Represented ground snow does not extend the imported vegetation constitutive
+> domain. Active sun/shade vapor and ordinary intercepted-liquid wet surfaces
+> retain the liquid saturation law and their component-temperature domain;
+> canopy-air and reference-air temperatures are not substituted for those
+> component temperatures. Dry stems retain their separate zero-latent energy
+> equation. Intercepted canopy ice/snow, active supercooled-liquid exchange,
+> mixed phase, freezing/melting, deposition and sublimation remain unsupported.
+> No leaf-tissue freezing state or cold physiological shutdown is inferred from
+> external water phase. Warm-start temperatures and potentials are numerical
+> state only, not stored sensible energy or phase history. Existing liquid
+> stores and signed liquid vapor transfers remain vegetation-owned and
+> unchanged on any refusal. The explicitly authorized transparent zero-area,
+> zero-beginning-store passage is transport of supplied liquid with its source
+> enthalpy, not active wet-canopy physics or phase conversion.
+
+**SC-LANDSURFACEENERGY-001:** add a cross-reference at `terminal-support.md`
+INV-154 and a temperature-role clarification at `numerical-methods.md` INV-138 /
+`water-vapor.md` ordinary-versus-transparent release clauses:
+
+> The represented-snow map imports the restricted active-canopy domain of
+> SC-VEGETATION-001. Preserve current component bounds, inactive anchors,
+> complete energy/shared-air/hydraulic residuals and all existing acceptance
+> tolerances. Ground snow, dry stem, shared air, active leaf, ordinary wet
+> surface and authenticated transparent release have distinct temperature
+> roles. No failed trial, convergence diagnostic, air-temperature threshold or
+> iteration limit selects another physical phase. Keep the original lower-
+> boundary representation and exactly one snow exchange; the canopy may not
+> debit or credit the ground-snow store as an implicit phase reservoir.
+
+**Guard/predicate mapping:** existing support is a conjunction, not an early
+meteorological classifier: active leaf/wet constitutive temperatures must lie
+in the existing 273.15..350 K covered domain; ordinary release obeys the
+existing subfreezing refusal; transparent passage requires its complete
+source-bound zero-area/zero-store eligibility. These distinct seams retain their own existing failures; the codes are not
+interchangeable or an ordered fallback list:
+
+| Trigger at its owning seam | Existing failure to preserve |
+| --- | --- |
+| Vegetation model/process admission requests an unsupported lifeform/process, including canopy snow | Canonical VEG-E-062 before solve; no newly accepted phase field or runtime selector is created. Unknown wire fields still fail their earlier schema guard. |
+| Admitted ordinary liquid interception is given a subfreezing interception-surface temperature | V1 equation 2 / VEG-E-040; the retained vegetation helper returns `VegetationError::Unsupported("CANOPY_SNOW")`. This is not an air-temperature predicate. |
+| Requested scientific family has no admitted constitutive authority | Governance/non-promotable HOLD under INV-VEGETATION-051; canonical VEG-E-060 at the missing-authority boundary. This is not a replacement runtime label for numerical failure. |
+| FvCB/Medlyn/energy/hydraulic constitutive operand violates its domain | Canonical VEG-E-063 at that vegetation constitutive seam. On the coupled LSE liquid saturation seam, the exact source error is `LandSurfaceEnergyError::ConstitutiveDomain("liquid_saturation_polynomial")`, class `Domain`; no separate numeric LSE code for this payload is invented. |
+| Initial coupled coordinate vector violates its existing trial domain | `LandSurfaceEnergyError::ConstitutiveDomain("covered_initial_trial")`, class `Domain`, before Jacobian work. A rejected trial during the solve follows existing trial/line-search handling; it is not automatically this initial-state error. |
+| Ordinary coupled liquid finalization has Twet below its reference, with no valid transparent-passage proof | `LandSurfaceEnergyError::UnsupportedDomain("covered_canopy_snow")`, class `Unsupported`, in canonical LSEB-E-030 unsupported-domain family. |
+
+Exact LSE variants/class mapping are in retained T `error.rs:34–60,165–182`;
+initial-trial mapping is `solver_covered_solve.rs:1618–1625`. The helper's
+legacy CANOPY_SNOW label does not prove the external water is ice. Historical
+V2–V7 requested-canopy-snow governance remains VEG-E-040 under INV-022; this
+clarification does not rewrite those historical identities into the current
+model-admission seam. Preserve each existing guard position rather than
+introducing a new global phase dispatcher.
+
+The existing first-error precedence remains serialization, identity, topology/
+owner, nonfinite, unsupported regime, constitutive domain, authorization,
+numerical failures, closure and owner joins as specified by INV-108.
+No new API, error number, admission predicate or earlier execution point is
+introduced by this proposal. In particular **air<273.15 K and liquid>0 is not
+sufficient**: solar/longwave heating can keep active surfaces warm, while cold
+dry stems need no liquid-vapor law. A failed candidate is not a known physical
+surface temperature. The captured state therefore receives no newly claimed
+pre-solve physical classification; its precise unsupported-equilibrium finding
+remains the already proved case-specific one. This avoids false blanket
+exclusion without claiming complete cold-regime detection.
+
+No snow, forcing, hydrology, custody or restart contract needs amendment for
+this restriction: their ownership, supplied precipitation phase, accepted
+support, parcel lineage and rollback remain unchanged. A later phase extension
+would genuinely affect vegetation phase/state and its V11 restart/custody,
+LSE energy/latent joins, and the receiving snow/liquid parcel boundary wherever
+ice unloading or melt is transferred; climate changes only if new forcing
+information is actually required. No broad adjacent-contract rewrite is part
+of this decision.
+
+**Prospective canonical integration required, not performed here:** when this
+clarification is separately adopted, map the consolidated vegetation paragraph
+to existing INV-VEGETATION-022 (phase ownership/exclusion), -051 (missing-authority
+hold), -062 (indivisible model), -065 (finite liquid interception), -066 (independent
+component energy/phase lineage), -067 (hydraulic domain), -073/-075 (occupancy liquid/custody),
+-110/-111/-114 (radiation/shared air/release enthalpy), and -118/-129..132
+(nighttime and represented-snow joins). Map the LSE cross-reference to existing
+INV-LANDSURFACEENERGY-002/010/030/031/040 (domains, closure and owners),
+-108/-131/-138/-154 and OBL-LANDSURFACEENERGY-C-009 (unchanged algorithm,
+anchors, component bounds and represented-snow custody). Update each affected
+invariant guard-map row with the seam table above and its positive/refusal
+obligation; no new physics invariant is silently introduced.
+
+Add one clarification entry to vegetation's **Binding Exposure Index** and to
+LSE's **binding-index.md**, each `maps-to-existing-INV` (with applicable OBL IDs in the canonical-binding
+ID column), pointing to the
+actual canonical paragraph and these existing IDs, with this package as evidence
+only. Update both canonical change logs (including the LSE entry's change log)
+and applicable version/review metadata under the authoring procedure without
+rewriting frozen model-definition bytes. Amend/expand the existing
+**GAP-VEGETATION-005** canopy-snow missing-law entry to include **cold active
+leaf / supercooled intercepted liquid / ice and mixed-phase canopy authority**: disposition `AUTHORITY_MISSING / OUTSIDE_CURRENT_MODEL /
+NON_PROMOTABLE`, owner vegetation science with LSE energy/custody review; next
+gate is separately adopted phase/state/physiology authority and complete
+initial-state obligations identified above. Explicitly retain the known
+liquid-only domain rather than leaving the gap described as missing code.
+Cross-reference that entry from LSE's retained gap register for the coupled
+canopy boundary without reopening its already admitted warm-surface families.
+If adoption finds any genuinely new binding obligation beyond clarification,
+allocate a new canonical INV/OBL and guard/test mapping under dual review before
+promotion; this proposal cannot silently grant it. These integration surfaces
+are required parts of the minimum future adoption, not additional active files
+in this continuation.
+
+#### Contract-derived future checks and implementation boundary
+
+All requirements here are **specified, NOT RUN**. Separate canonical adoption
+must precede contract-derived expected-red tests and any production change.
+A0 authority/schema/definition checks, touched A1 invariants and applicable A3
+constitutive obligations then apply under the testing strategy; model/runtime,
+conservation and restart qualification cannot be replaced by static review.
+No current authority suite posture, cohort or required-case binding is changed.
+
+| Future requirement | Positive / expected-red evidence and boundary |
+| --- | --- |
+| Warm-liquid preservation | Existing admitted warm component/store cases retain gas, energy, water, release and owner results; poison below-range liquid evaluation, altered coefficients and dropped active energy rows. |
+| Dry-cold distinction | Positive dry-stem radiative/sensible component in 200..273.15 K with zero latent flux; poison a positive-area cold dry leaf entering the liquid saturation law. Cold air with warm active surfaces must not acquire a blanket phase refusal. Component validity is not whole-solve success. |
+| Wet freezing/melting and phase | Under this restriction, explicit ice/mixed/supercooled-active/freezing/melting requests reject without mutation; no fabricated positive cold-phase vector. A separately adopted extension would need positive finite freeze/melt budgets and authoritative initial enthalpy/phase. |
+| Signed vapor and finite stores | Positive evaporation withdraws only available liquid; negative condensation credits liquid and energy and reapplies capacity/drainage. Deposition/sublimation requests remain unsupported. Poison sign reversal, absolute-value latent terms, missing mass credit, donor overdraw and phase aliasing. |
+| Exact-once mass/energy | Independently reconstruct local and tile-weighted amounts and signed energy from primitives, including both drainage terms and stemflow; poison duplicate donor/receiver or fusion/latent credit and use of a warm-start heat reservoir. |
+| Boundary and inactivity | Preserve zero-area anchors and exact transparent-passage exception; positive beginning liquid excludes it. Preserve prescribed no-native-bundle snow H/v, represented-snow inactive litter, complete shared balances, exact snow event split and successor-only operands. |
+| Physiology/hydraulics | Zero PAR retains g0, beta=1 and Egas=q1; poison cold-air-triggered leaf inactivation, suppressed transpiration, invented capacitance, ignored frozen/inaccessible root rules or authorization donation. |
+| Restart/rollback/error order | Refusal leaves all owner, receipt, warm-start and checkpoint bytes unchanged; restored valid states retain the same temperature roles and phase exclusion. Pair invalid identity/nonfinite/topology with phase-domain errors to preserve first-error precedence. No guessed phase/enthalpy in migration. |
+| Selection and failure | Existing physical regime selection precedes iteration; injected numerical failure reaches typed failure only, never an ice law, historical solver or forcing/temperature repair. |
+
+Resolved: effective liquid-domain inheritance; separation of dry stem, active
+leaf, wet surface and external phase; no canopy phase authority implied by
+represented ground snow or CLM ice coefficients; no physical energy in warm
+starts; fixed captured snow boundary and single-owner responsibilities; the
+minimum clarification route and its future checks. Essential unresolved
+cold-model inputs/authority are initial thermodynamic water state, phase and
+nucleation/transition law, phase surface partition and cold physiology/hydraulic
+applicability. Those are explicit blockers to a cold successor, not blockers to
+this bounded support decision. Identity elimination/globalization remain parked.
+
+#### Current-scope checks and independent assessment
+
+**Ran:** [checks.json](artifacts/cold-canopy-authority-20260920/checks.json)
+records the unchanged historical package prefix against `1594cca3`, nine initial
+local citation targets, exact hashes for four inspected detached T source files
+against the previously verified manifest, and the original trace hash/selected
+input facts. The cited release-CLM5 HTML was retrieved read-only and retained at
+`/home/roger/openwepp-experiments/b01-wb14-cold-canopy-authority-20260920/clm5-fluxes.html`,
+SHA-256 `7f12c0858fd53934886f22f1c547029b178b72dd147669c0c1f44be677f1ef9b`.
+This is source retrieval, not a new acquired constitutive family, model run or
+claim of identity to the separately pinned CLM PDF. `git diff --check` passed.
+No Rust or evaluator/domain/FD/physical execution occurred.
+
+Only root was reachable in this thread's agent inventory. The required
+independent replacements are `/root/cold_correctness` (Sol/high correctness)
+and `/root/cold_qa` (Terra/medium QA), distinct from each other and from the
+author/adviser. They were dispatched at approximately 03:53 UTC with over
+26 minutes to the unchanged ceiling. Their scope is this new decision only;
+prior proof/reviews are reused and are not re-reviewed. Original responses are
+retained verbatim below. The QA navigation note was resolved by linking the
+retained input; its prospective implementation note is retained as a future
+obligation, not current execution authority.
+
+##### Independent QA/evidence original response
+
+## Independent QA/evidence review — `/root/cold_qa`
+
+**Evidence class: Static.** Reviewed only the appended cold-canopy reconciliation in [package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7048), its diff from `1594cca33104dc2a5530ab184889effd8d6eebce`, the authorization, retained detached source, and the original trace. No builds, tests, evaluator/model/reader calls, physical calculations, or source edits.
+
+### Findings
+
+No blocking findings.
+
+The appended section maintains appropriate claim boundaries:
+
+- It explicitly preserves the prior exact-real-root result without extending it to finite-tolerance or binary64 infeasibility ([package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7097)).
+- The trace-backed captured inputs and prescribed Stage-3 lower-boundary values match the retained input artifact; the detached source’s `None` native-snow exchange path uses those prescribed H/v values ([package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7169)).
+- The source/authority distinction is clear: source explains effective behavior but is not promoted to authority ([package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7182)).
+- The proposal remains inactive and does not introduce an early air-temperature guard. Its component-temperature distinction prevents the prohibited blanket `air < 273.15 K && liquid > 0` refusal ([package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7280)).
+- Dry stem, active leaf, wet-surface liquid, external phase, transparent passage, physiology, and energy/state ownership are separated rather than conflated ([package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7158)).
+- Proposed contract text is limited to clarification and cross-reference; it neither imports an ice law nor activates a phase/state extension ([package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7245)).
+- Future checks correctly remain specified/not run and retain A0/A1/A3, runtime, conservation, restart, rollback, and error-order obligations for any later implementation ([package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7308)).
+- The binding carried accounting is internally consistent: `138501.839022 / 140479.464696 s`, remaining `1977.625674 s`, with the stated resumption anchor and deadline. The record does not reclaim reserve or soften the mixed-outcome floor.
+
+### Non-blocking debt/follow-ups
+
+- The retained trace is named rather than linked at line 7169. A relative artifact link would improve reviewer navigation, but the authorization already pins its identity and this does not weaken the claim.
+- Future implementation must convert each listed expected-red/positive requirement into actual adopted-contract bindings before treating the restriction as enforced behavior.
+
+### QA pass
+
+**PASS / no blocker** for this bounded static authority reconciliation. The record is maintainable, appropriately scoped, evidence-linked, and avoids reopening the original proof or claiming an unsupported cold-canopy phase model. No fix verification is needed because this review found no corrective action.
+
+##### Correctness findings and same-reviewer correction
+
+Original `/root/cold_correctness` finding response:
+
+```text
+Static correctness review has two medium authority blockers in appended proposal. (1) package.md:7280-7289 maps excluded phase/domain requests ambiguously to VEG-E-040/060/062 and generic LSE constitutive semantics while claiming deterministic unchanged precedence. Those codes cover distinct conditions; proposed canonical wording needs a single deterministic existing error mapping per trigger/seam (canopy-snow/process request vs missing-authority governance vs component constitutive violation), with exact LSE error/variant mapping. (2) package.md:7245-7306 presents the minimum future canonical amendment but omits required canonical integration surfaces: existing/new INV/OBL mapping, both contracts' Binding Exposure Index entries, vegetation gap-register disposition for cold leaf/supercooled/mixed-phase authority, invariant guard map, and change log. Science authoring procedure requires active binding text map to IDs/BEI and unresolved items enter gap register. A short prospective-adoption paragraph can fix both without changing the decision or adding classifier/physics. Send changed lines and I will verify immediately.
+```
+
+Original same-reviewer first fix verification:
+
+```text
+Fix verification: C1 is CLOSED; trigger/seam table now preserves deterministic variants/classes and no phase dispatcher. C2 is almost closed but two exact corrections needed at package.md:7338-7349: (a) BEI classification vocabulary must be exact `maps-to-existing-INV` (it may list OBL IDs in Canonical binding IDs); `maps-to-existing-INV/OBL` is not permitted by science-contract-spec. (b) do not add a duplicative vegetation gap overlapping existing GAP-VEGETATION-005 (already canopy-snow missing-law boundary). Say amend/expand GAP-VEGETATION-005 to cover cold active leaf, supercooled liquid, canopy ice/mixed phase and the stated owner/next gate, or explicitly justify a distinct gap. Centralizing avoids silent divergence. Recheck after those two wording edits.
+```
+
+| Finding | Source / severity | Disposition and action | Evidence / rationale |
+| --- | --- | --- | --- |
+| C1 | cold_correctness / medium | Accepted; replaced grouped codes with per-trigger/seam errors and retained exact LSE variant/class, stage and historical/current distinction. | Guard/predicate mapping above; original source `error.rs`, `covered_liquid.rs`, `solver_covered_solve.rs`; no new classifier or guard relocation. |
+| C2 | cold_correctness / medium | Accepted; added prospective INV/OBL, invariant guard-map, exact BEI classification, change-log/metadata and gap integration. Corrected initial integration wording to extend existing GAP-VEGETATION-005, not create a parallel gap. | Prospective canonical integration paragraph above; science-contract authoring procedure and existing vegetation gap. |
+
+One first correction was incomplete for C2 and was corrected again within scope;
+no scientific or runtime experiment occurred. One parent `rg` lookup also named
+nonexistent `errors.rs`; actual `error.rs` was inspected and hash-bound. Carry
+**at least 462 mixed outcomes** (one tooling lookup and one incomplete static
+correction added conservatively to 460), preserving historical uncertainty and
+not representing a correction-cycle ceiling. No time allowance was renewed.
+
+##### Supplemental QA original response
+
+## Supplemental QA/evidence review — `/root/cold_qa`
+
+**Static.** Reviewed only the new seam/error table, prospective canonical-integration requirements, trace-link/check evidence, and CLM retrieval custody.
+
+No blocking finding.
+
+- The seam table preserves distinct existing error positions; it does not create an air-temperature phase selector, new error code, or fallback sequence ([package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7280)). Detached source confirms the named LSE error variants/classes and initial-trial guard.
+- The prospective INV/OBL/BEI/gap/change-log surfaces are clearly deferred until separate canonical adoption and do not alter canonical authority now ([package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7325)).
+- [checks.json](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/cold-canopy-authority-20260920/checks.json) truthfully records read-only trace/source custody, historical-prefix preservation, nine local-link checks, and zero prohibited runs. The corrected retained-trace link resolves my prior navigation note.
+- The CLM HTML retrieval is identified by path and SHA-256 and is correctly limited to cited-source inspection, with no claim of adoption or identity to the pinned reference.
+
+The reported nonexistent `errors.rs` lookup is not retained as a citation; the package correctly cites `error.rs`. Carrying the mixed-outcome floor of at least 461 is appropriate.
+
+**Supplemental PASS / no blocker.**
+
+##### Independent correctness final original response
+
+## Independent correctness/authority review — `/root/cold_correctness`
+
+**Evidence class: Static.** Ran only `git diff --check`; no Rust build/test, evaluator/domain/FD call, nonlinear solve, or model/reader execution.
+
+### Findings
+
+- **C1 — Medium, fixed and verified:** The original guard mapping at [package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7280) grouped `VEG-E-040/060/062` and generic LSE domain semantics despite their distinct triggers and precedence positions. The revised seam table now deterministically distinguishes model admission, ordinary subfreezing interception, missing scientific authority, vegetation constitutive violations, invalid initial coupled coordinates, and ordinary below-reference liquid finalization. It preserves the exact retained Rust variants/classes and introduces no new classifier, error, fallback, or phase dispatcher. **CLOSED.**
+
+- **C2 — Medium, fixed and verified:** The original minimum-amendment proposal omitted required canonical integration surfaces. The revision at [package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:7325) now identifies existing INV/OBL mappings, invariant guard-map updates, both Binding Exposure Index entries using the exact `maps-to-existing-INV` vocabulary, change logs/version metadata, and the owner/next gate. It correctly expands existing `GAP-VEGETATION-005` instead of creating overlapping phase-authority logic that could diverge. **CLOSED.**
+
+### Residual risk and missing tests
+
+The support clarification is scientifically adequate without a new early classifier. The effective V1–V11 chain keeps active leaf and ordinary wet-surface liquid-vapor coordinates within their component-temperature domain, permits cold dry-stem energy within its separate domain, and does not let represented ground snow import canopy ice physics. The CLM5 primary source supports the distinct water/ice saturation fits and shows that an ice saturation polynomial alone does not provide canopy freeze/melt state, fusion energy, or cold physiology authority.
+
+For the captured case, the two `0.018 kg m^-2 tile` stores remain supplied liquid state; the warm starts provide neither enthalpy nor phase history. The prescribed snow H/v boundary remains the sole captured lower-boundary representation. The exact-real-root absence remains case-specific, while finite-tolerance and binary64 infeasibility remain unproved.
+
+All contract-derived behavior, conservation, restart, rollback, and error-order checks remain prospective and **NOT RUN**. A later canonical adoption must complete the listed A0/A1/A3 bindings and expected-red/positive tests before any implementation or enforcement claim.
+
+### Verdict
+
+**PASS / GO.** No correctness or authority blocker remains for this bounded static reconciliation. The proposal preserves existing liquid-model behavior and ownership while clearly separating a support clarification from any future cold-canopy phase extension.
+
+#### Cold-canopy bounded disposition
+
+**COMPLETE:** source-backed effective-domain and owner decision, CLM primary
+reference reconciliation, minimum inactive canonical clarification proposal,
+explicit initial-state/phase gaps, future guard/conservation/restart requirements,
+and both independent assessments. C1/C2 are closed by their original reviewer;
+QA's original and affected-scope reviews pass. This is not successful cold-canopy
+modeling, a canonical promotion, implementation acceptance or an all-weather claim.
+
+**Unchanged:** Grid40 COMPLETE/valid negative, baseline and treatment each 1/1
+spent, execution authority expired; original E008 unresolved; file-owned reader
+not reached by the authentic captured path; RQ1/A-001, scientific/conservation/
+restart qualification, production and cadence retain their existing separate
+HOLD/unmet dispositions. Strict Clippy remains **FAIL**. Exact-real-root absence
+is retained; finite-tolerance/binary64 infeasibility is not claimed. No physics,
+fixture, numerical policy, canonical, runtime/public/wire or branch change was made.
+
+Terminal diff is only this appended narrative and the new checks/accounting raw
+evidence in `artifacts/cold-canopy-authority-20260920/`. Historical narrative and
+proof/review/evidence bytes remain unchanged. Six selected detached source hashes
+(including the two added error-mapping files) match the prior source manifest;
+full recovery remains reused. Three unrelated untracked Clippy logs are untouched.
+Only scoped files are committed/pushed on existing `main`. Exact-commit remote
+bytes and terminal charged accounting are recorded externally at
+`/home/roger/openwepp-experiments/b01-wb14-cold-canopy-authority-20260920/final-publication.json`
+after publication, avoiding circular self-verification. No remote-execution,
+corpus-publication or production-deployment claim follows from this receipt.
+
+[Final charged ledger](artifacts/cold-canopy-authority-20260920/final-ledger.json) at **2026-09-20T04:01:40.564237+00:00**: actual cumulative **139382.403259 s**, plus **120 s** publication/return precharge, charged **139502.403259 / 140479.464696 s**, remaining **977.061437 s**. No wait deduction, historical refund or new allowance. Mixed-outcome floor **at least 462**, uncertainty retained. The external publication receipt records any greater actual terminal charge; unused precharge is not reclaimed.

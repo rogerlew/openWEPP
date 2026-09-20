@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Ran: terminal documentation/path/diff/JSON checks only",
+  "utc": "2026-09-20T04:01:40.564237+00:00",
+  "historical_package_prefix_unchanged": true,
+  "local_links_checked": 25,
+  "tracked_diff_paths": [
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md"
+  ],
+  "new_evidence_paths": [
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/cold-canopy-authority-20260920/checks.json",
+    "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/cold-canopy-authority-20260920/final-ledger.json"
+  ],
+  "canonical_and_production_diff_empty": true,
+  "git_diff_check": "PASS",
+  "json_parse": "PASS",
+  "independent_correctness": "PASS",
+  "independent_qa": "PASS"
+}
