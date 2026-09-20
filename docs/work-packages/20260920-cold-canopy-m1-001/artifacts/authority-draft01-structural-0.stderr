@@ -1,0 +1,1 @@
+usage: check_sc_binding_exposure.py [--strict] <SC-contract.md>

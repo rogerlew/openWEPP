@@ -1,0 +1,17 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+warning: unused variable: `aa`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:391:9
+    |
+391 |     let aa = a.p()?;
+    |         ^^ help: if this is intentional, prefix it with an underscore: `_aa`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-vegetation` (lib) generated 1 warning (run `cargo fix --lib -p openwepp-vegetation` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.07s
+────────────
+ Nextest run ID 1a0368ad-29c0-4b3b-900a-8fe3789c3a93 with nextest profile: default
+    Starting 7 tests across 1 binary
+────────────
+     Summary [   0.007s] 7 tests run: 7 passed, 0 skipped

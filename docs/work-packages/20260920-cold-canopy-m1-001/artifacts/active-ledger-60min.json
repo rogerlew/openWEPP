@@ -1,0 +1,13 @@
+{
+  "observed_utc": "2026-09-20T17:08:07.025674+00:00",
+  "resumption_anchor": "2026-09-20T16:07:00+00:00",
+  "carry_seconds": 141047.416433,
+  "resumed_elapsed_seconds": 3667.025674,
+  "charged_cumulative_seconds": 144714.442107,
+  "fixed_ceiling_seconds": 169163.21924,
+  "remaining_seconds": 24448.777132999996,
+  "preservation_reserve_seconds": 1800,
+  "decision": "CONTINUE same author and same independent reviewers; finite in-scope authority defects remain; no new allowance",
+  "physical_runs": 0,
+  "rust_implementation": "not started"
+}

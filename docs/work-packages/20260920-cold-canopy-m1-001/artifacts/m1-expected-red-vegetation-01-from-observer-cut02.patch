@@ -1,0 +1,120 @@
+--- a/crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs
++++ b/crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs
+@@ -0,0 +1,117 @@
++//! Contract-derived M1 expected-red tests.
++//!
++//! The public API is intentionally absent until the reviewed production
++//! implementation lands.  Its absence is the expected-red result for this
++//! test target; these tests freeze the required surface and numeric controls.
++
++use openwepp_vegetation::cold_canopy_m1::{
++    m1_qsat_external, m1_qsat_internal, M1ExternalPhase, M1Phase,
++    M1PhaseReservoir, M1RestartExtension, M1RestartValidationContext,
++    M1ReservoirForcing,
++};
++
++const PRESSURE_PA: f64 = 90_000.0;
++const TF_K: f64 = 273.15;
++const MASS_KG_M2: f64 = 0.018;
++const LF_J_KG: f64 = 333_700.0;
++
++fn close(actual: f64, expected: f64, absolute: f64) {
++    assert!(
++        (actual - expected).abs() <= absolute,
++        "actual={actual:.17e}, expected={expected:.17e}, absolute={absolute:.3e}"
++    );
++}
++
++#[test]
++fn m1_qsat_join_expected_red() {
++    let liquid = m1_qsat_internal(263.15, PRESSURE_PA).expect("liquid control");
++    let ice = m1_qsat_external(263.15, PRESSURE_PA, M1ExternalPhase::Ice)
++        .expect("ice control");
++    close(liquid.specific_humidity_kg_kg, 0.001_982_784_738_557_326_8, 1.0e-15);
++    close(ice.specific_humidity_kg_kg, 0.001_798_623_863_474_746_7, 1.0e-15);
++    assert!(liquid.specific_humidity_kg_kg > ice.specific_humidity_kg_kg);
++
++    let at_join = m1_qsat_external(TF_K, PRESSURE_PA, M1ExternalPhase::Ice)
++        .expect("join control");
++    close(at_join.vapor_pressure_pa, 611.213_476, 0.0);
++    close(at_join.derivative_kg_kg_k, 0.000_308_440_322_289_953_86, 1.0e-18);
++}
++
++#[test]
++fn m1_phase_inverse_and_jacobian_expected_red() {
++    let liquid = M1PhaseReservoir::from_mass_enthalpy(MASS_KG_M2, 0.0)
++        .expect("liquid control");
++    assert_eq!(liquid.phase(), M1Phase::Liquid);
++    close(liquid.temperature_k(), TF_K, 0.0);
++    close(liquid.temperature_jacobian().d_t_d_h, 1.0 / (MASS_KG_M2 * 4218.0), 1.0e-15);
++
++    let mixed = M1PhaseReservoir::from_mass_enthalpy(MASS_KG_M2, -LF_J_KG * MASS_KG_M2)
++        .expect("mixed control");
++    assert_eq!(mixed.phase(), M1Phase::Mixed);
++    assert_eq!(mixed.temperature_jacobian().d_t_d_h.to_bits(), 0.0_f64.to_bits());
++    assert_eq!(mixed.temperature_jacobian().d_t_d_m.to_bits(), 0.0_f64.to_bits());
++
++    let ice = M1PhaseReservoir::from_mass_enthalpy(MASS_KG_M2, -6_006.600_001)
++        .expect("ice control");
++    assert_eq!(ice.phase(), M1Phase::Ice);
++    close(
++        ice.temperature_jacobian().d_t_d_m,
++        -(-6_006.600_001) / (MASS_KG_M2 * MASS_KG_M2 * 2106.0),
++        1.0e-12,
++    );
++}
++
++#[test]
++fn m1_ledger_cap_and_fusion_poison_expected_red() {
++    let beginning = M1PhaseReservoir::from_mass_enthalpy(MASS_KG_M2, -6_385.68)
++        .expect("beginning ice");
++    let forcing = M1ReservoirForcing {
++        dt_s: 60.0,
++        incident_liquid_kg_m2_s: 0.0,
++        incident_specific_enthalpy_j_kg: 0.0,
++        wet_nonvapor_heat_w_m2: 0.028_372_7,
++        vapor_loss_kg_m2_s: 1.0e-8,
++        liquid_capacity_kg_m2: 0.018,
++    };
++    let ending = beginning.backward_euler(forcing).expect("ledger control");
++    close(ending.mass_kg_m2(), 0.017_999_4, 1.0e-12);
++    close(ending.enthalpy_j_m2(), -6_385.467_144, 1.0e-9);
++    assert!(ending.capacity_residual_kg_m2().abs() <= 1.0e-9);
++    assert!(ending.rejects_extra_fusion_debit());
++}
++
++#[test]
++fn m1_empty_external_ice_guard_expected_red() {
++    let empty = M1PhaseReservoir::empty();
++    let q_ice = m1_qsat_external(263.15, PRESSURE_PA, M1ExternalPhase::Ice)
++        .expect("ice saturation")
++        .specific_humidity_kg_kg;
++    let q_liquid = m1_qsat_internal(263.15, PRESSURE_PA)
++        .expect("liquid saturation")
++        .specific_humidity_kg_kg;
++    assert!(q_ice < q_liquid);
++    assert!(empty
++        .validate_empty_surface_humidity(263.15, q_ice + (q_liquid - q_ice) * 0.5, PRESSURE_PA)
++        .is_err());
++}
++
++#[test]
++fn m1_domain_and_partial_pressure_guards_expected_red() {
++    assert!(m1_qsat_internal(f64::NAN, PRESSURE_PA).is_err());
++    assert!(m1_qsat_external(373.15, 80_000.0, M1ExternalPhase::Liquid).is_err());
++    assert!(M1PhaseReservoir::from_mass_enthalpy(0.0, 1.0).is_err());
++}
++
++#[test]
++fn m1_restart_schema_vectors_expected_red() {
++    let bytes = include_bytes!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/restart-reference-m1.json"
++    ));
++    let context = M1RestartValidationContext::synthetic_reference();
++    let extension = M1RestartExtension::parse_and_validate(bytes, &context)
++        .expect("frozen valid restart controls");
++    assert_eq!(extension.consumed_transaction_cursor(), extension.transaction_id());
++    assert!(extension.rejects_forcing_fields());
++    assert!(extension.rejects_unknown_fields());
++}

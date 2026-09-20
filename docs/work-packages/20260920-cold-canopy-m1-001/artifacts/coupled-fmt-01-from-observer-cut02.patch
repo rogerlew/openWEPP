@@ -1,0 +1,2309 @@
+--- a/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs
+@@ -0,0 +1,1002 @@
++//! Expected-red M1 physical-column and real-receiver tests.
++//!
++//! The planned evaluator is public in the LSE crate; this wrapper test owns the
++//! authenticated hydrology fixture and never supplies a test-only evaluator.
++
++use super::{
++    LandSurfaceEnergyRealHydrologyAdapter, M1PrescribedRoutingControl, M1ReceiverFailureInjection,
++    V8RollbackSnapshot, endpoint_fixture, execute_m1_cold_canopy_receiver_diagnostic,
++};
++use openwepp_kernel_contract::ResourceOwnerId;
++use openwepp_land_surface_energy::{
++    BandDirectionalFluxes, CoveredColumnInputs, M1ColumnLiquidRoutingInput, M1CoupledColumnInput,
++    M1CoupledColumnTrial, M1CoupledEvaluation, M1OccupancySupportCondition, M1PhaseReservoirInput,
++    M1RoutingOccupancyInput, M1SupportConditions, evaluate_m1_coupled_column,
++    route_m1_column_liquid, solve_m1_coupled_column,
++};
++use serde_json::Value;
++
++const RADIATION: &str = include_str!(concat!(
++    env!("CARGO_MANIFEST_DIR"),
++    "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/radiation-reference-m1.json"
++));
++const GAS: &str = include_str!(concat!(
++    env!("CARGO_MANIFEST_DIR"),
++    "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dark-gas-reference-m1.json"
++));
++const ROUTING: &str = include_str!(concat!(
++    env!("CARGO_MANIFEST_DIR"),
++    "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/reference-controls-m1.json"
++));
++const ORIGINAL: &str = include_str!(concat!(
++    env!("CARGO_MANIFEST_DIR"),
++    "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json"
++));
++
++fn decimal(value: &Value) -> f64 {
++    value.as_str().expect("decimal").parse().expect("valid")
++}
++fn assert_gas_reference(actual: f64, expected: &Value, gas: &Value, quantity: &str) {
++    let expected = decimal(expected);
++    let tolerance = &gas["comparisons"][quantity];
++    assert!(actual.is_finite());
++    assert!(
++        (actual - expected).abs()
++            <= decimal(&tolerance["absolute"])
++                .max(decimal(&tolerance["relative"]) * expected.abs())
++    );
++}
++
++fn vulnerability(psi_mm: f64, p50_mm: f64, exponent: f64) -> f64 {
++    1.0 / (1.0 + (psi_mm.abs() / p50_mm.abs()).powf(exponent))
++}
++
++fn independently_reconstruct_hydraulics(
++    actual: &M1CoupledEvaluation,
++    row: &Value,
++    original: &Value,
++    gas: &Value,
++) {
++    let occupancy = actual.occupancy(row["occupancy_id"].as_str().expect("occupancy"));
++    let source = covered_input(original)
++        .occupancies
++        .into_iter()
++        .find(|item| item.occupancy_id == row["occupancy_id"].as_str().expect("occupancy"))
++        .expect("original occupancy coefficients");
++    let p = &occupancy.hydraulics.potentials_mm;
++    let sun_flux = occupancy.sun.vapor_kg_m2_tile_s;
++    let shade_flux = occupancy.shade.vapor_kg_m2_tile_s;
++    let ksun = source.k1_sun_max_s1
++        * source.sun.leaf_area_m2_m2_tile
++        * vulnerability(p[2], source.p50_xylem_mm, source.vulnerability_exponent);
++    let kshade = source.k1_shade_max_s1
++        * source.shade.leaf_area_m2_m2_tile
++        * vulnerability(p[2], source.p50_xylem_mm, source.vulnerability_exponent);
++    assert_gas_reference(
++        ksun * (p[2] - p[0]),
++        &Value::String(format!("{sun_flux}")),
++        gas,
++        "water_flux_kg_m2_tile_s",
++    );
++    assert_gas_reference(
++        kshade * (p[2] - p[1]),
++        &Value::String(format!("{shade_flux}")),
++        gas,
++        "water_flux_kg_m2_tile_s",
++    );
++    let stem_k = source.k2_max / source.height_m
++        * vulnerability(p[3], source.p50_xylem_mm, source.vulnerability_exponent)
++        * source.sai;
++    assert_gas_reference(
++        stem_k * (p[3] - p[2] - 1000.0 * source.height_m),
++        &row["stem_flux"],
++        gas,
++        "water_flux_kg_m2_tile_s",
++    );
++    for (layer, expected) in source
++        .root_layers
++        .iter()
++        .filter(|layer| layer.accessible && !layer.frozen && layer.root_fraction > 0.0)
++        .zip(row["root_fluxes"].as_array().expect("root flows"))
++    {
++        let kr = source.k3_max_m_s / layer.z3_m
++            * vulnerability(
++                layer.soil_potential_mm,
++                source.p50_root_mm,
++                source.vulnerability_exponent,
++            );
++        let ks = layer.ksoil_m2_s / layer.dxroot_m;
++        let coefficient = kr * ks / (kr + ks)
++            * (source.lai + source.sai)
++            * layer.root_fraction
++            * source.root_to_leaf_area;
++        assert_gas_reference(
++            coefficient * (layer.soil_potential_mm - p[3] + layer.gravity_head_mm),
++            expected,
++            gas,
++            "water_flux_kg_m2_tile_s",
++        );
++    }
++}
++
++// Fieldwise test-side source operands: production evaluation takes this and a
++// trial vector, not an oracle JSON object or an expected residual callback.
++fn covered_input(original: &Value) -> CoveredColumnInputs {
++    serde_json::from_value(original["inputs"].clone()).expect("original CoveredColumnInputs")
++}
++fn conditions() -> M1SupportConditions {
++    M1SupportConditions {
++        model_definition_id: "OPENWEPP_C3_WOODY_COLD_M1_V1".to_owned(),
++        occupancy_conditions: vec![
++            M1OccupancySupportCondition {
++                occupancy_id: "stratum-z-upper::forest".to_owned(),
++                liquid_conducting: true,
++                full_supply: true,
++            },
++            M1OccupancySupportCondition {
++                occupancy_id: "stratum-a-lower::forest".to_owned(),
++                liquid_conducting: true,
++                full_supply: true,
++            },
++        ],
++    }
++}
++fn radiation_input_with_conditions(
++    root: &Value,
++    original: &Value,
++    support: M1SupportConditions,
++    pressure_pa: f64,
++) -> M1CoupledColumnInput {
++    let x = &root["inputs"];
++    let mut column = covered_input(original);
++    column.pressure_pa = pressure_pa;
++    column.air_temperature_k = decimal(&x["tcan"]);
++    column.air_specific_humidity_kg_kg = decimal(&x["qcan"]);
++    column.interval_s = decimal(&x["dt"]);
++    column.atmospheric_downward_longwave_w_m2 = decimal(&x["lw_down"]);
++    column.ground.air_pressure_pa = column.pressure_pa;
++    column.ground.air_temperature_k = column.air_temperature_k;
++    column.ground.air_specific_humidity_kg_kg = column.air_specific_humidity_kg_kg;
++    column.ground.atmospheric_downward_longwave_w_m2 = column.atmospheric_downward_longwave_w_m2;
++    for (index, occupancy) in column.occupancies.iter_mut().enumerate() {
++        occupancy.sun.vcmax25 = occupancy.shade.vcmax25;
++        occupancy.sun.jmax25 = occupancy.shade.jmax25;
++        occupancy.sun.rd25 = occupancy.shade.rd25;
++        occupancy.sun.leaf_area_m2_m2_tile = decimal(&x["sun_area"][index]);
++        occupancy.shade.leaf_area_m2_m2_tile = decimal(&x["shade_area"][index]);
++        occupancy.stem_area_m2_m2_tile = decimal(&x["stem_area"][index]);
++        occupancy.lai = occupancy.sun.leaf_area_m2_m2_tile + occupancy.shade.leaf_area_m2_m2_tile;
++        occupancy.sai = occupancy.stem_area_m2_m2_tile;
++        occupancy.clumping_index = decimal(&x["clumping"][index]);
++        occupancy.gb_wet_m_s = decimal(&x["gb"][index]);
++        occupancy.liquid_capacity_kg_m2_plant =
++            decimal(&x["capacity"][index]) / decimal(&x["plant_area"][index]);
++        let sw = decimal(&x["shortwave_total"][index]);
++        occupancy.sun.absorbed_shortwave_w_m2_tile = sw;
++        occupancy.sun.absorbed_par_w_m2_leaf = 0.0;
++        occupancy.shade.absorbed_shortwave_w_m2_tile = 0.0;
++        occupancy.shade.absorbed_par_w_m2_leaf = 0.0;
++        occupancy.stem_absorbed_shortwave_w_m2_tile = 0.0;
++        let receipt = column
++            .shortwave
++            .occupancies
++            .iter_mut()
++            .find(|receipt| receipt.occupancy_id == occupancy.occupancy_id)
++            .expect("shortwave identity");
++        receipt.sun_leaf_absorbed_w_m2_tile = BandDirectionalFluxes {
++            direct_nir: sw,
++            ..BandDirectionalFluxes::default()
++        };
++        receipt.shade_leaf_absorbed_w_m2_tile = BandDirectionalFluxes::default();
++        receipt.stem_absorbed_w_m2_tile = BandDirectionalFluxes::default();
++    }
++    // The explicit two occupancy NIR absorption is the whole prescribed
++    // incident shortwave control: 14 + 9 W m-2, no reflected or ground term.
++    column.shortwave.incident_w_m2_tile = BandDirectionalFluxes {
++        direct_nir: decimal(&x["shortwave_total"][0]) + decimal(&x["shortwave_total"][1]),
++        ..BandDirectionalFluxes::default()
++    };
++    column.shortwave.top_reflected_w_m2_tile = BandDirectionalFluxes::default();
++    column.shortwave.ground_absorbed_by_incident_w_m2_tile = BandDirectionalFluxes::default();
++    M1CoupledColumnInput::from_covered_column(
++        column,
++        [
++            M1PhaseReservoirInput::new(
++                "stratum-z-upper::forest",
++                decimal(&x["state"][0]),
++                decimal(&x["state"][1]),
++            ),
++            M1PhaseReservoirInput::new(
++                "stratum-a-lower::forest",
++                decimal(&x["state"][2]),
++                decimal(&x["state"][3]),
++            ),
++        ],
++        support,
++    )
++}
++fn radiation_input(root: &Value, original: &Value) -> M1CoupledColumnInput {
++    radiation_input_with_conditions(root, original, conditions(), decimal(&root["inputs"]["p"]))
++}
++fn trial() -> M1CoupledColumnTrial {
++    M1CoupledColumnTrial::from_coordinates([
++        267., 266., 268., 0.018, -6385.68, 0., 269., 267., 270., 0.023, -7917.29, 0., 268., 0.0015,
++        265.15, 291.5, 289.8, 293., 293., 293., 270.,
++    ])
++}
++fn gas_probe_input(
++    _root: &Value,
++    row: &Value,
++    original: &Value,
++) -> (M1CoupledColumnInput, M1CoupledColumnTrial) {
++    let mut column = covered_input(original);
++    column.pressure_pa = 90_000.0;
++    column.air_temperature_k = 268.0;
++    column.air_specific_humidity_kg_kg = 0.0015;
++    column.ground.air_pressure_pa = column.pressure_pa;
++    column.ground.air_temperature_k = column.air_temperature_k;
++    column.ground.air_specific_humidity_kg_kg = column.air_specific_humidity_kg_kg;
++    column.ground.atmospheric_downward_longwave_w_m2 = column.atmospheric_downward_longwave_w_m2;
++    let mut masses = [0.0; 2];
++    for (index, occupancy) in column.occupancies.iter_mut().enumerate() {
++        occupancy.sun.leaf_area_m2_m2_tile = 0.0;
++        occupancy.shade.leaf_area_m2_m2_tile = 1.0;
++        occupancy.lai = 1.0;
++        let capacity = occupancy.liquid_capacity_kg_m2_plant * (occupancy.lai + occupancy.sai);
++        masses[index] = capacity * 0.25_f64.powf(1.5);
++        occupancy.beginning_canopy_liquid_kg_m2_tile = masses[index];
++    }
++    let input = M1CoupledColumnInput::from_covered_column(
++        column,
++        [
++            M1PhaseReservoirInput::new("stratum-z-upper::forest", masses[0], 0.0),
++            M1PhaseReservoirInput::new("stratum-a-lower::forest", masses[1], 0.0),
++        ],
++        conditions(),
++    );
++    let temperature = decimal(&row["leaf_temperature_k"]);
++    let row_trial = M1CoupledColumnTrial::from_coordinates([
++        temperature,
++        temperature,
++        temperature,
++        masses[0],
++        0.0,
++        0.0,
++        temperature,
++        temperature,
++        temperature,
++        masses[1],
++        0.0,
++        0.0,
++        268.0,
++        0.0015,
++        265.15,
++        291.5,
++        289.8,
++        293.0,
++        293.0,
++        293.0,
++        270.0,
++    ]);
++    (input, row_trial)
++}
++fn independently_reconstruct_reservoirs(value: &M1CoupledEvaluation, must_close: bool) {
++    for o in value.reservoir_operands() {
++        let rm = o.ending_mass_kg_m2
++            - o.beginning_mass_kg_m2
++            - o.dt_s * (o.incident_liquid_kg_m2_s - o.vapor_kg_m2_s - o.drainage_kg_m2_s);
++        let t = o.wet_temperature_k.expect("nonempty reservoir");
++        let rh = o.ending_enthalpy_j_m2
++            - o.beginning_enthalpy_j_m2
++            - o.dt_s
++                * (o.non_vapor_heat_w_m2 + o.incident_liquid_kg_m2_s * o.incident_enthalpy_j_kg
++                    - o.vapor_kg_m2_s * (2_501_000. + 1_849. * (t - 273.15))
++                    - o.drainage_kg_m2_s * 4_218. * (t - 273.15));
++        assert!((rm - o.mass_residual_kg_m2).abs() <= 1e-12);
++        assert!((rh - o.enthalpy_residual_j_m2).abs() <= 1e-9);
++        if must_close {
++            assert!(rm.abs() <= 1e-9 && rh.abs() <= 1e-6);
++        }
++        assert!(
++            o.diagnosed_liquid_mass_kg_m2 >= 0.
++                && o.diagnosed_liquid_mass_kg_m2 <= o.liquid_capacity_kg_m2
++        );
++    }
++}
++
++#[test]
++fn m1_prescribed_twenty_one_coordinate_physical_evaluator_has_all_fd_columns() {
++    let root: Value = serde_json::from_str(RADIATION).expect("radiation");
++    let original: Value = serde_json::from_str(ORIGINAL).expect("original");
++    let input = radiation_input(&root, &original);
++    let trial = trial();
++    let base = evaluate_m1_coupled_column(&input, &trial).expect("actual evaluator");
++    assert_eq!(base.residuals().len(), 21);
++    assert!(base.jacobian().iter().all(|row| row.len() == 21));
++    for coordinate in 0..21 {
++        let h = match coordinate {
++            3 | 9 => 1e-8,
++            4 | 10 => 1e-3,
++            5 | 11 => 1e-10,
++            13 => 1e-8,
++            _ => 1e-4,
++        };
++        let high = evaluate_m1_coupled_column(&input, &trial.with_coordinate_offset(coordinate, h))
++            .expect("inward/high probe");
++        let fd = if matches!(coordinate, 5 | 11) {
++            high.residuals()
++                .iter()
++                .zip(base.residuals())
++                .map(|(a, b)| (a - b) / h)
++                .collect::<Vec<_>>()
++        } else {
++            let low =
++                evaluate_m1_coupled_column(&input, &trial.with_coordinate_offset(coordinate, -h))
++                    .expect("low probe");
++            high.residuals()
++                .iter()
++                .zip(low.residuals())
++                .map(|(a, b)| (a - b) / (2. * h))
++                .collect::<Vec<_>>()
++        };
++        assert_eq!(fd.len(), 21);
++        assert_eq!(base.jacobian_column(coordinate).len(), 21);
++        for (actual, analytic) in fd.iter().zip(base.jacobian_column(coordinate)) {
++            assert!(actual.is_finite() && analytic.is_finite());
++            assert!((actual - analytic).abs() <= 1e-6 * actual.abs().max(1.));
++        }
++    }
++    independently_reconstruct_reservoirs(&base, false);
++}
++
++#[test]
++fn m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs() {
++    let radiation: Value = serde_json::from_str(RADIATION).expect("radiation");
++    let original: Value = serde_json::from_str(ORIGINAL).expect("original");
++    let base = evaluate_m1_coupled_column(&radiation_input(&radiation, &original), &trial())
++        .expect("evaluation");
++    assert_eq!(base.residuals().len(), 21);
++    assert_eq!(base.jacobian().len(), 21);
++    assert_eq!(base.reservoir_operands().len(), 2);
++    for (index, operand) in base.reservoir_operands().iter().enumerate() {
++        let expected = &radiation["expected"];
++        assert!(
++            (operand.wet_temperature_k.expect("nonempty reservoir")
++                - decimal(&expected["temperature"][index]))
++            .abs()
++                <= 1e-9
++        );
++        assert!(
++            (operand.non_vapor_heat_w_m2 - decimal(&expected["q_nonvapor"][index])).abs() <= 1e-6
++        );
++        assert!((operand.vapor_kg_m2_s - decimal(&expected["e"][index])).abs() <= 1e-12);
++        assert!((operand.wet_fraction - decimal(&expected["wet_fraction"][index])).abs() <= 1e-12);
++        assert!((operand.emission_w_m2 - decimal(&expected["emission"][index])).abs() <= 1e-9);
++        assert!(
++            (operand.wet_longwave_w_m2 - decimal(&expected["wet_longwave"][index])).abs() <= 1e-9
++        );
++        assert!(
++            (operand.wet_sensible_w_m2 - decimal(&expected["wet_sensible"][index])).abs() <= 1e-9
++        );
++        assert!(
++            (base.residuals()[6 * index + 3] - decimal(&expected["residual"][2 * index])).abs()
++                <= 1e-9
++        );
++        assert!(
++            (base.residuals()[6 * index + 4] - decimal(&expected["residual"][2 * index + 1])).abs()
++                <= 1e-6
++        );
++    }
++    for column in radiation["columns"].as_array().expect("four columns") {
++        let index = match column["coordinate"].as_str().expect("coordinate") {
++            "upper_M" => 3,
++            "upper_H" => 4,
++            "lower_M" => 9,
++            "lower_H" => 10,
++            _ => unreachable!(),
++        };
++        for (actual, expected) in [3, 4, 9, 10]
++            .iter()
++            .zip(column["residual"].as_array().expect("rows"))
++        {
++            let actual = base.jacobian()[*actual][index];
++            assert!((actual - decimal(expected)).abs() <= 1e-6 * decimal(expected).abs().max(1.));
++        }
++    }
++    // Independent central probes bind each reservoir M/H sensitivity of the
++    // exposed ordinary non-vapor heat operands, rather than a fixture-only
++    // derivative API.
++    for column in radiation["columns"].as_array().expect("four columns") {
++        let coordinate = match column["coordinate"].as_str().expect("coordinate") {
++            "upper_M" => 3,
++            "upper_H" => 4,
++            "lower_M" => 9,
++            "lower_H" => 10,
++            _ => unreachable!(),
++        };
++        let step = decimal(&column["step"]);
++        let high = evaluate_m1_coupled_column(
++            &radiation_input(&radiation, &original),
++            &trial().with_coordinate_offset(coordinate, step),
++        )
++        .expect("high heat probe");
++        let low = evaluate_m1_coupled_column(
++            &radiation_input(&radiation, &original),
++            &trial().with_coordinate_offset(coordinate, -step),
++        )
++        .expect("low heat probe");
++        for index in 0..2 {
++            let fd = (high.reservoir_operands()[index].non_vapor_heat_w_m2
++                - low.reservoir_operands()[index].non_vapor_heat_w_m2)
++                / (2.0 * step);
++            assert!((fd - decimal(&column["q_nonvapor"][index])).abs() <= 1e-6 * fd.abs().max(1.0));
++        }
++    }
++    let gas: Value = serde_json::from_str(GAS).expect("gas");
++    assert_eq!(gas["rows"].as_array().expect("four gas controls").len(), 4);
++    for row in gas["rows"].as_array().expect("rows") {
++        let (gas_input, gas_trial) = gas_probe_input(&gas, row, &original);
++        let gas_evaluation =
++            evaluate_m1_coupled_column(&gas_input, &gas_trial).expect("frozen gas row");
++        let actual = gas_evaluation.occupancy(row["occupancy_id"].as_str().expect("occupancy"));
++        let sun = &row["leaves"][0];
++        let shade = &row["leaves"][1];
++        assert_eq!(
++            actual.sun.gas_branch,
++            sun["gas_branch"].as_str().expect("sun branch")
++        );
++        assert_eq!(
++            actual.shade.gas_branch,
++            shade["gas_branch"].as_str().expect("shade branch")
++        );
++        assert_eq!(actual.sun.beta, decimal(&sun["beta"]));
++        assert_eq!(actual.shade.beta, decimal(&shade["beta"]));
++        assert_gas_reference(
++            actual.shade.internal_specific_humidity_kg_kg,
++            &row["internal_liquid_qsat"],
++            &gas,
++            "specific_humidity",
++        );
++        assert_gas_reference(
++            actual.shade.dark_respiration,
++            &shade["rd"],
++            &gas,
++            "respiration_assimilation",
++        );
++        assert_gas_reference(
++            actual.shade.net_assimilation,
++            &shade["an"],
++            &gas,
++            "respiration_assimilation",
++        );
++        assert_gas_reference(
++            actual.shade.gross_assimilation,
++            &shade["ag"],
++            &gas,
++            "respiration_assimilation",
++        );
++        assert_gas_reference(
++            actual.shade.conductance_m_s,
++            &shade["gs_m_s"],
++            &gas,
++            "conductance_m_s",
++        );
++        assert_gas_reference(actual.shade.ci_pa, &shade["ci_pa"], &gas, "ci_pa");
++        assert_gas_reference(
++            actual.shade.vapor_kg_m2_tile_s,
++            &shade["vapor_kg_m2_tile_s"],
++            &gas,
++            "water_flux_kg_m2_tile_s",
++        );
++        assert_eq!(actual.sun.vapor_kg_m2_tile_s, 0.0);
++        assert_eq!(actual.sun.net_assimilation, 0.0);
++        assert_gas_reference(
++            actual.hydraulics.stem_flux_kg_m2_tile_s,
++            &row["stem_flux"],
++            &gas,
++            "water_flux_kg_m2_tile_s",
++        );
++        assert_gas_reference(
++            actual.hydraulics.total_leaf_demand_kg_m2_tile_s,
++            &row["total_leaf_demand"],
++            &gas,
++            "water_flux_kg_m2_tile_s",
++        );
++        assert_eq!(actual.hydraulics.potentials_mm.len(), 4);
++        for (a, e) in actual
++            .hydraulics
++            .potentials_mm
++            .iter()
++            .zip(row["potentials_mm"].as_array().expect("potentials"))
++        {
++            assert_gas_reference(*a, e, &gas, "hydraulic_potential_mm");
++        }
++        assert_eq!(
++            actual.hydraulics.root_layer_ids,
++            row["root_layer_ids"]
++                .as_array()
++                .expect("layer order")
++                .iter()
++                .map(|value| value.as_str().expect("layer").to_owned())
++                .collect::<Vec<_>>()
++        );
++        assert_eq!(
++            actual.hydraulics.root_fluxes_kg_m2_tile_s.len(),
++            row["root_fluxes"].as_array().expect("root flows").len()
++        );
++        for (actual_flow, expected_flow) in actual
++            .hydraulics
++            .root_fluxes_kg_m2_tile_s
++            .iter()
++            .zip(row["root_fluxes"].as_array().expect("root flows"))
++        {
++            assert_gas_reference(*actual_flow, expected_flow, &gas, "water_flux_kg_m2_tile_s");
++        }
++        independently_reconstruct_hydraulics(&gas_evaluation, row, &original, &gas);
++        assert_eq!(actual.hydraulics.continuity_residuals_kg_m2_tile_s.len(), 4);
++        for (actual_residual, expected_residual) in actual
++            .hydraulics
++            .continuity_residuals_kg_m2_tile_s
++            .iter()
++            .zip(row["continuity_residuals"].as_array().expect("continuity"))
++        {
++            assert_gas_reference(
++                *actual_residual,
++                expected_residual,
++                &gas,
++                "continuity_residual_kg_m2_tile_s",
++            );
++        }
++    }
++}
++
++#[test]
++fn m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure() {
++    let original: Value = serde_json::from_str(ORIGINAL).expect("original input");
++    let solved = solve_m1_coupled_column(&M1CoupledColumnInput::from_covered_column(
++        covered_input(&original),
++        [
++            M1PhaseReservoirInput::new("stratum-z-upper::forest", 0.018, 0.0),
++            M1PhaseReservoirInput::new("stratum-a-lower::forest", 0.018, 0.0),
++        ],
++        conditions(),
++    ))
++    .expect("actual solve");
++    assert_eq!(solved.support_duration_s(), 60.);
++    assert!(
++        solved
++            .occupancies()
++            .iter()
++            .all(|o| o.shade.gas_branch == "ExactZeroPar"
++                && o.shade.net_assimilation < 0.
++                && o.shade.vapor_kg_m2_tile_s > 0.)
++    );
++    for operand in solved.reservoir_operands() {
++        assert_eq!(operand.beginning_mass_kg_m2, 0.018);
++        assert_eq!(operand.beginning_enthalpy_j_m2, 0.0);
++        assert!(operand.ending_mass_kg_m2.is_finite() && operand.ending_enthalpy_j_m2.is_finite());
++        assert!(operand.vapor_kg_m2_s != 0.0 && operand.non_vapor_heat_w_m2 != 0.0);
++        assert!(
++            operand.ending_mass_kg_m2 != operand.beginning_mass_kg_m2
++                || operand.ending_enthalpy_j_m2 != operand.beginning_enthalpy_j_m2
++        );
++    }
++    independently_reconstruct_reservoirs(&solved, true);
++}
++
++fn endpoint_owner_snapshot(fixture: &super::EndpointFixture) -> V8RollbackSnapshot {
++    let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&fixture.hydrology);
++    let vegetation_owner_id = ResourceOwnerId::try_new("vegetation-v8").expect("owner");
++    let biogeochemistry_owner_id = ResourceOwnerId::try_new("biogeochemistry").expect("owner");
++    let pending_owner_id = ResourceOwnerId::try_new("m1-coupled-pending-envelope").expect("owner");
++    V8RollbackSnapshot::capture_endpoint_beginning(
++        &vegetation_owner_id,
++        &fixture.vegetation_state,
++        &adapter,
++        &fixture.lse_state,
++        &fixture.thermal,
++        &biogeochemistry_owner_id,
++        &fixture.biogeochemistry,
++        &pending_owner_id,
++        &[],
++        &[],
++        &[],
++    )
++    .expect("six actual endpoint-owner bytes")
++}
++
++fn prescribed_routing_input() -> M1ColumnLiquidRoutingInput {
++    let root: Value = serde_json::from_str(ROUTING).expect("routing reference");
++    let routing = &root["routing_control"];
++    // This test supplies physical routing operands, never an oracle object or
++    // expected terminal answer. The lower entry has no direct incident parcel:
++    // its input is the upper release routed by the shared M1 geometry routine.
++    M1ColumnLiquidRoutingInput::new(
++        M1RoutingOccupancyInput {
++            occupancy_id: "stratum-z-upper::forest".to_owned(),
++            plant_area_m2_m2_tile: decimal(&routing["upper_plant_area"]),
++            incident_mass_kg_m2_tile: decimal(&routing["top_input_mass"]),
++            incident_enthalpy_j_kg: decimal(&routing["top_input_h"]),
++            interception_fraction: decimal(&routing["interception_fraction"]),
++            stemflow_fraction: decimal(&routing["upper_stemflow_fraction"]),
++            initial_drainage_mass_kg_m2_tile: decimal(&routing["upper_drainage_mass"]),
++            initial_drainage_enthalpy_j_kg: decimal(&routing["upper_drainage_h"]),
++            second_drainage_mass_kg_m2_tile: 0.0,
++            second_drainage_enthalpy_j_kg: 0.0,
++        },
++        M1RoutingOccupancyInput {
++            occupancy_id: "stratum-a-lower::forest".to_owned(),
++            plant_area_m2_m2_tile: decimal(&routing["lower_plant_area"]),
++            incident_mass_kg_m2_tile: 0.0,
++            incident_enthalpy_j_kg: 0.0,
++            interception_fraction: decimal(&routing["interception_fraction"]),
++            stemflow_fraction: decimal(&routing["lower_stemflow_fraction"]),
++            initial_drainage_mass_kg_m2_tile: decimal(&routing["lower_drainage_mass"]),
++            initial_drainage_enthalpy_j_kg: decimal(&routing["lower_drainage_h"]),
++            second_drainage_mass_kg_m2_tile: 0.0,
++            second_drainage_enthalpy_j_kg: 0.0,
++        },
++        decimal(&routing["tile_fraction"]),
++    )
++    .expect("typed M1 routing input")
++}
++
++fn prescribed_routing_control() -> M1PrescribedRoutingControl {
++    // The orchestrator wrapper receives typed routing operands, while the
++    // reusable LSE geometry routine remains the single route used by solve.
++    M1PrescribedRoutingControl::new(prescribed_routing_input())
++        .expect("typed prescribed routing control")
++}
++
++fn assert_raw_receiver_operands(candidate: &super::UnifiedRealHydrologyCandidate) {
++    let ingress = candidate.surface_ingress();
++    assert!(!ingress.receipts().is_empty());
++    assert!(!ingress.ledgers().is_empty());
++    let receipt_mass: f64 = ingress
++        .receipts()
++        .iter()
++        .map(|receipt| receipt.mass_kg_m2_basis_ofe_ground)
++        .sum();
++    let receipt_enthalpy: f64 = ingress
++        .receipts()
++        .iter()
++        .map(|receipt| receipt.enthalpy_j_m2_basis_ofe_ground)
++        .sum();
++    let ledger_mass: f64 = ingress
++        .ledgers()
++        .iter()
++        .map(|ledger| ledger.ingress_mass_kg_m2_ofe_ground)
++        .sum();
++    let ledger_enthalpy: f64 = ingress
++        .ledgers()
++        .iter()
++        .map(|ledger| ledger.ingress_enthalpy_j_m2_ofe_ground)
++        .sum();
++    assert!((receipt_mass - ledger_mass).abs() <= 1e-12);
++    assert!((receipt_enthalpy - ledger_enthalpy).abs() <= 1e-8);
++    let root: Value = serde_json::from_str(ROUTING).expect("routing reference");
++    let expected_terminal = root["routing_control"]["terminal"]
++        .as_array()
++        .expect("terminal");
++    let expected_mass: f64 = expected_terminal
++        .iter()
++        .map(|row| decimal(&row["ofe_mass"]))
++        .sum();
++    let expected_enthalpy: f64 = expected_terminal
++        .iter()
++        .map(|row| decimal(&row["ofe_energy"]))
++        .sum();
++    assert!((ledger_mass - expected_mass).abs() <= 1e-12);
++    assert!((ledger_enthalpy - expected_enthalpy).abs() <= 1e-8);
++    for ledger in ingress.ledgers() {
++        assert!(
++            (ledger.ingress_mass_kg_m2_ofe_ground
++                - ledger.infiltration_mass_kg_m2_ofe_ground
++                - ledger.retained_mass_kg_m2_ofe_ground
++                - ledger.runoff_mass_kg_m2_ofe_ground)
++                .abs()
++                <= 1e-12
++        );
++        assert!(
++            (ledger.ingress_enthalpy_j_m2_ofe_ground
++                - ledger.infiltration_enthalpy_j_m2_ofe_ground
++                - ledger.retained_enthalpy_j_m2_ofe_ground
++                - ledger.runoff_enthalpy_j_m2_ofe_ground)
++                .abs()
++                <= 1e-8
++        );
++    }
++    let join = candidate.contribution_join();
++    let terminal = root["routing_control"]["terminal"]
++        .as_array()
++        .expect("terminal");
++    assert_eq!(join.contributors().len(), terminal.len());
++    let mut unique_receipt_ids = std::collections::BTreeSet::new();
++    for (actual, expected) in join.contributors().iter().zip(terminal) {
++        assert_eq!(
++            actual.origin(),
++            expected["origin"].as_str().expect("origin")
++        );
++        assert!(unique_receipt_ids.insert(actual.receipt_parcel_id()));
++        assert!(!actual.source_parcel_id().is_empty());
++        assert_eq!(actual.transaction_id(), candidate.transaction_id());
++        assert!(actual.support_identity_is_valid());
++        assert!((actual.tile_mass_kg_m2() - decimal(&expected["mass"])).abs() <= 1e-12);
++        assert!((actual.specific_enthalpy_j_kg() - decimal(&expected["h"])).abs() <= 1e-9);
++        assert!((actual.ofe_mass_kg_m2_ground() - decimal(&expected["ofe_mass"])).abs() <= 1e-12);
++        assert!(
++            (actual.ofe_enthalpy_j_m2_ground() - decimal(&expected["ofe_energy"])).abs() <= 1e-8
++        );
++        assert!(
++            (actual.ofe_enthalpy_j_m2_ground()
++                - actual.ofe_mass_kg_m2_ground() * actual.specific_enthalpy_j_kg())
++            .abs()
++                <= 1e-8
++        );
++    }
++    let operands = candidate.receiver_closure_operands();
++    assert!(!operands.production_soil.is_empty());
++    assert!(!operands.soil_thermal.is_empty());
++    assert!(!operands.lse_tiles.is_empty());
++    let infiltration_receipt_m: f64 = ingress
++        .ledgers()
++        .iter()
++        .map(|ledger| ledger.infiltration_mass_kg_m2_ofe_ground / 1_000.0)
++        .sum();
++    let infiltration_owner_m: f64 = operands
++        .production_soil
++        .iter()
++        .map(|soil| soil.infiltration_m)
++        .sum();
++    assert!(infiltration_owner_m > 0.0);
++    assert!((infiltration_receipt_m - infiltration_owner_m).abs() <= 1e-12);
++    for soil in &operands.production_soil {
++        let beginning_from_layers: f64 = soil
++            .ordered_layers
++            .iter()
++            .map(|layer| {
++                layer.beginning_liquid_m
++                    + layer.residual_theta * (layer.layer_depth_m - layer.frozen_depth_m).max(0.0)
++            })
++            .sum();
++        let ending_from_layers: f64 = soil
++            .ordered_layers
++            .iter()
++            .map(|layer| {
++                layer.ending_liquid_m
++                    + layer.residual_theta * (layer.layer_depth_m - layer.frozen_depth_m).max(0.0)
++            })
++            .sum();
++        assert!((beginning_from_layers - soil.beginning_aggregate_soil_water_m).abs() <= 1e-12);
++        assert!((ending_from_layers - soil.ending_aggregate_soil_water_m).abs() <= 1e-12);
++        assert!(
++            (soil.ending_aggregate_soil_water_m
++                - soil.beginning_aggregate_soil_water_m
++                - soil.infiltration_m)
++                .abs()
++                <= 1e-12
++        );
++    }
++    let ledger_infiltration_h: f64 = ingress
++        .ledgers()
++        .iter()
++        .map(|ledger| ledger.infiltration_enthalpy_j_m2_ofe_ground)
++        .sum();
++    let ledger_retained_h: f64 = ingress
++        .ledgers()
++        .iter()
++        .map(|ledger| ledger.retained_enthalpy_j_m2_ofe_ground)
++        .sum();
++    assert!(
++        (ledger_infiltration_h
++            - operands
++                .soil_thermal
++                .iter()
++                .map(|row| row.infiltration_enthalpy_j_m2_ofe_ground)
++                .sum::<f64>())
++        .abs()
++            <= 1e-8
++    );
++    assert!(
++        (ledger_retained_h
++            - operands
++                .lse_tiles
++                .iter()
++                .map(|row| row.retained_enthalpy_j_m2_ofe_ground)
++                .sum::<f64>())
++        .abs()
++            <= 1e-8
++    );
++    for thermal in &operands.soil_thermal {
++        assert!(
++            (thermal.beginning_enthalpy_j_m2_ofe_ground
++                + thermal.infiltration_enthalpy_j_m2_ofe_ground
++                - thermal.ending_enthalpy_j_m2_ofe_ground)
++                .abs()
++                <= 1e-8
++        );
++    }
++    for tile in &operands.lse_tiles {
++        assert!(
++            (tile.tile_fraction
++                * (tile.ending_enthalpy_j_m2_tile_ground
++                    - tile.beginning_enthalpy_j_m2_tile_ground)
++                - tile.retained_enthalpy_j_m2_ofe_ground)
++                .abs()
++                <= 1e-8
++        );
++    }
++}
++
++#[test]
++fn m1_receiver_uses_prescribed_release_components_and_actual_raw_owners() {
++    let mut fixture = endpoint_fixture();
++    let before = endpoint_owner_snapshot(&fixture);
++    let control = prescribed_routing_control();
++    let candidate = execute_m1_cold_canopy_receiver_diagnostic(&mut fixture, &control, None)
++        .expect("actual real-hydrology candidate");
++    assert_raw_receiver_operands(&candidate);
++    let after = endpoint_owner_snapshot(&fixture);
++    assert_eq!(before.owners().len(), 6);
++    assert_eq!(before.owners(), after.owners());
++    before
++        .check_snapshot(&after)
++        .expect("candidate-only wrapper");
++}
++
++#[test]
++fn m1_receiver_prescribed_routing_uses_shared_geometry_and_once_only_tile_conversion() {
++    let root: Value = serde_json::from_str(ROUTING).expect("routing reference");
++    let expected = &root["routing_control"];
++    let routed = route_m1_column_liquid(&prescribed_routing_input()).expect("shared geometry");
++    assert_eq!(routed.captures().len(), 9);
++    for (actual, frozen) in routed.captures().iter().zip(
++        expected["upper"]
++            .as_array()
++            .expect("upper capture")
++            .iter()
++            .chain(expected["lower"].as_array().expect("lower capture")),
++    ) {
++        assert_eq!(
++            actual.kind(),
++            frozen["kind"].as_str().expect("capture kind")
++        );
++        assert!((actual.mass_kg_m2_tile() - decimal(&frozen["mass"])).abs() <= 1e-12);
++        assert!((actual.enthalpy_j_kg() - decimal(&frozen["h"])).abs() <= 1e-9);
++    }
++    let terminal = expected["terminal"].as_array().expect("terminal branches");
++    assert_eq!(routed.terminal_parcels().len(), terminal.len());
++    let mut expected_ofe_mass = 0.0;
++    let mut expected_ofe_energy = 0.0;
++    for (actual, frozen) in routed.terminal_parcels().iter().zip(terminal) {
++        assert_eq!(actual.origin(), frozen["origin"].as_str().expect("origin"));
++        assert!((actual.mass_kg_m2_tile() - decimal(&frozen["mass"])).abs() <= 1e-12);
++        assert!((actual.enthalpy_j_kg() - decimal(&frozen["h"])).abs() <= 1e-9);
++        assert!((actual.energy_j_m2_tile() - decimal(&frozen["energy"])).abs() <= 1e-8);
++        assert!((actual.mass_kg_m2_ofe_ground() - decimal(&frozen["ofe_mass"])).abs() <= 1e-12);
++        assert!((actual.energy_j_m2_ofe_ground() - decimal(&frozen["ofe_energy"])).abs() <= 1e-8);
++        expected_ofe_mass += decimal(&frozen["ofe_mass"]);
++        expected_ofe_energy += decimal(&frozen["ofe_energy"]);
++    }
++    assert!((routed.total_ofe_mass_kg_m2_ground() - expected_ofe_mass).abs() <= 1e-12);
++    assert!((routed.total_ofe_energy_j_m2_ground() - expected_ofe_energy).abs() <= 1e-8);
++}
++
++#[test]
++fn m1_receiver_fixed_failures_restore_each_actual_owner_byte_record() {
++    let control = prescribed_routing_control();
++    let injections = [
++        M1ReceiverFailureInjection::WrongPhase,
++        M1ReceiverFailureInjection::WrongOwner,
++        M1ReceiverFailureInjection::WrongSupport,
++        M1ReceiverFailureInjection::WrongLiquidEnthalpy,
++        M1ReceiverFailureInjection::WrongAreaConversion,
++        M1ReceiverFailureInjection::WrongSourceBranch,
++        M1ReceiverFailureInjection::DuplicateTransfer,
++        M1ReceiverFailureInjection::LateReceiverFailure,
++    ];
++    for injection in injections {
++        let mut fixture = endpoint_fixture();
++        let before = endpoint_owner_snapshot(&fixture);
++        let error =
++            execute_m1_cold_canopy_receiver_diagnostic(&mut fixture, &control, Some(injection))
++                .expect_err("fixed receiver rejection");
++        assert_eq!(error.code(), "VEG-E-143");
++        assert_eq!(error.rejection_stage(), injection.expected_stage());
++        assert_eq!(error.rejection_reason(), injection.expected_reason());
++        if injection == M1ReceiverFailureInjection::LateReceiverFailure {
++            let rejected = error.rejected_candidate().expect("late rejected candidate");
++            assert_raw_receiver_operands(rejected);
++        }
++        let after = endpoint_owner_snapshot(&fixture);
++        assert_eq!(before.owners().len(), 6);
++        assert_eq!(before.owners(), after.owners(), "{injection:?}");
++        before
++            .check_snapshot(&after)
++            .unwrap_or_else(|failure| panic!("{injection:?}: {failure}"));
++    }
++}
++
++#[test]
++fn m1_combined_support_and_raw_domain_guards_preserve_precedence() {
++    let radiation: Value = serde_json::from_str(RADIATION).expect("radiation");
++    let original: Value = serde_json::from_str(ORIGINAL).expect("original");
++    let unsupported = radiation_input_with_conditions(
++        &radiation,
++        &original,
++        M1SupportConditions {
++            occupancy_conditions: vec![M1OccupancySupportCondition {
++                occupancy_id: "stratum-z-upper::forest".to_owned(),
++                liquid_conducting: true,
++                full_supply: false,
++            }],
++            ..conditions()
++        },
++        f64::NAN,
++    );
++    let error = evaluate_m1_coupled_column(&unsupported, &trial()).expect_err("support first");
++    assert_eq!(error.code(), "VEG-E-140");
++    let wrong_model = radiation_input_with_conditions(
++        &radiation,
++        &original,
++        M1SupportConditions {
++            model_definition_id: "wrong-model".to_owned(),
++            ..conditions()
++        },
++        decimal(&radiation["inputs"]["p"]),
++    );
++    let error = evaluate_m1_coupled_column(&wrong_model, &trial()).expect_err("model identity");
++    assert_eq!(error.code(), "VEG-E-140");
++    let raw_invalid =
++        radiation_input_with_conditions(&radiation, &original, conditions(), f64::NAN);
++    let error = evaluate_m1_coupled_column(&raw_invalid, &trial()).expect_err("raw input");
++    assert_eq!(error.code(), "VEG-E-141");
++    for support in [
++        M1SupportConditions {
++            occupancy_conditions: vec![M1OccupancySupportCondition {
++                occupancy_id: "stratum-z-upper::forest".to_owned(),
++                liquid_conducting: true,
++                full_supply: true,
++            }],
++            ..conditions()
++        },
++        M1SupportConditions {
++            occupancy_conditions: vec![
++                M1OccupancySupportCondition {
++                    occupancy_id: "stratum-z-upper::forest".to_owned(),
++                    liquid_conducting: true,
++                    full_supply: true,
++                },
++                M1OccupancySupportCondition {
++                    occupancy_id: "stratum-z-upper::forest".to_owned(),
++                    liquid_conducting: true,
++                    full_supply: true,
++                },
++            ],
++            ..conditions()
++        },
++        M1SupportConditions {
++            occupancy_conditions: vec![
++                M1OccupancySupportCondition {
++                    occupancy_id: "stratum-z-upper::forest".to_owned(),
++                    liquid_conducting: true,
++                    full_supply: true,
++                },
++                M1OccupancySupportCondition {
++                    occupancy_id: "unknown-occupancy".to_owned(),
++                    liquid_conducting: true,
++                    full_supply: true,
++                },
++            ],
++            ..conditions()
++        },
++    ] {
++        let invalid = radiation_input_with_conditions(&radiation, &original, support, f64::NAN);
++        assert_eq!(
++            evaluate_m1_coupled_column(&invalid, &trial())
++                .expect_err("support precedence")
++                .code(),
++            "VEG-E-140"
++        );
++    }
++}
+--- a/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs
++++ b/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs
+@@ -90,6 +90,8 @@
+ // The successor coordinator is an admitted candidate-only seam. The active
+ // V9 consumer adopts it in the following manifest slice; keeping it dormant
+ // here must not weaken lints on the established V8 runtime.
++#[cfg(test)]
++mod m1_coupled_expected_red;
+ #[allow(dead_code)]
+ pub(crate) mod v3_execution;
+ pub(crate) mod v3_input_projection;
+--- a/crates/openwepp-vegetation/src/cold_canopy_m1.rs
++++ b/crates/openwepp-vegetation/src/cold_canopy_m1.rs
+@@ -0,0 +1,699 @@
++//! M1 cold-canopy thermodynamic and restart primitives.
++use crate::energy::warm_saturation_vapor_pressure_and_derivative_pa;
++use serde::{Deserialize, Serialize};
++const TF: f64 = 273.15;
++const CW: f64 = 4218.;
++const CI: f64 = 2106.;
++const LF: f64 = 333_700.;
++const LV: f64 = 2_501_000.;
++const CPV: f64 = 1849.;
++const RV: f64 = 461.52;
++const E0: f64 = 611.213_476;
++const RD: f64 = 287.05;
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum M1ExternalPhase {
++    Liquid,
++    Ice,
++}
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum M1Phase {
++    Empty,
++    Liquid,
++    Mixed,
++    Ice,
++}
++impl M1Phase {
++    #[must_use]
++    pub fn as_str(self) -> &'static str {
++        match self {
++            Self::Empty => "empty",
++            Self::Liquid => "liquid",
++            Self::Mixed => "mixed",
++            Self::Ice => "ice",
++        }
++    }
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1Saturation {
++    pub vapor_pressure_pa: f64,
++    pub specific_humidity_kg_kg: f64,
++    pub derivative_kg_kg_k: f64,
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1TemperatureJacobian {
++    pub d_t_d_m: f64,
++    pub d_t_d_h: f64,
++}
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum M1DrySurface {
++    Sun,
++    Shade,
++    Stem,
++}
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum M1Stage {
++    Condition,
++    Saturation,
++    MhConsistency,
++    Capacity,
++    Parse,
++    Version,
++    Identity,
++    Chronology,
++    Ownership,
++    UnitsArea,
++    Domain,
++}
++impl M1Stage {
++    #[must_use]
++    pub fn as_str(self) -> &'static str {
++        match self {
++            Self::Condition => "condition",
++            Self::Saturation => "saturation",
++            Self::MhConsistency => "mh_consistency",
++            Self::Capacity => "capacity",
++            Self::Parse => "parse",
++            Self::Version => "version",
++            Self::Identity => "identity",
++            Self::Chronology => "chronology",
++            Self::Ownership => "ownership",
++            Self::UnitsArea => "units_area",
++            Self::Domain => "domain",
++        }
++    }
++}
++#[derive(Clone, Debug)]
++pub struct M1Error {
++    code: &'static str,
++    stage: M1Stage,
++}
++impl M1Error {
++    const fn new(code: &'static str, stage: M1Stage) -> Self {
++        Self { code, stage }
++    }
++    #[must_use]
++    pub fn code(&self) -> &str {
++        self.code
++    }
++    #[must_use]
++    pub fn stage(&self) -> M1Stage {
++        self.stage
++    }
++}
++fn sat(
++    temperature_k: f64,
++    pressure_pa: f64,
++    phase: M1ExternalPhase,
++) -> Result<M1Saturation, M1Error> {
++    if !temperature_k.is_finite()
++        || !pressure_pa.is_finite()
++        || !(258.15..=373.15).contains(&temperature_k)
++        || !(80_000. ..=110_000.).contains(&pressure_pa)
++    {
++        return Err(M1Error::new("VEG-E-141", M1Stage::Saturation));
++    }
++    let (vapor_pressure_pa, vapor_pressure_derivative_pa_k) = if temperature_k >= TF {
++        warm_saturation_vapor_pressure_and_derivative_pa(temperature_k)
++            .map_err(|_| M1Error::new("VEG-E-141", M1Stage::Saturation))?
++    } else {
++        let (phase_heat_capacity, latent_heat_at_freezing) = match phase {
++            M1ExternalPhase::Liquid => (CW, LV),
++            M1ExternalPhase::Ice => (CI, 2_834_700.),
++        };
++        let heat_capacity_difference = phase_heat_capacity - CPV;
++        let latent_heat = latent_heat_at_freezing - heat_capacity_difference * (temperature_k - TF);
++        let vapor_pressure_pa = E0
++            * (TF / temperature_k).powf(heat_capacity_difference / RV)
++            * (latent_heat_at_freezing / (RV * TF) - latent_heat / (RV * temperature_k)).exp();
++        (
++            vapor_pressure_pa,
++            vapor_pressure_pa * latent_heat / (RV * temperature_k * temperature_k),
++        )
++    };
++    let humidity_denominator = pressure_pa - 0.378 * vapor_pressure_pa;
++    let specific_humidity_kg_kg = 0.622 * vapor_pressure_pa / humidity_denominator;
++    if !vapor_pressure_pa.is_finite()
++        || !vapor_pressure_derivative_pa_k.is_finite()
++        || vapor_pressure_pa <= 0.
++        || vapor_pressure_pa >= pressure_pa
++        || humidity_denominator.partial_cmp(&0.) != Some(std::cmp::Ordering::Greater)
++        || !(0. ..1.).contains(&specific_humidity_kg_kg)
++    {
++        return Err(M1Error::new("VEG-E-141", M1Stage::Saturation));
++    }
++    Ok(M1Saturation {
++        vapor_pressure_pa,
++        specific_humidity_kg_kg,
++        derivative_kg_kg_k: 0.622 * pressure_pa * vapor_pressure_derivative_pa_k
++            / humidity_denominator.powi(2),
++    })
++}
++pub fn m1_qsat_external(
++    temperature_k: f64,
++    pressure_pa: f64,
++    phase: M1ExternalPhase,
++) -> Result<M1Saturation, M1Error> {
++    sat(temperature_k, pressure_pa, phase)
++}
++pub fn m1_qsat_internal(temperature_k: f64, pressure_pa: f64) -> Result<M1Saturation, M1Error> {
++    sat(temperature_k, pressure_pa, M1ExternalPhase::Liquid)
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1PhaseReservoir {
++    m: f64,
++    h: f64,
++}
++impl M1PhaseReservoir {
++    pub fn from_mass_enthalpy(mass_kg_m2: f64, enthalpy_j_m2: f64) -> Result<Self, M1Error> {
++        if !mass_kg_m2.is_finite()
++            || !enthalpy_j_m2.is_finite()
++            || mass_kg_m2 < 0.
++            || (mass_kg_m2 == 0. && enthalpy_j_m2 != 0.)
++        {
++            Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency))
++        } else {
++            let value = Self {
++                m: mass_kg_m2,
++                h: enthalpy_j_m2,
++            };
++            if let Some(temperature_k) = value.wet_temperature_k() {
++                if !temperature_k.is_finite() || !(258.15..=373.15).contains(&temperature_k) {
++                    return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency));
++                }
++            }
++            Ok(value)
++        }
++    }
++    #[must_use]
++    pub fn empty() -> Self {
++        Self { m: 0., h: 0. }
++    }
++    #[must_use]
++    pub fn phase(self) -> M1Phase {
++        if self.m == 0. {
++            M1Phase::Empty
++        } else if self.h >= 0. {
++            M1Phase::Liquid
++        } else if self.h >= -LF * self.m {
++            M1Phase::Mixed
++        } else {
++            M1Phase::Ice
++        }
++    }
++    #[must_use]
++    pub fn wet_temperature_k(self) -> Option<f64> {
++        if self.m == 0. {
++            None
++        } else {
++            Some(match self.phase() {
++                M1Phase::Empty => return None,
++                M1Phase::Liquid => TF + self.h / (self.m * CW),
++                M1Phase::Mixed => TF,
++                M1Phase::Ice => TF + (self.h + LF * self.m) / (self.m * CI),
++            })
++        }
++    }
++    pub fn temperature_jacobian(self) -> Result<M1TemperatureJacobian, M1Error> {
++        if self.m == 0. {
++            return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency));
++        }
++        let jacobian = match self.phase() {
++            M1Phase::Empty => return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency)),
++            M1Phase::Liquid => M1TemperatureJacobian {
++                d_t_d_m: -self.h / (self.m * self.m * CW),
++                d_t_d_h: 1.0 / (self.m * CW),
++            },
++            M1Phase::Mixed => M1TemperatureJacobian {
++                d_t_d_m: 0.,
++                d_t_d_h: 0.,
++            },
++            M1Phase::Ice => M1TemperatureJacobian {
++                d_t_d_m: -self.h / (self.m * self.m * CI),
++                d_t_d_h: 1.0 / (self.m * CI),
++            },
++        };
++        if !jacobian.d_t_d_m.is_finite() || !jacobian.d_t_d_h.is_finite() {
++            return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency));
++        }
++        Ok(jacobian)
++    }
++    fn ml(self) -> f64 {
++        match self.phase() {
++            M1Phase::Liquid => self.m,
++            M1Phase::Mixed => self.m + self.h / LF,
++            M1Phase::Empty | M1Phase::Ice => 0.,
++        }
++    }
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1ReservoirState {
++    pub mass_kg_m2: f64,
++    pub enthalpy_j_m2: f64,
++}
++impl M1ReservoirState {
++    #[must_use]
++    pub fn new(m: f64, h: f64) -> Self {
++        Self {
++            mass_kg_m2: m,
++            enthalpy_j_m2: h,
++        }
++    }
++    fn p(self) -> Result<M1PhaseReservoir, M1Error> {
++        M1PhaseReservoir::from_mass_enthalpy(self.mass_kg_m2, self.enthalpy_j_m2)
++    }
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1VaporBoundary {
++    pub wet_conductance_m_s: f64,
++    pub plant_area_m2_m2: f64,
++    pub canopy_air_temperature_k: f64,
++    pub canopy_air_specific_humidity_kg_kg: f64,
++    pub pressure_pa: f64,
++}
++#[derive(Clone, Copy, Debug)]
++enum VM {
++    E(f64),
++    B(M1VaporBoundary),
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1ReservoirForcing {
++    dt: f64,
++    i: f64,
++    hi: f64,
++    q: f64,
++    c: f64,
++    v: VM,
++}
++impl M1ReservoirForcing {
++    #[must_use]
++    pub fn prescribed(dt: f64, i: f64, hi: f64, q: f64, e: f64, c: f64) -> Self {
++        Self {
++            dt,
++            i,
++            hi,
++            q,
++            c,
++            v: VM::E(e),
++        }
++    }
++    #[must_use]
++    pub fn with_vapor_boundary(
++        dt: f64,
++        i: f64,
++        hi: f64,
++        q: f64,
++        c: f64,
++        b: M1VaporBoundary,
++    ) -> Self {
++        Self {
++            dt,
++            i,
++            hi,
++            q,
++            c,
++            v: VM::B(b),
++        }
++    }
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1Residuals {
++    pub mass_kg_m2: f64,
++    pub enthalpy_j_m2: f64,
++    pub capacity_kg_m2: f64,
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1CapacityTrial {
++    ml: f64,
++    c: f64,
++    d: f64,
++    dt: f64,
++}
++impl M1CapacityTrial {
++    #[must_use]
++    pub fn new(ml: f64, c: f64, d: f64, dt: f64) -> Self {
++        Self { ml, c, d, dt }
++    }
++}
++#[derive(Clone, Copy, Debug)]
++pub enum M1CapacityBranch {
++    Drainage,
++    Capacity,
++}
++impl M1CapacityBranch {
++    #[must_use]
++    pub fn as_str(self) -> &'static str {
++        match self {
++            Self::Drainage => "drainage",
++            Self::Capacity => "capacity",
++        }
++    }
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1CapacityResidual {
++    pub residual_kg_m2: f64,
++    b: M1CapacityBranch,
++}
++impl M1CapacityResidual {
++    #[must_use]
++    pub fn branch(self) -> M1CapacityBranch {
++        self.b
++    }
++}
++pub fn evaluate_m1_capacity_residual(x: M1CapacityTrial) -> Result<M1CapacityResidual, M1Error> {
++    if !x.ml.is_finite()
++        || !x.c.is_finite()
++        || !x.d.is_finite()
++        || !x.dt.is_finite()
++        || x.ml < 0.
++        || x.c < 0.
++        || x.d < 0.
++        || x.dt < 60.
++        || !(x.dt * x.d).is_finite()
++        || !(x.c - x.ml).is_finite()
++    {
++        return Err(M1Error::new("VEG-E-142", M1Stage::Capacity));
++    }
++    let a = x.dt * x.d;
++    let b = x.c - x.ml;
++    Ok(if a < b {
++        M1CapacityResidual {
++            residual_kg_m2: a,
++            b: M1CapacityBranch::Drainage,
++        }
++    } else {
++        M1CapacityResidual {
++            residual_kg_m2: b,
++            b: M1CapacityBranch::Capacity,
++        }
++    })
++}
++fn evap(reservoir: M1PhaseReservoir, capacity_kg_m2: f64, vapor_model: VM) -> Result<f64, M1Error> {
++    match vapor_model {
++        VM::E(flux_kg_m2_s) if flux_kg_m2_s.is_finite() => Ok(flux_kg_m2_s),
++        VM::E(_) => Err(M1Error::new("VEG-E-142", M1Stage::Domain)),
++        VM::B(boundary) => {
++            if !boundary.wet_conductance_m_s.is_finite()
++                || !boundary.plant_area_m2_m2.is_finite()
++                || !boundary.canopy_air_temperature_k.is_finite()
++                || !boundary.canopy_air_specific_humidity_kg_kg.is_finite()
++                || boundary.wet_conductance_m_s <= 0.
++                || boundary.plant_area_m2_m2 <= 0.
++                || !(258.15..=373.15).contains(&boundary.canopy_air_temperature_k)
++                || !(0. ..1.).contains(&boundary.canopy_air_specific_humidity_kg_kg)
++                || capacity_kg_m2 <= 0.
++            {
++                return Err(M1Error::new("VEG-E-140", M1Stage::Domain));
++            }
++            let temperature_k = reservoir
++                .wet_temperature_k()
++                .ok_or_else(|| M1Error::new("VEG-E-142", M1Stage::MhConsistency))?;
++            let phase = if reservoir.phase() == M1Phase::Ice {
++                M1ExternalPhase::Ice
++            } else {
++                M1ExternalPhase::Liquid
++            };
++            let air_density_kg_m3 = boundary.pressure_pa / (RD * boundary.canopy_air_temperature_k);
++            let wet_fraction = (reservoir.m / capacity_kg_m2).powf(2.0 / 3.0).min(1.);
++            let flux_kg_m2_s = air_density_kg_m3
++                * boundary.wet_conductance_m_s
++                * wet_fraction
++                * boundary.plant_area_m2_m2
++                * (sat(temperature_k, boundary.pressure_pa, phase)?.specific_humidity_kg_kg
++                    - boundary.canopy_air_specific_humidity_kg_kg);
++            if !air_density_kg_m3.is_finite()
++                || !wet_fraction.is_finite()
++                || !flux_kg_m2_s.is_finite()
++            {
++                return Err(M1Error::new("VEG-E-141", M1Stage::Saturation));
++            }
++            Ok(flux_kg_m2_s)
++        }
++    }
++}
++pub fn evaluate_m1_reservoir_residuals(
++    beginning: M1ReservoirState,
++    ending: M1ReservoirState,
++    forcing: M1ReservoirForcing,
++    drainage_kg_m2_s: f64,
++) -> Result<M1Residuals, M1Error> {
++    beginning.p()?;
++    let ending_reservoir = ending.p()?;
++    if !forcing.dt.is_finite()
++        || forcing.dt < 60.
++        || ![
++            forcing.i,
++            forcing.hi,
++            forcing.q,
++            forcing.c,
++            drainage_kg_m2_s,
++        ]
++        .iter()
++        .all(|value| value.is_finite())
++        || forcing.c < 0.
++        || forcing.i < 0.
++        || drainage_kg_m2_s < 0.
++    {
++        return Err(M1Error::new("VEG-E-142", M1Stage::Domain));
++    }
++    if forcing.i > 0.0 {
++        let incident_temperature_k = TF + forcing.hi / CW;
++        if !incident_temperature_k.is_finite()
++            || !(273.15..=373.15).contains(&incident_temperature_k)
++        {
++            return Err(M1Error::new("VEG-E-142", M1Stage::Domain));
++        }
++    }
++    let vapor_flux_kg_m2_s = evap(ending_reservoir, forcing.c, forcing.v)?;
++    let ending_temperature_k = ending_reservoir
++        .wet_temperature_k()
++        .ok_or_else(|| M1Error::new("VEG-E-142", M1Stage::MhConsistency))?;
++    let cap = evaluate_m1_capacity_residual(M1CapacityTrial::new(
++        ending_reservoir.ml(),
++        forcing.c,
++        drainage_kg_m2_s,
++        forcing.dt,
++    ))?
++    .residual_kg_m2;
++    let residuals = M1Residuals {
++        mass_kg_m2: ending.mass_kg_m2
++            - beginning.mass_kg_m2
++            - forcing.dt * (forcing.i - vapor_flux_kg_m2_s - drainage_kg_m2_s),
++        enthalpy_j_m2: ending.enthalpy_j_m2
++            - beginning.enthalpy_j_m2
++            - forcing.dt
++                * (forcing.q + forcing.i * forcing.hi
++                    - vapor_flux_kg_m2_s * (LV + CPV * (ending_temperature_k - TF))
++                    - drainage_kg_m2_s * CW * (ending_temperature_k - TF)),
++        capacity_kg_m2: cap,
++    };
++    if !residuals.mass_kg_m2.is_finite()
++        || !residuals.enthalpy_j_m2.is_finite()
++        || !residuals.capacity_kg_m2.is_finite()
++    {
++        return Err(M1Error::new("VEG-E-142", M1Stage::Domain));
++    }
++    Ok(residuals)
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1EmptySurfaceInput {
++    pub surface: M1DrySurface,
++    pub area_m2_m2: f64,
++    pub temperature_k: f64,
++    pub pressure_pa: f64,
++    pub qcan_kg_kg: f64,
++    pub liquid_conducting_tissue: bool,
++}
++pub fn validate_m1_empty_surface(x: M1EmptySurfaceInput) -> Result<(), M1Error> {
++    if !x.liquid_conducting_tissue {
++        return Err(M1Error::new("VEG-E-140", M1Stage::Condition));
++    }
++    if !(x.area_m2_m2.is_finite()
++        && x.area_m2_m2 >= 0.
++        && x.qcan_kg_kg.is_finite()
++        && x.qcan_kg_kg >= 0.
++        && x.qcan_kg_kg < 1.)
++    {
++        return Err(M1Error::new("VEG-E-142", M1Stage::Domain));
++    }
++    if x.area_m2_m2 > 0.
++        && x.qcan_kg_kg
++            > sat(
++                x.temperature_k,
++                x.pressure_pa,
++                if x.temperature_k < TF {
++                    M1ExternalPhase::Ice
++                } else {
++                    M1ExternalPhase::Liquid
++                },
++            )?
++            .specific_humidity_kg_kg
++    {
++        return Err(M1Error::new("VEG-E-142", M1Stage::Domain));
++    }
++    Ok(())
++}
++fn is_sha256_digest(value: &str) -> bool {
++    value.len() == 64
++        && value
++            .bytes()
++            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
++}
++#[derive(Clone, Debug)]
++pub struct M1RestartValidationContext {
++    d: [String; 4],
++    tx: u64,
++    day: u32,
++    ofe: String,
++    tile: String,
++    occ: String,
++    start: f64,
++    end: f64,
++}
++#[derive(Clone, Copy, Debug)]
++pub struct M1RestartExternalBindings<'a> {
++    pub definition_digests_sha256: [&'a str; 4],
++    pub transaction_id: u64,
++    pub day_index: u32,
++    pub ofe_id: &'a str,
++    pub tile_id: &'a str,
++    pub occupancy_id: &'a str,
++    pub support_start_s: f64,
++    pub support_end_s: f64,
++}
++impl M1RestartValidationContext {
++    pub fn from_external_bindings(
++        bindings: M1RestartExternalBindings<'_>,
++    ) -> Result<Self, M1Error> {
++        if !bindings
++            .definition_digests_sha256
++            .iter()
++            .all(|value| is_sha256_digest(value))
++            || bindings.transaction_id == 0
++            || bindings.ofe_id.is_empty()
++            || bindings.tile_id.is_empty()
++            || bindings.occupancy_id.is_empty()
++            || !bindings.support_start_s.is_finite()
++            || !bindings.support_end_s.is_finite()
++            || bindings.support_end_s <= bindings.support_start_s
++        {
++            return Err(M1Error::new("VEG-E-144", M1Stage::Identity));
++        }
++        Ok(Self {
++            d: bindings.definition_digests_sha256.map(str::to_owned),
++            tx: bindings.transaction_id,
++            day: bindings.day_index,
++            ofe: bindings.ofe_id.into(),
++            tile: bindings.tile_id.into(),
++            occ: bindings.occupancy_id.into(),
++            start: bindings.support_start_s,
++            end: bindings.support_end_s,
++        })
++    }
++}
++#[derive(Clone, Debug, Serialize, Deserialize)]
++#[serde(deny_unknown_fields)]
++pub struct M1RestartExtension {
++    area_basis: String,
++    configuration_digest_sha256: String,
++    consumed_transaction_cursor: u64,
++    day_index: u32,
++    enthalpy_unit: String,
++    h_j_m2: f64,
++    m_kg_h2o_m2: f64,
++    mass_unit: String,
++    model_definition_digest_sha256: String,
++    model_definition_id: String,
++    occupancy_id: String,
++    ofe_id: String,
++    schema_version: u32,
++    source_manifest_sha256: String,
++    support_end_s: f64,
++    support_start_s: f64,
++    tile_id: String,
++    topology_digest_sha256: String,
++    transaction_id: u64,
++}
++impl M1RestartExtension {
++    #[allow(
++        clippy::float_cmp,
++        reason = "Restart support bounds are externally bound identity coordinates and must match exactly."
++    )]
++    pub fn parse_and_validate(
++        serialized: &str,
++        context: &M1RestartValidationContext,
++    ) -> Result<Self, M1Error> {
++        let record: Self = serde_json::from_str(serialized)
++            .map_err(|_| M1Error::new("VEG-E-144", M1Stage::Parse))?;
++        if record.schema_version != 1
++            || record.model_definition_id != "OPENWEPP_C3_WOODY_COLD_M1_V1"
++        {
++            return Err(M1Error::new("VEG-E-144", M1Stage::Version));
++        }
++        if ![
++            &record.model_definition_digest_sha256,
++            &record.configuration_digest_sha256,
++            &record.topology_digest_sha256,
++            &record.source_manifest_sha256,
++        ]
++        .iter()
++        .all(|value| is_sha256_digest(value))
++            || record.model_definition_digest_sha256 != context.d[0]
++            || record.configuration_digest_sha256 != context.d[1]
++            || record.topology_digest_sha256 != context.d[2]
++            || record.source_manifest_sha256 != context.d[3]
++        {
++            return Err(M1Error::new("VEG-E-144", M1Stage::Identity));
++        }
++        if record.transaction_id != context.tx
++            || record.consumed_transaction_cursor != record.transaction_id
++            || record.day_index != context.day
++            || record.support_start_s != context.start
++            || record.support_end_s != context.end
++            || !record.support_start_s.is_finite()
++            || !record.support_end_s.is_finite()
++            || record.support_end_s <= record.support_start_s
++        {
++            return Err(M1Error::new("VEG-E-144", M1Stage::Chronology));
++        }
++        if record.ofe_id != context.ofe
++            || record.tile_id != context.tile
++            || record.occupancy_id != context.occ
++        {
++            return Err(M1Error::new("VEG-E-144", M1Stage::Ownership));
++        }
++        if record.area_basis != "tile_ground"
++            || record.mass_unit != "kg_h2o_m2"
++            || record.enthalpy_unit != "J_m2"
++        {
++            return Err(M1Error::new("VEG-E-144", M1Stage::UnitsArea));
++        }
++        if !record.m_kg_h2o_m2.is_finite()
++            || !record.h_j_m2.is_finite()
++            || record.m_kg_h2o_m2 < 0.0
++            || (record.m_kg_h2o_m2 == 0.0 && record.h_j_m2 != 0.0)
++        {
++            return Err(M1Error::new("VEG-E-144", M1Stage::MhConsistency));
++        }
++        let reservoir = M1PhaseReservoir::from_mass_enthalpy(record.m_kg_h2o_m2, record.h_j_m2)
++            .map_err(|_| M1Error::new("VEG-E-144", M1Stage::Domain))?;
++        if let Some(temperature_k) = reservoir.wet_temperature_k() {
++            if !(258.15..=373.15).contains(&temperature_k) {
++                return Err(M1Error::new("VEG-E-144", M1Stage::Domain));
++            }
++        }
++        Ok(record)
++    }
++    pub fn to_canonical_utf8(&self) -> Result<String, M1Error> {
++        serde_json::to_string(self)
++            .map(|s| s + "\n")
++            .map_err(|_| M1Error::new("VEG-E-144", M1Stage::Parse))
++    }
++    #[must_use]
++    pub fn phase(&self) -> M1Phase {
++        M1PhaseReservoir {
++            m: self.m_kg_h2o_m2,
++            h: self.h_j_m2,
++        }
++        .phase()
++    }
++}
+--- a/crates/openwepp-vegetation/src/energy.rs
++++ b/crates/openwepp-vegetation/src/energy.rs
+@@ -88,12 +88,29 @@
+     if !temperature_k.is_finite() || !(273.15..=373.15).contains(&temperature_k) {
+         return Err(VegetationError::Domain("liquid saturation temperature"));
+     }
++    Ok(warm_saturation_vapor_pressure_and_derivative_pa(temperature_k)?.0)
++}
++
++/// Retained V10 liquid saturation polynomial and its analytic derivative.
++pub(crate) fn warm_saturation_vapor_pressure_and_derivative_pa(
++    temperature_k: f64,
++) -> Result<(f64, f64), VegetationError> {
++    if !temperature_k.is_finite() || !(273.15..=373.15).contains(&temperature_k) {
++        return Err(VegetationError::Domain("liquid saturation temperature"));
++    }
+     let celsius = temperature_k - 273.15;
+     let hpa = ESAT_HPA
+         .iter()
+         .rev()
+         .fold(0.0, |sum, coefficient| sum * celsius + coefficient);
+-    Ok(hpa * 100.0)
++    let derivative_hpa_per_k = ESAT_HPA
++        .iter()
++        .rev()
++        .fold((0.0, 0.0), |(value, derivative), coefficient| {
++            (value * celsius + coefficient, derivative * celsius + value)
++        })
++        .1;
++    Ok((hpa * 100.0, derivative_hpa_per_k * 100.0))
+ }
+ 
+ pub fn saturation_specific_humidity(
+--- a/crates/openwepp-vegetation/src/lib.rs
++++ b/crates/openwepp-vegetation/src/lib.rs
+@@ -3,6 +3,7 @@
+ 
+ pub mod carbon_nitrogen;
+ pub mod carbon_phase;
++pub mod cold_canopy_m1;
+ pub mod column;
+ pub mod config;
+ pub mod diagnostics;
+--- a/crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs
++++ b/crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs
+@@ -0,0 +1,545 @@
++//! Contract-derived M1 expected-red tests.
++//!
++//! The reviewed API is intentionally absent before production implementation.
++//! This target must first fail at its public-module import. When it exists,
++//! every assertion below binds a frozen independent control.
++
++use openwepp_vegetation::cold_canopy_m1::{
++    M1CapacityTrial, M1DrySurface, M1EmptySurfaceInput, M1Error, M1ExternalPhase, M1Phase,
++    M1PhaseReservoir, M1ReservoirForcing, M1ReservoirState, M1RestartExtension,
++    M1RestartExternalBindings, M1RestartValidationContext, M1VaporBoundary,
++    evaluate_m1_capacity_residual, evaluate_m1_reservoir_residuals, m1_qsat_external,
++    m1_qsat_internal, validate_m1_empty_surface,
++};
++use serde_json::Value;
++
++const CONTROLS: &str = include_str!(concat!(
++    env!("CARGO_MANIFEST_DIR"),
++    "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/reference-controls-m1.json"
++));
++const RESTARTS: &str = include_str!(concat!(
++    env!("CARGO_MANIFEST_DIR"),
++    "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/restart-reference-m1.json"
++));
++
++fn close(actual: f64, expected: f64, absolute: f64) {
++    assert!(
++        (actual - expected).abs() <= absolute,
++        "actual={actual:.17e}, expected={expected:.17e}"
++    );
++}
++
++fn close_relative(actual: f64, expected: f64, relative: f64) {
++    close(actual, expected, expected.abs().max(1.0) * relative);
++}
++
++fn number(value: &Value) -> f64 {
++    value
++        .as_str()
++        .expect("frozen decimal")
++        .parse()
++        .expect("valid frozen decimal")
++}
++
++fn assert_error(error: &M1Error, code: &str, stage: &str) {
++    assert_eq!(error.code(), code);
++    assert_eq!(error.stage().as_str(), stage);
++}
++
++fn restart_context(root: &Value) -> M1RestartValidationContext {
++    let bindings = &root["external_bindings"];
++    M1RestartValidationContext::from_external_bindings(M1RestartExternalBindings {
++        definition_digests_sha256: [
++            bindings["model_definition_digest_sha256"]["sha256"]
++                .as_str()
++                .expect("model"),
++            bindings["configuration_digest_sha256"]["sha256"]
++                .as_str()
++                .expect("configuration"),
++            bindings["topology_digest_sha256"]["sha256"]
++                .as_str()
++                .expect("topology"),
++            bindings["source_manifest_sha256"]["sha256"]
++                .as_str()
++                .expect("source"),
++        ],
++        transaction_id: 17,
++        day_index: 3, // Expected parent checkpoint day; never derive it from the record.
++        ofe_id: "ofe-0",
++        tile_id: "tile-0",
++        occupancy_id: "upper",
++        support_start_s: 120.0,
++        support_end_s: 180.0,
++    })
++    .expect("reference context")
++}
++
++#[test]
++fn m1_all_saturation_and_join_derivative_controls() {
++    let root: Value = serde_json::from_str(CONTROLS).expect("controls parse");
++    let controls = root["saturation"]
++        .as_array()
++        .expect("ten saturation controls");
++    assert_eq!(controls.len(), 10, "frozen saturation membership");
++    for control in controls {
++        let phase = match control["phase_control"].as_str().expect("phase") {
++            "liquid" => M1ExternalPhase::Liquid,
++            "ice" => M1ExternalPhase::Ice,
++            other => panic!("unknown phase {other}"),
++        };
++        let actual = m1_qsat_external(
++            number(&control["temperature_k"]),
++            number(&control["pressure_pa"]),
++            phase,
++        )
++        .expect("saturation control");
++        close(actual.vapor_pressure_pa, number(&control["e_pa"]), 1.0e-9);
++        close(
++            actual.specific_humidity_kg_kg,
++            number(&control["q_kg_kg"]),
++            1.0e-15,
++        );
++        close(
++            actual.derivative_kg_kg_k,
++            number(&control["dq_kg_kg_k"]),
++            1.0e-15,
++        );
++    }
++    let liquid = m1_qsat_internal(263.15, 90_000.0).expect("liquid");
++    let ice = m1_qsat_external(263.15, 90_000.0, M1ExternalPhase::Ice).expect("ice");
++    assert!(liquid.specific_humidity_kg_kg > ice.specific_humidity_kg_kg);
++}
++
++#[test]
++fn m1_all_inverse_and_ice_jacobian_controls() {
++    let root: Value = serde_json::from_str(CONTROLS).expect("controls parse");
++    let controls = root["inverse"].as_array().expect("four inverse controls");
++    assert_eq!(controls.len(), 4, "frozen inverse membership");
++    for control in controls {
++        let reservoir = M1PhaseReservoir::from_mass_enthalpy(
++            number(&control["mass_kg_m2"]),
++            number(&control["enthalpy_j_m2"]),
++        )
++        .expect("inverse control");
++        let expected_phase = if control["enthalpy_j_m2"].as_str() == Some("-6006.6") {
++            "ice"
++        } else {
++            control["phase"].as_str().expect("phase")
++        };
++        assert_eq!(reservoir.phase().as_str(), expected_phase);
++        close(
++            reservoir
++                .wet_temperature_k()
++                .expect("positive inverse control"),
++            number(&control["temperature_k"]),
++            1.0e-12,
++        );
++    }
++    assert_eq!(
++        M1PhaseReservoir::from_mass_enthalpy(0.018, -333_700.0 * 0.018)
++            .expect("exact binary boundary")
++            .phase(),
++        M1Phase::Mixed
++    );
++    let control = &root["ice_inverse_jacobian"];
++    let ice = M1PhaseReservoir::from_mass_enthalpy(number(&control["m"]), number(&control["h"]))
++        .expect("ice control");
++    assert_eq!(ice.phase(), M1Phase::Ice);
++    close(
++        ice.temperature_jacobian().expect("ice Jacobian").d_t_d_m,
++        number(&control["expected_dt_dm"]),
++        1.0e-6,
++    );
++    close(
++        ice.temperature_jacobian().expect("ice Jacobian").d_t_d_h,
++        number(&control["expected_dt_dh"]),
++        1.0e-12,
++    );
++}
++
++#[test]
++fn m1_signed_vapor_ledger_and_capacity_controls() {
++    let root: Value = serde_json::from_str(CONTROLS).expect("controls parse");
++    let controls = root["constant_temperature_ice_vapor_controls"]
++        .as_array()
++        .expect("two signed vapor controls");
++    assert_eq!(controls.len(), 2, "frozen vapor membership");
++    for control in controls {
++        let forcing = M1ReservoirForcing::prescribed(
++            number(&control["dt_s"]),
++            0.0,
++            0.0,
++            number(&control["q_nonvapor_w_m2"]),
++            number(&control["e_kg_m2_s"]),
++            0.297,
++        );
++        let beginning = M1ReservoirState::new(number(&control["m0"]), number(&control["h0"]));
++        let ending = M1ReservoirState::new(number(&control["m1"]), number(&control["h1"]));
++        let residual = evaluate_m1_reservoir_residuals(beginning, ending, forcing, 0.0)
++            .expect("ledger residual");
++        close(
++            residual.mass_kg_m2,
++            number(&control["expected_mass_residual"]),
++            1.0e-9,
++        );
++        close(
++            residual.enthalpy_j_m2,
++            number(&control["expected_energy_residual"]),
++            1.0e-6,
++        );
++        let fusion_poison = M1ReservoirState::new(
++            number(&control["m1"]),
++            number(&control["h1"]) - number(&control["extra_fusion_debit_poison_j_m2"]),
++        );
++        assert!(
++            evaluate_m1_reservoir_residuals(beginning, fusion_poison, forcing, 0.0)
++                .expect("poison residual")
++                .enthalpy_j_m2
++                .abs()
++                > 1.0e-6
++        );
++    }
++    let controls = root["capacity_controls"]
++        .as_array()
++        .expect("four capacity controls");
++    assert_eq!(controls.len(), 4, "frozen capacity membership");
++    for control in controls {
++        let trial = M1CapacityTrial::new(
++            number(&control["liquid_mass"]),
++            number(&control["capacity"]),
++            number(&control["d"]),
++            number(&control["dt"]),
++        );
++        let outcome = evaluate_m1_capacity_residual(trial);
++        match control["name"].as_str().expect("capacity name") {
++            "capacity_active_melting" => {
++                close(outcome.expect("active").residual_kg_m2, 0.0, 1.0e-9);
++            }
++            "capacity_tie" => assert_eq!(outcome.expect("tie").branch().as_str(), "capacity"),
++            "overcapacity_trial" => close(outcome.expect("trial").residual_kg_m2, -1.0e-8, 1.0e-12),
++            "negative_drainage" => assert_error(
++                &outcome.expect_err("negative drainage rejects"),
++                "VEG-E-142",
++                "capacity",
++            ),
++            other => panic!("unknown capacity control {other}"),
++        }
++        if control["name"].as_str() == Some("capacity_active_melting") {
++            let forcing = M1ReservoirForcing::prescribed(
++                number(&control["dt"]),
++                number(&control["i"]),
++                0.0,
++                number(&control["q"]),
++                number(&control["e"]),
++                number(&control["capacity"]),
++            );
++            let residual = evaluate_m1_reservoir_residuals(
++                M1ReservoirState::new(number(&control["m0"]), number(&control["h0"])),
++                M1ReservoirState::new(number(&control["m1"]), number(&control["h1"])),
++                forcing,
++                number(&control["d"]),
++            )
++            .expect("active prescribed residual");
++            close(residual.mass_kg_m2, number(&control["expected_rm"]), 1.0e-9);
++            close(
++                residual.enthalpy_j_m2,
++                number(&control["expected_rh"]),
++                1.0e-6,
++            );
++            close(
++                residual.capacity_kg_m2,
++                number(&control["expected_rcap"]),
++                1.0e-9,
++            );
++        }
++    }
++}
++
++#[test]
++fn m1_assembled_ice_residual_jacobian_columns() {
++    let root: Value = serde_json::from_str(CONTROLS).expect("controls parse");
++    let control = &root["assembled_reservoir_column_control"];
++    let base_m = number(&control["m"]);
++    let base_h = number(&control["h"]);
++    let beginning = M1ReservoirState::new(base_m, base_h);
++    let boundary = M1VaporBoundary {
++        wet_conductance_m_s: number(&control["gb"]),
++        plant_area_m2_m2: number(&control["plant_area"]),
++        canopy_air_temperature_k: number(&control["tcan"]),
++        canopy_air_specific_humidity_kg_kg: number(&control["qcan"]),
++        pressure_pa: number(&control["pressure"]),
++    };
++    let forcing = M1ReservoirForcing::with_vapor_boundary(
++        number(&control["dt"]),
++        number(&control["i"]),
++        0.0,
++        number(&control["q_nonvapor"]),
++        number(&control["capacity"]),
++        boundary,
++    );
++    for expected in control["columns"].as_array().expect("M/H columns") {
++        let step = number(&expected["step"]);
++        let coordinate = expected["coordinate"].as_str().expect("coordinate");
++        let plus = match coordinate {
++            "M" => M1ReservoirState::new(base_m + step, base_h),
++            "H" => M1ReservoirState::new(base_m, base_h + step),
++            other => panic!("unknown column {other}"),
++        };
++        let minus = match coordinate {
++            "M" => M1ReservoirState::new(base_m - step, base_h),
++            "H" => M1ReservoirState::new(base_m, base_h - step),
++            other => panic!("unknown column {other}"),
++        };
++        let plus_residual =
++            evaluate_m1_reservoir_residuals(beginning, plus, forcing, number(&control["d"]))
++                .expect("plus residual");
++        let minus_residual =
++            evaluate_m1_reservoir_residuals(beginning, minus, forcing, number(&control["d"]))
++                .expect("minus residual");
++        let values = expected["analytic"].as_array().expect("analytic column");
++        let relative = number(&control["relative_tolerance"]);
++        close_relative(
++            (plus_residual.mass_kg_m2 - minus_residual.mass_kg_m2) / (2.0 * step),
++            number(&values[0]),
++            relative,
++        );
++        close_relative(
++            (plus_residual.enthalpy_j_m2 - minus_residual.enthalpy_j_m2) / (2.0 * step),
++            number(&values[1]),
++            relative,
++        );
++    }
++}
++
++#[test]
++fn m1_empty_surface_guards_enumerate_all_controls() {
++    let root: Value = serde_json::from_str(CONTROLS).expect("controls parse");
++    let controls = root["empty_surface_controls"]
++        .as_array()
++        .expect("six empty controls");
++    assert_eq!(controls.len(), 6, "frozen empty-guard membership");
++    for control in controls {
++        let combined =
++            control["name"].as_str() == Some("combined_missing_condition_and_supersaturation");
++        let (surface, area_m2_m2) = if combined {
++            (M1DrySurface::Shade, 1.0)
++        } else {
++            let name = control["positive_area_surface"]
++                .as_str()
++                .or_else(|| control["tested_surface"].as_str())
++                .expect("named surface for every ordinary control");
++            let surface = match name {
++                "sun" => M1DrySurface::Sun,
++                "shade" => M1DrySurface::Shade,
++                "stem" => M1DrySurface::Stem,
++                other => panic!("surface {other}"),
++            };
++            (surface, number(&control["area_m2_m2"]))
++        };
++        let result = validate_m1_empty_surface(M1EmptySurfaceInput {
++            surface,
++            area_m2_m2,
++            temperature_k: number(&control["temperature_k"]),
++            pressure_pa: number(&control["pressure_pa"]),
++            qcan_kg_kg: number(&control["qcan"]),
++            liquid_conducting_tissue: if combined {
++                control["liquid_conducting_tissue"]
++                    .as_bool()
++                    .expect("explicit missing condition")
++            } else {
++                true // All five ordinary controls prescribe conducting tissue.
++            },
++        });
++        if let Some(code) = control["expected_error"].as_str() {
++            assert_eq!(result.expect_err("poison").code(), code);
++        } else {
++            result.expect("admitted empty case");
++        }
++    }
++    let empty = M1PhaseReservoir::empty();
++    assert_eq!(empty.phase(), M1Phase::Empty);
++    assert!(empty.wet_temperature_k().is_none());
++    assert_error(
++        &empty
++            .temperature_jacobian()
++            .expect_err("empty Jacobian rejects"),
++        "VEG-E-142",
++        "mh_consistency",
++    );
++    assert_error(
++        &m1_qsat_internal(f64::NAN, 90_000.0).expect_err("nonfinite internal saturation rejects"),
++        "VEG-E-141",
++        "saturation",
++    );
++    assert_error(
++        &m1_qsat_external(373.15, 80_000.0, M1ExternalPhase::Liquid)
++            .expect_err("lower-pressure saturation boundary rejects"),
++        "VEG-E-141",
++        "saturation",
++    );
++}
++
++#[test]
++fn m1_restart_roundtrips_three_positives_and_rejects_23_poisons() {
++    let root: Value = serde_json::from_str(RESTARTS).expect("restart controls parse");
++    let context = restart_context(&root);
++    let positives = root["positives"].as_array().expect("three positives");
++    assert_eq!(positives.len(), 3, "frozen positive restart membership");
++    for positive in positives {
++        let bytes = positive["canonical_utf8"].as_str().expect("positive bytes");
++        let extension =
++            M1RestartExtension::parse_and_validate(bytes, &context).expect("positive restart");
++        assert_eq!(extension.to_canonical_utf8().expect("roundtrip"), bytes);
++        assert_eq!(
++            extension.phase().as_str(),
++            positive["expected_phase"].as_str().expect("phase")
++        );
++    }
++    let poisons = root["poisons"].as_array().expect("23 poisons");
++    assert_eq!(poisons.len(), 23, "frozen poison restart membership");
++    for poison in poisons {
++        let error = M1RestartExtension::parse_and_validate(
++            poison["canonical_utf8"].as_str().expect("poison bytes"),
++            &context,
++        )
++        .expect_err("poison rejects");
++        assert_eq!(
++            error.code(),
++            poison["expected_error"].as_str().expect("error")
++        );
++        assert_eq!(
++            error.stage().as_str(),
++            poison["first_rejection_stage"].as_str().expect("stage")
++        );
++    }
++}
++
++#[test]
++fn m1_restart_rejects_wrong_parent_day() {
++    let root: Value = serde_json::from_str(RESTARTS).expect("restart controls parse");
++    let context = restart_context(&root);
++    let mut record = root["positives"][0]["record"].clone();
++    record["day_index"] = Value::from(4);
++    let bytes = serde_json::to_string(&record).expect("day poison JSON");
++    let error =
++        M1RestartExtension::parse_and_validate(&bytes, &context).expect_err("parent day mismatch");
++    assert_eq!(error.code(), "VEG-E-144");
++    assert_eq!(error.stage().as_str(), "chronology");
++}
++
++#[test]
++fn m1_primitive_domains_reject_nonfinite_and_invalid_forcing() {
++    assert_eq!(M1PhaseReservoir::empty().phase(), M1Phase::Empty);
++    let error = M1PhaseReservoir::from_mass_enthalpy(f64::from_bits(1), -1.0)
++        .expect_err("raw invalid mass-enthalpy state rejects");
++    assert_error(&error, "VEG-E-142", "mh_consistency");
++    let tiny_liquid_jacobian = M1PhaseReservoir::from_mass_enthalpy(1.0e-200, 0.0)
++        .expect("finite tiny liquid")
++        .temperature_jacobian()
++        .expect_err("nonfinite tiny-liquid Jacobian rejects");
++    assert_error(&tiny_liquid_jacobian, "VEG-E-142", "mh_consistency");
++    let error = M1PhaseReservoir::from_mass_enthalpy(f64::INFINITY, 0.0)
++        .expect_err("nonfinite mass-enthalpy state rejects");
++    assert_error(&error, "VEG-E-142", "mh_consistency");
++    let error = evaluate_m1_capacity_residual(M1CapacityTrial::new(0.0, f64::INFINITY, 0.0, 60.0))
++        .expect_err("nonfinite capacity rejects");
++    assert_error(&error, "VEG-E-142", "capacity");
++    let error = evaluate_m1_capacity_residual(M1CapacityTrial::new(0.0, 0.297, 2.0, f64::MAX))
++        .expect_err("overflowing capacity product rejects");
++    assert_error(&error, "VEG-E-142", "capacity");
++    let error = evaluate_m1_capacity_residual(M1CapacityTrial::new(-1.0, 0.297, 0.0, 60.0))
++        .expect_err("negative liquid mass rejects");
++    assert_error(&error, "VEG-E-142", "capacity");
++    let state = M1ReservoirState::new(0.018, -6385.68);
++    let error = evaluate_m1_reservoir_residuals(
++        state,
++        state,
++        M1ReservoirForcing::prescribed(60.0, -1.0e-8, 0.0, 0.0, 0.0, 0.297),
++        0.0,
++    )
++    .expect_err("negative incident liquid rejects");
++    assert_error(&error, "VEG-E-142", "domain");
++    let error = evaluate_m1_reservoir_residuals(
++        state,
++        state,
++        M1ReservoirForcing::prescribed(60.0, 1.0e-8, -1.0e9, 0.0, 0.0, 0.297),
++        0.0,
++    )
++    .expect_err("subfreezing positive liquid input rejects");
++    assert_error(&error, "VEG-E-142", "domain");
++    let error = evaluate_m1_reservoir_residuals(
++        state,
++        state,
++        M1ReservoirForcing::prescribed(60.0, 1.0e-8, 4218.0 * (272.15 - 273.15), 0.0, 0.0, 0.297),
++        0.0,
++    )
++    .expect_err("subfreezing liquid input rejects");
++    assert_error(&error, "VEG-E-142", "domain");
++}
++
++#[test]
++fn m1_vapor_boundary_domain_and_overflow_guards_are_typed() {
++    let state = M1ReservoirState::new(0.018, -6385.68);
++    let bad_temperature = M1VaporBoundary {
++        wet_conductance_m_s: 0.0186,
++        plant_area_m2_m2: 1.35,
++        canopy_air_temperature_k: 258.14,
++        canopy_air_specific_humidity_kg_kg: 0.00135,
++        pressure_pa: 90_000.0,
++    };
++    let error = evaluate_m1_reservoir_residuals(
++        state,
++        state,
++        M1ReservoirForcing::with_vapor_boundary(60.0, 0.0, 0.0, 0.0, 0.297, bad_temperature),
++        0.0,
++    )
++    .expect_err("out-of-domain canopy-air temperature rejects");
++    assert_error(&error, "VEG-E-140", "domain");
++    let zero_area = M1VaporBoundary {
++        wet_conductance_m_s: 0.0186,
++        plant_area_m2_m2: 0.0,
++        canopy_air_temperature_k: 266.85,
++        canopy_air_specific_humidity_kg_kg: 0.00135,
++        pressure_pa: 90_000.0,
++    };
++    let error = evaluate_m1_reservoir_residuals(
++        state,
++        state,
++        M1ReservoirForcing::with_vapor_boundary(60.0, 0.0, 0.0, 0.0, 0.297, zero_area),
++        0.0,
++    )
++    .expect_err("zero plant area rejects");
++    assert_error(&error, "VEG-E-140", "domain");
++    let overflow = M1VaporBoundary {
++        wet_conductance_m_s: f64::MAX,
++        plant_area_m2_m2: f64::MAX,
++        canopy_air_temperature_k: 266.85,
++        canopy_air_specific_humidity_kg_kg: 0.00135,
++        pressure_pa: 90_000.0,
++    };
++    let error = evaluate_m1_reservoir_residuals(
++        state,
++        state,
++        M1ReservoirForcing::with_vapor_boundary(60.0, 0.0, 0.0, 0.0, 0.297, overflow),
++        0.0,
++    )
++    .expect_err("overflow vapor flux rejects");
++    assert_eq!(error.code(), "VEG-E-141");
++    assert_eq!(error.stage().as_str(), "saturation");
++    let bad_area_pressure = M1VaporBoundary {
++        wet_conductance_m_s: 0.0186,
++        plant_area_m2_m2: 0.0,
++        canopy_air_temperature_k: 266.85,
++        canopy_air_specific_humidity_kg_kg: 0.00135,
++        pressure_pa: 1.0,
++    };
++    let error = evaluate_m1_reservoir_residuals(
++        state,
++        state,
++        M1ReservoirForcing::with_vapor_boundary(60.0, 0.0, 0.0, 0.0, 0.297, bad_area_pressure),
++        0.0,
++    )
++    .expect_err("role-area guard precedes pressure");
++    assert_eq!(error.code(), "VEG-E-140");
++    assert_eq!(error.stage().as_str(), "domain");
++}

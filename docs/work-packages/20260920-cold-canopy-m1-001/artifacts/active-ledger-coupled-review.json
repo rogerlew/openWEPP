@@ -1,0 +1,18 @@
+{
+  "checkpoint": "COLD-CANOPY-M1",
+  "decision": "CONTINUE",
+  "reason": "Primitive slice independently passed both reviewers; recorded coupled-red-10 is compiler-negative only. Correctness identified bounded fixture/reconstruction defects; same writer correcting them before numerical bodies.",
+  "anchor_utc": "2026-09-20T16:07:00+00:00",
+  "observed_utc": "2026-09-20T19:33:45.790908+00:00",
+  "carried_charge_seconds": 141047.416433,
+  "elapsed_since_anchor_seconds": 12405.790908,
+  "total_charged_seconds": 153453.207341,
+  "cumulative_ceiling_seconds": 169163.21924,
+  "remaining_seconds": 15710.011899,
+  "preservation_reserve_seconds": 1800,
+  "deadline_utc": "2026-09-20T23:55:35.802807+00:00",
+  "wait_deductions_seconds": 0,
+  "concurrent_time_counted_once": true,
+  "historical_outcome_floor_at_least": 492,
+  "outcome_floor_note": "Conservative carried floor; later individual recorded attempts remain authoritative, no claim of exact retally."
+}

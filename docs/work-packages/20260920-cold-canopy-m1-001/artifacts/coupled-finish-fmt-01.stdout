@@ -1,0 +1,47 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs:4:
+ //! authenticated hydrology fixture and never supplies a test-only evaluator.
+ 
+ use super::{
+[31m-    endpoint_fixture, execute_m1_cold_canopy_receiver_diagnostic,
+[m     LandSurfaceEnergyRealHydrologyAdapter, M1PrescribedRoutingControl, M1ReceiverDiagnosticResult,
+[31m-    M1ReceiverFailureInjection, V8RollbackSnapshot,
+[m[32m+    M1ReceiverFailureInjection, V8RollbackSnapshot, endpoint_fixture,
+[m[32m+    execute_m1_cold_canopy_receiver_diagnostic,
+[m };
+ use openwepp_kernel_contract::ResourceOwnerId;
+ use openwepp_land_surface_energy::{
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs:13:
+[31m-    evaluate_m1_coupled_column, route_m1_column_liquid, solve_m1_coupled_column,
+[m     BandDirectionalFluxes, CoveredColumnInputs, M1ColumnLiquidRoutingInput, M1CoupledColumnInput,
+     M1CoupledColumnTrial, M1CoupledEvaluation, M1OccupancySupportCondition, M1PhaseReservoirInput,
+[31m-    M1RoutingOccupancyInput, M1SupportConditions,
+[m[32m+    M1RoutingOccupancyInput, M1SupportConditions, evaluate_m1_coupled_column,
+[m[32m+    route_m1_column_liquid, solve_m1_coupled_column,
+[m };
+ use serde_json::Value;
+ use std::collections::{BTreeMap, BTreeSet};
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs:574:
+     ))
+     .expect("actual solve");
+     assert_eq!(solved.support_duration_s(), 60.);
+[31m-    assert!(solved
+[m[31m-        .occupancies()
+[m[31m-        .iter()
+[m[31m-        .all(|o| o.shade.gas_branch == "ExactZeroPar"
+[m[31m-            && o.shade.net_assimilation < 0.
+[m[31m-            && o.shade.vapor_kg_m2_tile_s > 0.));
+[m[32m+    assert!(
+[m[32m+        solved
+[m[32m+            .occupancies()
+[m[32m+            .iter()
+[m[32m+            .all(|o| o.shade.gas_branch == "ExactZeroPar"
+[m[32m+                && o.shade.net_assimilation < 0.
+[m[32m+                && o.shade.vapor_kg_m2_tile_s > 0.)
+[m[32m+    );
+[m     for operand in solved.reservoir_operands() {
+         assert_eq!(operand.beginning_mass_kg_m2, 0.018);
+         assert_eq!(operand.beginning_enthalpy_j_m2, 0.0);

@@ -1,0 +1,188 @@
+{
+  "status": "PROSPECTIVE DRAFT FOR INDEPENDENT FIXTURE REVIEW; NO SIMULATION RESULT USED",
+  "base_input_file": "original-input-reference.json",
+  "base_input_sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+  "duration_s": 259200,
+  "support_s": 60,
+  "forcing_rule": "Piecewise constant external boundaries. Preserve all unmentioned original geometry, coefficients, PAR/SW=0, root observations and prescribed represented-snow H/v; synchronize duplicate meteorology fields. No daily reset or answer-temperature forcing.",
+  "liquid_enthalpy_rule": "hI=4218*(Tliquid-273.15); liquid is routed by retained geometric interception, not all credited to the store.",
+  "rationale": "The first support preserves original forcing and explicit new M/H initialization. Subsequent cold liquid precipitation is a prescribed external replenishment, and warm rainfall supplies enough inventory to exercise the required liquid receiver. No numerical result or expected solution temperature selected these boundaries.",
+  "cycles": [
+    {
+      "id": "original_liquid_cold_thaw_refreeze_warm",
+      "segments": [
+        {
+          "start_s": 0,
+          "end_s": 60,
+          "boundary_overrides": {
+            "air_temperature_k": 266.85496453757526,
+            "air_specific_humidity_kg_kg": 0.0013506651734953076,
+            "atmospheric_downward_longwave_w_m2": 272.50372519089217,
+            "top_liquid_rate_kg_m2_tile_s": 0.0,
+            "top_liquid_temperature_k": 273.15
+          },
+          "required_physical_intent": "original-derived first support"
+        },
+        {
+          "start_s": 60,
+          "end_s": 86400,
+          "boundary_overrides": {
+            "air_temperature_k": 266.85496453757526,
+            "air_specific_humidity_kg_kg": 0.0013506651734953076,
+            "atmospheric_downward_longwave_w_m2": 272.50372519089217,
+            "top_liquid_rate_kg_m2_tile_s": 8e-06,
+            "top_liquid_temperature_k": 273.15
+          },
+          "required_physical_intent": "liquid cooling into ice and cold persistence with nonzero vapor"
+        },
+        {
+          "start_s": 86400,
+          "end_s": 172800,
+          "boundary_overrides": {
+            "air_temperature_k": 279.15,
+            "air_specific_humidity_kg_kg": 0.003,
+            "atmospheric_downward_longwave_w_m2": 360.0,
+            "top_liquid_rate_kg_m2_tile_s": 0.0002,
+            "top_liquid_temperature_k": 278.15
+          },
+          "required_physical_intent": "mixed melting and real liquid release"
+        },
+        {
+          "start_s": 172800,
+          "end_s": 216000,
+          "boundary_overrides": {
+            "air_temperature_k": 266.85496453757526,
+            "air_specific_humidity_kg_kg": 0.0013506651734953076,
+            "atmospheric_downward_longwave_w_m2": 272.50372519089217,
+            "top_liquid_rate_kg_m2_tile_s": 8e-06,
+            "top_liquid_temperature_k": 273.15
+          },
+          "required_physical_intent": "refreezing"
+        },
+        {
+          "start_s": 216000,
+          "end_s": 259200,
+          "boundary_overrides": {
+            "air_temperature_k": 279.15,
+            "air_specific_humidity_kg_kg": 0.003,
+            "atmospheric_downward_longwave_w_m2": 360.0,
+            "top_liquid_rate_kg_m2_tile_s": 0.0002,
+            "top_liquid_temperature_k": 278.15
+          },
+          "required_physical_intent": "warm liquid endpoint"
+        }
+      ],
+      "initial_phase_records": [
+        {
+          "occupancy_id": "stratum-z-upper::forest",
+          "mass_kg_m2_tile_ground": 0.018,
+          "enthalpy_j_m2_tile_ground": 0.0
+        },
+        {
+          "occupancy_id": "stratum-a-lower::forest",
+          "mass_kg_m2_tile_ground": 0.018,
+          "enthalpy_j_m2_tile_ground": 0.0
+        }
+      ]
+    },
+    {
+      "id": "distinct_phase_inventory_shifted_cycle",
+      "segments": [
+        {
+          "start_s": 0,
+          "end_s": 43200,
+          "boundary_overrides": {
+            "air_temperature_k": 266.85496453757526,
+            "air_specific_humidity_kg_kg": 0.0013506651734953076,
+            "atmospheric_downward_longwave_w_m2": 272.50372519089217,
+            "top_liquid_rate_kg_m2_tile_s": 8e-06,
+            "top_liquid_temperature_k": 273.15
+          },
+          "required_physical_intent": "ice/mixed inventory cooling and cold persistence"
+        },
+        {
+          "start_s": 43200,
+          "end_s": 86400,
+          "boundary_overrides": {
+            "air_temperature_k": 279.15,
+            "air_specific_humidity_kg_kg": 0.003,
+            "atmospheric_downward_longwave_w_m2": 360.0,
+            "top_liquid_rate_kg_m2_tile_s": 0.0002,
+            "top_liquid_temperature_k": 278.15
+          },
+          "required_physical_intent": "melting and real liquid release"
+        },
+        {
+          "start_s": 86400,
+          "end_s": 172800,
+          "boundary_overrides": {
+            "air_temperature_k": 266.85496453757526,
+            "air_specific_humidity_kg_kg": 0.0013506651734953076,
+            "atmospheric_downward_longwave_w_m2": 272.50372519089217,
+            "top_liquid_rate_kg_m2_tile_s": 8e-06,
+            "top_liquid_temperature_k": 273.15
+          },
+          "required_physical_intent": "refreezing and cold persistence"
+        },
+        {
+          "start_s": 172800,
+          "end_s": 259200,
+          "boundary_overrides": {
+            "air_temperature_k": 279.15,
+            "air_specific_humidity_kg_kg": 0.003,
+            "atmospheric_downward_longwave_w_m2": 360.0,
+            "top_liquid_rate_kg_m2_tile_s": 0.0002,
+            "top_liquid_temperature_k": 278.15
+          },
+          "required_physical_intent": "warm liquid endpoint"
+        }
+      ],
+      "initial_phase_records": [
+        {
+          "occupancy_id": "stratum-z-upper::forest",
+          "mass_kg_m2_tile_ground": 0.024,
+          "enthalpy_j_m2_tile_ground": -8261.52
+        },
+        {
+          "occupancy_id": "stratum-a-lower::forest",
+          "mass_kg_m2_tile_ground": 0.03,
+          "enthalpy_j_m2_tile_ground": -5005.5
+        }
+      ]
+    }
+  ],
+  "acceptance": "Every required branch must actually be reached and all retained full-state, conservation, domain and receiver predicates must pass; intended branches are not assertions of observed outcomes. Failed fixtures stay failed; no post-result forcing changes for acceptance.",
+  "pending_before_acceptance_run": [
+    "Independent fixture review",
+    "Complete real caller/receiver and phase-state continuity tests",
+    "Exact full checkpoint schema and split-boundary selection protocol",
+    "Scale-lane complete inputs and final enumerated correctness/restart/timing matrix"
+  ],
+  "model_definition_id": "OPENWEPP_C3_WOODY_COLD_M1_V1",
+  "base_authority_usage": "V11SnowCovered in the preserved base identifies geometry and represented-snow boundary policy only; it never selects M1 equations. The executable M1 caller must select model_definition_id explicitly.",
+  "support_predicates": {
+    "stratum-z-upper::forest": {
+      "liquid_conducting_tissue": true,
+      "root_supply": "FullSupply",
+      "positive_area_foliage": true,
+      "positive_area_leaf_par_w_m2": 0,
+      "positive_root_fraction_accessible_temperature_min_exclusive_k": 273.15,
+      "effective_g0_hydraulic_rd_coefficients": "Exact original-input-reference.json fields, supplied each support"
+    },
+    "stratum-a-lower::forest": {
+      "liquid_conducting_tissue": true,
+      "root_supply": "FullSupply",
+      "positive_area_foliage": true,
+      "positive_area_leaf_par_w_m2": 0,
+      "positive_root_fraction_accessible_temperature_min_exclusive_k": 273.15,
+      "effective_g0_hydraulic_rd_coefficients": "Exact original-input-reference.json fields, supplied each support"
+    }
+  },
+  "rate_to_caller_amount": {
+    "mass_kg_m2_tile_ground": "top_liquid_rate_kg_m2_tile_s * actual_support_duration_s",
+    "specific_enthalpy_j_kg": "4218.0 * (top_liquid_temperature_k - 273.15)",
+    "enthalpy_j_m2_tile_ground": "mass_kg_m2_tile_ground * specific_enthalpy_j_kg",
+    "routing": "Top amount is incident to the upper occupancy geometric interception preparation. It is not automatically stored. Carry uncaptured throughfall, stemflow and initial/second drainage separately through lower capture and actual terminal receipt. Multiply by tile_fraction exactly once at the terminal tile-to-OFE conversion.",
+    "support_rule": "Each support is 60 seconds; forcing segment endpoints are exact support boundaries."
+  }
+}

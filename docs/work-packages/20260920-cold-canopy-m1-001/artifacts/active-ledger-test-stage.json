@@ -1,0 +1,13 @@
+{
+  "current_utc": "2026-09-20T17:45:14.416451+00:00",
+  "resumption_anchor": "2026-09-20T16:07:00+00:00",
+  "carry_seconds": 141047.416433,
+  "elapsed_seconds": 5894.416451,
+  "charged_cumulative_seconds": 146941.832884,
+  "cumulative_ceiling_seconds": 169163.21924,
+  "remaining_seconds": 22221.386356000003,
+  "preservation_reserve_seconds": 1800,
+  "wait_deductions_seconds": 0,
+  "stage": "Expected-red test corrections before numerical implementation",
+  "decision": "CONTINUE on the same accepted authority; no allowance renewal"
+}

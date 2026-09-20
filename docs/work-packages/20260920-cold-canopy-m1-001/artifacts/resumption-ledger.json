@@ -1,0 +1,13 @@
+{
+  "utc": "2026-09-20T16:08:20.974872+00:00",
+  "anchor_utc": "2026-09-20T16:07:00+00:00",
+  "carry_seconds": 141047.416433,
+  "ceiling_seconds": 169163.21924,
+  "available_seconds": 28115.802807,
+  "deadline_utc": "2026-09-20T23:55:35.802807+00:00",
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "source_files": 747,
+  "reviewer_recovery": "interrupt_agent on each completed implementation/qa, then single correctness spawn succeeded",
+  "correctness_reviewer": "/root/correctness",
+  "prior_precharge_retained": true
+}

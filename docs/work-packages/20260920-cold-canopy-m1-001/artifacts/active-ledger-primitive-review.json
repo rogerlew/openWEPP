@@ -1,0 +1,12 @@
+{
+  "current_utc": "2026-09-20T18:14:37.967644+00:00",
+  "resumption_anchor": "2026-09-20T16:07:00+00:00",
+  "carry_seconds": 141047.416433,
+  "elapsed_seconds": 7657.967644,
+  "charged_cumulative_seconds": 148705.384077,
+  "cumulative_ceiling_seconds": 169163.21924,
+  "remaining_seconds": 20457.83516300001,
+  "preservation_reserve_seconds": 1800,
+  "wait_deductions_seconds": 0,
+  "decision": "CONTINUE: same writer corrects independently identified primitive guards and exact phase predicate; no new science or allowance. Coupled integration remains required."
+}

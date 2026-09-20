@@ -1,0 +1,71 @@
+{
+  "time": "2026-09-20T17:27:29.913504+00:00",
+  "base": "80b3e3df883e01497c3667a973e0d420f2d97fd6",
+  "files": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "98fceaa9b07e46c7a411aa10f86dd281863229a10f960af741c1144cef442f2c",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "3c6dbce3116260cd754095f05c66a7c78ae3f281911fdd0ed15ac69a3d9ddad9",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md": "d4b2e1a82faebb26e0634e69c964097dfc89be870fa38a48c5c3c5e4135b52bb",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": "30da56f05e75189e70011f38bec40f6212b0da4c891160ce7091f6be46ecbfbc",
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": "6817564e38f6ff6dd86eaa7302b4a88457257aca9e7db7a105102870bdc7c10e"
+  },
+  "patch_sha256": "213d6e4a6985cf52aebc9fb40670dd062daee603cf94a837a7ea96ac451881c8",
+  "checks": [
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "--strict",
+        "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"
+      ],
+      "exit": 0,
+      "stdout": "PASS docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md: 20 binding exposure row(s) fully consolidated\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "--strict",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "exit": 0,
+      "stdout": "PASS docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md: directory-v1, 22 binding exposure row(s), 106 actual definition(s); structural evidence only\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/release/check_sc_unit_compliance.py",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "exit": 0,
+      "stdout": "PASS: SC unit compliance lint found no findings\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "tools/release/check_science_contract_admission.sh",
+        "--base-ref",
+        "80b3e3df883e01497c3667a973e0d420f2d97fd6",
+        "--worktree"
+      ],
+      "exit": 0,
+      "stdout": "A0_ADMITTED contracts=49 science_surfaces=0 base=80b3e3df883e01497c3667a973e0d420f2d97fd6 head=WORKTREE authority_sha256=98d469c72c4b9c0b5580eef272b180c0ac6ef1181c19797e92fb8dc3cb59caa9\n",
+      "stderr": ""
+    }
+  ]
+}

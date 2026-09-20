@@ -36,6 +36,7 @@ Structural schema/definition and original-span preservation locators. Scientific
 | `LSE-V33-EXPERIMENTAL-RESIDUAL-JACOBIAN` | [Version 33 experimental method](numerical-methods.md#version-33-experimental-residual-jacobian-representation) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-165, OBL-LANDSURFACEENERGY-C-021` | `flagged-binding-addition` | Isolated active dry-stem analytic derivative block of the actual normalized residual, with smooth-branch admission, independent multistep oracle, hybrid FD boundary, frozen cost criteria and no production activation. |
 | `LSE-DIRECTORY-HISTORY` | [Original change log](history.md#history) | `historical` | `historical-or-superseded` | `none` | `none` | Original history retained; no authority demotion. |
 | `LSE-V34-INACTIVE-LEAF-JACOBIAN` | [Version 34 experimental method](inactive-jacobian.md#inactive-jacobian) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-166, OBL-LANDSURFACEENERGY-C-022` | `flagged-binding-addition` | Isolated affine zero-input-area sun/shade columns; prospective reference, assembly and consumer obligations; no production activation. |
+| `LSE-COLD-CANOPY-M1-V1` | [Cold-canopy vapor amendment](water-vapor.md#cold-canopy-m1-prospective-vapor-amendment); [diagnostic envelope](interface.md#m1-diagnostic-envelope) | `active` | `unpromoted-binding` | `INV-LANDSURFACEENERGY-167, OBL-LANDSURFACEENERGY-C-023` | `flagged-binding-addition` | Review-pending phase-aware external vapor primitive, assembled reservoir residual and liquid-only real receiver; bounded two-occupancy/six-soil represented-snow entry. |
 | `EXP-B01-LSE-GRID40-20260919` | [Original-start fixed-grid experiment](solve-boundary.md#b01-grid40-original-start-experiment) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-108, INV-LANDSURFACEENERGY-112, INV-LANDSURFACEENERGY-138, INV-LANDSURFACEENERGY-139` | `flagged-binding-addition` | Experiment-only strict b0..40; unchanged witness b0..20, exact captured input, fixed costs, dual prospective review and no production activation. |
 
 
@@ -118,6 +119,7 @@ Structural schema/definition and original-span preservation locators. Scientific
 | `INV-LANDSURFACEENERGY-164` | dependency-replay.md#INV-LANDSURFACEENERGY-164 |
 | `INV-LANDSURFACEENERGY-165` | numerical-methods.md#INV-LANDSURFACEENERGY-165 |
 | `INV-LANDSURFACEENERGY-166` | inactive-jacobian.md#INV-LANDSURFACEENERGY-166 |
+| `INV-LANDSURFACEENERGY-167` | water-vapor.md#INV-LANDSURFACEENERGY-167 |
 | `OBL-LANDSURFACEENERGY-C-001` | water-vapor.md#OBL-LANDSURFACEENERGY-C-001 |
 | `OBL-LANDSURFACEENERGY-C-002` | water-vapor.md#OBL-LANDSURFACEENERGY-C-002 |
 | `OBL-LANDSURFACEENERGY-C-003` | soil-coupling.md#OBL-LANDSURFACEENERGY-C-003 |
@@ -140,6 +142,7 @@ Structural schema/definition and original-span preservation locators. Scientific
 | `OBL-LANDSURFACEENERGY-C-020` | dependency-replay.md#OBL-LANDSURFACEENERGY-C-020 |
 | `OBL-LANDSURFACEENERGY-C-021` | numerical-methods.md#OBL-LANDSURFACEENERGY-C-021 |
 | `OBL-LANDSURFACEENERGY-C-022` | inactive-jacobian.md#OBL-LANDSURFACEENERGY-C-022 |
+| `OBL-LANDSURFACEENERGY-C-023` | water-vapor.md#OBL-LANDSURFACEENERGY-C-023 |
 | `OBL-LANDSURFACEENERGY-P-001` | water-vapor.md#OBL-LANDSURFACEENERGY-P-001 |
 | `OBL-LANDSURFACEENERGY-P-002` | water-vapor.md#OBL-LANDSURFACEENERGY-P-002 |
 | `OBL-LANDSURFACEENERGY-P-003` | water-vapor.md#OBL-LANDSURFACEENERGY-P-003 |

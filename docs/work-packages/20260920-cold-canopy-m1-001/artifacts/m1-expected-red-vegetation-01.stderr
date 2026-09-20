@@ -1,0 +1,45 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.45
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling autocfg v1.5.1
+   Compiling serde_core v1.0.228
+   Compiling num-traits v0.2.19
+   Compiling typenum v1.20.0
+   Compiling syn v2.0.117
+   Compiling serde v1.0.228
+   Compiling serde_derive v1.0.228
+   Compiling syn v3.0.3
+   Compiling zmij v1.0.21
+   Compiling thiserror v2.0.20
+   Compiling thiserror-impl v2.0.20
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling serde_json v1.0.150
+   Compiling digest v0.10.7
+   Compiling num-integer v0.1.46
+   Compiling itoa v1.0.18
+   Compiling openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-sim-contract)
+   Compiling cfg-if v1.0.4
+   Compiling openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-unit-boundary)
+   Compiling cpufeatures v0.2.17
+   Compiling memchr v2.8.0
+   Compiling openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-kernel-contract)
+   Compiling sha2 v0.10.9
+   Compiling num-bigint v0.4.6
+   Compiling base64 v0.22.1
+   Compiling openwepp-biogeochemistry v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-biogeochemistry)
+   Compiling openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-coupled-time)
+   Compiling approx v0.5.1
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+error[E0432]: unresolved import `openwepp_vegetation::cold_canopy_m1`
+ --> crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:7:26
+  |
+7 | use openwepp_vegetation::cold_canopy_m1::{
+  |                          ^^^^^^^^^^^^^^ could not find `cold_canopy_m1` in `openwepp_vegetation`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `openwepp-vegetation` (test "cold_canopy_m1_expected_red") due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-vegetation --test cold_canopy_m1_expected_red` exited with code 101

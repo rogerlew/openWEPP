@@ -1,0 +1,125 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation/src/energy.rs:1:
+ //! E06/E13 neutral aerodynamics, saturation humidity, and energy closure.
+[31m-use crate::numerics::{damped_newton, NewtonSystem, SolverDiagnostics};
+[m[31m-use crate::photosynthesis::{arrhenius, peaked_response, solve_ci, CiSolution, FvcbInput};
+[m use crate::VegetationError;
+[32m+use crate::numerics::{NewtonSystem, SolverDiagnostics, damped_newton};
+[m[32m+use crate::photosynthesis::{CiSolution, FvcbInput, arrhenius, peaked_response, solve_ci};
+[m 
+ pub const STEFAN_BOLTZMANN: f64 = 5.670_374_419e-8;
+ pub const LATENT_HEAT_VAPORIZATION: f64 = 2_501_000.0;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation/src/lib.rs:2:
+ //! Digest-bound coupled C3 woody vegetation state machine.
+ 
+ pub mod carbon_nitrogen;
+[31m-pub mod cold_canopy_m1;
+[m pub mod carbon_phase;
+[32m+pub mod cold_canopy_m1;
+[m pub mod column;
+ pub mod config;
+ pub mod diagnostics;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:5:
+ //! every assertion below binds a frozen independent control.
+ 
+ use openwepp_vegetation::cold_canopy_m1::{
+[31m-    evaluate_m1_capacity_residual, evaluate_m1_reservoir_residuals, m1_qsat_external,
+[m[31m-    m1_qsat_internal, validate_m1_empty_surface, M1CapacityTrial, M1DrySurface,
+[m[31m-    M1EmptySurfaceInput, M1ExternalPhase, M1Phase, M1PhaseReservoir, M1ReservoirForcing,
+[m[31m-    M1ReservoirState, M1RestartExtension, M1RestartExternalBindings, M1RestartValidationContext,
+[m[31m-    M1VaporBoundary,
+[m[32m+    M1CapacityTrial, M1DrySurface, M1EmptySurfaceInput, M1ExternalPhase, M1Phase, M1PhaseReservoir,
+[m[32m+    M1ReservoirForcing, M1ReservoirState, M1RestartExtension, M1RestartExternalBindings,
+[m[32m+    M1RestartValidationContext, M1VaporBoundary, evaluate_m1_capacity_residual,
+[m[32m+    evaluate_m1_reservoir_residuals, m1_qsat_external, m1_qsat_internal, validate_m1_empty_surface,
+[m };
+ use serde_json::Value;
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:422:
+     );
+     assert!(evaluate_m1_capacity_residual(M1CapacityTrial::new(-1.0, 0.297, 0.0, 60.0)).is_err());
+     let state = M1ReservoirState::new(0.018, -6385.68);
+[31m-    assert!(evaluate_m1_reservoir_residuals(
+[m[31m-        state,
+[m[31m-        state,
+[m[31m-        M1ReservoirForcing::prescribed(60.0, -1.0e-8, 0.0, 0.0, 0.0, 0.297),
+[m[31m-        0.0,
+[m[31m-    )
+[m[31m-    .is_err());
+[m[31m-    assert!(evaluate_m1_reservoir_residuals(
+[m[31m-        state,
+[m[31m-        state,
+[m[31m-        M1ReservoirForcing::prescribed(60.0, 1.0e-8, -1.0e9, 0.0, 0.0, 0.297),
+[m[31m-        0.0,
+[m[31m-    )
+[m[31m-    .is_err());
+[m[31m-    assert!(evaluate_m1_reservoir_residuals(
+[m[31m-        state,
+[m[31m-        state,
+[m[31m-        M1ReservoirForcing::prescribed(60.0, 1.0e-8, 4218.0 * (272.15 - 273.15), 0.0, 0.0, 0.297),
+[m[31m-        0.0,
+[m[31m-    )
+[m[31m-    .is_err());
+[m[32m+    assert!(
+[m[32m+        evaluate_m1_reservoir_residuals(
+[m[32m+            state,
+[m[32m+            state,
+[m[32m+            M1ReservoirForcing::prescribed(60.0, -1.0e-8, 0.0, 0.0, 0.0, 0.297),
+[m[32m+            0.0,
+[m[32m+        )
+[m[32m+        .is_err()
+[m[32m+    );
+[m[32m+    assert!(
+[m[32m+        evaluate_m1_reservoir_residuals(
+[m[32m+            state,
+[m[32m+            state,
+[m[32m+            M1ReservoirForcing::prescribed(60.0, 1.0e-8, -1.0e9, 0.0, 0.0, 0.297),
+[m[32m+            0.0,
+[m[32m+        )
+[m[32m+        .is_err()
+[m[32m+    );
+[m[32m+    assert!(
+[m[32m+        evaluate_m1_reservoir_residuals(
+[m[32m+            state,
+[m[32m+            state,
+[m[32m+            M1ReservoirForcing::prescribed(
+[m[32m+                60.0,
+[m[32m+                1.0e-8,
+[m[32m+                4218.0 * (272.15 - 273.15),
+[m[32m+                0.0,
+[m[32m+                0.0,
+[m[32m+                0.297
+[m[32m+            ),
+[m[32m+            0.0,
+[m[32m+        )
+[m[32m+        .is_err()
+[m[32m+    );
+[m     for boundary in [
+         M1VaporBoundary {
+             wet_conductance_m_s: 0.0186,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:459:
+             pressure_pa: 90_000.0,
+         },
+     ] {
+[31m-        assert!(evaluate_m1_reservoir_residuals(
+[m[31m-            state,
+[m[31m-            state,
+[m[31m-            M1ReservoirForcing::with_vapor_boundary(60.0, 0.0, 0.0, 0.0, 0.297, boundary),
+[m[31m-            0.0
+[m[31m-        )
+[m[31m-        .is_err());
+[m[32m+        assert!(
+[m[32m+            evaluate_m1_reservoir_residuals(
+[m[32m+                state,
+[m[32m+                state,
+[m[32m+                M1ReservoirForcing::with_vapor_boundary(60.0, 0.0, 0.0, 0.0, 0.297, boundary),
+[m[32m+                0.0
+[m[32m+            )
+[m[32m+            .is_err()
+[m[32m+        );
+[m     }
+     let overflow = M1VaporBoundary {
+         wet_conductance_m_s: f64::MAX,

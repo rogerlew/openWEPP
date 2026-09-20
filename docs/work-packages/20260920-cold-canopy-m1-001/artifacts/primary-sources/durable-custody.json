@@ -1,0 +1,50 @@
+{
+  "purpose": "Immutable source bytes retained locally; publish source URLs, digests and equation mapping without redistributing whole articles.",
+  "sources": [
+    {
+      "name": "clm5-plant_hydraulics.html",
+      "retained_path": "/home/roger/openwepp-experiments/cold-canopy-m1-primary-sources-20260920/clm5-plant_hydraulics.html",
+      "sha256": "4228822c94293f6673adf12b0fbb7d4e3a78f72e5c268eecb9cefef75ba36cee"
+    },
+    {
+      "name": "clm5-photosynthesis.html",
+      "retained_path": "/home/roger/openwepp-experiments/cold-canopy-m1-primary-sources-20260920/clm5-photosynthesis.html",
+      "sha256": "bb2dfb9510d57587f11af577214dff81367320a46a0023bb8954c691cdd6a97c"
+    },
+    {
+      "name": "kuprian2018.html",
+      "retained_path": "/home/roger/openwepp-experiments/cold-canopy-m1-primary-sources-20260920/kuprian2018.html",
+      "sha256": "c9332c20eed5976e1e881a05093442c6975ef4bcce18849c594fe378d6e18f7c"
+    },
+    {
+      "name": "lindfors2015.pdf",
+      "retained_path": "/home/roger/openwepp-experiments/cold-canopy-m1-primary-sources-20260920/lindfors2015.pdf",
+      "sha256": "150fabf656a8ecdaa75becf59bb89e0cff77bfcfabcdd126c2bb0246d78c1446"
+    },
+    {
+      "name": "clm5-hydrology.html",
+      "retained_path": "/home/roger/openwepp-experiments/cold-canopy-m1-primary-sources-20260920/clm5-hydrology.html",
+      "sha256": "fff5080f4b9285bfa19bca4f7913b17e93c341138249f70d515c6706b5cced09"
+    },
+    {
+      "name": "clm5-fluxes.html",
+      "retained_path": "/home/roger/openwepp-experiments/cold-canopy-m1-primary-sources-20260920/clm5-fluxes.html",
+      "sha256": "7f12c0858fd53934886f22f1c547029b178b72dd147669c0c1f44be677f1ef9b"
+    },
+    {
+      "name": "ambaum2020.pdf",
+      "retained_path": "/home/roger/openwepp-experiments/cold-canopy-m1-primary-sources-20260920/ambaum2020.pdf",
+      "sha256": "53a2f41897205a66ca6db78bd4f48311f4b7f6cda35ccdea300d8d51be196c5e"
+    },
+    {
+      "name": "lambert2022.html",
+      "retained_path": "/home/roger/openwepp-experiments/cold-canopy-m1-primary-sources-20260920/lambert2022.html",
+      "sha256": "21852529d7cf275a039172b679de831afa0201a987e310e8b873197565c09312"
+    },
+    {
+      "name": "clm5-ecosystem.html",
+      "retained_path": "/home/roger/openwepp-experiments/cold-canopy-m1-primary-sources-20260920/clm5-ecosystem.html",
+      "sha256": "c0c12beb60957c34acdbd8867172c9106dd485e9ad2e4091edc4cba76e0221c2"
+    }
+  ]
+}

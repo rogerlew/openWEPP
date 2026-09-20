@@ -1,0 +1,11 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+error[E0432]: unresolved import `openwepp_vegetation::cold_canopy_m1`
+ --> crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:7:26
+  |
+7 | use openwepp_vegetation::cold_canopy_m1::{
+  |                          ^^^^^^^^^^^^^^ could not find `cold_canopy_m1` in `openwepp_vegetation`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `openwepp-vegetation` (test "cold_canopy_m1_expected_red") due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-vegetation --test cold_canopy_m1_expected_red` exited with code 101

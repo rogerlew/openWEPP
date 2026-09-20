@@ -1,0 +1,107 @@
+{
+  "evidence_class": "Static API inventory; no receiver execution",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "observer_aggregate_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "files": {
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs": "4f7beb29f4c8f8bc9ec40f0b895309f4da7ebec3736b101f71d2e60d468e85af",
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_preflight.rs": "3043b0f47a21d583fda9add115103cc638824f21a55d204d6262d04fdca60f7d",
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs": "a011b6ae781c4d507d21a5a784af80f8d03413b5c39764d751b7469d6f976e4a",
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs": "130cb35477b4546ca206c32d3e070904ff915c56044f21fc06e1291dce4130b0"
+  },
+  "receipt": {
+    "symbol": "DirectSurfaceLiquidParcelReceipt",
+    "source": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs",
+    "fields": [
+      "parcel_id:String",
+      "source_parcel_id:String",
+      "transaction_id:TransactionId",
+      "origin_store_key:DirectSurfaceLiquidStoreKey",
+      "recipient_store_key:DirectSurfaceLiquidStoreKey",
+      "recipient:DirectSurfaceLiquidReceiptRecipient",
+      "basis_ofe_id:OfeId",
+      "kind:DirectSurfaceLiquidParcelKind",
+      "disposition:DirectSurfaceLiquidReceiptDisposition",
+      "start_s:f64",
+      "end_s:f64",
+      "mass_kg_m2_basis_ofe_ground:f64",
+      "temperature_k:f64",
+      "enthalpy_j_m2_basis_ofe_ground:f64"
+    ],
+    "encoding": "serde Serialize/Deserialize with deny_unknown_fields",
+    "phase": "liquid-only by producing ingress API and amount temperature/enthalpy validation; no ice field",
+    "area": "receipt mass/enthalpy are per basis OFE ground, ingress amount per tile ground",
+    "support": "relative start_s/end_s, transaction identity and owner store keys",
+    "lineage_gap": "No explicit vegetation occupancy ID/list in receipt or four-amount DirectCanopyLiquidRelease. M1 must preserve typed contributor/routing lineage joined to actual terminal branch/transaction/source_parcel_id; receipt alone does not establish occupancy lineage."
+  },
+  "ingress": {
+    "function": "execute_surface_liquid_ingress",
+    "source": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_ingress.rs",
+    "parameters": [
+      "&DirectSurfaceLiquidConfiguration",
+      "&DirectSurfaceLiquidResourceCandidate",
+      "&DirectSurfaceLiquidIngressInput"
+    ],
+    "result": "Result<DirectSurfaceLiquidIngressCandidate, DirectSurfaceLiquidError>",
+    "input_fields": [
+      "transaction_id",
+      "day_index",
+      "interval_index",
+      "interval_s",
+      "tile_ingress",
+      "wb14_parameters"
+    ],
+    "covered_variant": "DirectTileGroundIngress::CoveredCanopyRelease",
+    "release_fields": [
+      "throughfall",
+      "initial_drainage",
+      "second_drainage",
+      "stemflow"
+    ],
+    "amount_fields": [
+      "mass_kg_m2_tile_ground",
+      "temperature_k",
+      "specific_liquid_enthalpy_j_kg",
+      "start_s",
+      "end_s"
+    ],
+    "guards": [
+      "nonnegative mass",
+      "admitted temperature",
+      "bitwise specific_liquid_enthalpy==4218*(T-273.15)",
+      "finite ordered support within interval"
+    ],
+    "observable": "candidate receipts plus authoritative ending surface state, WB14 calls, independent ingress ledger and closure operands"
+  },
+  "consumer_joins": [
+    {
+      "symbol": "aggregate_receiver_receipts",
+      "source": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_preflight.rs",
+      "observable": "actual infiltration mass/1000 and per-tile infiltration/retained enthalpy aggregates"
+    },
+    {
+      "symbol": "apply_ingress_to_real_receivers",
+      "source": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs",
+      "visibility": "private existing function called by real hydrology candidate execution",
+      "observable": "mutated candidate DirectRunFrame, LSE TileState and SoilThermalTileCandidate plus RealReceiverClosureOperands",
+      "required_calls": [
+        "apply_receiver_receipt",
+        "credit_retained_receipt_group",
+        "apply_production_infiltration",
+        "freeze_real_receiver_closure_operands"
+      ]
+    },
+    {
+      "symbol": "capture_and_validate_surface_liquid_closure_with_phase_capacity_spills",
+      "source": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_closure.rs",
+      "observable": "independent beginning/ending/boundary operand closure; no substitute fabricated receipt"
+    }
+  ],
+  "required_negative_controls": [
+    "wrong liquid enthalpy",
+    "wrong owner/support/source branch",
+    "duplicate terminal use",
+    "wrong area conversion",
+    "ice sent as liquid",
+    "late receiver failure preserves every authoritative beginning owner"
+  ]
+}

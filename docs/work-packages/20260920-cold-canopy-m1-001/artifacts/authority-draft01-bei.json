@@ -1,0 +1,27 @@
+{
+  "time": "2026-09-20T16:32:43.703230+00:00",
+  "commands": [
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"
+      ],
+      "exit": 1,
+      "entry_sha256": "a0de9983857b4989d1c8adcf8022a3f084ce5573944761a5e7eb0770603769ce",
+      "stdout": "FAIL docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md: 6 issue(s)\n- BEI-VEGETATION-019: invalid binding classification new-INV\n- BEI-VEGETATION-019: referenced binding ID INV-VEGETATION-140 not present in contract\n- BEI-VEGETATION-019: referenced binding ID INV-VEGETATION-141 not present in contract\n- BEI-VEGETATION-019: referenced binding ID INV-VEGETATION-142 not present in contract\n- BEI-VEGETATION-019: referenced binding ID INV-VEGETATION-143 not present in contract\n- BEI-VEGETATION-019: referenced binding ID INV-VEGETATION-144 not present in contract\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "exit": 1,
+      "entry_sha256": "98fceaa9b07e46c7a411aa10f86dd281863229a10f960af741c1144cef442f2c",
+      "stdout": "FAIL /workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md:144: OBL-LANDSURFACEENERGY-C-023: target is not its actual definition\n",
+      "stderr": ""
+    }
+  ]
+}

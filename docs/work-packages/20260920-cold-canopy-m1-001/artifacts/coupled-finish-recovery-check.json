@@ -1,0 +1,13 @@
+{
+  "observed_utc": "2026-09-20T20:08:56.904549+00:00",
+  "source_receipt": "coupled-finish-red-02-source.json",
+  "base": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-finish-red-02-from-observer-cut02.patch",
+  "patch_exit": 0,
+  "patch_stdout": "patching file crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs\npatching file crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs\npatching file crates/openwepp-vegetation/src/cold_canopy_m1.rs\npatching file crates/openwepp-vegetation/src/energy.rs\npatching file crates/openwepp-vegetation/src/lib.rs\npatching file crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs\n",
+  "patch_stderr": "",
+  "expected_tree_sha256": "133f89b0274b2277b05aa046b006465fdddac875490073468eafab994d6a8a4d",
+  "reconstructed_tree_sha256": "133f89b0274b2277b05aa046b006465fdddac875490073468eafab994d6a8a4d",
+  "entries_equal": true,
+  "scope": "Source entries only; existing separately pinned build-support dependencies remain required."
+}

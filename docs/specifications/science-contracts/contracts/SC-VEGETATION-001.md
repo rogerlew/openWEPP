@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 32
+contract_version: 33
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -1030,6 +1030,12 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
 | `INV-VEGETATION-085` | One Atkin leaf-N/T10 source supplies `Rd25`; its Rd-specific peaked response is subtracted once from gross assimilation and the identical amount is debited once in the carbon ledger, with no nonpositive clamp or second leaf-maintenance formula. | `REF-VEGETATION-027/034` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | respiration/ledger poison test | `VEG-E-085` |
 | `INV-VEGETATION-086` | Every numerical failure carries deterministic typed solve/pass/identity, residual, iteration, step/backtracking/bound, cap, bracket, pivot, and matrix evidence applicable at failure; no last iterate or opaque fallback is usable. | `REF-VEGETATION-010/027` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | diagnostic schema/error-precedence test | `VEG-E-086` |
 
+| <a id="INV-VEGETATION-140"></a> `INV-VEGETATION-140` | M1 supplied conducting-tissue and role-temperature envelope precedes every cold equation. | M1 prospective amendment | `[DIRECT+INFERENCE][Static]` | V1 input validator | `VEG-E-140` |
+| <a id="INV-VEGETATION-141"></a> `INV-VEGETATION-141` | Internal liquid and external phase saturation retain distinct equations, derivatives and domains. | Ambaum 2020 + M1 selection | `[DIRECT+INFERENCE][Static]` | vapor primitive/domain validator | `VEG-E-141` |
+| <a id="INV-VEGETATION-142"></a> `INV-VEGETATION-142` | M/H inversion, event and capacity active set close water/enthalpy once without fusion duplication. | first law + M1 selection | `[INFERENCE][Static]` | full residual/closure validator | `VEG-E-142` |
+| <a id="INV-VEGETATION-143"></a> `INV-VEGETATION-143` | Only diagnosed liquid enters the typed real receiver once; any failure is atomic. | SC-VEGETATIONTRANSACTION-001 | `[DIRECT+INFERENCE][Static]` | receipt/owner validator | `VEG-E-143` |
+| <a id="INV-VEGETATION-144"></a> `INV-VEGETATION-144` | M1 restart carries explicit M/H and cannot infer it from a V32 warm start. | state custody | `[INFERENCE][Static]` | V1 restart parser | `VEG-E-144` |
+
 ### Invariant Guard Map
 
 | Invariant ID | Enforcement path | Guard class | Failure behavior | Evidence artifact |
@@ -1128,6 +1134,9 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
   external bytes, durable publication, and every untrusted V11 executor return
   retain fresh full semantic validation, canonical reconstruction, and atomic
   rollback.
+- `OBL-VEGETATION-C-008`: M1 binds A0 independent M/H and real-recipient
+  receipt reconstruction, A1 typed domain/phase/state/custody guards, and A3
+  complete saturation plus vapor-law source vectors before implementation.
 
 ### Child 2C canonical invariants
 
@@ -1487,6 +1496,7 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
 | `BEI-VEGETATION-017` | Validated In-Memory Vegetation-State Handoff Amendment below | `active` | `maps-to-existing-INV` | `INV-VEGETATION-134, OBL-VEGETATION-C-006` | `flagged-binding-addition` | Private immutable revision-bound typestate may remove duplicate trusted in-process validation; every mutation and restart/external/untrusted boundary retains full validation. |
 | `BEI-VEGETATION-018` | [Liquid-canopy support clarification](#liquid-canopy-supported-domain-clarification) | `active` | `maps-to-existing-INV` | `INV-VEGETATION-022, INV-VEGETATION-051, INV-VEGETATION-062, INV-VEGETATION-065, INV-VEGETATION-066, INV-VEGETATION-067, INV-VEGETATION-073, INV-VEGETATION-075, INV-VEGETATION-110, INV-VEGETATION-111, INV-VEGETATION-114, INV-VEGETATION-118, INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `none` | Existing liquid-only component-domain, ownership, release-enthalpy, shared-air, represented-snow, and refusal authority is clarified; no cold-canopy phase model or runtime selector is admitted. |
 | `BEI-VEGETATION-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `flagged-binding-addition` | Shared canopy-air carrier, sealed exposure, exact-once canopy fluxes, and event-bounded snow regime. |
+| `BEI-VEGETATION-019` | Cold-canopy M1 amendment | `active` | `unpromoted-binding` | `INV-VEGETATION-140, INV-VEGETATION-141, INV-VEGETATION-142, INV-VEGETATION-143, INV-VEGETATION-144, OBL-VEGETATION-C-008` | `flagged-binding-addition` | Review-pending V33 bulk external-water phase, narrow conducting-tissue domain, conserved phase ledger, liquid receipt and diagnostic restart. |
 
 ## Gap Register and Promotability Labels
 
@@ -1496,7 +1506,7 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
 | `GAP-VEGETATION-002` | Layer root/hydraulic law was missing. | Version 5 selects CLM5 hydraulic nodes/vulnerability and explicit layer requests; implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-003` | Stage B competition/fairness/priority policy was unspecified. | Version 5 selects equal-status proportional per-layer arbitration with exact zero and oversubscription branches; implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-004` | Coupled constitutive stack was missing. | Version 5 selects the complete indivisible stack; production implementation remains. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
-| `GAP-VEGETATION-005` | Canopy snow has a single-owner boundary but no admitted constitutive law or atomic amendment with snow/frost; cold active-leaf behavior, supercooled intercepted liquid, and intercepted canopy ice/mixed phase are outside the current liquid-only model. | Separately adopted phase/state/physiology authority with complete initial liquid/ice mass and thermodynamic-state obligations, then joint vegetation/snow/LSE mass-energy, custody, conservation, restart, and refusal vectors. Vegetation science owns the gap; LSE energy/custody review is required. | `AUTHORITY_MISSING`, `OUTSIDE_CURRENT_MODEL`, `NON_PROMOTABLE` |
+| `GAP-VEGETATION-005` | Canopy snow has a single-owner boundary but no admitted general canopy-snow law. V33 conditionally admits only M1 external intercepted ice/mixed phase and liquid receipt under its exact supplied conducting-tissue domain. | M1 requires dual review, source-pinned saturation/thermodynamic vectors, real receiver, reconstruction and diagnostic restart. Snowfall capture, loading/unloading, morphology, positive-PAR cold physiology, acclimation/injury and general winter ecohydrology remain outside M1. | `AUTHORITY_ADMITTED_PENDING_REVIEW`, `NON_PROMOTABLE_OUTSIDE_M1` |
 | `GAP-VEGETATION-006` | Elemental/dead-material receiver was missing. | `SC-BIOGEOCHEM-001` admits N and litter/CWD receiving transactions; soil transformations remain explicit dependency. | `AUTHORITY_ADMITTED`, `IMPLEMENTATION_MISSING` |
 | `GAP-VEGETATION-007` | Every compatibility reduction except exact tile-union cover lacks reviewed operator/cutover evidence. | Field-specific reductions, unit helpers, real consumers, negative old-path proof. | `AUTHORITY_MISSING`, `NON_PROMOTABLE` |
 | `GAP-VEGETATION-008` | The vegetation crate and default-off diagnostic scaffolding exist, but the public V3 transaction, complete typed numerical failures, owner candidates, atomic commit, output, and real consumer remain incomplete/fail-closed. | Resume the existing implementation package against immutable V3, pass both column solves and independent ledgers, then require direct-consumer evidence before cutover. | `IMPLEMENTATION_INCOMPLETE`, `NON_PROMOTABLE` |
@@ -3167,3 +3177,278 @@ mass, active-canopy storage model, frozen canopy process, or runtime activation.
 Nontransparent reached state remains subject to independent energy assessment;
 production/integration/release HOLD is unchanged. Provenance: existing liquid
 enthalpy/occupancy routing authority plus first-law conservation, [INFERENCE][Static].
+
+## `OPENWEPP_C3_WOODY_COLD_M1_V1` Prospective Cold-Canopy Amendment
+
+**Status: `HOLD / dual review and expected-red required`.** This is a new
+default-off diagnostic model identity, not V33-as-an-alias or a change to any
+historical model byte. It evaluates idealized liquid-conducting, zero-PAR
+foliage only when the support supplies positive leaf area, liquid conducting
+tissue, liquid-accessible `FullSupply` roots above `273.15 K`, and the
+effective V10 `g0`, hydraulic, and `Rd` coefficients. The `263.15..273.15 K`
+leaf extent is `ASSUMED_FOR_EXECUTION`, not a biological threshold or an
+empirically authenticated species trait. CLM5 Photosynthesis §2.9.1 and
+2.9.9--2.9.11 and Plant Hydraulics §2.11 are direct authority for the retained
+liquid equations; their cold continuation is an explicit `[INFERENCE]`,
+conditional on the supplied liquid condition and coefficients. Lindfors et al.
+(2015), DOI 10.1093/treephys/tpv095, establishes that attached-needle cooling,
+needle ice, and xylem ice are distinct observed regimes, but does not validate
+this tuple below its reported freezing observations. Lambert et al. (2022), §4,
+DOI 10.5194/gmd-15-8809-2022, forbids a general winter-physiology claim.
+Tissue phase change, loss of liquid condition, injury, acclimation, hardening,
+frozen roots, positive-PAR cold FvCB, and any unprescribed physiological
+response reject `VEG-E-140`; no epidermal ice-exclusion mechanism is asserted.
+
+Vegetation owns one external intercepted reservoir per existing occupancy:
+`M=ml+mi` (`kg H2O m^-2 tile-ground`) and
+`H=ml*Cw*(T-Tf)+mi*(Ci*(T-Tf)-Lf)` (`J m^-2 tile-ground`), where
+`Tf=273.15 K`, `Cw=4218`, `Ci=2106 J kg^-1 K^-1`, and
+`Lf=333700 J kg^-1`. `ml`, `mi`, and `T` are diagnosed, not stored. Its unique
+equilibrium inverse is liquid for `H>=0`, mixed at `T=Tf` for
+`-Lf*M<=H<0`, and ice for `H<-Lf*M`; `M=0` requires `H=0`. There is no plant
+sensible-storage term. These constants/reference convention are the retained
+R156/SURFEX material convention; fusion occurs only in `H`.
+
+For `T< Tf`, use Ambaum (2020), DOI 10.1002/qj.3899, equations 13/15 for
+liquid and 17/18 for ice: `e_j=e0*(Tf/T)^((cpj-cpv)/Rv)*exp(Lj0/(Rv*Tf)-Lj(T)/(Rv*T))`,
+`Lj(T)=Lj0+(cpv-cpj)*(T-Tf)`, with `e0=611.213476 Pa`, `Rv=461.52`,
+`cpv=1849`, `Lv0=2501000`, `Ls0=2834700 J kg^-1`, `cp_liq=Cw`, `cp_ice=Ci`.
+This is `q_sat_liquid_internal` for liquid conducting tissue and
+`q_sat_external_phase` for external water/ice; they must not alias. At and
+above `Tf`, the existing liquid polynomial remains authoritative. The exact
+kink at `Tf`, pressure denominator and analytic derivative are part of the
+evaluator guard; nonfinite/out-of-range input is `VEG-E-141`.
+
+The phase state is selected from the coupled ending `(M1,H1)`, never from a
+starting phase or failed solve. With rates `I,E,D` in `kg m^-2 s^-1`, interval
+`dt`, incident/release specific enthalpies `hI,hl`, and non-vapor heat `Q` in
+`W m^-2`, the complete residual includes
+`M1-M0-dt*(I-E-D)=0` and
+`H1-H0-dt*(Q+I*hI-E*hv-D*hl)=0`,
+where `hv=2501000+1849*(T-Tf)` and `hl=Cw*(T-Tf)`. Thus no separate fusion or
+sublimation debit is admissible. `Q` is the wet-area radiation plus sensible
+heat only; `E*hv` is the sole vapor-energy debit. `I` is incident liquid to
+the reservoir, `E` is positive vapor loss from its diagnosed donor phase, and
+`D` is positive diagnosed liquid release. `fwet=min(1,(M/Cliq)^(2/3))`,
+`Cliq=pliq*(L+S)`, follows CLM5 Hydrology 2.7.23; at mixed phase there is one
+wet area and the common `Tf` saturation value, not an invented morphology
+partition. Liquid capacity is a coupled complementarity condition
+`0<=ml<=Cliq`, `D>=0`, `D*(Cliq-ml)=0`; it is never a post-solve clip and does
+not cap total `M`. Empty `(0,0)` with supersaturation rejects `VEG-E-142`; it
+never silently zeros vapor exchange or forms an unreviewed condensate.
+
+The support policy remains `dt>=60 s`; phase boundaries are internal
+backward-Euler constitutive transitions and may not demand a new sub-floor
+event. One selected physical regime has one algorithm: eliminate only exact
+dark-sun identities while retaining reconstructed full residuals/guards; reject
+nonconvergence without physics fallback. All residual/closure predicates retain
+`1e-6 J m^-2` energy reconstruction and exact identity/phase/receipt checks.
+
+Only diagnosed liquid may be released after the coupled solve, with exact
+occupancy/tile/support, `hl`, temperature, and one area conversion. Existing
+upper-to-lower vertical routing is preserved: an upper drainage release is
+lower same-support incident liquid only after lower `prepare_covered_liquid`
+computes its actually intercepted fraction. The uncaptured fraction remains
+throughfall; D, throughfall, initial drainage, second drainage, and stemflow
+remain separate branches with their own source enthalpies. Every terminal
+branch constructs its own typed `DirectSurfaceLiquidParcelReceipt`, or an
+explicit conservative merge retaining branch and contributor lineage; no
+double ground credit is allowed. The M1 join binds existing transaction/
+typestate identity to each terminal branch and authenticated contributor
+occupancy before the actual receipt, preserving old API bytes where a wrapper
+suffices. The actual consumer is
+`land_surface_energy_shadow::{receiver_preflight,real_hydrology_execution}`
+through `direct_runtime::execute_surface_liquid_ingress`, which must mutate
+real recipient state/use rather than validate a fabricated receipt. Ice remains
+vegetation-owned; wrong phase/owner/support, duplicate terminal receipt,
+initialization/restart mismatch or late receiver failure rolls back every
+owner. Old liquid-only state fails V1 admission: V1 diagnostic restart
+serializes authoritative `(M,H)` and identities, then fresh-process split
+execution must equal uninterrupted stable-ice, mixed and liquid-release endings.
+
+| ID | Requirement |
+|---|---|
+| `INV-VEGETATION-140` | Supplied conducting-tissue envelope and role-specific temperature domains precede all cold equations. |
+| `INV-VEGETATION-141` | Internal liquid and external phase saturation use their separate named equations, domains and derivatives. |
+| `INV-VEGETATION-142` | `(M,H)` inversion, event/cap complementarity and complete mass/energy ledger have one fusion term only. |
+| `INV-VEGETATION-143` | Liquid-only typed real receipt is exact once and rolls back atomically. |
+| `INV-VEGETATION-144` | V1 phase-state initialization/restart is explicit; legacy warm starts never invent enthalpy. |
+
+`OBL-VEGETATION-C-008`: freeze source bytes/equation map and vectors at each
+saturation boundary, prove `p_liq>p_ice` below freezing and no semantic alias;
+test cold `g0`/root flux, freeze, ice sublimation, deposition, mixed melt and
+actual receipt, empty/full/cap, double fusion, two occupancy area/order,
+all domain/init/receipt poisons, late rollback, and diagnostic split restart.
+
+Expected-red component vectors are frozen before Rust: `m1_qsat_join` uses
+`T={263.15,273.149999,273.15,273.150001,278.15}`, `p=90000 Pa`, and requires
+analytic-versus-centered derivative relative error `<=1e-6` away from the
+join, exact `e0=611.213476 Pa` at the join, and `q_liq>q_ice` at `263.15 K`;
+`m1_mh_inverse` uses `(M,H)={(.018,0),(.018,-6006.6),(.018,-6006.600001),
+(.018,1)}` with the stated absolute residual tolerances; `m1_vapor_ledger`
+uses positive and negative E with the one-only `E*hv` debit; `m1_cap_drain`
+uses `ml=Cliq` with `D={0,1e-8}` and an over-cap trial; `m1_empty_guard` uses
+each leaf and stem poison above saturation; `m1_route_receiver` uses two
+occupancies where upper liquid is lower `I,hI` and asserts one terminal real
+recipient state/use; and `m1_restart_matrix` covers ice/mixed/liquid, malformed
+identity/units/area/support, forcing-as-state, parse precedence, split restart,
+and late rollback. These are A0 M/H/receipt closure, A1 guards/phase/state/
+custody, and A3 complete saturation/vapor-law vectors respectively.
+
+M1 error taxonomy is fixed: `VEG-E-140` is missing or false supplied cold
+condition/domain; `VEG-E-141` is saturation/pressure/nonfinite input;
+`VEG-E-142` is empty supersaturation, invalid M/H/capacity, or residual
+closure; `VEG-E-143` is phase/owner/lineage/duplicate/late real-receiver
+failure; and `VEG-E-144` is restart parse, version, identity, unit, area,
+support, occupancy, M/H, or forcing-as-state failure. The precedence is the
+operational order stated above.
+
+### M1 operational specification
+
+The independent role domains are `263.15<=Tleaf_sun,Tleaf_shade,Tstem<=373.15
+K`, `258.15<=Tair,Tcan,Twet<=373.15 K`, and `80000<=p<=110000 Pa`. The cold
+physiology inference is selected independently per leaf class when that class
+is `263.15..273.15 K` and its supplied liquid-condition predicates hold; the
+other leaf class may be on the warm V10 continuation. The required 72-hour
+warm continuation allows leaves/stem at `273.15..373.15 K`
+while the same M/H reservoir may remain ice or mixed and `Twet` may remain
+cold; it never returns to a zero-storage wet residual. `PAR=0`, positive leaf
+area, supplied liquid conducting tissue, liquid-accessible `FullSupply` roots,
+and supplied effective `g0`, hydraulic, and `Rd` coefficients are
+`ASSUMED_FOR_EXECUTION`, not observed certification. A missing predicate is
+`VEG-E-140`; no parameter is retuned at `Tf`.
+
+For phase `j in {liq,ice}`, set `a_j=cp_j-cpv`,
+`L_j(T)=Lj0-a_j*(T-Tf)`,
+`e_j=e0*(Tf/T)^(a_j/Rv)*exp(Lj0/(Rv*Tf)-L_j(T)/(Rv*T))`, and
+`de_j/dT=e_j*L_j(T)/(Rv*T^2)`. Then
+`q_j=.622*e_j/(p-.378*e_j)` and
+`dq_j/dT=.622*p*(de_j/dT)/(p-.378*e_j)^2`. Require finite `p` and
+`0<e_j<p`, `p-.378e_j>0`, and `0<=q_j<1`; this is the inherited dry-air
+partial-pressure/humidity guard and rejects a boiling-state trial even inside
+the broad role-temperature envelope. At `Tf`, use `e0` and the liquid-side derivative for the
+internal-liquid branch and for external liquid/mixed controls; external ice
+uses its ice-side limiting derivative strictly below `Tf`. The controls are
+therefore `dT/dH=1/(M*Cw), dT/dM=-H/(M*M*Cw)` in liquid,
+`dT/dH=dT/dM=0` in mixed, and
+`dT/dH=1/(M*Ci), dT/dM=-H/(M*M*Ci)` in ice. At `H=0` select the
+liquid controls; at `H=-Lf*M` select the mixed controls. These are
+`VEG-E-141` guards. The exact
+Ambaum PDF digest and equations are
+the immutable source register (`Ambaum2020.pdf`, SHA-256
+`53a2f41897205a66ca6db78bd4f48311f4b7f6cda35ccdea300d8d51be196c5e`,
+equation map and source URLs); Ambaum p.4253 below Eq. 2 supplies
+`Rv=461.52`. R156 supplies `Tf,Cw,Ci`, SURFEX supplies `Lf`. Their litter
+kinetics/capacity/saturation do not transfer.
+
+For nonempty M1, `rho=p/(Rdry*Tcan)`,
+`Awet=fwet*(Asun+Ashade+Astem)`, and `gb_wet>0` are the retained V10 dry-air
+density, area, and wet conductance operands. The signed wet vapor mass flux is
+`E=rho*gb_wet*Awet*(q_sat_external_phase(Twet,p,phase)-qcan)` in
+`kg m^-2 tile-ground s^-1`: positive is reservoir loss (ice therefore
+sublimates), negative is deposition/condensation to the diagnosed external
+phase. `Q=SWwet+component_net_w_m2[occupancy][wet]-Hwet`, where
+`SWwet=fwet*(SWsun+SWshade+SWstem)`, the second operand is the existing
+`reciprocal_longwave_column.component_net_w_m2` wet component (including its
+component weight, `(1-tau)`, and recursive down/up terms), and
+`Hwet=rho*cp_air*gb_wet*Awet*(Twet-Tcan)`. This preserves the existing
+radiation law and replaces the old
+beginning-liquid availability `min` and old condensation/wet-temperature
+residual: neither branch is evaluated in M1, and latent energy occurs only as
+`E*hv` in the M/H ledger.
+
+Empty `M=H=0` has `fwet=0` and no wet temperature. With `I=0`, test every
+positive-area dry leaf-sun, leaf-shade, and stem surface against
+`q_sat_external_phase(T,p,ice)` below `Tf` and liquid at/above `Tf`: if
+`qcan` exceeds that phase-selected value, reject `VEG-E-142`; otherwise set
+`E=Q=D=0`. Thus M1 does not hide negative vapor exchange or initiate external
+condensation/deposition from an empty store. In particular,
+`q_ice<qcan<=q_liq` below `Tf` rejects; M1 invents no metastable/no-nucleation
+law. An empty state becomes nonempty
+only through authenticated liquid `I>0` with supplied `hI`, whose temperature
+is diagnosed by `hI=Cw*(T-Tf)`.
+
+For positive `M`, diagnose ice for `H<-Lf*M`, mixed for
+`-Lf*M<=H<0`, and liquid for `H>=0`; hence `H=0` is liquid and
+`H=-Lf*M` is mixed. Define `alpha` as this phase plus the capacity branch.
+`alpha` is the physical residual evaluated at each Newton state, never a
+post-failure retry. `D` is an explicit nonnegative coordinate. Per occupancy,
+the three reservoir residuals are
+`R_M=M1-M0-dt*(I-E-D)`,
+`R_H=H1-H0-dt*(Q+I*hI-E*hv-D*hl)`, and
+`R_cap=min(dt*D,Cliq-ml)`, all with units stated above. The selected
+generalized derivative of `R_cap` is `dt*dD` when `dt*D<Cliq-ml`, and
+`dCliq-dml` when the capacity argument is smaller; exact equality selects the
+capacity derivative. Finite trial `ml>Cliq` remains a residual violation so
+Newton can return inward; only accepted state requires `M>0`, `D>=0`,
+`0<=ml<=Cliq`, and all three absolute residual tolerances. Phase boundaries
+are continuous backward-Euler constitutive changes inside `dt>=60 s`, not
+events. Positive-storage evaporation approaches but does not manufacture a
+finite-step empty state; `M^(2/3)` is never differentiated at zero.
+
+The exact cold-dark reduction is block triangular, not a reduced physics
+model. V10 fixes both beta values at one, makes `ci` analytic, and makes dry
+energy/vapor/`Rd` independent of the four hydraulic potentials under supplied
+`FullSupply`. First solve a 21-coordinate energy block: per occupancy
+`(Tleaf_sun,Tleaf_shade,Tstem,M,H,D)` plus shared `(Tcan,qcan)`, one ground,
+and six soil coordinates (`2*6+2+1+6=21`). Its residual order is three dry
+energies, `R_M,R_H,R_cap` for each occupancy, then shared-air, ground, and
+soil. Then solve each unchanged four-potential hydraulic block using accepted
+`Egas`, yielding 29 coordinates/residuals (`21+2*4`). Any hydraulic failure
+rejects the candidate without changing `E`, `g0`, or alpha. The former warm
+system also has 29 coordinates; a retained dense M/H/D form would have 33
+(`29-2 wetT+6 M,H,D`). This selection saves four fixed beta coordinates, keeps
+drainage exact rather than algebraically approximate, and costs per occupancy
+one M/H inverse, two named saturation calls, three reservoir residuals and one
+explicit D Jacobian column; it adds no history or plant heat store.
+
+Require `abs(R_M)<=1e-9 kg m^-2`, `abs(R_H)<=1e-6 J m^-2`, and
+`abs(R_cap)<=1e-9 kg m^-2`, each also divided respectively by
+`max(M0,abs(I-E-D)*dt,1e-9)`,
+`max(abs(H0),abs(Q+I*hI-E*hv-D*hl)*dt,1)`, and `max(Cliq,1e-9)`, with scaled
+residual `<=1e-8`; independently reconstruct the ledger to `1e-6 J m^-2`.
+Finite differences use `1e-4 K`, `1e-8 kg kg^-1`, `1e-3` hydraulic native
+units, `1e-8 kg m^-2` for M, `1e-3 J m^-2` for H, and `1e-10 kg m^-2 s^-1`
+for D. A bound-crossing probe uses the inward one-sided step; nonfinite,
+pressure-denominator, or M/H-inversion domain failure precedes nonlinear
+failure, closure, and receipt publication failure.
+
+Fresh V1 initialization supplies M/H and all domain predicates. The retained
+`0.018 kg m^-2` fixture fixes `Tinit=273.15 K`, `M=.018`, `H=0`, `D=0`.
+The M1 diagnostic extension serializes model-definition/version,
+configuration/topology/OFE-tile-occupancy, support, units and area lineage,
+then `(M,H)`, inside the complete coupled checkpoint; it does not serialize
+interval forcing `I,hI`. Parse/version/identity/unit/area validation precedes
+M/H consistency and domain validation. Legacy liquid-only state, missing fields,
+wrong support/occupancy, corrupt bytes, or a forcing value presented as state
+rejects `VEG-E-144`; receipt/owner failure is `VEG-E-143` and rolls back all
+owners.
+
+The M1 restart diagnostic extension is a required nested object of the complete
+coupled checkpoint, never a stand-alone restorable checkpoint. It is JSON with
+`deny_unknown_fields` and exactly these fields: `schema_version:u32`,
+`model_definition_id:String`, `model_definition_digest_sha256:String`,
+`configuration_digest_sha256:String`, `topology_digest_sha256:String`,
+`source_manifest_sha256:String`, `transaction_id:u64`,
+`consumed_transaction_cursor:u64`, `day_index:u32`, `support_start_s:f64`,
+`support_end_s:f64`, `ofe_id:String`, `tile_id:String`,
+`occupancy_id:String`, `area_basis:"tile_ground"`,
+`mass_unit:"kg_h2o_m2"`, `enthalpy_unit:"J_m2"`,
+`m_kg_h2o_m2:f64`, and `h_j_m2:f64`. The `(ofe_id,tile_id,occupancy_id)` key is
+globally unique within the complete checkpoint. `transaction_id` is the
+committed parent transaction whose ending state contains this record;
+`consumed_transaction_cursor` is the exact committed cursor copied from that
+same parent checkpoint and equals `transaction_id` for this committed
+full-support checkpoint, so a staged/current transaction cannot be serialized.
+
+All M1 JSON object keys are recursively lexicographically sorted, compact UTF-8
+with one trailing newline; this is the sole ordering rule. The four lowercase
+hexadecimal SHA-256 values refer, respectively, to: the canonical M1 model
+definition bytes; the validated complete vegetation configuration bytes; the
+ordered validated topology bytes; and the immutable M1 primary-source-register
+bytes. None hashes this diagnostic object or another field in it. `I,hI`,
+meteorology, and all current forcing are interval inputs, never restart fields.
+The concrete synthetic byte/guard vectors are `restart-reference-m1.json`;
+independent numeric component controls are `reference-controls-m1.json` in
+the package evidence. Their exact files and generators are bound by
+`m1-frozen-component-inventory.json`. The earlier draft04 inventory is historical.

@@ -1,0 +1,29 @@
+{
+  "time": "2026-09-20T16:32:29.966740+00:00",
+  "qualification": "Draft structural screening only; no science acceptance or expected-red physics evidence",
+  "commands": [
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "exit": 2,
+      "stdout": "",
+      "stderr": "usage: check_sc_binding_exposure.py [--strict] <SC-contract.md>\n"
+    },
+    {
+      "argv": [
+        "bash",
+        "tools/release/check_science_contract_admission.sh",
+        "--base-ref",
+        "HEAD",
+        "--worktree"
+      ],
+      "exit": 0,
+      "stdout": "A0_ADMITTED contracts=49 science_surfaces=0 base=80b3e3df883e01497c3667a973e0d420f2d97fd6 head=WORKTREE authority_sha256=2603497ba1e21b17819c8338519ef8464da88989ed91475bf4e1d6b26bf566be\n",
+      "stderr": ""
+    }
+  ]
+}

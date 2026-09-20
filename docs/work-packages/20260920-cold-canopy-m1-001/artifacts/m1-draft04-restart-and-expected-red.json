@@ -1,0 +1,64 @@
+{
+  "evidence_class": "Prospective contract-derived expected-red fixture inventory; no Rust execution",
+  "status": "HOLD pending authority review and reference-vector acceptance",
+  "reference_controls": {
+    "components": "reference-components-draft03.json",
+    "generator": "reference_components.py",
+    "generator_sha256": "bf5d1613419d02a673c01ab51b1551445830abb7933d39ed2c6cd0730c7ac052",
+    "receiver_inventory": "receiver-api-inventory.json"
+  },
+  "restart_example": {
+    "synthetic_shape_only": true,
+    "schema_version": 1,
+    "model_definition_id": "OPENWEPP_C3_WOODY_COLD_M1_V1",
+    "model_definition_digest_sha256": "<64-lowercase-hex M1 definition digest>",
+    "configuration_digest_sha256": "<64-lowercase-hex configuration digest>",
+    "topology_digest_sha256": "<64-lowercase-hex topology digest>",
+    "source_manifest_sha256": "<64-lowercase-hex source-register digest>",
+    "transaction_id": 17,
+    "consumed_transaction_cursor": 17,
+    "day_index": 3,
+    "support_start_s": 120.0,
+    "support_end_s": 180.0,
+    "tile_id": "tile-0",
+    "occupancy_id": "upper",
+    "area_basis": "tile_ground",
+    "mass_unit": "kg_h2o_m2",
+    "enthalpy_unit": "J_m2",
+    "m_kg_h2o_m2": 0.018,
+    "h_j_m2": 0.0
+  },
+  "restart_validation_precedence": [
+    "parse JSON and reject unknown/missing/type-invalid fields",
+    "schema_version and model_definition_id",
+    "model/configuration/topology/source digest syntax and identity",
+    "transaction cursor, day and ordered support",
+    "tile/occupancy identity, units and area basis",
+    "finite M/H and M/H inverse consistency",
+    "role-domain and supplied-condition validation"
+  ],
+  "restart_poison_matrix": [
+    {"name": "unknown_field", "mutation": "extra=1", "error": "VEG-E-144"},
+    {"name": "forcing_as_state", "mutation": "add I_kg_m2_s", "error": "VEG-E-144"},
+    {"name": "wrong_area", "mutation": "area_basis=ofe_ground", "error": "VEG-E-144"},
+    {"name": "cursor_regression", "mutation": "consumed_transaction_cursor=16", "error": "VEG-E-144"},
+    {"name": "mh_inconsistent", "mutation": "m=0,h=1", "error": "VEG-E-144"},
+    {"name": "ice_domain", "mutation": "m=0.018,h=-7000", "error": "VEG-E-144"}
+  ],
+  "tolerances": {
+    "mass_abs_kg_m2": 1e-9,
+    "enthalpy_abs_j_m2": 1e-6,
+    "capacity_abs_kg_m2": 1e-9,
+    "scaled_residual": 1e-8,
+    "qsat_derivative_relative": 1e-6
+  },
+  "cases": [
+    {"name": "m1_qsat_join", "gate": "A3", "inputs": {"temperature_k": [263.15,273.149999,273.15,273.150001,278.15], "pressure_pa": 90000, "phases": ["liquid","ice"]}, "expected": "reference_controls.components.saturation; exact e0 at Tf; liquid control at Tf", "poisons": ["e>=p", "q>=1", "p-.378e<=0", "nonfinite pressure"]},
+    {"name": "m1_mh_inverse", "gate": "A0", "inputs": {"M": 0.018, "H": [0,-6006.6,-6006.600001,1]}, "expected": "reference_controls.components.inverse; H=0 liquid and H=-LfM mixed controls", "poisons": ["M=0,H!=0", "M<0", "nonfinite H"]},
+    {"name": "m1_vapor_ledger", "gate": "A0", "inputs": {"E_kg_m2_s": [1e-8,-1e-8], "dt_s": 60, "T_k": 263.15, "M0": 0.018}, "expected": "reference_controls.components.constant_temperature_ice_vapor_controls; extra fusion debit fails", "poisons": ["second latent debit", "fusion debit", "wrong donor phase"]},
+    {"name": "m1_cap_drain", "gate": "A1", "inputs": {"Ml_minus_Cliq": [0,1e-8], "D_kg_m2_s": [0,1e-8], "dt_s": 60}, "expected": "Rcap=min(dt*D,Cliq-Ml); exact tie uses capacity derivative; over-cap trial only fails acceptance", "poisons": ["D<0", "postsolve clip", "accepted Ml>Cliq"]},
+    {"name": "m1_empty_guard", "gate": "A1", "inputs": {"M": 0, "H": 0, "I": 0, "T_k": [263.15,273.15], "areas": ["sun","shade","stem"]}, "expected": "qcan>external phase qsat gives VEG-E-142, including qice<qcan<=qliq poison", "poisons": ["below-freeze liquid saturation alias", "negative exchange silently zeroed"]},
+    {"name": "m1_route_receiver", "gate": "A0", "inputs": {"occupancies": ["upper","lower"], "branches": ["throughfall","initial_drainage","second_drainage","stemflow"]}, "expected": "upper drainage enters lower prepare_covered_liquid as incident liquid; every terminal branch has typed receipt or conservative lineage merge and real receiver state/use changes", "poisons": ["upper drainage double credited to ground", "lost contributor occupancy", "fabricated receipt"]},
+    {"name": "m1_restart_matrix", "gate": "A1", "inputs": {"phases": ["ice","mixed","liquid"], "record": "restart_example"}, "expected": "fresh-process split equals uninterrupted; all restart_poison_matrix cases are VEG-E-144; late receipt rolls back", "poisons": ["legacy liquid-only warm start", "receipt failure after restart"]}
+  ]
+}

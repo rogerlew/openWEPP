@@ -1,0 +1,3 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.95s

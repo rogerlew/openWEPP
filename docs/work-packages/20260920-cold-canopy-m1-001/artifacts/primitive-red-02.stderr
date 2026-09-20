@@ -1,0 +1,99 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+warning: unused variable: `aa`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:394:9
+    |
+394 |     let aa = a.p()?;
+    |         ^^ help: if this is intentional, prefix it with an underscore: `_aa`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-vegetation` (lib) generated 1 warning (run `cargo fix --lib -p openwepp-vegetation` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.63s
+────────────
+ Nextest run ID 97b95ee4-e659-4db0-92c2-f093018cbf96 with nextest profile: default
+    Starting 7 tests across 1 binary
+        FAIL [   0.004s] (4/7) openwepp-vegetation::cold_canopy_m1_expected_red m1_assembled_ice_residual_jacobian_columns
+  stdout ───
+
+    running 1 test
+    test m1_assembled_ice_residual_jacobian_columns ... FAILED
+
+    failures:
+
+    failures:
+        m1_assembled_ice_residual_jacobian_columns
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_assembled_ice_residual_jacobian_columns' (3940634) panicked at crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:25:5:
+    actual=1.41313690119721458e0, expected=1.41312248418663566e0
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 3 tests still running
+        FAIL [   0.006s] (5/7) openwepp-vegetation::cold_canopy_m1_expected_red m1_all_inverse_and_ice_jacobian_controls
+  stdout ───
+
+    running 1 test
+    test m1_all_inverse_and_ice_jacobian_controls ... FAILED
+
+    failures:
+
+    failures:
+        m1_all_inverse_and_ice_jacobian_controls
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_all_inverse_and_ice_jacobian_controls' (3940635) panicked at crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:116:9:
+    assertion `left == right` failed
+      left: "ice"
+     right: "mixed"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.008s] 7 tests run: 5 passed, 2 failed, 0 skipped
+        FAIL [   0.004s] (4/7) openwepp-vegetation::cold_canopy_m1_expected_red m1_assembled_ice_residual_jacobian_columns
+  stdout ───
+
+    running 1 test
+    test m1_assembled_ice_residual_jacobian_columns ... FAILED
+
+    failures:
+
+    failures:
+        m1_assembled_ice_residual_jacobian_columns
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_assembled_ice_residual_jacobian_columns' (3940634) panicked at crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:25:5:
+    actual=1.41313690119721458e0, expected=1.41312248418663566e0
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (5/7) openwepp-vegetation::cold_canopy_m1_expected_red m1_all_inverse_and_ice_jacobian_controls
+  stdout ───
+
+    running 1 test
+    test m1_all_inverse_and_ice_jacobian_controls ... FAILED
+
+    failures:
+
+    failures:
+        m1_all_inverse_and_ice_jacobian_controls
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_all_inverse_and_ice_jacobian_controls' (3940635) panicked at crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:116:9:
+    assertion `left == right` failed
+      left: "ice"
+     right: "mixed"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

@@ -1,0 +1,12 @@
+{
+  "current_utc": "2026-09-20T19:06:22.967638+00:00",
+  "resumption_anchor": "2026-09-20T16:07:00+00:00",
+  "carry_seconds": 141047.416433,
+  "elapsed_seconds": 10762.967638,
+  "charged_cumulative_seconds": 151810.384071,
+  "cumulative_ceiling_seconds": 169163.21924,
+  "remaining_seconds": 17352.835168999998,
+  "preservation_reserve_seconds": 1800,
+  "wait_deductions_seconds": 0,
+  "decision": "CONTINUE after two rejected coupled test drafts: same writer corrects explicit prescribed-trial input construction, row mapping, independent balances and receiver assertions. Source/reference availability and reviewer capacity remain recoverable. No new numerical bodies or acceptance relaxation."
+}

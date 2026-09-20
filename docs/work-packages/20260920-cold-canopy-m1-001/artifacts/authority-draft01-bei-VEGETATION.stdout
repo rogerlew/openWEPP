@@ -1,0 +1,7 @@
+FAIL docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md: 6 issue(s)
+- BEI-VEGETATION-019: invalid binding classification new-INV
+- BEI-VEGETATION-019: referenced binding ID INV-VEGETATION-140 not present in contract
+- BEI-VEGETATION-019: referenced binding ID INV-VEGETATION-141 not present in contract
+- BEI-VEGETATION-019: referenced binding ID INV-VEGETATION-142 not present in contract
+- BEI-VEGETATION-019: referenced binding ID INV-VEGETATION-143 not present in contract
+- BEI-VEGETATION-019: referenced binding ID INV-VEGETATION-144 not present in contract

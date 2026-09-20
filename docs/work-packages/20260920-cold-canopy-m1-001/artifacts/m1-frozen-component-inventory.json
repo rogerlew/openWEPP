@@ -1,0 +1,30 @@
+{
+  "status": "Additive coupled preimplementation input binding; no coupled simulation executed",
+  "files": {
+    "reference-controls-m1.json": "a0400e74fdb4100dcfa099ef9a4627cee7b9310e4aefb4ef1aa094835bdcc0ef",
+    "reference_controls_m1.py": "55dbd49342a6366cc879ebed8c27dea2632c0ee9a41a44e5c8fc0f2e0fd12762",
+    "reference_components.py": "bf5d1613419d02a673c01ab51b1551445830abb7933d39ed2c6cd0730c7ac052",
+    "restart-reference-m1.json": "fcbf92ed3bb0140eed85ccc290bde080f68df5d9cd306e81611802b0494862dc",
+    "restart_reference_m1.py": "a4089941f1d96ae34e0ba13a1e8846da6faf87f45dfffba1243e570f4392c8df",
+    "receiver-api-inventory.json": "076c3aa173d1253c8bf2da0f84aaa71e5b205ebc16113c9bb02e660ff1640a84",
+    "original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+    "radiation-reference-m1.json": "b92985388719f4a59406c2b8f3a5e03d3af2a2f35c99617926c20aeed284b47e",
+    "radiation_reference_m1.py": "d6d59c331218fdcee2f8e76afa5706405a0e72c505aac42988f427dc512ecefb",
+    "dark-gas-reference-m1.json": "caf8abaafe9eaa5d4eb4b4ed1a3a23e6b65763cbf8298c7da453c0865675e7ac",
+    "dark_gas_reference_m1.py": "1edad3a2fb1f3da3a675ab81845a0d528c529490ffe4791cf2f7027e7bc7c480",
+    "continuous-fixtures-draft01.json": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1",
+    "binary64-phase-boundary.json": "6ff613765d88822f45487cf2699d96836903e84ffbeb2ad000160e6ea2d87857"
+  },
+  "reference_contract": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+  "reference_contract_sha256": "ae8bc5f93dc483432b126e000ec88f940e7c8a6d100f7dae1fedeb8fbc82eeb4",
+  "later_required": [
+    "Complete coupled Q-dependent Jacobian",
+    "Actual recipient and rollback",
+    "Full diagnostic checkpoint and fresh-process restart",
+    "Two frozen 72-hour cycles",
+    "1/10/19 OFE timing and warm paired controls"
+  ],
+  "previous_inventory_file": "m1-frozen-component-inventory-v1.json",
+  "previous_inventory_sha256": "7088c0d3ceddaaaa7e84c782d8c02adc95b75e86d5248dffb9bfba954586ea6f",
+  "binding_note": "Original seven files unchanged. New analytical controls and draft continuous forcing were correctness-admitted before coupled test execution. Draft status does not admit continuous/cost measurements; final complete checkpoint and campaign matrix remain required."
+}

@@ -1,0 +1,21 @@
+{
+  "status": "Prospective component/test inventory; execution not yet performed",
+  "files": {
+    "reference-controls-m1.json": "a0400e74fdb4100dcfa099ef9a4627cee7b9310e4aefb4ef1aa094835bdcc0ef",
+    "reference_controls_m1.py": "55dbd49342a6366cc879ebed8c27dea2632c0ee9a41a44e5c8fc0f2e0fd12762",
+    "reference_components.py": "bf5d1613419d02a673c01ab51b1551445830abb7933d39ed2c6cd0730c7ac052",
+    "restart-reference-m1.json": "fcbf92ed3bb0140eed85ccc290bde080f68df5d9cd306e81611802b0494862dc",
+    "restart_reference_m1.py": "a4089941f1d96ae34e0ba13a1e8846da6faf87f45dfffba1243e570f4392c8df",
+    "receiver-api-inventory.json": "076c3aa173d1253c8bf2da0f84aaa71e5b205ebc16113c9bb02e660ff1640a84",
+    "original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54"
+  },
+  "reference_contract": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+  "reference_contract_sha256": "ae8bc5f93dc483432b126e000ec88f940e7c8a6d100f7dae1fedeb8fbc82eeb4",
+  "later_required": [
+    "Complete coupled Q-dependent Jacobian",
+    "Actual recipient and rollback",
+    "Full diagnostic checkpoint and fresh-process restart",
+    "Two frozen 72-hour cycles",
+    "1/10/19 OFE timing and warm paired controls"
+  ]
+}

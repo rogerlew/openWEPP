@@ -1,0 +1,27 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+error: this argument is passed by value, but not consumed in the function body
+  --> crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:44:24
+   |
+44 | fn assert_error(error: M1Error, code: &str, stage: &str) {
+   |                        ^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value
+   = note: `-D clippy::needless-pass-by-value` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_pass_by_value)]`
+help: consider taking a reference instead
+   |
+44 | fn assert_error(error: &M1Error, code: &str, stage: &str) {
+   |                        +
+
+error: this function has too many lines (108/100)
+   --> crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:412:1
+    |
+412 | fn m1_primitive_domains_reject_nonfinite_and_invalid_forcing() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: could not compile `openwepp-vegetation` (test "cold_canopy_m1_expected_red") due to 2 previous errors

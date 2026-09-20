@@ -1,0 +1,11 @@
+{
+  "time": "2026-09-20T17:35:18.849020+00:00",
+  "run": "m1-expected-red-vegetation-01",
+  "dependency_file": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/cold_canopy_m1_expected_red-81ac6e8a8c5cdf0e.d",
+  "dependency_text": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/cold_canopy_m1_expected_red-81ac6e8a8c5cdf0e.d: crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/restart-reference-m1.json\n\n/tmp/openwepp-cold-canopy-m1-target/debug/deps/cold_canopy_m1_expected_red-81ac6e8a8c5cdf0e: crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/restart-reference-m1.json\n\ncrates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:\n/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/restart-reference-m1.json:\n\n# env-dep:CARGO_MANIFEST_DIR=/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation\n",
+  "dependency_sha256": "42cae83f29ef09fd234825f9bbffd82b3d17214f6e8834f7ef8c260216d5cfa2",
+  "resolved_external_include": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/restart-reference-m1.json",
+  "sha256": "fcbf92ed3bb0140eed85ccc290bde080f68df5d9cd306e81611802b0494862dc",
+  "matches_frozen_inventory": true,
+  "scope": "Actual failed test compile dependency; no executed assertions"
+}

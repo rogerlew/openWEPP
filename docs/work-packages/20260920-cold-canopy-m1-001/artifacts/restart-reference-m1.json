@@ -1,0 +1,256 @@
+{
+  "evidence_class": "Synthetic byte and guard vectors only; no Rust or full-checkpoint execution",
+  "context": "Digest preimages below are synthetic test context. Never claim these are actual model/config/source identities.",
+  "generator_sha256": "a4089941f1d96ae34e0ba13a1e8846da6faf87f45dfffba1243e570f4392c8df",
+  "external_bindings": {
+    "model_definition_digest_sha256": {
+      "canonical_utf8": "{\"control_kind\":\"synthetic_model_binding\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\"}\n",
+      "sha256": "60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328"
+    },
+    "configuration_digest_sha256": {
+      "canonical_utf8": "{\"case\":\"restart_byte_control\",\"control_kind\":\"synthetic_configuration_binding\"}\n",
+      "sha256": "0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01"
+    },
+    "topology_digest_sha256": {
+      "canonical_utf8": "{\"control_kind\":\"synthetic_topology_binding\",\"ofes\":[{\"id\":\"ofe-0\",\"tiles\":[{\"id\":\"tile-0\",\"occupancies\":[\"upper\",\"lower\"]}]}]}\n",
+      "sha256": "ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b"
+    },
+    "source_manifest_sha256": {
+      "canonical_utf8": "{\"control_kind\":\"synthetic_primary_source_register_binding\",\"entries\":[]}\n",
+      "sha256": "3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1"
+    }
+  },
+  "positives": [
+    {
+      "name": "valid_ice",
+      "record": {
+        "schema_version": 1,
+        "model_definition_id": "OPENWEPP_C3_WOODY_COLD_M1_V1",
+        "model_definition_digest_sha256": "60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328",
+        "configuration_digest_sha256": "0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01",
+        "topology_digest_sha256": "ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b",
+        "source_manifest_sha256": "3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1",
+        "transaction_id": 17,
+        "consumed_transaction_cursor": 17,
+        "day_index": 3,
+        "support_start_s": 120.0,
+        "support_end_s": 180.0,
+        "ofe_id": "ofe-0",
+        "tile_id": "tile-0",
+        "occupancy_id": "upper",
+        "area_basis": "tile_ground",
+        "mass_unit": "kg_h2o_m2",
+        "enthalpy_unit": "J_m2",
+        "m_kg_h2o_m2": 0.018,
+        "h_j_m2": -6385.68
+      },
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":-6385.68,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "artifact_sha256": "2625c80ce619db5722f29bf4d9959e6409eaa5795e4b54f4c595442a6b01be37",
+      "expected_phase": "ice",
+      "expected_phase_extension": "admit_only_with_matching_synthetic_parent_context"
+    },
+    {
+      "name": "valid_mixed",
+      "record": {
+        "schema_version": 1,
+        "model_definition_id": "OPENWEPP_C3_WOODY_COLD_M1_V1",
+        "model_definition_digest_sha256": "60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328",
+        "configuration_digest_sha256": "0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01",
+        "topology_digest_sha256": "ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b",
+        "source_manifest_sha256": "3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1",
+        "transaction_id": 17,
+        "consumed_transaction_cursor": 17,
+        "day_index": 3,
+        "support_start_s": 120.0,
+        "support_end_s": 180.0,
+        "ofe_id": "ofe-0",
+        "tile_id": "tile-0",
+        "occupancy_id": "upper",
+        "area_basis": "tile_ground",
+        "mass_unit": "kg_h2o_m2",
+        "enthalpy_unit": "J_m2",
+        "m_kg_h2o_m2": 0.018,
+        "h_j_m2": -3003.3
+      },
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":-3003.3,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "artifact_sha256": "4c78706f95f97592c3c9ffcd157b193ddc4c196d87d9337c3a44a92be19442ce",
+      "expected_phase": "mixed",
+      "expected_phase_extension": "admit_only_with_matching_synthetic_parent_context"
+    },
+    {
+      "name": "valid_liquid",
+      "record": {
+        "schema_version": 1,
+        "model_definition_id": "OPENWEPP_C3_WOODY_COLD_M1_V1",
+        "model_definition_digest_sha256": "60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328",
+        "configuration_digest_sha256": "0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01",
+        "topology_digest_sha256": "ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b",
+        "source_manifest_sha256": "3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1",
+        "transaction_id": 17,
+        "consumed_transaction_cursor": 17,
+        "day_index": 3,
+        "support_start_s": 120.0,
+        "support_end_s": 180.0,
+        "ofe_id": "ofe-0",
+        "tile_id": "tile-0",
+        "occupancy_id": "upper",
+        "area_basis": "tile_ground",
+        "mass_unit": "kg_h2o_m2",
+        "enthalpy_unit": "J_m2",
+        "m_kg_h2o_m2": 0.018,
+        "h_j_m2": 0.0
+      },
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "artifact_sha256": "d6416f456cb917777417bfdb94f8df641b120b5a59ba570a8f0e383b58960f5b",
+      "expected_phase": "liquid",
+      "expected_phase_extension": "admit_only_with_matching_synthetic_parent_context"
+    }
+  ],
+  "poisons": [
+    {
+      "name": "unknown_field",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"extra\":1,\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "parse"
+    },
+    {
+      "name": "forcing_as_state",
+      "canonical_utf8": "{\"I_kg_m2_s\":0.0,\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "parse"
+    },
+    {
+      "name": "missing_h",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "parse"
+    },
+    {
+      "name": "wrong_schema",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":2,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "version"
+    },
+    {
+      "name": "wrong_model",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_V11\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "version"
+    },
+    {
+      "name": "wrong_digest",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "identity"
+    },
+    {
+      "name": "bad_digest_syntax",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "identity"
+    },
+    {
+      "name": "cursor_regression",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":16,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "chronology"
+    },
+    {
+      "name": "staged_transaction",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":18}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "chronology"
+    },
+    {
+      "name": "wrong_support",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":60.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "chronology"
+    },
+    {
+      "name": "reversed_support",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":120.0,\"support_start_s\":180.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "chronology"
+    },
+    {
+      "name": "wrong_ofe",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-1\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "ownership"
+    },
+    {
+      "name": "wrong_occupancy",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"missing\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "ownership"
+    },
+    {
+      "name": "wrong_area",
+      "canonical_utf8": "{\"area_basis\":\"ofe_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "units_area"
+    },
+    {
+      "name": "wrong_units",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"mm\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "units_area"
+    },
+    {
+      "name": "mh_inconsistent",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":1.0,\"m_kg_h2o_m2\":0.0,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "mh_consistency"
+    },
+    {
+      "name": "negative_mass",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":-0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "mh_consistency"
+    },
+    {
+      "name": "ice_below_domain",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":-7000.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "domain"
+    },
+    {
+      "name": "combined_version_mh",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":1.0,\"m_kg_h2o_m2\":0.0,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":2,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "version"
+    },
+    {
+      "name": "combined_unknown_version",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"extra\":1,\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":2,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "parse"
+    },
+    {
+      "name": "combined_owner_mh",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":1.0,\"m_kg_h2o_m2\":0.0,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-1\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "ownership"
+    },
+    {
+      "name": "nonfinite_json",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":NaN,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17}\n",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "parse"
+    },
+    {
+      "name": "truncated_json",
+      "canonical_utf8": "{\"area_basis\":\"tile_ground\",\"configuration_digest_sha256\":\"0739f2384dbd9c3f9823ce77aac066919ae47464808c586e7febe4c433c09a01\",\"consumed_transaction_cursor\":17,\"day_index\":3,\"enthalpy_unit\":\"J_m2\",\"h_j_m2\":0.0,\"m_kg_h2o_m2\":0.018,\"mass_unit\":\"kg_h2o_m2\",\"model_definition_digest_sha256\":\"60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328\",\"model_definition_id\":\"OPENWEPP_C3_WOODY_COLD_M1_V1\",\"occupancy_id\":\"upper\",\"ofe_id\":\"ofe-0\",\"schema_version\":1,\"source_manifest_sha256\":\"3f574de5fd556698436006257e49d93aa8b63cee7df74b271ab41dc0909450e1\",\"support_end_s\":180.0,\"support_start_s\":120.0,\"tile_id\":\"tile-0\",\"topology_digest_sha256\":\"ad417462c9c571eac41ac5f1e2e1bf3ed74c9c40308bf1d5e8afd5f1aa269e6b\",\"transaction_id\":17",
+      "expected_error": "VEG-E-144",
+      "first_rejection_stage": "parse"
+    }
+  ],
+  "consumption_control": {
+    "first_load_cursor": 17,
+    "next_transaction": 18,
+    "attempted_reuse_transaction": 17,
+    "expected_error": "VEG-E-144"
+  },
+  "required_later_evidence": "Complete actual owner checkpoint, fresh-process split, future flux/closure and late-rollback verification are NOT RUN."
+}

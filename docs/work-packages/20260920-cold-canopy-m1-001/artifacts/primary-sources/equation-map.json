@@ -1,0 +1,59 @@
+{
+  "status": "prospective mapping for independent review; no numerical qualification",
+  "entries": [
+    {
+      "source": "ambaum2020.pdf",
+      "location": "equation2 immediately following text (Rv461.52), equations13,15,17,18; journalpages4253,4254,4256",
+      "supports": "constant-specific-heat ideal-vapor saturation structure and linear latent heats; alternate reference point explicitly permitted",
+      "limitation": "Retained M1 constants differ from recommended paper constants. Paper error figures do not qualify substituted constants."
+    },
+    {
+      "source": "clm5-hydrology.html",
+      "location": "equations2.7.12\u201313,2.7.23\u201324",
+      "supports": "separate liquid/snow capacities; total intercepted water wet fraction and dry transpiring fraction",
+      "limitation": "M1 bulk equilibrium mixed reservoir and liquid-only complementarity are explicit model selections, not wholesale CLM phase partition adoption."
+    },
+    {
+      "source": "clm5-fluxes.html",
+      "location": "section2.5.3; equations2.5.111\u2013112",
+      "supports": "shared canopy air coupling and full-area condensation direction precedent",
+      "limitation": "Actual initiation decision, heat ownership and cold extensions require precise canonical clauses."
+    },
+    {
+      "source": "clm5-photosynthesis.html",
+      "location": "section2.9.1; equations2.9.9\u201311",
+      "supports": "existing respiration and basal stomatal constitutive structure",
+      "limitation": "Cold applicability conditional on explicit unfrozen conducting tissue assumption, not inferred from darkness."
+    },
+    {
+      "source": "clm5-plant_hydraulics.html",
+      "location": "section2.11",
+      "supports": "existing conducting hydraulic network and vulnerability relationships",
+      "limitation": "Does not implement frozen-tissue mechanics or persistence of supercooling."
+    },
+    {
+      "source": "kuprian2018.html",
+      "location": "experimental freezing/nucleation observations",
+      "supports": "Nucleation sensitivity and difference between detached versus attached twig freezing; not active leaf-gas authority.",
+      "limitation": "Withdrawn as positive justification of attached foliage down to-10C or epidermal ice exclusion. Coldest shoot observations explicitly detached/artificial supercooling."
+    },
+    {
+      "source": "lambert2022.html",
+      "location": "winter gas exchange, hardening and hydraulic discussion",
+      "supports": "limits of unmodified gas/hydraulic winter modelling",
+      "limitation": "Not adoption of a new hardening or tissue-injury model."
+    },
+    {
+      "source": "lindfors2015.pdf",
+      "location": "Methods and cooling/nucleation results",
+      "supports": "Attached Scots-pine gas exchange before tissue nucleation, with unfrozen soil; distinction between liquid-conducting and tissue-frozen regimes",
+      "limitation": "Not cold-dark calibration to263.15K. Proposed conditional continuation of CLM equations remains a scientific inference requiring independent review."
+    },
+    {
+      "source": "clm5-ecosystem.html",
+      "location": "table2.2.7",
+      "supports": "Tf273.15,Lv2501000,Lf333700,Ls=Lv+Lf; molecular gas constant derivation",
+      "limitation": "M1 heat capacities follow separately retained material convention, not CLM tabulatedCw/Ci."
+    }
+  ]
+}

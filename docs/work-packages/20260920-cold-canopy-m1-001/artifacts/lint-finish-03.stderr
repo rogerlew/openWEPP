@@ -1,0 +1,14 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+error: this function has too many lines (119/100)
+   --> crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs:406:1
+    |
+406 | fn m1_primitive_domains_reject_nonfinite_and_invalid_forcing() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: could not compile `openwepp-vegetation` (test "cold_canopy_m1_expected_red") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,43 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-sim-contract)
+    Checking openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-unit-boundary)
+    Checking openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-coupled-time)
+    Checking openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-kernel-contract)
+    Checking openwepp-biogeochemistry v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-biogeochemistry)
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+error: this boolean expression can be simplified
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:510:8
+    |
+510 |       if !x.area_m2_m2.is_finite()
+    |  ________^
+511 | |         || x.area_m2_m2 < 0.
+512 | |         || !x.qcan_kg_kg.is_finite()
+513 | |         || !(x.qcan_kg_kg >= 0. && x.qcan_kg_kg < 1.)
+    | |_____________________________________________________^ help: try: `!(x.area_m2_m2.is_finite() && x.area_m2_m2 >= 0. && x.qcan_kg_kg.is_finite() && x.qcan_kg_kg >= 0. && x.qcan_kg_kg < 1.)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#nonminimal_bool
+    = note: `-D clippy::nonminimal-bool` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::nonminimal_bool)]`
+
+error: this argument is passed by value, but not consumed in the function body
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:563:19
+    |
+563 |         bindings: M1RestartExternalBindings<'_>,
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: or consider marking this type as `Copy`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:551:1
+    |
+551 | pub struct M1RestartExternalBindings<'a> {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value
+    = note: `-D clippy::needless-pass-by-value` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_pass_by_value)]`
+help: consider taking a reference instead
+    |
+563 |         bindings: &M1RestartExternalBindings<'_>,
+    |                   +
+
+error: could not compile `openwepp-vegetation` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-vegetation` (lib test) due to 2 previous errors

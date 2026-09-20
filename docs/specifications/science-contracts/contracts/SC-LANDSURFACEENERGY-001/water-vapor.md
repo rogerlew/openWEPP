@@ -218,6 +218,7 @@ The ordinary covered-canopy release remains distinct from the authenticated tran
 | <a id="INV-LANDSURFACEENERGY-104"></a> `INV-LANDSURFACEENERGY-104` | Signed vapor mass and `v*[h_l+L_v]` energy preserve sign; condensation has one explicit hydrology credit. | v31:L1093-L1093 | [INFERENCE][Static] | [Solve guards](solve-boundary.md#solve) and [typed errors](#errors) | [Typed failures](#errors); no partial state or promotion |
 | <a id="INV-LANDSURFACEENERGY-105"></a> `INV-LANDSURFACEENERGY-105` | Root and ground requests share beginning stores before ingress; accepted current ingress is partitioned exactly once after the capped solve. | v31:L1094-L1094 | [INFERENCE][Static] | [Solve guards](solve-boundary.md#solve) and [typed errors](#errors) | [Typed failures](#errors); no partial state or promotion |
 | <a id="INV-LANDSURFACEENERGY-107"></a> `INV-LANDSURFACEENERGY-107` | Local tile closure precedes one `f_t` weighting to OFE ground; no cross-OFE aggregate is called stand ground. | v31:L1096-L1096 | [INFERENCE][Static] | [Solve guards](solve-boundary.md#solve) and [typed errors](#errors) | [Typed failures](#errors); no partial state or promotion |
+| <a id="INV-LANDSURFACEENERGY-167"></a> `INV-LANDSURFACEENERGY-167` | A review-pending M1 canopy phase reservoir uses named external saturation, exactly one M/H vapor-energy ledger, and a liquid-only typed receiver parcel. | SC-VEGETATION-001 M1, Ambaum Eq. 13/15/17/18 | `[INFERENCE][Static]` | M1 evaluator/receiver guards | typed domain, phase, closure, or rollback failure |
 
 <a id="canonical-obligations"></a>
 ## Canonical obligations
@@ -229,6 +230,7 @@ The ordinary covered-canopy release remains distinct from the authenticated tran
 | <a id="OBL-LANDSURFACEENERGY-P-004"></a> `OBL-LANDSURFACEENERGY-P-004` | reject all schema-v8 terminal payloads until a reviewed atomic cutover revises both snow and receiving-surface authority. | All LSE producer paths; retain named model/regime and reviewed terminal-cutover limits | v31:L317-L318 | [Guards/errors](#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
 | <a id="OBL-LANDSURFACEENERGY-C-001"></a> `OBL-LANDSURFACEENERGY-C-001` | ET supplies one actual evaporation debit and consumes no second latent debit. | ET consumers of actual evaporation and latent energy | v31:L326-L327 | [Guards/errors](#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
 | <a id="OBL-LANDSURFACEENERGY-C-002"></a> `OBL-LANDSURFACEENERGY-C-002` | infiltration/runoff consumes one water offer, returns sealed partition terms, and remains sole water-partition owner. | Infiltration/runoff consumers of the LSE water offer | v31:L328-L329 | [Guards/errors](#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
+| <a id="OBL-LANDSURFACEENERGY-C-023"></a> `OBL-LANDSURFACEENERGY-C-023` | Before M1 implementation, bind A0 independent saturation/M-H/receipt operand reconstructions, A1 phase-cap-empty-init-restart-rollback and two-occupancy custody vectors, and A3 source-byte/join-derivative vectors. | M1 only; HOLD pending both authority reviews | SC-VEGETATION-001 M1 | required expected-red gate failure blocks implementation | named contract-derived expected-red vectors and real receiver test |
 
 
 <a id="isolated-b01-transparent-canopy-liquid"></a>
@@ -356,3 +358,23 @@ Change log: 2026-09-10, supersede transparent wet-coordinate/source-temperature
 identity with independently source-bound passage and unchanged numerical anchor.
 Actual090 cold provider reconstruction establishes residual mixed-phase liquid;
 this exception adds no canopy freezing or phase-repartition process.
+
+## Cold-canopy M1 prospective vapor amendment
+
+M1 external saturation uses the named Ambaum (2020) liquid/ice equations,
+constants, domains and derivatives in SC-VEGETATION-001; internal leaf liquid
+saturation remains a distinct operand. The existing liquid polynomial applies
+at/above `Tf`; its exact join kink is explicit. LSE retains phase, `q_sat`,
+derivative and pressure denominator as independent operands. Its only outgoing
+parcel is diagnosed liquid with `hl=Cw*(T-Tf)` through the existing typed real
+receiver. `OBL-LANDSURFACEENERGY-C-023` requires source-pinned saturation
+boundary/derivative vectors, independent M/H reconstruction, wrong-phase and
+receiver poisons, weighted two-occupancy receipt, and late rollback.
+
+This section is `HOLD / dual review and expected-red required`; it neither
+activates M1 nor changes a V35 equation or receiver. The immutable source
+register records Ambaum Eq. 13/15 and 17/18 (`Ambaum2020.pdf`, SHA-256
+`53a2f41897205a66ca6db78bd4f48311f4b7f6cda35ccdea300d8d51be196c5e`) for
+saturation, R156/SURFEX for `Tf,Cw,Ci,Lf`, and existing LSE water-vapor for the
+selected `hv` convention. This is an owner-specific external phase law; litter
+saturation/kinetics do not transfer.

@@ -1,0 +1,71 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator)
+error[E0432]: unresolved imports `openwepp_land_surface_energy::M1ColumnLiquidRoutingInput`, `openwepp_land_surface_energy::M1CoupledColumnInput`, `openwepp_land_surface_energy::M1CoupledColumnTrial`, `openwepp_land_surface_energy::M1CoupledEvaluation`, `openwepp_land_surface_energy::M1OccupancySupportCondition`, `openwepp_land_surface_energy::M1PhaseReservoirInput`, `openwepp_land_surface_energy::M1RoutingOccupancyInput`, `openwepp_land_surface_energy::M1SupportConditions`, `openwepp_land_surface_energy::evaluate_m1_coupled_column`, `openwepp_land_surface_energy::route_m1_column_liquid`, `openwepp_land_surface_energy::solve_m1_coupled_column`
+  --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs:12:49
+   |
+12 |     BandDirectionalFluxes, CoveredColumnInputs, M1ColumnLiquidRoutingInput, M1CoupledColumnInput,
+   |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^ no `M1CoupledColumnInput` in the root
+   |                                                 |
+   |                                                 no `M1ColumnLiquidRoutingInput` in the root
+13 |     M1CoupledColumnTrial, M1CoupledEvaluation, M1OccupancySupportCondition, M1PhaseReservoirInput,
+   |     ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^ no `M1PhaseReservoirInput` in the root
+   |     |                     |                    |
+   |     |                     |                    no `M1OccupancySupportCondition` in the root
+   |     |                     no `M1CoupledEvaluation` in the root
+   |     no `M1CoupledColumnTrial` in the root
+14 |     M1RoutingOccupancyInput, M1SupportConditions, evaluate_m1_coupled_column,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^ no `evaluate_m1_coupled_column` in the root
+   |     |                        |
+   |     |                        no `M1SupportConditions` in the root
+   |     no `M1RoutingOccupancyInput` in the root
+15 |     route_m1_column_liquid, solve_m1_coupled_column,
+   |     ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^
+   |     |
+   |     no `route_m1_column_liquid` in the root
+   |
+help: a similar name exists in the module
+   |
+12 -     BandDirectionalFluxes, CoveredColumnInputs, M1ColumnLiquidRoutingInput, M1CoupledColumnInput,
+12 +     BandDirectionalFluxes, CoveredColumnInputs, M1ColumnLiquidRoutingInput, CoveredColumnInputs,
+   |
+help: a similar name exists in the module
+   |
+14 -     M1RoutingOccupancyInput, M1SupportConditions, evaluate_m1_coupled_column,
+14 +     M1RoutingOccupancyInput, M1SupportConditions, evaluate_covered_column,
+   |
+
+error[E0432]: unresolved imports `super::M1PrescribedRoutingControl`, `super::M1ReceiverFailureInjection`, `super::execute_m1_cold_canopy_receiver_diagnostic`
+ --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs:7:44
+  |
+7 |     LandSurfaceEnergyRealHydrologyAdapter, M1PrescribedRoutingControl, M1ReceiverFailureInjection,
+  |                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1ReceiverFailureInjection` in `land_surface_energy_shadow`
+  |                                            |
+  |                                            no `M1PrescribedRoutingControl` in `land_surface_energy_shadow`
+8 |     V8RollbackSnapshot, endpoint_fixture, execute_m1_cold_canopy_receiver_diagnostic,
+  |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `execute_m1_cold_canopy_receiver_diagnostic` in `land_surface_energy_shadow`
+
+warning: unused import: `DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:109:13
+    |
+109 | use crate::{DirectRunConstructorInputs, vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:131:16
+    |
+131 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `contribution_join` found for reference `&UnifiedRealHydrologyCandidate` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs:636:26
+    |
+636 |     let join = candidate.contribution_join();
+    |                          ^^^^^^^^^^^^^^^^^ method not found in `&UnifiedRealHydrologyCandidate`
+
+Some errors have detailed explanations: E0432, E0599.
+For more information about an error, try `rustc --explain E0432`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 2 warnings
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 3 previous errors; 2 warnings emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-hillslope-orchestrator --lib` exited with code 101

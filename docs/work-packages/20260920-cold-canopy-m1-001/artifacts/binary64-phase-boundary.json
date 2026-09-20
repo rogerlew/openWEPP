@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Independent binary64 representation analysis; no physical solve",
+  "time": "2026-09-20T18:05:05.525500+00:00",
+  "mass_decimal_literal": ".018",
+  "enthalpy_decimal_literal": "-6006.6",
+  "mass_f64_hex": "0x1.26e978d4fdf3bp-6",
+  "enthalpy_f64_hex": "-0x1.776999999999ap+12",
+  "computed_boundary_f64_hex": "-0x1.7769999999999p+12",
+  "mass_exact_decimal": "0.0179999999999999986399767948341832379810512065887451171875",
+  "enthalpy_exact_decimal": "-6006.600000000000363797880709171295166015625",
+  "computed_boundary_exact_decimal": "-6006.5999999999994543031789362430572509765625",
+  "exact_real_h_plus_lfm": "-8.176376242730043486517388373613357543945312500E-13",
+  "binary64_h_plus_lfm": -9.094947017729282e-13,
+  "phase_under_exact_comparison": "ice",
+  "computed_tie_enthalpy": -6006.599999999999,
+  "computed_tie_phase": "mixed",
+  "proposed_test_reconciliation": "Retain Decimal reference as exact-decimal analytical evidence. Exercise float-converted decimal input as ice, and separately exercise H computed as -Lf*M as the operational exact tie. No phase epsilon or physical tolerance change."
+}

@@ -1,0 +1,359 @@
+--- a/crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs
++++ b/crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs
+@@ -0,0 +1,356 @@
++//! Contract-derived M1 expected-red tests.
++//!
++//! The reviewed API is intentionally absent before production implementation.
++//! This target must first fail at its public-module import. When it exists,
++//! every assertion below binds a frozen independent control.
++
++use openwepp_vegetation::cold_canopy_m1::{
++    M1CapacityTrial, M1DrySurface, M1EmptySurfaceInput, M1ExternalPhase, M1Phase, M1PhaseReservoir,
++    M1ReservoirForcing, M1ReservoirState, M1RestartExtension, M1RestartValidationContext,
++    M1VaporBoundary, evaluate_m1_capacity_residual, evaluate_m1_reservoir_residuals,
++    m1_qsat_external, m1_qsat_internal, validate_m1_empty_surface,
++};
++use serde_json::Value;
++
++const CONTROLS: &str = include_str!(concat!(
++    env!("CARGO_MANIFEST_DIR"),
++    "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/reference-controls-m1.json"
++));
++const RESTARTS: &str = include_str!(concat!(
++    env!("CARGO_MANIFEST_DIR"),
++    "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/restart-reference-m1.json"
++));
++
++fn close(actual: f64, expected: f64, absolute: f64) {
++    assert!(
++        (actual - expected).abs() <= absolute,
++        "actual={actual:.17e}, expected={expected:.17e}"
++    );
++}
++
++fn close_relative(actual: f64, expected: f64, relative: f64) {
++    close(actual, expected, expected.abs().max(1.0) * relative);
++}
++
++fn number(value: &Value) -> f64 {
++    value
++        .as_str()
++        .expect("frozen decimal")
++        .parse()
++        .expect("valid frozen decimal")
++}
++
++fn restart_context(root: &Value) -> M1RestartValidationContext {
++    let bindings = &root["external_bindings"];
++    M1RestartValidationContext::from_external_bindings(
++        bindings["model_definition_digest_sha256"]["sha256"]
++            .as_str()
++            .expect("model"),
++        bindings["configuration_digest_sha256"]["sha256"]
++            .as_str()
++            .expect("configuration"),
++        bindings["topology_digest_sha256"]["sha256"]
++            .as_str()
++            .expect("topology"),
++        bindings["source_manifest_sha256"]["sha256"]
++            .as_str()
++            .expect("source"),
++        17,
++        "ofe-0",
++        "tile-0",
++        "upper",
++        120.0,
++        180.0,
++    )
++    .expect("reference context")
++}
++
++#[test]
++fn m1_all_saturation_and_join_derivative_controls() {
++    let root: Value = serde_json::from_str(CONTROLS).expect("controls parse");
++    for control in root["saturation"]
++        .as_array()
++        .expect("ten saturation controls")
++    {
++        let phase = match control["phase_control"].as_str().expect("phase") {
++            "liquid" => M1ExternalPhase::Liquid,
++            "ice" => M1ExternalPhase::Ice,
++            other => panic!("unknown phase {other}"),
++        };
++        let actual = m1_qsat_external(
++            number(&control["temperature_k"]),
++            number(&control["pressure_pa"]),
++            phase,
++        )
++        .expect("saturation control");
++        close(actual.vapor_pressure_pa, number(&control["e_pa"]), 1.0e-9);
++        close(
++            actual.specific_humidity_kg_kg,
++            number(&control["q_kg_kg"]),
++            1.0e-15,
++        );
++        close(
++            actual.derivative_kg_kg_k,
++            number(&control["dq_kg_kg_k"]),
++            1.0e-15,
++        );
++    }
++    let liquid = m1_qsat_internal(263.15, 90_000.0).expect("liquid");
++    let ice = m1_qsat_external(263.15, 90_000.0, M1ExternalPhase::Ice).expect("ice");
++    assert!(liquid.specific_humidity_kg_kg > ice.specific_humidity_kg_kg);
++}
++
++#[test]
++fn m1_all_inverse_and_ice_jacobian_controls() {
++    let root: Value = serde_json::from_str(CONTROLS).expect("controls parse");
++    for control in root["inverse"].as_array().expect("four inverse controls") {
++        let reservoir = M1PhaseReservoir::from_mass_enthalpy(
++            number(&control["mass_kg_m2"]),
++            number(&control["enthalpy_j_m2"]),
++        )
++        .expect("inverse control");
++        assert_eq!(
++            reservoir.phase().as_str(),
++            control["phase"].as_str().expect("phase")
++        );
++        close(
++            reservoir.temperature_k(),
++            number(&control["temperature_k"]),
++            1.0e-12,
++        );
++    }
++    let control = &root["ice_inverse_jacobian"];
++    let ice = M1PhaseReservoir::from_mass_enthalpy(number(&control["m"]), number(&control["h"]))
++        .expect("ice control");
++    assert_eq!(ice.phase(), M1Phase::Ice);
++    close(
++        ice.temperature_jacobian().d_t_d_m,
++        number(&control["expected_dt_dm"]),
++        1.0e-6,
++    );
++    close(
++        ice.temperature_jacobian().d_t_d_h,
++        number(&control["expected_dt_dh"]),
++        1.0e-12,
++    );
++}
++
++#[test]
++fn m1_signed_vapor_ledger_and_capacity_controls() {
++    let root: Value = serde_json::from_str(CONTROLS).expect("controls parse");
++    for control in root["constant_temperature_ice_vapor_controls"]
++        .as_array()
++        .expect("two signed vapor controls")
++    {
++        let forcing = M1ReservoirForcing::prescribed(
++            number(&control["dt_s"]),
++            0.0,
++            0.0,
++            number(&control["q_nonvapor_w_m2"]),
++            number(&control["e_kg_m2_s"]),
++            0.297,
++        );
++        let beginning = M1ReservoirState::new(number(&control["m0"]), number(&control["h0"]));
++        let ending = M1ReservoirState::new(number(&control["m1"]), number(&control["h1"]));
++        let residual = evaluate_m1_reservoir_residuals(beginning, ending, forcing, 0.0)
++            .expect("ledger residual");
++        close(
++            residual.mass_kg_m2,
++            number(&control["expected_mass_residual"]),
++            1.0e-9,
++        );
++        close(
++            residual.enthalpy_j_m2,
++            number(&control["expected_energy_residual"]),
++            1.0e-6,
++        );
++        let fusion_poison = M1ReservoirState::new(
++            number(&control["m1"]),
++            number(&control["h1"]) - number(&control["extra_fusion_debit_poison_j_m2"]),
++        );
++        assert!(
++            evaluate_m1_reservoir_residuals(beginning, fusion_poison, forcing, 0.0)
++                .expect("poison residual")
++                .enthalpy_j_m2
++                .abs()
++                > 1.0e-6
++        );
++    }
++    for control in root["capacity_controls"]
++        .as_array()
++        .expect("four capacity controls")
++    {
++        let trial = M1CapacityTrial::new(
++            number(&control["liquid_mass"]),
++            number(&control["capacity"]),
++            number(&control["d"]),
++            number(&control["dt"]),
++        );
++        let outcome = evaluate_m1_capacity_residual(trial);
++        match control["name"].as_str().expect("capacity name") {
++            "capacity_active_melting" => {
++                close(outcome.expect("active").residual_kg_m2, 0.0, 1.0e-9)
++            }
++            "capacity_tie" => assert_eq!(outcome.expect("tie").branch().as_str(), "capacity"),
++            "overcapacity_trial" => close(outcome.expect("trial").residual_kg_m2, -1.0e-8, 1.0e-12),
++            "negative_drainage" => assert!(outcome.is_err()),
++            other => panic!("unknown capacity control {other}"),
++        }
++        if control["name"].as_str() == Some("capacity_active_melting") {
++            let forcing = M1ReservoirForcing::prescribed(
++                number(&control["dt"]),
++                number(&control["i"]),
++                0.0,
++                number(&control["q"]),
++                number(&control["e"]),
++                number(&control["capacity"]),
++            );
++            let residual = evaluate_m1_reservoir_residuals(
++                M1ReservoirState::new(number(&control["m0"]), number(&control["h0"])),
++                M1ReservoirState::new(number(&control["m1"]), number(&control["h1"])),
++                forcing,
++                number(&control["d"]),
++            )
++            .expect("active prescribed residual");
++            close(residual.mass_kg_m2, number(&control["expected_rm"]), 1.0e-9);
++            close(
++                residual.enthalpy_j_m2,
++                number(&control["expected_rh"]),
++                1.0e-6,
++            );
++            close(
++                residual.capacity_kg_m2,
++                number(&control["expected_rcap"]),
++                1.0e-9,
++            );
++        }
++    }
++}
++
++#[test]
++fn m1_assembled_ice_residual_jacobian_columns() {
++    let root: Value = serde_json::from_str(CONTROLS).expect("controls parse");
++    let control = &root["assembled_reservoir_column_control"];
++    let base_m = number(&control["m"]);
++    let base_h = number(&control["h"]);
++    let beginning = M1ReservoirState::new(base_m, base_h);
++    let boundary = M1VaporBoundary {
++        wet_conductance_m_s: number(&control["gb"]),
++        wet_area_m2_m2: number(&control["plant_area"]),
++        canopy_air_temperature_k: number(&control["tcan"]),
++        canopy_air_specific_humidity_kg_kg: number(&control["qcan"]),
++        pressure_pa: number(&control["pressure"]),
++    };
++    let forcing = M1ReservoirForcing::with_vapor_boundary(
++        number(&control["dt"]),
++        number(&control["i"]),
++        0.0,
++        number(&control["q_nonvapor"]),
++        number(&control["capacity"]),
++        boundary,
++    );
++    for expected in control["columns"].as_array().expect("M/H columns") {
++        let step = number(&expected["step"]);
++        let coordinate = expected["coordinate"].as_str().expect("coordinate");
++        let plus = match coordinate {
++            "M" => M1ReservoirState::new(base_m + step, base_h),
++            "H" => M1ReservoirState::new(base_m, base_h + step),
++            other => panic!("unknown column {other}"),
++        };
++        let minus = match coordinate {
++            "M" => M1ReservoirState::new(base_m - step, base_h),
++            "H" => M1ReservoirState::new(base_m, base_h - step),
++            other => panic!("unknown column {other}"),
++        };
++        let plus_residual =
++            evaluate_m1_reservoir_residuals(beginning, plus, forcing, number(&control["d"]))
++                .expect("plus residual");
++        let minus_residual =
++            evaluate_m1_reservoir_residuals(beginning, minus, forcing, number(&control["d"]))
++                .expect("minus residual");
++        let values = expected["analytic"].as_array().expect("analytic column");
++        let relative = number(&control["relative_tolerance"]);
++        close_relative(
++            (plus_residual.mass_kg_m2 - minus_residual.mass_kg_m2) / (2.0 * step),
++            number(&values[0]),
++            relative,
++        );
++        close_relative(
++            (plus_residual.enthalpy_j_m2 - minus_residual.enthalpy_j_m2) / (2.0 * step),
++            number(&values[1]),
++            relative,
++        );
++    }
++}
++
++#[test]
++fn m1_empty_surface_guards_enumerate_all_controls() {
++    let root: Value = serde_json::from_str(CONTROLS).expect("controls parse");
++    for control in root["empty_surface_controls"]
++        .as_array()
++        .expect("six empty controls")
++    {
++        let name = control["positive_area_surface"]
++            .as_str()
++            .or_else(|| control["tested_surface"].as_str())
++            .unwrap_or("shade");
++        let surface = match name {
++            "sun" => M1DrySurface::Sun,
++            "shade" => M1DrySurface::Shade,
++            "stem" => M1DrySurface::Stem,
++            other => panic!("surface {other}"),
++        };
++        let result = validate_m1_empty_surface(M1EmptySurfaceInput {
++            surface,
++            area_m2_m2: control["area_m2_m2"]
++                .as_str()
++                .map_or(1.0, |value| value.parse().expect("area decimal")),
++            temperature_k: number(&control["temperature_k"]),
++            pressure_pa: number(&control["pressure_pa"]),
++            qcan_kg_kg: number(&control["qcan"]),
++            liquid_conducting_tissue: control["liquid_conducting_tissue"]
++                .as_bool()
++                .unwrap_or(true),
++        });
++        if let Some(code) = control["expected_error"].as_str() {
++            assert_eq!(result.expect_err("poison").code(), code);
++        } else {
++            result.expect("admitted empty case");
++        }
++    }
++    let empty = M1PhaseReservoir::empty();
++    assert!(empty.wet_temperature_k().is_none());
++    assert!(m1_qsat_internal(f64::NAN, 90_000.0).is_err());
++    assert!(m1_qsat_external(373.15, 80_000.0, M1ExternalPhase::Liquid).is_err());
++}
++
++#[test]
++fn m1_restart_roundtrips_three_positives_and_rejects_23_poisons() {
++    let root: Value = serde_json::from_str(RESTARTS).expect("restart controls parse");
++    let context = restart_context(&root);
++    for positive in root["positives"].as_array().expect("three positives") {
++        let bytes = positive["canonical_utf8"].as_str().expect("positive bytes");
++        let extension =
++            M1RestartExtension::parse_and_validate(bytes, &context).expect("positive restart");
++        assert_eq!(extension.to_canonical_utf8().expect("roundtrip"), bytes);
++        assert_eq!(
++            extension.phase().as_str(),
++            positive["expected_phase"].as_str().expect("phase")
++        );
++    }
++    for poison in root["poisons"].as_array().expect("23 poisons") {
++        let error = M1RestartExtension::parse_and_validate(
++            poison["canonical_utf8"].as_str().expect("poison bytes"),
++            &context,
++        )
++        .expect_err("poison rejects");
++        assert_eq!(
++            error.code(),
++            poison["expected_error"].as_str().expect("error")
++        );
++        assert_eq!(
++            error.stage().as_str(),
++            poison["first_rejection_stage"].as_str().expect("stage")
++        );
++    }
++}

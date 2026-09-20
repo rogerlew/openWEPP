@@ -64,3 +64,52 @@ Citations remain binding; logical IDs resolve via binding-index.
 | Obligation ID | Statement | Applicability | Authority | Enforcement/failure | Test bindings |
 |---|---|---|---|---|---|
 | <a id="OBL-LANDSURFACEENERGY-C-004"></a> `OBL-LANDSURFACEENERGY-C-004` | a real scheduler consumer must prove that the new state and ledger affect the intended direct path before runtime closure. | All scheduler/direct-path consumers claiming runtime closure | v31:L332-L333 | [Guards/errors](water-vapor.md#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
+
+## Cold-canopy M1 prospective interface
+
+For review-pending `OPENWEPP_C3_WOODY_COLD_M1_V1`, vegetation supplies one
+authoritative `(M,H)` reservoir per occupancy, phase-selected external vapor
+operands and post-solve liquid-only release. LSE assembles the full shared-air,
+radiation, sensible, vapor, ground and soil residuals plus both reservoir
+balances; it never copies a vegetation residual. Only diagnosed liquid with
+mass, liquid enthalpy, temperature and exact occupancy/tile/support/area lineage
+may enter the existing `DirectSurfaceLiquidParcelReceipt` receiver path. Canopy
+ice never enters ground snow, surface liquid or hydrology. Any phase, owner,
+support, enthalpy, duplicate or late receiver mismatch rejects atomically.
+
+<a id="m1-diagnostic-envelope"></a>
+### M1 diagnostic implementation envelope
+
+The first detached M1 entry admits exactly two distinct occupancies in their
+configured upper-to-lower order and exactly six distinct ordered soil nodes.
+Caller-supplied ordered occupancy and soil identities bind the prepared column,
+phase records and per-occupancy supplied conditions to that topology; identities
+are not hardcoded to a fixture and may differ between OFEs. Its lower boundary
+is explicitly `V11SnowCovered` with a validated represented-snow boundary and
+optical receipt, and with the native constitutive exchange bundle absent.
+It retains the supplied snow sensible/vapor operands, the existing shared-air
+heat/vapor equations, and the existing Stage-3 ground-temperature and six
+soil-temperature identity rows. These rows preserve the already selected
+represented-snow boundary; they neither solve nor stub a new ground/litter
+process and do not introduce a second snow owner.
+
+Before residual evaluation or owner mutation, unsupported topology, identity
+ordering or lower-boundary mode rejects through the named typed
+`LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope")`,
+`LSEB-E-030` family. Structural envelope validation precedes M1 physical
+condition and numerical-domain checks; inside that envelope the declared
+`VEG-E-140`, `VEG-E-141`, `VEG-E-142` ordering remains unchanged. There is no
+fallback, inferred native bundle or reinterpretation of another model's
+boundary. Required controls bind the admitted envelope and wrong occupancy
+count/order, soil count/identity, lower-boundary mode and native-bundle-presence
+rejections, including structural refusal combined with invalid pressure.
+This restriction governs only the detached diagnostic entry and its local
+consumer; it does not change existing selectors or qualify broader M1,
+native-snow, bare/litter, all-season or production execution. It adds no new
+physical equation to `INV-LANDSURFACEENERGY-167` or
+`OBL-LANDSURFACEENERGY-C-023`.
+
+The ordered topology binding is a separate input from physical supplied-condition
+records. Missing, duplicate or unknown supplied-condition occupancy keys in an
+otherwise valid topology remain `VEG-E-140`; they are not relabeled structural
+envelope failures.

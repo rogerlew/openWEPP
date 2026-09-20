@@ -1,0 +1,431 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking typenum v1.20.0
+    Checking serde_core v1.0.228
+    Checking generic-array v0.14.7
+    Checking num-traits v0.2.19
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking serde v1.0.228
+    Checking digest v0.10.7
+    Checking thiserror v2.0.20
+    Checking zmij v1.0.21
+    Checking num-integer v0.1.46
+    Checking itoa v1.0.18
+    Checking memchr v2.8.0
+    Checking openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-sim-contract)
+    Checking cpufeatures v0.2.17
+    Checking openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-unit-boundary)
+    Checking cfg-if v1.0.4
+    Checking openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-kernel-contract)
+    Checking sha2 v0.10.9
+    Checking serde_json v1.0.150
+    Checking num-bigint v0.4.6
+    Checking base64 v0.22.1
+    Checking openwepp-biogeochemistry v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-biogeochemistry)
+    Checking approx v0.5.1
+    Checking openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-coupled-time)
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+error: long literal lacking separators
+ --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:7:17
+  |
+7 | const LF: f64 = 333700.;
+  |                 ^^^^^^^ help: consider: `333_700.`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+  = note: `-D clippy::unreadable-literal` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::unreadable_literal)]`
+
+error: long literal lacking separators
+ --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:8:17
+  |
+8 | const LV: f64 = 2501000.;
+  |                 ^^^^^^^^ help: consider: `2_501_000.`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+  --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:11:17
+   |
+11 | const E0: f64 = 611.213476;
+   |                 ^^^^^^^^^^ help: consider: `611.213_476`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: 5 bindings with single-character names in scope
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:97:8
+    |
+ 97 | fn sat(t: f64, p: f64, phase: M1ExternalPhase) -> Result<M1Saturation, M1Error> {
+    |        ^       ^
+...
+113 |         let a = cp - CPV;
+    |             ^
+114 |         let l = l0 - a * (t - TF);
+    |             ^
+115 |         let e = E0 * (TF / t).powf(a / RV) * (l0 / (RV * TF) - l / (RV * t)).exp();
+    |             ^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#many_single_char_names
+    = note: `-D clippy::many-single-char-names` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::many_single_char_names)]`
+
+error: long literal lacking separators
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:101:24
+    |
+101 |         || !(80000. ..=110000.).contains(&p)
+    |                        ^^^^^^^ help: consider: `110_000.`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:111:42
+    |
+111 |             M1ExternalPhase::Ice => (CI, 2834700.),
+    |                                          ^^^^^^^^ help: consider: `2_834_700.`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: 5 bindings with single-character names in scope
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:336:9
+    |
+336 | fn evap(e: M1PhaseReservoir, c: f64, v: VM) -> Result<f64, M1Error> {
+    |         ^                    ^       ^
+...
+340 |         VM::B(b) => {
+    |               ^
+...
+354 |             let t = e
+    |                 ^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#many_single_char_names
+
+error: 6 bindings with single-character names in scope
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:372:5
+    |
+372 |     a: M1ReservoirState,
+    |     ^
+373 |     z: M1ReservoirState,
+    |     ^
+374 |     f: M1ReservoirForcing,
+    |     ^
+375 |     d: f64,
+    |     ^
+...
+396 |     let e = evap(zz, f.c, f.v)?;
+    |         ^
+397 |     let t = zz
+    |         ^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#many_single_char_names
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:25:12
+   |
+25 |     pub fn as_str(self) -> &'static str {
+   |            ^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+   = note: `-D clippy::must-use-candidate` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::must_use_candidate)]`
+help: add the attribute
+   |
+25 ~     #[must_use] 
+26 ~     pub fn as_str(self) -> &'static str {
+   |
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:65:12
+   |
+65 |     pub fn as_str(self) -> &'static str {
+   |            ^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+   |
+65 ~     #[must_use] 
+66 ~     pub fn as_str(self) -> &'static str {
+   |
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:90:12
+   |
+90 |     pub fn code(&self) -> &str {
+   |            ^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+   |
+90 ~     #[must_use] 
+91 ~     pub fn code(&self) -> &str {
+   |
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:93:12
+   |
+93 |     pub fn stage(&self) -> M1Stage {
+   |            ^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+   |
+93 ~     #[must_use] 
+94 ~     pub fn stage(&self) -> M1Stage {
+   |
+
+error: this boolean expression can be simplified
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:120:8
+    |
+120 |       if !e.is_finite()
+    |  ________^
+121 | |         || !de.is_finite()
+122 | |         || !(e > 0. && e < p)
+123 | |         || !(den > 0.)
+    | |______________________^ help: try: `!(e.is_finite() && de.is_finite() && e > 0. && e < p && (den > 0.))`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#nonminimal_bool
+    = note: `-D clippy::nonminimal-bool` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::nonminimal_bool)]`
+
+error: this boolean expression can be simplified
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:120:8
+    |
+120 |       if !e.is_finite()
+    |  ________^
+121 | |         || !de.is_finite()
+122 | |         || !(e > 0. && e < p)
+    | |_____________________________^ help: try: `!(e.is_finite() && de.is_finite() && e > 0. && e < p)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#nonminimal_bool
+
+error: unnecessary semicolon
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:127:6
+    |
+127 |     };
+    |      ^ help: remove
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_semicolon
+    = note: `-D clippy::unnecessary-semicolon` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unnecessary_semicolon)]`
+
+error: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:123:12
+    |
+123 |         || !(den > 0.)
+    |            ^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#neg_cmp_op_on_partial_ord
+    = note: `-D clippy::neg-cmp-op-on-partial-ord` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::neg_cmp_op_on_partial_ord)]`
+
+error: manual `Range::contains` implementation
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:124:13
+    |
+124 |         || !(q >= 0. && q < 1.)
+    |             ^^^^^^^^^^^^^^^^^^^ help: use: `(0. ..1.).contains(&q)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#manual_range_contains
+    = note: `-D clippy::manual-range-contains` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_range_contains)]`
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:153:12
+    |
+153 |     pub fn empty() -> Self {
+    |            ^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+153 ~     #[must_use] 
+154 ~     pub fn empty() -> Self {
+    |
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:156:12
+    |
+156 |     pub fn phase(self) -> M1Phase {
+    |            ^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+156 ~     #[must_use] 
+157 ~     pub fn phase(self) -> M1Phase {
+    |
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:165:12
+    |
+165 |     pub fn wet_temperature_k(self) -> Option<f64> {
+    |            ^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+165 ~     #[must_use] 
+166 ~     pub fn wet_temperature_k(self) -> Option<f64> {
+    |
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:209:12
+    |
+209 |     pub fn new(m: f64, h: f64) -> Self {
+    |            ^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+209 ~     #[must_use] 
+210 ~     pub fn new(m: f64, h: f64) -> Self {
+    |
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:242:12
+    |
+242 |     pub fn prescribed(dt: f64, i: f64, hi: f64, q: f64, e: f64, c: f64) -> Self {
+    |            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+242 ~     #[must_use] 
+243 ~     pub fn prescribed(dt: f64, i: f64, hi: f64, q: f64, e: f64, c: f64) -> Self {
+    |
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:252:12
+    |
+252 |     pub fn with_vapor_boundary(
+    |            ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+252 ~     #[must_use] 
+253 ~     pub fn with_vapor_boundary(
+    |
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:284:12
+    |
+284 |     pub fn new(ml: f64, c: f64, d: f64, dt: f64) -> Self {
+    |            ^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+284 ~     #[must_use] 
+285 ~     pub fn new(ml: f64, c: f64, d: f64, dt: f64) -> Self {
+    |
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:294:12
+    |
+294 |     pub fn as_str(self) -> &'static str {
+    |            ^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+294 ~     #[must_use] 
+295 ~     pub fn as_str(self) -> &'static str {
+    |
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:307:12
+    |
+307 |     pub fn branch(self) -> M1CapacityBranch {
+    |            ^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+307 ~     #[must_use] 
+308 ~     pub fn branch(self) -> M1CapacityBranch {
+    |
+
+error: unnecessary semicolon
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:321:6
+    |
+321 |     };
+    |      ^ help: remove
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_semicolon
+
+error: unnecessary semicolon
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:353:14
+    |
+353 |             };
+    |              ^ help: remove
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_semicolon
+
+error: unnecessary semicolon
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:387:6
+    |
+387 |     };
+    |      ^ help: remove
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_semicolon
+
+error: this boolean expression can be simplified
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:430:8
+    |
+430 |       if !x.area_m2_m2.is_finite()
+    |  ________^
+431 | |         || x.area_m2_m2 < 0.
+432 | |         || !x.qcan_kg_kg.is_finite()
+433 | |         || !(x.qcan_kg_kg >= 0. && x.qcan_kg_kg < 1.)
+    | |_____________________________________________________^ help: try: `!(x.area_m2_m2.is_finite() && x.area_m2_m2 >= 0. && x.qcan_kg_kg.is_finite() && x.qcan_kg_kg >= 0. && x.qcan_kg_kg < 1.)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#nonminimal_bool
+
+error: this function has too many arguments (11/7)
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:471:5
+    |
+471 | /     pub fn from_external_bindings(
+472 | |         a: &str,
+473 | |         b: &str,
+474 | |         c: &str,
+...   |
+482 | |         end: f64,
+483 | |     ) -> Result<Self, M1Error> {
+    | |______________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_arguments
+    = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:555:16
+    |
+555 |             || r.support_start_s != x.start
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(r.support_start_s - x.start).abs() > error_margin`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+    = note: `-D clippy::float-cmp` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:556:16
+    |
+556 |             || r.support_end_s != x.end
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(r.support_end_s - x.end).abs() > error_margin`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:584:12
+    |
+584 |     pub fn phase(&self) -> M1Phase {
+    |            ^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+584 ~     #[must_use] 
+585 ~     pub fn phase(&self) -> M1Phase {
+    |
+
+error: could not compile `openwepp-vegetation` (lib) due to 34 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-vegetation` (lib test) due to 34 previous errors

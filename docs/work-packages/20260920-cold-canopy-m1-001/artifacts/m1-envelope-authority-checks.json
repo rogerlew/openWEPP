@@ -1,0 +1,54 @@
+{
+  "observed_utc": "2026-09-20T19:56:37.781691+00:00",
+  "scope": "Prospective non-equation M1 diagnostic envelope; documentation checks only, no detached Rust gate claim",
+  "files": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md": "ecad8d17ad3facb5bff86b8dc3e65a529df777fa370ffc6d82d2cc5c0138a78c",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "9171cdebcde9bce40098f665f71b31030069228e5bb499c689ea38b90a296c24"
+  },
+  "checks": [
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "--strict",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md: directory-v1, 22 binding exposure row(s), 106 actual definition(s); structural evidence only\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/release/check_sc_unit_compliance.py",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: SC unit compliance lint found no findings\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "tools/release/check_science_contract_admission.sh",
+        "--base-ref",
+        "80b3e3df883e01497c3667a973e0d420f2d97fd6",
+        "--worktree"
+      ],
+      "exit_code": 0,
+      "stdout": "A0_ADMITTED contracts=49 science_surfaces=0 base=80b3e3df883e01497c3667a973e0d420f2d97fd6 head=WORKTREE authority_sha256=de8dbc14b3196a7194a68a9f02dc0c33a9bb182a864873824cd45f9c0808621d\n",
+      "stderr": ""
+    }
+  ]
+}
