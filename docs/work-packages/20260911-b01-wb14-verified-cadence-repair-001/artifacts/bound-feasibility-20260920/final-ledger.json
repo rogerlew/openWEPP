@@ -1,0 +1,32 @@
+{
+  "evidence_class": "Ran: wall-clock accounting, concurrent work charged once with no wait deduction or refund",
+  "utc": "2026-09-20T02:50:30.399146+00:00",
+  "start_utc": "2026-09-20T02:32:30+00:00",
+  "carried_charged_seconds": 137301.439876,
+  "elapsed_seconds": 1080.399146,
+  "actual_cumulative_seconds": 138381.839022,
+  "publication_return_precharge_seconds": 120.0,
+  "cumulative_charged_seconds": 138501.839022,
+  "ceiling_seconds": 140479.464696,
+  "remaining_seconds": 1977.62567400001,
+  "fixed_deadline_utc": "2026-09-20T03:25:28.024820+00:00",
+  "mixed_outcome_floor": 460,
+  "uncertainty_retained": true,
+  "new_tooling_failures": {
+    "parent": 2,
+    "qa": 2,
+    "correctness": 0
+  },
+  "new_canonical_evaluator_domain_calls": 0,
+  "new_rust_builds_tests": 0,
+  "new_solver_model_reader_runs": 0,
+  "new_fd_samples": 0,
+  "grid40_baseline_runs_consumed": 1,
+  "grid40_treatment_runs_consumed": 1,
+  "grid40_execution_authority_expired": true,
+  "disposition": "COMPLETE bounded offline decision; exact real-root contradiction on declared fixed equation/domain; no finite-tolerance or binary64 infeasibility certificate",
+  "independent_correctness": "PASS",
+  "independent_qa": "PASS",
+  "broader_holds_unchanged": true,
+  "final_external_publication_receipt": "/home/roger/openwepp-experiments/b01-wb14-bound-feasibility-final-publication-20260920.json"
+}

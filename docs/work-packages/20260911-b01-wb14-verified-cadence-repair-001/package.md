@@ -6663,3 +6663,382 @@ Terminal diff reconciliation: one recorder deadline literal, twelve canonical li
 Primary commit`d5b33ec60687b8368b5992721961afbf001e08b8` is pushed on existing`main`. [Exact-commit remote verification](artifacts/grid40-20260919/continuation-primary-remote-verification.json) checks all38 changed paths against HTTPS bytes, all identical, including both raw archives and immutable independent result reviews. [Terminal checks](artifacts/grid40-20260919/continuation-terminal-checks.json) retain final source/binary/input/freeze equality,21-document ContractSet, Python/JSON syntax,26 local links and whitespace checks. Unrelated three untracked six-owner Clippy logs remain untouched.
 
 After the immutable correctness verdict, one redundant offline script invocation omitted its required output argument and stopped before reconstruction; no evidence/source byte or evaluator changed. Final mixed floor is **at least456**, uncertainty retained; the immutable substantive verdict remains unchanged. Updated [charged ledger](artifacts/grid40-20260919/continuation-final-ledger.json) at2026-09-20T01:47:51.456298+00:00: actual**137211.439876s**, charged**137301.439876/140479.464696s**, remaining**3178.024820s**, including90.000000s publication/return precharge without refunding earlier charge. The final receipt commit's exact remote verification and any greater actual terminal charge are retained at`/home/roger/openwepp-experiments/b01-wb14-grid40-continuation-final-publication-20260920.json`. The study remains COMPLETE/valid negative, execution authority expired, both arms consumed, and all broader HOLDs unchanged.
+
+### Owner-adopted post-Grid40 equation/domain attribution, 2026-09-20
+
+Owner instruction `execute /tmp/openwepp_b01_wb14_lse_bound_feasibility_authorization.md`
+adopts the bounded offline follow-on for `B01-WB14-CURRENT-CONTEXT-CAPTURE / A-001`.
+Intent: inspect exact retained T source, original physical input and measured arrays;
+map full equations/domain and identity-row transformations; perform bounded offline
+linear algebra if supported; return one next-experiment or precise authority-gap
+proposal with distinct correctness and QA review. Write only this narrative and
+private offline tools/evidence under `artifacts/bound-feasibility-20260920/`.
+No Rust edits, builds/tests, physical evaluator/domain calls, finite-difference
+sampling, nonlinear replay, acquisition, canonical amendment or runtime run.
+Grid40 remains COMPLETE/valid negative, both arms 1/1 spent and authority expired.
+Acceptance preserves every original residual, domain/step predicate and all broader
+HOLDs; linearized descent cannot establish nonlinear feasibility or acceptance.
+
+Evidence starts at repository `25e70aa8200e4648fbc66d5860feea044638e25e`, detached T
+`fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be` at
+`/home/roger/openwepp-experiments/b01-wb14-grid40-source-20260919`, and retained
+original pair files. Existing recovery, 749 source entries, five links, nineteen
+external inputs, spent claims, writable-baseline limitation and strict-Clippy FAIL
+remain preserved. Three unrelated untracked Clippy logs remain untouched.
+
+The predecessor final ledger and named external publication receipt were read;
+the latter reports no greater charge. Carry **137301.439876 / 140479.464696 s**,
+**3178.024820 s** available, mixed-outcome floor **at least456** with uncertainty.
+Conservative actual-resumption anchor **2026-09-20T02:32:30Z** (before first tool
+inspection) sets deadline **2026-09-20T03:25:28.024820Z**. Concurrent work is charged
+once with no wait deductions or refunded reserve. Reserve at least900s for review,
+preservation/publication and return; check remaining time before review dispatch.
+Stops include completed decision, indispensable unavailable evidence/independence
+following bounded recovery, integrity failure, excluded change, owner stop or ceiling.
+Selected checks: input/source hashes, source-backed row/dependency mapping, finite
+retained-array arithmetic with independent constraint/residual reconstruction,
+Python syntax, documentation links/whitespace, exact terminal scoped diff and
+remote-byte publication verification. No runtime qualification is claimed.
+
+### Equation/domain decision and retained-array evidence
+
+**Static:** exact T source and canonical LSE interface, common physical rules,
+numerical methods, accepted-solve and solve-boundary, surface-energy,
+soil-coupling, represented-snow support and identity-anchor dependencies;
+vegetation liquid interception/energy, V8 shared-air/longwave, V10 zero-PAR and
+V11 inherited-domain provisions. **Ran:** retained-file hashing, three bounded
+29-row matrix/direction calculations and static coefficient-bound arithmetic.
+No Rust or canonical evaluator/domain/model/reader call ran.
+
+The supported next locus is **physical-regime/domain authority for the cold
+represented-snow canopy**, not another scalar-damping experiment. The exact
+retained equilibrium equations have no exact root in their declared liquid-vapor
+coordinate domain, by the coupled maximum argument below. This conclusion is
+about the fixed input/equations; it is not inferred from the terminal failure,
+a constrained minimum, a negative leaf residual alone, or a linearized model.
+It neither demonstrates a root in another phase model nor diagnoses which
+physical extension would be correct. It does not by itself certify exclusion
+of every finite-tolerance numerical acceptance point.
+
+[Retained-array analysis](artifacts/bound-feasibility-20260920/retained-array-analysis.json)
+and its [finite arithmetic tool](artifacts/bound-feasibility-20260920/analyze.py)
+verify all749 manifest source hashes, the original input, treatment trace and
+sidecar, frozen binary, pair freeze, five links and nineteen external build
+inputs. No recovery was replaced. Original Grid40 raw archive, spent claims,
+byte/permission records and independent reviews remain unchanged. Source files
+remain nonwritable now; writable baseline modes and subsequent hardening remain
+a limitation, not retroactively repaired provenance.
+
+#### Actual problem, bounds and complete equation set
+
+The original input is R0, `V11SnowCovered`, uncapped Potential, transaction41,
+`ofe-1/forest`, two occupancies, six soil nodes, `[0,60000000000)`ns. Original
+coordinates remain the29 recorded warm-start values; no coordinate was installed
+or overwritten. Reference air is266.85496453757526K and q=0.0013506651734953076;
+snow is265.15K; downward atmospheric longwave is272.50372519089217W/m².
+All incoming/absorbed shortwave and PAR are zero. Both beginning canopy-liquid
+stores are0.018kg/m² tile, top rain is zero, and the upper occupancy initially
+has wet fraction0.1542922233230148. These are actual physical operands, whereas
+leaf/air temperatures near295K in the initial vector are numerical warm starts.
+The warm ground295K, surface U=439352.808J/m² tile and warm soil nodes do not
+supply heat to this represented-snow canopy solve: the snow lower boundary owns
+radiative temperature and exchange; litter/storage and tile-soil conduction are
+inactive here. No warm-start leaf sensible-energy reservoir appears in the model.
+
+The retained Stage3 boundary has **no native_snow_exchange bundle**. T therefore
+uses the prescribed signed sensible flux **-169.6149611357895W/m² tile** and
+vapor flux **-4.871670425672764e-5kg/m² tile/s** in the shared equations. Do not
+replace those with a recomputed snow exchange, an iteration14 input, or a later
+native-carrier policy. Source: `solver_covered_evaluation.rs:2358–2416` in T;
+`Stage3SnowCoveredLowerBoundary.native_snow_exchange` is optional and defaults absent.
+This finding is confined to the captured inner problem, not all live outer maps.
+
+The shade-leaf273.15K floor is the actual liquid saturation-polynomial domain,
+not an arbitrary convergence threshold. Source `solver_covered_evaluation.rs`
+lines779–807 and1773–1812 enforces sun/shade/wet273.15..350K; dry stems,
+canopy air, represented-snow ground and soil200..350K; humidity0..0.1kg/kg;
+beta0..1; finite hydraulic coordinates with their further constitutive guards.
+The polynomial authority is SC-VEGETATION-001's V1 equation5 (CLM5 Table5.2),
+imported by V8/V10/V11, and LSE INV138. There is no admitted ice-law substitution
+for an active shade leaf. Inactive sun coordinates instead solve the numerical
+anchor `T_sun=max(T_canopy,273.15)` (INV131); dry-stem inactivity would anchor
+to canopy temperature without a liquid floor. Neither inactive rule applies to
+the positive-area shade energy balance.
+
+For each occupancy offset o=0 or10, the **actual branch-aware rows** are:
+
+| Rows | Equation | Applied normalizer / units |
+|---|---|---|
+| o+0 | psi_sun−psi_stem | 1e-7mm |
+| o+1 | E_shade−q1_shade | current water-rate tolerance, kg/m² tile/s |
+| o+2,o+3 | beta_sun−1, beta_shade−1 | 1e-8, dimensionless |
+| o+4 | q1_sun+q1_shade−q2 | current water-rate tolerance |
+| o+5 | q2−sum(layer q3) | current water-rate tolerance |
+| o+6 | T_sun−max(T_canopy,273.15) | 1.0001e-6K, source's inactive-row normalization |
+| o+7,o+8 | SW+LW−H−Lv·v, shade and wet respectively | current energy tolerance, W/m² tile |
+| o+9 | SW+LW−H, dry stem | current energy tolerance, W/m² tile |
+| 20 | sum(component H)+H_snow−H_reference | current energy tolerance |
+| 21 | sum(component v)+v_snow−v_reference | current water-rate tolerance |
+| 22 | T_ground−265.15 | 1e-9K |
+| 23..28 | T_soil,k−beginning T_soil,k | 1e-9K each |
+
+The six hydraulic rows are not in the same semantic order as the six hydraulic
+coordinates. Current water normalizers include demand, q1/q2 and root-source
+magnitudes; physical energy normalizers include the current signed operands'
+absolute magnitudes. Retained `raw/applied_normalizer` reproduces every analyzed
+normalized row. No row is dropped or relabeled as physical closure merely because
+it dominates the norm. At this zero-PAR branch g_s=g0 and beta=1 are prescribed;
+root continuity and every active energy balance remain required. Negative
+failed-iterate root flows are diagnostics; the accepted-candidate constructor
+also rejects hydraulic redistribution (`solver_covered_solve.rs:2169–2181`).
+
+#### Explicit full-domain exact-root contradiction
+
+This argument fixes every original input, including the prescribed snow fluxes,
+and considers **all** finite29-coordinate states in the above closed numerical
+domain for which the canonical constitutive and natural-branch evaluation is
+defined. It does not freeze the iteration14 physical values or permit a
+Jacobian's frozen water branch to override the natural root equations. Additional
+owner/gas/hydraulic guards can only reduce this set. Use the real-valued equations
+represented by T, not a claim about exact zeros of binary64 rounding artifacts.
+
+1. Let M be the maximum temperature over **positive-area physical canopy
+   components** (shade, wet and dry stem in either occupancy), excluding
+   zero-area sun anchors. There is always positive wet area from each beginning
+   store, so M>=273.15K. Upper incoming rain is zero and its dry shade/stem also
+   remain positive. Lower routed condensation may change lower wet/dry areas;
+   the argument allows that change and excludes any resulting zero-area term.
+   Preliminary stores cannot fall below0.018kg/m² before the wet flux calculation
+   and are capped at approximately0.297kg/m², so their rates are at least3e-4kg/m²/s, far above
+   the water tolerance (1.3e-12 at that minimum). The conditional inactive-wet
+   energy anchor therefore cannot replace an active wet-energy equation.
+2. The saturation humidity is increasing throughout273.15..350K. For
+   t=T−273.15 in[0,76.85], the polynomial derivative's sole negative term can
+   be paired as `t^5*(6*c6+7*c7*t)`, which is positive for t<=77; all remaining
+   derivative terms are nonnegative with a positive constant. A positive-term
+   coefficient enclosure gives es<=42536.764Pa, leaving
+   `p−0.378*es>=71554.628Pa>0`. Thus the rational humidity is increasing and
+   its lower bound is0.004349702119687087kg/kg, above reference humidity.
+   [Static-bound arithmetic](artifacts/bound-feasibility-20260920/proof-constants.json)
+   and [tool](artifacts/bound-feasibility-20260920/proof_constants.py) retain the
+   coefficients/inequalities; these are interval coefficient bounds, not sampled
+   constitutive evaluations or a surrogate model.
+3. If T_canopy>=M, every component sensible flux into canopy air is<=0.
+   H_snow<0, while H_reference>0 because M>=273.15>T_air. Hence row20 is
+   strictly negative. Any simultaneous root therefore requires T_canopy<M.
+4. If q_canopy>=qsat(M), all positive-area shade/wet vapor fluxes are<=0.
+   The natural wet cap cannot turn a nonpositive raw evaporation law into a
+   positive flux; condensation retains its sign. Fixed v_snow<0 and the
+   reference vapor export is>0. Row21 is then strictly negative. A root
+   therefore requires q_canopy<qsat(M).
+5. At a component attaining M, sensible heat is strictly outward. A hottest
+   shade/wet component has positive vapor export and positive Lv; a hottest
+   dry stem has zero latent flux. For each layer, tau is strictly between0
+   and1 and its emissive-weighted emission is<=sigma*M^4. Both external
+   radiative boundaries are colder: sigma*273.15^4=315.6578223008047W/m² exceeds
+   Ldn=272.50372519089217 and sigma*265.15^4=280.2710641249629. The reciprocal
+   recurrence makes both incident streams at the hottest component strictly
+   below sigma*M^4, so its own net LW is strictly negative. With SW=0 its
+   physical energy row `LW−H−Lv*v` (or `LW−H` for stem) is strictly negative.
+   This contradicts a simultaneous root.
+
+Source support: T `solver_covered_evaluation.rs:1153–1189` (natural wet law),
+1387–1571 (all signed component terms and inactive-wet predicate),2358–2416
+(shared balances), and T `physics.rs:322–420` (reciprocal radiative mixing).
+Canonical support: SC-VEGETATION-001 equation5, V8 reciprocal longwave/shared
+node, V10 exact-zero-PAR, V11 imported constitutive domain; LSE INV101/102/131/138
+and represented-snow INV154. Leaf energy has **no storage term** in those
+selected equations; canopy liquid mass and release enthalpy are still accounted
+for by their separate unchanged laws. This proof omits no modeled latent or
+thermal-storage contribution and inserts no missing physics. It is not proof
+that nature has no cold-canopy state. It establishes incompatibility of this
+fixed equilibrium problem with its active liquid-vapor domain. A uniform bound
+against every configured finite residual tolerance, or an interval-certified
+binary64 infeasibility certificate, was not produced and is not claimed.
+
+#### Identity representation and feasible-direction evidence
+
+In this represented-snow branch, residuals22..28 are decoupled prescribed
+identities. Ground trial temperature is replaced by the authoritative snow
+value in longwave; turbulent exchange uses the prescribed boundary; ordinary
+ground/litter storage and tile-soil heat are inactive. Each corresponding
+column therefore affects only its own identity row. This is source-backed by
+`stage3_identity_anchor_k`, `evaluate_covered_column_observed`, and INV162 /
+OBL-C-017 in the LSE identity-anchor dependency section. The six soil anchors
+already equal their original warm starts; ground does not (295 versus265.15K).
+
+Exact algebraic elimination of these seven coordinates is possible **for this
+fixed branch**: substitute their prescribed constants, evaluate all remaining
+physics with those same authoritative operands, then reconstruct all29 original
+rows and the full coordinate vector. This changes numerical initial-vector and
+step/diagnostic semantics even though dependent physical operands are unchanged;
+a future method would need prospective authority preserving the supplied original
+warm start, guard/error ordering, branch selection, every original residual and
+the governed full-coordinate step predicates. It must not count a29.85K
+initial-coordinate replacement as an accepted small step. Inactive sun-temperature,
+sun-potential and nighttime beta identities are also algebraic on this branch,
+but their targets/dependencies and all preprocessing guards would need explicit
+retention; a general reduced formulation is neither implemented nor authorized.
+No elimination can repair the active energy contradiction above.
+
+The consumed matrix is **not** the original residual derivative. T
+`solver_covered_solve.rs:1820–1908` replaces each zero-area component row by a
+unit diagonal and a frozen-current anchor RHS, removing the canopy-temperature
+derivative and its original residual normalization. Completely inactive
+occupancy replacements are inapplicable here. The subsequent V10 Potential
+column scaling uses D=(1000mm for each potential,1 for beta/temperature,
+0.001kg/kg for humidity). Captured A=J_modified·D; captured direction is already
+in physical units, so linear checks use A·(delta/D)=rhs. Original rows6/16
+instead have derivative1/s on their sun coordinate and−1/s on canopy temperature
+when T_canopy>273.15, or zero canopy derivative when colder. Initial canopy is
+on the warm branch; bases6/14 are on the cold branch. The offline tool restores
+these rows, retains other measured FD entries, and explicitly distinguishes the
+exact identity slope1e9/K from the captured finite-difference estimate. It makes
+no complete Jacobian-correctness claim.
+
+Before calculation the diagnostic direction was fixed to **d22=−1K, all other
+coordinates zero**, with neighborhood `||D^-1 d||_infinity<=1` and merit equal
+to the infinity norm of **all29 original normalized residuals**. This preserves
+the active shade coordinate and every explicit bound. All28 other predicted
+residuals are unchanged. Independent canonical evaluation has not occurred.
+
+| Retained base | Original full norm | Measured-matrix predicted full norm | Source identity predicted full norm |
+|---|---:|---:|---:|
+| 0 | 29850000000.00002 | 28850000000.00002 | 28850000000.00002 |
+| 6 | 10502497301.076118 | 9502497304.635223 | 9502497301.076118 |
+| 14 | 10502488038.117178 | 9502488035.701517 | 9502488038.117178 |
+
+The few-unit differences in normalized prediction arise from measured FD
+identity slopes (relative few-e-9), not a change in normalization or evidence.
+This explicitly exhibits an offline feasible merit direction that scalar damping
+of the captured outward shade direction cannot follow. It does **not** reduce
+the physical energy rows, establish nonlinear descent/admission, solve the full
+root problem, justify discarding the identity rows, or prescribe a new solver.
+The accurate captured linear solve and the existence of this direction coexist
+with the equation/domain contradiction. A different globalization may lower a
+merit value without supplying a missing admissible equilibrium.
+
+#### One next decision; no successor execution
+
+Propose one bounded **canopy physical-regime/domain authority reconciliation**
+for this exact cold represented-snow input. Its governing invariants are the
+unchanged complete component/shared energy and vapor equations, phase-specific
+constitutive domains, physical-regime selection before iteration, and exact
+owner/latent/storage custody (LSE INV002/010/101/102/138/154;
+VEGETATION INV014/020/021/022/118; ADR0044). The missing discriminator is an
+authoritative rule stating whether this physical beginning state is unsupported
+by the liquid canopy model, or which separately justified cold-canopy state,
+phase/enthalpy and vapor equations apply. The equilibrium root analysis cannot
+choose that physics or authorize extrapolation below273.15K.
+
+The proposed work is a prospective authority/fixture-admission decision, confined
+to the original R0 input and scientific acceptance, **zero runtime runs** and no
+production activation. It must trace the positive canopy liquid stores, cold
+forcing and represented-snow boundary to their physical owners and state exactly
+which regime/domain invariant admits or rejects them before iteration. Any
+new phase equations would require their own canonical source/contract authority,
+independent correctness/QA, and explicitly owner-adopted implementation and test
+budget. Proposal preparation supplies none of those permissions and adds no time.
+The original-start endpoint remains the authentic iteration14 typed refusal;
+all29 residuals, bound/branch guards, governed step tests, accepted-candidate
+constructor and rollback remain required. No larger grid, bound clipping,
+changed warm start, omitted leaf energy, complementarity replacement, reduced
+solver or constraint-aware production policy is authorized. Original E008,
+reader/RQ1/A-001, scientific/conservation/restart, production and cadence HOLDs
+remain separate and unchanged.
+
+#### Tooling and review finding disposition
+
+Two new non-runtime tooling failures are retained: the first offline analysis
+asserted that canopy temperature exceeded273.15K at all three bases; it stopped
+before writing results. Source/trace inspection corrected the max-anchor branch
+handling for cold bases6/14 and the same finite calculation passed. After a
+successful provenance-bound proof-arithmetic rerun, an accidental shell token
+`.date-command-does-not-exist` returned127 without modifying any result or source.
+The mixed-outcome floor is therefore **at least458**, with historical uncertainty;
+it is not a correction-cycle ceiling. No failed attempt called a physical model
+or altered captured state, original evidence, source T, binary or canonical text.
+
+QA's proof-provenance finding was accepted: the proof tool now verifies the exact
+frozen-T hashes for `solver_covered_evaluation.rs`, `physics.rs` and
+`covered_liquid.rs`, and its output maps each bound/sign-bearing equation to
+source locations. Both scopes review that fix. QA's proposed row-table correction
+was rejected on direct source evidence and retracted by the same reviewer:
+generic historical diagnostic labels do not override the actual zero-area/
+ExactZeroPar residual branches. The branch-aware table remains unchanged.
+
+QA additionally reported two harmless read-only subcommand failures: `sha256sum`
+was initially given the source directory before manifest-based file hashing, and
+an exploratory jq filter indexed a number while inspecting linear metadata.
+Neither wrote data or called a model; corrected checks passed. Carry the final
+mixed-outcome floor **at least460**, preserving uncertainty and the historical
+subtotals above. QA verified the package's two parent-tooling dispositions and
+unchanged-result accounting in its same-reviewer follow-up.
+
+#### Independent final verdicts
+
+The previous Grid40 correctness/QA reviews remain accepted and were not reopened.
+The prior reviewer agents were unavailable in this thread's live-agent inventory;
+distinct replacements `/root/bound_correctness` (correctness) and `/root/bound_qa`
+(QA/evidence) reviewed only the new inference/evidence/proposal. Neither authored
+the analysis or selected the proposal. Their final responses are retained below;
+the QA accounting update is already incorporated in the at-least460 floor.
+
+Verbatim final correctness response, `/root/bound_correctness`:
+
+> ## Independent correctness review — equation/domain/direction inference
+>
+> **Evidence class — Static:** retained Grid40 source, relevant LSE/vegetation authority, full equation/domain map, and identity dependencies. **Ran:** hashes, Python syntax, deterministic proof replay, and independent finite arithmetic. No Rust, evaluator, solver, FD, optimization, or acquisition ran.
+>
+> ### Findings
+>
+> No blocking findings.
+>
+> - **Resolved low:** [package.md](/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:6753) now correctly names `Stage3SnowCoveredLowerBoundary.native_snow_exchange`.
+>
+> The source supports the bounded conclusion: the fixed retained equations have no real-valued exact root in their declared domain. The narrative correctly avoids claiming tolerance-certified or binary64 infeasibility.
+>
+> The complete row map and identity dependencies are consistent with source. Independent reconstruction matches the reported three `d22=-1 K` predictions, while preserving all 29 rows and leaving the physical rows unchanged.
+>
+> The repaired proof tool replayed byte-identically. Its source hashes match the 749-entry manifest and retained source digest `fae897…c4be`; the treatment trace remains `93124…a17e`. Python compilation and scoped `git diff --check` pass. My review added zero failed tooling outcomes.
+>
+> Residual risk is accurately stated: no canonical nonlinear evaluation or finite-tolerance infeasibility certificate exists, and the analysis cannot choose a cold-canopy phase law.
+>
+> **PASS / no blocker** for adopting the new post-Grid40 equation/domain decision, exact-root contradiction, identity-direction evidence, and zero-runtime authority-reconciliation proposal. This does not authorize any solver, model, tolerance, fixture, domain, or production change.
+
+Independent correctness [arithmetic source](artifacts/bound-feasibility-20260920/correctness-independent-reconstruct.py)
+and [results](artifacts/bound-feasibility-20260920/correctness-independent-reconstruction.json)
+retain the separately reconstructed predictions and inequalities. The same reviewer
+verified the source-type spelling correction and repaired proof provenance.
+
+Verbatim final QA response, `/root/bound_qa`:
+
+> **Same-reviewer QA final: PASS** for the corrected provenance, branch-aware 29-row map, scoped root-absence conclusion, and single authority-gap proposal.
+>
+> The package tail correctly records the two author tooling failures and the retracted row-table finding. My review had **two** additional harmless read-only subcommand failures (a directory passed to `sha256sum`, and an exploratory malformed `jq` filter); neither changed files or called an evaluator/model. Update the mixed-outcome floor from at least 458 to **at least 460** if review-tool failures are included in the adopted cumulative accounting.
+
+#### Bounded offline disposition
+
+**COMPLETE:** post-Grid40 equation/domain attribution, explicit full-equation
+exact-root contradiction in the stated real-valued domain, branch-aware identity
+representation assessment, finite retained-array direction evidence, and one
+physical-regime/domain authority-gap proposal. Both independent scopes PASS;
+source-provenance and source-name fixes were verified by the same reviewers.
+This completes only the authorized offline decision. Grid40 stays COMPLETE/valid
+negative with both arms consumed and expired execution authority. The broader
+A-001/reader/E008/RQ1, scientific/conservation/restart, production and cadence
+acceptance remains INCOMPLETE/HOLD. Strict Clippy remains FAIL.
+
+Terminal diff is confined to this maintained package narrative, the adopted
+instruction bytes, three private Python arithmetic/check tools, their three
+JSON evidence outputs, and check/ledger/publication receipts under
+`artifacts/bound-feasibility-20260920`. No Rust, canonical contract, fixture,
+build/dependency, public schema, production selector or numerical policy changed.
+No original evidence, source/recovery/permissions, spent claim or unrelated
+Clippy log changed. [Terminal checks](artifacts/bound-feasibility-20260920/terminal-checks.json)
+cover source entry-set/hash equality, Python/JSON syntax, documentation links and
+whitespace. Documentation/private-arithmetic checks apply; Rust/A0/A1/A3 runtime
+qualification is NOT RUN under the explicit zero-run authorization, not passed
+or waived. Prior unchanged runtime evidence is retained only for its old scope.
+
+[Charged final ledger](artifacts/bound-feasibility-20260920/final-ledger.json) at 2026-09-20T02:50:30.399146+00:00: actual cumulative **138381.839022s**, plus **120s** publication/return precharge, charged **138501.839022 / 140479.464696s**, remaining **1977.625674s**. No new time, wait deductions or refunded prior reserves; mixed-outcome floor **at least460** with uncertainty. Scoped current-branch commit/push and exact remote bytes are the remaining publication steps. The named external final receipt records any greater actual charge through return.

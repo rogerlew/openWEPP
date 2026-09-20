@@ -1,0 +1,77 @@
+{
+  "evidence_class": "Ran: finite retained-array/hash arithmetic; Static: source equation inequalities; no evaluator/domain/solver/FD/optimizer call",
+  "trace_sha256": "93124ec24c18dea0bfba15d1b09a180948dc56e7b62a3e2b76bb94eda194a17e",
+  "qsat_monotonic_derivative_group_lower": 3.3463939904049997e-10,
+  "es_positive_term_upper_pa": 42536.76370435258,
+  "es_denominator_limit_pa": 231834.72351195174,
+  "qsat_at_273_15_kg_kg": 0.004349702119687087,
+  "air_specific_humidity_kg_kg": 0.0013506651734953076,
+  "sigma_tref4_w_m2": 315.6578223008046,
+  "atmospheric_downward_longwave_w_m2": 272.50372519089217,
+  "snow_temperature_K": 265.15,
+  "snow_sensible_to_canopy_w_m2": -169.6149611357895,
+  "snow_vapor_to_canopy_kg_m2_s": -4.871670425672764e-05,
+  "occupancies": [
+    {
+      "occupancy_id": "stratum-z-upper::forest",
+      "capacity_kg_m2_tile": 0.2970000000000001,
+      "preliminary_store_kg_m2_tile": 0.018,
+      "wet_fraction": 0.1542922233230148,
+      "store_rate_kg_m2_s": 0.0003,
+      "water_tolerance_kg_m2_s": 1.3e-12
+    },
+    {
+      "occupancy_id": "stratum-a-lower::forest",
+      "capacity_kg_m2_tile": 0.2970000000000001,
+      "preliminary_store_kg_m2_tile": 0.018,
+      "wet_fraction": 0.1542922233230148,
+      "store_rate_kg_m2_s": 0.0003,
+      "water_tolerance_kg_m2_s": 1.3e-12
+    }
+  ],
+  "bases": [
+    {
+      "iteration": 0,
+      "direction_coordinate": 22,
+      "direction_K": -1.0,
+      "scaled_radius": 1.0,
+      "explicit_bounds_pass": true,
+      "base_infinity_merit": 29850000000.00002,
+      "linearized_infinity_merit": 28850000000.00002,
+      "source_identity_infinity_merit": 28850000000.00002,
+      "matrix_vs_source_prediction_max_difference": 0.0,
+      "all_other_rows_unchanged": true,
+      "shade_margin_K": 22.25,
+      "captured_newton_shade_direction_K": -35.082001296680524
+    },
+    {
+      "iteration": 6,
+      "direction_coordinate": 22,
+      "direction_K": -1.0,
+      "scaled_radius": 1.0,
+      "explicit_bounds_pass": true,
+      "base_infinity_merit": 10502497301.076118,
+      "linearized_infinity_merit": 9502497304.635223,
+      "source_identity_infinity_merit": 9502497301.076118,
+      "matrix_vs_source_prediction_max_difference": 3.5591049194335938,
+      "all_other_rows_unchanged": true,
+      "shade_margin_K": 9.935398111338145e-06,
+      "captured_newton_shade_direction_K": -11.264912352652773
+    },
+    {
+      "iteration": 14,
+      "direction_coordinate": 22,
+      "direction_K": -1.0,
+      "scaled_radius": 1.0,
+      "explicit_bounds_pass": true,
+      "base_infinity_merit": 10502488038.117178,
+      "linearized_infinity_merit": 9502488035.701517,
+      "source_identity_infinity_merit": 9502488038.117178,
+      "matrix_vs_source_prediction_max_difference": 2.415660858154297,
+      "all_other_rows_unchanged": true,
+      "shade_margin_K": 6.764366844436154e-12,
+      "captured_newton_shade_direction_K": -11.26490267669643
+    }
+  ],
+  "scope_limit": "Exact source-identity prediction and equation/domain contradiction; no tolerance-certified infeasibility and no nonlinear trial result"
+}

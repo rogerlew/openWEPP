@@ -1,0 +1,30 @@
+{
+  "evidence_class": "Ran: decimal arithmetic of static coefficient enclosures and source constants; no constitutive evaluation",
+  "trace_sha256": "93124ec24c18dea0bfba15d1b09a180948dc56e7b62a3e2b76bb94eda194a17e",
+  "source_files_sha256": {
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs": "a5f9d2006057e9e57236e1f8d72189e6607ca1bb453f8f98400bfdf7e955ca58",
+    "crates/openwepp-land-surface-energy/src/physics.rs": "24663224a9620421c60ac1337f355fdbf9d3df6ffd51c4934c29373689959435",
+    "crates/openwepp-land-surface-energy/src/covered_liquid.rs": "5101c08b413031019631e9957c975e3349b946761f579fceab83d0e06bfe38b0"
+  },
+  "source_bindings": {
+    "polynomial_and_q": "solver_covered_evaluation.rs:779-807 canopy_saturation_q",
+    "natural_wet_sign": "solver_covered_evaluation.rs:1153-1189 covered_wet_flux",
+    "component_heat_energy_and_inactive_wet": "solver_covered_evaluation.rs:1387-1571 evaluate_covered_occupancy",
+    "shared_heat_vapor": "solver_covered_evaluation.rs:2358-2416 evaluate_covered_column_observed",
+    "coordinate_domain": "solver_covered_evaluation.rs:1773-1812 covered_trial_is_valid",
+    "radiation_and_sigma": "physics.rs:21 and322-420 reciprocal_longwave_column",
+    "liquid_preparation": "covered_liquid.rs:131-175 prepare_covered_liquid"
+  },
+  "finite_work": "One coefficient interval enclosure, one derivative grouping, constant boundary inequalities; no sampling",
+  "domain": "273.15<=active liquid-vapor T<=350 K; 200<=stem/canopy/ground/soil T<=350; 0<=qcan<=0.1; natural wet branches; exact immutable inputs",
+  "constants_decimal": {
+    "derivative_group_lower": "3.34247530210E-10",
+    "saturation_pressure_upper_Pa": "42536.763704352585083669695700",
+    "saturation_denominator_lower_Pa": "71554.628807272482838372855025400",
+    "saturation_humidity_lower_kg_kg": "0.0043497021196870869183976462331937828545842715610898",
+    "floor_blackbody_emission_W_m2": "315.6578223008046990395911875",
+    "snow_blackbody_emission_W_m2": "280.2710641249628923814711875",
+    "atmospheric_longwave_gap_at_floor_W_m2": "43.1540971099125290395911875"
+  },
+  "limitation": "Supports the real-arithmetic exact-equation maximum principle; not interval-certified binary64 or tolerance-feasibility proof"
+}

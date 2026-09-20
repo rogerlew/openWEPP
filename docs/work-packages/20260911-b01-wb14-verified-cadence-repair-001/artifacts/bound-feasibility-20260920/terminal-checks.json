@@ -1,0 +1,35 @@
+{
+  "python_syntax": {
+    "proof_constants.py": "PASS",
+    "analyze.py": "PASS",
+    "correctness-independent-reconstruct.py": "PASS"
+  },
+  "json_parse": {
+    "retained-array-analysis.json": "PASS",
+    "proof-constants.json": "PASS",
+    "correctness-independent-reconstruction.json": "PASS",
+    "terminal-checks.json": "PASS",
+    "final-ledger.json": "PASS"
+  },
+  "new_links": [
+    "artifacts/bound-feasibility-20260920/retained-array-analysis.json",
+    "artifacts/bound-feasibility-20260920/analyze.py",
+    "artifacts/bound-feasibility-20260920/proof-constants.json",
+    "artifacts/bound-feasibility-20260920/proof_constants.py",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md:6753",
+    "artifacts/bound-feasibility-20260920/correctness-independent-reconstruct.py",
+    "artifacts/bound-feasibility-20260920/correctness-independent-reconstruction.json",
+    "artifacts/bound-feasibility-20260920/terminal-checks.json",
+    "artifacts/bound-feasibility-20260920/final-ledger.json"
+  ],
+  "whitespace_exit": 0,
+  "source_full_entry_set_and_hashes": 749,
+  "exact_source_tree_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+  "adopted_authorization_sha256": "9465628e04ca53f4bf1d6231c063d187637ea46d31f6d534c1ad2d2a7dd6dcbc",
+  "evidence_class": "Ran: Python AST/JSON/doc links/whitespace/exact full source inventory and hash verification; no Rust/model/evaluator",
+  "utc": "2026-09-20T02:50:48.041483+00:00",
+  "runtime_runs": 0,
+  "rust_builds_tests": 0,
+  "new_domain_evaluator_calls": 0,
+  "new_fd_samples": 0
+}
