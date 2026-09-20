@@ -1,0 +1,78 @@
+{
+  "evidence_class": "Ran: exact-commit HTTPS remote bytes compared with committed bytes",
+  "utc": "2026-09-20T02:51:22.643670+00:00",
+  "commit": "6dfd1d19f607bcf85f9b8f8a84da45f8009deb22",
+  "files": [
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/adopted-authorization.txt",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/6dfd1d19f607bcf85f9b8f8a84da45f8009deb22/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/adopted-authorization.txt",
+      "sha256": "9465628e04ca53f4bf1d6231c063d187637ea46d31f6d534c1ad2d2a7dd6dcbc",
+      "bytes": 14658,
+      "exact_bytes": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/analyze.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/6dfd1d19f607bcf85f9b8f8a84da45f8009deb22/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/analyze.py",
+      "sha256": "2a0b01bc03ca99deb5e0cd2271b4a98136dffe27fc4fe0f6bfc53561a1c3c7b7",
+      "bytes": 9081,
+      "exact_bytes": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/correctness-independent-reconstruct.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/6dfd1d19f607bcf85f9b8f8a84da45f8009deb22/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/correctness-independent-reconstruct.py",
+      "sha256": "c82cf16541266847b3cf4a047c8a8f8414c577bc5d40a2ed8195ebee0548c29d",
+      "bytes": 8642,
+      "exact_bytes": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/correctness-independent-reconstruction.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/6dfd1d19f607bcf85f9b8f8a84da45f8009deb22/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/correctness-independent-reconstruction.json",
+      "sha256": "61142fd6effc4d731f7b7f9d3ab16601b24055296d33837cbf007b0e94048a04",
+      "bytes": 3098,
+      "exact_bytes": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/final-ledger.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/6dfd1d19f607bcf85f9b8f8a84da45f8009deb22/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/final-ledger.json",
+      "sha256": "f2051e350e5da1a660980457827cf79d80abb869b7237b7935e22101cd333296",
+      "bytes": 1379,
+      "exact_bytes": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/proof-constants.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/6dfd1d19f607bcf85f9b8f8a84da45f8009deb22/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/proof-constants.json",
+      "sha256": "f19c454c2438d174efebbaaee0183f3874223674639e0b793815d6c558082d6b",
+      "bytes": 2270,
+      "exact_bytes": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/proof_constants.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/6dfd1d19f607bcf85f9b8f8a84da45f8009deb22/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/proof_constants.py",
+      "sha256": "8b03fc11ce29b9a98cb9c9e90b837bd566aa05c52cdb3810821b7a2b65708020",
+      "bytes": 5345,
+      "exact_bytes": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/retained-array-analysis.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/6dfd1d19f607bcf85f9b8f8a84da45f8009deb22/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/retained-array-analysis.json",
+      "sha256": "016fbd436328894ffa897fb2f9df0890ac64001fbf0ba6c598a255d6b31e5544",
+      "bytes": 24238,
+      "exact_bytes": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/terminal-checks.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/6dfd1d19f607bcf85f9b8f8a84da45f8009deb22/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/bound-feasibility-20260920/terminal-checks.json",
+      "sha256": "62ce9b5a2d87148cfa803a6cf00c7522ee09d833a0c274772a4c85bcb2c49006",
+      "bytes": 1610,
+      "exact_bytes": true
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/6dfd1d19f607bcf85f9b8f8a84da45f8009deb22/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "sha256": "a179135e5323f68ab57696c194d786dafce102cc2e4fa58dbeba2ee207f0bf20",
+      "bytes": 799591,
+      "exact_bytes": true
+    }
+  ],
+  "all_exact_remote_bytes": true
+}
