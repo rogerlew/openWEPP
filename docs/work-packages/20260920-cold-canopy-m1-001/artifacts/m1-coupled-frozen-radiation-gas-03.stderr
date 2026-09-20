@@ -1,0 +1,61 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused import: `std::collections::BTreeSet`
+ --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8:5
+  |
+8 | use std::collections::BTreeSet;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.68s
+────────────
+ Nextest run ID 05b58c37-107f-4ed9-b937-896d2d471a92 with nextest profile: default
+    Starting 1 test across 1 binary (181 tests skipped)
+        FAIL [   0.011s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 181 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs' (93608) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:766:9:
+    assertion `left == right` failed
+      left: ["soil-1", "soil-2", "soil-dry", "soil-frozen"]
+     right: ["soil-1", "soil-2"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.012s] 1 test run: 0 passed, 1 failed, 181 skipped
+        FAIL [   0.011s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 181 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs' (93608) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:766:9:
+    assertion `left == right` failed
+      left: ["soil-1", "soil-2", "soil-dry", "soil-frozen"]
+     right: ["soil-1", "soil-2"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

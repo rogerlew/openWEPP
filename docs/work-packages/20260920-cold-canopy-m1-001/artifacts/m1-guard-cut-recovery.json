@@ -1,0 +1,10 @@
+{
+  "observed_utc": "2026-09-20T22:24:48.463670+00:00",
+  "source_label": "m1-coupled-guard-tests-03",
+  "reconstructed_path": "/home/roger/openwepp-experiments/m1-guard-review-cut-20260920",
+  "tree_sha256": "d6ffc5ccaebd6c38def668c560264c93f86c9f78dc41603eafa0d5f28c7ed2e1",
+  "entries": 754,
+  "patch_exit": 0,
+  "exact_reconstruction": true,
+  "scope": "Frozen guard review/recovery only; not another mutable implementation"
+}

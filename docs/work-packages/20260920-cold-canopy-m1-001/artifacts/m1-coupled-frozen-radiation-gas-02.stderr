@@ -1,0 +1,46 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find value `LF` in this scope
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:594:36
+    |
+ 12 | const LV: f64 = 2_501_000.0;
+    | ---------------------------- similarly named constant `LV` defined here
+...
+594 |                     || (enthalpy + LF * mass).to_bits() == 0.0_f64.to_bits()
+    |                                    ^^
+    |
+help: a constant with a similar name exists
+    |
+594 -                     || (enthalpy + LF * mass).to_bits() == 0.0_f64.to_bits()
+594 +                     || (enthalpy + LV * mass).to_bits() == 0.0_f64.to_bits()
+    |
+
+error[E0425]: cannot find value `LF` in this scope
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:600:36
+    |
+ 12 | const LV: f64 = 2_501_000.0;
+    | ---------------------------- similarly named constant `LV` defined here
+...
+600 |                     || (enthalpy + LF * mass).to_bits() == 0.0_f64.to_bits()
+    |                                    ^^
+    |
+help: a constant with a similar name exists
+    |
+600 -                     || (enthalpy + LF * mass).to_bits() == 0.0_f64.to_bits()
+600 +                     || (enthalpy + LV * mass).to_bits() == 0.0_f64.to_bits()
+    |
+
+warning: unused import: `std::collections::BTreeSet`
+ --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8:5
+  |
+8 | use std::collections::BTreeSet;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors; 1 warning emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy` exited with code 101

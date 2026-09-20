@@ -1,0 +1,68 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused import: `std::collections::BTreeSet`
+ --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8:5
+  |
+8 | use std::collections::BTreeSet;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0382]: use of moved value: `trial`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:563:14
+    |
+549 |     let trial = trial();
+    |         ----- move occurs because `trial` has type `m1_coupled::M1CoupledColumnTrial`, which does not implement the `Copy` trait
+...
+553 |     for coordinate in 0..21 {
+    |     -----------------------
+    |     |
+    |     inside of this loop
+    |     inside of this loop
+...
+563 |             &trial
+    |              ^^^^^
+564 |                 .with_coordinate_offset(coordinate, h)
+    |                  ------------------------------------- `trial` moved due to this method call, in previous iteration of loop
+...
+578 |                     .with_coordinate_offset(coordinate, -h)
+    |                      -------------------------------------- `trial` moved due to this method call, in previous iteration of loop
+    |
+note: `m1_coupled::M1CoupledColumnTrial::with_coordinate_offset` takes ownership of the receiver `self`, which moves `trial`
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:92:13
+    |
+ 92 |         mut self,
+    |             ^^^^
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+    |
+577 |                 &trial.clone()
+    |                       ++++++++
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+    |
+563 |             &trial.clone()
+    |                   ++++++++
+
+error[E0382]: use of moved value: `trial`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:577:18
+    |
+549 |     let trial = trial();
+    |         ----- move occurs because `trial` has type `m1_coupled::M1CoupledColumnTrial`, which does not implement the `Copy` trait
+...
+553 |     for coordinate in 0..21 {
+    |     ----------------------- inside of this loop
+...
+564 |                 .with_coordinate_offset(coordinate, h)
+    |                  ------------------------------------- `trial` moved due to this method call
+...
+577 |                 &trial
+    |                  ^^^^^ value used here after move
+    |
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+    |
+563 |             &trial.clone()
+    |                   ++++++++
+
+For more information about this error, try `rustc --explain E0382`.
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors; 1 warning emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy` exited with code 101

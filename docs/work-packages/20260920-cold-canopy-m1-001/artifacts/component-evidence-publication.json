@@ -1,0 +1,7 @@
+{
+  "observed_utc": "2026-09-20T21:49:27.282808+00:00",
+  "commit": "37d798fc4860dbb538859aa68624872bc3d0e02d",
+  "verified_remote_sha": "37d798fc4860dbb538859aa68624872bc3d0e02d",
+  "scope": "Reviewed component test/review evidence, prior failed attempts and recovery patches; pending coupled implementation explicitly incomplete. No experimental Rust adopted into main.",
+  "raw_primary_articles_published": false
+}

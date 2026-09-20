@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-09-20T22:12:05.336699+00:00",
+  "resumption_anchor": "2026-09-20T16:07:00+00:00",
+  "carry_seconds": 141047.416433,
+  "ceiling_seconds": 169163.21924,
+  "charged_seconds": 162952.753132,
+  "remaining_seconds": 6210.466107999993,
+  "wait_deductions": 0,
+  "preservation_reserve_seconds": 1800,
+  "decision": "CONTINUE: frozen physical component predicates pass; complete bounded guards then original60 Newton, no new allowance"
+}

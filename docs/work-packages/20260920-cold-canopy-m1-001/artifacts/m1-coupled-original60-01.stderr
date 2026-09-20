@@ -1,0 +1,48 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.14s
+────────────
+ Nextest run ID c9aa9273-f367-4195-b5b1-d0385257e0e5 with nextest profile: default
+    Starting 1 test across 1 binary (183 tests skipped)
+        FAIL [   0.005s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 183 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure' (115846) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:122:6:
+    actual solve: LandSurfaceEnergy(NumericalAcceptedResidual)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.006s] 1 test run: 0 passed, 1 failed, 183 skipped
+        FAIL [   0.005s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 183 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure' (115846) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:122:6:
+    actual solve: LandSurfaceEnergy(NumericalAcceptedResidual)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

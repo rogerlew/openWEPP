@@ -1,0 +1,310 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused import: `std::collections::BTreeSet`
+ --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8:5
+  |
+8 | use std::collections::BTreeSet;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0609]: no field `sun` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:680:20
+    |
+680 |             actual.sun.gas_branch,
+    |                    ^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+680 |             actual.unwrap().sun.gas_branch,
+    |                    +++++++++
+
+error[E0609]: no field `shade` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:684:20
+    |
+684 |             actual.shade.gas_branch,
+    |                    ^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+684 |             actual.unwrap().shade.gas_branch,
+    |                    +++++++++
+
+error[E0609]: no field `sun` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:687:27
+    |
+687 |         assert_eq!(actual.sun.beta, decimal(&sun["beta"]));
+    |                           ^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+687 |         assert_eq!(actual.unwrap().sun.beta, decimal(&sun["beta"]));
+    |                           +++++++++
+
+error[E0609]: no field `shade` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:688:27
+    |
+688 |         assert_eq!(actual.shade.beta, decimal(&shade["beta"]));
+    |                           ^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+688 |         assert_eq!(actual.unwrap().shade.beta, decimal(&shade["beta"]));
+    |                           +++++++++
+
+error[E0609]: no field `shade` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:690:20
+    |
+690 |             actual.shade.internal_specific_humidity_kg_kg,
+    |                    ^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+690 |             actual.unwrap().shade.internal_specific_humidity_kg_kg,
+    |                    +++++++++
+
+error[E0609]: no field `shade` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:696:20
+    |
+696 |             actual.shade.dark_respiration,
+    |                    ^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+696 |             actual.unwrap().shade.dark_respiration,
+    |                    +++++++++
+
+error[E0609]: no field `shade` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:702:20
+    |
+702 |             actual.shade.net_assimilation,
+    |                    ^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+702 |             actual.unwrap().shade.net_assimilation,
+    |                    +++++++++
+
+error[E0609]: no field `shade` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:708:20
+    |
+708 |             actual.shade.gross_assimilation,
+    |                    ^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+708 |             actual.unwrap().shade.gross_assimilation,
+    |                    +++++++++
+
+error[E0609]: no field `shade` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:714:20
+    |
+714 |             actual.shade.conductance_m_s,
+    |                    ^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+714 |             actual.unwrap().shade.conductance_m_s,
+    |                    +++++++++
+
+error[E0609]: no field `shade` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:719:37
+    |
+719 |         assert_gas_reference(actual.shade.ci_pa, &shade["ci_pa"], &gas, "ci_pa");
+    |                                     ^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+719 |         assert_gas_reference(actual.unwrap().shade.ci_pa, &shade["ci_pa"], &gas, "ci_pa");
+    |                                     +++++++++
+
+error[E0609]: no field `shade` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:721:20
+    |
+721 |             actual.shade.vapor_kg_m2_tile_s,
+    |                    ^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+721 |             actual.unwrap().shade.vapor_kg_m2_tile_s,
+    |                    +++++++++
+
+error[E0609]: no field `sun` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:726:27
+    |
+726 |         assert_eq!(actual.sun.vapor_kg_m2_tile_s, 0.0);
+    |                           ^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+726 |         assert_eq!(actual.unwrap().sun.vapor_kg_m2_tile_s, 0.0);
+    |                           +++++++++
+
+error[E0609]: no field `sun` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:727:27
+    |
+727 |         assert_eq!(actual.sun.net_assimilation, 0.0);
+    |                           ^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+727 |         assert_eq!(actual.unwrap().sun.net_assimilation, 0.0);
+    |                           +++++++++
+
+error[E0609]: no field `hydraulics` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:729:20
+    |
+729 |             actual.hydraulics.stem_flux_kg_m2_tile_s,
+    |                    ^^^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+729 |             actual.unwrap().hydraulics.stem_flux_kg_m2_tile_s,
+    |                    +++++++++
+
+error[E0609]: no field `hydraulics` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:735:20
+    |
+735 |             actual.hydraulics.total_leaf_demand_kg_m2_tile_s,
+    |                    ^^^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+735 |             actual.unwrap().hydraulics.total_leaf_demand_kg_m2_tile_s,
+    |                    +++++++++
+
+error[E0609]: no field `hydraulics` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:740:27
+    |
+740 |         assert_eq!(actual.hydraulics.potentials_mm.len(), 4);
+    |                           ^^^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+740 |         assert_eq!(actual.unwrap().hydraulics.potentials_mm.len(), 4);
+    |                           +++++++++
+
+error[E0609]: no field `hydraulics` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:742:14
+    |
+742 |             .hydraulics
+    |              ^^^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+742 |             .unwrap().hydraulics
+    |              +++++++++
+
+error[E0609]: no field `hydraulics` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:750:20
+    |
+750 |             actual.hydraulics.root_layer_ids,
+    |                    ^^^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+750 |             actual.unwrap().hydraulics.root_layer_ids,
+    |                    +++++++++
+
+error[E0609]: no field `hydraulics` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:759:20
+    |
+759 |             actual.hydraulics.root_fluxes_kg_m2_tile_s.len(),
+    |                    ^^^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+759 |             actual.unwrap().hydraulics.root_fluxes_kg_m2_tile_s.len(),
+    |                    +++++++++
+
+error[E0609]: no field `hydraulics` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:763:14
+    |
+763 |             .hydraulics
+    |              ^^^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+763 |             .unwrap().hydraulics
+    |              +++++++++
+
+error[E0609]: no field `hydraulics` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:771:27
+    |
+771 |         assert_eq!(actual.hydraulics.continuity_residuals_kg_m2_tile_s.len(), 4);
+    |                           ^^^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+771 |         assert_eq!(actual.unwrap().hydraulics.continuity_residuals_kg_m2_tile_s.len(), 4);
+    |                           +++++++++
+
+error[E0609]: no field `hydraulics` on type `Result<&M1OccupancyEvaluation, solver::M1CoupledError>`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:773:14
+    |
+773 |             .hydraulics
+    |              ^^^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+773 |             .unwrap().hydraulics
+    |              +++++++++
+
+error[E0382]: use of moved value: `trial`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:559:56
+    |
+547 |     let trial = trial();
+    |         ----- move occurs because `trial` has type `m1_coupled::M1CoupledColumnTrial`, which does not implement the `Copy` trait
+...
+551 |     for coordinate in 0..21 {
+    |     -----------------------
+    |     |
+    |     inside of this loop
+    |     inside of this loop
+...
+559 |         let high = evaluate_m1_coupled_column(&input, &trial.with_coordinate_offset(coordinate, h).expect("valid coordinate offset"))
+    |                                                        ^^^^^ ------------------------------------- `trial` moved due to this method call, in previous iteration of loop
+...
+569 |                 evaluate_m1_coupled_column(&input, &trial.with_coordinate_offset(coordinate, -h).expect("valid coordinate offset"))
+    |                                                           -------------------------------------- `trial` moved due to this method call, in previous iteration of loop
+    |
+note: `m1_coupled::M1CoupledColumnTrial::with_coordinate_offset` takes ownership of the receiver `self`, which moves `trial`
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:92:13
+    |
+ 92 |         mut self,
+    |             ^^^^
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+    |
+569 |                 evaluate_m1_coupled_column(&input, &trial.clone().with_coordinate_offset(coordinate, -h).expect("valid coordinate offset"))
+    |                                                          ++++++++
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+    |
+559 |         let high = evaluate_m1_coupled_column(&input, &trial.clone().with_coordinate_offset(coordinate, h).expect("valid coordinate offset"))
+    |                                                             ++++++++
+
+error[E0382]: use of moved value: `trial`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:569:53
+    |
+547 |     let trial = trial();
+    |         ----- move occurs because `trial` has type `m1_coupled::M1CoupledColumnTrial`, which does not implement the `Copy` trait
+...
+551 |     for coordinate in 0..21 {
+    |     ----------------------- inside of this loop
+...
+559 |         let high = evaluate_m1_coupled_column(&input, &trial.with_coordinate_offset(coordinate, h).expect("valid coordinate offset"))
+    |                                                              ------------------------------------- `trial` moved due to this method call
+...
+569 |                 evaluate_m1_coupled_column(&input, &trial.with_coordinate_offset(coordinate, -h).expect("valid coordinate offset"))
+    |                                                     ^^^^^ value used here after move
+    |
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+    |
+559 |         let high = evaluate_m1_coupled_column(&input, &trial.clone().with_coordinate_offset(coordinate, h).expect("valid coordinate offset"))
+    |                                                             ++++++++
+
+Some errors have detailed explanations: E0382, E0609.
+For more information about an error, try `rustc --explain E0382`.
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 24 previous errors; 1 warning emitted
+warning: build failed, waiting for other jobs to finish...
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy` exited with code 101

@@ -1,0 +1,17 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused import: `std::collections::BTreeSet`
+ --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8:5
+  |
+8 | use std::collections::BTreeSet;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.25s
+────────────
+ Nextest run ID 8bfabbcb-4d68-4f8f-8c67-0e4bf6961eaf with nextest profile: default
+    Starting 1 test across 1 binary (181 tests skipped)
+────────────
+     Summary [   0.013s] 1 test run: 1 passed, 181 skipped

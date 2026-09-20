@@ -1,0 +1,4 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.32s

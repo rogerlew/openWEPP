@@ -1,0 +1,40 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:630:
+ ) -> f64 {
+     let drainage_limited = duration_s * drainage < capacity - reservoir.liquid_mass_kg_m2();
+     if drainage_limited {
+-        return if coordinate == base + 5 { duration_s } else { 0.0 };
++        return if coordinate == base + 5 {
++            duration_s
++        } else {
++            0.0
++        };
+     }
+     let (mass_derivative, enthalpy_derivative) = match reservoir.phase() {
+         openwepp_vegetation::cold_canopy_m1::M1Phase::Liquid => (1.0, 0.0),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:53:
+     );
+     let error = evaluate_m1_coupled_column(&wrong_model, &trial()).expect_err("model identity");
+     assert_eq!(error.code(), "VEG-E-140");
+-    let raw_invalid = radiation_input_with_conditions(&radiation, &original, conditions(), f64::NAN);
++    let raw_invalid =
++        radiation_input_with_conditions(&radiation, &original, conditions(), f64::NAN);
+     let error = evaluate_m1_coupled_column(&raw_invalid, &trial()).expect_err("raw input");
+     assert_eq!(error.code(), "VEG-E-141");
+     for support in [
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:630:
+ ) -> f64 {
+     let drainage_limited = duration_s * drainage < capacity - reservoir.liquid_mass_kg_m2();
+     if drainage_limited {
+-        return if coordinate == base + 5 { duration_s } else { 0.0 };
++        return if coordinate == base + 5 {
++            duration_s
++        } else {
++            0.0
++        };
+     }
+     let (mass_derivative, enthalpy_derivative) = match reservoir.phase() {
+         openwepp_vegetation::cold_canopy_m1::M1Phase::Liquid => (1.0, 0.0),

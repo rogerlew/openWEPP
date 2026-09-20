@@ -10,9 +10,11 @@ with both reviewers' primitive verification complete. Coupled expected-red and
 envelope tests now pass both static reviews; the reusable LSE/receiver body is
 being implemented. Gas/hydraulic controls pass four focused tests and the earlier
 LSE library cut passes172 tests (six existing ignores). Component correctness
-findings and strict Clippy HOLD remain open. The new full21 evaluator compiles
-but still needs physical corrections and frozen-vector execution. No coupled
-M1 support has run.
+findings and strict Clippy HOLD remain open. The full21 evaluator now passes frozen radiation/gas/hydraulic controls and
+all21 FD-column comparisons. Guard verification remains open. Two original60
+attempts failed on an incomplete noncanonical Newton draft; a fresh writer
+is replacing that draft with the specified normalized solve. No accepted
+coupled support, receiver cycle or timing result exists.
 The predecessor B01/A-001
 record and its unresolved obligations remain intact.
 
@@ -1354,3 +1356,148 @@ component run executes4/passes4 (174skipped). Prior include-format evidence gap
 is closed. This is not a live-tree format claim: the parent has subsequently
 changed for the coupled body. Strict Clippy remains HOLD. Reviewer is stopped
 until an affected frozen cut needs verification.
+
+
+Publication: reviewed component records, failed attempts and recovery patches are
+committed/pushed on existing main as `37d798fc4860dbb538859aa68624872bc3d0e02d`;
+`git ls-remote origin refs/heads/main` agrees. Experimental Rust remains outside
+main. `artifacts/component-evidence-publication.json` records remote verification.
+The newer evolving coupled source is not covered by that publication claim.
+
+Custody limitation reported by sole writer: its first two new coupled-core
+`nix develop /workdir/openWEPP --command cargo check -p openwepp-land-surface-energy`
+checks bypassed the recorder (first E0507 move error, then exit0). No physical
+assertions or accepted results were obtained; exact historical full-tree identity
+is not established for those two checks. Current source is now sealed in
+`m1-coupled-core-check-01` with exact patch/source/command logs. Historical
+reconstruction from issued edits is requested where recoverable, without invented
+source hashes. Subsequent checks must use the recorder. This is an evidence gap,
+not a passing validation or loss of the current implementation source.
+
+
+Cost allocation reconciliation before physical execution: the current selected
+energy Jacobian uses central probes where the selected phase/domain permits,
+so its upper bound is42 core evaluations plus one base (not the earlier21+base
+allocation). Inward one-sided and selected-join columns reduce that count; report
+actual work. Hydraulics now use the independently reviewed exact FullSupply
+triangular elimination plus all-six-residual reconstruction, without hydraulic
+finite-difference sweeps. This changes numerical work accounting, not the21+8
+physical coordinates, residuals, map ceilings or absolute cost predicates.
+No coupled timing has run and affordability is unestablished.
+
+
+Internal reassessment **CONTINUE**, 2026-09-20T21:53 UTC: two recorded local
+core tests failed with142. This was a newly added finite-row development check,
+not frozen-vector acceptance. The writer suggested positive original rain;
+root verified original top rain is exactly0. Actual code requires top-rain hI
+whenever lower incident is positive, including the upper D finite-difference
+probe. Correct lower input energy is a_lower*(upper_through*h_rain+D_upper*hl_upper),
+with its own weighted hI. No top-rain enthalpy is needed when rain=0. Fixing
+this existing conservation equation and the still-missing shared dry-area
+factors is supported next work. Neither new initial masses nor fake rain
+enthalpy may serve as a correction to the frozen original/radiation cases.
+The writer retains sole source ownership; all failed attempts remain evidence.
+
+Static: same correctness confirms inherited acceptance for the forthcoming
+M1 Newton path: Tstep<=1e-8K includes diagnosed positive-store Twet(M,H),
+qstep<=1e-12, reconstructed hydraulic-potential step<=1e-7mm, beta exactly1.
+M/H/D have no independent step thresholds beyond their declared domains and
+current absolute/scaled residual criteria. Reconstruct hydraulic potentials
+from Egas at each current/prospective candidate; failure invalidates that
+candidate. Ordinary full-trial and first-valid-halved no-update witnesses apply.
+The fixed-final zero-Jacobian shortcut requires an accepted potential seed and
+identity/amount-equal actual FullSupply authorization; supplied M1 predicates
+alone do not grant it. No new authority gap or extra coordinate threshold.
+
+
+Prospective numerical initialization, frozen before the first nonlinear run, 2026-09-20T21:59:35.213686+00:00:
+For the fixed original60 and the two frozen forcing sequences, initialize dry
+sun/shade/stem and shared-air temperatures from supplied air temperature,
+shared humidity from supplied air humidity, M/H from authoritative beginning
+phase state, D=0, ground from prescribed snow temperature and six soil
+coordinates from beginning soil temperature. All frozen air temperatures are
+inside the admitted dry-component domain. Initialization never changes physical
+M/H and introduces no plant or reservoir heat from numerical coordinates.
+Continuous supports use their actual preceding accepted M/H without resetting.
+A future general caller with inadmissible numerical seed must supply a valid
+warm coordinate interface or reject; no silent physical-input clamp is selected.
+No nonlinear result has informed this seed selection. Ordinary strict-decrease
+Newton and inherited current/prospective step acceptance apply; no alternative
+seed retry or fallback is authorized by this choice.
+
+
+Ran: `m1-coupled-core-test-03` passes one local finite-residual/Jacobian
+smoke test after the actual routing-energy correction (178 skipped). It does
+not compare frozen radiation/gas values, prove closure or solve a support.
+`m1-coupled-typed-api-check-01` compiles typed occupancy/coordinate-offset
+accessors. Root independently reconstructs that entire754-entry cut from
+immutable observer plus zero-fuzz patch; exact tree
+`082e95f184c8c9ac570992d686246b45d85c218a114c2fa4213aa13e64d5f3a3`
+matches every recorded file. See `artifacts/m1-typed-api-recovery.json`.
+The recovery directory is frozen custody evidence, not another development fork.
+Same correctness is checking bounded admission/guard gaps on that frozen cut;
+sole writer continues mechanical frozen component-test integration.
+
+
+Ran: `m1-coupled-frozen-component-03` executes/passes the mechanically copied
+all21 finite-difference-column comparison. `m1-coupled-frozen-radiation-gas-01`
+fails on its first gas-case evaluation (line690), after the frozen radiation,
+M/H-residual and Q-derivative assertions pass. The combined test remains FAIL;
+no four-row gas PASS is claimed. Root identifies the still-unconditional
+263.15K-minus1e-4 probe as outside the admitted leaf bound. The already-required
+inward/selected-phase derivative correction is assigned; no input or tolerance
+changes. Same-cut exact active-root output comparisons remain to be satisfied.
+
+
+Ran: `m1-coupled-frozen-radiation-gas-04` passes the copied combined frozen
+radiation and four gas/hydraulic rows at tree `9d0ffd238f1c1ee05545e75154e36fb46d2bd8c8b18363ab588c52dce5b0f54e`.
+The caller now retains all root rows separately from the public ordered active
+root outputs. This is component evidence, not a nonlinear support or receiver.
+Same QA checks the test adaptation, exact predicates, pins and executed counts.
+
+Static: same correctness on recovered `082e95...f3a3` retains six guard findings:
+support admission (positive sub60 ->041, zero no physical candidate); complete
+represented-boundary/optical self-validation and exact joins before physical
+predicates; finite-role140 then nonfinite/pressure141 then M/H142 precedence;
+all consumed operand bounds including external liquid temperature; hydraulic
+root-fraction and derived-finite checks; finite invalid capacity classified142.
+Final finite validation must cover every residual and published derived output.
+Its finding5 proposed copying vegetation residuals; parent challenged this
+against canonical LSE interface70–76 and prior ice/D trial interpretation.
+Reviewer formally withdrew5. LSE must retain its own M/H balances, reuse
+validated phase/saturation/capacity primitives, and guard the actual operands.
+No primitive forcing-domain weakening or internal drainage column omission.
+Sole writer owns this guard batch before the first nonlinear solve.
+
+
+Internal reassessment **CONTINUE**, 2026-09-20T22:12:05.336699+00:00: real frozen
+component progress supports the next bounded guard/Newton work. Updated charge
+ledger: `artifacts/active-ledger-physical-vectors.json`; original launch stop
+and hard ceiling remain unchanged. No wait deduction or renewed allowance.
+
+Same `/root/qa` independently passes component evidence custody and predicate
+preservation: test SHA `4f5e8013...76d4` is identical in all21-FD component03
+and radiation/gas04 receipts; each runs/passes1 test with unchanged frozen pins.
+All21 coordinates compare every residual entry, not only shape/finiteness;
+radiation binds four M/H columns and independent Q probes; gas binds all four
+rows, branches/beta, gas outputs, potentials, exact active roots/flows,
+continuity and independent hydraulic reconstruction. Mechanical Result-getter
+adaptation changes no criterion. New unused BTreeSet import must be removed;
+strict Clippy and guards/Newton/full M1 remain HOLD. Same QA is stopped until
+the next affected cut, preserving its independent acceptance role.
+
+
+Internal reassessment **REASSIGN**, 2026-09-20T22:24:20.399730+00:00.
+Original60-01 and02 each fail the actual single support test, but the draft
+solver did not implement the already-required normalized residual system,
+step/no-update acceptance or discriminating numerical diagnostics. Its raw
+infinity norm and uniform1e-8 acceptance are not canonical M1, so neither
+failure proves scientific infeasibility. The second correction merely changed
+candidate error handling and did not address that known deficiency. Parent
+stops `/root/m1_component_finish`, retaining its useful component work and
+all failed patches, and assigns fresh pinned `/root/m1_newton_finish` the one
+bounded canonical Newton/original60 task. Same correctness and QA remain the
+independent reviewers; no new allowance, scope or predicate is introduced.
+Failed draft source is `cbf9ffc6f9e6488e7c3711df19195e23e02d2c4c7f900cd2db80b6617aff52c3` in
+`artifacts/m1-coupled-original60-02-source.json` and its exact observer-relative
+patch. No source is deleted or reset.

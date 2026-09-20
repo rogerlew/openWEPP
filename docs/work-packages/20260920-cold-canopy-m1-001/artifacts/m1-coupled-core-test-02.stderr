@@ -1,0 +1,48 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.38s
+────────────
+ Nextest run ID 86d3bf80-de15-44a7-a94b-bf4613790107 with nextest profile: default
+    Starting 1 test across 1 binary (178 tests skipped)
+        FAIL [   0.005s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_coupled_core_evaluates_all_twenty_one_physical_rows
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_coupled_core_evaluates_all_twenty_one_physical_rows ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_coupled_core_evaluates_all_twenty_one_physical_rows
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 178 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_coupled_core_evaluates_all_twenty_one_physical_rows' (70196) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:70:6:
+    physical core: Vegetation(M1Error { code: "VEG-E-142", stage: Domain })
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.006s] 1 test run: 0 passed, 1 failed, 178 skipped
+        FAIL [   0.005s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_coupled_core_evaluates_all_twenty_one_physical_rows
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_coupled_core_evaluates_all_twenty_one_physical_rows ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_coupled_core_evaluates_all_twenty_one_physical_rows
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 178 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_coupled_core_evaluates_all_twenty_one_physical_rows' (70196) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:70:6:
+    physical core: Vegetation(M1Error { code: "VEG-E-142", stage: Domain })
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

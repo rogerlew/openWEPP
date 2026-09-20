@@ -1,0 +1,14 @@
+patching file Cargo.lock
+patching file crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs
+patching file crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs
+patching file crates/openwepp-land-surface-energy/Cargo.toml
+patching file crates/openwepp-land-surface-energy/src/lib.rs
+patching file crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+patching file crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs
+patching file crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs
+patching file crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
+patching file crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs
+patching file crates/openwepp-vegetation/src/cold_canopy_m1.rs
+patching file crates/openwepp-vegetation/src/energy.rs
+patching file crates/openwepp-vegetation/src/lib.rs
+patching file crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs

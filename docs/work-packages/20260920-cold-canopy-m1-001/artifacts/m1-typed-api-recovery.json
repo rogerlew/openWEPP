@@ -1,0 +1,10 @@
+{
+  "observed_utc": "2026-09-20T22:01:15.687374+00:00",
+  "source_label": "m1-coupled-typed-api-check-01",
+  "reconstructed_path": "/home/roger/openwepp-experiments/m1-typed-api-recovery-20260920",
+  "tree_sha256": "082e95f184c8c9ac570992d686246b45d85c218a114c2fa4213aa13e64d5f3a3",
+  "entries": 754,
+  "patch_exit": 0,
+  "exact_reconstruction": true,
+  "scope": "Source recovery only, not physical acceptance; never used as a mutable development fork"
+}
