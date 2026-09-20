@@ -1,0 +1,276 @@
+{
+  "evidence_class": "Ran: exact commit-addressed HTTPS bytes and remote main identity",
+  "utc": "2026-09-20T01:46:54.683993+00:00",
+  "base": "12746be377199b6c31c4cb1d847440224e0115b7",
+  "commit": "d5b33ec60687b8368b5992721961afbf001e08b8",
+  "files": [
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+      "bytes": 21239,
+      "sha256": "c6b60b52eb194341324df1fc69736030627fe4e7d45371442d32e6f4dc80ee94",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/baseline-admission.json",
+      "bytes": 1456,
+      "sha256": "d0c6956ed98ccf2a3f8064f3cf99993cf3720dc14a6a26e263d98d0a8c5016bd",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/baseline-admission.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/baseline-comparison.json",
+      "bytes": 517,
+      "sha256": "dd628e13720774031293835cc03a65cdd55cdc52f08f8b5aebd9552dce920f94",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/baseline-comparison.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/baseline-cost-reconstruction.json",
+      "bytes": 2573,
+      "sha256": "1bce8797dd0f1918c5607b0ddb7c2b1180966128f6b300af921a7d9bc059d527",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/baseline-cost-reconstruction.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-adopted-authorization.txt",
+      "bytes": 16645,
+      "sha256": "09902021580756d2bdfea264cb1f502165d3b75f5e840236a8da70d7e3a3ce5f",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-adopted-authorization.txt"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-binary-binding.json",
+      "bytes": 2563,
+      "sha256": "624048cc1d9d845fe9b520c1c177b8d5330de2ae735cfac6af6c50cd25481d08",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-binary-binding.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-binary-list.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-binary-list.stderr"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-binary-list.stdout",
+      "bytes": 116,
+      "sha256": "6d6cd822d8d800b52c2ca0a9937b5ba65add7326f21ba504244003a7555c80a7",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-binary-list.stdout"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-correctness-reconstruct.py",
+      "bytes": 22741,
+      "sha256": "382282edc32fb56b0fe5144b69845b5d128ba56b774a816459538c9d64f97612",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-correctness-reconstruct.py"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-correctness-reconstruction.json",
+      "bytes": 16332,
+      "sha256": "4455f13dfa853796b70419e1b67436999c7d5399881ffe902aab400e68bae7ec",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-correctness-reconstruction.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-correctness-result-review.md",
+      "bytes": 8850,
+      "sha256": "1400e7fbd28c2d3a3e06c01a43e6c8c6578d715c376de90dcd7fa06b1647669c",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-correctness-result-review.md"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-correctness-review.md",
+      "bytes": 6004,
+      "sha256": "d4bfc2ea9526440a2b0b6a3b2df9d34031ff65c6766b67e31cdb708abf9250a1",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-correctness-review.md"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-custody.json",
+      "bytes": 7901,
+      "sha256": "806e75045c309008c95d80a2c8f7167f84290a3b6e565eb40d3b1233ab90e0e0",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-custody.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-document-checks.json",
+      "bytes": 290,
+      "sha256": "bc244264a4a21f831c1f09853fde3796d8795e4fda0510c3633887ac30e72b32",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-document-checks.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-final-ledger.json",
+      "bytes": 1260,
+      "sha256": "e10bd9acd5c9ef1c54d73300626f5dc27b1f2eee8a8a609747d5ea2f0ec876b0",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-final-ledger.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-ledger.json",
+      "bytes": 595,
+      "sha256": "93eff7dc397138b4215203579a6976e3086f6d4b4a09ee34008cc7bf4ada8b92",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-ledger.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-pair-freeze-candidate.json",
+      "bytes": 9883,
+      "sha256": "49ffc543eeb8b3dfa7cfbd9e4e01c44db1d5401bf5af9ce8d63d5d996ff0730e",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-pair-freeze-candidate.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-pair-freeze-confirmation.json",
+      "bytes": 9061,
+      "sha256": "a53a4fba40b97bbbc760455f04b9935811f2c435253a681c5dd9511f065996bc",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-pair-freeze-confirmation.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-pair-preservation.json",
+      "bytes": 4449,
+      "sha256": "993225997c4c000195bf74f898bc450354854a1b19d09a621ec3de40e7672790",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-pair-preservation.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-pair-raw-evidence.tar.gz",
+      "bytes": 575898,
+      "sha256": "6b1b175683b1be74ddc5e74d02dc3dae1e5cc2b297505af4d87cec438bc85805",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-pair-raw-evidence.tar.gz"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-baseline-review.md",
+      "bytes": 2604,
+      "sha256": "f03d5b504982396c0a6ece184832d7b03704bb7aab34aadee5adb99d42c6b1cd",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-baseline-review.md"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-freeze-review.md",
+      "bytes": 3226,
+      "sha256": "255b0a340a6b24c73e219029eaee730b50491f92918f5dcfc10a084015cc5a1a",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-freeze-review.md"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-result-review.md",
+      "bytes": 3019,
+      "sha256": "e00b1b34f30fab6d0e10b445dd243122d0cd5ada2910f5170aea23148914e010",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-result-review.md"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-review.md",
+      "bytes": 5320,
+      "sha256": "b016cbe61b735428743f89eabebe69606f54504c317d5c6850cbbf834c7d4ed0",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-review.md"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-readonly-custody.json",
+      "bytes": 160676,
+      "sha256": "01b321d4e9245f9c59a750665e151e96252f05958b3ae87c0be1f23d6600eadf",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-readonly-custody.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recorder-process-checks.json",
+      "bytes": 1415,
+      "sha256": "9f51e29af872c238d89ad400e6029ad4143a4d1550e0b78c95c60c08a0e58473",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recorder-process-checks.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recorder-process-checks.stdout",
+      "bytes": 1415,
+      "sha256": "9f51e29af872c238d89ad400e6029ad4143a4d1550e0b78c95c60c08a0e58473",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recorder-process-checks.stdout"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recovery-custody.json",
+      "bytes": 1090,
+      "sha256": "8282d142750d4b027d0a7f5a592f7c59b42b5f9bfb728733316686d829826884",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recovery-custody.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recovery-inspection.json",
+      "bytes": 358657,
+      "sha256": "d362a04a9c7301a01e0773527134da221811f7a0c46d76fc1974f3c33708c9c2",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recovery-inspection.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-terminal-checks.json",
+      "bytes": 1003,
+      "sha256": "e1e274118696c6624f93ce5d78c594720f20c6288d4077aa2319daaef2f4271d",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-terminal-checks.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-tooling-preservation.json",
+      "bytes": 428,
+      "sha256": "19cece87fcc2afc4557273e5a007c7554ecd0d219a0257213d8eadcb52ddf3d7",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-tooling-preservation.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-tooling-raw-evidence.tar.gz",
+      "bytes": 6508,
+      "sha256": "57ba27981b2c9f0801ad23fd5484f74e6275035dc1e57f2f920d38ad303fcdc9",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-tooling-raw-evidence.tar.gz"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-treatment-admission.json",
+      "bytes": 829,
+      "sha256": "236bea41cd65111cf45ac36a688227bf322675e9f3bef42da91b69fbcd03ce60",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-treatment-admission.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation_recount.py",
+      "bytes": 9323,
+      "sha256": "b1d75ad6f4f276b02e7bab28274448298008981e0ef433d6f75d1fbc40f6db56",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation_recount.py"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/pair-freeze.json",
+      "bytes": 10581,
+      "sha256": "a13048e5df6c41e034746c2d4d52b9468ab04a1aa03a6ce796491eceeaa2f901",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/pair-freeze.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/run_pair_arm.py",
+      "bytes": 12529,
+      "sha256": "e34d9b4d20c34fc1169ef25e7911c1b6793b0920e3dba61335cf0acad56297ab",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/run_pair_arm.py"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/treatment-cost-reconstruction.json",
+      "bytes": 2650,
+      "sha256": "3b51315ebad10e87b58c14e97663d009359a73799d0d939155c4053afe5138bf",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/treatment-cost-reconstruction.json"
+    },
+    {
+      "path": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md",
+      "bytes": 771310,
+      "sha256": "19a3ce27656604830fe80a3d466f048ef46bc887520876210150411f1e7eb07a",
+      "exact_remote_bytes": true,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/d5b33ec60687b8368b5992721961afbf001e08b8/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/package.md"
+    }
+  ],
+  "file_count": 38,
+  "all_exact_remote_bytes": true
+}

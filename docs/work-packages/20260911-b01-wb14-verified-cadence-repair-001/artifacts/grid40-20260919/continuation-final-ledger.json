@@ -1,23 +1,24 @@
 {
   "evidence_class": "Ran: cumulative elapsed ledger at complete bounded disposition, concurrent work counted once without wait deductions",
-  "utc": "2026-09-20T01:45:36.437843+00:00",
+  "utc": "2026-09-20T01:47:51.456298+00:00",
   "study": "EXP-B01-LSE-GRID40-20260919",
   "start_utc": "2026-09-20T01:24:30+00:00",
   "carried_charged_seconds": 135809.983578,
-  "continuation_elapsed_seconds": 1266.437843,
-  "actual_cumulative_seconds": 137076.421421,
-  "publication_return_precharge_seconds": 180.0,
-  "cumulative_charged_seconds": 137256.421421,
+  "continuation_elapsed_seconds": 1401.456298,
+  "actual_cumulative_seconds": 137211.43987600002,
+  "publication_return_precharge_seconds": 90.0,
+  "cumulative_charged_seconds": 137301.43987600002,
   "ceiling_seconds": 140479.464696,
-  "remaining_seconds": 3223.0432750000036,
+  "remaining_seconds": 3178.0248199999915,
   "fixed_deadline_utc": "2026-09-20T02:42:19.481118+00:00",
-  "mixed_outcome_floor": 455,
+  "mixed_outcome_floor": 456,
   "uncertainty_retained": true,
   "new_outcomes": {
     "expected_synthetic_child_nonzero": 2,
     "root_mistaken_overlay_inspection": 1,
     "independent_correctness_tooling": 2,
-    "authentic_numerical_refusals": 2
+    "authentic_numerical_refusals": 2,
+    "post_freeze_offline_script_missing_argument": 1
   },
   "baseline_runs": 1,
   "treatment_runs": 1,
@@ -25,5 +26,7 @@
   "study_disposition": "COMPLETE valid fixed-policy negative experiment",
   "new_execution_authority_expired": true,
   "broader_holds_unchanged": true,
-  "publication_status": "Pending scoped current-branch publication; greater terminal charge to be retained externally"
+  "publication_status": "Primary committed/pushed and all38 exact remote file bytes verified; final receipt commit verification recorded externally",
+  "primary_commit": "d5b33ec60687b8368b5992721961afbf001e08b8",
+  "final_external_publication_receipt": "/home/roger/openwepp-experiments/b01-wb14-grid40-continuation-final-publication-20260920.json"
 }
