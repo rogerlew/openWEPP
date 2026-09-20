@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-09-20T23:23:07.371005+00:00",
+  "binary": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-6930b921f1500e71",
+  "durable_copy": "/home/roger/openwepp-experiments/m1-final-diagnostic-binary-20260920/openwepp_land_surface_energy-6930b921f1500e71",
+  "sha256": "55064d93f9718b15cac11b62c49361bafed045e5176b2027ca1d855804bbf0b5",
+  "size_bytes": 101905464,
+  "source_tree_sha256": "b465c013c549e96e486905fd5f8851b3f364e0d080b7130b8a148e9ed6c53f3a",
+  "inventory": "m1-terminal-binary-inventory-01",
+  "kind": "Debug LSE test executable; not release benchmark or production runner",
+  "remote_binary_publication": false
+}

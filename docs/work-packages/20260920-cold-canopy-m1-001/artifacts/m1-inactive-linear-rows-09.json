@@ -1,0 +1,21 @@
+{
+  "trace": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-original60-09.stderr",
+  "trace_sha256": "10b2976857ba8edec7fef95a4c2e1adeb72fb0423f70d6e38227ce2dbbcb7908",
+  "script_sha256": "19453eb1a8cff28ec4559e77bc9c813af66e1fc31b657275d646756404dc187e",
+  "checked_rows": [
+    {
+      "row": 0,
+      "raw_anchor": -6.295035462424721,
+      "linear_rhs": 6.295035462424721,
+      "convergence_residual": -6294406.021822539
+    },
+    {
+      "row": 6,
+      "raw_anchor": -6.295035462424721,
+      "linear_rhs": 6.295035462424721,
+      "convergence_residual": -6294406.021822539
+    }
+  ],
+  "result": "PASS: exact unit-scaled direct rows; convergence normalization retained",
+  "scope": "Frozen original60 inactive sun rows only; not nonlinear or physical acceptance"
+}

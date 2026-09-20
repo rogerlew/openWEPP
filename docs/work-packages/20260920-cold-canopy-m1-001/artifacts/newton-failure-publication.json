@@ -1,0 +1,7 @@
+{
+  "observed_utc": "2026-09-20T22:49:09.327570+00:00",
+  "commit": "1dfac27c83438f30cd782642f1edcc4303e0f56c",
+  "remote_ref": "refs/heads/main",
+  "remote_verified": true,
+  "scope": "Sealed normalized Newton compile/failure/trace evidence and exact recovery patches; experimental Rust not adopted"
+}

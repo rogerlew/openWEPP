@@ -1,0 +1,7 @@
+{
+  "path": "/workdir/openWEPP/deny.toml",
+  "sha256": "850ba0fbab8e6738367aeb0ed53773db7d98bd5e7918d3257fd9c88a7bf43c86",
+  "reason": "Detached source does not carry deny.toml; explicit unchanged canonical config replaces accidental cargo-deny default in attempt01",
+  "failed_attempt": "m1-terminal-deny-01",
+  "unchanged_after_attempt02": true
+}

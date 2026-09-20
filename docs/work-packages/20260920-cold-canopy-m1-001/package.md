@@ -3,20 +3,54 @@
 ## Adopted scope and current checkpoint
 
 Owner instruction `execute /tmp/openwepp_cold_canopy_m1_authorization.md`
-adopts that document's M1 scope and limits. Astra owns execution. Current stage:
-prospective M1 authority passed independent correctness and QA review. The
-vegetation primitive layer passes 298 tests, scoped formatting and strict Clippy,
-with both reviewers' primitive verification complete. Coupled expected-red and
-envelope tests now pass both static reviews; the reusable LSE/receiver body is
-being implemented. Gas/hydraulic controls pass four focused tests and the earlier
-LSE library cut passes172 tests (six existing ignores). Component correctness
-findings and strict Clippy HOLD remain open. The full21 evaluator now passes frozen radiation/gas/hydraulic controls and
-all21 FD-column comparisons. Guard verification remains open. Two original60
-attempts failed on an incomplete noncanonical Newton draft; a fresh writer
-is replacing that draft with the specified normalized solve. No accepted
-coupled support, receiver cycle or timing result exists.
-The predecessor B01/A-001
-record and its unresolved obligations remain intact.
+adopts that document's M1 scope and limits. Astra owns execution.
+
+**Terminal disposition: INCOMPLETE / IMPLEMENTATION HOLD.** Source authoring
+and validation launches are closed under the fixed allowance; the remaining
+reserve is for review, custody, publication and return. This is an implementation
+failure, not proof of scientific or numerical infeasibility. No M1 acceptance,
+performance acceptance or production qualification is claimed.
+
+The frozen experimental source has 754 entries, SHA-256
+`b465c013c549e96e486905fd5f8851b3f364e0d080b7130b8a148e9ed6c53f3a`.
+[Final source receipt](artifacts/m1-original60-09-source.json) and
+[complete base-relative recovery patch](artifacts/m1-original60-09-from-observer-cut02.patch)
+retain the exact implementation. Independent reconstruction of all 754 entries
+is recorded in [recovery evidence](artifacts/m1-final-source-recovery.json).
+The final debug diagnostic binary is retained locally with its identity in
+[the binary receipt](artifacts/m1-final-binary.json); it is not a release benchmark.
+
+| Acceptance axis | Terminal evidence and disposition |
+| --- | --- |
+| Supported model and source/contract agreement | Prospective authority and primitive layer passed both independent scopes. `OPENWEPP_C3_WOODY_COLD_M1_V1` uses one equilibrium water/enthalpy reservoir per occupancy, zero PAR with positive basal exchange and liquid-conducting tissue/roots, no plant sensible store, and the prescribed represented-snow boundary. This is a bounded synthetic cold physiology domain, not injury/species or all-season validation. Full implementation agreement remains HOLD for the review gaps below. |
+| Complete coupled cycle and actual receiver | FAIL / incomplete. Original 60-second case fails at iteration zero; no accepted support, liquid receipt, or either required 72-hour cycle. Real routing/receiver APIs remain absent. |
+| Conservation, state/restart and rejection | Component controls pass; accepted coupled water/energy reconstruction, transaction/rollback and fresh-process restart evidence are NOT RUN. Accurate reconstruction of the recorded linear solve is not physical closure evidence. |
+| Absolute cost and scaling | NOT MEASURED. No completed OFE-day denominator exists; no release 1/10/19-OFE timings, map distribution, memory/allocation result, or six-pair warm regression. Failed-run elapsed time is not a cost measurement. |
+
+**Ran:** final component regression: 467 passed, seven skipped (the separately
+failed original support plus six existing ignored tests). Final original support:
+one selected, one failed, `BacktrackingLimit` at iteration zero. Its full step
+violates the active shade-leaf bound; all 20 domain-valid halved trials increase
+the upper enthalpy residual. Corrected inactive unit rows and recorded linear
+system reconstruction pass their narrow independent checks.
+
+Full workspace correctness fails compilation on two missing routing/receiver
+import groups; no workspace tests ran. The affected feature inventory has the
+same blocking groups. Final authority integrations ran all 95 selected cases:
+56 passed and 39 failed. Strict Clippy fails with 53 library and 124 library-test
+diagnostics (overlapping populations, including new M1 findings). Formatting
+passes with documented unchanged-source reuse; dependency/license checking
+passes with the canonical config and unchanged manifests. Doctest commands
+exit successfully but contain zero tests. Detailed source-bound receipts and
+failure attribution are retained below; no failed gate is waived.
+
+Both independent reviewers retain **implementation HOLD**. Correctness accepts
+the narrow inactive-row fix but retains accepted-output Jacobian rebuilding,
+empty-store supersaturation refusal, exact accepted-cap enforcement, final
+finite/error-precedence and diagnostic gaps. QA accepts source/run custody,
+not missing cycle, restart or performance evidence. All writers are stopped;
+no further implementation is launched from this disposition. B01, E008,
+RQ1/A-001 and production obligations remain open.
 
 Canonical documents start at `cf9e6cee0282758c92675baa331a324875e2a173`,
 current branch `main`. Runtime must start from observer cut02 at
@@ -90,10 +124,11 @@ Dependency/license checks run if triggered. No inherited-lint waiver is selected
 Known prior strict-Clippy failures remain visible. Exact commands will be bound
 to the chosen implementation surface before edits. Contract documentation also
 requires schema/BEI, reference, historical-definition preservation and unit checks.
-Unrun required gates remain NOT RUN, including coupled M1 execution, full
-critical regression, continuous restart and performance measurement.
+Required gates retain their actual disposition: coupled support execution FAIL,
+full critical regression compile FAIL, continuous restart and performance NOT RUN.
 
-Current sole source writer: `/root/m1_physics` (implementer role).
+Source authoring is frozen. `/root/m1_newton_finish` is stopped; root made the
+small independently reviewed inactive-anchor correction and its focused test.
 Earlier author/implementer agents are stopped; their findings remain below.
 Assigned `/root/qa` (rust_qa_reviewer): independent source/input/ledger custody,
 then authority/evidence/inventory/restart/performance attribution. Correctness
@@ -1557,3 +1592,196 @@ adjudication; concrete diagnostic/acceptance-control defects remain assigned.
 The root proposal to change inactive-component tolerance to1e-9 was withdrawn
 before adoption: retained inactive anchors use energy_tolerance(1.0), while
 1e-9 applies to Stage3 ground/soil identity rows. No threshold is changed.
+
+
+Publication: sealed normalized-Newton attempts through trace01 and compile03,
+plus verified -05 recovery, are pushed and remotely verified at
+`1dfac27c83438f30cd782642f1edcc4303e0f56c`.
+See `artifacts/newton-failure-publication.json`. Subsequent writer fixes
+remain local until their own source is sealed; no experimental Rust is adopted.
+
+
+Static: same correctness on exact -05 cut finds concrete implementation
+blockers before any algorithmic limitation claim: H=0 currently forces forward
+FD for M as well as H, although M± stay liquid and require centered differences;
+inactive anchor rows lack their exact direct replacement; ordinary accepted
+installed steps miss top-of-iteration termination; accepted output assembly
+rebuilds the Jacobian; prospective hydraulic failure aborts rather than rejects
+the candidate. Parent accepts these as bounded compliance corrections and
+authorizes one new original60 run after compile/format, with unchanged model,
+seed, domains and thresholds. The reviewer withdrew an initial negative-D
+interpretation after comparison with the actual trace. Neither D nor H/M is
+yet established as b0 rejection cause. Same writer owns these corrections;
+source freeze is targeted by23:00UTC for gates and affected review.
+
+
+Static: same correctness final -05 verdict remains **HOLD**. In addition to
+controller/Jacobian findings above, the coupled empty-store path lacks required
+dry-surface phase-selected supersaturation refusal; accepted output lacks exact
+liquid-cap and complete finite guards; nonfinite latent-heat classification and
+backtracking/step diagnostics remain incomplete. Verified prior fixes include
+role/pressure admission before M/H, ca>=p rejection, external hI temperature
+bound, captured I/hI outputs, D probe direction, typed Jacobian indexing, and
+active/all-root separation. Existing energy-slot units and inactive tolerances
+are retained; neither requires a new schema/threshold. The reviewer requires
+corrected selected Jacobian and Jdelta+F evidence before any claim that the
+frozen seed/direction cannot decrease. A changed derivative, seed retry or
+fallback is not released. Same QA now checks sealed failed-run custody while
+correctness waits for its affected-fix cut.
+
+
+Ran: `m1-final-component-regression-01` at -06 source runs466 tests across
+vegetation/LSE libraries, allPASS,7skipped (six existing ignores plus explicitly
+excluded already-failing original60). This does not satisfy that required
+positive support or full critical regression. Same correctness verifies H0
+M-centering, mixed-boundary probes, candidate-local hydraulic rejection and
+post-install acceptance, but finds the direct inactive row correction wrong:
+it adds shared-Tcan coupling; retained canonical controller uses diagonal-only
+with current target frozen in RHS. Root stops the writer, assumes exclusive
+source ownership for this small coordinating block removal, and adds a
+three-temperature inactive-sun row control. No physics/threshold/schema change.
+`m1-inactive-anchor-control-01` runs/passes1 test;184othersskipped. One
+neworiginal60 attempt07 follows that passing targeted guard. Other acceptance
+output/finite/cap/empty/diagnostic issues remainHOLD, not silently completed.
+
+Same QA independently verifies -05 and trace01 failed-run custody/predicates,
+39 unchangedpins,754entries, one actual failedtesteach, exactrecovery and
+remotecommit1dfac27. QA permits only implementation-direction observation,
+not scientificorperformance conclusion. Runtime briefly counted a completed
+writer against threadcapacity; one explicit wake/interruption culled that
+unused slot, allowing the same QA to resume without replacement.
+
+
+Terminal validation source is frozen after mechanical rustfmt. Direct include
+graph formatcheck01PASS. Cargo-deny01FAIL used an unintended default because
+the detached predecessor does not include deny.toml; this is preserved as
+configuration/execution failure, not a dependency verdict. Explicit unchanged
+canonical deny.toml is pinned in `m1-terminal-deny-config.json`; corrected
+`m1-terminal-deny-02` PASS. No allowlist/advisory exception changed. Critical
+full-workspace correctness is running on the frozen source; its result is
+not inferred from component success.
+
+
+Ran: full critical `m1-terminal-full-correctness-01` stops after422.035s
+at compilation with34 errors in hillslope M1 expected-red tests: missing real
+routing/receiver APIs plus unadapted typed Result accesses. No workspace test
+execution is claimed. `m1-terminal-clippy-01` fails with53 LSE diagnostics,
+including new M1 large error variants, wildcard import and accessor warnings;
+this is not all inherited debt and receives no waiver. Workspace format01PASS;
+scoped placeholder scan01PASS covers the three named M1 production files only.
+
+Internal reassessment CONTINUE within the remaining allowance: before23:12UTC,
+the same sole writer will mechanically adapt valid caller-test Result accesses
+and add a cfg(test)-only JSON trace of the actual normalized J, r and delta.
+No missing receiver is stubbed and no physical predicate, seed or tolerance is
+changed. One named original60 diagnostic attempt08 is allowed to collect that
+missing linear-algebra witness. Root will independently compute Jdelta+r with
+math.fsum and report normwise/componentwise backward errors; these are diagnostic
+observations, not a new physical acceptance tolerance or a fallback solver.
+The exact linear witness cannot by itself prove the complete Jacobian is
+canonical. Remaining implementation and consumer obligations stay HOLD.
+
+
+Ran: final bounded caller-test adaptation preserves its assertions while
+unwrapping known-valid typed accesses. `m1-original60-08` records the same one-test
+iteration-zero failure and a cfg(test) JSON of actual normalized J, r and delta.
+A requested JSON-key rename arrived after the run; the writer reverted only
+that rename and root verified every source entry matches the measured source
+`c48da099b3eef554195292cbcf36077a232153e0f67b2a6675fc5fd05a7787fd`.
+There was no rerun to replace an equivalent key spelling.
+
+Root's separate `artifacts/reconstruct_linear_witness.py` uses math.fsum on
+retained J_ij*delta_j products plus r_i. The maximum remainder is
+1.1469237506389618e-6 in normalized row units; normwise backward error is
+1.7888401790415146e-21 and componentwise backward error is
+3.446144336761542e-15. Full values and hashes are retained in
+`artifacts/m1-linear-reconstruction.json`. These characterize the linear solve
+only; they do not validate the Jacobian's complete authority or establish a
+nonlinear/physical impossibility. Same correctness is checking this evidence
+and the inactive-row scaling interpretation before any stronger conclusion.
+
+Ran: `m1-terminal-full-correctness-02` fails compilation after35.153s at the
+exact c48 source, now with only the two unresolved-import errors for missing
+M1 routing and actual receiver APIs. The32 mechanical caller errors are removed
+without dropping expected-red tests. No full-workspace tests execute. Required
+feature inventory is being attempted separately; no receiver is stubbed to
+make these requirements disappear.
+
+
+Same correctness verifies the final unit-row correction: exact diagonal1 and
+zero off-diagonals, LU-only RHS target-minus-current, unchanged convergence
+threshold, and minimum pivot1.0. The independent actual-witness control passes
+for both frozen inactive sun rows; -09 remains a one-test BacktrackingLimit
+failure with unchanged shade-domain and upper-enthalpy trace. The reviewer
+accepts only this bounded correction and linear backward-error evidence;
+complete Jacobian authority, nonlinear feasibility and all earlier physical/
+publication guards remain unqualified. Final source is
+`b465c013c549e96e486905fd5f8851b3f364e0d080b7130b8a148e9ed6c53f3a`,
+754 entries, independently reconstructed from observer plus exact patch at
+`artifacts/m1-final-source-recovery.json`.
+
+QA independently binds the unchanged1447-byte original60 predicate, -09 source,
+39 pins, failure count and both linear artifact hashes. Its temporary missing-
+receipt finding used informal filenames; the same reviewer withdrew it after
+opening the actual terminal-full-correctness and feature-inventory receipts.
+It verifies the34-to2 mechanical compile-error reduction, final two missing
+receiver/routing import groups, and final format pass. This is evidence PASS,
+not implementation acceptance.
+
+Ran: final full-correctness03 fails at the same two missing API import groups;
+no workspace tests run. Feature-inventory01 also fails those imports.
+Authority-integrations01 selects95 tests across the six named required targets:
+19 run,15PASS,4FAIL,76not run after fail-fast. Three LSE assertions expect the
+old single-file layout/version31; the canonical starting revision already had
+version35, which explains that particular version mismatch. The separate
+C3 V11 full-V10 binding drift is not attributed to inherited debt without
+further evidence. All four failures remain open. Doctests01 command completes;
+its actual per-crate inventory is recorded in stdout, not inferred physics.
+
+A final component regression checks the corrected source while explicitly
+excluding the already-executed failing original60. Before launch cutoff, the
+same95 authority cases will be run once with no-fail-fast solely to complete
+case membership; the first failed attempt remains evidence, no assertion or
+acceptance criterion changes, and a later run cannot erase its failures.
+
+
+Terminal results at b465: component-regression02 runs467/passes467, with
+7skipped (six existing ignores and the separately failed original60).
+Authority-completion02 executes all95 named cases:56PASS,39FAIL,0skipped.
+Failures include outdated single-file/version assertions, missing independent
+calculator/assurance runtime inputs, V10 binding drift, and V9 runtime
+fingerprint mismatch. They are retained without acceptance or baseline waiver.
+Clippy02 fails both library (53 diagnostics) and library-test (124 diagnostics)
+builds; these counts overlap and are not177 unique defects. Doctests01 has
+zero declared examples in each of the three crates: successful command/empty
+inventory, not executed doctest coverage.
+
+Validation reuse: 26 Cargo manifests/lock files are byte-identical between
+deny02 and final b465, so its explicit-config dependency result is reused.
+Rust files changed since that format/deny cut are exactly crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs, crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs.
+Both are covered by final direct-format-check02; unchanged workspace files
+retain workspace-format01 evidence. No dependency or lint exception is added.
+
+Final debug diagnostic test executable is retained locally with inventory,
+size and SHA in `artifacts/m1-final-binary.json`; it is not a release benchmark
+or production runner and is not uploaded as a binary. Final source recovery
+reconstructs all754 entries exactly from the observer plus retained -09 patch.
+
+## Terminal preservation and publication
+
+Static + inspected recorded evidence: the same QA reviewer `/root/qa` verified
+all four final terminal receipts against the 754-entry `b465c…3f3a` tree, unchanged
+source/base/pins and no retries: authority 95/56/39; selective components 467
+passes/seven skips; empty doctests; overlapping Clippy populations 53/124.
+The reviewer explicitly retains implementation HOLD and no runtime acceptance.
+The same correctness reviewer accepts only the corrected inactive rows and
+linear reconstruction, retaining the substantive implementation findings above.
+All authoring agents and reviewers have finished; interruption was requested
+for the remaining unused reviewers. No running validation jobs remain.
+
+Charged through **2026-09-20T23:28:18.941645+00:00**: **167526.358078 s** cumulative;
+**1636.861162 s** remains below the fixed **169163.219240 s**
+ceiling. Carry is 141047.416433 s at 2026-09-20T16:07:00Z, with concurrent
+wall time counted once and no wait deductions. Launch cutoff
+2026-09-20T23:25:35.802807Z has passed; only preservation/publication/return
+continues. Hard deadline remains 2026-09-20T23:55:35.802807Z.

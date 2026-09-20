@@ -1,0 +1,1010 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:121:
+     ))
+     .expect("actual solve");
+     assert_eq!(solved.support_duration_s(), 60.);
+-    assert!(solved.occupancies().iter().all(|o| o.shade.gas_branch == "ExactZeroPar"
+-        && o.shade.net_assimilation < 0.
+-        && o.shade.vapor_kg_m2_tile_s > 0.));
++    assert!(
++        solved
++            .occupancies()
++            .iter()
++            .all(|o| o.shade.gas_branch == "ExactZeroPar"
++                && o.shade.net_assimilation < 0.
++                && o.shade.vapor_kg_m2_tile_s > 0.)
++    );
+     for operand in solved.reservoir_operands() {
+         assert_eq!(operand.beginning_mass_kg_m2, 0.018);
+         assert_eq!(operand.beginning_enthalpy_j_m2, 0.0);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:130:
+         assert!(operand.ending_mass_kg_m2.is_finite() && operand.ending_enthalpy_j_m2.is_finite());
+         assert!(operand.vapor_kg_m2_s != 0.0 && operand.non_vapor_heat_w_m2 != 0.0);
+-        assert!(operand.ending_mass_kg_m2 != operand.beginning_mass_kg_m2
+-            || operand.ending_enthalpy_j_m2 != operand.beginning_enthalpy_j_m2);
++        assert!(
++            operand.ending_mass_kg_m2 != operand.beginning_mass_kg_m2
++                || operand.ending_enthalpy_j_m2 != operand.beginning_enthalpy_j_m2
++        );
+     }
+     independently_reconstruct_reservoirs(&solved, true);
+ }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:697:
+                 .collect::<Vec<_>>()
+         };
+         assert_eq!(fd.len(), 21);
+-        let column = base.jacobian_column(coordinate).expect("valid Jacobian column");
++        let column = base
++            .jacobian_column(coordinate)
++            .expect("valid Jacobian column");
+         assert_eq!(column.len(), 21);
+         for (actual, analytic) in fd.iter().zip(column) {
+             assert!(actual.is_finite() && analytic.is_finite());
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:628:
+         let dry_area = 1.0 - wet_fraction;
+         scales[base] = (occupancy.sun.absorbed_shortwave_w_m2_tile * dry_area).abs()
+             + longwave.component_net_w_m2[index][0].abs()
+-            + (rho * 1004.64 * occupancy.gb_leaf_m_s * occupancy.sun.leaf_area_m2_m2_tile * dry_area * (trial.coordinates[base] - tcan)).abs()
++            + (rho
++                * 1004.64
++                * occupancy.gb_leaf_m_s
++                * occupancy.sun.leaf_area_m2_m2_tile
++                * dry_area
++                * (trial.coordinates[base] - tcan))
++                .abs()
+             + (column.latent_heat_j_kg * sun.vapor_kg_m2_tile_s).abs();
+         scales[base + 1] = (occupancy.shade.absorbed_shortwave_w_m2_tile * dry_area).abs()
+             + longwave.component_net_w_m2[index][1].abs()
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:635:
+-            + (rho * 1004.64 * occupancy.gb_leaf_m_s * occupancy.shade.leaf_area_m2_m2_tile * dry_area * (trial.coordinates[base + 1] - tcan)).abs()
++            + (rho
++                * 1004.64
++                * occupancy.gb_leaf_m_s
++                * occupancy.shade.leaf_area_m2_m2_tile
++                * dry_area
++                * (trial.coordinates[base + 1] - tcan))
++                .abs()
+             + (column.latent_heat_j_kg * shade.vapor_kg_m2_tile_s).abs();
+         scales[base + 2] = (occupancy.stem_absorbed_shortwave_w_m2_tile * dry_area).abs()
+             + longwave.component_net_w_m2[index][3].abs()
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:639:
+-            + (rho * 1004.64 * occupancy.gb_stem_m_s * occupancy.stem_area_m2_m2_tile * dry_area * (trial.coordinates[base + 2] - tcan)).abs();
++            + (rho
++                * 1004.64
++                * occupancy.gb_stem_m_s
++                * occupancy.stem_area_m2_m2_tile
++                * dry_area
++                * (trial.coordinates[base + 2] - tcan))
++                .abs();
+         scales[base + 3] = (incident - wet_vapor - drainage).abs() * column.interval_s;
+-        scales[base + 4] = (q_nonvapor + incident * incident_h - wet_vapor * hv - drainage * hl).abs() * column.interval_s;
++        scales[base + 4] = (q_nonvapor + incident * incident_h - wet_vapor * hv - drainage * hl)
++            .abs()
++            * column.interval_s;
+         canopy_h += wet_sensible
+             + rho
+                 * 1004.64
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:676:
+     residuals[13] = canopy_e + boundary.vapor_to_canopy_air_kg_m2_s
+         - rho * (qcan - column.air_specific_humidity_kg_kg)
+             / column.canopy_to_atmosphere_vapor_resistance_s_m;
+-    let reference_heat = rho * 1004.64 * (tcan - column.air_temperature_k) / column.canopy_to_atmosphere_heat_resistance_s_m;
+-    let reference_vapor = rho * (qcan - column.air_specific_humidity_kg_kg) / column.canopy_to_atmosphere_vapor_resistance_s_m;
++    let reference_heat = rho * 1004.64 * (tcan - column.air_temperature_k)
++        / column.canopy_to_atmosphere_heat_resistance_s_m;
++    let reference_vapor = rho * (qcan - column.air_specific_humidity_kg_kg)
++        / column.canopy_to_atmosphere_vapor_resistance_s_m;
+     scales[12] = canopy_h.abs() + boundary.sensible_to_canopy_air_w_m2.abs() + reference_heat.abs();
+-    scales[13] = canopy_e.abs().max(boundary.vapor_to_canopy_air_kg_m2_s.abs()).max(reference_vapor.abs());
++    scales[13] = canopy_e
++        .abs()
++        .max(boundary.vapor_to_canopy_air_kg_m2_s.abs())
++        .max(reference_vapor.abs());
+     residuals[14] = trial.coordinates[14] - boundary.snow_temperature_k;
+     for soil in 0..6 {
+         residuals[15 + soil] =
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:717:
+ fn fd_trial_rejection_reason(trial: &M1CoupledColumnTrial) -> Option<String> {
+     for index in [0, 1, 2, 6, 7, 8] {
+         if !(263.15..=373.15).contains(&trial.coordinates[index]) {
+-            return Some(format!("temperature[{index}]={:.17e}", trial.coordinates[index]));
++            return Some(format!(
++                "temperature[{index}]={:.17e}",
++                trial.coordinates[index]
++            ));
+         }
+     }
+     if !(258.15..=373.15).contains(&trial.coordinates[12]) {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:728:
+     }
+     for index in [5, 11] {
+         if trial.coordinates[index] < 0.0 {
+-            return Some(format!("drainage[{index}]={:.17e}", trial.coordinates[index]));
++            return Some(format!(
++                "drainage[{index}]={:.17e}",
++                trial.coordinates[index]
++            ));
+         }
+     }
+     for base in [0, 6] {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:735:
+         if let Err(error) = M1PhaseReservoir::from_mass_enthalpy(
+-            trial.coordinates[base + 3], trial.coordinates[base + 4],
++            trial.coordinates[base + 3],
++            trial.coordinates[base + 4],
+         ) {
+-            return Some(format!("reservoir[{base}] M={:.17e} H={:.17e}: {error:?}", trial.coordinates[base + 3], trial.coordinates[base + 4]));
++            return Some(format!(
++                "reservoir[{base}] M={:.17e} H={:.17e}: {error:?}",
++                trial.coordinates[base + 3],
++                trial.coordinates[base + 4]
++            ));
+         }
+     }
+     None
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:795:
+         let leaf_phase_join = matches!(column, 0 | 1 | 6 | 7)
+             && trial.coordinates[column] == TF
+             && if column % 6 == 0 {
+-                input.column.occupancies[column / 6].sun.leaf_area_m2_m2_tile > 0.0
++                input.column.occupancies[column / 6]
++                    .sun
++                    .leaf_area_m2_m2_tile
++                    > 0.0
+             } else {
+-                input.column.occupancies[column / 6].shade.leaf_area_m2_m2_tile > 0.0
++                input.column.occupancies[column / 6]
++                    .shade
++                    .leaf_area_m2_m2_tile
++                    > 0.0
+             };
+         let phase_join = match column {
+             3 | 4 => {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:858:
+                 column,
+                 base,
+             );
+-            normalized_jacobian[base + 5][column] = jacobian[base + 5][column]
+-                / m1_tolerances(input, &result)[base + 5];
++            normalized_jacobian[base + 5][column] =
++                jacobian[base + 5][column] / m1_tolerances(input, &result)[base + 5];
+         }
+     }
+     Ok((result, jacobian, normalized_jacobian))
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:985:
+     for index in 0..2 {
+         let base = index * 6;
+         let detail = &core.occupancies[index];
+-        let mass_scale = input.reservoirs[index].mass_kg_m2.abs().max(core.scales[base + 3]).max(1.0e-9);
+-        let heat_scale = input.reservoirs[index].enthalpy_j_m2.abs().max(core.scales[base + 4]).max(1.0);
++        let mass_scale = input.reservoirs[index]
++            .mass_kg_m2
++            .abs()
++            .max(core.scales[base + 3])
++            .max(1.0e-9);
++        let heat_scale = input.reservoirs[index]
++            .enthalpy_j_m2
++            .abs()
++            .max(core.scales[base + 4])
++            .max(1.0);
+         values[base + 3] = 1.0e-9_f64.min(1.0e-8 * mass_scale);
+         values[base + 4] = 1.0e-6_f64.min(1.0e-8 * heat_scale);
+         values[base + 5] = 1.0e-9_f64.min(1.0e-8 * detail.capacity.max(1.0e-9));
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:999:
+ 
+ fn normalized(core: &Core, input: &M1CoupledColumnInput) -> Vec<f64> {
+     let tolerances = m1_tolerances(input, core);
+-    core.residuals.iter().zip(tolerances).map(|(r, t)| r / t).collect()
++    core.residuals
++        .iter()
++        .zip(tolerances)
++        .map(|(r, t)| r / t)
++        .collect()
+ }
+ 
+ fn m1_failure(
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1019:
+         kind,
+         iterations,
+         normalized_residuals,
+-        ordered_residuals: core.residuals.iter().enumerate().map(|(index, raw)| NormalizedResidual {
+-            identity: format!("m1_row_{index}"), raw: *raw, scale: core.scales[index],
+-            tolerance: tolerances[index], normalized: raw / tolerances[index],
+-            unit: match index {
+-                3 | 5 | 9 | 11 => ResidualUnit::KilogramsPerSquareMeter,
+-                4 | 10 => ResidualUnit::JoulesPerSquareMeter,
+-                13 => ResidualUnit::KilogramsPerSquareMeterSecond,
+-                14..=20 => ResidualUnit::Kelvin,
+-                _ => ResidualUnit::WattsPerSquareMeter,
+-            },
+-        }).collect(),
+-        failed_solution: trial.coordinates.to_vec(), occupancy_id: None, active_bounds: Vec::new(),
+-        backtracking_count, step_norms, pivot_magnitude: pivot, matrix_norm,
++        ordered_residuals: core
++            .residuals
++            .iter()
++            .enumerate()
++            .map(|(index, raw)| NormalizedResidual {
++                identity: format!("m1_row_{index}"),
++                raw: *raw,
++                scale: core.scales[index],
++                tolerance: tolerances[index],
++                normalized: raw / tolerances[index],
++                unit: match index {
++                    3 | 5 | 9 | 11 => ResidualUnit::KilogramsPerSquareMeter,
++                    4 | 10 => ResidualUnit::JoulesPerSquareMeter,
++                    13 => ResidualUnit::KilogramsPerSquareMeterSecond,
++                    14..=20 => ResidualUnit::Kelvin,
++                    _ => ResidualUnit::WattsPerSquareMeter,
++                },
++            })
++            .collect(),
++        failed_solution: trial.coordinates.to_vec(),
++        occupancy_id: None,
++        active_bounds: Vec::new(),
++        backtracking_count,
++        step_norms,
++        pivot_magnitude: pivot,
++        matrix_norm,
+     })
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1038:
+-fn hydraulic_potentials(input: &M1CoupledColumnInput, core: &Core) -> Result<Vec<f64>, M1CoupledError> {
++fn hydraulic_potentials(
++    input: &M1CoupledColumnInput,
++    core: &Core,
++) -> Result<Vec<f64>, M1CoupledError> {
+     let mut values = Vec::with_capacity(8);
+     for index in 0..2 {
+         let occupancy = &input.column.occupancies[index];
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1042:
+         let detail = &core.occupancies[index];
+-        values.extend(solve_m1_full_supply_hydraulics(
+-            &input.column, occupancy,
+-            [detail.sun.vapor_kg_m2_tile_s, detail.shade.vapor_kg_m2_tile_s],
+-            [detail.sun.gas_branch, detail.shade.gas_branch],
+-        )?.potentials_mm);
++        values.extend(
++            solve_m1_full_supply_hydraulics(
++                &input.column,
++                occupancy,
++                [
++                    detail.sun.vapor_kg_m2_tile_s,
++                    detail.shade.vapor_kg_m2_tile_s,
++                ],
++                [detail.sun.gas_branch, detail.shade.gas_branch],
++            )?
++            .potentials_mm,
++        );
+     }
+     Ok(values)
+ }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1054:
+     input: &M1CoupledColumnInput,
+ ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+     // Structural preflight precedes all topology-indexed seed reads.
+-    if input.column.occupancies.len() != 2 || input.column.ground.soil_nodes.len() != 6
+-        || input.topology.occupancy_ids.iter().collect::<BTreeSet<_>>().len() != 2
+-        || input.topology.soil_layer_ids.iter().collect::<BTreeSet<_>>().len() != 6
++    if input.column.occupancies.len() != 2
++        || input.column.ground.soil_nodes.len() != 6
++        || input
++            .topology
++            .occupancy_ids
++            .iter()
++            .collect::<BTreeSet<_>>()
++            .len()
++            != 2
++        || input
++            .topology
++            .soil_layer_ids
++            .iter()
++            .collect::<BTreeSet<_>>()
++            .len()
++            != 6
+     {
+         return Err(LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope").into());
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1085:
+     for iteration in 0..=crate::numerics::MAX_NEWTON_ITERATIONS {
+         if iteration == crate::numerics::MAX_NEWTON_ITERATIONS {
+             let terminal = core(input, &trial)?;
+-            if normalized(&terminal, input).iter().all(|value| value.is_finite())
+-                && normalized(&terminal, input).iter().map(|value| value.abs()).fold(0.0_f64, f64::max) <= 1.0
++            if normalized(&terminal, input)
++                .iter()
++                .all(|value| value.is_finite())
++                && normalized(&terminal, input)
++                    .iter()
++                    .map(|value| value.abs())
++                    .fold(0.0_f64, f64::max)
++                    <= 1.0
+                 && last_installed_steps.as_ref().is_some_and(|steps| {
+                     steps.temperature_k.is_some_and(|value| value <= 1.0e-8)
+                         && steps.humidity_kg_kg.is_some_and(|value| value <= 1.0e-12)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1095:
+             {
+                 return evaluate_m1_coupled_column(input, &trial);
+             }
+-            return Err(m1_failure(crate::numerics::NumericalFailureKind::IterationLimit, iteration, input, &terminal, &trial, backtracking_count, StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, None, None));
++            return Err(m1_failure(
++                crate::numerics::NumericalFailureKind::IterationLimit,
++                iteration,
++                input,
++                &terminal,
++                &trial,
++                backtracking_count,
++                StepNorms {
++                    temperature_k: None,
++                    humidity_kg_kg: None,
++                    ci_pa: None,
++                    hydraulic_mm: None,
++                    beta: Some(0.0),
++                },
++                None,
++                None,
++            ));
+         }
+         let (base, raw_jacobian, jacobian) = evaluate_core_with_jacobian(input, &trial)?;
+         let residuals = normalized(&base, input);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1102:
+-        if residuals.iter().any(|x| !x.is_finite()) || raw_jacobian.iter().flatten().any(|x| !x.is_finite()) {
++        if residuals.iter().any(|x| !x.is_finite())
++            || raw_jacobian.iter().flatten().any(|x| !x.is_finite())
++        {
+             return Err(domain_error());
+         }
+         let norm = residuals.iter().map(|x| x.abs()).fold(0.0_f64, f64::max);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1106:
+         // Normalize each probe independently: use the public raw FD matrix as
+         // the physical derivative and the current threshold derivative scale.
+         let rhs: Vec<f64> = residuals.iter().map(|value| -value).collect();
+-        let (delta, pivot, matrix_norm) = crate::numerics::solve_linear(&jacobian, &rhs).map_err(|e| m1_failure(crate::numerics::NumericalFailureKind::SingularPivot, iteration, input, &base, &trial, backtracking_count, StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, Some(e.pivot), Some(e.matrix_norm)))?;
++        let (delta, pivot, matrix_norm) =
++            crate::numerics::solve_linear(&jacobian, &rhs).map_err(|e| {
++                m1_failure(
++                    crate::numerics::NumericalFailureKind::SingularPivot,
++                    iteration,
++                    input,
++                    &base,
++                    &trial,
++                    backtracking_count,
++                    StepNorms {
++                        temperature_k: None,
++                        humidity_kg_kg: None,
++                        ci_pa: None,
++                        hydraulic_mm: None,
++                        beta: Some(0.0),
++                    },
++                    Some(e.pivot),
++                    Some(e.matrix_norm),
++                )
++            })?;
+         #[cfg(test)]
+         if iteration == 0 {
+-            eprintln!("m1-newton iteration=0 current={:?} delta={delta:?}", trial.coordinates);
++            eprintln!(
++                "m1-newton iteration=0 current={:?} delta={delta:?}",
++                trial.coordinates
++            );
+         }
+         let base_hydraulics = hydraulic_potentials(input, &base)?;
+         let mut accepted = None;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1117:
+         for exponent in 0..=crate::numerics::MAX_BACKTRACKING_HALVINGS {
+             let factor = 0.5_f64.powi(exponent as i32);
+             let mut candidate = trial.clone();
+-            for (index, change) in delta.iter().enumerate() { candidate.coordinates[index] += factor * change; }
++            for (index, change) in delta.iter().enumerate() {
++                candidate.coordinates[index] += factor * change;
++            }
+             if !fd_trial_is_admissible(&candidate) {
+                 #[cfg(test)]
+-                eprintln!("m1-newton iteration={iteration} b={exponent} candidate=fd-domain reason={:?}", fd_trial_rejection_reason(&candidate));
++                eprintln!(
++                    "m1-newton iteration={iteration} b={exponent} candidate=fd-domain reason={:?}",
++                    fd_trial_rejection_reason(&candidate)
++                );
+                 continue;
+             }
+             let Ok(candidate_core) = core(input, &candidate) else {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1134:
+                 eprintln!("m1-newton iteration={iteration} b={exponent} candidate=nonfinite");
+                 continue;
+             }
+-            let candidate_norm = candidate_residuals.iter().map(|x| x.abs()).fold(0.0_f64, f64::max);
++            let candidate_norm = candidate_residuals
++                .iter()
++                .map(|x| x.abs())
++                .fold(0.0_f64, f64::max);
+             #[cfg(test)]
+-            eprintln!("m1-newton iteration={iteration} b={exponent} norm={candidate_norm:.17e} current={norm:.17e}");
++            eprintln!(
++                "m1-newton iteration={iteration} b={exponent} norm={candidate_norm:.17e} current={norm:.17e}"
++            );
+             let potentials = hydraulic_potentials(input, &candidate_core)?;
+-            let dry_temperature = [0,1,2,6,7,8,12,14,15,16,17,18,19,20].iter().map(|&i| (factor * delta[i]).abs()).fold(0.0, f64::max);
+-            let wet_temperature = candidate_core.occupancies.iter().zip(&base.occupancies)
+-                .filter_map(|(next, current)| next.wet_temperature_k.zip(current.wet_temperature_k).map(|(a, b)| (a - b).abs()))
++            let dry_temperature = [0, 1, 2, 6, 7, 8, 12, 14, 15, 16, 17, 18, 19, 20]
++                .iter()
++                .map(|&i| (factor * delta[i]).abs())
+                 .fold(0.0, f64::max);
++            let wet_temperature = candidate_core
++                .occupancies
++                .iter()
++                .zip(&base.occupancies)
++                .filter_map(|(next, current)| {
++                    next.wet_temperature_k
++                        .zip(current.wet_temperature_k)
++                        .map(|(a, b)| (a - b).abs())
++                })
++                .fold(0.0, f64::max);
+             let temperature = dry_temperature.max(wet_temperature);
+             let humidity = (factor * delta[13]).abs();
+-            let hydraulic = potentials.iter().zip(&base_hydraulics).map(|(a,b)| (a-b).abs()).fold(0.0, f64::max);
++            let hydraulic = potentials
++                .iter()
++                .zip(&base_hydraulics)
++                .map(|(a, b)| (a - b).abs())
++                .fold(0.0, f64::max);
+             let steps_pass = temperature <= 1.0e-8 && humidity <= 1.0e-12 && hydraulic <= 1.0e-7;
+             let is_first_halved_witness = exponent > 0 && !first_halved_witness_seen;
+-            if exponent > 0 && !first_halved_witness_seen { first_halved_witness_seen = true; }
++            if exponent > 0 && !first_halved_witness_seen {
++                first_halved_witness_seen = true;
++            }
+             if norm <= 1.0 && steps_pass && (exponent == 0 || is_first_halved_witness) {
+                 return evaluate_m1_coupled_column(input, &trial);
+             }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1154:
+             if candidate_norm < norm {
+-                accepted = Some((candidate, exponent, StepNorms {
+-                    temperature_k: Some(temperature), humidity_kg_kg: Some(humidity), ci_pa: None,
+-                    hydraulic_mm: Some(hydraulic), beta: Some(0.0),
+-                }));
++                accepted = Some((
++                    candidate,
++                    exponent,
++                    StepNorms {
++                        temperature_k: Some(temperature),
++                        humidity_kg_kg: Some(humidity),
++                        ci_pa: None,
++                        hydraulic_mm: Some(hydraulic),
++                        beta: Some(0.0),
++                    },
++                ));
+                 break;
+             }
+         }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1162:
+-        let Some((candidate, exponent, installed_steps)) = accepted else { return Err(m1_failure(crate::numerics::NumericalFailureKind::BacktrackingLimit, iteration, input, &base, &trial, backtracking_count, StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, Some(pivot), Some(matrix_norm))); };
++        let Some((candidate, exponent, installed_steps)) = accepted else {
++            return Err(m1_failure(
++                crate::numerics::NumericalFailureKind::BacktrackingLimit,
++                iteration,
++                input,
++                &base,
++                &trial,
++                backtracking_count,
++                StepNorms {
++                    temperature_k: None,
++                    humidity_kg_kg: None,
++                    ci_pa: None,
++                    hydraulic_mm: None,
++                    beta: Some(0.0),
++                },
++                Some(pivot),
++                Some(matrix_norm),
++            ));
++        };
+         backtracking_count += exponent;
+         last_installed_steps = Some(installed_steps);
+         trial = candidate;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:628:
+         let dry_area = 1.0 - wet_fraction;
+         scales[base] = (occupancy.sun.absorbed_shortwave_w_m2_tile * dry_area).abs()
+             + longwave.component_net_w_m2[index][0].abs()
+-            + (rho * 1004.64 * occupancy.gb_leaf_m_s * occupancy.sun.leaf_area_m2_m2_tile * dry_area * (trial.coordinates[base] - tcan)).abs()
++            + (rho
++                * 1004.64
++                * occupancy.gb_leaf_m_s
++                * occupancy.sun.leaf_area_m2_m2_tile
++                * dry_area
++                * (trial.coordinates[base] - tcan))
++                .abs()
+             + (column.latent_heat_j_kg * sun.vapor_kg_m2_tile_s).abs();
+         scales[base + 1] = (occupancy.shade.absorbed_shortwave_w_m2_tile * dry_area).abs()
+             + longwave.component_net_w_m2[index][1].abs()
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:635:
+-            + (rho * 1004.64 * occupancy.gb_leaf_m_s * occupancy.shade.leaf_area_m2_m2_tile * dry_area * (trial.coordinates[base + 1] - tcan)).abs()
++            + (rho
++                * 1004.64
++                * occupancy.gb_leaf_m_s
++                * occupancy.shade.leaf_area_m2_m2_tile
++                * dry_area
++                * (trial.coordinates[base + 1] - tcan))
++                .abs()
+             + (column.latent_heat_j_kg * shade.vapor_kg_m2_tile_s).abs();
+         scales[base + 2] = (occupancy.stem_absorbed_shortwave_w_m2_tile * dry_area).abs()
+             + longwave.component_net_w_m2[index][3].abs()
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:639:
+-            + (rho * 1004.64 * occupancy.gb_stem_m_s * occupancy.stem_area_m2_m2_tile * dry_area * (trial.coordinates[base + 2] - tcan)).abs();
++            + (rho
++                * 1004.64
++                * occupancy.gb_stem_m_s
++                * occupancy.stem_area_m2_m2_tile
++                * dry_area
++                * (trial.coordinates[base + 2] - tcan))
++                .abs();
+         scales[base + 3] = (incident - wet_vapor - drainage).abs() * column.interval_s;
+-        scales[base + 4] = (q_nonvapor + incident * incident_h - wet_vapor * hv - drainage * hl).abs() * column.interval_s;
++        scales[base + 4] = (q_nonvapor + incident * incident_h - wet_vapor * hv - drainage * hl)
++            .abs()
++            * column.interval_s;
+         canopy_h += wet_sensible
+             + rho
+                 * 1004.64
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:676:
+     residuals[13] = canopy_e + boundary.vapor_to_canopy_air_kg_m2_s
+         - rho * (qcan - column.air_specific_humidity_kg_kg)
+             / column.canopy_to_atmosphere_vapor_resistance_s_m;
+-    let reference_heat = rho * 1004.64 * (tcan - column.air_temperature_k) / column.canopy_to_atmosphere_heat_resistance_s_m;
+-    let reference_vapor = rho * (qcan - column.air_specific_humidity_kg_kg) / column.canopy_to_atmosphere_vapor_resistance_s_m;
++    let reference_heat = rho * 1004.64 * (tcan - column.air_temperature_k)
++        / column.canopy_to_atmosphere_heat_resistance_s_m;
++    let reference_vapor = rho * (qcan - column.air_specific_humidity_kg_kg)
++        / column.canopy_to_atmosphere_vapor_resistance_s_m;
+     scales[12] = canopy_h.abs() + boundary.sensible_to_canopy_air_w_m2.abs() + reference_heat.abs();
+-    scales[13] = canopy_e.abs().max(boundary.vapor_to_canopy_air_kg_m2_s.abs()).max(reference_vapor.abs());
++    scales[13] = canopy_e
++        .abs()
++        .max(boundary.vapor_to_canopy_air_kg_m2_s.abs())
++        .max(reference_vapor.abs());
+     residuals[14] = trial.coordinates[14] - boundary.snow_temperature_k;
+     for soil in 0..6 {
+         residuals[15 + soil] =
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:717:
+ fn fd_trial_rejection_reason(trial: &M1CoupledColumnTrial) -> Option<String> {
+     for index in [0, 1, 2, 6, 7, 8] {
+         if !(263.15..=373.15).contains(&trial.coordinates[index]) {
+-            return Some(format!("temperature[{index}]={:.17e}", trial.coordinates[index]));
++            return Some(format!(
++                "temperature[{index}]={:.17e}",
++                trial.coordinates[index]
++            ));
+         }
+     }
+     if !(258.15..=373.15).contains(&trial.coordinates[12]) {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:728:
+     }
+     for index in [5, 11] {
+         if trial.coordinates[index] < 0.0 {
+-            return Some(format!("drainage[{index}]={:.17e}", trial.coordinates[index]));
++            return Some(format!(
++                "drainage[{index}]={:.17e}",
++                trial.coordinates[index]
++            ));
+         }
+     }
+     for base in [0, 6] {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:735:
+         if let Err(error) = M1PhaseReservoir::from_mass_enthalpy(
+-            trial.coordinates[base + 3], trial.coordinates[base + 4],
++            trial.coordinates[base + 3],
++            trial.coordinates[base + 4],
+         ) {
+-            return Some(format!("reservoir[{base}] M={:.17e} H={:.17e}: {error:?}", trial.coordinates[base + 3], trial.coordinates[base + 4]));
++            return Some(format!(
++                "reservoir[{base}] M={:.17e} H={:.17e}: {error:?}",
++                trial.coordinates[base + 3],
++                trial.coordinates[base + 4]
++            ));
+         }
+     }
+     None
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:795:
+         let leaf_phase_join = matches!(column, 0 | 1 | 6 | 7)
+             && trial.coordinates[column] == TF
+             && if column % 6 == 0 {
+-                input.column.occupancies[column / 6].sun.leaf_area_m2_m2_tile > 0.0
++                input.column.occupancies[column / 6]
++                    .sun
++                    .leaf_area_m2_m2_tile
++                    > 0.0
+             } else {
+-                input.column.occupancies[column / 6].shade.leaf_area_m2_m2_tile > 0.0
++                input.column.occupancies[column / 6]
++                    .shade
++                    .leaf_area_m2_m2_tile
++                    > 0.0
+             };
+         let phase_join = match column {
+             3 | 4 => {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:858:
+                 column,
+                 base,
+             );
+-            normalized_jacobian[base + 5][column] = jacobian[base + 5][column]
+-                / m1_tolerances(input, &result)[base + 5];
++            normalized_jacobian[base + 5][column] =
++                jacobian[base + 5][column] / m1_tolerances(input, &result)[base + 5];
+         }
+     }
+     Ok((result, jacobian, normalized_jacobian))
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:985:
+     for index in 0..2 {
+         let base = index * 6;
+         let detail = &core.occupancies[index];
+-        let mass_scale = input.reservoirs[index].mass_kg_m2.abs().max(core.scales[base + 3]).max(1.0e-9);
+-        let heat_scale = input.reservoirs[index].enthalpy_j_m2.abs().max(core.scales[base + 4]).max(1.0);
++        let mass_scale = input.reservoirs[index]
++            .mass_kg_m2
++            .abs()
++            .max(core.scales[base + 3])
++            .max(1.0e-9);
++        let heat_scale = input.reservoirs[index]
++            .enthalpy_j_m2
++            .abs()
++            .max(core.scales[base + 4])
++            .max(1.0);
+         values[base + 3] = 1.0e-9_f64.min(1.0e-8 * mass_scale);
+         values[base + 4] = 1.0e-6_f64.min(1.0e-8 * heat_scale);
+         values[base + 5] = 1.0e-9_f64.min(1.0e-8 * detail.capacity.max(1.0e-9));
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:999:
+ 
+ fn normalized(core: &Core, input: &M1CoupledColumnInput) -> Vec<f64> {
+     let tolerances = m1_tolerances(input, core);
+-    core.residuals.iter().zip(tolerances).map(|(r, t)| r / t).collect()
++    core.residuals
++        .iter()
++        .zip(tolerances)
++        .map(|(r, t)| r / t)
++        .collect()
+ }
+ 
+ fn m1_failure(
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1019:
+         kind,
+         iterations,
+         normalized_residuals,
+-        ordered_residuals: core.residuals.iter().enumerate().map(|(index, raw)| NormalizedResidual {
+-            identity: format!("m1_row_{index}"), raw: *raw, scale: core.scales[index],
+-            tolerance: tolerances[index], normalized: raw / tolerances[index],
+-            unit: match index {
+-                3 | 5 | 9 | 11 => ResidualUnit::KilogramsPerSquareMeter,
+-                4 | 10 => ResidualUnit::JoulesPerSquareMeter,
+-                13 => ResidualUnit::KilogramsPerSquareMeterSecond,
+-                14..=20 => ResidualUnit::Kelvin,
+-                _ => ResidualUnit::WattsPerSquareMeter,
+-            },
+-        }).collect(),
+-        failed_solution: trial.coordinates.to_vec(), occupancy_id: None, active_bounds: Vec::new(),
+-        backtracking_count, step_norms, pivot_magnitude: pivot, matrix_norm,
++        ordered_residuals: core
++            .residuals
++            .iter()
++            .enumerate()
++            .map(|(index, raw)| NormalizedResidual {
++                identity: format!("m1_row_{index}"),
++                raw: *raw,
++                scale: core.scales[index],
++                tolerance: tolerances[index],
++                normalized: raw / tolerances[index],
++                unit: match index {
++                    3 | 5 | 9 | 11 => ResidualUnit::KilogramsPerSquareMeter,
++                    4 | 10 => ResidualUnit::JoulesPerSquareMeter,
++                    13 => ResidualUnit::KilogramsPerSquareMeterSecond,
++                    14..=20 => ResidualUnit::Kelvin,
++                    _ => ResidualUnit::WattsPerSquareMeter,
++                },
++            })
++            .collect(),
++        failed_solution: trial.coordinates.to_vec(),
++        occupancy_id: None,
++        active_bounds: Vec::new(),
++        backtracking_count,
++        step_norms,
++        pivot_magnitude: pivot,
++        matrix_norm,
+     })
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1038:
+-fn hydraulic_potentials(input: &M1CoupledColumnInput, core: &Core) -> Result<Vec<f64>, M1CoupledError> {
++fn hydraulic_potentials(
++    input: &M1CoupledColumnInput,
++    core: &Core,
++) -> Result<Vec<f64>, M1CoupledError> {
+     let mut values = Vec::with_capacity(8);
+     for index in 0..2 {
+         let occupancy = &input.column.occupancies[index];
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1042:
+         let detail = &core.occupancies[index];
+-        values.extend(solve_m1_full_supply_hydraulics(
+-            &input.column, occupancy,
+-            [detail.sun.vapor_kg_m2_tile_s, detail.shade.vapor_kg_m2_tile_s],
+-            [detail.sun.gas_branch, detail.shade.gas_branch],
+-        )?.potentials_mm);
++        values.extend(
++            solve_m1_full_supply_hydraulics(
++                &input.column,
++                occupancy,
++                [
++                    detail.sun.vapor_kg_m2_tile_s,
++                    detail.shade.vapor_kg_m2_tile_s,
++                ],
++                [detail.sun.gas_branch, detail.shade.gas_branch],
++            )?
++            .potentials_mm,
++        );
+     }
+     Ok(values)
+ }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1054:
+     input: &M1CoupledColumnInput,
+ ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+     // Structural preflight precedes all topology-indexed seed reads.
+-    if input.column.occupancies.len() != 2 || input.column.ground.soil_nodes.len() != 6
+-        || input.topology.occupancy_ids.iter().collect::<BTreeSet<_>>().len() != 2
+-        || input.topology.soil_layer_ids.iter().collect::<BTreeSet<_>>().len() != 6
++    if input.column.occupancies.len() != 2
++        || input.column.ground.soil_nodes.len() != 6
++        || input
++            .topology
++            .occupancy_ids
++            .iter()
++            .collect::<BTreeSet<_>>()
++            .len()
++            != 2
++        || input
++            .topology
++            .soil_layer_ids
++            .iter()
++            .collect::<BTreeSet<_>>()
++            .len()
++            != 6
+     {
+         return Err(LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope").into());
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1085:
+     for iteration in 0..=crate::numerics::MAX_NEWTON_ITERATIONS {
+         if iteration == crate::numerics::MAX_NEWTON_ITERATIONS {
+             let terminal = core(input, &trial)?;
+-            if normalized(&terminal, input).iter().all(|value| value.is_finite())
+-                && normalized(&terminal, input).iter().map(|value| value.abs()).fold(0.0_f64, f64::max) <= 1.0
++            if normalized(&terminal, input)
++                .iter()
++                .all(|value| value.is_finite())
++                && normalized(&terminal, input)
++                    .iter()
++                    .map(|value| value.abs())
++                    .fold(0.0_f64, f64::max)
++                    <= 1.0
+                 && last_installed_steps.as_ref().is_some_and(|steps| {
+                     steps.temperature_k.is_some_and(|value| value <= 1.0e-8)
+                         && steps.humidity_kg_kg.is_some_and(|value| value <= 1.0e-12)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1095:
+             {
+                 return evaluate_m1_coupled_column(input, &trial);
+             }
+-            return Err(m1_failure(crate::numerics::NumericalFailureKind::IterationLimit, iteration, input, &terminal, &trial, backtracking_count, StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, None, None));
++            return Err(m1_failure(
++                crate::numerics::NumericalFailureKind::IterationLimit,
++                iteration,
++                input,
++                &terminal,
++                &trial,
++                backtracking_count,
++                StepNorms {
++                    temperature_k: None,
++                    humidity_kg_kg: None,
++                    ci_pa: None,
++                    hydraulic_mm: None,
++                    beta: Some(0.0),
++                },
++                None,
++                None,
++            ));
+         }
+         let (base, raw_jacobian, jacobian) = evaluate_core_with_jacobian(input, &trial)?;
+         let residuals = normalized(&base, input);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1102:
+-        if residuals.iter().any(|x| !x.is_finite()) || raw_jacobian.iter().flatten().any(|x| !x.is_finite()) {
++        if residuals.iter().any(|x| !x.is_finite())
++            || raw_jacobian.iter().flatten().any(|x| !x.is_finite())
++        {
+             return Err(domain_error());
+         }
+         let norm = residuals.iter().map(|x| x.abs()).fold(0.0_f64, f64::max);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1106:
+         // Normalize each probe independently: use the public raw FD matrix as
+         // the physical derivative and the current threshold derivative scale.
+         let rhs: Vec<f64> = residuals.iter().map(|value| -value).collect();
+-        let (delta, pivot, matrix_norm) = crate::numerics::solve_linear(&jacobian, &rhs).map_err(|e| m1_failure(crate::numerics::NumericalFailureKind::SingularPivot, iteration, input, &base, &trial, backtracking_count, StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, Some(e.pivot), Some(e.matrix_norm)))?;
++        let (delta, pivot, matrix_norm) =
++            crate::numerics::solve_linear(&jacobian, &rhs).map_err(|e| {
++                m1_failure(
++                    crate::numerics::NumericalFailureKind::SingularPivot,
++                    iteration,
++                    input,
++                    &base,
++                    &trial,
++                    backtracking_count,
++                    StepNorms {
++                        temperature_k: None,
++                        humidity_kg_kg: None,
++                        ci_pa: None,
++                        hydraulic_mm: None,
++                        beta: Some(0.0),
++                    },
++                    Some(e.pivot),
++                    Some(e.matrix_norm),
++                )
++            })?;
+         #[cfg(test)]
+         if iteration == 0 {
+-            eprintln!("m1-newton iteration=0 current={:?} delta={delta:?}", trial.coordinates);
++            eprintln!(
++                "m1-newton iteration=0 current={:?} delta={delta:?}",
++                trial.coordinates
++            );
+         }
+         let base_hydraulics = hydraulic_potentials(input, &base)?;
+         let mut accepted = None;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1117:
+         for exponent in 0..=crate::numerics::MAX_BACKTRACKING_HALVINGS {
+             let factor = 0.5_f64.powi(exponent as i32);
+             let mut candidate = trial.clone();
+-            for (index, change) in delta.iter().enumerate() { candidate.coordinates[index] += factor * change; }
++            for (index, change) in delta.iter().enumerate() {
++                candidate.coordinates[index] += factor * change;
++            }
+             if !fd_trial_is_admissible(&candidate) {
+                 #[cfg(test)]
+-                eprintln!("m1-newton iteration={iteration} b={exponent} candidate=fd-domain reason={:?}", fd_trial_rejection_reason(&candidate));
++                eprintln!(
++                    "m1-newton iteration={iteration} b={exponent} candidate=fd-domain reason={:?}",
++                    fd_trial_rejection_reason(&candidate)
++                );
+                 continue;
+             }
+             let Ok(candidate_core) = core(input, &candidate) else {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1134:
+                 eprintln!("m1-newton iteration={iteration} b={exponent} candidate=nonfinite");
+                 continue;
+             }
+-            let candidate_norm = candidate_residuals.iter().map(|x| x.abs()).fold(0.0_f64, f64::max);
++            let candidate_norm = candidate_residuals
++                .iter()
++                .map(|x| x.abs())
++                .fold(0.0_f64, f64::max);
+             #[cfg(test)]
+-            eprintln!("m1-newton iteration={iteration} b={exponent} norm={candidate_norm:.17e} current={norm:.17e}");
++            eprintln!(
++                "m1-newton iteration={iteration} b={exponent} norm={candidate_norm:.17e} current={norm:.17e}"
++            );
+             let potentials = hydraulic_potentials(input, &candidate_core)?;
+-            let dry_temperature = [0,1,2,6,7,8,12,14,15,16,17,18,19,20].iter().map(|&i| (factor * delta[i]).abs()).fold(0.0, f64::max);
+-            let wet_temperature = candidate_core.occupancies.iter().zip(&base.occupancies)
+-                .filter_map(|(next, current)| next.wet_temperature_k.zip(current.wet_temperature_k).map(|(a, b)| (a - b).abs()))
++            let dry_temperature = [0, 1, 2, 6, 7, 8, 12, 14, 15, 16, 17, 18, 19, 20]
++                .iter()
++                .map(|&i| (factor * delta[i]).abs())
+                 .fold(0.0, f64::max);
++            let wet_temperature = candidate_core
++                .occupancies
++                .iter()
++                .zip(&base.occupancies)
++                .filter_map(|(next, current)| {
++                    next.wet_temperature_k
++                        .zip(current.wet_temperature_k)
++                        .map(|(a, b)| (a - b).abs())
++                })
++                .fold(0.0, f64::max);
+             let temperature = dry_temperature.max(wet_temperature);
+             let humidity = (factor * delta[13]).abs();
+-            let hydraulic = potentials.iter().zip(&base_hydraulics).map(|(a,b)| (a-b).abs()).fold(0.0, f64::max);
++            let hydraulic = potentials
++                .iter()
++                .zip(&base_hydraulics)
++                .map(|(a, b)| (a - b).abs())
++                .fold(0.0, f64::max);
+             let steps_pass = temperature <= 1.0e-8 && humidity <= 1.0e-12 && hydraulic <= 1.0e-7;
+             let is_first_halved_witness = exponent > 0 && !first_halved_witness_seen;
+-            if exponent > 0 && !first_halved_witness_seen { first_halved_witness_seen = true; }
++            if exponent > 0 && !first_halved_witness_seen {
++                first_halved_witness_seen = true;
++            }
+             if norm <= 1.0 && steps_pass && (exponent == 0 || is_first_halved_witness) {
+                 return evaluate_m1_coupled_column(input, &trial);
+             }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1154:
+             if candidate_norm < norm {
+-                accepted = Some((candidate, exponent, StepNorms {
+-                    temperature_k: Some(temperature), humidity_kg_kg: Some(humidity), ci_pa: None,
+-                    hydraulic_mm: Some(hydraulic), beta: Some(0.0),
+-                }));
++                accepted = Some((
++                    candidate,
++                    exponent,
++                    StepNorms {
++                        temperature_k: Some(temperature),
++                        humidity_kg_kg: Some(humidity),
++                        ci_pa: None,
++                        hydraulic_mm: Some(hydraulic),
++                        beta: Some(0.0),
++                    },
++                ));
+                 break;
+             }
+         }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1162:
+-        let Some((candidate, exponent, installed_steps)) = accepted else { return Err(m1_failure(crate::numerics::NumericalFailureKind::BacktrackingLimit, iteration, input, &base, &trial, backtracking_count, StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, Some(pivot), Some(matrix_norm))); };
++        let Some((candidate, exponent, installed_steps)) = accepted else {
++            return Err(m1_failure(
++                crate::numerics::NumericalFailureKind::BacktrackingLimit,
++                iteration,
++                input,
++                &base,
++                &trial,
++                backtracking_count,
++                StepNorms {
++                    temperature_k: None,
++                    humidity_kg_kg: None,
++                    ci_pa: None,
++                    hydraulic_mm: None,
++                    beta: Some(0.0),
++                },
++                Some(pivot),
++                Some(matrix_norm),
++            ));
++        };
+         backtracking_count += exponent;
+         last_installed_steps = Some(installed_steps);
+         trial = candidate;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:121:
+     ))
+     .expect("actual solve");
+     assert_eq!(solved.support_duration_s(), 60.);
+-    assert!(solved.occupancies().iter().all(|o| o.shade.gas_branch == "ExactZeroPar"
+-        && o.shade.net_assimilation < 0.
+-        && o.shade.vapor_kg_m2_tile_s > 0.));
++    assert!(
++        solved
++            .occupancies()
++            .iter()
++            .all(|o| o.shade.gas_branch == "ExactZeroPar"
++                && o.shade.net_assimilation < 0.
++                && o.shade.vapor_kg_m2_tile_s > 0.)
++    );
+     for operand in solved.reservoir_operands() {
+         assert_eq!(operand.beginning_mass_kg_m2, 0.018);
+         assert_eq!(operand.beginning_enthalpy_j_m2, 0.0);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:130:
+         assert!(operand.ending_mass_kg_m2.is_finite() && operand.ending_enthalpy_j_m2.is_finite());
+         assert!(operand.vapor_kg_m2_s != 0.0 && operand.non_vapor_heat_w_m2 != 0.0);
+-        assert!(operand.ending_mass_kg_m2 != operand.beginning_mass_kg_m2
+-            || operand.ending_enthalpy_j_m2 != operand.beginning_enthalpy_j_m2);
++        assert!(
++            operand.ending_mass_kg_m2 != operand.beginning_mass_kg_m2
++                || operand.ending_enthalpy_j_m2 != operand.beginning_enthalpy_j_m2
++        );
+     }
+     independently_reconstruct_reservoirs(&solved, true);
+ }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:697:
+                 .collect::<Vec<_>>()
+         };
+         assert_eq!(fd.len(), 21);
+-        let column = base.jacobian_column(coordinate).expect("valid Jacobian column");
++        let column = base
++            .jacobian_column(coordinate)
++            .expect("valid Jacobian column");
+         assert_eq!(column.len(), 21);
+         for (actual, analytic) in fd.iter().zip(column) {
+             assert!(actual.is_finite() && analytic.is_finite());

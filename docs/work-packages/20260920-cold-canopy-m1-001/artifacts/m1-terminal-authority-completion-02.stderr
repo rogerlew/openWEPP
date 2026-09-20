@@ -1,0 +1,1628 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning: method `restart_authority_state_derived_active_snow_lanes_v1` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_attachment.rs:981:19
+    |
+973 | impl DirectSnowStage3V11PreparedSupport {
+    | --------------------------------------- method in this implementation
+...
+981 |     pub(crate) fn restart_authority_state_derived_active_snow_lanes_v1(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `diagnostic_restore_parent_receipt_archive_with_configured_scope_v3` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_restart.rs:1858:15
+     |
+1858 | pub(crate) fn diagnostic_restore_parent_receipt_archive_with_configured_scope_v3(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RestoredStage3PublicationDayEvidenceV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1729:19
+     |
+1729 | pub(crate) struct RestoredStage3PublicationDayEvidenceV1 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restart_authority_restore_archived_publication_day_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_publication_retention.rs:1757:15
+     |
+1757 | pub(crate) fn restart_authority_restore_archived_publication_day_v1(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `diagnostic_install_hydrology_constructor_inputs_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:4328:19
+     |
+3338 | impl DirectV10RealConsumerShadow {
+     | -------------------------------- method in this implementation
+...
+4328 |     pub(crate) fn diagnostic_install_hydrology_constructor_inputs_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `restart_authority_from_canonical_bytes` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/direct_runtime/surface_liquid_owner/v2.rs:207:19
+    |
+161 | impl SurfaceLiquidOwnerModelDefinitionV2 {
+    | ---------------------------------------- associated function in this implementation
+...
+207 |     pub(crate) fn restart_authority_from_canonical_bytes(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1193:9
+     |
+1173 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1193 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: function `restore_covered_interval` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:671:4
+    |
+671 | fn restore_covered_interval(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_destination_capability` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:687:4
+    |
+687 | fn restore_destination_capability(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `provider_interval_for_destination` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:735:4
+    |
+735 | fn provider_interval_for_destination<'a>(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_prepared_support` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:773:4
+    |
+773 | fn restore_prepared_support(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_support_forcing` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:891:4
+    |
+891 | fn restore_support_forcing(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `active_snow_restore` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1004:4
+     |
+1004 | fn active_snow_restore(
+     |    ^^^^^^^^^^^^^^^^^^^
+
+warning: method `validate_against` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1212:19
+     |
+1190 | impl ProviderStaticConfigurationCaptureV1 {
+     | ----------------------------------------- method in this implementation
+...
+1212 |     pub(crate) fn validate_against(
+     |                   ^^^^^^^^^^^^^^^^
+
+warning: struct `PreparedDayCaptureV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1246:8
+     |
+1246 | struct PreparedDayCaptureV1 {
+     |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_prepared_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1254:4
+     |
+1254 | fn capture_prepared_day(
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_prepared_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1271:4
+     |
+1271 | fn validate_prepared_day(
+     |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_provider_day` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1317:4
+     |
+1317 | fn restore_provider_day(
+     |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-hillslope-orchestrator` (lib) generated 18 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+────────────
+ Nextest run ID e230c476-402d-48a3-93ee-137191d45b2d with nextest profile: default
+    Starting 95 tests across 6 binaries
+        FAIL [   0.005s] ( 3/95) openwepp::land_surface_energy_balance_authority_contract contract_binds_control_volume_closure_and_exact_one_custody
+  stdout ───
+
+    running 1 test
+    test contract_binds_control_volume_closure_and_exact_one_custody ... FAILED
+
+    failures:
+
+    failures:
+        contract_binds_control_volume_closure_and_exact_one_custody
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'contract_binds_control_volume_closure_and_exact_one_custody' (256636) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:577:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing E_s,1 - E_s,0 = dt * (R_sw + R_lw + H + LE + Q_p + Q_runon - Q_inf - Q_runoff + G)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] ( 7/95) openwepp::land_surface_energy_balance_authority_contract contract_preserves_adjacent_owners_and_rejects_terminal_payload
+  stdout ───
+
+    running 1 test
+    test contract_preserves_adjacent_owners_and_rejects_terminal_payload ... FAILED
+
+    failures:
+
+    failures:
+        contract_preserves_adjacent_owners_and_rejects_terminal_payload
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'contract_preserves_adjacent_owners_and_rejects_terminal_payload' (256656) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:600:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing SC-CLIMATE-001
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] ( 8/95) openwepp::land_surface_energy_balance_authority_contract current_version_releases_named_authority_without_production_claims
+  stdout ───
+
+    running 1 test
+    test current_version_releases_named_authority_without_production_claims ... FAILED
+
+    failures:
+
+    failures:
+        current_version_releases_named_authority_without_production_claims
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'current_version_releases_named_authority_without_production_claims' (256660) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:665:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] ( 9/95) openwepp::land_surface_energy_balance_authority_contract prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation
+  stdout ───
+
+    running 1 test
+    test prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation ... FAILED
+
+    failures:
+
+    failures:
+        prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation' (256661) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:9:10:
+    separately identified prospective authority
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (12/95) openwepp::land_surface_energy_balance_authority_contract typed_failures_state_surface_and_guard_map_are_complete
+  stdout ───
+
+    running 1 test
+    test typed_failures_state_surface_and_guard_map_are_complete ... FAILED
+
+    failures:
+
+    failures:
+        typed_failures_state_surface_and_guard_map_are_complete
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'typed_failures_state_surface_and_guard_map_are_complete' (256672) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1709:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing Required future inputs are one state identity
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (14/95) openwepp::land_surface_energy_balance_authority_contract schema_sections_test_vectors_and_registry_are_bound
+  stdout ───
+
+    running 1 test
+    test schema_sections_test_vectors_and_registry_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        schema_sections_test_vectors_and_registry_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'schema_sections_test_vectors_and_registry_are_bound' (256671) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1794:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Purpose
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (16/95) openwepp::land_surface_energy_balance_authority_contract version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference
+  stdout ───
+
+    running 1 test
+    test version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference ... FAILED
+
+    failures:
+
+    failures:
+        version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference' (256677) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1239:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing INV-LANDSURFACEENERGY-131
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (17/95) openwepp::land_surface_energy_balance_authority_contract version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry
+  stdout ───
+
+    running 1 test
+    test version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry ... FAILED
+
+    failures:
+
+    failures:
+        version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry' (256678) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1139:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing INV-LANDSURFACEENERGY-150
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (18/95) openwepp::land_surface_energy_balance_authority_contract version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology
+  stdout ───
+
+    running 1 test
+    test version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology ... FAILED
+
+    failures:
+
+    failures:
+        version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology' (256683) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1022:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing OPENWEPP_SNOW_FREE_LSE_V3
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (22/95) openwepp::land_surface_energy_balance_authority_contract version_sixteen_binds_exact_lse_surface_enthalpy_carry
+  stdout ───
+
+    running 1 test
+    test version_sixteen_binds_exact_lse_surface_enthalpy_carry ... FAILED
+
+    failures:
+
+    failures:
+        version_sixteen_binds_exact_lse_surface_enthalpy_carry
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_sixteen_binds_exact_lse_surface_enthalpy_carry' (256688) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1198:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Version 16 LSE Surface-Enthalpy Exact-Carry Amendment
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (23/95) openwepp::land_surface_energy_balance_authority_contract version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant
+  stdout ───
+
+    running 1 test
+    test version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant ... FAILED
+
+    failures:
+
+    failures:
+        version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant' (256693) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:737:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (24/95) openwepp::land_surface_energy_balance_authority_contract version_thirty_one_binds_component_temperature_dependency_replay
+  stdout ───
+
+    running 1 test
+    test version_thirty_one_binds_component_temperature_dependency_replay ... FAILED
+
+    failures:
+
+    failures:
+        version_thirty_one_binds_component_temperature_dependency_replay
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_thirty_one_binds_component_temperature_dependency_replay' (256692) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:853:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (25/95) openwepp::land_surface_energy_balance_authority_contract version_three_binds_surface_classes_reciprocal_coupling_and_water_custody
+  stdout ───
+
+    running 1 test
+    test version_three_binds_surface_classes_reciprocal_coupling_and_water_custody ... FAILED
+
+    failures:
+
+    failures:
+        version_three_binds_surface_classes_reciprocal_coupling_and_water_custody
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_three_binds_surface_classes_reciprocal_coupling_and_water_custody' (256694) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1285:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing bare_mineral_soil
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (27/95) openwepp::land_surface_energy_balance_authority_contract version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation
+  stdout ───
+
+    running 1 test
+    test version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation' (256699) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:689:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Validated In-Memory LSE Custody Handoff Amendment
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (28/95) openwepp::land_surface_energy_balance_authority_contract version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks
+  stdout ───
+
+    running 1 test
+    test version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks ... FAILED
+
+    failures:
+
+    failures:
+        version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks' (256701) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1255:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing INV-LANDSURFACEENERGY-138
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.021s] (29/95) openwepp::land_surface_energy_balance_authority_contract revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+  stdout ───
+
+    running 1 test
+    test revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red ... FAILED
+
+    failures:
+
+    failures:
+        revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red' (256664) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:895:5:
+    revision 31 expected-red: production dependency-replay seam is absent: ["struct CoveredComponentTemperatureDependencyGraph", "struct ValidatedCoveredComponentReplaySweepBase", "struct ValidatedCoveredComponentProbeReplay", "struct CoveredComponentDependencyReplayAudit", "fn covered_component_temperature_probe_residuals", "fn begin_covered_component_dependency_replay_audit", "fn take_covered_component_dependency_replay_audit"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (30/95) openwepp::land_surface_energy_balance_authority_contract version_twenty_one_binds_exact_litter_phase_capacity_spill
+  stdout ───
+
+    running 1 test
+    test version_twenty_one_binds_exact_litter_phase_capacity_spill ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_one_binds_exact_litter_phase_capacity_spill
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twenty_one_binds_exact_litter_phase_capacity_spill' (256704) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:943:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Exact V3 Litter-Phase Capacity-Spill Amendment
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (33/95) openwepp::land_surface_energy_balance_authority_contract version_twenty_three_binds_exact_surface_order_to_authenticated_topology
+  stdout ───
+
+    running 1 test
+    test version_twenty_three_binds_exact_surface_order_to_authenticated_topology ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_three_binds_exact_surface_order_to_authenticated_topology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twenty_three_binds_exact_surface_order_to_authenticated_topology' (256705) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:919:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Topology-Ranked V16 Exact-Surface Owner Amendment
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (34/95) openwepp::land_surface_energy_balance_authority_contract version_twenty_two_binds_exact_heterogeneous_surface_resource_join
+  stdout ───
+
+    running 1 test
+    test version_twenty_two_binds_exact_heterogeneous_surface_resource_join ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_two_binds_exact_heterogeneous_surface_resource_join
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twenty_two_binds_exact_heterogeneous_surface_resource_join' (256710) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:980:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Exact Heterogeneous V3 Surface-Resource Join Amendment
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (35/95) openwepp::surface_liquid_hydrology_custody_authority_contract contract_binds_existing_lse_identity_and_restart_bytes
+  stdout ───
+
+    running 1 test
+    test contract_binds_existing_lse_identity_and_restart_bytes ... FAILED
+
+    failures:
+
+    failures:
+        contract_binds_existing_lse_identity_and_restart_bytes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'contract_binds_existing_lse_identity_and_restart_bytes' (256712) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:191:9:
+    docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md missing contract_version: 25
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (43/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_9_binds_multi_lane_stage3_parent_release
+  stdout ───
+
+    running 1 test
+    test version_9_binds_multi_lane_stage3_parent_release ... FAILED
+
+    failures:
+
+    failures:
+        version_9_binds_multi_lane_stage3_parent_release
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_9_binds_multi_lane_stage3_parent_release' (256736) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:590:5:
+    assertion failed: registry_row.contains("v25 admits the complete all-local SurfaceLiquid routing posture")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.010s] (44/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_16_binds_exact_surface_enthalpy_custody_before_production
+  stdout ───
+
+    running 1 test
+    test version_16_binds_exact_surface_enthalpy_custody_before_production ... FAILED
+
+    failures:
+
+    failures:
+        version_16_binds_exact_surface_enthalpy_custody_before_production
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'version_16_binds_exact_surface_enthalpy_custody_before_production' (256733) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:511:5:
+    assertion failed: read(LSE).contains("INV-LANDSURFACEENERGY-151")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.012s] (45/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_15_binds_exact_soil_energy_credit_custody_before_production
+  stdout ───
+
+    running 1 test
+    test version_15_binds_exact_soil_energy_credit_custody_before_production ... FAILED
+
+    failures:
+
+    failures:
+        version_15_binds_exact_soil_energy_credit_custody_before_production
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'version_15_binds_exact_soil_energy_credit_custody_before_production' (256730) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:457:5:
+    assertion failed: read(LSE).contains("INV-LANDSURFACEENERGY-150")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.008s] (47/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_five_binds_laned_active_local_surface_routing
+  stdout ───
+
+    running 1 test
+    test version_twenty_five_binds_laned_active_local_surface_routing ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_five_binds_laned_active_local_surface_routing
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twenty_five_binds_laned_active_local_surface_routing' (256740) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:253:5:
+    assertion failed: read("docs/specifications/science-contracts/index.md").contains("v25 admits the complete all-local SurfaceLiquid routing posture")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.013s] (50/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
+  stdout ───
+
+    running 1 test
+    test version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries' (256743) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:232:5:
+    assertion failed: index.contains("v24 admits private immutable revision-bound surface-resource validation handoffs")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.012s] (53/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_three_binds_exact_owner_order_to_surface_topology
+  stdout ───
+
+    running 1 test
+    test version_twenty_three_binds_exact_owner_order_to_surface_topology ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_three_binds_exact_owner_order_to_surface_topology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'version_twenty_three_binds_exact_owner_order_to_surface_topology' (256745) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:278:5:
+    assertion failed: read(LSE).contains("INV-LANDSURFACEENERGY-158")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (55/95) openwepp::v10_nighttime_authority_contract independent_nighttime_calculator_regenerates_frozen_vectors
+  stdout ───
+
+    running 1 test
+    test independent_nighttime_calculator_regenerates_frozen_vectors ... FAILED
+
+    failures:
+
+    failures:
+        independent_nighttime_calculator_regenerates_frozen_vectors
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'independent_nighttime_calculator_regenerates_frozen_vectors' (256755) panicked at tests/integration/v10_nighttime_authority_contract.rs:58:10:
+    execute independent V10 calculator: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (56/95) openwepp::vegetation_boundary_authority_contract assurance_receipts_form_the_recorded_generation_chain
+  stdout ───
+
+    running 1 test
+    test assurance_receipts_form_the_recorded_generation_chain ... FAILED
+
+    failures:
+
+    failures:
+        assurance_receipts_form_the_recorded_generation_chain
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'assurance_receipts_form_the_recorded_generation_chain' (256758) panicked at tests/integration/vegetation_boundary_authority_contract.rs:64:53:
+    read assurance/v2/transactions/3208ab181e5eb9261a51bb3d8ea63d25c133244b8cf25b6949b4f4eb3a26cc1f.json: No such file or directory (os error 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.070s] (57/95) openwepp::c3_woody_v11_authority_contract typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit
+  stdout ───
+
+    running 1 test
+    test typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit ... FAILED
+
+    failures:
+
+    failures:
+        typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.07s
+
+  stderr ───
+
+    thread 'typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit' (256634) panicked at tests/integration/c3_woody_v11_authority_contract.rs:269:5:
+    full V10 surface binding drift
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.008s] (58/95) openwepp::vegetation_boundary_authority_contract adjacent_contracts_retain_current_owners_until_real_consumer_cutover
+  stdout ───
+
+    running 1 test
+    test adjacent_contracts_retain_current_owners_until_real_consumer_cutover ... FAILED
+
+    failures:
+
+    failures:
+        adjacent_contracts_retain_current_owners_until_real_consumer_cutover
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'adjacent_contracts_retain_current_owners_until_real_consumer_cutover' (256759) panicked at tests/integration/vegetation_boundary_authority_contract.rs:69:28:
+    missing section start ## Invariants and Invariant Guard Map
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (59/95) openwepp::vegetation_boundary_authority_contract independent_coupled_reference_vectors_pass
+  stdout ───
+
+    running 1 test
+    test independent_coupled_reference_vectors_pass ... FAILED
+
+    failures:
+
+    failures:
+        independent_coupled_reference_vectors_pass
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'independent_coupled_reference_vectors_pass' (256767) panicked at tests/integration/vegetation_boundary_authority_contract.rs:1689:10:
+    run independent coupled vegetation reference calculator: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (60/95) openwepp::vegetation_boundary_authority_contract coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted
+  stdout ───
+
+    running 1 test
+    test coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted ... FAILED
+
+    failures:
+
+    failures:
+        coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted' (256766) panicked at tests/integration/vegetation_boundary_authority_contract.rs:754:9:
+    vegetation contract missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.014s] (61/95) openwepp::vegetation_boundary_authority_contract canonical_schema_and_registry_entry_are_bound
+  stdout ───
+
+    running 1 test
+    test canonical_schema_and_registry_entry_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        canonical_schema_and_registry_entry_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'canonical_schema_and_registry_entry_are_bound' (256763) panicked at tests/integration/vegetation_boundary_authority_contract.rs:234:9:
+    docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.009s] (70/95) openwepp::vegetation_boundary_authority_contract v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority
+  stdout ───
+
+    running 1 test
+    test v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority ... FAILED
+
+    failures:
+
+    failures:
+        v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority' (256790) panicked at tests/integration/vegetation_boundary_authority_contract.rs:1002:10:
+    run independent V3 oracle: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.009s] (74/95) openwepp::vegetation_boundary_authority_contract v5_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority
+  stdout ───
+
+    running 1 test
+    test v5_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority ... FAILED
+
+    failures:
+
+    failures:
+        v5_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'v5_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority' (256811) panicked at tests/integration/vegetation_boundary_authority_contract.rs:1908:10:
+    run independent V5 oracle: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.021s] (76/95) openwepp::vegetation_boundary_authority_contract v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable
+  stdout ───
+
+    running 1 test
+    test v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable' (256795) panicked at tests/integration/vegetation_boundary_authority_contract.rs:189:9:
+    assertion `left == right` failed
+      left: "611714c14991f5edb05391fdea72d319eee20c901036c6ac01275c47c10e027e"
+     right: "49704e9c34ae2e551dd13009c419e53f1d8157e595599e3d918f5e589830f63c"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (82/95) openwepp::vegetation_boundary_authority_contract version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs
+  stdout ───
+
+    running 1 test
+    test version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs ... FAILED
+
+    failures:
+
+    failures:
+        version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs' (256857) panicked at tests/integration/vegetation_boundary_authority_contract.rs:818:9:
+    docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.162s] (93/95) openwepp::vegetation_boundary_authority_contract v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
+  stdout ───
+
+    running 1 test
+    test v9_oracle_successor_is_exactly_bound_and_v8_is_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.16s
+
+  stderr ───
+
+    thread 'v9_oracle_successor_is_exactly_bound_and_v8_is_immutable' (256852) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2775:5:
+    V9 oracle failed: VEG-E-133: runtime mismatch is not libcrypto-only: ld-linux-x86-64.so.2,libc.so.6,libcrypto.so.3,libm.so.6,libz.so.1
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.160s] (94/95) openwepp::vegetation_boundary_authority_contract v9_runtime_equivalence_verifier_rejects_every_required_poison
+  stdout ───
+
+    running 1 test
+    test v9_runtime_equivalence_verifier_rejects_every_required_poison ... FAILED
+
+    failures:
+
+    failures:
+        v9_runtime_equivalence_verifier_rejects_every_required_poison
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.16s
+
+  stderr ───
+
+    thread 'v9_runtime_equivalence_verifier_rejects_every_required_poison' (256858) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2806:5:
+    V9 equivalence poisons failed: VEG-E-133: runtime mismatch is not libcrypto-only: ld-linux-x86-64.so.2,libc.so.6,libcrypto.so.3,libm.so.6,libz.so.1
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.375s] 95 tests run: 56 passed, 39 failed, 0 skipped
+        FAIL [   0.005s] ( 3/95) openwepp::land_surface_energy_balance_authority_contract contract_binds_control_volume_closure_and_exact_one_custody
+  stdout ───
+
+    running 1 test
+    test contract_binds_control_volume_closure_and_exact_one_custody ... FAILED
+
+    failures:
+
+    failures:
+        contract_binds_control_volume_closure_and_exact_one_custody
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'contract_binds_control_volume_closure_and_exact_one_custody' (256636) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:577:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing E_s,1 - E_s,0 = dt * (R_sw + R_lw + H + LE + Q_p + Q_runon - Q_inf - Q_runoff + G)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] ( 7/95) openwepp::land_surface_energy_balance_authority_contract contract_preserves_adjacent_owners_and_rejects_terminal_payload
+  stdout ───
+
+    running 1 test
+    test contract_preserves_adjacent_owners_and_rejects_terminal_payload ... FAILED
+
+    failures:
+
+    failures:
+        contract_preserves_adjacent_owners_and_rejects_terminal_payload
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'contract_preserves_adjacent_owners_and_rejects_terminal_payload' (256656) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:600:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing SC-CLIMATE-001
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] ( 8/95) openwepp::land_surface_energy_balance_authority_contract current_version_releases_named_authority_without_production_claims
+  stdout ───
+
+    running 1 test
+    test current_version_releases_named_authority_without_production_claims ... FAILED
+
+    failures:
+
+    failures:
+        current_version_releases_named_authority_without_production_claims
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'current_version_releases_named_authority_without_production_claims' (256660) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:665:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] ( 9/95) openwepp::land_surface_energy_balance_authority_contract prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation
+  stdout ───
+
+    running 1 test
+    test prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation ... FAILED
+
+    failures:
+
+    failures:
+        prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation' (256661) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:9:10:
+    separately identified prospective authority
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (12/95) openwepp::land_surface_energy_balance_authority_contract typed_failures_state_surface_and_guard_map_are_complete
+  stdout ───
+
+    running 1 test
+    test typed_failures_state_surface_and_guard_map_are_complete ... FAILED
+
+    failures:
+
+    failures:
+        typed_failures_state_surface_and_guard_map_are_complete
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'typed_failures_state_surface_and_guard_map_are_complete' (256672) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1709:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing Required future inputs are one state identity
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (14/95) openwepp::land_surface_energy_balance_authority_contract schema_sections_test_vectors_and_registry_are_bound
+  stdout ───
+
+    running 1 test
+    test schema_sections_test_vectors_and_registry_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        schema_sections_test_vectors_and_registry_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'schema_sections_test_vectors_and_registry_are_bound' (256671) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1794:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Purpose
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (16/95) openwepp::land_surface_energy_balance_authority_contract version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference
+  stdout ───
+
+    running 1 test
+    test version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference ... FAILED
+
+    failures:
+
+    failures:
+        version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference' (256677) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1239:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing INV-LANDSURFACEENERGY-131
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (17/95) openwepp::land_surface_energy_balance_authority_contract version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry
+  stdout ───
+
+    running 1 test
+    test version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry ... FAILED
+
+    failures:
+
+    failures:
+        version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry' (256678) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1139:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing INV-LANDSURFACEENERGY-150
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (18/95) openwepp::land_surface_energy_balance_authority_contract version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology
+  stdout ───
+
+    running 1 test
+    test version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology ... FAILED
+
+    failures:
+
+    failures:
+        version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology' (256683) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1022:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing OPENWEPP_SNOW_FREE_LSE_V3
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (22/95) openwepp::land_surface_energy_balance_authority_contract version_sixteen_binds_exact_lse_surface_enthalpy_carry
+  stdout ───
+
+    running 1 test
+    test version_sixteen_binds_exact_lse_surface_enthalpy_carry ... FAILED
+
+    failures:
+
+    failures:
+        version_sixteen_binds_exact_lse_surface_enthalpy_carry
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_sixteen_binds_exact_lse_surface_enthalpy_carry' (256688) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1198:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Version 16 LSE Surface-Enthalpy Exact-Carry Amendment
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (23/95) openwepp::land_surface_energy_balance_authority_contract version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant
+  stdout ───
+
+    running 1 test
+    test version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant ... FAILED
+
+    failures:
+
+    failures:
+        version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant' (256693) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:737:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (24/95) openwepp::land_surface_energy_balance_authority_contract version_thirty_one_binds_component_temperature_dependency_replay
+  stdout ───
+
+    running 1 test
+    test version_thirty_one_binds_component_temperature_dependency_replay ... FAILED
+
+    failures:
+
+    failures:
+        version_thirty_one_binds_component_temperature_dependency_replay
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_thirty_one_binds_component_temperature_dependency_replay' (256692) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:853:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (25/95) openwepp::land_surface_energy_balance_authority_contract version_three_binds_surface_classes_reciprocal_coupling_and_water_custody
+  stdout ───
+
+    running 1 test
+    test version_three_binds_surface_classes_reciprocal_coupling_and_water_custody ... FAILED
+
+    failures:
+
+    failures:
+        version_three_binds_surface_classes_reciprocal_coupling_and_water_custody
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_three_binds_surface_classes_reciprocal_coupling_and_water_custody' (256694) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1285:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing bare_mineral_soil
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (27/95) openwepp::land_surface_energy_balance_authority_contract version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation
+  stdout ───
+
+    running 1 test
+    test version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation' (256699) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:689:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Validated In-Memory LSE Custody Handoff Amendment
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (28/95) openwepp::land_surface_energy_balance_authority_contract version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks
+  stdout ───
+
+    running 1 test
+    test version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks ... FAILED
+
+    failures:
+
+    failures:
+        version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks' (256701) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1255:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing INV-LANDSURFACEENERGY-138
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.021s] (29/95) openwepp::land_surface_energy_balance_authority_contract revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+  stdout ───
+
+    running 1 test
+    test revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red ... FAILED
+
+    failures:
+
+    failures:
+        revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red' (256664) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:895:5:
+    revision 31 expected-red: production dependency-replay seam is absent: ["struct CoveredComponentTemperatureDependencyGraph", "struct ValidatedCoveredComponentReplaySweepBase", "struct ValidatedCoveredComponentProbeReplay", "struct CoveredComponentDependencyReplayAudit", "fn covered_component_temperature_probe_residuals", "fn begin_covered_component_dependency_replay_audit", "fn take_covered_component_dependency_replay_audit"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (30/95) openwepp::land_surface_energy_balance_authority_contract version_twenty_one_binds_exact_litter_phase_capacity_spill
+  stdout ───
+
+    running 1 test
+    test version_twenty_one_binds_exact_litter_phase_capacity_spill ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_one_binds_exact_litter_phase_capacity_spill
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twenty_one_binds_exact_litter_phase_capacity_spill' (256704) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:943:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Exact V3 Litter-Phase Capacity-Spill Amendment
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (33/95) openwepp::land_surface_energy_balance_authority_contract version_twenty_three_binds_exact_surface_order_to_authenticated_topology
+  stdout ───
+
+    running 1 test
+    test version_twenty_three_binds_exact_surface_order_to_authenticated_topology ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_three_binds_exact_surface_order_to_authenticated_topology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twenty_three_binds_exact_surface_order_to_authenticated_topology' (256705) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:919:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Topology-Ranked V16 Exact-Surface Owner Amendment
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (34/95) openwepp::land_surface_energy_balance_authority_contract version_twenty_two_binds_exact_heterogeneous_surface_resource_join
+  stdout ───
+
+    running 1 test
+    test version_twenty_two_binds_exact_heterogeneous_surface_resource_join ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_two_binds_exact_heterogeneous_surface_resource_join
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twenty_two_binds_exact_heterogeneous_surface_resource_join' (256710) panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:980:9:
+    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Exact Heterogeneous V3 Surface-Resource Join Amendment
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (35/95) openwepp::surface_liquid_hydrology_custody_authority_contract contract_binds_existing_lse_identity_and_restart_bytes
+  stdout ───
+
+    running 1 test
+    test contract_binds_existing_lse_identity_and_restart_bytes ... FAILED
+
+    failures:
+
+    failures:
+        contract_binds_existing_lse_identity_and_restart_bytes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'contract_binds_existing_lse_identity_and_restart_bytes' (256712) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:191:9:
+    docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md missing contract_version: 25
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (43/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_9_binds_multi_lane_stage3_parent_release
+  stdout ───
+
+    running 1 test
+    test version_9_binds_multi_lane_stage3_parent_release ... FAILED
+
+    failures:
+
+    failures:
+        version_9_binds_multi_lane_stage3_parent_release
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_9_binds_multi_lane_stage3_parent_release' (256736) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:590:5:
+    assertion failed: registry_row.contains("v25 admits the complete all-local SurfaceLiquid routing posture")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.010s] (44/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_16_binds_exact_surface_enthalpy_custody_before_production
+  stdout ───
+
+    running 1 test
+    test version_16_binds_exact_surface_enthalpy_custody_before_production ... FAILED
+
+    failures:
+
+    failures:
+        version_16_binds_exact_surface_enthalpy_custody_before_production
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'version_16_binds_exact_surface_enthalpy_custody_before_production' (256733) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:511:5:
+    assertion failed: read(LSE).contains("INV-LANDSURFACEENERGY-151")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.012s] (45/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_15_binds_exact_soil_energy_credit_custody_before_production
+  stdout ───
+
+    running 1 test
+    test version_15_binds_exact_soil_energy_credit_custody_before_production ... FAILED
+
+    failures:
+
+    failures:
+        version_15_binds_exact_soil_energy_credit_custody_before_production
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'version_15_binds_exact_soil_energy_credit_custody_before_production' (256730) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:457:5:
+    assertion failed: read(LSE).contains("INV-LANDSURFACEENERGY-150")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.008s] (47/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_five_binds_laned_active_local_surface_routing
+  stdout ───
+
+    running 1 test
+    test version_twenty_five_binds_laned_active_local_surface_routing ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_five_binds_laned_active_local_surface_routing
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_twenty_five_binds_laned_active_local_surface_routing' (256740) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:253:5:
+    assertion failed: read("docs/specifications/science-contracts/index.md").contains("v25 admits the complete all-local SurfaceLiquid routing posture")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.013s] (50/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
+  stdout ───
+
+    running 1 test
+    test version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries' (256743) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:232:5:
+    assertion failed: index.contains("v24 admits private immutable revision-bound surface-resource validation handoffs")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.012s] (53/95) openwepp::surface_liquid_hydrology_custody_authority_contract version_twenty_three_binds_exact_owner_order_to_surface_topology
+  stdout ───
+
+    running 1 test
+    test version_twenty_three_binds_exact_owner_order_to_surface_topology ... FAILED
+
+    failures:
+
+    failures:
+        version_twenty_three_binds_exact_owner_order_to_surface_topology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'version_twenty_three_binds_exact_owner_order_to_surface_topology' (256745) panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:278:5:
+    assertion failed: read(LSE).contains("INV-LANDSURFACEENERGY-158")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (55/95) openwepp::v10_nighttime_authority_contract independent_nighttime_calculator_regenerates_frozen_vectors
+  stdout ───
+
+    running 1 test
+    test independent_nighttime_calculator_regenerates_frozen_vectors ... FAILED
+
+    failures:
+
+    failures:
+        independent_nighttime_calculator_regenerates_frozen_vectors
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'independent_nighttime_calculator_regenerates_frozen_vectors' (256755) panicked at tests/integration/v10_nighttime_authority_contract.rs:58:10:
+    execute independent V10 calculator: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (56/95) openwepp::vegetation_boundary_authority_contract assurance_receipts_form_the_recorded_generation_chain
+  stdout ───
+
+    running 1 test
+    test assurance_receipts_form_the_recorded_generation_chain ... FAILED
+
+    failures:
+
+    failures:
+        assurance_receipts_form_the_recorded_generation_chain
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'assurance_receipts_form_the_recorded_generation_chain' (256758) panicked at tests/integration/vegetation_boundary_authority_contract.rs:64:53:
+    read assurance/v2/transactions/3208ab181e5eb9261a51bb3d8ea63d25c133244b8cf25b6949b4f4eb3a26cc1f.json: No such file or directory (os error 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.070s] (57/95) openwepp::c3_woody_v11_authority_contract typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit
+  stdout ───
+
+    running 1 test
+    test typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit ... FAILED
+
+    failures:
+
+    failures:
+        typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.07s
+
+  stderr ───
+
+    thread 'typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit' (256634) panicked at tests/integration/c3_woody_v11_authority_contract.rs:269:5:
+    full V10 surface binding drift
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.008s] (58/95) openwepp::vegetation_boundary_authority_contract adjacent_contracts_retain_current_owners_until_real_consumer_cutover
+  stdout ───
+
+    running 1 test
+    test adjacent_contracts_retain_current_owners_until_real_consumer_cutover ... FAILED
+
+    failures:
+
+    failures:
+        adjacent_contracts_retain_current_owners_until_real_consumer_cutover
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'adjacent_contracts_retain_current_owners_until_real_consumer_cutover' (256759) panicked at tests/integration/vegetation_boundary_authority_contract.rs:69:28:
+    missing section start ## Invariants and Invariant Guard Map
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (59/95) openwepp::vegetation_boundary_authority_contract independent_coupled_reference_vectors_pass
+  stdout ───
+
+    running 1 test
+    test independent_coupled_reference_vectors_pass ... FAILED
+
+    failures:
+
+    failures:
+        independent_coupled_reference_vectors_pass
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'independent_coupled_reference_vectors_pass' (256767) panicked at tests/integration/vegetation_boundary_authority_contract.rs:1689:10:
+    run independent coupled vegetation reference calculator: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (60/95) openwepp::vegetation_boundary_authority_contract coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted
+  stdout ───
+
+    running 1 test
+    test coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted ... FAILED
+
+    failures:
+
+    failures:
+        coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted' (256766) panicked at tests/integration/vegetation_boundary_authority_contract.rs:754:9:
+    vegetation contract missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.014s] (61/95) openwepp::vegetation_boundary_authority_contract canonical_schema_and_registry_entry_are_bound
+  stdout ───
+
+    running 1 test
+    test canonical_schema_and_registry_entry_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        canonical_schema_and_registry_entry_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'canonical_schema_and_registry_entry_are_bound' (256763) panicked at tests/integration/vegetation_boundary_authority_contract.rs:234:9:
+    docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.009s] (70/95) openwepp::vegetation_boundary_authority_contract v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority
+  stdout ───
+
+    running 1 test
+    test v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority ... FAILED
+
+    failures:
+
+    failures:
+        v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority' (256790) panicked at tests/integration/vegetation_boundary_authority_contract.rs:1002:10:
+    run independent V3 oracle: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.009s] (74/95) openwepp::vegetation_boundary_authority_contract v5_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority
+  stdout ───
+
+    running 1 test
+    test v5_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority ... FAILED
+
+    failures:
+
+    failures:
+        v5_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'v5_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority' (256811) panicked at tests/integration/vegetation_boundary_authority_contract.rs:1908:10:
+    run independent V5 oracle: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.021s] (76/95) openwepp::vegetation_boundary_authority_contract v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable
+  stdout ───
+
+    running 1 test
+    test v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable' (256795) panicked at tests/integration/vegetation_boundary_authority_contract.rs:189:9:
+    assertion `left == right` failed
+      left: "611714c14991f5edb05391fdea72d319eee20c901036c6ac01275c47c10e027e"
+     right: "49704e9c34ae2e551dd13009c419e53f1d8157e595599e3d918f5e589830f63c"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (82/95) openwepp::vegetation_boundary_authority_contract version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs
+  stdout ───
+
+    running 1 test
+    test version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs ... FAILED
+
+    failures:
+
+    failures:
+        version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs' (256857) panicked at tests/integration/vegetation_boundary_authority_contract.rs:818:9:
+    docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md missing contract_version: 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.162s] (93/95) openwepp::vegetation_boundary_authority_contract v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
+  stdout ───
+
+    running 1 test
+    test v9_oracle_successor_is_exactly_bound_and_v8_is_immutable ... FAILED
+
+    failures:
+
+    failures:
+        v9_oracle_successor_is_exactly_bound_and_v8_is_immutable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.16s
+
+  stderr ───
+
+    thread 'v9_oracle_successor_is_exactly_bound_and_v8_is_immutable' (256852) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2775:5:
+    V9 oracle failed: VEG-E-133: runtime mismatch is not libcrypto-only: ld-linux-x86-64.so.2,libc.so.6,libcrypto.so.3,libm.so.6,libz.so.1
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.160s] (94/95) openwepp::vegetation_boundary_authority_contract v9_runtime_equivalence_verifier_rejects_every_required_poison
+  stdout ───
+
+    running 1 test
+    test v9_runtime_equivalence_verifier_rejects_every_required_poison ... FAILED
+
+    failures:
+
+    failures:
+        v9_runtime_equivalence_verifier_rejects_every_required_poison
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.16s
+
+  stderr ───
+
+    thread 'v9_runtime_equivalence_verifier_rejects_every_required_poison' (256858) panicked at tests/integration/vegetation_boundary_authority_contract.rs:2806:5:
+    V9 equivalence poisons failed: VEG-E-133: runtime mismatch is not libcrypto-only: ld-linux-x86-64.so.2,libc.so.6,libcrypto.so.3,libm.so.6,libz.so.1
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

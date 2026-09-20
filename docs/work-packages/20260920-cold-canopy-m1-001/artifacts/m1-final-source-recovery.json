@@ -1,0 +1,9 @@
+{
+  "source": "/home/roger/openwepp-experiments/m1-final-source-recovery-20260920",
+  "tree_sha256": "b465c013c549e96e486905fd5f8851b3f364e0d080b7130b8a148e9ed6c53f3a",
+  "entries": 754,
+  "base": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-original60-09-from-observer-cut02.patch",
+  "exact_file_map_verified": true,
+  "mutable_source_matched": true
+}
