@@ -1,0 +1,16 @@
+{
+  "utc": "2026-09-20T16:00:24.197193+00:00",
+  "anchor_utc": "2026-09-20T15:51:00+00:00",
+  "carry_seconds": 140363.21924,
+  "elapsed_seconds": 564.197193,
+  "actual_cumulative_seconds": 140927.416433,
+  "publication_return_precharge_seconds": 120.0,
+  "charged_cumulative_seconds": 141047.416433,
+  "cumulative_ceiling_seconds": 169163.21924,
+  "remaining_seconds": 28115.802807,
+  "mixed_outcome_floor": 471,
+  "wait_deductions_seconds": 0,
+  "concurrent_wall_counted_once": true,
+  "status": "INCOMPLETE_BLOCKED_REVIEW_CAPACITY",
+  "final_external_receipt": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920-publication.json"
+}

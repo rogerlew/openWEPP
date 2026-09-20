@@ -1,0 +1,23 @@
+{
+  "evidence_class": "Ran: terminal source equality, JSON parse, recipient path existence and tracked-tree unchanged checks",
+  "utc": "2026-09-20T15:59:22.133990+00:00",
+  "source_files": 747,
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "implementation_delta_empty": true,
+  "canonical_tracked_diff_empty": true,
+  "recipient_paths_exist": [
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs",
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/receiver_preflight.rs",
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/real_hydrology_execution.rs"
+  ],
+  "git_status": "?? docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/late-v18-capped-clippy.stdout\n?? docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/quality-v19-capped-clippy.stdout\n?? docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/six-owner-restoration-20260917/terminal-v20-capped-clippy.stdout\n?? docs/work-packages/20260920-cold-canopy-m1-001/\n",
+  "physical_runs": 0,
+  "builds": 0,
+  "authority_edits": 0,
+  "correctness_spawn_error": "agent thread limit reached",
+  "bounded_recovery": "list_agents confirmed QA completed; no independent nonauthor reviewer or thread-release tool available; no repeat spawn",
+  "independent_science_verdict": "UNAVAILABLE",
+  "terminal_json_count": 3,
+  "package_artifact_links_checked": 3,
+  "staged_diff_check_exit": 0
+}

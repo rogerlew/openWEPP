@@ -1,0 +1,20 @@
+{
+  "evidence_class": "Ran: per-file and aggregate verification, durable copy, destination readback",
+  "utc": "2026-09-20T15:57:05.788731+00:00",
+  "source": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "implementation": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "entries": 747,
+  "copy_byte_equal": true,
+  "canonical_commit": "cf9e6cee0282758c92675baa331a324875e2a173",
+  "charged_anchor_utc": "2026-09-20T15:51:00Z",
+  "carry_seconds": 140363.21924,
+  "ceiling_seconds": 169163.21924,
+  "deadline_utc": "2026-09-20T23:51:00Z",
+  "independent_custody_reviewer": "/root/qa",
+  "external_receipt_checked_by_qa": true,
+  "greater_historical_charge": false,
+  "manifest_reference": "docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/publication-observer-20260918/source-custody-cut02.json",
+  "manifest_member": "entries",
+  "aggregate_method": "SHA256(json.dumps({relative_posix_path: SHA256(file_bytes).hexdigest() for every regular file under source}, sort_keys=True).encode()); Python default JSON separators/ensure_ascii; same map reconstructed independently at destination"
+}
