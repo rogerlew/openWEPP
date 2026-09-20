@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-09-20T22:44:22.302821+00:00",
+  "resumption_anchor": "2026-09-20T16:07:00+00:00",
+  "carry_seconds": 141047.416433,
+  "ceiling_seconds": 169163.21924,
+  "charged_seconds": 164889.719254,
+  "remaining_seconds": 4273.49998600001,
+  "wait_deductions": 0,
+  "preservation_reserve_seconds": 1800,
+  "decision": "CONTINUE: inspect exact first-step rejection trace; bounded implementation correction only, frozen science and seed unchanged"
+}

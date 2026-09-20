@@ -1,0 +1,22 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find value `temperature` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1127:33
+     |
+1127 |             temperature_k: Some(temperature), humidity_kg_kg: Some(humidity), ci_pa: None,
+     |                                 ^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `humidity` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1127:68
+     |
+1127 |             temperature_k: Some(temperature), humidity_kg_kg: Some(humidity), ci_pa: None,
+     |                                                                    ^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `hydraulic` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1128:32
+     |
+1128 |             hydraulic_mm: Some(hydraulic), beta: Some(0.0),
+     |                                ^^^^^^^^^ not found in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib) due to 3 previous errors

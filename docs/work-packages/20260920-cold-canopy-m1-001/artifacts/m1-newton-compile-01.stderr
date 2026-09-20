@@ -1,0 +1,80 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:781:8
+    |
+781 |     Ok((result, jacobian))
+    |     -- ^^^^^^^^^^^^^^^^^^ expected `M1CoupledEvaluation`, found `(Core, Vec<Vec<f64>>)`
+    |     |
+    |     arguments to this enum variant are incorrect
+    |
+    = note: expected struct `M1CoupledEvaluation`
+                found tuple `(Core, Vec<Vec<f64>>)`
+help: the type constructed contains `(Core, Vec<Vec<f64>>)` due to the type of the argument passed
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:781:5
+    |
+781 |     Ok((result, jacobian))
+    |     ^^^------------------^
+    |        |
+    |        this argument influences the type of `Ok`
+note: tuple variant defined here
+   --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:561:4
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:788:9
+    |
+788 |     let (result, jacobian) = evaluate_core_with_jacobian(input, trial)?;
+    |         ^^^^^^^^^^^^^^^^^^   ------------------------------------------ this expression has type `M1CoupledEvaluation`
+    |         |
+    |         expected `M1CoupledEvaluation`, found `(_, _)`
+    |
+    = note: expected struct `M1CoupledEvaluation`
+                found tuple `(_, _)`
+
+error[E0599]: no variant or associated item named `KilogramPerSquareMeter` found for enum `diagnostics::ResidualUnit` in the current scope
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:953:70
+    |
+953 | ...1) { ResidualUnit::KilogramPerSquareMeter } else if index == 13 { ResidualUnit::KilogramPerSquareMeterSecond } else { ResidualUn...
+    |                       ^^^^^^^^^^^^^^^^^^^^^^ variant or associated item not found in `diagnostics::ResidualUnit`
+    |
+   ::: crates/openwepp-land-surface-energy/src/diagnostics.rs:81:1
+    |
+ 81 | pub enum ResidualUnit {
+    | --------------------- variant or associated item `KilogramPerSquareMeter` not found for this enum
+    |
+help: there is a variant with a similar name
+    |
+953 -             unit: if matches!(index, 3 | 5 | 9 | 11) { ResidualUnit::KilogramPerSquareMeter } else if index == 13 { ResidualUnit::KilogramPerSquareMeterSecond } else { ResidualUnit::Dimensionless },
+953 +             unit: if matches!(index, 3 | 5 | 9 | 11) { ResidualUnit::KilogramsPerSquareMeterSecond } else if index == 13 { ResidualUnit::KilogramPerSquareMeterSecond } else { ResidualUnit::Dimensionless },
+    |
+
+error[E0599]: no variant or associated item named `KilogramPerSquareMeterSecond` found for enum `diagnostics::ResidualUnit` in the current scope
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:953:131
+    |
+953 | ...{ ResidualUnit::KilogramPerSquareMeterSecond } else { ResidualUnit::Dimensionless },
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ variant or associated item not found in `diagnostics::ResidualUnit`
+    |
+   ::: crates/openwepp-land-surface-energy/src/diagnostics.rs:81:1
+    |
+ 81 | pub enum ResidualUnit {
+    | --------------------- variant or associated item `KilogramPerSquareMeterSecond` not found for this enum
+    |
+help: there is a variant with a similar name
+    |
+953 |             unit: if matches!(index, 3 | 5 | 9 | 11) { ResidualUnit::KilogramPerSquareMeter } else if index == 13 { ResidualUnit::KilogramsPerSquareMeterSecond } else { ResidualUnit::Dimensionless },
+    |                                                                                                                                           +
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1002:13
+     |
+1002 |         let (base, raw_jacobian) = evaluate_core_with_jacobian(input, &trial)?;
+     |             ^^^^^^^^^^^^^^^^^^^^   ------------------------------------------- this expression has type `M1CoupledEvaluation`
+     |             |
+     |             expected `M1CoupledEvaluation`, found `(_, _)`
+     |
+     = note: expected struct `M1CoupledEvaluation`
+                 found tuple `(_, _)`
+
+Some errors have detailed explanations: E0308, E0599.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `openwepp-land-surface-energy` (lib) due to 5 previous errors

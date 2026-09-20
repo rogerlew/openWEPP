@@ -1501,3 +1501,59 @@ independent reviewers; no new allowance, scope or predicate is introduced.
 Failed draft source is `cbf9ffc6f9e6488e7c3711df19195e23e02d2c4c7f900cd2db80b6617aff52c3` in
 `artifacts/m1-coupled-original60-02-source.json` and its exact observer-relative
 patch. No source is deleted or reset.
+
+
+Publication: coupled component evidence, partial guards and rejected initial
+solver attempts are pushed and remotely verified at `a2a31fb5591e0f762f073dc6694f1417aa195589`.
+`artifacts/coupled-component-publication.json` records verification. New Newton
+work remains local until its later evidence is sealed and published. Guard-tests03
+actually ran9/passed9 (174skipped); prior writer's later count of7 was incorrect.
+
+
+Static: same correctness verifies frozen guard cut `d6ffc5...d2e1` and resolves
+positive support floor/zero no-candidate, transparent refusal and exact optical
+joins, gas q/g0 positivity, capacity142, crate-private FullSupply helper,
+root-fraction and derived hydraulic140/141 guards, active/all-root separation,
+shared coefficient arithmetic, six original residual checks and cap tie
+selection. Release remains **HOLD** for deferred role/pressure/PAR/Rd admission
+before M/H, upper incident-temperature and latent-heat guards, final finite
+validation, captured I/hI publication, interior-D and smooth stem/inactive-Tf
+FD selection, active ca>=p classification, empty store and public Jacobian-index
+panic. Passing selected tests do not bind the missing negative cases. These
+are assigned to the new writer as directly touched prerequisites; frozen
+physical values and tolerances remain unchanged. Same reviewer is stopped
+until the next frozen result cut. No unsupported Newton draft is accepted.
+
+
+Internal reassessment **CONTINUE**, 2026-09-20T22:44:22.302821+00:00.
+Unused agents are stopped; `/root/m1_newton_finish` remains sole source writer.
+Ran: `m1-newton-compile-04` passes compile only. `m1-original60-03` selects
+zero tests and supplies no physical evidence; `m1-original60-04` fails at test
+compilation and also supplies no physical evidence. `m1-original60-05` actually
+runs one frozen original60 test and FAILS at iteration0 with typed
+BacktrackingLimit. Exact recorded source is
+`13badbbcd9453704fc9c47f3db6b1856f964afa647a01778825e20b459eb00d3`.
+Initial upper/lower enthalpy residuals are about4109.906/4038.173J/m²,
+normalized4.109906e9/4.038173e9. The failure currently does not distinguish
+domain rejection from non-decreasing candidate residuals; no scientific
+infeasibility is established. Next bounded action records candidate reasons
+and corrects only demonstrated implementation defects under the frozen seed,
+model, domains and algorithm. Actual step diagnostics and terminal Jacobian
+work remain to correct. Ledger: `artifacts/active-ledger-newton.json`; no new
+allowance or wait deduction. Receiver, cycle, restart and cost remain NOT RUN.
+
+
+Ran: `m1-original60-trace-01` preserves a test-only first-iteration trace at
+source `8e3467f8e07bcef897fa522262d68fb6d3ea08d35bac857568eed3685c9f56ee`.
+The full trial fails the domain predicate; the trace does not identify its
+offending coordinate, so H/M is not established as the cause. Every evaluated
+halved trial increases the current normalized infinity norm: b1 gives
+4.808556887e9 against4.109906224e9; b20 gives4.109907551e9. Upper D is
+positive, about1.36e-19, and lower D is zero, excluding the proposed negative-D
+roundoff explanation. This is evidence of the implemented direction failing
+strict decrease, not general physical infeasibility. Same correctness reviews
+the frozen -05 source and this trace. Further numeric results wait on that
+adjudication; concrete diagnostic/acceptance-control defects remain assigned.
+The root proposal to change inactive-component tolerance to1e-9 was withdrawn
+before adoption: retained inactive anchors use energy_tolerance(1.0), while
+1e-9 applies to Stage3 ground/soil identity rows. No threshold is changed.

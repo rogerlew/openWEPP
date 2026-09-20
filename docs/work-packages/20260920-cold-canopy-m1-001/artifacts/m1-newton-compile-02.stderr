@@ -1,0 +1,12 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused variable: `steps`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1055:17
+     |
+1055 | ...   let steps = StepNorms { temperature_k: Some(temperature), humidity_kg_kg: Some(humidity), ci_pa: None, hydraulic_mm: Some(hy...
+     |           ^^^^^ help: if this is intentional, prefix it with an underscore: `_steps`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib) generated 1 warning (run `cargo fix --lib -p openwepp-land-surface-energy` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.22s
