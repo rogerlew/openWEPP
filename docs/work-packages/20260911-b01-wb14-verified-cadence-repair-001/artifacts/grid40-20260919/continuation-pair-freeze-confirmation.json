@@ -1,0 +1,105 @@
+{
+  "evidence_class": "Ran: actual existing-schema recorder verify/source/input/tool/build/write boundary plus exact reviewed mechanical freeze fill; no child or evaluator",
+  "utc": "2026-09-20T01:32:23.424091+00:00",
+  "freeze": "/home/roger/openwepp-experiments/b01-wb14-grid40-run-evidence-20260919/pair-freeze.json",
+  "freeze_sha256": "a13048e5df6c41e034746c2d4d52b9468ab04a1aa03a6ce796491eceeaa2f901",
+  "candidate_sha256": "49ffc543eeb8b3dfa7cfbd9e4e01c44db1d5401bf5af9ce8d63d5d996ff0730e",
+  "changed_fields": {
+    "prerequisites": {
+      "candidate": {
+        "correctness": "PENDING",
+        "qa": "PENDING",
+        "focused_checks": "PASS"
+      },
+      "final": {
+        "correctness": "GO",
+        "qa": "GO",
+        "focused_checks": "PASS"
+      }
+    },
+    "bound_files": {
+      "candidate": {
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/compare_baseline.py": "beaf885258b495437a138cfc59695cee128e65799214deeced7d61ed15e7a655",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/original-input-bits.json": "67ae40339f8088bcc288905aabf5a6d375c7174f48c637803a8dd3c2a21b3314",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-ledger.json": "93eff7dc397138b4215203579a6976e3086f6d4b4a09ee34008cc7bf4ada8b92",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-adopted-authorization.txt": "09902021580756d2bdfea264cb1f502165d3b75f5e840236a8da70d7e3a3ce5f",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-binary-binding.json": "624048cc1d9d845fe9b520c1c177b8d5330de2ae735cfac6af6c50cd25481d08",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-custody.json": "806e75045c309008c95d80a2c8f7167f84290a3b6e565eb40d3b1233ab90e0e0",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recorder-process-checks.json": "9f51e29af872c238d89ad400e6029ad4143a4d1550e0b78c95c60c08a0e58473",
+        "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md": "c6b60b52eb194341324df1fc69736030627fe4e7d45371442d32e6f4dc80ee94",
+        "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-t-binary.json": "8fd13f72f2e29602947d0a00571b2e7e22076bdb6cf27de232858426e81bff35",
+        "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-t-binary.stdout": "2a3cd22d3a5d6252ece16660d37bc3d0cb5790e48f336e4d7426fc54f6ce0033",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.json": "0b608b7f987c7ee9b0dbcd116ba24aebaed59167d0fba7d8b39547575ca9ac3d",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/terminal-source-recovery.json": "57d0d84df4146982b04c9323dd5c5e9dc3b5bb41f97dc9ea5a2e084470ec1ef7",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch": "ae2478a9238f3e3f9753c0607bd4129b86a3ca240f59ad44a457a7163d8200b9"
+      },
+      "final": {
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/compare_baseline.py": "beaf885258b495437a138cfc59695cee128e65799214deeced7d61ed15e7a655",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/original-input-bits.json": "67ae40339f8088bcc288905aabf5a6d375c7174f48c637803a8dd3c2a21b3314",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-ledger.json": "93eff7dc397138b4215203579a6976e3086f6d4b4a09ee34008cc7bf4ada8b92",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-adopted-authorization.txt": "09902021580756d2bdfea264cb1f502165d3b75f5e840236a8da70d7e3a3ce5f",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-binary-binding.json": "624048cc1d9d845fe9b520c1c177b8d5330de2ae735cfac6af6c50cd25481d08",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-custody.json": "806e75045c309008c95d80a2c8f7167f84290a3b6e565eb40d3b1233ab90e0e0",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recorder-process-checks.json": "9f51e29af872c238d89ad400e6029ad4143a4d1550e0b78c95c60c08a0e58473",
+        "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md": "c6b60b52eb194341324df1fc69736030627fe4e7d45371442d32e6f4dc80ee94",
+        "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-t-binary.json": "8fd13f72f2e29602947d0a00571b2e7e22076bdb6cf27de232858426e81bff35",
+        "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-t-binary.stdout": "2a3cd22d3a5d6252ece16660d37bc3d0cb5790e48f336e4d7426fc54f6ce0033",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.json": "0b608b7f987c7ee9b0dbcd116ba24aebaed59167d0fba7d8b39547575ca9ac3d",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/terminal-source-recovery.json": "57d0d84df4146982b04c9323dd5c5e9dc3b5bb41f97dc9ea5a2e084470ec1ef7",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch": "ae2478a9238f3e3f9753c0607bd4129b86a3ca240f59ad44a457a7163d8200b9",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-review.md": "b016cbe61b735428743f89eabebe69606f54504c317d5c6850cbbf834c7d4ed0",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-correctness-review.md": "d4bfc2ea9526440a2b0b6a3b2df9d34031ff65c6766b67e31cdb708abf9250a1",
+        "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-freeze-review.md": "255b0a340a6b24c73e219029eaee730b50491f92918f5dcfc10a084015cc5a1a"
+      }
+    },
+    "write_boundary": {
+      "candidate": {
+        "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+        "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+        "entry_arguments": [
+          "grid40_experimental_tests::grid40_original_start_replay_is_explicit_and_single_arm_only",
+          "--ignored",
+          "--exact",
+          "--test-threads=1"
+        ],
+        "no_subprocess": true,
+        "no_other_destinations": true,
+        "review": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-review.md",
+        "review_sha256": null,
+        "output_environment": {
+          "OPENWEPP_GRID40_SIDECAR": "sidecar.json",
+          "OPENWEPP_GRID40_EVENTS": "events.jsonl",
+          "OPENWEPP_LSE_FIRST_TRIAL_TRACE": "trace.json"
+        }
+      },
+      "final": {
+        "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+        "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+        "entry_arguments": [
+          "grid40_experimental_tests::grid40_original_start_replay_is_explicit_and_single_arm_only",
+          "--ignored",
+          "--exact",
+          "--test-threads=1"
+        ],
+        "no_subprocess": true,
+        "no_other_destinations": true,
+        "review": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-review.md",
+        "review_sha256": "b016cbe61b735428743f89eabebe69606f54504c317d5c6850cbbf834c7d4ed0",
+        "output_environment": {
+          "OPENWEPP_GRID40_SIDECAR": "sidecar.json",
+          "OPENWEPP_GRID40_EVENTS": "events.jsonl",
+          "OPENWEPP_LSE_FIRST_TRIAL_TRACE": "trace.json"
+        }
+      }
+    }
+  },
+  "verify": "PASS",
+  "normalized_environments": "PASS both arms",
+  "arm_claims": {
+    "baseline": false,
+    "treatment": false
+  },
+  "deadline_utc": "2026-09-20T02:42:19.481118+00:00",
+  "seconds_until_deadline": 4196.056972,
+  "review_reserve_seconds": 1200
+}

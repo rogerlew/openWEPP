@@ -1,0 +1,9 @@
+{
+  "evidence_class": "Ran: harmless recorder-control raw evidence archive/readback only",
+  "archive_sha256": "57ba27981b2c9f0801ad23fd5484f74e6275035dc1e57f2f920d38ad303fcdc9",
+  "file_count": 41,
+  "raw_directory": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-6pkkyt9w",
+  "source_control_receipt": "continuation-recorder-process-checks.json",
+  "archive_bytes": 6508,
+  "all_member_bytes_match": true
+}

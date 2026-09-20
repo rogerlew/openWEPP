@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Ran: final treatment admission verification; no additional evaluator",
+  "utc": "2026-09-20T01:36:38.781687+00:00",
+  "baseline_admission_sha256": "d0c6956ed98ccf2a3f8064f3cf99993cf3720dc14a6a26e263d98d0a8c5016bd",
+  "independent_qa_baseline_review": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-baseline-review.md",
+  "independent_qa_baseline_review_sha256": "f03d5b504982396c0a6ece184832d7b03704bb7aab34aadee5adb99d42c6b1cd",
+  "freeze_sha256": "a13048e5df6c41e034746c2d4d52b9468ab04a1aa03a6ce796491eceeaa2f901",
+  "remaining_seconds": 3940.699455,
+  "required_reserve_plus_arm_seconds": 1320,
+  "baseline_consumed": 1,
+  "treatment_consumed": 0,
+  "decision": "GO single treatment; all later evaluator probes forbidden"
+}

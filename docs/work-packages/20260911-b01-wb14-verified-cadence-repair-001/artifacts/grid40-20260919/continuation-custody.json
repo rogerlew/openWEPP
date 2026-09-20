@@ -1,0 +1,110 @@
+{
+  "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+  "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+  "binary_bytes": 55908800,
+  "binary_mode": "0o444",
+  "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+  "external_build_inputs": {
+    "/workdir/openWEPP/docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/openwepp_c3_woody_v9_vectors.json": "f86770cce11235ba282b47e81de2fa5dc9af19c29dc3bd91c62256957c590633",
+    "/workdir/openWEPP/docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/runtime_descriptor.json": "e0d05e49eabe43340e9fc7e251b319bcd08305d59af522298001b3c4f6bf951f",
+    "/workdir/openWEPP/docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/candidate-v22-hermite-gauss-matrix.json": "b3127ff0cb5ccbde794a82c5417b5ca0fdc814a995ddd39159151f3857354681",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs": "5bd1ed07e3712bb1bc023de5eb1a47677806fc0a7d9d197dea420f4d42d4a47e",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs": "6e0bd56d8c5a9fb2bd2fd548908b69fa2abe44263daa532a4e8bff8bfd3b2f14",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs": "7d24fce2c50728c2e5ca21c7f2af199dd15cddfbc4b5b0bcff01249583c92f60",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/sealed_receiver_context_tests.rs": "80cca7061a4bdee3554ce9b95f4ef3d6407c89c8ee2b69e5b494b65838294c7f",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/source_binding_tests.rs": "a8ef32be64016c54fff0039aaa940ffca9a186c0ec8797f77ebada2c4764088a",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs": "afc499fa26c946c9a1122ed08c49aee7f270d0b646ee8c935d414cf2aa375e62",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/finalization_test_support.rs": "e56808b51a74f2476f2a8a873a221a4aa4d882d5e65046d85aecda37a0c7ed66",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/fixtures/disturbed_native_route_coefficients/p1.man": "fb79e94b9d44d53e1d4d2bf2044a1dd3b0d996fb96fb1ef93226656184916490",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/snow_preflight_tests.rs": "fd9beed5817a08b29292f3e47a2db98884f5b67819e41d297cb539f26dfb9672",
+    "/workdir/openWEPP/docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json": "3fb57d7c637abba20659a59e6eb1487f9f4130f909e17b61c8a6f2eb70f4c711",
+    "/workdir/openWEPP/docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_lse_rust_failure_diagnostics_v1.json": "bdf18078cede6895d25146b6feb9fa7c90aadc436532d4485c43de7ae9b26211",
+    "/workdir/openWEPP/docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/nighttime-ci-vectors.json": "18704e36b4c994a54ea857cb2a784e9c0a3eb28437f3e19c3083fdb6b2495f30",
+    "/workdir/openWEPP/docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/lse-support-admissibility-baseline.json": "e0d07718ab779d15130e3a908e9c38e45fc9d7ba6f5fcdc79a495648b5ef2512",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openWEPP/tools/dev/openwepp-env": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+  },
+  "support_links": {
+    "docs": "/workdir/openWEPP/docs",
+    "tests": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests",
+    ".config": "/workdir/openWEPP/.config",
+    "src": "/workdir/openWEPP/src",
+    "tools": "/workdir/openWEPP/tools"
+  },
+  "patch_hashes": {
+    "root-terminal-c.patch": "95f6b0c3bcfb59b7db07aed10f5ace2341f5622f7f049f00ea80ee3e0e1d3f3e",
+    "root-terminal-c-to-t.patch": "e0a45653ac26fb5ab3f3adc78975623f645845c20b1a91a384cd0c693c08447d",
+    "root-terminal-t.patch": "ae2478a9238f3e3f9753c0607bd4129b86a3ca240f59ad44a457a7163d8200b9"
+  },
+  "canonical_run_directory_exists": false,
+  "utc": "2026-09-20T01:28:04.095685+00:00",
+  "located_receipts": [
+    {
+      "path": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/timeout/baseline/receipt.json",
+      "source_sha256": "synthetic-tooling-source",
+      "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+      "argv": [
+        "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/bin/python3.12",
+        "-c",
+        "import time; time.sleep(2)"
+      ],
+      "arm": "baseline"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/failure/baseline/receipt.json",
+      "source_sha256": "synthetic-tooling-source",
+      "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+      "argv": [
+        "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/bin/python3.12",
+        "-c",
+        "raise SystemExit(3)"
+      ],
+      "arm": "baseline"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-t0jfddwg/success/baseline/receipt.json",
+      "source_sha256": "synthetic-tooling-source",
+      "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+      "argv": [
+        "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/bin/python3.12",
+        "-c",
+        "print(\"synthetic tooling only\")"
+      ],
+      "arm": "baseline"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-6pkkyt9w/timeout/baseline/receipt.json",
+      "source_sha256": "synthetic-tooling-source",
+      "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+      "argv": [
+        "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/bin/python3.12",
+        "-c",
+        "import time; time.sleep(2)"
+      ],
+      "arm": "baseline"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-6pkkyt9w/failure/baseline/receipt.json",
+      "source_sha256": "synthetic-tooling-source",
+      "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+      "argv": [
+        "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/bin/python3.12",
+        "-c",
+        "raise SystemExit(3)"
+      ],
+      "arm": "baseline"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/grid40-recorder-synthetic-final-6pkkyt9w/success/baseline/receipt.json",
+      "source_sha256": "synthetic-tooling-source",
+      "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+      "argv": [
+        "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/bin/python3.12",
+        "-c",
+        "print(\"synthetic tooling only\")"
+      ],
+      "arm": "baseline"
+    }
+  ]
+}

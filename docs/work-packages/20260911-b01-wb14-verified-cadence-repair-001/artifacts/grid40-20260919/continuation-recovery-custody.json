@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: base rehash and retained six-file recovery-overlay composition only; no source copy/patch/evaluator",
+  "base": "/home/roger/openwepp-experiments/b01-wb14-lse-first-trial-source-20260918",
+  "base_sha256": "8cd4866f66b06d6cf96403753cdb3d41ba75f6ca87652341ebe082a86a1b4bc5",
+  "results": [
+    {
+      "overlay": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-recovery-direct-t",
+      "files": 6,
+      "composed_source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+      "exact_terminal_entries_match": true
+    },
+    {
+      "overlay": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-recovery-c-then-t",
+      "files": 6,
+      "composed_source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+      "exact_terminal_entries_match": true
+    }
+  ],
+  "prior_inspection_error": "Generic snapshot incorrectly treated six-file overlays as full trees; preserved continuation-recovery-inspection.json. No actual recovery drift.",
+  "failure_floor": 451
+}

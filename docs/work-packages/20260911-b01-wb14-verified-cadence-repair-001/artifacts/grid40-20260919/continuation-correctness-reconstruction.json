@@ -1,0 +1,559 @@
+{
+  "evidence_class": "Ran: independent offline arithmetic over retained treatment trace/sidecar only; no evaluator",
+  "inputs": {
+    "trace": "/home/roger/openwepp-experiments/b01-wb14-grid40-run-evidence-20260919/treatment/trace.json",
+    "trace_sha256": "93124ec24c18dea0bfba15d1b09a180948dc56e7b62a3e2b76bb94eda194a17e",
+    "sidecar": "/home/roger/openwepp-experiments/b01-wb14-grid40-run-evidence-20260919/treatment/sidecar.json",
+    "sidecar_sha256": "bad1c601160d3a5e13713a5c99e92f0336531814d21d5f7cd70a8be87e4fadca",
+    "receipt": "/home/roger/openwepp-experiments/b01-wb14-grid40-run-evidence-20260919/treatment/receipt.json",
+    "receipt_sha256": "b317828cfa8f552ec719b8a451107602a8ba6a931bfbab9cb8ef947e47d3cee2",
+    "row_map": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/original-case-row-dimensions.json",
+    "row_map_sha256": "70c950434f9b8e59e24b87f428a2ce5a1961d3c64a0a3e3eb4fa4be95df3e9b7"
+  },
+  "identity": {
+    "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+    "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+    "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+    "freeze_sha256": "a13048e5df6c41e034746c2d4d52b9468ab04a1aa03a6ce796491eceeaa2f901",
+    "arm": "treatment",
+    "elapsed_seconds": 4.115309141110629
+  },
+  "terminal": {
+    "kind": "Rejected",
+    "failure_kind": "BacktrackingLimit",
+    "iterations": 14,
+    "backtracking_count": 297,
+    "accepted_strict_exponents": [
+      1,
+      2,
+      5,
+      5,
+      12,
+      20,
+      21,
+      22,
+      23,
+      25,
+      26,
+      29,
+      30,
+      36
+    ]
+  },
+  "branch_audit": {
+    "accepted_base_frames": 15,
+    "iterations": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "all_gas_branches": [
+      [
+        "Inactive",
+        "ExactZeroPar"
+      ],
+      [
+        "Inactive",
+        "ExactZeroPar"
+      ]
+    ],
+    "all_wet_branches": [
+      "ConstitutiveLaw",
+      "ConstitutiveLaw"
+    ],
+    "sun_areas_zero_all_frames": true,
+    "shade_areas_positive_all_frames": true,
+    "represented_snow_all_frames": true
+  },
+  "normalization": {
+    "row_frames_checked": 435,
+    "bit_exact_raw_div_normalizer": 435,
+    "normalizers_are_per_frame": true
+  },
+  "first_obstruction": {
+    "iteration": 14,
+    "coordinate_index": 7,
+    "coordinate_role": "upper occupancy active shade-leaf temperature K",
+    "base_value_k": 273.15000000000674,
+    "lower_bound_k": 273.15,
+    "base_distance_to_lower_k": 6.764366844436154e-12,
+    "newton_direction_k": -11.26490267669643,
+    "maximum_lawful_factor": 6.004816054407216e-13,
+    "attempted_exponents": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40
+    ],
+    "all_41_attempts_domain_invalid": true,
+    "all_41_trial_coordinates_match_x_plus_factor_delta_bitwise": true,
+    "b40_factor": 9.094947017729282e-13,
+    "b40_coordinate_k": 273.1499999999965,
+    "b40_distance_to_lower_k": -3.467448550509289e-12,
+    "b40_violating_indices": [
+      7
+    ],
+    "first_arithmetically_lawful_exponent": 41,
+    "projected_b41_coordinate_k": 273.1500000000016,
+    "projected_b41_distance_to_lower_k": 1.6484591469634324e-12,
+    "projected_b41_offline_bound_check": "PASS; no canonical Rust domain-admission call",
+    "projected_b41_evaluator_status": "NOT RUN; outside fixed policy; no residual or acceptance inference"
+  },
+  "endpoint_domain_distances": [
+    {
+      "index": 4,
+      "kind": "beta",
+      "value": 0.8838920921560247,
+      "lower": 0.0,
+      "upper": 1.0,
+      "distance_to_lower": 0.8838920921560247,
+      "distance_to_upper": 0.11610790784397529
+    },
+    {
+      "index": 5,
+      "kind": "beta",
+      "value": 0.8838920921560247,
+      "lower": 0.0,
+      "upper": 1.0,
+      "distance_to_lower": 0.8838920921560247,
+      "distance_to_upper": 0.11610790784397529
+    },
+    {
+      "index": 6,
+      "kind": "liquid-vapor component temperature K",
+      "value": 290.2425513585237,
+      "lower": 273.15,
+      "upper": 350.0,
+      "distance_to_lower": 17.092551358523735,
+      "distance_to_upper": 59.75744864147629
+    },
+    {
+      "index": 7,
+      "kind": "liquid-vapor component temperature K",
+      "value": 273.15000000000674,
+      "lower": 273.15,
+      "upper": 350.0,
+      "distance_to_lower": 6.764366844436154e-12,
+      "distance_to_upper": 76.84999999999326
+    },
+    {
+      "index": 8,
+      "kind": "liquid-vapor component temperature K",
+      "value": 276.9164235364052,
+      "lower": 273.15,
+      "upper": 350.0,
+      "distance_to_lower": 3.7664235364052274,
+      "distance_to_upper": 73.0835764635948
+    },
+    {
+      "index": 9,
+      "kind": "dry-stem temperature K",
+      "value": 273.46624230431377,
+      "lower": 200.0,
+      "upper": 350.0,
+      "distance_to_lower": 73.46624230431377,
+      "distance_to_upper": 76.53375769568623
+    },
+    {
+      "index": 14,
+      "kind": "beta",
+      "value": 0.8838920921560247,
+      "lower": 0.0,
+      "upper": 1.0,
+      "distance_to_lower": 0.8838920921560247,
+      "distance_to_upper": 0.11610790784397529
+    },
+    {
+      "index": 15,
+      "kind": "beta",
+      "value": 0.8838920921560247,
+      "lower": 0.0,
+      "upper": 1.0,
+      "distance_to_lower": 0.8838920921560247,
+      "distance_to_upper": 0.11610790784397529
+    },
+    {
+      "index": 16,
+      "kind": "liquid-vapor component temperature K",
+      "value": 290.2425513585237,
+      "lower": 273.15,
+      "upper": 350.0,
+      "distance_to_lower": 17.092551358523735,
+      "distance_to_upper": 59.75744864147629
+    },
+    {
+      "index": 17,
+      "kind": "liquid-vapor component temperature K",
+      "value": 273.20118700598914,
+      "lower": 273.15,
+      "upper": 350.0,
+      "distance_to_lower": 0.05118700598916348,
+      "distance_to_upper": 76.79881299401086
+    },
+    {
+      "index": 18,
+      "kind": "liquid-vapor component temperature K",
+      "value": 276.9429092998254,
+      "lower": 273.15,
+      "upper": 350.0,
+      "distance_to_lower": 3.7929092998253964,
+      "distance_to_upper": 73.05709070017463
+    },
+    {
+      "index": 19,
+      "kind": "dry-stem temperature K",
+      "value": 273.5535511662243,
+      "lower": 200.0,
+      "upper": 350.0,
+      "distance_to_lower": 73.55355116622428,
+      "distance_to_upper": 76.44644883377572
+    },
+    {
+      "index": 20,
+      "kind": "canopy temperature K",
+      "value": 272.7626346526034,
+      "lower": 200.0,
+      "upper": 350.0,
+      "distance_to_lower": 72.76263465260342,
+      "distance_to_upper": 77.23736534739658
+    },
+    {
+      "index": 21,
+      "kind": "canopy humidity kg/kg",
+      "value": 0.0015407074854858376,
+      "lower": 0.0,
+      "upper": 0.1,
+      "distance_to_lower": 0.0015407074854858376,
+      "distance_to_upper": 0.09845929251451417
+    },
+    {
+      "index": 22,
+      "kind": "ground temperature K",
+      "value": 275.65248803811716,
+      "lower": 200.0,
+      "upper": 350.0,
+      "distance_to_lower": 75.65248803811716,
+      "distance_to_upper": 74.34751196188284
+    },
+    {
+      "index": 23,
+      "kind": "soil temperature K",
+      "value": 291.5,
+      "lower": 200.0,
+      "upper": 350.0,
+      "distance_to_lower": 91.5,
+      "distance_to_upper": 58.5
+    },
+    {
+      "index": 24,
+      "kind": "soil temperature K",
+      "value": 289.8,
+      "lower": 200.0,
+      "upper": 350.0,
+      "distance_to_lower": 89.80000000000001,
+      "distance_to_upper": 60.19999999999999
+    },
+    {
+      "index": 25,
+      "kind": "soil temperature K",
+      "value": 293.0,
+      "lower": 200.0,
+      "upper": 350.0,
+      "distance_to_lower": 93.0,
+      "distance_to_upper": 57.0
+    },
+    {
+      "index": 26,
+      "kind": "soil temperature K",
+      "value": 293.0,
+      "lower": 200.0,
+      "upper": 350.0,
+      "distance_to_lower": 93.0,
+      "distance_to_upper": 57.0
+    },
+    {
+      "index": 27,
+      "kind": "soil temperature K",
+      "value": 293.0,
+      "lower": 200.0,
+      "upper": 350.0,
+      "distance_to_lower": 93.0,
+      "distance_to_upper": 57.0
+    },
+    {
+      "index": 28,
+      "kind": "soil temperature K",
+      "value": 270.0,
+      "lower": 200.0,
+      "upper": 350.0,
+      "distance_to_lower": 70.0,
+      "distance_to_upper": 80.0
+    }
+  ],
+  "dominant_residual": {
+    "row_index": 22,
+    "branch_aware_name": "represented-snow ground temperature identity",
+    "raw_unit": "K",
+    "ground_temperature_k": 275.65248803811716,
+    "snow_temperature_k": 265.15,
+    "reconstructed_raw_k": 10.502488038117178,
+    "applied_normalizer_k": 1e-09,
+    "reconstructed_normalized": 10502488038.117178,
+    "captured_normalized": 10502488038.117178,
+    "bit_exact": true,
+    "complete_residuals_all_pass": false
+  },
+  "step_provenance": {
+    "terminal_step_origin_text": "last_domain_valid_rejected_trial_or_previous_accepted_step",
+    "actual_source_iteration": 13,
+    "actual_source_exponent": 36,
+    "terminal_equals_prior_accepted_step_bitwise": true,
+    "terminal_steps": {
+      "beta": 1.689592432313145e-12,
+      "ci_pa": 9.197947292705067e-09,
+      "humidity_kg_kg": 2.6655245441544562e-14,
+      "hydraulic_mm": 3.524998744560216e-09,
+      "temperature_k": 2.487293584093638e-10
+    },
+    "iteration_14_has_domain_valid_trial": false,
+    "iteration_14_has_rejected_step_norms": false
+  },
+  "linear_system": {
+    "iteration": 14,
+    "v10_scaled_potential": true,
+    "matrix_infinity_norm_reconstructed": 20000000012.683525,
+    "matrix_infinity_norm_captured": 20000000012.683525,
+    "max_abs_residual": 2.980232238769531e-07,
+    "relative_rhs_residual": 2.83764402106742e-17,
+    "normwise_backward_error": 8.458074372187226e-19
+  },
+  "hydraulic_primitive_reconstruction": [
+    {
+      "occupancy_id": "stratum-z-upper::forest",
+      "branches": {
+        "gas": [
+          "Inactive",
+          "ExactZeroPar"
+        ],
+        "wet": "ConstitutiveLaw",
+        "root": [
+          "ConstitutiveLaw",
+          "ConstitutiveLaw",
+          "ConstitutiveLaw",
+          "ConstitutiveLaw"
+        ]
+      },
+      "rho_kg_m3": 1.1192519398430893,
+      "shade_gs_m_s": 6.478957258407061e-07,
+      "shade_area_m2_m2_tile": 0.8457077766769854,
+      "shade_surface_q_kg_kg": 0.00434970211968923,
+      "canopy_q_kg_kg": 0.0015407074854858376,
+      "shade_vapor_kg_m2_tile_s": 1.722635955884222e-09,
+      "q1_sun_kg_m2_tile_s": 0.0,
+      "q1_shade_kg_m2_tile_s": 0.0012146879663786734,
+      "q2_kg_m2_tile_s": 1.1656834595993929e-09,
+      "root_source_sum_kg_m2_tile_s": -3.8261256083177646e-08,
+      "root_fluxes": [
+        {
+          "layer_id": "soil-1",
+          "kr_m_s": 2.3156172914558957e-08,
+          "ks_m_s": 2.8294499950614293e-10,
+          "series_m_s": 2.795294327156584e-10,
+          "root_area_m2_m2_tile": 0.8370000000000002,
+          "law_kg_m2_tile_s": -2.3756256961997536e-08,
+          "request_kg_m2_stand_ground": 0.0
+        },
+        {
+          "layer_id": "soil-2",
+          "kr_m_s": 1.7599176871607343e-08,
+          "ks_m_s": 2.8294499950614293e-10,
+          "series_m_s": 2.7846802114068087e-10,
+          "root_area_m2_m2_tile": 0.5130000000000001,
+          "law_kg_m2_tile_s": -1.4504999121180106e-08,
+          "request_kg_m2_stand_ground": 0.0
+        },
+        {
+          "layer_id": "soil-dry",
+          "kr_m_s": 0.0,
+          "ks_m_s": 0.0,
+          "series_m_s": 0.0,
+          "root_area_m2_m2_tile": 0.0,
+          "law_kg_m2_tile_s": 0.0,
+          "request_kg_m2_stand_ground": 0.0
+        },
+        {
+          "layer_id": "soil-frozen",
+          "kr_m_s": 0.0,
+          "ks_m_s": 0.0,
+          "series_m_s": 0.0,
+          "root_area_m2_m2_tile": 0.0,
+          "law_kg_m2_tile_s": 0.0,
+          "request_kg_m2_stand_ground": 0.0
+        }
+      ],
+      "reconstructed_rows_0_to_5": [
+        -35.18421446945649,
+        -0.0012146862437427174,
+        -0.11610790784397529,
+        -0.11610790784397529,
+        0.0012146868006952137,
+        3.942693954277704e-08
+      ],
+      "captured_rows_0_to_5": [
+        -35.18421446945649,
+        -0.0012146862437427174,
+        -0.11610790784397529,
+        -0.11610790784397529,
+        0.0012146868006952137,
+        3.942693954277704e-08
+      ],
+      "all_six_rows_bit_exact": true,
+      "water_scale_kg_m2_tile_s": 0.0012146879663786734,
+      "water_normalizer_kg_m2_tile_s": 2.2146879663786735e-12,
+      "captured_water_normalizer_kg_m2_tile_s": 2.2146879663786735e-12,
+      "all_root_requests_and_finalized_uses_zero": true
+    },
+    {
+      "occupancy_id": "stratum-a-lower::forest",
+      "branches": {
+        "gas": [
+          "Inactive",
+          "ExactZeroPar"
+        ],
+        "wet": "ConstitutiveLaw",
+        "root": [
+          "ConstitutiveLaw",
+          "ConstitutiveLaw",
+          "ConstitutiveLaw",
+          "ConstitutiveLaw"
+        ]
+      },
+      "rho_kg_m3": 1.1192519398430893,
+      "shade_gs_m_s": 6.480171384066755e-07,
+      "shade_area_m2_m2_tile": 0.8457077766769854,
+      "shade_surface_q_kg_kg": 0.004365945788156546,
+      "canopy_q_kg_kg": 0.0015407074854858376,
+      "shade_vapor_kg_m2_tile_s": 1.7329216997416018e-09,
+      "q1_sun_kg_m2_tile_s": 0.0,
+      "q1_shade_kg_m2_tile_s": 0.0012494661652394123,
+      "q2_kg_m2_tile_s": 1.1544450420070503e-09,
+      "root_source_sum_kg_m2_tile_s": -3.928977341625396e-08,
+      "root_fluxes": [
+        {
+          "layer_id": "soil-1",
+          "kr_m_s": 2.3156172914558957e-08,
+          "ks_m_s": 2.8294499950614293e-10,
+          "series_m_s": 2.795294327156584e-10,
+          "root_area_m2_m2_tile": 0.8370000000000002,
+          "law_kg_m2_tile_s": -2.4394859155331492e-08,
+          "request_kg_m2_stand_ground": 0.0
+        },
+        {
+          "layer_id": "soil-2",
+          "kr_m_s": 1.7599176871607343e-08,
+          "ks_m_s": 2.8294499950614293e-10,
+          "series_m_s": 2.7846802114068087e-10,
+          "root_area_m2_m2_tile": 0.5130000000000001,
+          "law_kg_m2_tile_s": -1.4894914260922467e-08,
+          "request_kg_m2_stand_ground": 0.0
+        },
+        {
+          "layer_id": "soil-dry",
+          "kr_m_s": 0.0,
+          "ks_m_s": 0.0,
+          "series_m_s": 0.0,
+          "root_area_m2_m2_tile": 0.0,
+          "law_kg_m2_tile_s": 0.0,
+          "request_kg_m2_stand_ground": 0.0
+        },
+        {
+          "layer_id": "soil-frozen",
+          "kr_m_s": 0.0,
+          "ks_m_s": 0.0,
+          "series_m_s": 0.0,
+          "root_area_m2_m2_tile": 0.0,
+          "law_kg_m2_tile_s": 0.0,
+          "request_kg_m2_stand_ground": 0.0
+        }
+      ],
+      "reconstructed_rows_0_to_5": [
+        -35.184214537757725,
+        -0.0012494644323177125,
+        -0.11610790784397529,
+        -0.11610790784397529,
+        0.0012494650107943703,
+        4.044421845826101e-08
+      ],
+      "captured_rows_0_to_5": [
+        -35.184214537757725,
+        -0.0012494644323177125,
+        -0.11610790784397529,
+        -0.11610790784397529,
+        0.0012494650107943703,
+        4.044421845826101e-08
+      ],
+      "all_six_rows_bit_exact": true,
+      "water_scale_kg_m2_tile_s": 0.0012494661652394123,
+      "water_normalizer_kg_m2_tile_s": 2.2494661652394125e-12,
+      "captured_water_normalizer_kg_m2_tile_s": 2.2494661652394125e-12,
+      "all_root_requests_and_finalized_uses_zero": true
+    }
+  ],
+  "scientific_interpretation": {
+    "fixed_policy_result": "valid typed refusal if event/cost integrity independently passes",
+    "proximate_cause": "strict b0..40 grid ends before the first domain-valid projected factor at iteration14",
+    "root_existence": "UNPROVED",
+    "b41_behavior": "UNKNOWN; arithmetic domain projection only; evaluator forbidden",
+    "potential_requests_are_final_fluxes": false,
+    "global_conservation_claim": false
+  }
+}

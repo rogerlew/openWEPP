@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Ran: offline full ordinary-trace binary64/typed-value comparison; no evaluator calls",
+  "reference_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+  "actual_trace_sha256": "cc7b48160e4306c91e8c9b376101da2c38ea112a23ae55829e70213dfb85ccc4",
+  "ordinary_record_count": 95,
+  "ordinary_record_values_and_order_match": true,
+  "signed_zero_bits_preserved": true,
+  "top_level_schema_match": true,
+  "uncompared_fields_or_records": 0,
+  "diagnostic_probe_records": 0
+}

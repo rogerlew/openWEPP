@@ -1,0 +1,7 @@
+{
+  "evidence_class": "Ran: canonical ContractSet load and scoped git diff --check; no evaluator",
+  "utc": "2026-09-20T01:30:12.514866+00:00",
+  "contract_set": "PASS",
+  "diff_check_exit": 0,
+  "solve_boundary_sha256": "c6b60b52eb194341324df1fc69736030627fe4e7d45371442d32e6f4dc80ee94"
+}

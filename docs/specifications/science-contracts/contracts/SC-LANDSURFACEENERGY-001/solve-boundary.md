@@ -282,6 +282,18 @@ reviewers; the method author/adviser cannot provide independent acceptance.
 Preserve exact source/recovery/raw evidence and leave the disposable entry
 production-inaccessible. This authority expires for new execution at study
 disposition; historical outcomes and broader HOLDs are not rewritten.
+The owner's 2026-09-20 adoption of the Grid40 measurement continuation
+prospectively reactivates this same study once after its earlier premeasurement
+INCOMPLETE disposition, solely for remaining final QA, concrete launch freeze,
+the still-unspent original baseline/treatment pair and independent result review.
+The earlier disposition and zero executed arms remain historical evidence.
+All numerical predicates, input identities, run limits and cumulative budget
+remain unchanged. Carry135809.983578 charged seconds under140479.464696;
+the conservatively anchored resumption deadline is2026-09-20T02:42:19.481118Z,
+with the existing1200-second review/preservation reserve. Both independent
+scopes verify this narrow lifecycle continuation before measurement. New
+execution expires again at continuation disposition or that hard deadline;
+neither unused arms nor a later session renew it.
 Calibration/identifiability: NOT_APPLICABLE, no estimated physical parameter;
 observations are DIAGNOSTIC_ONLY. No reader/E008/RQ1/A-001, full scientific/
 conservation/restart, production or cadence qualification follows.

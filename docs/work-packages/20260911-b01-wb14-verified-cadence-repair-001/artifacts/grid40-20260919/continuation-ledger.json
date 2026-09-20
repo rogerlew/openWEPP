@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Ran: external publication ledger read; conservative resumption anchor includes initial onboarding",
+  "study": "EXP-B01-LSE-GRID40-20260919",
+  "start_utc": "2026-09-20T01:24:30+00:00",
+  "deadline_utc": "2026-09-20T02:42:19.481118+00:00",
+  "carried_charged_seconds": 135809.983578,
+  "ceiling_seconds": 140479.464696,
+  "resumption_balance_seconds": 4669.481118,
+  "review_preservation_reserve_seconds": 1200,
+  "failure_floor": 448,
+  "uncertainty_retained": true,
+  "baseline_runs_at_resumption": 0,
+  "treatment_runs_at_resumption": 0,
+  "no_wait_deductions": true
+}

@@ -1,0 +1,119 @@
+{
+  "schema": "openwepp.grid40.pair-freeze.v1",
+  "prerequisites": {
+    "correctness": "PENDING",
+    "qa": "PENDING",
+    "focused_checks": "PASS"
+  },
+  "recorder_sha256": "e34d9b4d20c34fc1169ef25e7911c1b6793b0920e3dba61335cf0acad56297ab",
+  "snapshot_tool_sha256": "90fd8f6d218ac1e2234e527c2700a1e50eafea6631f78b62107ec484fe2f9e7d",
+  "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+  "binary": "/home/roger/openwepp-experiments/b01-wb14-grid40-run-evidence-20260919/grid40-tests.launch",
+  "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+  "input": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/lse-first-trial-20260918/final-first-failure-trace.json",
+  "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+  "bound_files": {
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/compare_baseline.py": "beaf885258b495437a138cfc59695cee128e65799214deeced7d61ed15e7a655",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/original-input-bits.json": "67ae40339f8088bcc288905aabf5a6d375c7174f48c637803a8dd3c2a21b3314",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-ledger.json": "93eff7dc397138b4215203579a6976e3086f6d4b4a09ee34008cc7bf4ada8b92",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-adopted-authorization.txt": "09902021580756d2bdfea264cb1f502165d3b75f5e840236a8da70d7e3a3ce5f",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-binary-binding.json": "624048cc1d9d845fe9b520c1c177b8d5330de2ae735cfac6af6c50cd25481d08",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-custody.json": "806e75045c309008c95d80a2c8f7167f84290a3b6e565eb40d3b1233ab90e0e0",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-recorder-process-checks.json": "9f51e29af872c238d89ad400e6029ad4143a4d1550e0b78c95c60c08a0e58473",
+    "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md": "c6b60b52eb194341324df1fc69736030627fe4e7d45371442d32e6f4dc80ee94",
+    "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-t-binary.json": "8fd13f72f2e29602947d0a00571b2e7e22076bdb6cf27de232858426e81bff35",
+    "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-t-binary.stdout": "2a3cd22d3a5d6252ece16660d37bc3d0cb5790e48f336e4d7426fc54f6ce0033",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.json": "0b608b7f987c7ee9b0dbcd116ba24aebaed59167d0fba7d8b39547575ca9ac3d",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/terminal-source-recovery.json": "57d0d84df4146982b04c9323dd5c5e9dc3b5bb41f97dc9ea5a2e084470ec1ef7",
+    "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/root-terminal-t.patch": "ae2478a9238f3e3f9753c0607bd4129b86a3ca240f59ad44a457a7163d8200b9"
+  },
+  "external_build_inputs": {
+    "/workdir/openWEPP/docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/openwepp_c3_woody_v9_vectors.json": "f86770cce11235ba282b47e81de2fa5dc9af19c29dc3bd91c62256957c590633",
+    "/workdir/openWEPP/docs/work-packages/20260817-c3-woody-v3-v5-oracle-reconciliation-001/artifacts/v9/runtime_descriptor.json": "e0d05e49eabe43340e9fc7e251b319bcd08305d59af522298001b3c4f6bf951f",
+    "/workdir/openWEPP/docs/work-packages/20260821-snow-stage3-v11-covered-consumer-runner-closure-001/artifacts/candidate-v22-hermite-gauss-matrix.json": "b3127ff0cb5ccbde794a82c5417b5ca0fdc814a995ddd39159151f3857354681",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract.rs": "5bd1ed07e3712bb1bc023de5eb1a47677806fc0a7d9d197dea420f4d42d4a47e",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs": "6e0bd56d8c5a9fb2bd2fd548908b69fa2abe44263daa532a4e8bff8bfd3b2f14",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/unified_boundary_tests.rs": "7d24fce2c50728c2e5ca21c7f2af199dd15cddfbc4b5b0bcff01249583c92f60",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/sealed_receiver_context_tests.rs": "80cca7061a4bdee3554ce9b95f4ef3d6407c89c8ee2b69e5b494b65838294c7f",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/source_binding_tests.rs": "a8ef32be64016c54fff0039aaa940ffca9a186c0ec8797f77ebada2c4764088a",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs": "afc499fa26c946c9a1122ed08c49aee7f270d0b646ee8c935d414cf2aa375e62",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/finalization_test_support.rs": "e56808b51a74f2476f2a8a873a221a4aa4d882d5e65046d85aecda37a0c7ed66",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/fixtures/disturbed_native_route_coefficients/p1.man": "fb79e94b9d44d53e1d4d2bf2044a1dd3b0d996fb96fb1ef93226656184916490",
+    "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests/integration/land_surface_energy_real_hydrology_shadow_contract/snow_preflight_tests.rs": "fd9beed5817a08b29292f3e47a2db98884f5b67819e41d297cb539f26dfb9672",
+    "/workdir/openWEPP/docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_snow_free_lse_v1_vectors.json": "3fb57d7c637abba20659a59e6eb1487f9f4130f909e17b61c8a6f2eb70f4c711",
+    "/workdir/openWEPP/docs/work-packages/20260814-snow-free-land-surface-energy-authority-001/artifacts/openwepp_lse_rust_failure_diagnostics_v1.json": "bdf18078cede6895d25146b6feb9fa7c90aadc436532d4485c43de7ae9b26211",
+    "/workdir/openWEPP/docs/work-packages/20260818-c3-nighttime-ci-hold-lift-001/artifacts/nighttime-ci-vectors.json": "18704e36b4c994a54ea857cb2a784e9c0a3eb28437f3e19c3083fdb6b2495f30",
+    "/workdir/openWEPP/docs/work-packages/20260820-c3-woody-v11-segmented-support-001/artifacts/lse-support-admissibility-baseline.json": "e0d07718ab779d15130e3a908e9c38e45fc9d7ba6f5fcdc79a495648b5ef2512",
+    "/workdir/openWEPP/flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+    "/workdir/openWEPP/flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "/workdir/openWEPP/tools/dev/openwepp-env": "5b8149ebc091778fb50586c854d1682f25bde1cb4a7fee621c61dfd0d5194051"
+  },
+  "support_links": {
+    "docs": "/workdir/openWEPP/docs",
+    "tests": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests",
+    ".config": "/workdir/openWEPP/.config",
+    "src": "/workdir/openWEPP/src",
+    "tools": "/workdir/openWEPP/tools"
+  },
+  "binary_arguments": [
+    "grid40_experimental_tests::grid40_original_start_replay_is_explicit_and_single_arm_only",
+    "--ignored",
+    "--exact",
+    "--test-threads=1"
+  ],
+  "environment": {
+    "OPENWEPP_GRID40_TRACE": "{input}",
+    "OPENWEPP_GRID40_ARM": "{arm}",
+    "OPENWEPP_GRID40_SIDECAR": "{output}/sidecar.json",
+    "OPENWEPP_GRID40_EVENTS": "{output}/events.jsonl",
+    "OPENWEPP_LSE_FIRST_TRIAL_TRACE": "{output}/trace.json"
+  },
+  "output_filenames": [
+    "stdout",
+    "stderr",
+    "trace.json",
+    "trace.partial",
+    "trace.partial.next",
+    "sidecar.json",
+    "events.jsonl",
+    "reserved-2"
+  ],
+  "trace_filename": "trace.json",
+  "write_boundary": {
+    "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+    "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+    "entry_arguments": [
+      "grid40_experimental_tests::grid40_original_start_replay_is_explicit_and_single_arm_only",
+      "--ignored",
+      "--exact",
+      "--test-threads=1"
+    ],
+    "no_subprocess": true,
+    "no_other_destinations": true,
+    "review": "/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/grid40-20260919/continuation-qa-review.md",
+    "review_sha256": null,
+    "output_environment": {
+      "OPENWEPP_GRID40_SIDECAR": "sidecar.json",
+      "OPENWEPP_GRID40_EVENTS": "events.jsonl",
+      "OPENWEPP_LSE_FIRST_TRIAL_TRACE": "trace.json"
+    }
+  },
+  "study": "EXP-B01-LSE-GRID40-20260919",
+  "deadline_utc": "2026-09-20T02:42:19.481118+00:00",
+  "build_features": [
+    "default"
+  ],
+  "per_arm_limits": {
+    "updates": 50,
+    "bases": 51,
+    "jacobian_assemblies": 50,
+    "signed_probe_starts": 2900,
+    "covered_trial_is_valid": 20000,
+    "baseline_ordinary": 1201,
+    "baseline_complete": 4101,
+    "treatment_ordinary": 2201,
+    "treatment_complete": 5101,
+    "wall_seconds": 120
+  },
+  "pair_wall_seconds": 240
+}

@@ -1,0 +1,108 @@
+{
+  "evidence_class": "Ran: offline typed/binary64 trace, receipt and event lifecycle reconstruction; no evaluator",
+  "arm": "treatment",
+  "status": "PASS",
+  "freeze_sha256": "a13048e5df6c41e034746c2d4d52b9468ab04a1aa03a6ce796491eceeaa2f901",
+  "receipt_sha256": "b317828cfa8f552ec719b8a451107602a8ba6a931bfbab9cb8ef947e47d3cee2",
+  "trace_sha256": "93124ec24c18dea0bfba15d1b09a180948dc56e7b62a3e2b76bb94eda194a17e",
+  "sidecar_sha256": "bad1c601160d3a5e13713a5c99e92f0336531814d21d5f7cd70a8be87e4fadca",
+  "journal_sha256": "6aeea36dd2548aa78939e09f87fce5a3a658cd821eb45bff73f0b3213fe5ae9b",
+  "tool_sha256": "b1d75ad6f4f276b02e7bab28274448298008981e0ef433d6f75d1fbc40f6db56",
+  "terminal": {
+    "backtracking_count": 297,
+    "failure_kind": "BacktrackingLimit",
+    "iterations": 14,
+    "kind": "Rejected"
+  },
+  "counts": {
+    "base": 15,
+    "jacobian_assembly": 15,
+    "updates": 14,
+    "signed_probe": 863,
+    "domain_predicate": 3185,
+    "witness": 0,
+    "strict": 14,
+    "ordinary": 29,
+    "complete": 682
+  },
+  "caps": {
+    "base": 51,
+    "jacobian_assembly": 50,
+    "updates": 50,
+    "signed_probe": 2900,
+    "domain_predicate": 20000,
+    "witness": 100,
+    "strict": 2050,
+    "ordinary": 2201,
+    "complete": 5101
+  },
+  "lifecycle": {
+    "base": {
+      "attempted": 15,
+      "completed": 15,
+      "errors": 0,
+      "inflight": 0
+    },
+    "witness": {
+      "attempted": 0,
+      "completed": 0,
+      "errors": 0,
+      "inflight": 0
+    },
+    "strict": {
+      "attempted": 14,
+      "completed": 14,
+      "errors": 0,
+      "inflight": 0
+    },
+    "jacobian": {
+      "attempted": 653,
+      "completed": 653,
+      "errors": 0,
+      "inflight": 0
+    },
+    "ordinary": {
+      "attempted": 29,
+      "completed": 29,
+      "errors": 0,
+      "inflight": 0
+    },
+    "complete": {
+      "attempted": 682,
+      "completed": 682,
+      "errors": 0,
+      "inflight": 0
+    }
+  },
+  "event_count": 8379,
+  "operation_ids": 4759,
+  "signed_identity_shortcuts": 210,
+  "signed_full_evaluations": 653,
+  "ci_bracket_loop_iterations": 0,
+  "ci_inventory_scope": "Actual bracket loop only; zero is not zero nested Ci work; endpoint/dark/final work remains under unchanged component limits",
+  "accepted_strict_exponents": [
+    1,
+    2,
+    5,
+    5,
+    12,
+    20,
+    21,
+    22,
+    23,
+    25,
+    26,
+    29,
+    30,
+    36
+  ],
+  "strict_attempted_candidates": 312,
+  "domain_invalid_strict_candidates": 298,
+  "errors": 0,
+  "inflight": 0,
+  "denied": 0,
+  "original_input_typed_binary64_match": true,
+  "R0_uncapped_Potential": true,
+  "extra_probes": 0,
+  "elapsed_seconds": 4.115309141110629
+}

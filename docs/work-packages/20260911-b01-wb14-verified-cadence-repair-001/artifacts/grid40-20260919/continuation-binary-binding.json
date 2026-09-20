@@ -1,0 +1,59 @@
+{
+  "evidence_class": "Ran: byte-identical launch-copy hash and ignored exact listing only; zero evaluator calls",
+  "utc": "2026-09-20T01:29:02.672689+00:00",
+  "argv": [
+    "/home/roger/openwepp-experiments/b01-wb14-grid40-run-evidence-20260919/grid40-tests.launch",
+    "grid40_experimental_tests::grid40_original_start_replay_is_explicit_and_single_arm_only",
+    "--ignored",
+    "--exact",
+    "--list"
+  ],
+  "exit": 0,
+  "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+  "frozen_binary": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-grid40-tests.frozen",
+  "launch_binary": "/home/roger/openwepp-experiments/b01-wb14-grid40-run-evidence-20260919/grid40-tests.launch",
+  "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+  "compiler_artifact": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///home/roger/openwepp-experiments/b01-wb14-grid40-source-20260919/crates/openwepp-land-surface-energy#0.1.0",
+    "manifest_path": "/home/roger/openwepp-experiments/b01-wb14-grid40-source-20260919/crates/openwepp-land-surface-energy/Cargo.toml",
+    "target": {
+      "kind": [
+        "lib"
+      ],
+      "crate_types": [
+        "lib"
+      ],
+      "name": "openwepp_land_surface_energy",
+      "src_path": "/home/roger/openwepp-experiments/b01-wb14-grid40-source-20260919/crates/openwepp-land-surface-energy/src/lib.rs",
+      "edition": "2024",
+      "doc": true,
+      "doctest": true,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "features": [
+      "default"
+    ],
+    "filenames": [
+      "/home/roger/openwepp-experiments/cache/impl4-target/debug/deps/openwepp_land_surface_energy-d5efd685a3babbfa"
+    ],
+    "executable": "/home/roger/openwepp-experiments/cache/impl4-target/debug/deps/openwepp_land_surface_energy-d5efd685a3babbfa",
+    "fresh": true
+  },
+  "build_receipt": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-t-binary.json",
+  "build_receipt_sha256": "8fd13f72f2e29602947d0a00571b2e7e22076bdb6cf27de232858426e81bff35",
+  "listing": "grid40_experimental_tests::grid40_original_start_replay_is_explicit_and_single_arm_only: test\n\n1 test, 0 benchmarks\n",
+  "binary_arguments": [
+    "grid40_experimental_tests::grid40_original_start_replay_is_explicit_and_single_arm_only",
+    "--ignored",
+    "--exact",
+    "--test-threads=1"
+  ]
+}

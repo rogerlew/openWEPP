@@ -1,0 +1,134 @@
+{
+  "evidence_class": "Ran: complete original pair/raw stdout/stderr/receipts/partial/journal preservation and archive member byte verification; no evaluator",
+  "utc": "2026-09-20T01:38:20.336524+00:00",
+  "run_directory": "/home/roger/openwepp-experiments/b01-wb14-grid40-run-evidence-20260919",
+  "archive_sha256": "6b1b175683b1be74ddc5e74d02dc3dae1e5cc2b297505af4d87cec438bc85805",
+  "archive_bytes": 575898,
+  "members": [
+    {
+      "name": "baseline/events.jsonl",
+      "bytes": 768493,
+      "sha256": "0b34c63f323916f64575be8bd8f83302cb1d03ddc43cc79dfa428ab554a70790"
+    },
+    {
+      "name": "baseline/receipt.json",
+      "bytes": 2205,
+      "sha256": "ac95a253af45e598f148657683f6740a307f26395cd07f41a2b7810f56f10d9b"
+    },
+    {
+      "name": "baseline/sidecar.json",
+      "bytes": 1203897,
+      "sha256": "3ef900aefb0aea8883d10a93d25898ab4d5da8cad22b92a9eaff1333e3b30c91"
+    },
+    {
+      "name": "baseline/stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "baseline/stdout",
+      "bytes": 214,
+      "sha256": "aee08a00fe7d415bb8b3731dfacfe19b4768f053636a9718fe8ba29657daad31"
+    },
+    {
+      "name": "baseline/trace.json",
+      "bytes": 411344,
+      "sha256": "cc7b48160e4306c91e8c9b376101da2c38ea112a23ae55829e70213dfb85ccc4"
+    },
+    {
+      "name": "baseline/trace.partial",
+      "bytes": 411344,
+      "sha256": "cc7b48160e4306c91e8c9b376101da2c38ea112a23ae55829e70213dfb85ccc4"
+    },
+    {
+      "name": "treatment/events.jsonl",
+      "bytes": 1670615,
+      "sha256": "6aeea36dd2548aa78939e09f87fce5a3a658cd821eb45bff73f0b3213fe5ae9b"
+    },
+    {
+      "name": "treatment/receipt.json",
+      "bytes": 2208,
+      "sha256": "b317828cfa8f552ec719b8a451107602a8ba6a931bfbab9cb8ef947e47d3cee2"
+    },
+    {
+      "name": "treatment/sidecar.json",
+      "bytes": 2740921,
+      "sha256": "bad1c601160d3a5e13713a5c99e92f0336531814d21d5f7cd70a8be87e4fadca"
+    },
+    {
+      "name": "treatment/stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "treatment/stdout",
+      "bytes": 214,
+      "sha256": "0b48249778b061d9d83622fe4977e9a3aea5d0da3c87bda047d3a6c626e4b66a"
+    },
+    {
+      "name": "treatment/trace.json",
+      "bytes": 1036746,
+      "sha256": "93124ec24c18dea0bfba15d1b09a180948dc56e7b62a3e2b76bb94eda194a17e"
+    },
+    {
+      "name": "treatment/trace.partial",
+      "bytes": 1036746,
+      "sha256": "93124ec24c18dea0bfba15d1b09a180948dc56e7b62a3e2b76bb94eda194a17e"
+    },
+    {
+      "name": "baseline-launch.stdout",
+      "bytes": 2205,
+      "sha256": "ac95a253af45e598f148657683f6740a307f26395cd07f41a2b7810f56f10d9b"
+    },
+    {
+      "name": "baseline-launch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "treatment-launch.stdout",
+      "bytes": 2208,
+      "sha256": "b317828cfa8f552ec719b8a451107602a8ba6a931bfbab9cb8ef947e47d3cee2"
+    },
+    {
+      "name": "treatment-launch.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "baseline-recount.stdout",
+      "bytes": 2573,
+      "sha256": "1bce8797dd0f1918c5607b0ddb7c2b1180966128f6b300af921a7d9bc059d527"
+    },
+    {
+      "name": "baseline-recount.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "treatment-recount.stdout",
+      "bytes": 2650,
+      "sha256": "3b51315ebad10e87b58c14e97663d009359a73799d0d939155c4053afe5138bf"
+    },
+    {
+      "name": "treatment-recount.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "pair-freeze.json",
+      "bytes": 10581,
+      "sha256": "a13048e5df6c41e034746c2d4d52b9468ab04a1aa03a6ce796491eceeaa2f901"
+    }
+  ],
+  "all_members_match_original": true,
+  "original_binary": "/home/roger/openwepp-experiments/b01-wb14-grid40-evidence-20260919/root-terminal-grid40-tests.frozen",
+  "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+  "frozen_binary_and_launch_copy_mode": "0444",
+  "original_arms": {
+    "baseline": 1,
+    "treatment": 1
+  },
+  "subsequent_evaluator_calls": 0,
+  "pair_seconds": 4.671534009277821
+}

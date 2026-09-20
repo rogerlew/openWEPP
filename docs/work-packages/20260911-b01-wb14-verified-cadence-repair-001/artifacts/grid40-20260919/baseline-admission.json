@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Ran: source/receipt-bound baseline exact comparison and independent event lifecycle recount; no new evaluator",
+  "disposition": "MATCHED_BASELINE_GO",
+  "utc": "2026-09-20T01:35:06.894048+00:00",
+  "baseline_receipt_sha256": "ac95a253af45e598f148657683f6740a307f26395cd07f41a2b7810f56f10d9b",
+  "comparison_sha256": "dd628e13720774031293835cc03a65cdd55cdc52f08f8b5aebd9552dce920f94",
+  "cost_reconstruction_sha256": "1bce8797dd0f1918c5607b0ddb7c2b1180966128f6b300af921a7d9bc059d527",
+  "freeze_sha256": "a13048e5df6c41e034746c2d4d52b9468ab04a1aa03a6ce796491eceeaa2f901",
+  "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+  "binary_sha256": "e26cc780e7065211714a37653e55f9038cee3a5a32a6964de7122cd80cf0f272",
+  "input_sha256": "527208c3e5ad07f1744f1bd92c9e4ac17cf7efd9469968a97d7964c5db482dfd",
+  "sidecar_sha256": "3ef900aefb0aea8883d10a93d25898ab4d5da8cad22b92a9eaff1333e3b30c91",
+  "events_sha256": "0b34c63f323916f64575be8bd8f83302cb1d03ddc43cc79dfa428ab554a70790",
+  "numerical_endpoint": "Expected Rejected BacktrackingLimit / E034 at iteration6, backtracking65; not convergence",
+  "ordinary_records": 95,
+  "typed_binary64_values_and_order_match": true,
+  "event_lifecycle_cost_and_integrity": "PASS",
+  "review_scope": "Correctness independently confirmed exact95 records; QA independently confirmed event counts and identities; formal QA confirmation pending before treatment launch"
+}

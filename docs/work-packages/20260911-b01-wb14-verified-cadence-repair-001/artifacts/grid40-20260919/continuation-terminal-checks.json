@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: terminal Python syntax/JSON parse, ContractSet, local-link, whitespace and frozen identity reconciliation only; no evaluator or repeated scientific tests",
+  "utc": "2026-09-20T01:46:11.555757+00:00",
+  "contract_documents": 21,
+  "new_local_links_checked": 26,
+  "diff_check": "PASS",
+  "actual_recorder_verify": "PASS",
+  "no_rust_byte_diff": true,
+  "source_sha256": "fae897fe90f6bbadcaf298607c9d23fd986cd778f9dd56195f7a5510cbd5c4be",
+  "pair_freeze_sha256": "a13048e5df6c41e034746c2d4d52b9468ab04a1aa03a6ce796491eceeaa2f901",
+  "correctness_result_review_sha256": "1400e7fbd28c2d3a3e06c01a43e6c8c6578d715c376de90dcd7fa06b1647669c",
+  "qa_result_review_sha256": "e00b1b34f30fab6d0e10b445dd243122d0cd5ada2910f5170aea23148914e010",
+  "continuation_recount_sha256": "b1d75ad6f4f276b02e7bab28274448298008981e0ef433d6f75d1fbc40f6db56",
+  "reconstruction_script_sha256": "382282edc32fb56b0fe5144b69845b5d128ba56b774a816459538c9d64f97612",
+  "no_more_original_execution": true
+}
