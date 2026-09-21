@@ -1,0 +1,36 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0004]: non-exhaustive patterns: `M1PhaseJoinControllerError::Phase { error: solver::M1CoupledError::LandSurfaceEnergy(_), .. }` and `M1PhaseJoinControllerError::Phase { error: solver::M1CoupledError::Vegetation(_), .. }` not covered
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1397:36
+     |
+1397 |     result.map_err(|failure| match failure {
+     |                                    ^^^^^^^ patterns `M1PhaseJoinControllerError::Phase { error: solver::M1CoupledError::LandSurfaceEnergy(_), .. }` and `M1PhaseJoinControllerError::Phase { error: solver::M1CoupledError::Vegetation(_), .. }` not covered
+     |
+note: `M1PhaseJoinControllerError` defined here
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1244:6
+     |
+1244 | enum M1PhaseJoinControllerError {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+1245 |     Source(M1CoupledError),
+1246 |     Phase { error: M1CoupledError, activity: M1PhaseJoinActivity },
+     |     ----- not covered
+     = note: the matched value is of type `M1PhaseJoinControllerError`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern, a match arm with multiple or-patterns as shown, or multiple match arms
+     |
+1405 ~         M1PhaseJoinControllerError::Source(_) => M1PhaseJoinFailure::UnrepresentableProbe { activity: M1PhaseJoinActivity::default() },
+1406 ~         M1PhaseJoinControllerError::Phase { error: solver::M1CoupledError::LandSurfaceEnergy(_), .. } | M1PhaseJoinControllerError::Phase { error: solver::M1CoupledError::Vegetation(_), .. } => todo!(),
+     |
+
+warning: field `activity` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1246:36
+     |
+1246 |     Phase { error: M1CoupledError, activity: M1PhaseJoinActivity },
+     |     ----- field in this variant    ^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0004`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+warning: `openwepp-land-surface-energy` (lib) generated 1 warning
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy` exited with code 101

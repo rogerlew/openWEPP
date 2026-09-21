@@ -1,0 +1,98 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: field `activity` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1338:5
+     |
+1336 | struct M1PhaseJoinControllerError {
+     |        -------------------------- field in this struct
+1337 |     error: M1CoupledError,
+1338 |     activity: M1PhaseJoinActivity,
+     |     ^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.72s
+────────────
+ Nextest run ID 89c8034e-de4f-4e20-a60c-5eaad179c837 with nextest profile: default
+    Starting 5 tests across 1 binary (184 tests skipped)
+        FAIL [   0.004s] (1/5) openwepp-land-surface-energy m1_coupled_tests::m1_phase_join_expected_red_selects_directional_phase_and_capacity_controls
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_phase_join_expected_red_selects_directional_phase_and_capacity_controls ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_phase_join_expected_red_selects_directional_phase_and_capacity_controls
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 188 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_phase_join_expected_red_selects_directional_phase_and_capacity_controls' (680601) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:247:10:
+    finite lower-join predictor: UnrepresentableProbe { activity: M1PhaseJoinActivity { assemblies: 0, linear_solves: 0, candidate_attempts: 0, backtracking_attempts: 0, materialization_attempts: 0, receipt_attempts: 0, state_install_attempts: 0 } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 4 tests still running
+        FAIL [   0.008s] (5/5) openwepp-land-surface-energy m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 188 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work' (680602) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:525:10:
+    away-from-tie capacity-limited controller: Source { error: Numerical(NumericalFailure { kind: SingularPivot, iterations: 0, normalized_residuals: [-6149385.061493828, 50430948.94993961, -3770378.690121038, 59995504963.57042, 6016431116366.529, 287000000.00000006, -4149585.041495828, 22717368.38001364, -12757237.97330646, -38278115474.422035, -3835080860150.893, 0.0, -185765248.8181183, 11386828.978706857, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], ordered_residuals: [NormalizedResidual { identity: "m1_row_0", raw: -6.149999999999977, scale: 0.0, tolerance: 1.0001e-6, normalized: -6149385.061493828, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_1", raw: 50.719119460481224, scale: 57.14159985918036, tolerance: 1.005714159985918e-6, normalized: 50430948.94993961, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_2", raw: -3.771800801857708, scale: 3.771800801857708, tolerance: 1.0003771800801856e-6, normalized: -3770378.690121038, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_3", raw: 59.995504963570426, scale: 60.00350496357043, tolerance: 1e-9, normalized: 59995504963.57042, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_4", raw: 6016431.116366529, scale: 6015431.116366529, tolerance: 1e-6, normalized: 6016431116366.529, unit: JoulesPerSquareMeter }, NormalizedResidual { identity: "m1_row_5", raw: 0.2870000000000001, scale: 0.0, tolerance: 1e-9, normalized: 287000000.00000006, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_6", raw: -4.149999999999977, scale: 0.0, tolerance: 1.0001e-6, normalized: -4149585.041495828, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_7", raw: 22.776324837965852, scale: 25.952151220155883, tolerance: 1.0025952151220156e-6, normalized: 22717368.38001364, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_8", raw: -12.773533473935156, scale: 12.773533473935156, tolerance: 1.0012773533473934e-6, normalized: -12757237.97330646, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_9", raw: -38.27811547442204, scale: 38.28311547442204, tolerance: 1e-9, normalized: -38278115474.422035, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_10", raw: -3835080.8601508928, scale: 3827163.5701508927, tolerance: 1e-6, normalized: -3835080860150.893, unit: JoulesPerSquareMeter }, NormalizedResidual { identity: "m1_row_11", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_12", raw: -189.94312594484984, scale: 224.90089795115813, tolerance: 1.0224900897951159e-6, normalized: -185765248.8181183, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_13", raw: 1.2131448474351805e-5, scale: 6.539305165971756e-5, tolerance: 1.0653930516597176e-12, normalized: 11386828.978706857, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "m1_row_14", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_15", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_16", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_17", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_18", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_19", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_20", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }], occupancy_id: None, active_bounds: [], backtracking_count: 0, step_norms: StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, pivot_magnitude: Some(1.0), matrix_norm: Some(607394403746999.0), .. }), activity: M1PhaseJoinActivity { assemblies: 1, linear_solves: 1, candidate_attempts: 0, backtracking_attempts: 0, materialization_attempts: 0, receipt_attempts: 0, state_install_attempts: 0 } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.009s] 5 tests run: 3 passed, 2 failed, 184 skipped
+        FAIL [   0.004s] (1/5) openwepp-land-surface-energy m1_coupled_tests::m1_phase_join_expected_red_selects_directional_phase_and_capacity_controls
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_phase_join_expected_red_selects_directional_phase_and_capacity_controls ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_phase_join_expected_red_selects_directional_phase_and_capacity_controls
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 188 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_phase_join_expected_red_selects_directional_phase_and_capacity_controls' (680601) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:247:10:
+    finite lower-join predictor: UnrepresentableProbe { activity: M1PhaseJoinActivity { assemblies: 0, linear_solves: 0, candidate_attempts: 0, backtracking_attempts: 0, materialization_attempts: 0, receipt_attempts: 0, state_install_attempts: 0 } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.008s] (5/5) openwepp-land-surface-energy m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 188 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work' (680602) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:525:10:
+    away-from-tie capacity-limited controller: Source { error: Numerical(NumericalFailure { kind: SingularPivot, iterations: 0, normalized_residuals: [-6149385.061493828, 50430948.94993961, -3770378.690121038, 59995504963.57042, 6016431116366.529, 287000000.00000006, -4149585.041495828, 22717368.38001364, -12757237.97330646, -38278115474.422035, -3835080860150.893, 0.0, -185765248.8181183, 11386828.978706857, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], ordered_residuals: [NormalizedResidual { identity: "m1_row_0", raw: -6.149999999999977, scale: 0.0, tolerance: 1.0001e-6, normalized: -6149385.061493828, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_1", raw: 50.719119460481224, scale: 57.14159985918036, tolerance: 1.005714159985918e-6, normalized: 50430948.94993961, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_2", raw: -3.771800801857708, scale: 3.771800801857708, tolerance: 1.0003771800801856e-6, normalized: -3770378.690121038, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_3", raw: 59.995504963570426, scale: 60.00350496357043, tolerance: 1e-9, normalized: 59995504963.57042, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_4", raw: 6016431.116366529, scale: 6015431.116366529, tolerance: 1e-6, normalized: 6016431116366.529, unit: JoulesPerSquareMeter }, NormalizedResidual { identity: "m1_row_5", raw: 0.2870000000000001, scale: 0.0, tolerance: 1e-9, normalized: 287000000.00000006, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_6", raw: -4.149999999999977, scale: 0.0, tolerance: 1.0001e-6, normalized: -4149585.041495828, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_7", raw: 22.776324837965852, scale: 25.952151220155883, tolerance: 1.0025952151220156e-6, normalized: 22717368.38001364, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_8", raw: -12.773533473935156, scale: 12.773533473935156, tolerance: 1.0012773533473934e-6, normalized: -12757237.97330646, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_9", raw: -38.27811547442204, scale: 38.28311547442204, tolerance: 1e-9, normalized: -38278115474.422035, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_10", raw: -3835080.8601508928, scale: 3827163.5701508927, tolerance: 1e-6, normalized: -3835080860150.893, unit: JoulesPerSquareMeter }, NormalizedResidual { identity: "m1_row_11", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_12", raw: -189.94312594484984, scale: 224.90089795115813, tolerance: 1.0224900897951159e-6, normalized: -185765248.8181183, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_13", raw: 1.2131448474351805e-5, scale: 6.539305165971756e-5, tolerance: 1.0653930516597176e-12, normalized: 11386828.978706857, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "m1_row_14", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_15", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_16", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_17", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_18", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_19", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_20", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }], occupancy_id: None, active_bounds: [], backtracking_count: 0, step_norms: StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, pivot_magnitude: Some(1.0), matrix_norm: Some(607394403746999.0), .. }), activity: M1PhaseJoinActivity { assemblies: 1, linear_solves: 1, candidate_attempts: 0, backtracking_attempts: 0, materialization_attempts: 0, receipt_attempts: 0, state_install_attempts: 0 } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

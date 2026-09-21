@@ -1,0 +1,52 @@
+{
+  "commit": "36a23175b98b70049b645e7d18d5b5cca175b272",
+  "remote_head": "36a23175b98b70049b645e7d18d5b5cca175b272",
+  "verified_utc": "2026-09-21T04:59:49.417364+00:00",
+  "files": {
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-ledger.json": {
+      "sha256": "813ecc230e7a4a5bf6db0d2ec911fde3c5b62ada41df43a926a0e64450b7e2fc",
+      "bytes": 608,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/36a23175b98b70049b645e7d18d5b5cca175b272/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-ledger.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-publication-01.json": {
+      "sha256": "c3e4fb25792a9b82c816f0fd0159ea4b522e94b526760a69edd049064a2d50c4",
+      "bytes": 20474,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/36a23175b98b70049b645e7d18d5b5cca175b272/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-publication-01.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-01-from-observer-cut02.patch": {
+      "sha256": "78f066a0b6e86e9bb13e1b45ff450f207ce42781b9a8797ee4ae8f06c7063508",
+      "bytes": 280923,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/36a23175b98b70049b645e7d18d5b5cca175b272/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-01-from-observer-cut02.patch"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-01-run-attribution.json": {
+      "sha256": "2d6ba9342ad6ddad4571385b15ea35cf3905fb8f3128773092c4c29c8a15771d",
+      "bytes": 1436,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/36a23175b98b70049b645e7d18d5b5cca175b272/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-01-run-attribution.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-01-source.json": {
+      "sha256": "3d7ab49caee9a8efa736631a75e14e1f2412d6f657b02648b6a29828e1780f13",
+      "bytes": 110697,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/36a23175b98b70049b645e7d18d5b5cca175b272/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-01-source.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-02-from-observer-cut02.patch": {
+      "sha256": "2805a74cde0660aa727ea3db74325f8ce526ccc1c46036216cee7ab98bf1dd6a",
+      "bytes": 280913,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/36a23175b98b70049b645e7d18d5b5cca175b272/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-02-from-observer-cut02.patch"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-02-run-attribution.json": {
+      "sha256": "4b69fa5d4dd1a9fabdfe1756f73a11b4b91d40ef49fecaee276c8f96e98b4d26",
+      "bytes": 2025,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/36a23175b98b70049b645e7d18d5b5cca175b272/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-02-run-attribution.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-02-source.json": {
+      "sha256": "a2cce9542207f359f8557bd98031e7776c5f85eb9afc3d0082a4e35623d3c61e",
+      "bytes": 110683,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/36a23175b98b70049b645e7d18d5b5cca175b272/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-rejected-draft-02-source.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/package.md": {
+      "sha256": "65e96a48f608c4c76122161bdeb116cba087a13720df5b03408434e388b8b6b2",
+      "bytes": 137366,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/36a23175b98b70049b645e7d18d5b5cca175b272/docs/work-packages/20260920-cold-canopy-m1-001/package.md"
+    }
+  }
+}

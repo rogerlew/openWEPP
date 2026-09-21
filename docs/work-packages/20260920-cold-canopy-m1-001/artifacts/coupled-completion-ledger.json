@@ -1,13 +1,16 @@
 {
   "anchor_utc": "2026-09-21T03:46:00+00:00",
-  "observed_utc": "2026-09-21T04:57:57.551988+00:00",
+  "observed_utc": "2026-09-21T16:07:22.986031+00:00",
   "carry_seconds": 167559.878319,
   "ceiling_seconds": 181959.878319,
-  "charged_seconds": 171877.430307,
+  "charged_seconds": 212042.86435000002,
   "deadline_utc": "2026-09-21T07:46:00Z",
   "launch_cutoff_utc": "2026-09-21T07:16:00Z",
   "wait_deductions_seconds": 0,
   "historical_outcomes": "at least 492 plus subsequent recorded failures; uncertain total",
-  "remaining_seconds": 10082.448012,
-  "decision": "REASSIGN repeated invalid body and unrecorded executions; fresh bounded writer m1_controller_finish, same reviewers, no budget reset"
+  "remaining_seconds": 0,
+  "decision": "STOP \u2014 hard deadline elapsed; original60 launch refused before command. Safe evidence preservation/publication only.",
+  "last_pre_gap_ledger_utc": "2026-09-21T05:41:40.949983+00:00",
+  "elapsed_beyond_ceiling_seconds": 30082.986031000008,
+  "clock_gap_note": "Last observed pre-gap clock 05:39:57 UTC; subsequent resumed clock 16:06:34 UTC. No claim of continuously active computation across that gap. Authorization permits no wait deductions, so conservative wall-clock ledger includes it; no renewed allowance."
 }

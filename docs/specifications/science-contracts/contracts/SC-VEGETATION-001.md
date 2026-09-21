@@ -3340,7 +3340,10 @@ kinetics/capacity/saturation do not transfer.
 
 ### M1 prospective phase-join directional linearization amendment
 
-**Status: `HOLD / two independent authority reviews and expected-red required`.**
+**Status: `IMPLEMENTATION RELEASED / integrated acceptance HOLD`.** The two
+independent authority reviews and corrected expected-red review are complete
+(COLD-CANOPY-M1, red07); numerical implementation, physical acceptance and
+production activation are not certified by that release.
 This amendment changes neither the primal inverse nor a physical phase tie:
 at a positive-mass state `H=0` remains liquid, and at `H=-Lf*M` it remains
 mixed. It specifies a bounded numerical active-set selection only for a Newton

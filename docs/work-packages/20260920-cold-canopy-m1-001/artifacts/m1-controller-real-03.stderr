@@ -1,0 +1,36 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0277]: `M1PhaseJoinControllerReport` doesn't implement `Debug`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:547:6
+     |
+ 547 |     .expect_err("joined cooling predictor and warming final direction disagree");
+     |      ^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `Debug` is not implemented for `M1PhaseJoinControllerReport`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1174:1
+     |
+1174 | pub struct M1PhaseJoinControllerReport {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: add `#[derive(Debug)]` to `M1PhaseJoinControllerReport` or manually `impl Debug for M1PhaseJoinControllerReport`
+note: required by a bound in `Result::<T, E>::expect_err`
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:1293:4
+
+error[E0277]: `M1PhaseJoinControllerReport` doesn't implement `Debug`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:563:10
+     |
+ 563 |         .expect_err("unrepresentable selected-side probe");
+     |          ^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `Debug` is not implemented for `M1PhaseJoinControllerReport`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1174:1
+     |
+1174 | pub struct M1PhaseJoinControllerReport {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: add `#[derive(Debug)]` to `M1PhaseJoinControllerReport` or manually `impl Debug for M1PhaseJoinControllerReport`
+note: required by a bound in `Result::<T, E>::expect_err`
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:1293:4
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy` exited with code 101

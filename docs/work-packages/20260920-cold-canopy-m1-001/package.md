@@ -4,8 +4,8 @@
 
 Owner instruction `execute /tmp/openwepp_cold_canopy_m1_coupled_completion_authorization.md`
 reopens only this M1 checkpoint. The stopped disposition below is preserved as
-historical evidence; current disposition remains **INCOMPLETE / HOLD**, execution
-active. All four acceptance axes and original frozen predicates remain binding.
+historical evidence; current disposition is **INCOMPLETE / HOLD — STOPPED**,
+hard deadline elapsed. All four acceptance axes and original frozen predicates remain binding.
 Intent: diagnose the retained phase-join direction; review any required numerical
 authority amendment with two independent reviewers before expected-red tests and
 implementation; complete accepted-output guards and real receiver; then run the
@@ -31,7 +31,8 @@ Historical mixed outcomes remain uncertain: latest explicit floor at least492
 plus subsequent separately recorded failed attempts; no invented exact total.
 Initially `/root/m1_implementation` owned detached-source diagnosis. After the
 recorded reassignment below, `/root/m1_tests_finish` is the sole source writer.
-The later body reassignment names `/root/m1_controller_finish` as current writer.
+The later body reassignment named `/root/m1_controller_finish`; root now owns
+bounded integration after that writer paused, as recorded below.
 Attributable replacement reviewers `/root/correctness` and `/root/qa` retain
 independent correctness and QA scopes through implementation.
 
@@ -44,6 +45,77 @@ remain open until supported correction and same-reviewer verification. Physical
 processes are capped at180s; longer checks retain their existing command bounds
 and this package ceiling. Two unsuccessful corrections or60 charged minutes
 trigger internal reassessment, never a new allowance.
+
+### Terminal continuation boundary — 2026-09-21 16:06Z
+
+**STOPPED / INCOMPLETE / HOLD.** Last observed pre-gap clock was05:39:57Z;
+on resumption it was16:06:34Z, beyond the fixed07:46Z hard deadline. The recorder
+refused `m1-original60-10` before starting its command. Its source snapshot and
+complete observer-relative patch exist; no physical process, solver result or
+new original60 pass/failure exists. See [launch refusal](artifacts/m1-original60-10-launch-refusal.json).
+No implementation or tests continue after discovery; only safe preservation and
+already-authorized scoped publication remain. The conservative elapsed ledger
+includes the gap with no wait deductions; this does not claim continuous active
+computation or authorize work beyond the ceiling.
+
+Static independent fix verification: `/root/correctness` returns **GO for the
+bounded controller and unchanged original60 diagnostic**; `/root/qa` returns
+**GO for the bounded original60 diagnostic only**. Both inspected integration02,
+the actual restored2/1 failure path, exact-zero fixture correction, source-error
+preservation, selected-side validation and unchanged custody. Neither approval
+certifies accepted support, receiver, cycles, performance or package closure.
+QA retains the introduced unused `activity` warning and notes production conversion
+discards private activity; no clean lint/public work-count claim is made.
+
+The [verbatim terminal review responses](artifacts/coupled-completion-terminal-reviews.json)
+and [successful exact source reconstruction](artifacts/coupled-completion-terminal-recovery.json)
+are retained.
+
+Exact terminal detached source is
+`272dcadc31a86466b7f4491333a8d2c2e544134616cd25c40847a5ec3afbf504`.
+[Integration02 source](artifacts/m1-controller-integration-02-source.json) and
+[complete recovery patch](artifacts/m1-controller-integration-02-from-observer-cut02.patch)
+bind the immutable observer cut02. Experimental Rust is not adopted into main.
+The verified iteration-zero cause remains the liquid tangent applied to a direction
+entering mixed phase; the reviewed correction has focused evidence but no physical
+rerun. First unresolved outcome is whether original60 converges under that correction.
+
+Accepted-state/materialization guards, empty-store supersaturation, exact accepted
+capacity/drainage/phase eligibility, first-witness semantics and complete finite/error
+provenance remain open. Real routing/receiver APIs and six-owner rollback, both fixed
+72h cycles, fresh-process restart, release cost/scaling/memory, balanced warm timing,
+and Critical full qualification remain NOT RUN or unmet. Earlier authority/V9/V10
+and lint failures are not waived. No accepted coupled support, real receiver result,
+complete conservation/restart result or qualified performance figure is claimed.
+
+### Controller integration reassessment — 05:40Z
+
+Root took bounded integration ownership after the assigned controller writer paused
+with unresolved review fixes. The writer is stopped; no concurrent source edits.
+The complete deleted unrepresentable-controller assertion block was restored.
+Integration adds actual failed-assembly entry counts, full selected-side probe
+validation, preserved source error/phase failure provenance and transaction rollback,
+pivot retention, and an off-tie capacity-limited one-assembly/one-solve control.
+
+Ran: [integration-01](artifacts/m1-controller-integration-01.json) failed two of
+five focused tests. The old purported exact-zero lower-join fixture used decimal
+operands whose computed normal is approximately 7.1e-15, not zero. The two intended
+zero cases now use dM=1/8192 and dH=-333700/8192, with explicit assertions that both
+phase and liquid-mass normals equal zero. This is a disclosed fixture correction,
+not an unchanged-test claim. The new away-tie regression fixture initially produced
+a genuine singular pivot; its final M=.01, H=10, D=.005 preserves the strict
+capacity branch without changing solver thresholds. All failures remain retained.
+
+Ran: [integration-02](artifacts/m1-controller-integration-02.json), source
+`272dcadc31a86466b7f4491333a8d2c2e544134616cd25c40847a5ec3afbf504`,
+passed all five selected tests (184 skipped), including real two-assembly/one-solve
+unrepresentability and phase-error rollback. Source, observer base, pinned inputs
+and support links remained unchanged. One introduced unused-activity warning remains.
+The source is frozen for both retained reviewers to verify fixes and the exact-zero
+fixture correction before a bounded original60 diagnostic. Accepted-output guards,
+real receiver, fixed cycles/restarts and performance remain unfulfilled. Decision:
+CONTINUE within the original allowance because focused control failures have been
+resolved and independent assessment is available; this does not reset charge.
 
 ### Continuation diagnostic and validation attribution
 
@@ -278,6 +350,59 @@ recording failure; it cannot restore missing intermediate raw evidence or waive
 qualification. New writer must implement the exact same-base method and actual
 work/error paths, use the recorder for every check/test, and return for the same
 two reviewers before original60. This is no new allowance or physical retry.
+
+### Replacement controller increment and known guard obligations
+
+Ran: replacement writer retained real02/real03 compilation failures (17.633s
+and6.999s); real04 executes4 focused tests,3PASS/1FAIL after11.711s overall.
+Exact-join identical-set reuse returns `InconsistentFinalSet`; this is a
+corrective test failure, not a physical result. Source and pin checks remain
+true. Root directs literal predictor reuse (including the test override) on an
+identical set, actual counters, preserved errors and removal of the remaining
+fabricated helper before another green claim. Decision: CONTINUE this bounded
+correction; no numerical/physical acceptance or new allowance.
+
+Static: QA's separate known-guard audit confirms remaining empty positive-area
+leaf/shade/stem external-phase supersaturation, exact accepted cap/D/phase,
+first-domain-valid-halved-witness, accepted-output Jacobian rebuild/work,
+derived finite/latent precedence and diagnostic provenance/unit gaps. Existing
+inactive-sun, reservoir reconstruction and basic precedence tests do not cover
+these combinations. They remain current-scope implementation/test obligations,
+not silently deferred acceptance. QA also verifies the phase-amendment status
+clarification accurately reflects the existing authority/red07 release, while
+whole-M1 integration and production remain HOLD. No equations or method rules
+changed in that status edit.
+
+### Real07 review HOLD and frozen-test restoration
+
+Ran: real05 compilation failure13.607s, real06 adapter correctness failure8.594s,
+and real07 exit0/4PASS3.127s are all retained with exact cuts/logs. Real07 tree
+`70bc1fc00fd18de647432b6d09c1f74d115378453232689dbf617f777392dfec`
+is **INVALID as the required focused gate**: its combined failure test deleted
+all reviewed unrepresentable-controller assertions while retaining the same four
+test names. Root exact comparison caught the deletion; both reviewers independently
+confirm HOLD before original60. No physical execution occurred.
+
+Static: correctness additionally finds away-capacity-limited states incorrectly
+request a second solve; missing capacity-normal representability/ordered primal
+validation and discarded high-side evaluation; failed assembly work not counted;
+test adapters collapsing unrelated failures into Unrepresentable; new phase
+provenance mapped to generic backtracking in transaction diagnostics; lost selected
+pivot/matrix norm; repeated normalization and an incomplete duplicate consistency
+helper. QA independently confirms the absent actual2/1 failure seam, with positive
+findings for shared Newton/controller integration, cfg(test) adapters, retained
+original60 input/predicate and bounded successful paths.
+
+Root restored the entire frozen red07 failure assertion as a small coordinating
+edit; test SHA`4dca85412eb184b267ddb9686da3bed7310f7e2b8240f2df7c70c463b2be53af`
+now differs from red07 only by two necessary ownership-preserving clones.
+Decision: CONTINUE all consolidated fixes with retained writer. The actual
+unrepresentable path must execute a predictor and enter a corrected assembly,
+then retain its real2/1 work counts and exact numerical kind before any candidate.
+A large finite lower-join fixture with asymmetric binary64 spacing is a prospective
+control candidate, not an accepted result or any change to original60 forcing.
+No weakened test, fabricated counter, unrelated-error relabel or allowance renewal
+is permitted. The same two reviewers verify the corrected frozen source.
 
 ## Adopted scope and current checkpoint
 

@@ -1,0 +1,10 @@
+{
+  "observed_utc": "2026-09-21T16:07:22.986031+00:00",
+  "status": "NOT RUN \u2014 recorder refused before subprocess launch",
+  "recorder_exit": 1,
+  "message": "Review/preservation reserve reached",
+  "source_tree_sha256": "272dcadc31a86466b7f4491333a8d2c2e544134616cd25c40847a5ec3afbf504",
+  "physical_process_started": false,
+  "source_receipt": "m1-original60-10-source.json",
+  "note": "Recorder produced custody snapshot/patch before deadline check. No physical stdout, stderr, binary execution or solver result exists for this label."
+}

@@ -381,8 +381,10 @@ lower-join vectors, capacity-tie directions, finite/binary64 boundary cases,
 and distinct final-direction-inconsistent/unrepresentable failures that prove
 no candidate, receiver or mutation is reached. A selected-side primitive error
 retains its existing M1 saturation/domain precedence; only the new bounded
-numerical kinds map to `LSEB-E-034`. This remains `HOLD / dual review and
-expected-red required` and cannot activate M1.
+numerical kinds map to `LSEB-E-034`. The phase-join amendment is
+`IMPLEMENTATION RELEASED / integrated acceptance HOLD` after its two independent
+authority reviews and corrected red07 review. This releases bounded numerical
+implementation only and cannot activate M1.
 
 This section is `HOLD / dual review and expected-red required`; it neither
 activates M1 nor changes a V35 equation or receiver. The immutable source

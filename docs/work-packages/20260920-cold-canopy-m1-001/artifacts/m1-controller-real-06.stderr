@@ -1,0 +1,48 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.86s
+────────────
+ Nextest run ID 1e1f44b5-937a-49bd-b45d-2e669316b0dc with nextest profile: default
+    Starting 4 tests across 1 binary (185 tests skipped)
+        FAIL [   0.012s] (4/4) openwepp-land-surface-energy m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 188 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work' (657833) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:486:6:
+    lower final controller matrix: InconsistentFinalSet { activity: M1PhaseJoinActivity { assemblies: 2, linear_solves: 2, candidate_attempts: 0, backtracking_attempts: 0, materialization_attempts: 0, receipt_attempts: 0, state_install_attempts: 0 } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.014s] 4 tests run: 3 passed, 1 failed, 185 skipped
+        FAIL [   0.012s] (4/4) openwepp-land-surface-energy m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 188 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work' (657833) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:486:6:
+    lower final controller matrix: InconsistentFinalSet { activity: M1PhaseJoinActivity { assemblies: 2, linear_solves: 2, candidate_attempts: 0, backtracking_attempts: 0, materialization_attempts: 0, receipt_attempts: 0, state_install_attempts: 0 } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

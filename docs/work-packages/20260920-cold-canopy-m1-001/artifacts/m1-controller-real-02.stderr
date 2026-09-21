@@ -1,0 +1,53 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find value `pivot` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1603:22
+     |
+1603 |                 Some(pivot),
+     |                      ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `matrix_norm` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1604:22
+     |
+1604 |                 Some(matrix_norm),
+     |                      ^^^^^^^^^^^ not found in this scope
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:958:37
+    |
+958 |             (selected[occupancy] == openwepp_vegetation::cold_canopy_m1::M1Phase::Mixed
+    |              -------------------    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `M1PhaseJoinSelection`, found `M1Phase`
+    |              |
+    |              expected because this is `M1PhaseJoinSelection`
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:960:44
+    |
+960 |                 || (selected[occupancy] == openwepp_vegetation::cold_canopy_m1::M1Phase::Ice
+    |                     -------------------    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `M1PhaseJoinSelection`, found `M1Phase`
+    |                     |
+    |                     expected because this is `M1PhaseJoinSelection`
+
+error[E0277]: `Core` doesn't implement `Debug`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1175:5
+     |
+1173 | #[derive(Clone, Debug)]
+     |                 ----- in this derive macro expansion
+1174 | pub struct M1PhaseJoinControllerReport {
+1175 |     base: Core,
+     |     ^^^^^^^^^^ unsatisfied trait bound
+     |
+help: the trait `Debug` is not implemented for `Core`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:405:1
+     |
+ 405 | struct Core {
+     | ^^^^^^^^^^^
+     = note: add `#[derive(Debug)]` to `Core` or manually `impl Debug for Core`
+
+Some errors have detailed explanations: E0277, E0308, E0425.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `openwepp-land-surface-energy` (lib) due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 5 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy` exited with code 101

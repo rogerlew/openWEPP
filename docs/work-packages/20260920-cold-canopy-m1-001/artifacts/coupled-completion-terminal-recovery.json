@@ -1,0 +1,8 @@
+{
+  "reconstructed_source": "/home/roger/openwepp-experiments/m1-terminal-recovery-3oq79ctf",
+  "base": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-controller-integration-02-from-observer-cut02.patch",
+  "tree_sha256": "272dcadc31a86466b7f4491333a8d2c2e544134616cd25c40847a5ec3afbf504",
+  "entries": 754,
+  "matches_terminal_source": true
+}

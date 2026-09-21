@@ -1,0 +1,12 @@
+{
+  "source_tree_sha256": "272dcadc31a86466b7f4491333a8d2c2e544134616cd25c40847a5ec3afbf504",
+  "evidence": "m1-controller-integration-02.json",
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "verbatim_final": "**GO** for the bounded controller and unchanged original60 diagnostic.\n\nAll prior blockers are fixed: actual 2/1 unrepresentability, capacity-limited 1/1 reuse, combined selected-side validation, source-error preservation, exact failure taxonomy, retained pivot evidence, hoisted normalization, and restored red07 coverage.\n\nThe binary-exact zero fixture correction is appropriate and strengthens the test.\n\nRecorded evidence: five focused tests passed in 3.829 seconds with all integrity checks true. Accepted-state, receiver, rollback, full support, and original60 outcome remain pending."
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "verbatim_final": "**QA GO** for the bounded original60 diagnostic only.\n\nThe restored test exercises the actual controller\u2019s 2-assembly/1-solve unrepresentable path, preserves source-error typing, and validates corrected exact-zero fixtures. The focused receipt records 5/5 passes with custody intact.\n\nA new `dead_code` warning for production `activity` tracking remains; do not claim a clean lint gate or public activity provenance before resolving it."
+  }
+}
