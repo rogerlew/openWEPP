@@ -1,0 +1,252 @@
+{
+  "commit": "e812c7e7fbc1af568d103de8daa7a79379d838ec",
+  "remote_head": "e812c7e7fbc1af568d103de8daa7a79379d838ec",
+  "verified_utc": "2026-09-21T04:45:08.770779+00:00",
+  "files": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": {
+      "sha256": "5af361dea2740b65228426e6aadfa16fc5c89aea8495172d21c072860881da81",
+      "bytes": 5625,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+    },
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": {
+      "sha256": "241d82fe6d805f63dae36566979cf95ae4bbd902df58a87817bf10fb736f8e7a",
+      "bytes": 42745,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md"
+    },
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": {
+      "sha256": "92b3e2b3ba5bf0fff1fe41c7c1b1181f9a4996d574ddfd1a95da8a92222e9b4c",
+      "bytes": 28274,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md"
+    },
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": {
+      "sha256": "2735cf32ad895af43572d39cfc8f4dd554f92571c6fd5ca5f282487dea84cb67",
+      "bytes": 282524,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-authority-failure-attribution.json": {
+      "sha256": "cb8378ef3fb47a86c953fd744e9e8a73c8a93f189df4012eb0efa4aa9876f41d",
+      "bytes": 28206,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-authority-failure-attribution.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-authority-structural-01.json": {
+      "sha256": "db9752b7c1a2f57e92d19bd23940fbe31847373258d190444ff790e0927dc41e",
+      "bytes": 2406,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-authority-structural-01.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-authority-structural-02.json": {
+      "sha256": "157e01a200f7a4738db27692c74615fdb97ac61ff05b3f8b258df2a4bbeea04f",
+      "bytes": 2273,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-authority-structural-02.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-ledger.json": {
+      "sha256": "ca335c2ff4ec445fa1fe690d5d0e0ffc66902388e4b453676272348e898bb21f",
+      "bytes": 609,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-ledger.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-retained-direction.json": {
+      "sha256": "77673c3943ae8c78a084a3343237901ea83ceb7c0e1de8e8eec790ab73aae15b",
+      "bytes": 737,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-retained-direction.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-support-recovery.json": {
+      "sha256": "e38c90a30778331d85c41e33cc13709226b49e236e8e235b97f9dc7e16b1a915",
+      "bytes": 30099,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-support-recovery.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-v9-runtime-attribution.json": {
+      "sha256": "c2877a22f6b619e71e39328fc132495f320f87ed051e9d717e3ccf5e2243a8a8",
+      "bytes": 2851,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/coupled-completion-v9-runtime-attribution.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02-from-observer-cut02.patch": {
+      "sha256": "bc00435be1bd4500a8db13d174a75e1665667d2bd647f09160bda7e428d84b15",
+      "bytes": 254469,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02-from-observer-cut02.patch"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02-source.json": {
+      "sha256": "b7959ca44532ad7eaad43c6df282ccaa2063c9a1a35026986559287b06482514",
+      "bytes": 110445,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02-source.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02.json": {
+      "sha256": "bcf9c70fbe3c6e24495d20320f9fb2fa581902e2c2ef77128a3bb579f2bf6629",
+      "bytes": 81864,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02.resources": {
+      "sha256": "ecc6b17ad26fb3f7d41bd86c187a2b64119117e7bd53787593601c0cbe835efb",
+      "bytes": 972,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02.resources"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02.stderr": {
+      "sha256": "99e2961802b924d188bb35654fc942d049301b057bb72e3d159875355766da7d",
+      "bytes": 3205,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02.stderr"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02.stdout": {
+      "sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244",
+      "bytes": 204,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-02.stdout"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03-from-observer-cut02.patch": {
+      "sha256": "8791831780e6dd23322fce751079579afd11e640e63b1485226c119239a68f18",
+      "bytes": 258135,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03-from-observer-cut02.patch"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03-source.json": {
+      "sha256": "0318108dec95565921854b0446c0df2b2b34509566401142c36c3d040fd6604f",
+      "bytes": 110445,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03-source.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03.json": {
+      "sha256": "6b25dc653aed5cc081b40485e57593363aa359116f52b808056305596894dec8",
+      "bytes": 81863,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03.resources": {
+      "sha256": "476efa7e57826f3bf2de5435aaafa2fa7631704a1a131fac35db1a838f211fca",
+      "bytes": 965,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03.resources"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03.stderr": {
+      "sha256": "59de21fac73297ef3c65e279c8e081544c33a7534d6df4ddb33b629aa760ca56",
+      "bytes": 5652,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03.stderr"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03.stdout": {
+      "sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244",
+      "bytes": 204,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-03.stdout"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04-from-observer-cut02.patch": {
+      "sha256": "8f0fb22d41746bcd299aefd5c0973680e000e4bb2b4c250a5889858b8d2994c3",
+      "bytes": 262496,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04-from-observer-cut02.patch"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04-source.json": {
+      "sha256": "23d07f95d133b5b81e15bcd1427e545d0f1789b51f12d4096126d33664c1f06e",
+      "bytes": 110445,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04-source.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04.json": {
+      "sha256": "fd2eb45198501b271703c57322f492ae849577a0983c31223addd6a6fcd2f41b",
+      "bytes": 81864,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04.resources": {
+      "sha256": "0394b739097b71e26b104fed2e5e78eccb576f2f21831c28727369612e889e6d",
+      "bytes": 961,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04.resources"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04.stderr": {
+      "sha256": "291ff169d2f6c9ab36558b81c36a2c0056af3836dfdc6e7f337b6cfe7d21eef0",
+      "bytes": 6911,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04.stderr"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04.stdout": {
+      "sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244",
+      "bytes": 204,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-04.stdout"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05-from-observer-cut02.patch": {
+      "sha256": "477f7221286843617bd88c3fd81259b7103257c821af20c92335fea0608f26ab",
+      "bytes": 262877,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05-from-observer-cut02.patch"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05-source.json": {
+      "sha256": "9cc3aa59399474f6678572db4aa3ad36324ea1d71cda2f547b48efedf9685292",
+      "bytes": 110445,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05-source.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05.json": {
+      "sha256": "920d45dfac3c77c59342cb312121e887e9805010d340ce60717f0faf99038089",
+      "bytes": 81863,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05.resources": {
+      "sha256": "5fd57108bc691a679be4cdec20be8852d9494858b2d8e42a4a0cd718296470ce",
+      "bytes": 961,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05.resources"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05.stderr": {
+      "sha256": "095183bb28829d2e8c024812259afb896dd205bf57b0194d1947dadf7bc5bd85",
+      "bytes": 6911,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05.stderr"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05.stdout": {
+      "sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244",
+      "bytes": 204,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-05.stdout"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06-from-observer-cut02.patch": {
+      "sha256": "02fe8f21605ff35b34c5617c52535e73a7d279e396cd4942430fb0f3b3e77be1",
+      "bytes": 265675,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06-from-observer-cut02.patch"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06-source.json": {
+      "sha256": "7ac689c3a2517059bf6bd36476f9857585f471e4b1fe8e3db44137601b83f684",
+      "bytes": 110445,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06-source.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06.json": {
+      "sha256": "71062329b2a506ab66954afac5f394abc9588c039c5c115d2c89e9ef850aae4b",
+      "bytes": 81863,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06.resources": {
+      "sha256": "d521e69342f925665947c58b375d6b26229cf405ef4f788ee6b29faab026b52a",
+      "bytes": 963,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06.resources"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06.stderr": {
+      "sha256": "0723a707bc007ffe275d425e72a4541d8ead3b9e7a8ef1ad86cc18a18f154d2f",
+      "bytes": 9147,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06.stderr"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06.stdout": {
+      "sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244",
+      "bytes": 204,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-06.stdout"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07-from-observer-cut02.patch": {
+      "sha256": "cc6db0d74c5a6c2d07524fe09e229bfe12d39acb41a04e7bf4feb64dabb98ab5",
+      "bytes": 267412,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07-from-observer-cut02.patch"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07-source.json": {
+      "sha256": "684ebaff8e272233f47f849c82da37134f12b2fd3b14f2354a3e1ffa0c884f7e",
+      "bytes": 110445,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07-source.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07.json": {
+      "sha256": "b9fffc2df94a0de4a5c584e03f358fb4c1d135be59091d365f73d489599d8982",
+      "bytes": 81863,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07.resources": {
+      "sha256": "5648ccb451545d9dbecb987fcf776a4bfc4959d20ddcf3d8489b72ed7594622a",
+      "bytes": 960,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07.resources"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07.stderr": {
+      "sha256": "57ed5644270e159d616ee9d4a6042b2f859a4d0652e45b1c6bcaac3ae0ec1a2e",
+      "bytes": 8785,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07.stderr"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07.stdout": {
+      "sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244",
+      "bytes": 204,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-phase-expected-red-07.stdout"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py": {
+      "sha256": "addbfaa41e80b35c70fc4837aa84a27859cfd3e65511e2f39ea16e8112ef5d09",
+      "bytes": 8668,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/package.md": {
+      "sha256": "f4458dde4d33c3b7bd202ebe8bd179598a52034cb6f0ec05d25948f4ddee4f62",
+      "bytes": 133482,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/e812c7e7fbc1af568d103de8daa7a79379d838ec/docs/work-packages/20260920-cold-canopy-m1-001/package.md"
+    }
+  }
+}

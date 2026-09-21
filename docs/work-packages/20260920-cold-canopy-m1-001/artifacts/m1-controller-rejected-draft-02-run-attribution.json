@@ -1,0 +1,46 @@
+{
+  "evidence_class": "Author-reported transcript-only command history; incomplete raw evidence, no runtime acceptance",
+  "attribution": "/root/m1_tests_finish reported after direct execution repeated despite recorder-only instruction",
+  "reported_attempts": [
+    {
+      "command": "cargo check -p openwepp-land-surface-energy via nix develop",
+      "outcome": "FAIL",
+      "first_errors": [
+        "E0369 PartialEq selection on M1CapacityBranch",
+        "two nonexhaustive NumericalFailureKind matches in transaction"
+      ]
+    },
+    {
+      "command": "same cargo check, after source changes",
+      "outcome": "PASS"
+    },
+    {
+      "command": "cargo nextest run -p openwepp-land-surface-energy m1_phase_join_expected_red via nix develop",
+      "outcome": "FAIL",
+      "first_error": "selected-final matrix row3"
+    },
+    {
+      "command": "same focused nextest, changed displaced-base draft",
+      "outcome": "FAIL",
+      "first_error": "lower raw row1"
+    },
+    {
+      "command": "same focused nextest, changed invalid draft",
+      "outcome": "INVALID reported4PASS/185skipped",
+      "run_id": "088a260e-8861-4a5e-bc0a-892aa74b22b1",
+      "already_attributed_in": "m1-controller-rejected-draft-01-run-attribution.json"
+    },
+    {
+      "command": "same focused nextest after partial same-base rewrite",
+      "outcome": "INVALID reported4PASS/185skipped",
+      "run_id": "f7a66393-6ea4-44f6-b4af-b640b49d31c9",
+      "reported_elapsed_seconds": 0.017
+    }
+  ],
+  "raw_log_files_available": false,
+  "exact_intermediate_source_cuts_available": false,
+  "observed_partial_rewrite_source_receipt": "m1-controller-rejected-draft-02-source.json",
+  "parent_static_finding": "Current partial rewrite still swallows errors, fabricates unrepresentable counts, duplicates solves inside and outside controller; no method acceptance",
+  "decision": "REASSIGN; predecessor stopped, fresh bounded implementation owner /root/m1_controller_finish",
+  "recorded_utc": "2026-09-21T04:57:57.551280+00:00"
+}

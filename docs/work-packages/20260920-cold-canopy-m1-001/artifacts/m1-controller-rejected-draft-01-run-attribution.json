@@ -1,0 +1,35 @@
+{
+  "evidence_class": "Author-reported tool-transcript-only execution; INVALID implementation, no scientific acceptance",
+  "argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "cargo",
+    "nextest",
+    "run",
+    "-p",
+    "openwepp-land-surface-energy",
+    "m1_phase_join_expected_red"
+  ],
+  "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "reported_exit_code": 0,
+  "reported_wall_seconds": 4.4,
+  "reported_passed": 4,
+  "reported_skipped": 185,
+  "nextest_run_id": "088a260e-8861-4a5e-bc0a-892aa74b22b1",
+  "raw_log_available": false,
+  "attribution": "Retained implementer /root/m1_tests_finish reports source unchanged after run; parent preserved observed draft",
+  "source_receipt": "m1-controller-rejected-draft-01-source.json",
+  "source_tree_sha256": "b57e7b5e3cf9a5cc6a344839d02c7c7d9125658a2b1b1975a05d23255c4ed14b",
+  "recorded_utc": "2026-09-21T04:53:15.562768+00:00",
+  "invalid_reasons": [
+    "Shifted Newton base used instead of same-base selected-side Jacobian",
+    "Unrepresentable helper fabricated work counts",
+    "Original errors swallowed into Unrepresentable",
+    "Unchanged-set extra solve omitted from claimed count",
+    "Actual final set not universally verified",
+    "Capacity and lower join classifications incomplete"
+  ],
+  "disposition": "First unsuccessful body correction; no rerun to recreate missing logs, substantive rewrite assigned"
+}

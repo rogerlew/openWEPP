@@ -18,7 +18,8 @@ Ran: custody check confirms all 754 current and preserved recovery entries match
 747 observer entries match `85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963`;
 the preserved debug binary matches its recorded SHA256. Existing immutable
 recovery source and complete base-relative patch preserve the measured cut before
-edits. Main remains at `2c44ccb623238bb068776587b0ed99e1b702baf9`.
+edits. The continuation started from main `2c44ccb623238bb068776587b0ed99e1b702baf9`;
+subsequent scoped publication is recorded below.
 
 The final external publication receipt was read once and confirms carried charge
 **167559.878319 s**. New ceiling **181959.878319 s**, with no old remainder or
@@ -28,9 +29,11 @@ start was not instrumented. Hard deadline **07:46:00Z**, launch cutoff
 **07:16:00Z**, 1800-second review/preservation reserve, no wait deductions.
 Historical mixed outcomes remain uncertain: latest explicit floor at least492
 plus subsequent separately recorded failed attempts; no invented exact total.
-`/root/m1_implementation` is the sole detached-source writer, initially read-only
-for diagnosis. Prior reviewers are not present in this new thread; attributable
-independent replacements will inspect affected authority and implementation.
+Initially `/root/m1_implementation` owned detached-source diagnosis. After the
+recorded reassignment below, `/root/m1_tests_finish` is the sole source writer.
+The later body reassignment names `/root/m1_controller_finish` as current writer.
+Attributable replacement reviewers `/root/correctness` and `/root/qa` retain
+independent correctness and QA scopes through implementation.
 
 Validation remains Critical: focused phase/direction/cap/finite/precedence and
 work-count controls, original residual reconstruction, real receiver/rollback,
@@ -53,7 +56,8 @@ mixed H-column prediction +1390.8165787453413, and observed b20 secant
 [retained-direction arithmetic](artifacts/coupled-completion-retained-direction.json).
 This establishes a tangent/trajectory discrepancy in the prescribed selection,
 not an incorrect physical inverse or proof of nonlinear feasibility. No physical
-rerun occurred. Numerical amendment remains pending dual independent review.
+rerun occurred at diagnosis. The later dual authority/test release is recorded
+below; implementation and runtime acceptance remain pending.
 
 Static: replacement `/root/qa` identifies outstanding measurement freeze,
 complete checkpoint/receiver evidence, and full consumed-input binding as stage
@@ -69,8 +73,8 @@ correctness; QA retains its distinct role for affected submissions.
 
 Static authority-failure attribution: detached tests point at the older Sep16
 support tree; current canonical tests already have the directory-contract reader.
-Missing detached `.venv` and assurance paths explain particular missing-input
-failures but have not yet been repaired/rerun. The M1 insertion of INV140-144
+Missing detached `.venv` and assurance paths explained particular missing-input
+failures; recovery is recorded below, while those tests remain unrerun. The M1 insertion of INV140-144
 inside the historically hashed V3 invariant section changes its digest from
 49704e9... to611714c...; author is assigned preservation of the new rows outside
 that immutable span, never an expected-hash replacement. Separate full-V10
@@ -220,6 +224,60 @@ required guards, then focused controls and corrected-source original60 under
 180s. Real receiver, cycles, restart, cost and complete qualification remain
 required. Same reviewers retain their numerical/QA scopes. No physical rerun has
 occurred at this release; this is not M1 acceptance.
+
+### Reviewed continuation checkpoint publication
+
+Ran: commit `e812c7e7fbc1af568d103de8daa7a79379d838ec` pushed to existing
+`origin/main`; all49 changed files downloaded at that exact commit and compared
+byte-for-byte successfully. [Remote verification](artifacts/coupled-completion-publication-01.json)
+binds each published path. This preserves the reviewed canonical amendment,
+red02–red07 complete recovery patches/logs and the current attribution. No Rust
+source was adopted into main. Unified-diff blank context markers account for
+all54 whitespace-check reports in the six immutable recovery patches; direct
+inspection verified each reported line is exactly the required single-space
+context marker. The evidence was not rewritten. Later implementation remains
+active in the sole detached tree and is not covered by this publication claim.
+
+### First body correction rejected before physical execution
+
+Static: root early inspection caught shifted-base differentiation, a fabricated
+unrepresentable-helper activity result, swallowed original error types,
+unchanged-set duplicate solve despite1/1 claims, incomplete actual final-set
+checks and capacity/lower-join classification. Writer confirms these are invalid.
+Author reports an unrecorded focused run: nextest
+`088a260e-8861-4a5e-bc0a-892aa74b22b1`, exit0,4.4s,4PASS/185skipped.
+That green result is **INVALID**, not physical or method acceptance. Its raw
+output exists only in the author's tool transcript, not a saved raw log.
+[Run attribution](artifacts/m1-controller-rejected-draft-01-run-attribution.json)
+records the limitation without recreating evidence. Root preserved the unchanged
+rejected draft tree`b57e7b5e...5c4ed14b` and complete observer-relative patch in
+[source custody](artifacts/m1-controller-rejected-draft-01-source.json).
+
+Decision: CONTINUE one substantive correction with retained writer. Implement
+the literal reviewed same-base selected-side method and actual work/error paths;
+all subsequent commands must use the recorder. This is the first unsuccessful
+body correction. Focused green now returns for same-reviewer actual-controller
+inspection before original60; no physical rerun has occurred. Test differences
+from red07 are the two required ownership-preserving clones, not relaxed predicates.
+
+### Body reassessment — REASSIGN after repeated execution-integrity failure
+
+Author disclosed six transcript-only direct check/focused-test executions,
+including the already-recorded invalid green; the intermediate failed-source
+cuts/raw files were not preserved. [Attribution](artifacts/m1-controller-rejected-draft-02-run-attribution.json)
+retains the reported history and explicitly marks what is unavailable. The
+partial rewrite's reported4PASS run`f7a66393-6ea4-44f6-b4af-b640b49d31c9`
+also remains **INVALID**: root inspection still finds fabricated failure counts,
+swallowed error variants, extra internal solves and duplicate caller/controller
+solves. Test green does not establish method conformance. Source custody at
+reassignment preserves tree`925607db...28b634cf` with its complete observer patch.
+
+Decision: **REASSIGN** to fresh bounded implementer `/root/m1_controller_finish`.
+`/root/m1_tests_finish` is stopped; one source writer remains. This contains the
+recording failure; it cannot restore missing intermediate raw evidence or waive
+qualification. New writer must implement the exact same-base method and actual
+work/error paths, use the recorder for every check/test, and return for the same
+two reviewers before original60. This is no new allowance or physical retry.
 
 ## Adopted scope and current checkpoint
 
