@@ -1,14 +1,14 @@
 {
   "anchor_utc": "2026-09-21T19:13:00+00:00",
-  "observed_utc": "2026-09-21T19:25:23.324590+00:00",
+  "observed_utc": "2026-09-21T19:26:34.454188+00:00",
   "carry_seconds": 212116.28217,
   "ceiling_seconds": 226516.28217,
   "deadline_utc": "2026-09-21T23:13:00+00:00",
   "launch_cutoff_utc": "2026-09-21T22:43:00+00:00",
-  "charged_seconds": 212859.60676,
+  "charged_seconds": 212930.736358,
   "wait_deductions_seconds": 0,
   "historical_outcomes": "uncertain mixed outcomes carried in full, including subsequent separately recorded results",
   "decision": "STOP \u2014 necessary numerical-method change outside authorized envelope; preservation/publication only",
   "anchor_note": "Conservative 19:13:00 anchor covers initial reading; first observed clock 19:13:41",
-  "remaining_seconds": 13656.675409999996
+  "remaining_seconds": 13585.545811999997
 }

@@ -142,6 +142,16 @@ Runtime rustfmt/full Clippy checks are NOT RUN in this
 continuation; the unrecorded PATH-level rustfmt failure and existing lint debt
 remain visible. Scoped publication and final ledger follow.
 
+Publication: scoped evidence commit `b6b6345c033d2d7bd6e8b71121d75626ae07bf86`
+is pushed to main; all32 changed files were downloaded from that exact GitHub
+commit and matched byte-for-byte. [Publication receipt](artifacts/original60-first-publication-01.json)
+binds this check. Charged through **2026-09-21T19:26:34.454188+00:00**:
+**212930.736358 s** cumulative, **13585.545812 s**
+unused below the fixed ceiling. No wait deductions, outcome-count reset or
+reserve reclamation. The method-boundary stop remains effective despite unused
+time. Final local `original60-first-publication-02.json` records verification
+of this closing record and any additional publication charge after this snapshot.
+
 ## Coupled-completion continuation — adopted 2026-09-21
 
 Owner instruction `execute /tmp/openwepp_cold_canopy_m1_coupled_completion_authorization.md`
