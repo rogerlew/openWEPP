@@ -16,7 +16,7 @@ HERE = Path(__file__).resolve().parent
 SOURCE = Path('/home/roger/openwepp-experiments/cold-canopy-m1-20260920')
 BASE = Path('/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918')
 LOGS = Path('/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts')
-DEADLINE = dt.datetime.fromisoformat('2026-09-20T23:55:35.802807+00:00')
+DEADLINE = dt.datetime.fromisoformat('2026-09-21T07:46:00+00:00')
 SPEC = importlib.util.spec_from_file_location(
     'snapshot_tool',
     Path('/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/execution-discretion-20260915/run-recorded.py'),
@@ -70,6 +70,14 @@ def main():
     source_receipt = LOGS / (args.label + '-source.json')
     save(source_receipt, dict(source=str(SOURCE), entries=before, tree_sha256=source_hash, base=str(BASE), incremental_patch=str(patch_path), incremental_patch_sha256=sha(patch_path)))
     pinned = {str(path): sha(path) for path in (Path(__file__), Path('/workdir/openWEPP/flake.nix'), Path('/workdir/openWEPP/flake.lock'), Path('/workdir/openWEPP/tools/dev/openwepp-env'))}
+    # These source/configuration supports are outside the detached crate snapshot.
+    # Runtime datasets still require explicit per-campaign input binding.
+    snapshot_path = Path(SPEC.origin)
+    pinned[str(snapshot_path)] = sha(snapshot_path)
+    for support_root, pattern in (('.config', '*'), ('src', '*.rs'), ('tests', '*.rs')):
+        for support_path in sorted((SOURCE / support_root).rglob(pattern)):
+            if support_path.is_file():
+                pinned[str(support_path)] = sha(support_path)
     authority_root = Path('/workdir/openWEPP/docs/specifications/science-contracts/contracts')
     for name in (
         'SC-VEGETATION-001.md',
@@ -84,6 +92,15 @@ def main():
     for item in support['files']:
         assert sha(item['path']) == item['sha256'], item['path']
         pinned[item['path']] = item['sha256']
+    recovered_support_path = HERE / 'coupled-completion-support-recovery.json'
+    recovered_support = json.loads(recovered_support_path.read_text())
+    pinned[str(recovered_support_path)] = sha(recovered_support_path)
+    support_links = {str(SOURCE / name): target for name, target in support['support_symlinks'].items()}
+    support_links.update(recovered_support['links'])
+    assert all(str(Path(name).resolve()) == str(Path(target).resolve()) for name, target in support_links.items())
+    for name, digest in recovered_support['files'].items():
+        assert sha(name) == digest, name
+        pinned[name] = digest
     component_inventory_path = HERE / 'm1-frozen-component-inventory.json'
     component_inventory = json.loads(component_inventory_path.read_text())
     pinned[str(component_inventory_path)] = sha(component_inventory_path)
@@ -98,7 +115,8 @@ def main():
         raise SystemExit('Review/preservation reserve reached')
     executed = ['/usr/bin/time', '-v', '-o', str(LOGS / (args.label + '.resources')), *command]
     receipt = dict(label=args.label, argv=command, executed_argv=executed, cwd=str(SOURCE), source_tree_sha256=source_hash,
-                   source_receipt=str(source_receipt), pinned_files=pinned, start_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
+                   source_receipt=str(source_receipt), pinned_files=pinned, support_links=support_links,
+                   start_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
                    timeout_seconds=timeout, address_space_bytes=16 * 1024**3, output_file_limit_bytes=1024**3,
                    automatic_retries=0, binary=str(args.binary) if args.binary else None,
                    binary_sha256=sha(args.binary) if args.binary else None,
@@ -128,6 +146,7 @@ def main():
                    observer_base_unchanged=SNAPSHOT.snapshot(BASE)[0] == original,
                    binary_unchanged=sha(args.binary) == receipt['binary_sha256'] if args.binary else None,
                    pinned_files_unchanged=all(sha(path) == digest for path, digest in pinned.items()),
+                   support_links_unchanged=all(str(Path(name).resolve()) == str(Path(target).resolve()) for name, target in support_links.items()),
                    stdout_sha256=sha(LOGS / (args.label + '.stdout')), stderr_sha256=sha(LOGS / (args.label + '.stderr')))
     save(receipt_path, receipt)
     print(json.dumps({key: receipt[key] for key in ('label', 'exit_code', 'elapsed_seconds', 'source_unchanged', 'observer_base_unchanged')}))

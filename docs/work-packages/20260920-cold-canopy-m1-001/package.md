@@ -1,5 +1,226 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Coupled-completion continuation — adopted 2026-09-21
+
+Owner instruction `execute /tmp/openwepp_cold_canopy_m1_coupled_completion_authorization.md`
+reopens only this M1 checkpoint. The stopped disposition below is preserved as
+historical evidence; current disposition remains **INCOMPLETE / HOLD**, execution
+active. All four acceptance axes and original frozen predicates remain binding.
+Intent: diagnose the retained phase-join direction; review any required numerical
+authority amendment with two independent reviewers before expected-red tests and
+implementation; complete accepted-output guards and real receiver; then run the
+fixed original60, continuous/restart/negative/cost protocols and critical checks.
+No production Rust adoption, physical-model redesign, altered seed/forcing,
+threshold relaxation, historical fallback or old reader run is authorized.
+
+Ran: custody check confirms all 754 current and preserved recovery entries match
+`b465c013c549e96e486905fd5f8851b3f364e0d080b7130b8a148e9ed6c53f3a`;
+747 observer entries match `85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963`;
+the preserved debug binary matches its recorded SHA256. Existing immutable
+recovery source and complete base-relative patch preserve the measured cut before
+edits. Main remains at `2c44ccb623238bb068776587b0ed99e1b702baf9`.
+
+The final external publication receipt was read once and confirms carried charge
+**167559.878319 s**. New ceiling **181959.878319 s**, with no old remainder or
+reserve reclaimed. Conservative resumption anchor **2026-09-21T03:46:00Z** covers
+initial reading before the first observed clock at03:47:13Z; exact earlier
+start was not instrumented. Hard deadline **07:46:00Z**, launch cutoff
+**07:16:00Z**, 1800-second review/preservation reserve, no wait deductions.
+Historical mixed outcomes remain uncertain: latest explicit floor at least492
+plus subsequent separately recorded failed attempts; no invented exact total.
+`/root/m1_implementation` is the sole detached-source writer, initially read-only
+for diagnosis. Prior reviewers are not present in this new thread; attributable
+independent replacements will inspect affected authority and implementation.
+
+Validation remains Critical: focused phase/direction/cap/finite/precedence and
+work-count controls, original residual reconstruction, real receiver/rollback,
+frozen continuous and fresh-process restart, release1/10/19-OFE and six balanced
+warm pairs, then applicable format/feature/inventory, A0/A1/A3, full correctness,
+Clippy, doctest/placeholder and authority anti-evasion checks. Prior failures
+remain open until supported correction and same-reviewer verification. Physical
+processes are capped at180s; longer checks retain their existing command bounds
+and this package ceiling. Two unsuccessful corrections or60 charged minutes
+trigger internal reassessment, never a new allowance.
+
+### Continuation diagnostic and validation attribution
+
+Static + retained-witness arithmetic: `/root/m1_implementation` inspected the
+actual b465 evaluator's forward H=0 probe and phase inversion. Both recorded H
+directions are negative, approaching mixed phase. Parent reconstruction from the
+actual row/direction gives liquid prediction -4109.906224354979 J/m2/factor,
+mixed H-column prediction +1390.8165787453413, and observed b20 secant
++1390.816596 (relative difference1.2406e-8). See
+[retained-direction arithmetic](artifacts/coupled-completion-retained-direction.json).
+This establishes a tangent/trajectory discrepancy in the prescribed selection,
+not an incorrect physical inverse or proof of nonlinear feasibility. No physical
+rerun occurred. Numerical amendment remains pending dual independent review.
+
+Static: replacement `/root/qa` identifies outstanding measurement freeze,
+complete checkpoint/receiver evidence, and full consumed-input binding as stage
+prerequisites. Both existing72-hour forcing sequences and restart selectors are
+preserved; their earlier scope-limited approvals are reused, not called runtime
+success. Ran: parent rehashed19 build inputs and13 frozen M1 inputs, all match;
+recorder AST passes. QA directly rehashed the retained binary successfully.
+Raw filesystem counts including target files are not source-manifest counts.
+A completed-agent capacity refusal was resolved by explicit QA wake/interruption;
+this adds one tooling failure to the uncertain historical outcomes, not a
+scientific correction or a new allowance. `/root/correctness` now owns independent
+correctness; QA retains its distinct role for affected submissions.
+
+Static authority-failure attribution: detached tests point at the older Sep16
+support tree; current canonical tests already have the directory-contract reader.
+Missing detached `.venv` and assurance paths explain particular missing-input
+failures but have not yet been repaired/rerun. The M1 insertion of INV140-144
+inside the historically hashed V3 invariant section changes its digest from
+49704e9... to611714c...; author is assigned preservation of the new rows outside
+that immutable span, never an expected-hash replacement. Separate full-V10
+binding drift identifies `v10_state.rs`, whose last source change is inherited
+commit `0d56001edbbe55b119a5248249fcedefe2a3bbb0` (Sep4, state validation
+projection change); the other three bound files match. This is attribution,
+not acceptance. V9 oracle explicitly rejects a runtime mismatch across
+ld-linux/libc/libcrypto/libm/libz, not only libcrypto. Its frozen fingerprint
+must not be updated to the present runtime for convenience. All failed
+qualification requirements remain open.
+
+### Prospective numerical amendment review
+
+Static/Ran — independent replacement `/root/correctness` gives **GO for the
+prospective M1 authority amendment and contract-derived expected-red stage**
+on four-file diff SHA256 `a8c66fd0666f6b074a2d9ab24e6c522a59d9f3d453ece2d2ee011fde0981d654`.
+QA independently gives **GO for prospective authority and expected-red authoring**
+on the same final diff, superseding its initially supplied pre-BEI hash. Both
+reviews remain limited to authority; no numerical implementation is accepted.
+Correctness independently reconstructs the retained directional mismatch and verifies
+unchanged primal phase/equations/seed/21+8/50/20/tolerances, phase and capacity
+normals, exact-zero/empty/rounding behavior, distinct typed numerical refusals
+and retained141/142 precedence, all-affected-row expected-red and bounded work
+counts. This does not accept implementation or runtime. Both authority verdicts are complete.
+
+Reviewer caught a strict vegetation Binding Exposure Index failure after the
+historical row relocation: six M1 IDs were missing before its scan boundary.
+Parent added them to the existing successor declaration; the same reviewer
+verified the fix. Full definitions remain in M1 and the historical invariant
+SHA remains exactly49704e9... . [Structural01](artifacts/coupled-completion-authority-structural-01.json)
+and [Structural02](artifacts/coupled-completion-authority-structural-02.json)
+retain exact canonical hashes and actual outputs: LSE23 rows/106 definitions,
+vegetation20 rows, unit compliance, structural A0 admission49 contracts,
+and source-level anti-evasion PASS. A0 reports zero detached science surfaces;
+this is not numerical admission evidence.
+
+Author separately ran main-tree `nix develop --command cargo nextest run
+--test vegetation_boundary_authority_contract`: nextest76ff0af9-16e1-480e-b448-eb7d5197627c,
+25/29 executed,22PASS/3FAIL/4not-run after fail-fast. Its evidence is tool
+transcript only; no redirected raw log or run-ID artifact was retained. The
+three failures demand stale version31 or read an obsolete contract path.
+They are not waived, and the run does not certify detached code. Subsequent
+runs must preserve raw logs before launch through the established recorder.
+
+### Recovered validation support
+
+Parent restored detached `.venv` and `assurance` links to the existing canonical
+roots. [Recovery receipt](artifacts/coupled-completion-support-recovery.json)
+pins the real interpreter and159 existing assurance files; no substitute
+calculator, vector, fingerprint or assertion was generated. Recorder now binds
+this receipt and all files plus original/new support-link targets before and
+after execution. It additionally binds its imported snapshot helper, external
+Rust test/support source and nextest config, while explicitly leaving runtime
+datasets to per-campaign input binding. This does not resolve V9's runtime
+fingerprint or any still-unrun authority check. Source custody uses the existing
+crate snapshot, not raw filesystem counts that include generated target files.
+
+### Expected-red authoring checkpoint
+
+Ran: `m1-phase-expected-red-02` is a compiler-negative selector subset,
+exit101 after13.763s, with source/base/pin/support-link checks all true. Parent
+inspected its two tests and withheld numerical release: all-affected-row
+reconstruction, complete capacity/rounding combinations and actual bounded-work/
+no-backtracking/no-mutation controls are still missing. The sole writer continues
+those same authorized tests; the absent-API compile alone is not the milestone.
+
+[Historical authority failure attribution](artifacts/coupled-completion-authority-failure-attribution.json)
+retains all39 named failed cases and their first errors;56 prior passes remain
+historical. The log prints each failure twice, not78 separate failures. An
+initial extraction assertion counted these repeated displays and failed before
+writing; the corrected extraction deduplicates test identities. All39 retain
+OPEN/not-rerun status despite source/support repairs. No expected hash or
+substantive assertion was changed for convenience. QA withdrew its initial
+support-link finding after reading the already-present terminal check and
+gives narrow support-recovery PASS.
+
+### Internal reassessment — REASSIGN, 2026-09-21
+
+Both same reviewers return **HOLD** on expected-red03, tree
+`57758f77...5065a`, test`d524d567...ecb65f`; production remains
+`1676e1f9...2cec0`. Its15 missing-API compiler errors are real preserved evidence,
+with no executed assertions. The expanded test still echoes a primal evaluation
+instead of checking a secant/J*d; its supposed lower join starts atH=0; capacity
+positive/zero, phase exact-zero and actual representability controls are missing;
+failure variants are conflated and immutable-input equality is vacuous; actual
+controller-owned work and identical-set reuse are not bound.
+
+Decision: **REASSIGN** bounded local test correction to fresh pinned implementer
+`/root/m1_tests_finish`. `/root/m1_implementation` is stopped after two incomplete
+test-cut returns. One source writer remains. The two retained reviewers will
+verify these specific fixes; no new allowance or numerical implementation release.
+Use actual selected-matrix directional evidence, independent primal secants and
+normalization, actual lower joins and typed failures, and controller/failure-owned
+counts. No generic trace framework or fabricated receiver owners. Real receiver
+and six-owner rollback remain required at their actual subsequent seam. Label01
+was an argparse rejection before launch/receipt, retained as reported tooling
+failure; red02/red03 remain unchanged compiler-negative cuts.
+
+Read-only V9 runtime attribution now directly verifies the five mismatching
+objects (ld-linux/libc/libcrypto/libm/libz); libexpat/libzstd still match.
+[Exact expected/observed bytes](artifacts/coupled-completion-v9-runtime-attribution.json)
+record the unchanged descriptor. Bounded path search found no matching runtime/
+library archive in either experiment root; apt cache has only lock/partial.
+This is not exhaustive host recovery, and no system library, descriptor or
+expected hash was changed. V9 qualification remains unresolved while separately
+admitted M1 diagnostic work proceeds under the owner's explicit allowance.
+
+### Retained expected-red review, 2026-09-21
+
+Static: both retained reviewers HOLD red06, source
+`140a0daf84d4439614ef140fa0a08d3c386dbb0d04b4ec659cfc8922f53cb6b9`,
+test SHA`93cb0523edb44333ea0adb00d4cf2f30a3370b05616d1ff29a3b1224e3a85591`.
+The H=0 raw and endpoint-normalized all21-row secant/J*d, actual lower join,
+phase/capacity signs and zero ties, binary64 rounding construction, distinct
+failure types, and controller-local publication counts are now accepted
+prospectively. Remaining corrections: lower-join normalized rows (both reviewers),
+exact failure-path assembly/solve counts and explicit f64 rounding-fixture types
+(correctness). Red06 exit101/4.934s executed zero assertions and includes four
+unintended ambiguous-float errors alongside absent APIs. Earlier red04/red05
+cuts remain retained. The frozen step2^-12 and allowance2e-3 are accepted as
+nonvacuous controls, not changes to physical convergence tolerances.
+
+Decision: CONTINUE with retained writer `/root/m1_tests_finish` for these three
+bounded fixes, one recorded red07 and same-reviewer release. The production
+solver is unchanged; no original60 or other physical rerun has occurred.
+Real receiver/six-owner rollback still belongs to its actual receiver seam.
+
+### Implementation release after red07
+
+Static: both retained reviewers `/root/correctness` and `/root/qa` give **GO
+for bounded implementation** of the reviewed amendment against red07, test SHA
+`41b27ee29db65c432a29c38874bc97d0e2af643e8e2bbf7b078be6bee3a3a58c`,
+source tree`cccb2dd0aea1d6aaa90d77550fea8b4b30889a847157d5d855bfd8dfa3afcc1a`.
+They verified all three red06 fixes: explicit binary64 types; both endpoint
+normalizers and all21 raw/normalized lower-join secants; controller-owned exact
+failure work counts (inconsistent2/2, unrepresentable2/1 with selected-side
+refusal before the corrected solve), no third assembly/candidate/publication.
+Nonjoin and identical-set1/1 controls remain. Ran-by-package: red07 exit101 in
+4.933s, zero assertions; all24 diagnostics are intentionally absent APIs/types,
+with source/base/pin/link unchanged flags true. These reviews accept the
+prospective tests only, not numerical body/counter behavior or convergence.
+
+Decision: CONTINUE actual implementation with sole writer `/root/m1_tests_finish`.
+Integrate the one reviewed controller into Newton, preserve error precedence,
+reuse normalization/core and accepted materialization, complete the existing
+required guards, then focused controls and corrected-source original60 under
+180s. Real receiver, cycles, restart, cost and complete qualification remain
+required. Same reviewers retain their numerical/QA scopes. No physical rerun has
+occurred at this release; this is not M1 acceptance.
+
 ## Adopted scope and current checkpoint
 
 Owner instruction `execute /tmp/openwepp_cold_canopy_m1_authorization.md`

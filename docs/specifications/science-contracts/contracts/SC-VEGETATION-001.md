@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 33
+contract_version: 34
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-09-20
+last_reviewed: 2026-09-21
 supersedes: []
 superseded_by: []
 ---
@@ -1030,12 +1030,6 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
 | `INV-VEGETATION-085` | One Atkin leaf-N/T10 source supplies `Rd25`; its Rd-specific peaked response is subtracted once from gross assimilation and the identical amount is debited once in the carbon ledger, with no nonpositive clamp or second leaf-maintenance formula. | `REF-VEGETATION-027/034` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | respiration/ledger poison test | `VEG-E-085` |
 | `INV-VEGETATION-086` | Every numerical failure carries deterministic typed solve/pass/identity, residual, iteration, step/backtracking/bound, cap, bracket, pivot, and matrix evidence applicable at failure; no last iterate or opaque fallback is usable. | `REF-VEGETATION-010/027` plus `OPENWEPP_CANONICAL_SELECTION` | `[DIRECT+INFERENCE][Static]` | diagnostic schema/error-precedence test | `VEG-E-086` |
 
-| <a id="INV-VEGETATION-140"></a> `INV-VEGETATION-140` | M1 supplied conducting-tissue and role-temperature envelope precedes every cold equation. | M1 prospective amendment | `[DIRECT+INFERENCE][Static]` | V1 input validator | `VEG-E-140` |
-| <a id="INV-VEGETATION-141"></a> `INV-VEGETATION-141` | Internal liquid and external phase saturation retain distinct equations, derivatives and domains. | Ambaum 2020 + M1 selection | `[DIRECT+INFERENCE][Static]` | vapor primitive/domain validator | `VEG-E-141` |
-| <a id="INV-VEGETATION-142"></a> `INV-VEGETATION-142` | M/H inversion, event and capacity active set close water/enthalpy once without fusion duplication. | first law + M1 selection | `[INFERENCE][Static]` | full residual/closure validator | `VEG-E-142` |
-| <a id="INV-VEGETATION-143"></a> `INV-VEGETATION-143` | Only diagnosed liquid enters the typed real receiver once; any failure is atomic. | SC-VEGETATIONTRANSACTION-001 | `[DIRECT+INFERENCE][Static]` | receipt/owner validator | `VEG-E-143` |
-| <a id="INV-VEGETATION-144"></a> `INV-VEGETATION-144` | M1 restart carries explicit M/H and cannot infer it from a V32 warm start. | state custody | `[INFERENCE][Static]` | V1 restart parser | `VEG-E-144` |
-
 ### Invariant Guard Map
 
 | Invariant ID | Enforcement path | Guard class | Failure behavior | Evidence artifact |
@@ -1134,10 +1128,6 @@ state, respiration, and potential-pass text. No other V1/V2 byte is rewritten.
   external bytes, durable publication, and every untrusted V11 executor return
   retain fresh full semantic validation, canonical reconstruction, and atomic
   rollback.
-- `OBL-VEGETATION-C-008`: M1 binds A0 independent M/H and real-recipient
-  receipt reconstruction, A1 typed domain/phase/state/custody guards, and A3
-  complete saturation plus vapor-law source vectors before implementation.
-
 ### Child 2C canonical invariants
 
 | ID | Binding rule | Guard/failure |
@@ -1470,6 +1460,8 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
 `INV-VEGETATION-123`, `INV-VEGETATION-124`, `INV-VEGETATION-125`,
 `INV-VEGETATION-126`, `INV-VEGETATION-127`, `INV-VEGETATION-128`,
 `INV-VEGETATION-133`, `INV-VEGETATION-134`,
+`INV-VEGETATION-140`, `INV-VEGETATION-141`, `INV-VEGETATION-142`,
+`INV-VEGETATION-143`, `INV-VEGETATION-144`, `OBL-VEGETATION-C-008`,
 `VEG-E-095`, `VEG-E-096`, `VEG-E-097`, `VEG-E-098`, `VEG-E-099`,
 `VEG-E-100`, and `VEG-E-133`.
 
@@ -3139,6 +3131,7 @@ constitutive behavior unchanged.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-09-21 | 34 | Codex | Prospective M1 phase-join directional-linearization amendment: bounded two-solve predictor/final active-set selection with deterministic phase/capacity ties, representable-boundary refusal, and final-direction consistency failure. Primal equations, phase definition, acceptance, solver limits, and production HOLD remain unchanged. |
 | 2026-09-20 | 32 | Codex | Owner-adopted existing-domain liquid-canopy clarification: distinguished active component, shared-air, dry-stem, ground-snow, and transparent-passage temperature roles; preserved existing guard/error seams and expanded the non-promotable cold-canopy authority gap. No equation, historical model-definition byte, guard position, acceptance, runtime selector, or phase law changed. |
 | 2026-08-29 | 30 | Codex | Bound accepted terminal composition to every exact physical child's ordered resource/material custody, canonical same-key enclosing debit folds, the exact sequential BGC ending, and an audit-only one-ULP binary64 regrouping bound with one-bit-over rejection. |
 | 2026-09-02 | 31 | Codex | Admitted only private immutable nonserializable validation-once handoffs for unchanged trusted in-process V10/V11 state revisions; retained fresh full validation after mutation and at every restart, external, durable, and untrusted-executor boundary. |
@@ -3266,13 +3259,15 @@ owner. Old liquid-only state fails V1 admission: V1 diagnostic restart
 serializes authoritative `(M,H)` and identities, then fresh-process split
 execution must equal uninterrupted stable-ice, mixed and liquid-release endings.
 
-| ID | Requirement |
-|---|---|
-| `INV-VEGETATION-140` | Supplied conducting-tissue envelope and role-specific temperature domains precede all cold equations. |
-| `INV-VEGETATION-141` | Internal liquid and external phase saturation use their separate named equations, domains and derivatives. |
-| `INV-VEGETATION-142` | `(M,H)` inversion, event/cap complementarity and complete mass/energy ledger have one fusion term only. |
-| `INV-VEGETATION-143` | Liquid-only typed real receipt is exact once and rolls back atomically. |
-| `INV-VEGETATION-144` | V1 phase-state initialization/restart is explicit; legacy warm starts never invent enthalpy. |
+### M1 prospective binding invariant and obligation map
+
+| ID | Requirement | Authority | Evidence | Guard | Failure posture |
+|---|---|---|---|---|---|
+| <a id="INV-VEGETATION-140"></a> `INV-VEGETATION-140` | M1 supplied conducting-tissue and role-temperature envelope precedes every cold equation. | M1 prospective amendment | `[DIRECT+INFERENCE][Static]` | V1 input validator | `VEG-E-140` |
+| <a id="INV-VEGETATION-141"></a> `INV-VEGETATION-141` | Internal liquid and external phase saturation retain distinct equations, derivatives and domains. | Ambaum 2020 + M1 selection | `[DIRECT+INFERENCE][Static]` | vapor primitive/domain validator | `VEG-E-141` |
+| <a id="INV-VEGETATION-142"></a> `INV-VEGETATION-142` | M/H inversion, event and capacity active set close water/enthalpy once without fusion duplication. | first law + M1 selection | `[INFERENCE][Static]` | full residual/closure validator | `VEG-E-142` |
+| <a id="INV-VEGETATION-143"></a> `INV-VEGETATION-143` | Only diagnosed liquid enters the typed real receiver once; any failure is atomic. | SC-VEGETATIONTRANSACTION-001 | `[DIRECT+INFERENCE][Static]` | receipt/owner validator | `VEG-E-143` |
+| <a id="INV-VEGETATION-144"></a> `INV-VEGETATION-144` | M1 restart carries explicit M/H and cannot infer it from a V32 warm start. | state custody | `[INFERENCE][Static]` | V1 restart parser | `VEG-E-144` |
 
 `OBL-VEGETATION-C-008`: freeze source bytes/equation map and vectors at each
 saturation boundary, prove `p_liq>p_ice` below freezing and no semantic alias;
@@ -3333,13 +3328,84 @@ therefore `dT/dH=1/(M*Cw), dT/dM=-H/(M*M*Cw)` in liquid,
 `dT/dH=dT/dM=0` in mixed, and
 `dT/dH=1/(M*Ci), dT/dM=-H/(M*M*Ci)` in ice. At `H=0` select the
 liquid controls; at `H=-Lf*M` select the mixed controls. These are
-`VEG-E-141` guards. The exact
+the primal/current-set predictor controls; the prospective phase-join
+directional-linearization amendment below exclusively governs the final tangent
+at an exact join. These are `VEG-E-141` guards. The exact
 Ambaum PDF digest and equations are
 the immutable source register (`Ambaum2020.pdf`, SHA-256
 `53a2f41897205a66ca6db78bd4f48311f4b7f6cda35ccdea300d8d51be196c5e`,
 equation map and source URLs); Ambaum p.4253 below Eq. 2 supplies
 `Rv=461.52`. R156 supplies `Tf,Cw,Ci`, SURFEX supplies `Lf`. Their litter
 kinetics/capacity/saturation do not transfer.
+
+### M1 prospective phase-join directional linearization amendment
+
+**Status: `HOLD / two independent authority reviews and expected-red required`.**
+This amendment changes neither the primal inverse nor a physical phase tie:
+at a positive-mass state `H=0` remains liquid, and at `H=-Lf*M` it remains
+mixed. It specifies a bounded numerical active-set selection only for a Newton
+base exactly on one of those joins or on the capacity `min` tie. The residual
+equations, M/H state, saturation equations, source temperatures, forcing,
+tolerances, warm numerical seed, 21+8 block factorization, 50-update/20-halving
+limits, and typed accepted-state guards remain unchanged.
+
+For an iteration with at least one exact join/tie, first assemble the existing
+current-state generalized tangent and solve its normalized linear system once
+to obtain a **predictor** `d_p`. This solve is classification work only: it
+does not enter backtracking, mutate state, publish a receipt, or establish an
+accepted candidate. Freeze a second, phase-and-capacity active set as follows.
+
+1. At `H=0`, select the mixed tangent iff `d_p,H < 0`; otherwise retain the
+   liquid tangent. At `H=-Lf*M`, form `g_p=d_p,H+Lf*d_p,M`; select the ice
+   tangent iff `g_p < 0`; otherwise retain the mixed tangent. Exact zero
+   retains the existing liquid/mixed tie respectively.
+2. For an exact capacity tie `dt*D = Cliq-ml`, use the phase selected above to
+   form the directional liquid-mass change `d_p,ml`: liquid `d_p,M`, mixed
+   `d_p,M+d_p,H/Lf`, and ice zero. Select the capacity derivative iff
+   `dt*d_p,D+d_p,ml >= 0`; otherwise select the drainage derivative. Thus an
+   exact zero retains the existing capacity tie. Away from a tie, retain the
+   current `min` branch.
+3. If the frozen set equals the predictor's current set, reuse its matrix and
+   direction as `d`; otherwise reassemble once with the frozen set and solve
+   once for the sole direction `d`. Before any line-search candidate is
+   evaluated, recompute the same phase normals and capacity normal from `d`.
+   They must select exactly the frozen set; an exact zero retains its stated
+   tie. A disagreement is a typed bounded M1 numerical failure with stable
+   `phase_active_set_inconsistent` provenance,
+   `NumericalFailureKind::PhaseActiveSetInconsistent`, and `LSEB-E-034`, not
+   a third assembly, a fallback, a phase relabel, or a candidate retry.
+
+Every predictor and final normal must be finite. A nonfinite normal or a
+nonzero normal that cannot produce an admissible representable probe on its
+selected side returns `NumericalFailureKind::PhaseActiveSetUnrepresentable`
+with `LSEB-E-034`. A representable selected-side probe runs the existing
+ordered M1 validation: its saturation/nonfinite failure remains `VEG-E-141`,
+its M/H/domain failure remains `VEG-E-142`, and neither is recast as a
+numerical failure. It must not round the displacement to a different side,
+clamp M/H/D, or choose the tangent because a later
+backtracking factor decreases a residual. If no exact M/H join or capacity tie
+exists, the existing single tangent assembly/solve remains the only assembly.
+The identical-set reuse means an exact tie also retains one assembly when its
+current tangent already agrees with the predictor. A changed set uses at most
+two complete 21-coordinate assemblies and two linear solves in that Newton
+iteration; it does not add a solver, history, dense coordinates, or a
+failure-triggered solver cascade.
+
+Required expected-red vectors bind the primal and numerical sides separately:
+`H=0` cooling/warming, both signs of `H+Lf*M` at the lower join, capacity-tie
+positive/negative/exact-zero normals including the empty `M=H=0` tie, finite
+and binary64-rounding boundary cases, and a forced final-direction/set
+disagreement. They independently
+reconstruct the raw residual and normalization for every changed row from the
+primal evaluator and operands: each affected dry sun/shade/stem row,
+`R_M`, `R_H`, `R_cap`, shared heat/vapor, and every reciprocal-longwave-linked
+occupancy row. They may not take their expected values from the Jacobian helper.
+They must also non-vacuously count one assembly/solve for a no-tie or
+identical-set iteration, two for a changed set, and no third assembly or
+backtracking for inconsistent/unrepresentable vectors. The latter vectors must
+also prove no receipt or state mutation occurs. The retained original60 trace
+is a diagnostic vector for this amendment, never a convergence or acceptance
+oracle.
 
 For nonempty M1, `rho=p/(Rdry*Tcan)`,
 `Awet=fwet*(Asun+Ashade+Astem)`, and `gb_wet>0` are the retained V10 dry-air
@@ -3376,10 +3442,15 @@ post-failure retry. `D` is an explicit nonnegative coordinate. Per occupancy,
 the three reservoir residuals are
 `R_M=M1-M0-dt*(I-E-D)`,
 `R_H=H1-H0-dt*(Q+I*hI-E*hv-D*hl)`, and
-`R_cap=min(dt*D,Cliq-ml)`, all with units stated above. The selected
+`R_cap=min(dt*D,Cliq-ml)`, all with units stated above. The current/predictor
 generalized derivative of `R_cap` is `dt*dD` when `dt*D<Cliq-ml`, and
-`dCliq-dml` when the capacity argument is smaller; exact equality selects the
-capacity derivative. Finite trial `ml>Cliq` remains a residual violation so
+`dCliq-dml` when the capacity argument is smaller; its exact equality selects
+the capacity derivative. Under the prospective phase-join directional
+linearization amendment, the final exact-tie derivative is instead selected by
+its stated predictor direction. `Cliq` is fixed for the 21-coordinate solve,
+so `dCliq=0`; when only a capacity tie is present, use the current diagnosed
+phase for `dml`, including empty `dml=0`, without differentiating `M^(2/3)` at
+zero. Finite trial `ml>Cliq` remains a residual violation so
 Newton can return inward; only accepted state requires `M>0`, `D>=0`,
 `0<=ml<=Cliq`, and all three absolute residual tolerances. Phase boundaries
 are continuous backward-Euler constitutive changes inside `dt>=60 s`, not
@@ -3409,7 +3480,8 @@ Require `abs(R_M)<=1e-9 kg m^-2`, `abs(R_H)<=1e-6 J m^-2`, and
 residual `<=1e-8`; independently reconstruct the ledger to `1e-6 J m^-2`.
 Finite differences use `1e-4 K`, `1e-8 kg kg^-1`, `1e-3` hydraulic native
 units, `1e-8 kg m^-2` for M, `1e-3 J m^-2` for H, and `1e-10 kg m^-2 s^-1`
-for D. A bound-crossing probe uses the inward one-sided step; nonfinite,
+for D. Outside the prospective exact phase/capacity active-set selection above,
+a bound-crossing probe uses the inward one-sided step; nonfinite,
 pressure-denominator, or M/H-inversion domain failure precedes nonlinear
 failure, closure, and receipt publication failure.
 

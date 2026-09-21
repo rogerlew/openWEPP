@@ -1,0 +1,59 @@
+{
+  "observed_utc": "2026-09-21T04:05:59.731215+00:00",
+  "scope": "Final prospective authority structural checks only; no physical run",
+  "files": {
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": "01ef8a7a19430c18d452985e5c8f1dca111dcf863aeb24c8f905788bff3564a2",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "5af361dea2740b65228426e6aadfa16fc5c89aea8495172d21c072860881da81",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": "92b3e2b3ba5bf0fff1fe41c7c1b1181f9a4996d574ddfd1a95da8a92222e9b4c",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "241d82fe6d805f63dae36566979cf95ae4bbd902df58a87817bf10fb736f8e7a"
+  },
+  "checks": [
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "--strict",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit_code": 0,
+      "stdout": "PASS docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md: directory-v1, 23 binding exposure row(s), 106 actual definition(s); structural evidence only\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/release/check_sc_unit_compliance.py",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit_code": 0,
+      "stdout": "PASS: SC unit compliance lint found no findings\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "tools/release/check_science_contract_admission.sh",
+        "--base-ref",
+        "2c44ccb623238bb068776587b0ed99e1b702baf9",
+        "--worktree"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit_code": 0,
+      "stdout": "A0_ADMITTED contracts=49 science_surfaces=0 base=2c44ccb623238bb068776587b0ed99e1b702baf9 head=WORKTREE authority_sha256=0c46cffc18ace8e524036b6b5a30fea53d14321692b0051d3e68ee7eb21eccb2\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "tools/release/check_authority_suite_antievasion.sh"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit_code": 0,
+      "stdout": "PASS: authority suite anti-evasion checks passed.\n",
+      "stderr": ""
+    }
+  ]
+}

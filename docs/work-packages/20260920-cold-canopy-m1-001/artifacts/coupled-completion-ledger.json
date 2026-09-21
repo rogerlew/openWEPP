@@ -1,0 +1,13 @@
+{
+  "anchor_utc": "2026-09-21T03:46:00+00:00",
+  "observed_utc": "2026-09-21T04:43:43.573340+00:00",
+  "carry_seconds": 167559.878319,
+  "ceiling_seconds": 181959.878319,
+  "charged_seconds": 171023.451659,
+  "deadline_utc": "2026-09-21T07:46:00Z",
+  "launch_cutoff_utc": "2026-09-21T07:16:00Z",
+  "wait_deductions_seconds": 0,
+  "historical_outcomes": "at least 492 plus subsequent recorded failures; uncertain total",
+  "remaining_seconds": 10936.426660000001,
+  "decision": "CONTINUE: dual authority and red07 release; retained writer implements actual controller and guards before unchanged original60"
+}

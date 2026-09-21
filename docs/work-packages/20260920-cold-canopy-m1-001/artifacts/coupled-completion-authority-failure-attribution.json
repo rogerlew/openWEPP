@@ -1,0 +1,322 @@
+{
+  "evidence_class": "Static attribution of retained95-case run; no new test execution",
+  "source_log": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-terminal-authority-completion-02.stderr",
+  "source_log_sha256": "e3b8579ee419a2c8ee5174a36f183d8c4bf0e069888afc2c0c14f6f6a0471530",
+  "recorded_passed": 56,
+  "recorded_failed": 39,
+  "cases": [
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "contract_binds_control_volume_closure_and_exact_one_custody",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:577:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing E_s,1 - E_s,0 = dt * (R_sw + R_lw + H + LE + Q_p + Q_runon - Q_inf - Q_runoff + G)\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "contract_preserves_adjacent_owners_and_rejects_terminal_payload",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:600:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing SC-CLIMATE-001\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "current_version_releases_named_authority_without_production_claims",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:665:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing contract_version: 31\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Stale current-version assertion; substantive binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:9:10:\n    separately identified prospective authority\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "typed_failures_state_surface_and_guard_map_are_complete",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1709:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing Required future inputs are one state identity\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "schema_sections_test_vectors_and_registry_are_bound",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1794:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Purpose\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1239:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing INV-LANDSURFACEENERGY-131\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1139:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing INV-LANDSURFACEENERGY-150\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1022:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing OPENWEPP_SNOW_FREE_LSE_V3\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_sixteen_binds_exact_lse_surface_enthalpy_carry",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1198:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Version 16 LSE Surface-Enthalpy Exact-Carry Amendment\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:737:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing contract_version: 31\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Stale current-version assertion; substantive binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_thirty_one_binds_component_temperature_dependency_replay",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:853:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing contract_version: 31\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Stale current-version assertion; substantive binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_three_binds_surface_classes_reciprocal_coupling_and_water_custody",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1285:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing bare_mineral_soil\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:689:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Validated In-Memory LSE Custody Handoff Amendment\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:1255:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing INV-LANDSURFACEENERGY-138\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:895:5:\n    revision 31 expected-red: production dependency-replay seam is absent: [\"struct CoveredComponentTemperatureDependencyGraph\", \"struct ValidatedCoveredComponentReplaySweepBase\", \"struct ValidatedCoveredComponentProbeReplay\", \"struct CoveredComponentDependencyReplayAudit\", \"fn covered_component_temperature_probe_residuals\", \"fn begin_covered_component_dependency_replay_audit\", \"fn take_covered_component_dependency_replay_audit\"]\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_twenty_one_binds_exact_litter_phase_capacity_spill",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:943:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Exact V3 Litter-Phase Capacity-Spill Amendment\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_twenty_three_binds_exact_surface_order_to_authenticated_topology",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:919:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Topology-Ranked V16 Exact-Surface Owner Amendment\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_twenty_two_binds_exact_heterogeneous_surface_resource_join",
+      "recorded_failure_excerpt": "panicked at tests/integration/land_surface_energy_balance_authority_contract.rs:980:9:\n    docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md missing ## Exact Heterogeneous V3 Surface-Resource Join Amendment\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "contract_binds_existing_lse_identity_and_restart_bytes",
+      "recorded_failure_excerpt": "panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:191:9:\n    docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md missing contract_version: 25\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_9_binds_multi_lane_stage3_parent_release",
+      "recorded_failure_excerpt": "panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:590:5:\n    assertion failed: registry_row.contains(\"v25 admits the complete all-local SurfaceLiquid routing posture\")\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_16_binds_exact_surface_enthalpy_custody_before_production",
+      "recorded_failure_excerpt": "panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:511:5:\n    assertion failed: read(LSE).contains(\"INV-LANDSURFACEENERGY-151\")\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_15_binds_exact_soil_energy_credit_custody_before_production",
+      "recorded_failure_excerpt": "panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:457:5:\n    assertion failed: read(LSE).contains(\"INV-LANDSURFACEENERGY-150\")\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_twenty_five_binds_laned_active_local_surface_routing",
+      "recorded_failure_excerpt": "panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:253:5:\n    assertion failed: read(\"docs/specifications/science-contracts/index.md\").contains(\"v25 admits the complete all-local SurfaceLiquid routing posture\")\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries",
+      "recorded_failure_excerpt": "panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:232:5:\n    assertion failed: index.contains(\"v24 admits private immutable revision-bound surface-resource validation handoffs\")\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_twenty_three_binds_exact_owner_order_to_surface_topology",
+      "recorded_failure_excerpt": "panicked at tests/integration/surface_liquid_hydrology_custody_authority_contract.rs:278:5:\n    assertion failed: read(LSE).contains(\"INV-LANDSURFACEENERGY-158\")\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::v10_nighttime_authority_contract",
+      "test": "independent_nighttime_calculator_regenerates_frozen_vectors",
+      "recorded_failure_excerpt": "panicked at tests/integration/v10_nighttime_authority_contract.rs:58:10:\n    execute independent V10 calculator: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Missing interpreter/assurance path; existing canonical support restored, test rerun pending",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "assurance_receipts_form_the_recorded_generation_chain",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:64:53:\n    read assurance/v2/transactions/3208ab181e5eb9261a51bb3d8ea63d25c133244b8cf25b6949b4f4eb3a26cc1f.json: No such file or directory (os error 2)\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Missing interpreter/assurance path; existing canonical support restored, test rerun pending",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::c3_woody_v11_authority_contract",
+      "test": "typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit",
+      "recorded_failure_excerpt": "panicked at tests/integration/c3_woody_v11_authority_contract.rs:269:5:\n    full V10 surface binding drift\n\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Full V10 state-source pin drift attributed to pre-M1 commit0d56001ed; unresolved acceptance",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "adjacent_contracts_retain_current_owners_until_real_consumer_cutover",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:69:28:\n    missing section start ## Invariants and Invariant Guard Map\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Contract layout/section lookup or declaration assertion; exact binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "independent_coupled_reference_vectors_pass",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:1689:10:\n    run independent coupled vegetation reference calculator: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Missing interpreter/assurance path; existing canonical support restored, test rerun pending",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:754:9:\n    vegetation contract missing contract_version: 31\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Stale current-version assertion; substantive binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "canonical_schema_and_registry_entry_are_bound",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:234:9:\n    docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md missing contract_version: 31\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Stale current-version assertion; substantive binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "v3_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:1002:10:\n    run independent V3 oracle: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Missing interpreter/assurance path; existing canonical support restored, test rerun pending",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "v5_historical_oracle_is_immutable_and_isolated_execution_cannot_rewrite_authority",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:1908:10:\n    run independent V5 oracle: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Missing interpreter/assurance path; existing canonical support restored, test rerun pending",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "v3_potential_pass_authority_is_digest_bound_and_prior_models_are_immutable",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:189:9:\n    assertion `left == right` failed\n      left: \"611714c14991f5edb05391fdea72d319eee20c901036c6ac01275c47c10e027e\"\n     right: \"49704e9c34ae2e551dd13009c419e53f1d8157e595599e3d918f5e589830f63c\"\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "M1 invariant insertion changed historical digest; current canonical span restored, test rerun pending",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:818:9:\n    docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md missing contract_version: 31\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Stale current-version assertion; substantive binding migration still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "v9_oracle_successor_is_exactly_bound_and_v8_is_immutable",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:2775:5:\n    V9 oracle failed: VEG-E-133: runtime mismatch is not libcrypto-only: ld-linux-x86-64.so.2,libc.so.6,libcrypto.so.3,libm.so.6,libz.so.1\n\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace",
+      "current_attribution": "Pinned runtime-library mismatch; actual pinned recovery still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    },
+    {
+      "target": "openwepp::vegetation_boundary_authority_contract",
+      "test": "v9_runtime_equivalence_verifier_rejects_every_required_poison",
+      "recorded_failure_excerpt": "panicked at tests/integration/vegetation_boundary_authority_contract.rs:2806:5:\n    V9 equivalence poisons failed: VEG-E-133: runtime mismatch is not libcrypto-only: ld-linux-x86-64.so.2,libc.so.6,libcrypto.so.3,libm.so.6,libz.so.1\n\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "current_attribution": "Pinned runtime-library mismatch; actual pinned recovery still required",
+      "current_runtime_disposition": "OPEN / not rerun",
+      "log_occurrences": 2
+    }
+  ],
+  "note": "Repeated log displays are not new failures. Classification records known first causes only; no case is waived or reclassified as passed. Initial extraction assertion failed before write because it counted repeated displays; corrected by test identity."
+}

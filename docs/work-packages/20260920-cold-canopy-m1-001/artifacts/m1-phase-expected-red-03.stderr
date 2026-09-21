@@ -1,0 +1,96 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find `M1PhaseJoinFailure` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:344:38
+    |
+344 |     assert!(matches!(failure, super::M1PhaseJoinFailure::InconsistentFinalSet { .. }
+    |                                      ^^^^^^^^^^^^^^^^^^ could not find `M1PhaseJoinFailure` in the crate root
+
+error[E0433]: cannot find `M1PhaseJoinFailure` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:345:18
+    |
+345 |         | super::M1PhaseJoinFailure::UnrepresentableProbe { .. }));
+    |                  ^^^^^^^^^^^^^^^^^^ could not find `M1PhaseJoinFailure` in the crate root
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:203:27
+    |
+203 |     let selected = super::select_m1_phase_join_active_set(
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:217:26
+    |
+217 |     let warming = super::select_m1_phase_join_active_set(
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:232:31
+    |
+232 |         let selected = super::select_m1_phase_join_active_set(
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:245:31
+    |
+245 |     let capacity_tie = super::select_m1_phase_join_active_set(
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:258:28
+    |
+258 |     let empty_tie = super::select_m1_phase_join_active_set(
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:275:20
+    |
+275 |     assert!(super::select_m1_phase_join_active_set(join, 0.297, 0.0, 60.0, 0.0, f64::NAN, 0.0)
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:277:27
+    |
+277 |     let selected = super::select_m1_phase_join_active_set(join, 0.297, 0.0, 60.0, 0.0, -1.0, 0.0)
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_set_matches_direction` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:279:21
+    |
+279 |     assert!(!super::m1_phase_join_set_matches_direction(&selected, 0.0, 1.0, 0.0));
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_directional_witness` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:309:26
+    |
+309 |     let witness = super::m1_phase_join_directional_witness(&input, &join, direction)
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_directional_witness` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:320:27
+    |
+320 |     let ordinary = super::m1_phase_join_directional_witness(&input, &primal, [0.; 21])
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_directional_witness` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:326:24
+    |
+326 |     let lower = super::m1_phase_join_directional_witness(&input, &join, lower_direction)
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_injected_final_set_failure` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:341:26
+    |
+341 |     let failure = super::m1_phase_join_injected_final_set_failure(&input)
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_last_backtracking_attempts` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:346:23
+    |
+346 |     assert_eq!(super::m1_phase_join_last_backtracking_attempts(), 0);
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 15 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy` exited with code 101

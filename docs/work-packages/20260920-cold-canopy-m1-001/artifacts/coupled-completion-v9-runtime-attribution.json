@@ -1,0 +1,58 @@
+{
+  "evidence_class": "Read-only dynamic-object byte comparison; oracle NOT RUN",
+  "observed_utc": "2026-09-21T04:23:16.787082+00:00",
+  "descriptor_sha256": "e0d05e49eabe43340e9fc7e251b319bcd08305d59af522298001b3c4f6bf951f",
+  "checks": [
+    {
+      "name": "ld-linux-x86-64.so.2",
+      "path": "/lib64/ld-linux-x86-64.so.2",
+      "expected_sha256": "c5e80a563850d6ab5c2f2482e4202d9c1b71fbf44854b8c399e63527202c64e1",
+      "observed_sha256": "bda779ea9e9ad234f60315477d7cfd0bdde861cd8ddd9df8cdaf62f18c4cec14",
+      "matches": false
+    },
+    {
+      "name": "libc.so.6",
+      "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "expected_sha256": "a3947513a02831ec692ebf13053c07614882ab54a2101fb91a1b15724062ed0c",
+      "observed_sha256": "85e64f97e348786a8fb4d9f3d52fec289e2fb86bba20f0731dfe61990525e0f7",
+      "matches": false
+    },
+    {
+      "name": "libcrypto.so.3",
+      "path": "/usr/lib/x86_64-linux-gnu/libcrypto.so.3",
+      "expected_sha256": "0cd331307536a397ab9c83c6dbeeb3474d0a5114f397ce03d1762adb96d3c781",
+      "observed_sha256": "7cf7da0a671c553b7140d40ed0ee8f07d12d0fceedff87c930d1918d205b106f",
+      "matches": false
+    },
+    {
+      "name": "libexpat.so.1",
+      "path": "/usr/lib/x86_64-linux-gnu/libexpat.so.1",
+      "expected_sha256": "093e973baf0b0c786d32fd89d1f6904b794af28e489d20198b9fe0729fd39765",
+      "observed_sha256": "093e973baf0b0c786d32fd89d1f6904b794af28e489d20198b9fe0729fd39765",
+      "matches": true
+    },
+    {
+      "name": "libm.so.6",
+      "path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "expected_sha256": "beea4eeacfcfa2cd96011b959a826c97cf4a774017e214f6a34d7eea3d49cd88",
+      "observed_sha256": "1c488db6f4fe8cecb72456bc018de000b7a9b539c2994864b0416b5e8371b3d8",
+      "matches": false
+    },
+    {
+      "name": "libz.so.1",
+      "path": "/usr/lib/x86_64-linux-gnu/libz.so.1",
+      "expected_sha256": "fbf56b0e59287033b6579bbbeae2f9de2fe86ad5bf2bd44d44aad67a15109318",
+      "observed_sha256": "47b61967895b30e8c0c6818dd633ffeb87711cf637c688f981896f0dd84ce23b",
+      "matches": false
+    },
+    {
+      "name": "libzstd.so.1",
+      "path": "/usr/lib/x86_64-linux-gnu/libzstd.so.1",
+      "expected_sha256": "060eeb79531d435306665fd78329d8a9dd579f95876c5960bb67937825362a80",
+      "observed_sha256": "060eeb79531d435306665fd78329d8a9dd579f95876c5960bb67937825362a80",
+      "matches": true
+    }
+  ],
+  "bounded_recovery": "No exact library/runtime archive found by path search in /home/roger/openwepp-experiments or /workdir/openwepp-experiments; apt archive cache contains only lock/partial. This is not an exhaustive host recovery proof.",
+  "disposition": "Pinned V9 runtime remains unavailable in inspected recovery locations; no descriptor/expected hash/library was changed. Does not prevent independently admitted M1 diagnostics; qualification remains HOLD."
+}

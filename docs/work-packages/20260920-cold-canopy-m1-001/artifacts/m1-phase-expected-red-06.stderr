@@ -1,0 +1,166 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find `M1PhaseJoinFailure` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:345:16
+    |
+345 |         super::M1PhaseJoinFailure::UnrepresentableProbe { .. }
+    |                ^^^^^^^^^^^^^^^^^^ could not find `M1PhaseJoinFailure` in the crate root
+
+error[E0433]: cannot find `M1PhaseJoinFailure` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:524:16
+    |
+524 |         super::M1PhaseJoinFailure::InconsistentFinalSet { .. }
+    |                ^^^^^^^^^^^^^^^^^^ could not find `M1PhaseJoinFailure` in the crate root
+
+error[E0433]: cannot find `M1PhaseJoinFailure` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:538:16
+    |
+538 |         super::M1PhaseJoinFailure::UnrepresentableProbe { .. }
+    |                ^^^^^^^^^^^^^^^^^^ could not find `M1PhaseJoinFailure` in the crate root
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:203:27
+    |
+203 |     let selected = super::select_m1_phase_join_active_set(
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:217:26
+    |
+217 |     let warming = super::select_m1_phase_join_active_set(
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:238:31
+    |
+238 |         let selected = super::select_m1_phase_join_active_set(
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:251:31
+    |
+251 |     let capacity_tie = super::select_m1_phase_join_active_set(
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:264:28
+    |
+264 |     let empty_tie = super::select_m1_phase_join_active_set(
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:284:26
+    |
+284 |         let cap = super::select_m1_phase_join_active_set(
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:300:28
+    |
+300 |     let lower_cap = super::select_m1_phase_join_active_set(
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:318:16
+    |
+318 |         super::select_m1_phase_join_active_set(join, 0.297, 0.0, 60.0, 0.0, f64::NAN, 0.0).is_err()
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:320:27
+    |
+320 |     let selected = super::select_m1_phase_join_active_set(join, 0.297, 0.0, 60.0, 0.0, -1.0, 0.0)
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_set_matches_direction` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:322:21
+    |
+322 |     assert!(!super::m1_phase_join_set_matches_direction(
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `select_m1_phase_join_active_set` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:332:26
+    |
+332 |     let rounded = super::select_m1_phase_join_active_set(
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_primal_normalizers` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:407:35
+    |
+407 |     let base_normalizers = super::m1_phase_join_primal_normalizers(&input, &join)
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_primal_normalizers` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:409:36
+    |
+409 |     let probe_normalizers = super::m1_phase_join_primal_normalizers(&input, &stepped)
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_controller_iteration` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:412:29
+    |
+412 |     let controller = super::m1_phase_join_controller_iteration(&input, &join)
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_controller_with_forced_predictor_direction` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:447:27
+    |
+447 |     let ordinary = super::m1_phase_join_controller_with_forced_predictor_direction(
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_controller_with_forced_predictor_direction` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:477:35
+    |
+477 |     let lower_controller = super::m1_phase_join_controller_with_forced_predictor_direction(
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_controller_with_forced_directions` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:514:31
+    |
+514 |     let inconsistent = super::m1_phase_join_controller_with_forced_directions(
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_phase_join_controller_unrepresentable_probe` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:533:34
+    |
+533 |     let unrepresentable = super::m1_phase_join_controller_unrepresentable_probe(&input)
+    |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:330:35
+    |
+330 |     assert_eq!((large_m + 1.0e-3).to_bits(), large_m.to_bits());
+    |                                   ^^^^^^^
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:330:54
+    |
+330 |     assert_eq!((large_m + 1.0e-3).to_bits(), large_m.to_bits());
+    |                                                      ^^^^^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+328 |     let large_m: f32 = 1.0e14;
+    |                +++++
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:331:36
+    |
+331 |     assert_eq!((large_h - 333.701).to_bits(), large_h.to_bits());
+    |                                    ^^^^^^^
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:331:55
+    |
+331 |     assert_eq!((large_h - 333.701).to_bits(), large_h.to_bits());
+    |                                                       ^^^^^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+329 |     let large_h: f32 = -333_700.0 * large_m;
+    |                +++++
+
+Some errors have detailed explanations: E0425, E0433, E0689.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 25 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy` exited with code 101

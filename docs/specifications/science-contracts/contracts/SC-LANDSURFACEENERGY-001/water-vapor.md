@@ -371,6 +371,19 @@ receiver. `OBL-LANDSURFACEENERGY-C-023` requires source-pinned saturation
 boundary/derivative vectors, independent M/H reconstruction, wrong-phase and
 receiver poisons, weighted two-occupancy receipt, and late rollback.
 
+The prospective M1 phase-join directional-linearization amendment in
+SC-VEGETATION-001 governs only the Newton tangent at exact M/H or capacity
+ties. Its predictor and final direction are bounded internal numerical work;
+the primal phase, M/H residuals, capacity complementarity, receiver parcel and
+transaction boundary are unchanged. `OBL-LANDSURFACEENERGY-C-023` additionally
+requires contract-derived, independently reconstructed cooling/warming and
+lower-join vectors, capacity-tie directions, finite/binary64 boundary cases,
+and distinct final-direction-inconsistent/unrepresentable failures that prove
+no candidate, receiver or mutation is reached. A selected-side primitive error
+retains its existing M1 saturation/domain precedence; only the new bounded
+numerical kinds map to `LSEB-E-034`. This remains `HOLD / dual review and
+expected-red required` and cannot activate M1.
+
 This section is `HOLD / dual review and expected-red required`; it neither
 activates M1 nor changes a V35 equation or receiver. The immutable source
 register records Ambaum Eq. 13/15 and 17/18 (`Ambaum2020.pdf`, SHA-256
