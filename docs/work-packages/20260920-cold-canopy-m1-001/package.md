@@ -1,5 +1,147 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Original60-first continuation — adopted 2026-09-21 19:13 UTC
+
+Owner adopted `/tmp/openwepp_cold_canopy_m1_original60_first_authorization.md`.
+Current disposition: **STOPPED / INCOMPLETE / HOLD — numerical-method boundary**. Prior stops remain historical.
+Carry **212116.282170 s**, confirmed by local publication03; fixed ceiling
+**226516.282170 s**. Conservative reading anchor **19:13:00 UTC**, fixed deadline
+**23:13:00 UTC**, launch cutoff **22:43:00 UTC**, no wait deductions or reclaimed
+reserve. Ledger: [original60-first-ledger](artifacts/original60-first-ledger.json).
+All four acceptance axes, frozen thresholds, exclusions and historical uncertain
+outcomes carry unchanged. Two unsuccessful corrections or 60 charged minutes
+require internal reassessment; no numerical-method or physical-model redesign.
+
+Intent and initial write bounds: rebind only recorder deadline and package ledger,
+then run exact unchanged original60 on reviewed 754-entry `272dcadc…bf504`.
+Ran: current snapshot equals every integration02 entry and all its pinned inputs;
+existing observer-relative recovery remains available. Both terminal diagnostic
+clearances are reused. Attempt10 remains NOT RUN; new attempt11 will retain its
+own complete receipt. Reuse Nix configuration and `/tmp/openwepp-cold-canopy-m1-target`;
+nextest exact selector must select one test. Physical command cap remains 180 s.
+Subsequent work is limited to supported existing M1 implementation corrections,
+real receivers, acceptance/materialization and frozen cycle/restart/cost protocols;
+Critical qualification and independent correctness/QA remain required. Runtime
+remains detached; scoped current-main publication is authorized.
+
+Ran: [original60-11](artifacts/m1-original60-11.json) selected exactly one
+unchanged original60 test: **FAIL**, `BacktrackingLimit`, iteration 3, command
+elapsed 9.148916524 s. All source/base/pin/link integrity checks passed. The first
+step reduces the normalized infinity norm from 4.109906224e9 to 3.129591711e7;
+two subsequent half steps reach 7.823973189e6. At iteration 3, b0 rejects upper
+D=-2.565735664e-23; b1..20 reject lower D, ending at -7.983586927e-29.
+Upper/lower enthalpy residuals remain -7.823973189/-7.641663860 J/m². This is a
+new downstream typed refusal, not convergence or accepted state and not a proof
+of physical impossibility. No identical scientific rerun is authorized.
+Replacement independent reviewers `/root/correctness` and `/root/qa` own new
+result attribution and custody respectively; unchanged controller clearance is
+reused. Root is inspecting the frozen linear solve/domain path pending their
+classification. Build-inventory command records exact selected executable without
+another physical run. Receiver/cycle/restart/release-cost progress remains absent.
+
+Static + recorded evidence: replacement QA `/root/qa` returns **GO for the new
+attempt11 evidence, custody, ledger, and failure classification only**. It verified
+one exact selected test, all 754 source entries and 413 pins, output hashes,
+source/base/link integrity, and the unchanged NOT RUN refusal10. It corrected its
+initial final wording to: **introduced M1 unused `activity` warning remains visible;
+it is not waived**. Required Clippy/full qualification remains open.
+
+Ran: post-run [build inventory](artifacts/m1-original60-11-build-inventory.json)
+selects the same one case and identifies `openwepp_land_surface_energy-6930b921f1500e71`.
+[Binary custody](artifacts/m1-original60-11-binary.json) retains its current SHA256
+`dabdcd8a50233115aa797d6bfd0f63e41d020d2b8ff19f40cfdbf0b6263c70d0` and a durable
+102319424-byte copy. This is post-run source-bound cached-build evidence;
+attempt11 has no recorded prelaunch binary hash. Existing terminal recovery was
+rechecked against every one of the 754 source entries and matches attempt11;
+no new reconstruction campaign or runtime source edit occurred. Recorder AST
+parses; its sole changed line is the owner-adopted fixed deadline.
+
+Internal result attribution decision: correctness `/root/correctness` finds
+fail-closed behavior at the observed negative-D boundary, but current trace cannot
+separate linear-solve contamination from a frozen-method limitation. One additional
+original60 diagnostic is prospectively authorized solely to capture iteration3
+current coordinates, exact normalized Jacobian/RHS and solved direction; no
+unexplained identical rerun. Sole source writer `/root/trace_writer` owns only the
+existing `cfg(test)` observation block in `solver_covered_evaluation/m1_coupled.rs`.
+Equations, production controller, test predicates/fixture, thresholds and method
+stay unchanged. Root records the exact diff and new source before this run;
+correctness will inspect the decisive linear rows, QA the affected trace/custody.
+This test-only observation does not release any accepted state or cycle.
+
+Ran: [attempt12](artifacts/m1-original60-12.json), a single prospective
+iteration3 evidence run, again selects one original60 test and fails with the
+same `BacktrackingLimit` at iteration3 (1.721505443 s). Source is
+`3b1fab62f385f7ec57bfedc81b734cbdcd8f7020de81f7d48fc3a8d28bac8bc9`;
+only existing test-gated witness output differs from attempt11. Build/list12
+precedes execution; prelaunch/postrun binary SHA256 is
+`fcdc2879cdb4d1144d0704ee0db22bdecb17bbf79799ddd8bb76c70e88b3eca4`.
+All custody checks pass. [Binary preservation](artifacts/m1-original60-12-binary.json)
+and complete observer-relative source patch are retained.
+
+The actual iteration3 lower capacity row is solely J[11,11]=6e10, RHS=-0,
+current D=0, yet solved dD=-8.371397645548162e-23. Upper row is solely
+J[5,5]=6e10, RHS=-3.822946109693827e-10, current D=6.3715768494897124e-21,
+dD=-6.3972342061275676e-21. Full trial has both D negative; after the first
+halving only lower D remains negative through b20. Root's independent
+[linear reconstruction](artifacts/m1-original60-12-linear-reconstruction.json)
+uses math.fsum of actual J*delta minus emitted RHS. Normwise backward error
+is 7.965772119108046e-23, componentwise maximum1.0 because the structurally
+zero-RHS lower drainage row has a nonzero remainder. These are descriptive
+linear diagnostics, not new tolerances, a physical no-root proof or acceptance.
+
+Static + inspected run evidence: same QA `/root/qa` returns **GO for trace and
+custody evidence only; no acceptance or physical conclusion**. It independently
+confirms only one source entry changed, all changes are cfg(test) observations,
+emitted RHS matches the controller, exact one-test selection, same endpoint,
+and prelaunch/current binary custody. The writer's direct rustfmt attempt could
+not execute because rustfmt was absent from PATH (exit127); no format pass is
+claimed. No production correction has been made. Correctness classification of
+this frozen-method boundary remains pending before any further implementation.
+
+### Original60-first terminal disposition — method boundary
+
+Static + Ran evidence: same correctness `/root/correctness` concludes **no specific
+canonical implementation nonconformance demonstrated** and **STOP at the authorized
+method boundary**. The exact drainage row and zero RHS are assembled correctly;
+ordinary deterministic partial-pivot binary64 LU introduces a small negative
+component. The strict nonnegative-D guard correctly rejects every permitted
+positive factor. Structural elimination/refinement, projected/canonicalized D,
+changed line search or negative-D admission would change the frozen method and
+require a separate supported owner decision. This is not a nonlinear no-root proof
+or a statement that the complete Jacobian is qualified. The needed next decision
+is whether to authorize a prospective numerical-method amendment for structural
+zero drainage at the nonnegative boundary, with unchanged physical equations and
+independent boundary/closure tests. No method option is selected here.
+
+Implementation and launches stop under the explicit out-of-envelope condition;
+unused allowance does not authorize method redesign. No further original60 retry,
+receiver, cycle, restart or cost run follows. All previous accepted-output guards,
+materialization/work-provenance defects, missing real receiver/six-owner rollback,
+two72h cases, restart, release throughput/scaling/memory/warm pairs and Critical
+qualification remain unmet. No accepted physical support or OFE-day denominator
+exists. The initial run priority was fulfilled, but M1 remains incomplete.
+
+[Independent review scopes and same-reviewer verification](artifacts/original60-first-terminal-reviews.json)
+retain the QA arithmetic objection and withdrawal: its first calculation rounded
+the dot product before subtracting RHS; combined math.fsum including -rhs
+reproduces all retained values. The artifact now spells out this formula.
+QA confirms the new source and binary custody, only test-gated observation changes,
+one selected test and identical endpoint; introduced activity/lint debt is not waived.
+
+Terminal source remains detached `3b1fab62…8bc9`, recoverable from the unchanged
+observer cut02 and [complete patch](artifacts/m1-original60-12-from-observer-cut02.patch).
+Attempt11 reviewed source/recovery and binary remain separately preserved; no
+failed source, fixture or raw record is overwritten. Main receives only package,
+recorder deadline and evidence/recovery patch publication. No production Rust,
+scientific authority, fixture, dependency or protected suite change is introduced;
+full qualification is not claimed or rerun for this test-only diagnostic cut.
+`git diff --check` passed for the maintained record/recorder edits before staging.
+The staged raw logs and exact recovery patches contain recorded whitespace, so
+staged diff-check reports it; evidence bytes are intentionally preserved.
+Runtime rustfmt/full Clippy checks are NOT RUN in this
+continuation; the unrecorded PATH-level rustfmt failure and existing lint debt
+remain visible. Scoped publication and final ledger follow.
+
 ## Coupled-completion continuation — adopted 2026-09-21
 
 Owner instruction `execute /tmp/openwepp_cold_canopy_m1_coupled_completion_authorization.md`

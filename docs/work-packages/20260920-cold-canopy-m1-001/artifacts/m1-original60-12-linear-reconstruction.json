@@ -1,0 +1,58 @@
+{
+  "trace": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-original60-12.stderr",
+  "trace_sha256": "08ac08c43762bd9ae5e9fd2e4f5ee948056f439cdc76320af29a44c54b70bd1c",
+  "iteration": 3,
+  "method": "Python math.fsum([*(a*x for a,x in zip(row,delta)), -rhs_i]): RHS is included INSIDE the single compensated sum, not subtracted after rounding the dot product. Each product is binary64. No canopy solve or new acceptance threshold.",
+  "linear_remainder_by_row": [
+    0.0,
+    2.1710411246544936e-12,
+    1.0352621537812468e-12,
+    1.0688517711590065e-11,
+    2.319211489520967e-10,
+    -1.5394413982713437e-12,
+    0.0,
+    -1.0249578963339445e-12,
+    1.5735884817402734e-12,
+    1.369102478386617e-13,
+    5.069296094006859e-10,
+    -5.022838587328897e-12,
+    -4.320099833421409e-12,
+    1.886185652111294e-12,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "normwise_backward_error": 7.965772119108046e-23,
+  "componentwise_backward_error": 1.0,
+  "drainage_rows": [
+    {
+      "row": 5,
+      "current": 6.3715768494897124e-21,
+      "direction": -6.3972342061275676e-21,
+      "rhs": -3.822946109693827e-10,
+      "nonzero_coefficients": {
+        "5": 60000000000.0
+      },
+      "remainder": -1.5394413982713437e-12,
+      "full_trial": -2.5657356637855144e-23,
+      "halving20_trial": 6.371570748611754e-21
+    },
+    {
+      "row": 11,
+      "current": 0.0,
+      "direction": -8.371397645548162e-23,
+      "rhs": -0.0,
+      "nonzero_coefficients": {
+        "11": 60000000000.0
+      },
+      "remainder": -5.022838587328897e-12,
+      "full_trial": -8.371397645548162e-23,
+      "halving20_trial": -7.983586926983034e-29
+    }
+  ],
+  "disposition": "Diagnostic linear arithmetic only; not complete Jacobian conformity, nonlinear impossibility or physical acceptance"
+}

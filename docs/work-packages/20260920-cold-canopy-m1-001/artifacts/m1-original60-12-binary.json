@@ -1,0 +1,8 @@
+{
+  "binary": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-6930b921f1500e71",
+  "preserved_binary": "/home/roger/openwepp-experiments/cold-canopy-m1-original60-12-binary/openwepp_land_surface_energy-6930b921f1500e71",
+  "sha256": "fcdc2879cdb4d1144d0704ee0db22bdecb17bbf79799ddd8bb76c70e88b3eca4",
+  "bytes": 102344912,
+  "source_tree_sha256": "3b1fab62f385f7ec57bfedc81b734cbdcd8f7020de81f7d48fc3a8d28bac8bc9",
+  "prelaunch_and_postrun_hash_bound": true
+}

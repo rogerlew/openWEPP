@@ -1,0 +1,14 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning: field `activity` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1338:5
+     |
+1336 | struct M1PhaseJoinControllerError {
+     |        -------------------------- field in this struct
+1337 |     error: M1CoupledError,
+1338 |     activity: M1PhaseJoinActivity,
+     |     ^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s

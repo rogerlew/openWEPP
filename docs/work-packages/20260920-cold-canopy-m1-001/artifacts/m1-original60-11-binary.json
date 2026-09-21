@@ -1,0 +1,13 @@
+{
+  "observed_utc": "2026-09-21T19:17:28.514515+00:00",
+  "binary": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-6930b921f1500e71",
+  "preserved_binary": "/home/roger/openwepp-experiments/cold-canopy-m1-original60-11-binary/openwepp_land_surface_energy-6930b921f1500e71",
+  "sha256": "dabdcd8a50233115aa797d6bfd0f63e41d020d2b8ff19f40cfdbf0b6263c70d0",
+  "bytes": 102319424,
+  "source_tree_sha256": "272dcadc31a86466b7f4491333a8d2c2e544134616cd25c40847a5ec3afbf504",
+  "inventory": "m1-original60-11-build-inventory.json",
+  "selected": [
+    "m1_coupled_tests::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure"
+  ],
+  "binding": "Post-run nextest source-bound cached-build inventory; attempt11 did not capture prelaunch binary SHA. No source changes or intervening builds authored; do not claim contemporaneous binary hash."
+}

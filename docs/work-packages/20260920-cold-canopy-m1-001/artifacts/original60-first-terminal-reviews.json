@@ -1,0 +1,28 @@
+{
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "evidence": "Static + Ran evidence",
+    "verdict": "STOP at the authorized method boundary. Original60 remains FAIL/HOLD, but the failure does not support a production implementation-defect finding.",
+    "findings": [
+      "No specific canonical implementation nonconformance demonstrated. Iteration3 lower D=0, RHS=-0.0, sole J[11,11]=6e10; deterministic partial-pivot binary64 LU returns dD=-8.371397645548162e-23.",
+      "Independent row remainder -5.022838587328897e-12 and combined-fsum normwise backward error7.965772119108046e-23 are consistent with floating-point solve error.",
+      "Every positive allowed factor produces lower D<0, b20 -7.983586926983034e-29; guard correctly returns BacktrackingLimit. No iteration3 candidate reaches residual evaluation.",
+      "Structural elimination, iterative refinement, projection/canonicalization, different factor rule or admission of negative D alters frozen method and requires separate authority.",
+      "Does not prove complete Jacobian conformity or nonlinear infeasibility; no identical rerun justified."
+    ]
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "verdict": "GO for trace and custody evidence only; no acceptance or physical conclusion.",
+    "findings": [
+      "Only one of754 source entries differs; diff is cfg(test)-only witness output, no production behavior/predicate/fixture/tolerance change. Emitted RHS matches controller.",
+      "Attempt12 one selected test, same BacktrackingLimit iteration3; all source/base/pin/link checks true; binary prelaunch and preserved SHA fcdc2879cdb4d1144d0704ee0db22bdecb17bbf79799ddd8bb76c70e88b3eca4 verified.",
+      "Introduced M1 unused activity warning remains visible and is not waived."
+    ],
+    "reconstruction_initial_finding": "Reviewer computed fsum(products)-rhs and reported different remainder; retained as withdrawn arithmetic-method misunderstanding.",
+    "reconstruction_same_reviewer_verbatim": "Withdrawn: the reconstruction values are correct when -rhs is included inside the compensated math.fsum. Verified values: row 10 5.069296094006859e-10, normwise 7.965772119108046e-23, componentwise 1.0 from zero-RHS lower-drainage row 11. The method description should state this combined summation explicitly.",
+    "fix": "Artifact method now explicitly states single combined compensated sum including -rhs; numerical values unchanged."
+  },
+  "source_tree_sha256": "3b1fab62f385f7ec57bfedc81b734cbdcd8f7020de81f7d48fc3a8d28bac8bc9",
+  "scope": "Attempt11 and cfg(test)-only trace12/new evidence; prior bounded controller clearance reused; no acceptance qualification"
+}
