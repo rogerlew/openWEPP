@@ -1,0 +1,83 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+error[E0124]: field `carbon_ledgers` is already declared
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:282:5
+    |
+279 |     carbon_ledgers: Vec<VegetationCarbonLedger>,
+    |     ------------------------------------------- `carbon_ledgers` first declared here
+...
+282 |     carbon_ledgers: Vec<VegetationCarbonLedger>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field already declared
+
+error[E0124]: field `nitrogen_ledgers` is already declared
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:283:5
+    |
+280 |     nitrogen_ledgers: Vec<VegetationNitrogenLedger>,
+    |     ----------------------------------------------- `nitrogen_ledgers` first declared here
+...
+283 |     nitrogen_ledgers: Vec<VegetationNitrogenLedger>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field already declared
+
+error[E0124]: field `dry_material_ledgers` is already declared
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:284:5
+    |
+281 |     dry_material_ledgers: Vec<VegetationDryMaterialLedger>,
+    |     ------------------------------------------------------ `dry_material_ledgers` first declared here
+...
+284 |     dry_material_ledgers: Vec<VegetationDryMaterialLedger>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ field already declared
+
+error[E0062]: field `carbon_ledgers` specified more than once
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:282:5
+    |
+279 |     carbon_ledgers: Vec<VegetationCarbonLedger>,
+    |     ------------------------------------------- first use of `carbon_ledgers`
+...
+282 |     carbon_ledgers: Vec<VegetationCarbonLedger>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ used more than once
+
+error[E0062]: field `nitrogen_ledgers` specified more than once
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:283:5
+    |
+280 |     nitrogen_ledgers: Vec<VegetationNitrogenLedger>,
+    |     ----------------------------------------------- first use of `nitrogen_ledgers`
+...
+283 |     nitrogen_ledgers: Vec<VegetationNitrogenLedger>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ used more than once
+
+error[E0062]: field `dry_material_ledgers` specified more than once
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:284:5
+    |
+281 |     dry_material_ledgers: Vec<VegetationDryMaterialLedger>,
+    |     ------------------------------------------------------ first use of `dry_material_ledgers`
+...
+284 |     dry_material_ledgers: Vec<VegetationDryMaterialLedger>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ used more than once
+
+error[E0560]: struct `M1ParentSegmentCandidate` has no field named `carbon_ledgers`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:630:9
+    |
+630 |         carbon_ledgers: canonical.carbon_ledgers,
+    |         ^^^^^^^^^^^^^^ `M1ParentSegmentCandidate` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0560]: struct `M1ParentSegmentCandidate` has no field named `nitrogen_ledgers`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:631:9
+    |
+631 |         nitrogen_ledgers: canonical.nitrogen_ledgers,
+    |         ^^^^^^^^^^^^^^^^ `M1ParentSegmentCandidate` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+error[E0560]: struct `M1ParentSegmentCandidate` has no field named `dry_material_ledgers`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:632:9
+    |
+632 |         dry_material_ledgers: canonical.dry_material_ledgers,
+    |         ^^^^^^^^^^^^^^^^^^^^ `M1ParentSegmentCandidate` does not have this field
+    |
+    = note: all struct fields are already assigned
+
+Some errors have detailed explanations: E0062, E0124, E0560.
+For more information about an error, try `rustc --explain E0062`.
+error: could not compile `openwepp-vegetation` (lib) due to 9 previous errors

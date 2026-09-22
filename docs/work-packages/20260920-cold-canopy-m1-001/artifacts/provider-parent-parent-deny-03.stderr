@@ -1,0 +1,7 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning[license-not-encountered]: license was not encountered
+   ┌─ /workdir/openWEPP/deny.toml:14:4
+   │
+14 │   "MIT-0",
+   │    ━━━━━ unmatched license allowance
+

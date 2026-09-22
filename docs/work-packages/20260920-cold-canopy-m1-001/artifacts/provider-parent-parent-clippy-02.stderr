@@ -1,0 +1,134 @@
+waiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking serde_core v1.0.228
+    Checking num-traits v0.2.19
+    Checking num-integer v0.1.46
+    Checking num-bigint v0.4.6
+    Checking memchr v2.8.0
+    Checking serde v1.0.228
+    Checking libc v0.2.186
+    Checking zerocopy v0.8.48
+    Checking num-rational v0.4.2
+    Checking num-iter v0.1.45
+    Checking num-complex v0.4.6
+    Checking num v0.4.3
+    Checking zerofrom v0.1.8
+    Checking stable_deref_trait v1.2.1
+    Checking yoke v0.8.3
+   Compiling jobserver v0.1.34
+    Checking getrandom v0.3.4
+    Checking once_cell v1.21.4
+   Compiling cc v1.2.62
+    Checking ahash v0.8.12
+    Checking half v2.7.1
+    Checking serde_yaml v0.9.34+deprecated
+    Checking serde_json v1.0.150
+    Checking lexical-util v1.0.7
+    Checking bytes v1.11.1
+   Compiling zstd-sys v2.0.16+zstd.1.5.7
+    Checking arrow-buffer v54.3.1
+    Checking zerovec v0.11.6
+    Checking arrow-schema v54.3.1
+    Checking iana-time-zone v0.1.65
+    Checking arrow-data v54.3.1
+    Checking chrono v0.4.44
+    Checking openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-kernel-contract)
+    Checking openwepp-management-schema v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-management-schema)
+    Checking hashbrown v0.15.5
+    Checking arrow-array v54.3.1
+    Checking openwepp-input-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-input-contract)
+    Checking lexical-write-integer v1.0.6
+    Checking lexical-parse-integer v1.0.6
+    Checking alloc-no-stdlib v2.0.4
+    Checking alloc-stdlib v0.2.2
+    Checking lexical-parse-float v1.0.6
+    Checking lexical-write-float v1.0.6
+    Checking tinystr v0.8.3
+    Checking bitflags v1.3.2
+    Checking litemap v0.8.2
+    Checking writeable v0.6.3
+    Checking smallvec v1.15.2
+    Checking icu_locale_core v2.2.0
+   Compiling zstd-safe v7.2.4
+    Checking flatbuffers v24.12.23
+    Checking lexical-core v1.0.6
+    Checking brotli-decompressor v4.0.3
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-climate-runtime-adapter)
+    Checking arrow-select v54.3.1
+    Checking openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-coupled-time)
+    Checking potential_utf v0.1.5
+    Checking zerotrie v0.2.4
+    Checking ordered-float v2.10.1
+    Checking atoi v2.0.0
+    Checking integer-encoding v3.0.4
+    Checking twox-hash v2.1.2
+    Checking byteorder v1.5.0
+    Checking utf8_iter v1.0.4
+    Checking static_assertions v1.1.0
+    Checking twox-hash v1.6.3
+    Checking icu_collections v2.2.0
+    Checking thrift v0.17.0
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+    Checking lz4_flex v0.11.6
+    Checking arrow-cast v54.3.1
+    Checking icu_provider v2.2.0
+    Checking brotli v7.0.0
+    Checking arrow-ipc v54.3.1
+    Checking snap v1.1.1
+    Checking zstd v0.13.3
+    Checking toml_datetime v0.6.11
+    Checking serde_spanned v0.6.9
+    Checking winnow v0.7.15
+error: this function has a `#[must_use]` attribute with no message, but returns a type already marked as `#[must_use]`
+  --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:44:5
+   |
+44 | /     pub fn try_new(
+45 | |         occupancy_id: String,
+46 | |         mass_kg_m2: f64,
+47 | |         enthalpy_j_m2: f64,
+48 | |     ) -> Result<Self, M1Error> {
+   | |______________________________^
+   |
+   = help: either add some descriptive message or remove the attribute
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#double_must_use
+   = note: `-D clippy::double-must-use` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::double_must_use)]`
+
+error: this function has too many arguments (9/7)
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:389:1
+    |
+389 | / fn construct_m1_candidate_with_lineage(
+390 | |     configuration: &VegetationConfiguration,
+391 | |     beginning: &M1OwnerState,
+392 | |     transaction_id: TransactionId,
+...   |
+398 | |     nitrogen: &dyn NitrogenArbiter,
+399 | | ) -> Result<M1OwnerCandidate, M1Error> {
+    | |______________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_arguments
+    = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: this function has too many lines (168/100)
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:389:1
+    |
+389 | / fn construct_m1_candidate_with_lineage(
+390 | |     configuration: &VegetationConfiguration,
+391 | |     beginning: &M1OwnerState,
+392 | |     transaction_id: TransactionId,
+...   |
+398 | |     nitrogen: &dyn NitrogenArbiter,
+399 | | ) -> Result<M1OwnerCandidate, M1Error> {
+    | |______________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+    Checking simdutf8 v0.1.5
+    Checking toml_write v0.1.2
+    Checking toml_edit v0.22.27
+    Checking parquet v54.3.1
+error: could not compile `openwepp-vegetation` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...

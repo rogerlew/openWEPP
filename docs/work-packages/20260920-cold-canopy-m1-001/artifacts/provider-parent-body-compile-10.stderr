@@ -1,0 +1,262 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator)
+error[E0432]: unresolved imports `super::m1_fixed_sequence_provider::M1ParentExecutionError`, `super::m1_fixed_sequence_provider::advance_fixed_sequence_support`
+  --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:8:62
+   |
+ 8 |     FixedSequenceAdmissionAudit, FixedSequenceSourceAdapter, M1ParentExecutionError,
+   |                                                              ^^^^^^^^^^^^^^^^^^^^^^ no `M1ParentExecutionError` in `land_surface_energy_shadow::m1_fixed_sequence_provider`
+ 9 |     actual_m1_caller_beginning_for_provider_controls, admit_fixed_sequence_provider_for_parent,
+10 |     advance_fixed_sequence_support,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `advance_fixed_sequence_support` in `land_surface_energy_shadow::m1_fixed_sequence_provider`
+
+warning: unused import: `DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:109:13
+    |
+109 | use crate::{DirectRunConstructorInputs, vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:132:16
+    |
+132 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `parent_only_counters` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:114:27
+    |
+114 |     let counters = caller.parent_only_counters();
+    |                           ^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `parent_only_counters` not found for this struct
+
+error[E0599]: no method named `parent_only_counters` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:146:27
+    |
+146 |         assert_eq!(caller.parent_only_counters(), counters);
+    |                           ^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `parent_only_counters` not found for this struct
+
+error[E0599]: no method named `staged_owner_bytes` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:148:20
+    |
+148 |             caller.staged_owner_bytes().expect("actual staged owners"),
+    |                    ^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `staged_owner_bytes` not found for this struct
+
+error[E0599]: no method named `accepted_cursor` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:157:27
+    |
+157 |         assert_eq!(caller.accepted_cursor(), u64::from(ordinal + 1));
+    |                           ^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `accepted_cursor` not found for this struct
+
+error[E0599]: no method named `parent_only_transaction_id` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:160:20
+    |
+160 |             caller.parent_only_transaction_id()
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `parent_only_transaction_id` not found for this struct
+
+error[E0599]: no method named `native_capability_consumption_receipt` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:352:24
+    |
+352 |                 caller.native_capability_consumption_receipt(),
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `native_capability_consumption_receipt` not found for this struct
+
+error[E0599]: no method named `replay_native_capability` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:356:18
+    |
+355 |               let replay = caller
+    |  __________________________-
+356 | |                 .replay_native_capability(receipt)
+    | |                 -^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    | |_________________|
+    |
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 |   pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    |   -------------------------------------- method `replay_native_capability` not found for this struct
+
+error[E0599]: no method named `complete_parent` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:380:10
+    |
+379 | /     caller
+380 | |         .complete_parent()
+    | |         -^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    | |_________|
+    |
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 |   pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    |   -------------------------------------- method `complete_parent` not found for this struct
+
+error[E0599]: no method named `sealed_finalized_complete_owner_states` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:383:10
+    |
+382 |       let finalized_owners = caller
+    |  ____________________________-
+383 | |         .sealed_finalized_complete_owner_states()
+    | |         -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    | |_________|
+    |
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 |   pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    |   -------------------------------------- method `sealed_finalized_complete_owner_states` not found for this struct
+
+error[E0599]: no method named `parent_only_counters` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:440:16
+    |
+440 |         caller.parent_only_counters().parent_revision,
+    |                ^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `parent_only_counters` not found for this struct
+
+error[E0599]: no method named `parent_only_counters` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:444:16
+    |
+444 |         caller.parent_only_counters().publication_count,
+    |                ^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `parent_only_counters` not found for this struct
+
+error[E0599]: no method named `parent_clock_is_none` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:447:20
+    |
+447 |     assert!(caller.parent_clock_is_none() && caller.staged_owner_is_none());
+    |                    ^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `parent_clock_is_none` not found for this struct
+
+error[E0599]: no method named `staged_owner_is_none` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:447:53
+    |
+447 |     assert!(caller.parent_clock_is_none() && caller.staged_owner_is_none());
+    |                                                     ^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `staged_owner_is_none` not found for this struct
+
+error[E0599]: no method named `last_parent_receipt` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:448:23
+    |
+448 |     assert_eq!(caller.last_parent_receipt().accepted_slab_ids(), slab_ids);
+    |                       ^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `last_parent_receipt` not found for this struct
+
+error[E0599]: no method named `complete_parent` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:450:16
+    |
+450 |         caller.complete_parent(),
+    |                ^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `complete_parent` not found for this struct
+
+error[E0599]: no method named `accepted_cursor` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:469:23
+    |
+469 |     assert_eq!(caller.accepted_cursor(), 1);
+    |                       ^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 | pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    | -------------------------------------- method `accepted_cursor` not found for this struct
+
+error[E0599]: no method named `active_parent_clock` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:471:10
+    |
+470 |       let clock = caller
+    |  _________________-
+471 | |         .active_parent_clock()
+    | |         -^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    | |_________|
+    |
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 |   pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    |   -------------------------------------- method `active_parent_clock` not found for this struct
+
+error[E0599]: no method named `current_support_transaction_id` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:503:26
+    |
+502 | /                     caller
+503 | |                         .current_support_transaction_id()
+    | |                         -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    | |_________________________|
+    |
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 |   pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    |   -------------------------------------- method `current_support_transaction_id` not found for this struct
+
+error[E0599]: no method named `replay_native_capability` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:530:22
+    |
+529 |                   let replay = caller
+    |  ______________________________-
+530 | |                     .replay_native_capability(native)
+    | |                     -^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    | |_____________________|
+    |
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:707:1
+    |
+707 |   pub(super) struct RealM1ProviderCaller(super::M1CallerState);
+    |   -------------------------------------- method `replay_native_capability` not found for this struct
+
+Some errors have detailed explanations: E0432, E0599.
+For more information about an error, try `rustc --explain E0432`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 2 warnings
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 20 previous errors; 2 warnings emitted

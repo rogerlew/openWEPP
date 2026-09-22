@@ -2,6 +2,10 @@
 
 ## Provider implementation and complete-parent execution — adopted 2026-09-22 19:53 UTC
 
+Current disposition: **HOLD at the23:23UTC implementation cutoff**. Provider
+admission passed; parent tests remain uncompiled. See the terminal disposition
+at the end of this section for the frozen source, unresolved work and checks.
+
 Owner execution of `/tmp/openwepp_cold_canopy_m1_provider_parent_implementation_authorization.md`
 adopts the reviewed-provider implementation and complete-parent continuation in
 this same checkpoint. The complete incoming scope applies: contract-derived
@@ -561,6 +565,218 @@ nonphysical compilation precedes same-reviewer body and concrete executable QA;
 root retains all physical launches. The final Critical900-second command must
 start by23:08UTC to fit the unchanged23:23 implementation cutoff and1800-second
 review reserve. Missing current requirements remain HOLD rather than deferred.
+
+Ran: reviewed provider/control evidence and explicit recovery inputs are committed
+and pushed on authorized main as `afa6c76c154070d08b96ce154624afa137a250d6`.
+[Separate remote fetch](artifacts/provider-parent-publication-checkpoint-01.json)
+verifies all160 published blobs against that commit. This publishes source04's
+provider result and controls07, not an implemented parent or runtime adoption.
+The broad staged whitespace check reports preserved patch context, raw outputs
+and reviewer Markdown hard breaks; root-owned package/recorder/control-code
+whitespace checks pass. Frozen evidence bytes remain unchanged.
+
+Ran: [canonical authority checks01](artifacts/provider-parent-authority-checks-01.json)
+passes both strict BEI checks (vegetation20 rows; LSE24 rows/106 definitions),
+both unit checks, and structural A0 (49 contracts, zero runtime science surfaces).
+These canonical documents and tools remain unchanged across the commands.
+This is document admission only; detached M1 A1/A3 and actual physical owner
+invariants remain unmet. No runtime test executed in this authority check.
+
+Execution clarification: a sole-writer concern about changing the vegetation
+owner API arose from reading “main runtime untouched” as excluding the detached
+vegetation crate. Root resolved the path scope: necessary typed owner adapters
+inside the authorized detached tree are explicitly permitted; main checkout
+Rust stays untouched. A first real record-to-fresh-solver adapter is authored;
+complete-parent APIs still fail test-inclusive compilation. The writer continues
+with checked support identity through actual persistent-core/N/material operands
+and staged parent-only lineage, then coupled clock/finalization. No new science,
+allowance, physical result or acceptance claim follows from this clarification.
+
+Implementation progress: the detached provider now rebuilds each support's input
+from retained original geometry, exact five overrides and actual current M/H,
+and invokes the canonical solver. The detached vegetation owner now has a shared
+persistent-core construction path: the existing single-support API retains its
+strict revision increment, while a typed parent segment passes the distinct
+support transaction through the actual N/material protocol and retains parent
+lineage in staged state. These new bodies remain unreviewed and unexecuted.
+[Compile10](artifacts/provider-parent-body-compile-10.stderr) still fails on20
+missing parent driver/outcome/caller APIs; focused vegetation compilation passes.
+The sole parent-control change after07 is the required `BTreeMap` import, verified
+by exact diff; assertion semantics are unchanged. The writer continues actual
+coupled slab/staged-owner progression and resource/finalization integration.
+Repeated partial writer returns are execution friction, not a scientific
+impossibility or permission to stop this authorization at the adapter milestone.
+
+Internal reassessment **CONTINUE**,22:53UTC (third charged hour): actual
+record-to-solver, owner segment and coupled-slab integration bodies now exist,
+but no complete parent has compiled or executed. Root identified concrete
+remaining bridge defects: solver errors collapsed into provider refusal; discarded
+authenticated GSI; bootstrap native forcing/context; GSI substituted for parent
+forcing in the constraint; and custody-only ledger data without completed resource
+joins. The same writer is correcting these within existing authority and retains
+all failed compile logs. Candidate staging on a clone followed by one installation
+is permitted; a restored-clone rollback proof or fabricated receipt is not.
+Proceed to a coherent reviewed cut while the fixed allowance permits. No new
+budget, physical retry, threshold change or acceptance deferral is introduced.
+
+Static: first parent-body review cut is frozen760 entries
+`067138e680d3b0953b1f9a181ba779fec18aeced3db0f54f30182d63cc170fdf`,
+with [exact source and patch](artifacts/provider-parent-parent-body-review-01-source.json).
+The writer is stopped while the same correctness and QA reviewers inspect six
+changed files against provider04. Complete-parent resource/outcome/finalization/
+replay APIs remain absent, so no physical release is sought from partial bodies.
+Root caught and writer corrected native parcels using parent revision instead of
+support identity, and the new segment branch skipping canonical C/N/dry ledger
+validation; neither defective form was physically run. Both branches now invoke
+existing ledger validation and the native producer receives the support identity.
+The pure owner finalizer is authored but not wired into parent consumption.
+
+Ran: [format01](artifacts/provider-parent-parent-fmt-01.json) passes on this frozen
+source with all source/base/input custody checks unchanged. Fresh
+[reconstruction01](artifacts/provider-parent-parent-body-recovery-01.json) matches
+all760 entries exactly from the independently recovered observer base and this
+cut's patch. Root also rehashed all ten source-adapter dependency members: no
+mismatch. An earlier review-packet suspicion of stale manifest hashes was
+withdrawn before disposition; changed runtime files are separately sealed by the
+complete source snapshot. This does not authenticate new payload identities or
+execute the uncompiled parent driver.
+
+Same [body QA01](artifacts/provider-parent-parent-body-qa-01.md) retains runtime
+**HOLD** for native bootstrap context, collapsed solver errors and missing
+resource/outcome/finalization/replay APIs. After checking the actual canonical
+constructor and source helpers, QA withdrew its initial debit/credit-versus-ending
+digest finding and its module-name-only original-input provenance concern.
+The custody ledger requires equal debit/credit digests; the accepted slab binds
+the actual ending owner bytes. This does not supply missing physical resource
+accounting. Original geometry helpers read the prescribed retained source.
+
+Ran: QA-cleared [build/list01](artifacts/provider-parent-parent-build-01.json)
+fails exit101 after33.26852794876322s, with56 missing parent/outcome/caller-method
+errors and two warnings. Source/base/pins/links remain unchanged. It lists no
+new executable and runs no tests or physics. Parent progression, positive late
+rejection and subsequent cycles/restart/cost therefore remain unexecuted;
+no test count or source-only adapter is substituted for owner installation.
+
+Same [correctness body01](artifacts/provider-parent-parent-body-correctness-01.md)
+retains **HOLD**. Confirmed findings are the stale/colliding `support + 1`
+transaction namespace against the actual BGC/parent beginning, solver errors
+misclassified as provider admission errors, native bootstrap forcing/context,
+and the still-missing resource/outcome/finalization/replay implementation.
+The authored shared-core ledger validation, GSI forwarding, native single-source
+transaction propagation, lineage-only owner finalizer and clone-then-install
+slab direction receive bounded static acceptance. Correctness also independently
+passes the exact900-second recorder exception; this is not a selected run.
+Root questioned the review's assertion of existing staged-BGC counter coverage:
+controls07 explicitly inspect staged M1/stratum counters and final BGC lineage,
+not a per-support BGC assertion. The exact canonical BGC obligation/coverage
+remains to be resolved; no unsupported normalization is authorized by that prose.
+
+At23:08UTC the full900-second declared-bound launch window expires with the
+parent build still incomplete. Critical full-workspace execution is **NOT RUN /
+UNMET**, not reclassified, shortened or deferred. Other final runtime qualification
+also remains HOLD. Root closes this review phase, retaining its artifact and
+question, and resumes the sole writer for bounded supported corrections until
+the fixed23:23 cutoff, targeting a23:15 freeze for same-reviewer verification.
+No new allowance or physical launch is granted.
+
+Static: correction cut02 is760 entries
+`b8fbc11f6bfacf45dc9fc587b7fc2c01a1aa924c325c3ce833dfa79967ba6f0f`.
+Same [correctness02](artifacts/provider-parent-parent-body-correctness-02.md) and
+[QA02](artifacts/provider-parent-parent-body-qa-02.md) verify the high-bit support
+namespace, actual pre-solve run/cycle/cursor/parent/record guard, and typed solver
+error propagation. Runtime remains **HOLD**. Correctness locates the BGC
+compatibility obligation in the existing V11 finalizer: staged high-bit support
+lineage cannot pass its low-parent lineage guard. A staged BGC assertion is still
+missing and required before that correction. It also confirms that the solver's
+six soil-coordinate beginnings still come from the original frozen column,
+rather than current staged soil-thermal owners. Native forcing/context remains
+bootstrap-bound; resource/outcome/finalization/replay APIs are still absent.
+These scientific/integration defects are not silently normalized or waived.
+
+Ran: [build02](artifacts/provider-parent-parent-build-02.json) remains exit101
+(12.405192798934877s) on missing parent APIs, with no executable or physics.
+[Format02](artifacts/provider-parent-parent-fmt-02.json) passes. Strict
+[Clippy02](artifacts/provider-parent-parent-clippy-02.json) fails three owner-module
+issues: redundant `must_use` and the shared helper's argument/line counts.
+[Deny02](artifacts/provider-parent-parent-deny-02.json) fails because the detached
+root has no default `deny.toml` and the tool falls back to its default policy;
+this is preserved as tooling/configuration failure, not an adjudicated project
+license failure. Supported [deny03](artifacts/provider-parent-parent-deny-03.json)
+uses the explicitly pinned unchanged `/workdir/openWEPP/deny.toml` and passes.
+All run source/base/pins/links remain unchanged. Fresh
+[recovery02](artifacts/provider-parent-parent-body-recovery-02.json) matches all760
+entries and live source exactly. The writer receives one final mechanical lint
+correction, with23:23 still the hard authoring cutoff and no physical permission.
+
+### Provider/parent terminal disposition — implementation cutoff 23:23 UTC
+
+**HOLD; bounded implementation stopped at the fixed cutoff.** Ran: provider
+source04 passed all eight admission controls, including both actual 4320-record
+projections and seven-owner beginning admission. Original60 passed on its own
+source03, for original geometry, active cold shade and reservoir M/H closure.
+These source-specific results do not qualify the later partial parent body.
+The complete-parent controls have never compiled successfully: build02 failed
+with 56 missing-method E0599 errors and produced no selected executable.
+First/adjacent/all-parent supports, consuming parent installation and meaningful
+late owning rejection were **NOT RUN**. This is an implementation boundary,
+not a demonstrated physical failure or scientific impossibility.
+
+Static: A checked support IDs now occupy a namespace disjoint from parent IDs;
+B actual seven-owner admission passed, but parent consumption/finalization is
+unfinished; C shared M1 initialization and real inactive-snow custody passed
+provider controls; D authenticated GSI is wired into the unexecuted support path;
+E exactly-once area conversion and F configured fail-closed joins retain their
+prior guards, but the new coupled progression is unqualified. The next required
+work is the genuine raw support/resource/material/transition/replay interface,
+canonical complete-parent consuming operation, compatible staged BGC parent
+lineage with a new regression assertion, current staged soil-temperature inputs,
+and actual support-bound native endpoint forcing/receipts. No placeholder
+receipts, synthetic positive delivery or weakened tests may stand in for these.
+
+Full independent root/N/material/native-endpoint balances, both 72-hour physical
+cycles, fresh-process restart, support/parent cost, scaling and six warm pairs
+remain **NOT RUN / HOLD**. The full-workspace900-second launch window expired
+at23:08 with no run. Required full correctness, A1/A3 and doctests are unmet;
+unchanged A0/authority checks passed in their recorded scope. No criterion was
+waived or retrospectively deferred, and all four M1 acceptance axes remain binding.
+
+The final owner-only lint cleanup removed redundant Result must_use, grouped
+lineage arguments and extracted the existing carbon-validation block. Scoped
+owner compilation passed before the final Copy derive; scoped Clippy then failed
+on its missing Copy trait. The derive was added before cutoff. **No post-fix
+build, fmt or Clippy was run.** Body02 fmt passed; body02 test-inclusive build and
+Clippy failed. Deny02 selected default policy because configuration was absent;
+that configuration failure remains recorded. Deny03 passed with the pinned
+canonical deny.toml. Final changes do not touch dependency/lock/license policy;
+this narrow deny result is reusable, without implying overall quality acceptance.
+
+Final detached source is760 entries,
+`e53295e289aa3b83cc4f3e069e81ca7ccda0dfcbef0d43fa3181194d2a77495f`;
+[exact source/patch](artifacts/provider-parent-parent-body-review-03-source.json)
+and [fresh recovery03](artifacts/provider-parent-parent-body-recovery-03.json)
+match every entry and the unchanged live tree. The observer-relative patch is
+`c58b9183b84c9db40a9d60534107037ae7a362eaef11f1ba489fbeedbb50e153`.
+Only cold_canopy_m1_owner.rs differs from body02. No final-source binary exists.
+The qualified provider04 binary and its actual input/payload/run/calendar
+identities remain separately bound in
+[binary preservation04](artifacts/provider-parent-binary-preservation-04.json)
+and [observed identities04](artifacts/provider-parent-observed-identities-04.json).
+The immutable original/continuous fixture hashes and adapter dependencies are
+unchanged. Recovery uses the preserved observer-base recipe, final patch and
+selected external-test recovery, never main Rust as a detached replacement.
+
+Same independent Sol correctness and Terra QA reviewers provide
+[correctness03](artifacts/provider-parent-parent-body-correctness-03.md) and
+[QA03](artifacts/provider-parent-parent-body-qa-03.md). Final mechanical review
+is distinct from runtime acceptance; substantive parent findings and
+**QUALITY_HOLD** remain. Earlier failures, corrected reviewer findings, raw
+logs and source cuts are preserved. No implementation or result-bearing
+validation was launched after23:23; reserve work is review, custody and return.
+Experimental Rust remains detached; main publication contains package/evidence
+only. Current cumulative accounting is in the
+[active ledger](artifacts/provider-parent-active-ledger.json), with final remote
+publication/return accounting in provider-parent-final-publication-02.json.
+Unspent protected time is not a renewed implementation allowance.
 
 ## Diagnostic metadata and complete-parent resumption — adopted 2026-09-22
 
