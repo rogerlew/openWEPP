@@ -1,0 +1,2322 @@
+{
+  "utc": "2026-09-22T06:26:16.465065+00:00",
+  "run_receipt": "m1-receiver-terminal-full-workspace-01.json",
+  "stderr_sha256": "d99ba4238928fe434adc915e6f300f24836e0566c9ffa7ec7158fc914b17bc57",
+  "disposition": "FAIL_INTERRUPTED, not final-source qualification",
+  "summary": [
+    "     Summary [ 492.709s] 4389 tests run: 4101 passed (3 slow), 288 failed, 111 skipped"
+  ],
+  "unique_failed_cases": 288,
+  "status_counts": {
+    "FAIL": 249,
+    "SIGABRT": 38,
+    "SIGTERM": 1
+  },
+  "cases": [
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::advisory_linter_authority_contract",
+      "test": "historical_policy_identity_resolves_the_frozen_object",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::advisory_linter_authority_contract",
+      "test": "adr0043_records_deleted_advisory_experiment_and_manual_authority",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "output_symlink_escape_is_rejected",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "nonempty_catalog_and_retired_routes_fail_closed",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "check_detects_byte_drift_and_extra_public_files",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "public_output_and_snapshot_special_entries_are_rejected",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "public_builder_stays_zero_report_while_validation_admits_internal_v2",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "one_and_repeated_builds_are_byte_deterministic",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "snapshot_is_zero_report_deterministic_and_immutable",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "public_reader_path_preserves_snow_science_without_v1_routes",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "transition_preflight_separates_validation_from_release",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "transition_preflight_rejects_symlink_evasions_before_release_directory",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "snapshot_target_and_descendant_symlinks_are_rejected",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.010s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "frozen_v1_manifest_recovers_every_recorded_blob",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "implementation_rebind_adopts_only_the_finite_contract_surface",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_dossier_build_contract",
+      "test": "workflow_uses_validation_only_for_ordinary_events",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "inspect_exposes_layered_identity_without_mutation",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "manifest_adoption_rejects_drift_owned_by_another_report",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "manifest_adoption_accepts_complete_declared_external_source_set",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "attribution_check_is_read_only_and_apply_is_layer_proportional",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "manifest_adoption_accepts_complete_owned_internal_source_set",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "manifest_adoption_admits_new_declared_external_local_content",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "new_report_admission_checks_applies_and_repeats_as_no_op",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "production_generation_chain_and_recovery_inspection_are_current",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "manifest_adoption_rejects_invalid_new_external_sources_without_mutation",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "report_source_adoption_rejects_noncanonical_unchanged_reset_repair",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "role_assignment_is_typed_receipted_and_idempotent",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "stale_optional_generation_rejects_check_and_apply_without_writes",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.013s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "report_lead_can_return_pending_review_to_draft_without_erasing_history",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.014s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "principal_and_lifecycle_checks_recalculate_identical_candidates",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.014s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.011s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "report_source_adoption_rolls_back_an_invalid_isolated_candidate",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.017s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.010s",
+      "binary": "openwepp::assurance_v2_assembly_contract",
+      "test": "canopy_named_and_all_builds_are_byte_equivalent_and_complete",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_assembly_contract",
+      "test": "manifest_markdown_metadata_is_escaped_without_creating_external_links",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.018s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "report_source_adoption_rejects_wrong_path_second_drift_and_stale_generation",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_assembly_contract",
+      "test": "mtime_changes_do_not_affect_assembly_bytes",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_assembly_contract",
+      "test": "real_named_and_all_builds_are_deterministic_equivalent_and_checkable",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_assembly_contract",
+      "test": "malformed_duplicate_unsafe_link_and_inaccessible_figure_fail_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.013s",
+      "binary": "openwepp::assurance_v2_amendment_contract",
+      "test": "supersession_is_terminal_and_requires_a_named_successor",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_assembly_contract",
+      "test": "staging_is_sandboxed_exact_and_named_build_preserves_unrelated_reports",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::assurance_v2_assembly_contract",
+      "test": "rendered_tables_figures_references_objects_and_links_are_real_consumers",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::assurance_v2_assembly_contract",
+      "test": "real_cli_selects_v2_staging_without_weakening_zero_public_operations",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_assembly_contract",
+      "test": "stale_missing_unit_precision_orphan_and_figure_drift_fail_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.046s",
+      "binary": "openwepp::advisory_linter_authority_contract",
+      "test": "live_impact_map_has_no_planner_admission_rows",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_normalization_contract",
+      "test": "equivalent_inputs_emit_identical_receipts",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_normalization_contract",
+      "test": "apply_rebinds_complete_graph_builds_and_is_idempotent",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_normalization_contract",
+      "test": "check_detects_converter_diff_without_writing",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_normalization_contract",
+      "test": "lifecycle_review_and_packet_boundaries_fail_before_writing",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::assurance_v2_planner_contract",
+      "test": "current_one_and_all_plans_are_equivalent_stable_and_cli_consumed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::assurance_v2_planner_contract",
+      "test": "mtime_only_change_does_not_change_plan_bytes",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_planner_contract",
+      "test": "content_changes_select_expected_transitive_consumers",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::assurance_v2_planner_contract",
+      "test": "malformed_authority_remains_an_explicit_blocker",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::assurance_v2_planner_contract",
+      "test": "manifest_method_figure_review_and_software_changes_select_the_report",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.009s",
+      "binary": "openwepp::assurance_v2_normalization_contract",
+      "test": "current_report_is_american_english_and_check_is_read_only",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::assurance_v2_planner_contract",
+      "test": "unavailable_or_unparseable_selected_manifest_produces_a_bounded_blocked_plan",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_planner_contract",
+      "test": "unavailable_declared_content_blocks_consumers_with_relative_reasons",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_planner_contract",
+      "test": "stale_consumer_cannot_mask_a_blocked_prerequisite",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_planner_contract",
+      "test": "named_selection_isolated_and_all_plan_does_not_select_unrelated_report",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_planner_contract",
+      "test": "plan_format_is_plan_only_and_assembly_requires_staging",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "aliased_usersum_root_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_source_contract",
+      "test": "paths_symlinks_and_special_entries_fail_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_source_contract",
+      "test": "named_validation_isolated_from_an_unselected_broken_report",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.009s",
+      "binary": "openwepp::assurance_v2_source_contract",
+      "test": "every_record_family_has_executable_field_consumption",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_source_contract",
+      "test": "protected_public_surface_remains_byte_identical",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.009s",
+      "binary": "openwepp::assurance_v2_source_contract",
+      "test": "content_schema_contract_and_report_versions_are_enforced",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "approval_conflicts_and_release_mismatch_fail_before_publication",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "authority_bound_byte_negative_matrix_is_fail_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_source_contract",
+      "test": "schema_required_nullable_fields_cannot_be_omitted",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_source_contract",
+      "test": "real_source_and_cli_validate_named_and_all_deterministically",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_source_contract",
+      "test": "report_specific_assembly_requires_an_explicit_staging_root",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "bootstrap_empty_directory_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_source_contract",
+      "test": "restricted_evidence_and_draft_lifecycle_contradictions_fail_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_source_contract",
+      "test": "unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "bootstrap_unowned_readme_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::auth04_release_gate_authority_stack_contract",
+      "test": "auth04_workflow_exposes_periodic_and_manual_authority_lane_triggers",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "canonical_public_path_and_real_markdown_narrative_link_are_mandatory",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "cli_requires_explicit_publication_inputs",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "concurrent_reader_observes_only_complete_old_or_new_report_bytes",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "draft_subject_root_is_stable_but_cannot_publish",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "in_review_source_cannot_publish",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "every_precommit_fault_boundary_preserves_the_prior_public_generation",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.010s",
+      "binary": "openwepp::auth06_fixture_provenance_hash_enforcement_contract",
+      "test": "intval_auth_prov001_wb19_fixture_provenance_is_git_verifiable",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "missing_independence_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "missing_competence_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "multi_report_production_snapshot_replays_complete_authority",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "missing_release_transfer_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "multiply_linked_staging_bytes_fail_before_publication",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "named_publication_preserves_receipted_peer_and_all_mode_converges",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "named_publication_rejects_unreceipted_prior_catalog_entries",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "narrative_drift_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "receipt_preparation_is_reused_only_when_bytes_match",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "publication_api_has_separate_production_and_test_trust_domains",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "reconstructed_production_snapshot_passes_and_forged_roots_fail",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "release_driver_persists_verified_v2_artifacts_and_discovery_sidecar",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "release_verifier_requires_real_artifacts_and_independent_identity",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "simultaneous_publishers_serialize_and_converge_on_one_generation",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "special_files_on_public_and_immutable_surfaces_fail_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "staging_fifo_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "staging_symlink_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "superseded_report_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "synthetic_approved_fixture_publishes_idempotently_and_release_rejects_it",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "withdrawn_report_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "wrong_principal_kind_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "wrong_principal_role_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::assurance_v2_publication_contract",
+      "test": "wrong_principal_trust_domain_fails_closed",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.055s",
+      "binary": "openwepp::c3_woody_v11_authority_contract",
+      "test": "typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.611s",
+      "binary": "openwepp::cli01_runner_hillslope_integration",
+      "test": "cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.420s",
+      "binary": "openwepp::cli01_runner_hillslope_integration",
+      "test": "cli01_contract_conformance_sidecar_policy_warns_on_unknown_discovery",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.472s",
+      "binary": "openwepp::cli03_runner_contract_derived_tests",
+      "test": "cli03_fixture_run_emits_required_and_configured_optional_outputs_with_manifest_checksums",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.398s",
+      "binary": "openwepp::cli03_runner_contract_derived_tests",
+      "test": "cli03_fixture_run_publishes_retired_wb16_ealpha_provenance",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.402s",
+      "binary": "openwepp::cli03_runner_contract_derived_tests",
+      "test": "cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.592s",
+      "binary": "openwepp::cli03_runner_contract_derived_tests",
+      "test": "cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.999s",
+      "binary": "openwepp::cli03_runner_contract_derived_tests",
+      "test": "cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   2.024s",
+      "binary": "openwepp::cli03_runner_contract_derived_tests",
+      "test": "cli03_mofe03_single_ofe_policy_disables_wave2_by_default",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   2.028s",
+      "binary": "openwepp::cli03_runner_contract_derived_tests",
+      "test": "cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   2.028s",
+      "binary": "openwepp::cli03_runner_contract_derived_tests",
+      "test": "cli03_mofe04_single_ofe_publication_reports_single_contributor_policy",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.988s",
+      "binary": "openwepp::cli03_runner_contract_derived_tests",
+      "test": "cli03_runtime_accepts_finite_daily_temperature_inversion_records",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.994s",
+      "binary": "openwepp::cli04_runner_wat_parquet_contract_derived_tests",
+      "test": "cli04_fixture_run_emits_valid_wat_parquet_with_required_metadata_keys",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.067s",
+      "binary": "openwepp::cqr_quality_evidence_handoff_contract",
+      "test": "cqr_quality_evidence_self_test_passes",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "contract_binds_control_volume_closure_and_exact_one_custody",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "current_version_releases_named_authority_without_production_claims",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "contract_preserves_adjacent_owners_and_rejects_terminal_payload",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.013s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "revision_31_component_temperature_dependency_replay_structural_seam_is_expected_red",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "typed_failures_state_surface_and_guard_map_are_complete",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "schema_sections_test_vectors_and_registry_are_bound",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_fifteen_binds_receiver_owned_exact_soil_enthalpy_carry",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_eleven_binds_inactive_liquid_vapor_coordinates_without_physical_interference",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_fourteen_binds_frozen_litter_phase_vapor_and_atomic_chronology",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_sixteen_binds_exact_lse_surface_enthalpy_carry",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_thirty_one_binds_component_temperature_dependency_replay",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_three_binds_surface_classes_reciprocal_coupling_and_water_custody",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_twelve_binds_exact_closed_bound_derivatives_without_numeric_fallbacks",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_twenty_four_binds_private_validated_handoffs_and_full_boundary_validation",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_twenty_one_binds_exact_litter_phase_capacity_spill",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_twenty_two_binds_exact_heterogeneous_surface_resource_join",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::land_surface_energy_balance_authority_contract",
+      "test": "version_twenty_three_binds_exact_surface_order_to_authenticated_topology",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.148s",
+      "binary": "openwepp::laned_shadow_h2637",
+      "test": "h2637_default_mixed_routing_coefficients_fails_closed",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   2.087s",
+      "binary": "openwepp::dff_ws2_ksatadj_direct_runtime",
+      "test": "dff_ws2_forest_high_severity_loam_runs_with_live_direct_ksatadj_effect",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.179s",
+      "binary": "openwepp::paradigm2_stage0_surface_energy_balance_contract",
+      "test": "production_runtime_sources_only_wire_stage0_flux_primitives_through_stage3_opt_in",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::quality_observatory_workflow_contract",
+      "test": "conservative_correctness_workflow_is_direct_and_planner_free",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::quality_observatory_workflow_contract",
+      "test": "workflow_uses_direct_exact_source_identity_without_gate_control_plane",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.181s",
+      "binary": "openwepp::quality_observatory_workflow_contract",
+      "test": "controller_is_self_consistent_and_observes_only_quality_runs",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::snow_free_half_hour_forcing_adapter_contract",
+      "test": "closure_eligible_v10_api_has_no_raw_or_defaulted_execution_escape",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::snow_stage3_adaptive_compositional_contract",
+      "test": "successor_contracts_bind_one_adaptive_model_and_preserve_rejected_history",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.009s",
+      "binary": "openwepp::snow_stage3_shadow_observability_contract",
+      "test": "runtime_uses_typed_operators_and_bounded_extracted_modules",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::snow_stage3_shared_carrier_authority_contract",
+      "test": "current_snow_energy_preserves_v22_physical_custody_and_v17_precipitation",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.015s",
+      "binary": "openwepp::snow_stage3_shared_carrier_authority_contract",
+      "test": "canonical_contracts_bind_child_2c_authority_without_activation",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::snow_stage3_terminal_batch_temporal_v20_contract",
+      "test": "coordinated_v20_v10_v138_v5_define_the_complete_authority_surface",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::snow_stage3_terminal_batch_temporal_v20_contract",
+      "test": "successor_preserves_floor_tolerances_and_scope_holds",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::snow_stage3_terminal_batch_temporal_v21_contract",
+      "test": "corrected_coupled_time_defines_every_wire_node_and_split_owner_join",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::snow_stage3_terminal_batch_temporal_v21_contract",
+      "test": "corrected_successors_bind_estimator_scc_forcing_and_solver_authority",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::snow_stage3_terminal_chronology_v19_contract",
+      "test": "coordinated_terminal_chronology_successors_bind_the_review_findings",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::snow_stage3_terminal_chronology_v19_contract",
+      "test": "staged_terminal_authority_keeps_later_work_out_of_scope",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::snow_stage3_terminal_receiver_authority_contract",
+      "test": "all_owner_failure_rolls_back_and_index_records_lifecycle",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::snow_stage3_terminal_receiver_authority_contract",
+      "test": "restart_state_machine_and_canonical_tables_are_enforced",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.012s",
+      "binary": "openwepp::snow_stage3_terminal_receiver_authority_contract",
+      "test": "receiver_rebuilds_actual_surface_and_continues_only_remaining_support",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::snow_stage3_turbulent_operator_reconciliation_contract",
+      "test": "v130_retains_production_and_claim_holds",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.018s",
+      "binary": "openwepp::snow_stage3_turbulent_operator_reconciliation_contract",
+      "test": "v131_binds_raw_opportunity_separately_from_bounded_transfer",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.011s",
+      "binary": "openwepp::snow_stage3_turbulent_operator_reconciliation_contract",
+      "test": "v131_retains_fail_closed_authority_gaps_and_protected_boundaries",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::snow_stage3_wind_source_custody_contract",
+      "test": "v11_v134_separate_source_adjusted_and_virtual_wind",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::snow_surface_eb03_contract",
+      "test": "eb03_contract_binds_provider_selectors_and_exact_one_exchange",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::snow_terminal_enthalpy_event_numerics_contract",
+      "test": "revision_61_structural_production_seam_is_expected_red",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   2.990s",
+      "binary": "openwepp::erod16_wave1_continuity_fixture_conservation",
+      "test": "erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::solver_architecture_authority_contract",
+      "test": "repository_authoring_instructions_bind_solver_changes_to_the_standard",
+      "prior_run_classification": "missing runtime/source support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp::stage3_native_vegetation_laned_throughput_recovery",
+      "test": "canonical_covered_pending_adjudication_is_contract_bound",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::stage3_native_vegetation_laned_throughput_recovery",
+      "test": "coupled_slab_acceptance_consumes_one_private_revision_proof",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::stage3_native_vegetation_laned_throughput_recovery",
+      "test": "native_inactive_wb14_prefix_transition_is_contract_bound_and_production_reachable",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.036s",
+      "binary": "openwepp::solver_architecture_authority_contract",
+      "test": "stage3_canonical_replacement_authority_is_nonversioned_and_anti_accretive",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "contract_binds_existing_lse_identity_and_restart_bytes",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.014s",
+      "binary": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_15_binds_exact_soil_energy_credit_custody_before_production",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_16_binds_exact_surface_enthalpy_custody_before_production",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_9_binds_multi_lane_stage3_parent_release",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_twenty_five_binds_laned_active_local_surface_routing",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_twenty_four_binds_private_validated_handoffs_without_moving_trust_boundaries",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "test": "version_twenty_three_binds_exact_owner_order_to_surface_topology",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::vegetation_boundary_authority_contract",
+      "test": "adjacent_contracts_retain_current_owners_until_real_consumer_cutover",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp::vegetation_boundary_authority_contract",
+      "test": "canonical_schema_and_registry_entry_are_bound",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.046s",
+      "binary": "openwepp::vegetation_boundary_authority_contract",
+      "test": "canonical_authority_and_test_vector_references_resolve",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::vegetation_boundary_authority_contract",
+      "test": "coupled_c3_model_stack_and_biogeochemistry_boundary_are_admitted",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   3.978s",
+      "binary": "openwepp::hphys0208_fc_threshold_coupled_residual_contract",
+      "test": "hphys0208_sat_perturbation_changes_coupled_wb13_publications",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.090s",
+      "binary": "openwepp::vegetation_boundary_authority_contract",
+      "test": "v9_oracle_successor_is_exactly_bound_and_v8_is_immutable",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.068s",
+      "binary": "openwepp::vegetation_boundary_authority_contract",
+      "test": "v9_runtime_equivalence_verifier_rejects_every_required_poison",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp::vegetation_boundary_authority_contract",
+      "test": "version_thirty_one_binds_private_validated_handoffs_without_trusting_executor_outputs",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp-assurance",
+      "test": "cli::tests::amendment_recovery_command_reaches_typed_backend",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp-assurance",
+      "test": "cli::tests::inspect_and_lifecycle_commands_cover_human_json_and_request_paths",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-assurance",
+      "test": "v2::assembly::tests::post_install_source_drift_restores_prior_bytes_without_timing",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.356s",
+      "binary": "openwepp::snowfrost_fidelity_c_diagnostics_contract",
+      "test": "snowfrost_c_sources_and_crates_preserve_diagnostic_boundary",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.003s",
+      "binary": "openwepp::stage3_native_vegetation_laned_throughput_recovery",
+      "test": "snow_free_final_receipt_reseal_is_contract_bound_and_production_reachable",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp-assurance",
+      "test": "v2::transaction::tests::every_precommit_fault_preserves_the_active_generation",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp-assurance",
+      "test": "v2::transaction::tests::committed_cleanup_fault_leaves_new_generation_and_typed_recovery_state",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-assurance",
+      "test": "v2::transaction::tests::adoption_selected_source_race_preserves_the_active_generation",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.004s",
+      "binary": "openwepp-assurance",
+      "test": "v2::transaction::tests::recovery_tree_verifier_checks_the_selected_generation_members",
+      "prior_run_classification": "detached assurance symlink confinement/support",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp-coupled-time",
+      "test": "transaction::accepted_slab_context_source_guards::nonending_context_relation_is_exhaustive_and_not_a_schema_mirror",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   5.159s",
+      "binary": "openwepp::dff_ws3_directional_burn_validation",
+      "test": "dff_ws3_representative_clay_loam_documents_runoff_peak_and_directional_sediment",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.024s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_ingress::context_tests::b01_wb14_captured_first_physical_child_must_enter_real_ingress",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.013s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_ingress::tests::terminal_tests::wb14_failure_preserves_every_resource_candidate_byte",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.068s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_owner::v3_projection::tests::mixed_identity_cross_version_and_digest_poisons_fail_closed",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.073s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_owner::v3_projection::tests::omission_reorder_and_replay_are_rejected_even_if_projection_is_resealed",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.068s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_owner::v3_projection::tests::pre_soil_target_projection_bytes_fail_closed",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.068s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_owner::v3_projection::tests::soil_carry_substitution_and_wb14_ice_donation_are_rejected",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.102s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_owner::v3_projection::tests::canonical_roundtrip_binds_every_exact_frame_and_preserves_v2_bytes",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.102s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_owner::v3_projection::tests::finalized_wb14_projection_requires_exact_parent_end_and_no_open_parent_bytes",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.033s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_owner_v4_projection::tests::projection_v4_refuses_outer_resealed_beginning_lse_parent_substitution",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.032s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_owner_v4_projection::tests::projection_v4_refuses_outer_resealed_noncanonical_nested_receipts_atomically",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.076s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "direct_runtime::surface_liquid_owner::v3_projection::tests::split_physical_source_and_soil_target_are_bound_without_rebasing",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   6.013s",
+      "binary": "openwepp::hphys0209_profilewp_adjudication_contract",
+      "test": "hphys0209_wp_authority_perturbation_changes_profile_wp_without_profile_geometry_regression",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   7.084s",
+      "binary": "openwepp::erosion_single_ofe_p61_sediment",
+      "test": "erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   1.061s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "land_surface_energy_shadow::v3_tests::exact_surface_authentic_retained_sub_ulp_credits_and_poisons_are_fail_closed",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.691s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "land_surface_energy_shadow::v3_tests::exact_surface_true_noop_preserves_negative_zero_high_bits",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   8.107s",
+      "binary": "openwepp::erosion_multi_ofe_p102_chain",
+      "test": "erosion_multi_ofe_p102_wave1_chain_routes_sediment",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.030s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "land_surface_energy_shadow::v4_restart_evidence::tests::accepted_evidence_preserves_negative_zero_and_replays_projection",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.030s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "land_surface_energy_shadow::v4_restart_evidence::tests::accepted_nonzero_carry_support_advances_with_exact_continuity",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   9.245s",
+      "binary": "openwepp::dff_ws1_native_forest_cli",
+      "test": "native_forest_hillslope_runs_end_to_end_with_pmet_hit_and_reconciliation",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_attachment::adaptive_trial_failure_classification_tests::canonical_controller_uses_one_bounded_map_chronology_without_replay",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_attachment::adaptive_trial_failure_classification_tests::exact_floor_historical_midpoint_is_deleted_from_canonical_controller",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_attachment::adaptive_trial_failure_classification_tests::physical_active_sets_are_derived_inside_authentic_map",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   8.074s",
+      "binary": "openwepp::pl14s_tier_a_candidate_emission_and_replay_contract",
+      "test": "simimpl18_contract_requires_cold_day_partition_zero_rm_and_runtime_snow_storage",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::accepted_publication_chronology_tests::archived_restorer_uses_replayed_terminal_event_tail_and_rejects_wire_poisons",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   9.096s",
+      "binary": "openwepp::pl14s_tier_a_candidate_emission_and_replay_contract",
+      "test": "simimpl18_contract_requires_multi_day_storage_state_mutation",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::frozen_litter_v4_adoption::complete_lse_owner_bytes_tests::covered_native_map_retains_one_physical_exact_pair_without_final_replay",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.010s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_attachment::terminal_exact_installation_source_guards::touched_real_consumer_host_remains_below_hard_source_ceiling",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::archive_first_positive_beginning_rejects_pre_event_owner_substitution",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::archive_records_authenticate_sequentially_from_pinned_seed",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::composed_member_native_restoration_accepts_complete_deferred_admission",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::composed_member_native_restoration_from_pinned_seed",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::current_phase_members_validate_without_physics",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::current_phase_semantic_substitutions_refuse_without_physics",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::member_constructor_inverse_roundtrips_actual_operands",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::prepared_day_member_restores_provider_and_forcing_component",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::provider_authority_scalars_reject_semantic_substitutions_without_installation",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::recorded_archive_manifest_rejects_semantic_order_and_namespace_changes",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.006s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_reconstructs_provisional_on_clone_from_pinned_seed",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "snow_stage3_v11_current_context_capture::member_backed_restore_tests::snow_free_member_export_restores_clock_and_parent_without_native_decode",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "  34.605s",
+      "binary": "openwepp::direct_v10_real_consumer_checkpoint_v1_contract",
+      "test": "complete_generated_v1_schema_matches_frozen_authority_schema",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "  26.068s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::native_inactive_prefix_validator_consumes_real_ordered_terminal_chronology",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.879s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::ordinary_physical_reuse_is_byte_identical_to_forced_double_evaluation",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.742s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::real_two_active_lane_terminal_and_survivor_use_one_joint_batch_decision",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.676s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::adaptive_production_path_coverage::stable_minimum_production_support_accepts_one_direct_trial",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.290s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::child2c_scheduler_commits_the_concrete_v11_lse_bgc_soil_owner_candidate",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.313s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::coupled_hard_boundary_truncates_selected_900_second_child",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.837s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::interior_terminal_event_capture_reproduces_below_carrier_domain",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.987s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::mixed_open_covered_stack_executes_complete_ofe_ground_boundary",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.313s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::latest_accepted_stage3_state_changes_next_wb14_proposal",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.725s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::native_recorder_file_owned_reader_restores_local_fixture",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   2.241s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::one_1800_second_child_matches_complete_historical_candidate",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.198s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::solid_precipitation_reappears_through_the_adaptive_owner_path",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.314s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::two_900_second_complete_owner_children_publish_one_parent",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.005s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::v11_covered::accepted_carrier_evidence_tests::charged_native_map_uses_one_native_candidate_envelope_tuple",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::v11_covered::owner_finalization::terminal_custody_lane_set_tests::deferred_native_v2_shadow_retains_beginning_while_final_install_retains_trial",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::v11_covered::owner_finalization::terminal_custody_lane_set_tests::v2_finalization_has_one_accepted_receiver_and_one_install",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::v11_covered::owner_finalization::terminal_custody_lane_set_tests::v48_real_finalizer_source_never_erases_split_authority",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.086s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::v3_publication_retention_tests::real_candidate_only_v4_factory_uses_authenticated_aggregate_custody",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.250s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::v3_publication_retention_tests::v39_native_second_child_candidate_only_v4_factory",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.045s",
+      "binary": "openwepp-persisted-restart-v1",
+      "test": "frozen_litter_v3_tests::fixtures::accepted_negative_zero_v4_checkpoint_reloads_exact_projection_and_rolls_back_poison",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.046s",
+      "binary": "openwepp-persisted-restart-v1",
+      "test": "frozen_litter_v3_tests::fixtures::nonzero_carry_split_reload_advances_exact_owner_and_publication_history",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.038s",
+      "binary": "openwepp-persisted-restart-v1",
+      "test": "transaction::tests::production_exact_enthalpy_transaction_checkpoints_and_reloads_signed_zero",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.954s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::cqr_laned_active_outputs::cqr_execute_direct_publication_stream_runs_real_fixture_consumer",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.665s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::r7c_direct_production_executor_reports_no_day_input_compatibility_edges",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   2.796s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::native_forest_yaml_executes_through_the_direct_production_consumer",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.008s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::wat5_aggregate_only_positive_supply_remains_wat5_e_001",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.007s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::wat5_exact_segments_preserve_wat_pass_hbp_manifest_for_1_10_19",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.291s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::representative_ten_ofe_century_fixture_parses_exact_days_topology_and_owner",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   3.065s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::r7e_default_candidate_activation_selects_direct_runtime_manifest",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   6.225s",
+      "binary": "openwepp-persisted-restart-v1",
+      "test": "checkpoint::poison_tests::complete_checkpoint_poison_matrix_is_typed_and_preserves_actual_live_bytes",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   5.875s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::duplicate_configured_mapping_rejects_real_stage3_day_without_owner_or_clock_mutation",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   4.097s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::r7e_default_candidate_legacy_sidecar_discovery_uses_direct_manifest",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   3.072s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::r7e_default_candidate_uses_direct_production_manifest",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   2.046s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::simimpl::simimpl14_contract_gate_continuous_wb13_span_and_keys",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.594s",
+      "binary": "openwepp-runner::watershed_cli_behavior_contract",
+      "test": "wshedw2_watershed_cli_generated_mode_accepts_relative_output_dir",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   2.047s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::simimpl::simimpl14_contract_gate_loss_output_is_run_span_truthful",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.538s",
+      "binary": "openwepp-runner::watershed_cli_behavior_contract",
+      "test": "wshedw2_watershed_cli_serial_supervisor_generates_pass_inventory_and_routes",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.839s",
+      "binary": "openwepp-runner::watershed_cli_behavior_contract",
+      "test": "wshedw3_watershed_cli_worker_pool_matches_jobs1_outputs_and_isolates_artifacts",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGABRT",
+      "duration": "   1.611s",
+      "binary": "openwepp-runner::bin/openwepp-cli-hill",
+      "test": "tests::execute_cli_runs_real_minimal_fixture_and_publishes_outputs",
+      "prior_run_classification": "runtime stack overflow; SIGABRT",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.444s",
+      "binary": "openwepp-runner::watershed_cli_behavior_contract",
+      "test": "wshedw7_watershed_cli_generated_mode_accepts_relative_run_dir",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.579s",
+      "binary": "openwepp-runner::watershed_cli_behavior_contract",
+      "test": "wshedw7r_p102_sediment_active_fixture_publishes_nonzero_sediment_and_jobs_identity",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   4.589s",
+      "binary": "openwepp-runner::wshedw10_chaninp_absent_default_contract",
+      "test": "wshedw10_watershed_cli_absent_chaninp_uses_typed_legacy_defaults",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.558s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::interior_terminal_event_runs_covered_event_and_snow_free_remainder",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.623s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::resolved_snow_and_snow_free_lanes_publish_one_atomic_parent",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.568s",
+      "binary": "openwepp-hillslope-orchestrator",
+      "test": "v9_real_consumer_shadow::tests::two_resolved_snow_lanes_choose_common_earliest_cadence",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "  21.019s",
+      "binary": "openwepp-persisted-restart-v1",
+      "test": "snow_stage3_v11::tests::after_snow_reappearance_round_trips_and_resumes_byte_identically",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "  21.006s",
+      "binary": "openwepp-persisted-restart-v1",
+      "test": "snow_stage3_v11::tests::before_snow_reappearance_round_trips_and_resumes_byte_identically",
+      "prior_run_classification": "unclassified behavioral/environment failure; no inheritance claim",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "FAIL",
+      "duration": "   0.183s",
+      "binary": "openwepp-persisted-restart-v1",
+      "test": "snow_stage3_v11::tests::production_attachment_round_trips_canonical_v2_and_rejects_poison",
+      "prior_run_classification": "state/fingerprint assertion; attribution unresolved",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    },
+    {
+      "status": "SIGTERM",
+      "duration": " 386.406s",
+      "binary": "openwepp-runner",
+      "test": "hillslope::tests::accepted_stage3_real_runner_routes_lane_d_and_publishes_summary",
+      "prior_run_classification": "recorder900s cap interrupted long-running required test",
+      "current_cause": "Unadjudicated current log; prior label is contextual, not a waiver"
+    }
+  ],
+  "limitations": "Initial extraction assertion rejected whitespace-in-counter omission before writing a receipt; corrected parser deduplicates all288 identities. Individual prior classifications are context only; no inherited-failure waiver. Final guard source full regression NOT RUN."
+}

@@ -1,0 +1,1067 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:11:
+     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
+     DirectOpenLiquidIngressParcel, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidParcelKind,
+     DirectTileGroundIngress,
+[31m-    vegetation_real_hydrology_shadow::{RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter},
+[m[32m+    vegetation_real_hydrology_shadow::{
+[m[32m+        RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,
+[m[32m+    },
+[m };
+ 
+ struct FullNitrogen(Cell<u32>);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:82:
+         lse_beginning,
+         candidate.transaction_id(),
+         candidate.ending_lse_tile_states().to_vec(),
+[31m-    ).map_err(|source| M1ReceiverDiagnosticError { injection: None, source: M1ReceiverDiagnosticSource::Routing(source), rejected_candidate: None })?;
+[m[32m+    )
+[m[32m+    .map_err(|source| M1ReceiverDiagnosticError {
+[m[32m+        injection: None,
+[m[32m+        source: M1ReceiverDiagnosticSource::Routing(source),
+[m[32m+        rejected_candidate: None,
+[m[32m+    })?;
+[m     Ok(M1ReceiverLocalOwners {
+         frame: candidate.ending_frame().clone(),
+         lse_state,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:133:
+ }
+ 
+ impl M1ReceiverAuthenticatedHandoff {
+[31m-    fn validate(&self, accepted_state_sha256: &str, forest: &crate::DirectSurfaceLiquidConfigurationRecord) -> Result<(), M1ReceiverDiagnosticError> {
+[m[31m-        let error = |source| M1ReceiverDiagnosticError { injection: None, source: M1ReceiverDiagnosticSource::Context(source), rejected_candidate: None };
+[m[31m-        if self.kind != DirectSurfaceLiquidParcelKind::TerminalReceiver || self.parcel_id.to_string() != "m1-prescribed-terminal-receiver" {
+[m[32m+    fn validate(
+[m[32m+        &self,
+[m[32m+        accepted_state_sha256: &str,
+[m[32m+        forest: &crate::DirectSurfaceLiquidConfigurationRecord,
+[m[32m+    ) -> Result<(), M1ReceiverDiagnosticError> {
+[m[32m+        let error = |source| M1ReceiverDiagnosticError {
+[m[32m+            injection: None,
+[m[32m+            source: M1ReceiverDiagnosticSource::Context(source),
+[m[32m+            rejected_candidate: None,
+[m[32m+        };
+[m[32m+        if self.kind != DirectSurfaceLiquidParcelKind::TerminalReceiver
+[m[32m+            || self.parcel_id.to_string() != "m1-prescribed-terminal-receiver"
+[m[32m+        {
+[m             return Err(error(M1ReceiverContextError::Topology));
+         }
+[31m-        if self.source_owner_id.as_str() != "vegetation-v8" { return Err(error(M1ReceiverContextError::Owner)); }
+[m[31m-        if self.source_ofe_id != forest.key.ofe_id || self.source_tile_id != forest.key.tile_id
+[m[31m-            || self.destination_ofe_id != forest.key.ofe_id || self.destination_tile_id != forest.key.tile_id {
+[m[32m+        if self.source_owner_id.as_str() != "vegetation-v8" {
+[m[32m+            return Err(error(M1ReceiverContextError::Owner));
+[m[32m+        }
+[m[32m+        if self.source_ofe_id != forest.key.ofe_id
+[m[32m+            || self.source_tile_id != forest.key.tile_id
+[m[32m+            || self.destination_ofe_id != forest.key.ofe_id
+[m[32m+            || self.destination_tile_id != forest.key.tile_id
+[m[32m+        {
+[m             return Err(error(M1ReceiverContextError::Branch));
+         }
+[31m-        if self.accepted_source_state_sha256.as_str() != accepted_state_sha256 { return Err(error(M1ReceiverContextError::Identity)); }
+[m[31m-        if self.transaction_id != TransactionId(41) || self.interval_s.to_bits() != 60.0_f64.to_bits() { return Err(error(M1ReceiverContextError::Support)); }
+[m[32m+        if self.accepted_source_state_sha256.as_str() != accepted_state_sha256 {
+[m[32m+            return Err(error(M1ReceiverContextError::Identity));
+[m[32m+        }
+[m[32m+        if self.transaction_id != TransactionId(41)
+[m[32m+            || self.interval_s.to_bits() != 60.0_f64.to_bits()
+[m[32m+        {
+[m[32m+            return Err(error(M1ReceiverContextError::Support));
+[m[32m+        }
+[m         Ok(())
+     }
+ }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:205:
+ #[derive(Clone, Debug, PartialEq)]
+ enum M1ReceiverDiagnosticSource {
+     Routing(openwepp_land_surface_energy::LandSurfaceEnergyError),
+[31m-    Runtime(ExecuteV8LseRuntimeShadowError, Option<M1ReceiverContextError>),
+[m[32m+    Runtime(
+[m[32m+        ExecuteV8LseRuntimeShadowError,
+[m[32m+        Option<M1ReceiverContextError>,
+[m[32m+    ),
+[m     Context(M1ReceiverContextError),
+     Injection(M1ReceiverFailureInjection),
+ }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:229:
+     }
+     pub(crate) const fn rejection_stage(&self) -> M1ReceiverStage {
+         M1ReceiverStage(match self.source {
+[31m-            M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Phase | M1ReceiverContextError::Owner | M1ReceiverContextError::Support)
+[m[31m-            | M1ReceiverDiagnosticSource::Runtime(_, Some(M1ReceiverContextError::Support)) => "preflight",
+[m[31m-            M1ReceiverDiagnosticSource::Injection(M1ReceiverFailureInjection::LateReceiverFailure) => "late_receiver",
+[m[32m+            M1ReceiverDiagnosticSource::Context(
+[m[32m+                M1ReceiverContextError::Phase
+[m[32m+                | M1ReceiverContextError::Owner
+[m[32m+                | M1ReceiverContextError::Support,
+[m[32m+            )
+[m[32m+            | M1ReceiverDiagnosticSource::Runtime(_, Some(M1ReceiverContextError::Support)) => {
+[m[32m+                "preflight"
+[m[32m+            }
+[m[32m+            M1ReceiverDiagnosticSource::Injection(
+[m[32m+                M1ReceiverFailureInjection::LateReceiverFailure,
+[m[32m+            ) => "late_receiver",
+[m             _ => "receiver",
+         })
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:240:
+             M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Phase) => "wrong_phase",
+             M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Owner) => "wrong_owner",
+             M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Support)
+[31m-            | M1ReceiverDiagnosticSource::Runtime(_, Some(M1ReceiverContextError::Support)) => "wrong_support",
+[m[31m-            M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::LiquidEnthalpy) => "wrong_liquid_enthalpy",
+[m[31m-            M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Area) => "wrong_area_conversion",
+[m[31m-            M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Branch) => "wrong_source_branch",
+[m[32m+            | M1ReceiverDiagnosticSource::Runtime(_, Some(M1ReceiverContextError::Support)) => {
+[m[32m+                "wrong_support"
+[m[32m+            }
+[m[32m+            M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::LiquidEnthalpy) => {
+[m[32m+                "wrong_liquid_enthalpy"
+[m[32m+            }
+[m[32m+            M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Area) => {
+[m[32m+                "wrong_area_conversion"
+[m[32m+            }
+[m[32m+            M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Branch) => {
+[m[32m+                "wrong_source_branch"
+[m[32m+            }
+[m             M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Duplicate)
+[31m-            | M1ReceiverDiagnosticSource::Runtime(_, Some(M1ReceiverContextError::Duplicate)) => "duplicate_transfer",
+[m[31m-            M1ReceiverDiagnosticSource::Injection(M1ReceiverFailureInjection::LateReceiverFailure) => "injected_failure",
+[m[32m+            | M1ReceiverDiagnosticSource::Runtime(_, Some(M1ReceiverContextError::Duplicate)) => {
+[m[32m+                "duplicate_transfer"
+[m[32m+            }
+[m[32m+            M1ReceiverDiagnosticSource::Injection(
+[m[32m+                M1ReceiverFailureInjection::LateReceiverFailure,
+[m[32m+            ) => "injected_failure",
+[m             _ => "actual_receiver_failure",
+         })
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:296:
+ > {
+     let mut vegetation = fixture.vegetation_configuration.clone();
+     vegetation.dt_s = 60.0;
+[31m-    vegetation.configuration_sha256 = vegetation.canonical_sha256().map_err(|_| {
+[m[31m-        M1ReceiverDiagnosticError {
+[m[31m-            injection: None,
+[m[31m-            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[31m-            rejected_candidate: None,
+[m[31m-        }
+[m[31m-    })?;
+[m[32m+    vegetation.configuration_sha256 =
+[m[32m+        vegetation
+[m[32m+            .canonical_sha256()
+[m[32m+            .map_err(|_| M1ReceiverDiagnosticError {
+[m[32m+                injection: None,
+[m[32m+                source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[32m+                rejected_candidate: None,
+[m[32m+            })?;
+[m     let mut lse_configuration = fixture.lse_configuration.clone();
+[31m-    lse_configuration.vegetation_configuration.configuration_sha256 =
+[m[31m-        openwepp_land_surface_energy::Sha256Digest::try_new(
+[m[31m-            vegetation.configuration_sha256.clone(),
+[m[31m-        )
+[m[31m-        .map_err(|_| M1ReceiverDiagnosticError {
+[m[31m-            injection: None,
+[m[31m-            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[31m-            rejected_candidate: None,
+[m[31m-        })?;
+[m[31m-    lse_configuration.configuration_sha256 = lse_configuration.canonical_sha256().map_err(|_| {
+[m[31m-        M1ReceiverDiagnosticError {
+[m[31m-            injection: None,
+[m[31m-            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[31m-            rejected_candidate: None,
+[m[31m-        }
+[m[32m+    lse_configuration
+[m[32m+        .vegetation_configuration
+[m[32m+        .configuration_sha256 = openwepp_land_surface_energy::Sha256Digest::try_new(
+[m[32m+        vegetation.configuration_sha256.clone(),
+[m[32m+    )
+[m[32m+    .map_err(|_| M1ReceiverDiagnosticError {
+[m[32m+        injection: None,
+[m[32m+        source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[32m+        rejected_candidate: None,
+[m     })?;
+[32m+    lse_configuration.configuration_sha256 =
+[m[32m+        lse_configuration
+[m[32m+            .canonical_sha256()
+[m[32m+            .map_err(|_| M1ReceiverDiagnosticError {
+[m[32m+                injection: None,
+[m[32m+                source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[32m+                rejected_candidate: None,
+[m[32m+            })?;
+[m     let mut vegetation_state = fixture.vegetation_state.clone();
+     vegetation_state.configuration_sha256 = vegetation.configuration_sha256.clone();
+     vegetation_state.state_sha256 = vegetation_state.canonical_sha256();
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:326:
+     let mut lse_state = fixture.lse_state.clone();
+     lse_state.configuration_sha256 = lse_configuration.configuration_sha256.clone();
+[31m-    lse_state.state_sha256 = lse_state.canonical_sha256().map_err(|_| {
+[m[31m-        M1ReceiverDiagnosticError {
+[m[31m-            injection: None,
+[m[31m-            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[31m-            rejected_candidate: None,
+[m[31m-        }
+[m[31m-    })?;
+[m[32m+    lse_state.state_sha256 =
+[m[32m+        lse_state
+[m[32m+            .canonical_sha256()
+[m[32m+            .map_err(|_| M1ReceiverDiagnosticError {
+[m[32m+                injection: None,
+[m[32m+                source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[32m+                rejected_candidate: None,
+[m[32m+            })?;
+[m     let mut forcing = fixture.forcing.clone();
+     forcing.interval_s = 60.0;
+[31m-    forcing.forcing_sha256 = forcing.canonical_sha256().map_err(|_| {
+[m[31m-        M1ReceiverDiagnosticError {
+[m[32m+    forcing.forcing_sha256 = forcing
+[m[32m+        .canonical_sha256()
+[m[32m+        .map_err(|_| M1ReceiverDiagnosticError {
+[m             injection: None,
+             source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+             rejected_candidate: None,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:342:
+[31m-        }
+[m[31m-    })?;
+[m[32m+        })?;
+[m     let layer_ids = [
+[31m-        "thermal-1", "thermal-2", "soil-1", "soil-2", "soil-dry", "soil-frozen",
+[m[32m+        "thermal-1",
+[m[32m+        "thermal-2",
+[m[32m+        "soil-1",
+[m[32m+        "soil-2",
+[m[32m+        "soil-dry",
+[m[32m+        "soil-frozen",
+[m     ]
+[31m-    .map(|id| SoilLayerId::try_new(id).map_err(|_| M1ReceiverDiagnosticError {
+[m[31m-        injection: None,
+[m[31m-        source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[31m-        rejected_candidate: None,
+[m[31m-    }))
+[m[32m+    .map(|id| {
+[m[32m+        SoilLayerId::try_new(id).map_err(|_| M1ReceiverDiagnosticError {
+[m[32m+            injection: None,
+[m[32m+            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[32m+            rejected_candidate: None,
+[m[32m+        })
+[m[32m+    })
+[m     .into_iter()
+     .collect::<Result<Vec<_>, _>>()?;
+     let hydrology = RealHydrologyShadowAdapter::try_from_day_start(
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:356:
+         0,
+         TransactionId(41),
+         60.0,
+[31m-        ResourceOwnerId::try_new("production-hydrology").map_err(|_| M1ReceiverDiagnosticError {
+[m[31m-            injection: None,
+[m[31m-            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Owner),
+[m[31m-            rejected_candidate: None,
+[m[32m+        ResourceOwnerId::try_new("production-hydrology").map_err(|_| {
+[m[32m+            M1ReceiverDiagnosticError {
+[m[32m+                injection: None,
+[m[32m+                source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Owner),
+[m[32m+                rejected_candidate: None,
+[m[32m+            }
+[m         })?,
+         &[RealHydrologyLaneLayerMap {
+[31m-            ofe_lane: RealHydrologyOfeLaneId { lane_index: 0, lane_id: 1 },
+[m[32m+            ofe_lane: RealHydrologyOfeLaneId {
+[m[32m+                lane_index: 0,
+[m[32m+                lane_id: 1,
+[m[32m+            },
+[m             layer_ids,
+         }],
+     )
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:372:
+         rejected_candidate: None,
+     })?;
+     let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
+[31m-    let thermal = super::V8SoilThermalPhysicalBeginning::try_from_v1(&fixture.thermal).map_err(|_| {
+[m[31m-        M1ReceiverDiagnosticError {
+[m[31m-            injection: None,
+[m[31m-            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[31m-            rejected_candidate: None,
+[m[31m-        }
+[m[31m-    })?;
+[m[32m+    let thermal =
+[m[32m+        super::V8SoilThermalPhysicalBeginning::try_from_v1(&fixture.thermal).map_err(|_| {
+[m[32m+            M1ReceiverDiagnosticError {
+[m[32m+                injection: None,
+[m[32m+                source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[32m+                rejected_candidate: None,
+[m[32m+            }
+[m[32m+        })?;
+[m     let receipt = super::V8CanopyForcingReceipt::try_new(
+         vegetation.configuration_sha256.clone(),
+         vegetation_state.state_sha256.clone(),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:385:
+         lse_configuration.configuration_sha256.clone(),
+         forcing.forcing_sha256.clone(),
+[31m-        super::unified_beginning_hydrology_snapshot_sha256(&adapter, &fixture.surface_configuration)
+[m[32m+        super::unified_beginning_hydrology_snapshot_sha256(
+[m[32m+            &adapter,
+[m[32m+            &fixture.surface_configuration,
+[m[32m+        )
+[m[32m+        .map_err(|_| M1ReceiverDiagnosticError {
+[m[32m+            injection: None,
+[m[32m+            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[32m+            rejected_candidate: None,
+[m[32m+        })?,
+[m[32m+        thermal
+[m[32m+            .snapshot_sha256()
+[m             .map_err(|_| M1ReceiverDiagnosticError {
+                 injection: None,
+                 source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:391:
+                 rejected_candidate: None,
+             })?,
+[31m-        thermal.snapshot_sha256().map_err(|_| M1ReceiverDiagnosticError {
+[m[31m-            injection: None,
+[m[31m-            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+[m[31m-            rejected_candidate: None,
+[m[31m-        })?,
+[m         TransactionId(41),
+         fixture.receipt.forcing().clone(),
+     )
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:403:
+         source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Cadence),
+         rejected_candidate: None,
+     })?;
+[31m-    Ok((vegetation, vegetation_state, lse_configuration, lse_state, forcing, hydrology, receipt))
+[m[32m+    Ok((
+[m[32m+        vegetation,
+[m[32m+        vegetation_state,
+[m[32m+        lse_configuration,
+[m[32m+        lse_state,
+[m[32m+        forcing,
+[m[32m+        hydrology,
+[m[32m+        receipt,
+[m[32m+    ))
+[m }
+ 
+ fn validate_prescribed_source_context(
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:411:
+     fixture: &EndpointFixture,
+     forest: &crate::DirectSurfaceLiquidConfigurationRecord,
+ ) -> Result<(), M1ReceiverDiagnosticError> {
+[31m-    let reject = |source| M1ReceiverDiagnosticError { injection: None, source: M1ReceiverDiagnosticSource::Context(source), rejected_candidate: None };
+[m[31m-    let mut configured = fixture.vegetation_configuration.strata.iter().filter(|row| row.tile_ids.contains(&forest.key.tile_id)).collect::<Vec<_>>();
+[m[32m+    let reject = |source| M1ReceiverDiagnosticError {
+[m[32m+        injection: None,
+[m[32m+        source: M1ReceiverDiagnosticSource::Context(source),
+[m[32m+        rejected_candidate: None,
+[m[32m+    };
+[m[32m+    let mut configured = fixture
+[m[32m+        .vegetation_configuration
+[m[32m+        .strata
+[m[32m+        .iter()
+[m[32m+        .filter(|row| row.tile_ids.contains(&forest.key.tile_id))
+[m[32m+        .collect::<Vec<_>>();
+[m     configured.sort_by_key(|row| row.vertical_rank);
+[31m-    if configured.len() != 2 || configured[0].vertical_rank >= configured[1].vertical_rank { return Err(reject(M1ReceiverContextError::Topology)); }
+[m[31m-    let expected = configured.iter().map(|row| {
+[m[31m-        fixture.vegetation_state.strata.get(&row.stratum_id).ok_or_else(|| reject(M1ReceiverContextError::Identity))?;
+[m[31m-        Ok(format!("{}::{}", row.stratum_id.as_str(), forest.key.tile_id.as_str()))
+[m[31m-    }).collect::<Result<Vec<_>, M1ReceiverDiagnosticError>>()?;
+[m[31m-    let upper = control.input.upper(); let lower = control.input.lower();
+[m[31m-    if upper.occupancy_id != expected[0] || lower.occupancy_id != expected[1] { return Err(reject(M1ReceiverContextError::Branch)); }
+[m[31m-    if !upper.plant_area_m2_m2_tile.is_finite() || upper.plant_area_m2_m2_tile <= 0.0
+[m[31m-        || !lower.plant_area_m2_m2_tile.is_finite() || lower.plant_area_m2_m2_tile <= 0.0
+[m[31m-        || control.input.tile_fraction().to_bits() != forest.tile_fraction.to_bits() { return Err(reject(M1ReceiverContextError::Area)); }
+[m[32m+    if configured.len() != 2 || configured[0].vertical_rank >= configured[1].vertical_rank {
+[m[32m+        return Err(reject(M1ReceiverContextError::Topology));
+[m[32m+    }
+[m[32m+    let expected = configured
+[m[32m+        .iter()
+[m[32m+        .map(|row| {
+[m[32m+            fixture
+[m[32m+                .vegetation_state
+[m[32m+                .strata
+[m[32m+                .get(&row.stratum_id)
+[m[32m+                .ok_or_else(|| reject(M1ReceiverContextError::Identity))?;
+[m[32m+            Ok(format!(
+[m[32m+                "{}::{}",
+[m[32m+                row.stratum_id.as_str(),
+[m[32m+                forest.key.tile_id.as_str()
+[m[32m+            ))
+[m[32m+        })
+[m[32m+        .collect::<Result<Vec<_>, M1ReceiverDiagnosticError>>()?;
+[m[32m+    let upper = control.input.upper();
+[m[32m+    let lower = control.input.lower();
+[m[32m+    if upper.occupancy_id != expected[0] || lower.occupancy_id != expected[1] {
+[m[32m+        return Err(reject(M1ReceiverContextError::Branch));
+[m[32m+    }
+[m[32m+    if !upper.plant_area_m2_m2_tile.is_finite()
+[m[32m+        || upper.plant_area_m2_m2_tile <= 0.0
+[m[32m+        || !lower.plant_area_m2_m2_tile.is_finite()
+[m[32m+        || lower.plant_area_m2_m2_tile <= 0.0
+[m[32m+        || control.input.tile_fraction().to_bits() != forest.tile_fraction.to_bits()
+[m[32m+    {
+[m[32m+        return Err(reject(M1ReceiverContextError::Area));
+[m[32m+    }
+[m     Ok(())
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:432:
+     route: &openwepp_land_surface_energy::M1ColumnLiquidRouting,
+ ) -> Result<(), M1ReceiverDiagnosticError> {
+     if contributors.len() != route.terminal_parcels().len() || contributors.is_empty() {
+[31m-        return Err(M1ReceiverDiagnosticError { injection: None, source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Branch), rejected_candidate: None });
+[m[32m+        return Err(M1ReceiverDiagnosticError {
+[m[32m+            injection: None,
+[m[32m+            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Branch),
+[m[32m+            rejected_candidate: None,
+[m[32m+        });
+[m     }
+     for (row, parcel) in contributors.iter().zip(route.terminal_parcels()) {
+         let expected_fraction = parcel.mass_kg_m2_ofe_ground() / parcel.mass_kg_m2_tile();
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:440:
+             || row.source_occupancy_id != parcel.source_occupancy_id()
+             || row.destination_occupancy_id.as_deref() != parcel.destination_occupancy_id()
+         {
+[31m-            return Err(M1ReceiverDiagnosticError { injection: None, source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Branch), rejected_candidate: None });
+[m[32m+            return Err(M1ReceiverDiagnosticError {
+[m[32m+                injection: None,
+[m[32m+                source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Branch),
+[m[32m+                rejected_candidate: None,
+[m[32m+            });
+[m         }
+         if row.mass.to_bits() != parcel.mass_kg_m2_tile().to_bits()
+             || row.enthalpy.to_bits() != parcel.enthalpy_j_kg().to_bits()
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:447:
+             || row.fraction.to_bits() != expected_fraction.to_bits()
+[31m-            || !row.mass.is_finite() || !row.enthalpy.is_finite() || !row.fraction.is_finite()
+[m[32m+            || !row.mass.is_finite()
+[m[32m+            || !row.enthalpy.is_finite()
+[m[32m+            || !row.fraction.is_finite()
+[m         {
+[31m-            return Err(M1ReceiverDiagnosticError { injection: None, source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Area), rejected_candidate: None });
+[m[32m+            return Err(M1ReceiverDiagnosticError {
+[m[32m+                injection: None,
+[m[32m+                source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Area),
+[m[32m+                rejected_candidate: None,
+[m[32m+            });
+[m         }
+     }
+     Ok(())
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:480:
+         .map(|parcel| parcel.energy_j_m2_tile())
+         .sum();
+     if !terminal_mass.is_finite() || terminal_mass <= 0.0 || !terminal_energy.is_finite() {
+[31m-        return Err(M1ReceiverDiagnosticError { injection: None, source: M1ReceiverDiagnosticSource::Routing(openwepp_land_surface_energy::LandSurfaceEnergyError::ConstitutiveDomain("M1 receiver terminal mixture")), rejected_candidate: None });
+[m[32m+        return Err(M1ReceiverDiagnosticError {
+[m[32m+            injection: None,
+[m[32m+            source: M1ReceiverDiagnosticSource::Routing(
+[m[32m+                openwepp_land_surface_energy::LandSurfaceEnergyError::ConstitutiveDomain(
+[m[32m+                    "M1 receiver terminal mixture",
+[m[32m+                ),
+[m[32m+            ),
+[m[32m+            rejected_candidate: None,
+[m[32m+        });
+[m     }
+     let terminal_h = terminal_energy / terminal_mass;
+[31m-    let (vegetation_configuration, vegetation_state, lse_configuration, lse_state, forcing, hydrology, receipt) =
+[m[31m-        prescribed_sixty_second_context(fixture)?;
+[m[31m-    let mut contributors = route.terminal_parcels().iter().map(|parcel| M1ReceiverContribution {
+[m[31m-        origin: parcel.origin().to_owned(),
+[m[31m-        source_parcel_id: "m1-prescribed-terminal-receiver".to_owned(),
+[m[31m-        kind: DirectSurfaceLiquidParcelKind::TerminalReceiver,
+[m[31m-        transaction_id: TransactionId(41),
+[m[31m-        mass: parcel.mass_kg_m2_tile(), enthalpy: parcel.enthalpy_j_kg(),
+[m[31m-        fraction: parcel.mass_kg_m2_ofe_ground() / parcel.mass_kg_m2_tile(),
+[m[31m-        source_occupancy_id: parcel.source_occupancy_id().to_owned(),
+[m[31m-        destination_occupancy_id: parcel.destination_occupancy_id().map(str::to_owned),
+[m[31m-    }).collect::<Vec<_>>();
+[m[32m+    let (
+[m[32m+        vegetation_configuration,
+[m[32m+        vegetation_state,
+[m[32m+        lse_configuration,
+[m[32m+        lse_state,
+[m[32m+        forcing,
+[m[32m+        hydrology,
+[m[32m+        receipt,
+[m[32m+    ) = prescribed_sixty_second_context(fixture)?;
+[m[32m+    let mut contributors = route
+[m[32m+        .terminal_parcels()
+[m[32m+        .iter()
+[m[32m+        .map(|parcel| M1ReceiverContribution {
+[m[32m+            origin: parcel.origin().to_owned(),
+[m[32m+            source_parcel_id: "m1-prescribed-terminal-receiver".to_owned(),
+[m[32m+            kind: DirectSurfaceLiquidParcelKind::TerminalReceiver,
+[m[32m+            transaction_id: TransactionId(41),
+[m[32m+            mass: parcel.mass_kg_m2_tile(),
+[m[32m+            enthalpy: parcel.enthalpy_j_kg(),
+[m[32m+            fraction: parcel.mass_kg_m2_ofe_ground() / parcel.mass_kg_m2_tile(),
+[m[32m+            source_occupancy_id: parcel.source_occupancy_id().to_owned(),
+[m[32m+            destination_occupancy_id: parcel.destination_occupancy_id().map(str::to_owned),
+[m[32m+        })
+[m[32m+        .collect::<Vec<_>>();
+[m     let mut terminal_parcel = DirectOpenLiquidIngressParcel {
+         kind: DirectSurfaceLiquidParcelKind::TerminalReceiver,
+[31m-        parcel_id: ParcelId::try_new("m1-prescribed-terminal-receiver").map_err(|_| M1ReceiverDiagnosticError {
+[m[31m-            injection: None,
+[m[31m-            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Identity),
+[m[31m-            rejected_candidate: None,
+[m[32m+        parcel_id: ParcelId::try_new("m1-prescribed-terminal-receiver").map_err(|_| {
+[m[32m+            M1ReceiverDiagnosticError {
+[m[32m+                injection: None,
+[m[32m+                source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Identity),
+[m[32m+                rejected_candidate: None,
+[m[32m+            }
+[m         })?,
+[31m-        source_owner_id: ResourceOwnerId::try_new("vegetation-v8").map_err(|_| M1ReceiverDiagnosticError {
+[m[31m-            injection: None,
+[m[31m-            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Owner),
+[m[31m-            rejected_candidate: None,
+[m[32m+        source_owner_id: ResourceOwnerId::try_new("vegetation-v8").map_err(|_| {
+[m[32m+            M1ReceiverDiagnosticError {
+[m[32m+                injection: None,
+[m[32m+                source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Owner),
+[m[32m+                rejected_candidate: None,
+[m[32m+            }
+[m         })?,
+         source_ofe_id: forest.key.ofe_id.clone(),
+         source_tile_id: forest.key.tile_id.clone(),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:512:
+         destination_ofe_id: forest.key.ofe_id.clone(),
+         destination_tile_id: forest.key.tile_id.clone(),
+[31m-        accepted_source_state_sha256: Sha256Digest::try_new(vegetation_state.state_sha256.clone()).map_err(|_| M1ReceiverDiagnosticError {
+[m[31m-            injection: None,
+[m[31m-            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Identity),
+[m[31m-            rejected_candidate: None,
+[m[31m-        })?,
+[m[32m+        accepted_source_state_sha256: Sha256Digest::try_new(vegetation_state.state_sha256.clone())
+[m[32m+            .map_err(|_| M1ReceiverDiagnosticError {
+[m[32m+                injection: None,
+[m[32m+                source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Identity),
+[m[32m+                rejected_candidate: None,
+[m[32m+            })?,
+[m         amount: amount(terminal_mass, terminal_h),
+     };
+     let mut handoff = M1ReceiverAuthenticatedHandoff {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:534:
+     // every rejection is subsequently produced by this preflight or the native
+     // receiver, never by a selector label.
+     match injection {
+[31m-        Some(M1ReceiverFailureInjection::WrongPhase) => terminal_parcel.amount.temperature_k = 250.0,
+[m[32m+        Some(M1ReceiverFailureInjection::WrongPhase) => {
+[m[32m+            terminal_parcel.amount.temperature_k = 250.0
+[m[32m+        }
+[m         Some(M1ReceiverFailureInjection::WrongOwner) => {
+[31m-            terminal_parcel.source_owner_id = ResourceOwnerId::try_new("foreign-owner").map_err(|_| M1ReceiverDiagnosticError {
+[m[31m-                injection: None, source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Owner), rejected_candidate: None,
+[m[31m-            })?;
+[m[32m+            terminal_parcel.source_owner_id =
+[m[32m+                ResourceOwnerId::try_new("foreign-owner").map_err(|_| {
+[m[32m+                    M1ReceiverDiagnosticError {
+[m[32m+                        injection: None,
+[m[32m+                        source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Owner),
+[m[32m+                        rejected_candidate: None,
+[m[32m+                    }
+[m[32m+                })?;
+[m             handoff.source_owner_id = terminal_parcel.source_owner_id.clone();
+         }
+         Some(M1ReceiverFailureInjection::WrongSupport) => {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:546:
+             // actual native ingress support so its preflight rejects it.
+             terminal_parcel.amount.end_s = 61.0;
+         }
+[31m-        Some(M1ReceiverFailureInjection::WrongLiquidEnthalpy) => terminal_parcel.amount.specific_liquid_enthalpy_j_kg += 1.0,
+[m[32m+        Some(M1ReceiverFailureInjection::WrongLiquidEnthalpy) => {
+[m[32m+            terminal_parcel.amount.specific_liquid_enthalpy_j_kg += 1.0
+[m[32m+        }
+[m         Some(M1ReceiverFailureInjection::WrongAreaConversion) => contributors[0].fraction *= 0.5,
+[31m-        Some(M1ReceiverFailureInjection::WrongSourceBranch) => contributors[0].source_occupancy_id.push_str(":foreign"),
+[m[32m+        Some(M1ReceiverFailureInjection::WrongSourceBranch) => {
+[m[32m+            contributors[0].source_occupancy_id.push_str(":foreign")
+[m[32m+        }
+[m         _ => {}
+     }
+     // This validates the selected source owner, source state, canonical parcel
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:555:
+     // identity, topology, and support before the native ingress consumes it.
+     // The phase boundary is liquid-only for this receiver handoff.
+[31m-    handoff.validate(&vegetation_state.state_sha256, forest).map_err(|mut error| { error.injection = injection; error })?;
+[m[31m-    validate_contributor_handoff(&contributors, &route).map_err(|mut error| { error.injection = injection; error })?;
+[m[32m+    handoff
+[m[32m+        .validate(&vegetation_state.state_sha256, forest)
+[m[32m+        .map_err(|mut error| {
+[m[32m+            error.injection = injection;
+[m[32m+            error
+[m[32m+        })?;
+[m[32m+    validate_contributor_handoff(&contributors, &route).map_err(|mut error| {
+[m[32m+        error.injection = injection;
+[m[32m+        error
+[m[32m+    })?;
+[m     if terminal_parcel.amount.temperature_k < 273.15 {
+[31m-        return Err(M1ReceiverDiagnosticError { injection, source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Phase), rejected_candidate: None });
+[m[32m+        return Err(M1ReceiverDiagnosticError {
+[m[32m+            injection,
+[m[32m+            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Phase),
+[m[32m+            rejected_candidate: None,
+[m[32m+        });
+[m     }
+[31m-    if terminal_parcel.amount.specific_liquid_enthalpy_j_kg.to_bits()
+[m[32m+    if terminal_parcel
+[m[32m+        .amount
+[m[32m+        .specific_liquid_enthalpy_j_kg
+[m[32m+        .to_bits()
+[m         != (4218.0 * (terminal_parcel.amount.temperature_k - 273.15)).to_bits()
+     {
+[31m-        return Err(M1ReceiverDiagnosticError { injection, source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::LiquidEnthalpy), rejected_candidate: None });
+[m[32m+        return Err(M1ReceiverDiagnosticError {
+[m[32m+            injection,
+[m[32m+            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::LiquidEnthalpy),
+[m[32m+            rejected_candidate: None,
+[m[32m+        });
+[m     }
+     let mut ingress = DirectSurfaceLiquidIngressInput {
+         transaction_id: TransactionId(41),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:571:
+         interval_s: 60.0,
+         tile_ingress: vec![
+             DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround {
+[31m-                ofe_id: forest.key.ofe_id.clone(), tile_id: forest.key.tile_id.clone(), surface_id: forest.key.surface_id.clone(),
+[m[31m-                release: DirectCanopyLiquidRelease { throughfall: amount(0.0, 0.0), initial_drainage: amount(0.0, 0.0), second_drainage: amount(0.0, 0.0), stemflow: amount(0.0, 0.0) },
+[m[32m+                ofe_id: forest.key.ofe_id.clone(),
+[m[32m+                tile_id: forest.key.tile_id.clone(),
+[m[32m+                surface_id: forest.key.surface_id.clone(),
+[m[32m+                release: DirectCanopyLiquidRelease {
+[m[32m+                    throughfall: amount(0.0, 0.0),
+[m[32m+                    initial_drainage: amount(0.0, 0.0),
+[m[32m+                    second_drainage: amount(0.0, 0.0),
+[m[32m+                    stemflow: amount(0.0, 0.0),
+[m[32m+                },
+[m                 direct_ground_parcels: vec![terminal_parcel],
+             },
+[31m-            DirectTileGroundIngress::OpenRawPrecipitation { ofe_id: open.key.ofe_id.clone(), tile_id: open.key.tile_id.clone(), surface_id: open.key.surface_id.clone(), raw_precipitation: amount(0.0, 0.0) },
+[m[32m+            DirectTileGroundIngress::OpenRawPrecipitation {
+[m[32m+                ofe_id: open.key.ofe_id.clone(),
+[m[32m+                tile_id: open.key.tile_id.clone(),
+[m[32m+                surface_id: open.key.surface_id.clone(),
+[m[32m+                raw_precipitation: amount(0.0, 0.0),
+[m[32m+            },
+[m         ],
+[31m-        wb14_parameters: vec![DirectOfeWb14Parameters { ofe_id: forest.key.ofe_id.clone(), effective_conductivity_m_s: 1e-6, matric_potential_m: 0.1, infiltration_storage_capacity_m: 0.04 }],
+[m[32m+        wb14_parameters: vec![DirectOfeWb14Parameters {
+[m[32m+            ofe_id: forest.key.ofe_id.clone(),
+[m[32m+            effective_conductivity_m_s: 1e-6,
+[m[32m+            matric_potential_m: 0.1,
+[m[32m+            infiltration_storage_capacity_m: 0.04,
+[m[32m+        }],
+[m     };
+     if injection == Some(M1ReceiverFailureInjection::DuplicateTransfer) {
+[31m-        let DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { direct_ground_parcels, .. } = &mut ingress.tile_ingress[0] else { unreachable!() };
+[m[32m+        let DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround {
+[m[32m+            direct_ground_parcels,
+[m[32m+            ..
+[m[32m+        } = &mut ingress.tile_ingress[0]
+[m[32m+        else {
+[m[32m+            unreachable!()
+[m[32m+        };
+[m         direct_ground_parcels.push(direct_ground_parcels[0].clone());
+     }
+[31m-    let _prescribed_ingress = super::multi_tile_runtime::set_m1_prescribed_ingress_for_test(ingress);
+[m[32m+    let _prescribed_ingress =
+[m[32m+        super::multi_tile_runtime::set_m1_prescribed_ingress_for_test(ingress);
+[m     let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&hydrology);
+     let thermal =
+         super::V8SoilThermalPhysicalBeginning::try_from_v1(&fixture.thermal).map_err(|_| {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:653:
+     let actual_candidate = result.hydrology_candidate().clone();
+     let receipts = actual_candidate.surface_ingress().receipts().to_vec();
+     let expected_source = handoff.parcel_id.to_string();
+[31m-    let matching_receipts = receipts.iter().filter(|receipt| receipt.kind == handoff.kind
+[m[31m-        && receipt.source_parcel_id == expected_source
+[m[31m-        && receipt.transaction_id == handoff.transaction_id).collect::<Vec<_>>();
+[m[31m-    if matching_receipts.is_empty() || matching_receipts.len() != receipts.len()
+[m[31m-        || matching_receipts.iter().any(|receipt| receipt.start_s.to_bits() != 0.0_f64.to_bits()
+[m[31m-            || receipt.end_s.to_bits() != 60.0_f64.to_bits()
+[m[31m-            || receipt.origin_store_key.ofe_id != forest.key.ofe_id
+[m[31m-            || receipt.origin_store_key.tile_id != forest.key.tile_id
+[m[31m-            || receipt.recipient_store_key.ofe_id != forest.key.ofe_id)
+[m[32m+    let matching_receipts = receipts
+[m[32m+        .iter()
+[m[32m+        .filter(|receipt| {
+[m[32m+            receipt.kind == handoff.kind
+[m[32m+                && receipt.source_parcel_id == expected_source
+[m[32m+                && receipt.transaction_id == handoff.transaction_id
+[m[32m+        })
+[m[32m+        .collect::<Vec<_>>();
+[m[32m+    if matching_receipts.is_empty()
+[m[32m+        || matching_receipts.len() != receipts.len()
+[m[32m+        || matching_receipts.iter().any(|receipt| {
+[m[32m+            receipt.start_s.to_bits() != 0.0_f64.to_bits()
+[m[32m+                || receipt.end_s.to_bits() != 60.0_f64.to_bits()
+[m[32m+                || receipt.origin_store_key.ofe_id != forest.key.ofe_id
+[m[32m+                || receipt.origin_store_key.tile_id != forest.key.tile_id
+[m[32m+                || receipt.recipient_store_key.ofe_id != forest.key.ofe_id
+[m[32m+        })
+[m     {
+[31m-        return Err(M1ReceiverDiagnosticError { injection: None, source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Branch), rejected_candidate: None });
+[m[32m+        return Err(M1ReceiverDiagnosticError {
+[m[32m+            injection: None,
+[m[32m+            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Branch),
+[m[32m+            rejected_candidate: None,
+[m[32m+        });
+[m     }
+[31m-    let receipt_mass: f64 = matching_receipts.iter().map(|r| r.mass_kg_m2_basis_ofe_ground).sum();
+[m[31m-    let receipt_energy: f64 = matching_receipts.iter().map(|r| r.enthalpy_j_m2_basis_ofe_ground).sum();
+[m[31m-    let contributor_mass: f64 = contributors.iter().map(M1ReceiverContribution::ofe_mass_kg_m2_ground).sum();
+[m[31m-    let contributor_energy: f64 = contributors.iter().map(M1ReceiverContribution::ofe_enthalpy_j_m2_ground).sum();
+[m[31m-    if (receipt_mass - contributor_mass).abs() > 1.0e-12 || (receipt_energy - contributor_energy).abs() > 1.0e-8 {
+[m[31m-        return Err(M1ReceiverDiagnosticError { injection: None, source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Branch), rejected_candidate: None });
+[m[32m+    let receipt_mass: f64 = matching_receipts
+[m[32m+        .iter()
+[m[32m+        .map(|r| r.mass_kg_m2_basis_ofe_ground)
+[m[32m+        .sum();
+[m[32m+    let receipt_energy: f64 = matching_receipts
+[m[32m+        .iter()
+[m[32m+        .map(|r| r.enthalpy_j_m2_basis_ofe_ground)
+[m[32m+        .sum();
+[m[32m+    let contributor_mass: f64 = contributors
+[m[32m+        .iter()
+[m[32m+        .map(M1ReceiverContribution::ofe_mass_kg_m2_ground)
+[m[32m+        .sum();
+[m[32m+    let contributor_energy: f64 = contributors
+[m[32m+        .iter()
+[m[32m+        .map(M1ReceiverContribution::ofe_enthalpy_j_m2_ground)
+[m[32m+        .sum();
+[m[32m+    if (receipt_mass - contributor_mass).abs() > 1.0e-12
+[m[32m+        || (receipt_energy - contributor_energy).abs() > 1.0e-8
+[m[32m+    {
+[m[32m+        return Err(M1ReceiverDiagnosticError {
+[m[32m+            injection: None,
+[m[32m+            source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Branch),
+[m[32m+            rejected_candidate: None,
+[m[32m+        });
+[m     }
+     let diagnostic = M1ReceiverDiagnosticResult {
+         actual_candidate,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:677:
+[31m-        contribution_join: M1ReceiverContributionJoin { contributors: contributors.clone() },
+[m[32m+        contribution_join: M1ReceiverContributionJoin {
+[m[32m+            contributors: contributors.clone(),
+[m[32m+        },
+[m     };
+     if injection.is_none() {
+         let receiver = diagnostic.actual_candidate.receiver_closure_operands();
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:681:
+[31m-        eprintln!("M1_RECEIVER_RAW_PRIMITIVES={}", serde_json::json!({
+[m[31m-            "contributors": contributors.iter().map(|row| serde_json::json!({"origin":row.origin,"source_occupancy_id":row.source_occupancy_id,"destination_occupancy_id":row.destination_occupancy_id,"source_parcel_id":row.source_parcel_id,"kind":format!("{:?}",row.kind),"transaction_id":row.transaction_id.0,"mass":row.mass,"h":row.enthalpy,"fraction":row.fraction})).collect::<Vec<_>>(),
+[m[31m-            "receipts": receipts.iter().map(|row| serde_json::json!({"parcel_id":row.parcel_id,"source_parcel_id":row.source_parcel_id,"kind":format!("{:?}",row.kind),"transaction_id":row.transaction_id.0,"start_s":row.start_s,"end_s":row.end_s,"mass":row.mass_kg_m2_basis_ofe_ground,"temperature_k":row.temperature_k,"energy":row.enthalpy_j_m2_basis_ofe_ground,"basis_ofe":row.basis_ofe_id.as_str()})).collect::<Vec<_>>(),
+[m[31m-            "production_soil": receiver.production_soil.iter().map(|row| serde_json::json!({"ofe":row.ofe_id.as_str(),"infiltration_m":row.infiltration_m,"begin":row.beginning_aggregate_soil_water_m,"end":row.ending_aggregate_soil_water_m,"layers":row.ordered_layers.iter().map(|layer| serde_json::json!({"id":layer.layer_id.as_str(),"begin":layer.beginning_liquid_m,"end":layer.ending_liquid_m,"depth":layer.layer_depth_m,"residual":layer.residual_theta,"frozen":layer.frozen_depth_m})).collect::<Vec<_>>() })).collect::<Vec<_>>(),
+[m[31m-            "thermal": receiver.soil_thermal.iter().map(|row| serde_json::json!({"ofe":row.ofe_id.as_str(),"tile":row.tile_id.as_str(),"layer":row.layer_id.as_str(),"begin":row.beginning_enthalpy_j_m2_ofe_ground,"infiltration":row.infiltration_enthalpy_j_m2_ofe_ground,"end":row.ending_enthalpy_j_m2_ofe_ground})).collect::<Vec<_>>(),
+[m[31m-            "lse": receiver.lse_tiles.iter().map(|row| serde_json::json!({"ofe":row.ofe_id.as_str(),"tile":row.tile_id.as_str(),"fraction":row.tile_fraction,"begin":row.beginning_enthalpy_j_m2_tile_ground,"retained":row.retained_enthalpy_j_m2_ofe_ground,"end":row.ending_enthalpy_j_m2_tile_ground})).collect::<Vec<_>>(),
+[m[31m-        }));
+[m[32m+        eprintln!(
+[m[32m+            "M1_RECEIVER_RAW_PRIMITIVES={}",
+[m[32m+            serde_json::json!({
+[m[32m+                "contributors": contributors.iter().map(|row| serde_json::json!({"origin":row.origin,"source_occupancy_id":row.source_occupancy_id,"destination_occupancy_id":row.destination_occupancy_id,"source_parcel_id":row.source_parcel_id,"kind":format!("{:?}",row.kind),"transaction_id":row.transaction_id.0,"mass":row.mass,"h":row.enthalpy,"fraction":row.fraction})).collect::<Vec<_>>(),
+[m[32m+                "receipts": receipts.iter().map(|row| serde_json::json!({"parcel_id":row.parcel_id,"source_parcel_id":row.source_parcel_id,"kind":format!("{:?}",row.kind),"transaction_id":row.transaction_id.0,"start_s":row.start_s,"end_s":row.end_s,"mass":row.mass_kg_m2_basis_ofe_ground,"temperature_k":row.temperature_k,"energy":row.enthalpy_j_m2_basis_ofe_ground,"basis_ofe":row.basis_ofe_id.as_str()})).collect::<Vec<_>>(),
+[m[32m+                "production_soil": receiver.production_soil.iter().map(|row| serde_json::json!({"ofe":row.ofe_id.as_str(),"infiltration_m":row.infiltration_m,"begin":row.beginning_aggregate_soil_water_m,"end":row.ending_aggregate_soil_water_m,"layers":row.ordered_layers.iter().map(|layer| serde_json::json!({"id":layer.layer_id.as_str(),"begin":layer.beginning_liquid_m,"end":layer.ending_liquid_m,"depth":layer.layer_depth_m,"residual":layer.residual_theta,"frozen":layer.frozen_depth_m})).collect::<Vec<_>>() })).collect::<Vec<_>>(),
+[m[32m+                "thermal": receiver.soil_thermal.iter().map(|row| serde_json::json!({"ofe":row.ofe_id.as_str(),"tile":row.tile_id.as_str(),"layer":row.layer_id.as_str(),"begin":row.beginning_enthalpy_j_m2_ofe_ground,"infiltration":row.infiltration_enthalpy_j_m2_ofe_ground,"end":row.ending_enthalpy_j_m2_ofe_ground})).collect::<Vec<_>>(),
+[m[32m+                "lse": receiver.lse_tiles.iter().map(|row| serde_json::json!({"ofe":row.ofe_id.as_str(),"tile":row.tile_id.as_str(),"fraction":row.tile_fraction,"begin":row.beginning_enthalpy_j_m2_tile_ground,"retained":row.retained_enthalpy_j_m2_ofe_ground,"end":row.ending_enthalpy_j_m2_tile_ground})).collect::<Vec<_>>(),
+[m[32m+            })
+[m[32m+        );
+[m     }
+     let local_beginning = M1ReceiverLocalOwners {
+         frame: diagnostic.actual_candidate.beginning_frame().clone(),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:691:
+         lse_state: lse_state.clone(),
+         vegetation_state: vegetation_state.clone(),
+[31m-        thermal_candidates: diagnostic.actual_candidate.pre_ingress_soil_thermal_candidates().to_vec(),
+[m[32m+        thermal_candidates: diagnostic
+[m[32m+            .actual_candidate
+[m[32m+            .pre_ingress_soil_thermal_candidates()
+[m[32m+            .to_vec(),
+[m         biogeochemistry: fixture.biogeochemistry.clone(),
+     };
+     let mut local_owners = local_beginning.clone();
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:697:
+     local_owners = install_actual_receiver_candidate_locally(
+[31m-        &lse_state, &vegetation_state, &fixture.biogeochemistry, &diagnostic.actual_candidate,
+[m[32m+        &lse_state,
+[m[32m+        &vegetation_state,
+[m[32m+        &fixture.biogeochemistry,
+[m[32m+        &diagnostic.actual_candidate,
+[m     )?;
+     // This is a local diagnostic owner transaction. It proves the authentic
+     // candidate can be installed without publishing it into the fixture.
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:702:
+     if local_owners.lse_state == local_beginning.lse_state
+[31m-        || local_owners.thermal_candidates == local_beginning.thermal_candidates {
+[m[32m+        || local_owners.thermal_candidates == local_beginning.thermal_candidates
+[m[32m+    {
+[m         return Err(M1ReceiverDiagnosticError {
+             injection: None,
+             source: M1ReceiverDiagnosticSource::Context(M1ReceiverContextError::Identity),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:718:
+         }
+         return Err(M1ReceiverDiagnosticError {
+             injection,
+[31m-            source: M1ReceiverDiagnosticSource::Injection(M1ReceiverFailureInjection::LateReceiverFailure),
+[m[32m+            source: M1ReceiverDiagnosticSource::Injection(
+[m[32m+                M1ReceiverFailureInjection::LateReceiverFailure,
+[m[32m+            ),
+[m             rejected_candidate: Some(diagnostic),
+         });
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs:43:
+     }
+     /// Immutable upper occupancy input retained by the prescribed M1 route.
+     #[must_use]
+[31m-    pub const fn upper(&self) -> &M1RoutingOccupancyInput { &self.upper }
+[m[32m+    pub const fn upper(&self) -> &M1RoutingOccupancyInput {
+[m[32m+        &self.upper
+[m[32m+    }
+[m     /// Immutable lower occupancy input retained by the prescribed M1 route.
+     #[must_use]
+[31m-    pub const fn lower(&self) -> &M1RoutingOccupancyInput { &self.lower }
+[m[32m+    pub const fn lower(&self) -> &M1RoutingOccupancyInput {
+[m[32m+        &self.lower
+[m[32m+    }
+[m     /// Exact same-tile ground fraction used by every terminal conversion.
+     #[must_use]
+[31m-    pub const fn tile_fraction(&self) -> f64 { self.tile_fraction }
+[m[32m+    pub const fn tile_fraction(&self) -> f64 {
+[m[32m+        self.tile_fraction
+[m[32m+    }
+[m     fn validate(&self) -> Result<(), LandSurfaceEnergyError> {
+         if !self.tile_fraction.is_finite()
+             || !(0.0..=1.0).contains(&self.tile_fraction)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs:104:
+             ] {
+                 if mass > 0.0
+                     && (enthalpy < 0.0
+[31m-                        || REFERENCE_TEMPERATURE_K
+[m[31m-                            + enthalpy / WATER_HEAT_CAPACITY_J_KG_K
+[m[31m-                            > 373.15
+[m[32m+                        || REFERENCE_TEMPERATURE_K + enthalpy / WATER_HEAT_CAPACITY_J_KG_K > 373.15
+[m                         || !(mass * enthalpy).is_finite())
+                 {
+                     return Err(LandSurfaceEnergyError::ConstitutiveDomain(
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs:563:
+     #[test]
+     fn routing_rejects_finite_terminal_products_whose_aggregate_overflows() {
+         let upper = M1RoutingOccupancyInput {
+[31m-            occupancy_id: "upper".to_owned(), plant_area_m2_m2_tile: 1.0,
+[m[31m-            incident_mass_kg_m2_tile: 0.0, incident_enthalpy_j_kg: 0.0,
+[m[31m-            interception_fraction: 0.0, stemflow_fraction: 0.0,
+[m[31m-            initial_drainage_mass_kg_m2_tile: 0.0, initial_drainage_enthalpy_j_kg: 0.0,
+[m[31m-            second_drainage_mass_kg_m2_tile: 0.0, second_drainage_enthalpy_j_kg: 0.0,
+[m[32m+            occupancy_id: "upper".to_owned(),
+[m[32m+            plant_area_m2_m2_tile: 1.0,
+[m[32m+            incident_mass_kg_m2_tile: 0.0,
+[m[32m+            incident_enthalpy_j_kg: 0.0,
+[m[32m+            interception_fraction: 0.0,
+[m[32m+            stemflow_fraction: 0.0,
+[m[32m+            initial_drainage_mass_kg_m2_tile: 0.0,
+[m[32m+            initial_drainage_enthalpy_j_kg: 0.0,
+[m[32m+            second_drainage_mass_kg_m2_tile: 0.0,
+[m[32m+            second_drainage_enthalpy_j_kg: 0.0,
+[m         };
+         let lower = M1RoutingOccupancyInput {
+[31m-            occupancy_id: "lower".to_owned(), plant_area_m2_m2_tile: 1.0,
+[m[31m-            incident_mass_kg_m2_tile: 0.0, incident_enthalpy_j_kg: 0.0,
+[m[31m-            interception_fraction: 0.0, stemflow_fraction: 0.0,
+[m[32m+            occupancy_id: "lower".to_owned(),
+[m[32m+            plant_area_m2_m2_tile: 1.0,
+[m[32m+            incident_mass_kg_m2_tile: 0.0,
+[m[32m+            incident_enthalpy_j_kg: 0.0,
+[m[32m+            interception_fraction: 0.0,
+[m[32m+            stemflow_fraction: 0.0,
+[m             initial_drainage_mass_kg_m2_tile: f64::MAX * 0.75,
+             initial_drainage_enthalpy_j_kg: 1.0,
+             second_drainage_mass_kg_m2_tile: f64::MAX * 0.75,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs:580:
+         };
+         let input = M1ColumnLiquidRoutingInput::new(upper, lower, 1.0)
+             .expect("each individual terminal product remains finite");
+[31m-        assert!(matches!(route_m1_column_liquid(&input), Err(LandSurfaceEnergyError::NonFinite(_))));
+[m[32m+        assert!(matches!(
+[m[32m+            route_m1_column_liquid(&input),
+[m[32m+            Err(LandSurfaceEnergyError::NonFinite(_))
+[m[32m+        ));
+[m     }
+ 
+     #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs:587:
+     fn routing_has_exhaustive_reference_capture_and_terminal_lineage() {
+         let routed = route_m1_column_liquid(&reference_input()).expect("reference route");
+[31m-        let captures: Vec<_> = routed.captures().iter().map(|value| (
+[m[31m-            value.occupancy_id(), value.source_occupancy_id(), value.source_branch(), value.kind(),
+[m[31m-        )).collect();
+[m[31m-        assert_eq!(captures, vec![
+[m[31m-            ("stratum-z-upper::forest", "stratum-z-upper::forest", "top_incident", "capture"),
+[m[31m-            ("stratum-z-upper::forest", "stratum-z-upper::forest", "top_incident", "stemflow"),
+[m[31m-            ("stratum-z-upper::forest", "stratum-z-upper::forest", "top_incident", "throughfall"),
+[m[31m-            ("stratum-a-lower::forest", "stratum-z-upper::forest", "upper_throughfall", "capture"),
+[m[31m-            ("stratum-a-lower::forest", "stratum-z-upper::forest", "upper_throughfall", "stemflow"),
+[m[31m-            ("stratum-a-lower::forest", "stratum-z-upper::forest", "upper_throughfall", "throughfall"),
+[m[31m-            ("stratum-a-lower::forest", "stratum-z-upper::forest", "upper_drainage", "capture"),
+[m[31m-            ("stratum-a-lower::forest", "stratum-z-upper::forest", "upper_drainage", "stemflow"),
+[m[31m-            ("stratum-a-lower::forest", "stratum-z-upper::forest", "upper_drainage", "throughfall"),
+[m[31m-        ]);
+[m[31m-        let terminal: Vec<_> = routed.terminal_parcels().iter().map(|value| (
+[m[31m-            value.origin(), value.source_occupancy_id(), value.destination_occupancy_id(),
+[m[31m-        )).collect();
+[m[31m-        assert_eq!(terminal, vec![
+[m[31m-            ("upper_stemflow", "stratum-z-upper::forest", None),
+[m[31m-            ("upper_throughfall_stemflow", "stratum-z-upper::forest", Some("stratum-a-lower::forest")),
+[m[31m-            ("upper_throughfall_throughfall", "stratum-z-upper::forest", Some("stratum-a-lower::forest")),
+[m[31m-            ("upper_drainage_stemflow", "stratum-z-upper::forest", Some("stratum-a-lower::forest")),
+[m[31m-            ("upper_drainage_throughfall", "stratum-z-upper::forest", Some("stratum-a-lower::forest")),
+[m[31m-            ("lower_drainage", "stratum-a-lower::forest", None),
+[m[31m-        ]);
+[m[32m+        let captures: Vec<_> = routed
+[m[32m+            .captures()
+[m[32m+            .iter()
+[m[32m+            .map(|value| {
+[m[32m+                (
+[m[32m+                    value.occupancy_id(),
+[m[32m+                    value.source_occupancy_id(),
+[m[32m+                    value.source_branch(),
+[m[32m+                    value.kind(),
+[m[32m+                )
+[m[32m+            })
+[m[32m+            .collect();
+[m[32m+        assert_eq!(
+[m[32m+            captures,
+[m[32m+            vec![
+[m[32m+                (
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "top_incident",
+[m[32m+                    "capture"
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "top_incident",
+[m[32m+                    "stemflow"
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "top_incident",
+[m[32m+                    "throughfall"
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "stratum-a-lower::forest",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "upper_throughfall",
+[m[32m+                    "capture"
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "stratum-a-lower::forest",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "upper_throughfall",
+[m[32m+                    "stemflow"
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "stratum-a-lower::forest",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "upper_throughfall",
+[m[32m+                    "throughfall"
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "stratum-a-lower::forest",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "upper_drainage",
+[m[32m+                    "capture"
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "stratum-a-lower::forest",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "upper_drainage",
+[m[32m+                    "stemflow"
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "stratum-a-lower::forest",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    "upper_drainage",
+[m[32m+                    "throughfall"
+[m[32m+                ),
+[m[32m+            ]
+[m[32m+        );
+[m[32m+        let terminal: Vec<_> = routed
+[m[32m+            .terminal_parcels()
+[m[32m+            .iter()
+[m[32m+            .map(|value| {
+[m[32m+                (
+[m[32m+                    value.origin(),
+[m[32m+                    value.source_occupancy_id(),
+[m[32m+                    value.destination_occupancy_id(),
+[m[32m+                )
+[m[32m+            })
+[m[32m+            .collect();
+[m[32m+        assert_eq!(
+[m[32m+            terminal,
+[m[32m+            vec![
+[m[32m+                ("upper_stemflow", "stratum-z-upper::forest", None),
+[m[32m+                (
+[m[32m+                    "upper_throughfall_stemflow",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    Some("stratum-a-lower::forest")
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "upper_throughfall_throughfall",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    Some("stratum-a-lower::forest")
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "upper_drainage_stemflow",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    Some("stratum-a-lower::forest")
+[m[32m+                ),
+[m[32m+                (
+[m[32m+                    "upper_drainage_throughfall",
+[m[32m+                    "stratum-z-upper::forest",
+[m[32m+                    Some("stratum-a-lower::forest")
+[m[32m+                ),
+[m[32m+                ("lower_drainage", "stratum-a-lower::forest", None),
+[m[32m+            ]
+[m[32m+        );
+[m     }
+ 
+     #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs:621:
+         input.lower.second_drainage_mass_kg_m2_tile = 0.004;
+         input.lower.second_drainage_enthalpy_j_kg = 8436.0;
+         let routed = route_m1_column_liquid(&input).expect("second drainage route");
+[31m-        assert!(routed.captures().iter().any(|value| value.source_branch() == "upper_drainage_second"));
+[m[31m-        assert!(routed.terminal_parcels().iter().any(|value| value.origin() == "upper_drainage_second_stemflow"));
+[m[31m-        assert!(routed.terminal_parcels().iter().any(|value| value.origin() == "upper_drainage_second_throughfall"));
+[m[31m-        assert!(routed.terminal_parcels().iter().any(|value| value.origin() == "lower_drainage_second"));
+[m[32m+        assert!(
+[m[32m+            routed
+[m[32m+                .captures()
+[m[32m+                .iter()
+[m[32m+                .any(|value| value.source_branch() == "upper_drainage_second")
+[m[32m+        );
+[m[32m+        assert!(
+[m[32m+            routed
+[m[32m+                .terminal_parcels()
+[m[32m+                .iter()
+[m[32m+                .any(|value| value.origin() == "upper_drainage_second_stemflow")
+[m[32m+        );
+[m[32m+        assert!(
+[m[32m+            routed
+[m[32m+                .terminal_parcels()
+[m[32m+                .iter()
+[m[32m+                .any(|value| value.origin() == "upper_drainage_second_throughfall")
+[m[32m+        );
+[m[32m+        assert!(
+[m[32m+            routed
+[m[32m+                .terminal_parcels()
+[m[32m+                .iter()
+[m[32m+                .any(|value| value.origin() == "lower_drainage_second")
+[m[32m+        );
+[m     }
+ }
+ 

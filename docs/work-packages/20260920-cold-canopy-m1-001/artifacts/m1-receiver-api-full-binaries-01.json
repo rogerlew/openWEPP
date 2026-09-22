@@ -1,0 +1,1773 @@
+{
+  "utc": "2026-09-22T05:45:19.187297+00:00",
+  "source_tree_sha256": "186462b84ef1e5d02a512bf3c8d63f1109628825e9c859e71fbd4c183484ab0f",
+  "inventory_receipt": "m1-receiver-api-full-inventory-01.json",
+  "inventory_stdout_sha256": "a516fce9579d7fa27a1b181ab358c1370420c7085ec00c3561b31a0adf3627a4",
+  "scope": "Post-build inventory while exact-source full regression is running; inventory build reported 0.23 seconds and no compilation. No source edits permitted. Includes compiled skipped binaries; test selection remains full-run log authority.",
+  "binaries": [
+    {
+      "suite": "openwepp",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp-a04b64c2fe7c8410",
+      "sha256": "6502d7ca294c68cc8a095b7c7f0d77eb4a05776087634e9fa0eb523854e6d85d",
+      "bytes": 1305960,
+      "mtime_ns": 1790055435910191612
+    },
+    {
+      "suite": "openwepp-assurance",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_assurance-c3bd3198054b29d1",
+      "sha256": "999f03c3980f1b4fb01b0ecae57b69a567c3547f79babd6cdf33af3d1ebcb6c1",
+      "bytes": 39493816,
+      "mtime_ns": 1789945488157435839
+    },
+    {
+      "suite": "openwepp-assurance::bin/openwepp-assurance",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_assurance-e279355336ec458a",
+      "sha256": "b123065096e66af3e34bf3dcb1f21804f511546fb80f6d3687bc244c36756663",
+      "bytes": 1306152,
+      "mtime_ns": 1789945344167908790
+    },
+    {
+      "suite": "openwepp-biogeochemistry",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_biogeochemistry-59f4056c97984423",
+      "sha256": "14ab643a95203d3d52fc40bf0b066e5b03ee413f9b7b824f4cd283500902bda0",
+      "bytes": 13950104,
+      "mtime_ns": 1790055491292094622
+    },
+    {
+      "suite": "openwepp-climate-runtime-adapter",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_climate_runtime_adapter-3ea5e1dde03ca10d",
+      "sha256": "00a0b151cd4cf5aed898bf3516b8ff432c159986cba08af3064c343a417e51eb",
+      "bytes": 13569408,
+      "mtime_ns": 1790055489045976885
+    },
+    {
+      "suite": "openwepp-comparator-metadata",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_comparator_metadata-43863a927d41450f",
+      "sha256": "c11330e822b4867ed84bb33211845988aad76de5fcf4baad22de8df75e9b0544",
+      "bytes": 1421608,
+      "mtime_ns": 1790055500915599068
+    },
+    {
+      "suite": "openwepp-coupled-time",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_coupled_time-3752f3fcd6d00852",
+      "sha256": "2f115ffb447e48c4844d8677f21cd3ced834f4f47ad6c64569c81b6dec09b3af",
+      "bytes": 6184048,
+      "mtime_ns": 1789945260974560730
+    },
+    {
+      "suite": "openwepp-coupled-time::authority",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/authority-6d468d04e328263c",
+      "sha256": "ce9e303e3061c6fdf65263ac0b4a9a0d2b044effe935f2d2b25bd863fd31522c",
+      "bytes": 24558984,
+      "mtime_ns": 1789945259361476423
+    },
+    {
+      "suite": "openwepp-coupled-time::frozen_oracle",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/frozen_oracle-fe6c333f5872c78d",
+      "sha256": "c6a94c7174a44ead42a29421125cae5145cf1cea431576b65c9721475ecdd125",
+      "bytes": 11884928,
+      "mtime_ns": 1789945257980404242
+    },
+    {
+      "suite": "openwepp-hillslope-orchestrator",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_orchestrator-7511e2228ab2a6cb",
+      "sha256": "547afa510800b101135e1625da11de17de67964281e01fc9f2d1a358dbcdb19a",
+      "bytes": 455551792,
+      "mtime_ns": 1790055296125864390
+    },
+    {
+      "suite": "openwepp-hillslope-output",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_output-f03d2deb4606823f",
+      "sha256": "46168ffcad44e969b67bb536f14e1aab3b30036395147431cc9a49f97c8d17be",
+      "bytes": 108412992,
+      "mtime_ns": 1789945515192849663
+    },
+    {
+      "suite": "openwepp-input-contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_input_contract-fd77ef168e6155f8",
+      "sha256": "f0c04e7401e008da4ee99c7941d46f0692b27b5e5ce354c0459b8a17f4248b3a",
+      "bytes": 10873888,
+      "mtime_ns": 1790055493830227666
+    },
+    {
+      "suite": "openwepp-kernel-contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_kernel_contract-d2cbff58feef4af4",
+      "sha256": "23fccf86a4602b77faa6dc4e576d815e68e84a31e27e46be502ca06ccd27e556",
+      "bytes": 18558616,
+      "mtime_ns": 1790055497604425502
+    },
+    {
+      "suite": "openwepp-land-surface-energy",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-33cde06998c3108c",
+      "sha256": "d4bf4d615708d7c60dd3fb2059b5e2cb76c706fa57609232757da807178fb807",
+      "bytes": 105053976,
+      "mtime_ns": 1790055179442748091
+    },
+    {
+      "suite": "openwepp-landuse-migrate",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_landuse_migrate-6c277082af8716f4",
+      "sha256": "021182ea21fa586b1f0cebb46b0430c33ca7639a2da7b918550b2e2c961bbace",
+      "bytes": 30558304,
+      "mtime_ns": 1789945512067686232
+    },
+    {
+      "suite": "openwepp-landuse-migrate::bin/openwepp-landuse-migrate",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_landuse_migrate-d2914b08bdacdf5a",
+      "sha256": "2c1560af54b8db4162568a1993a664e7995b9033b46baab9202d5caf9059b7f7",
+      "bytes": 1306208,
+      "mtime_ns": 1789945478715942093
+    },
+    {
+      "suite": "openwepp-landuse-migrate::cli",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/cli-0683ada8bdc9557a",
+      "sha256": "752fefb779fb1c224e4b62905f93b8ca9eeb178411d99ca1b3e5264d510ff7a4",
+      "bytes": 30361936,
+      "mtime_ns": 1789945477892899052
+    },
+    {
+      "suite": "openwepp-legacy-bridge",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_legacy_bridge-e9c29139d0a9efef",
+      "sha256": "ee80fe0af01807e0965a443a844412d2b09f9cb4600116703d04234eb7a7abf4",
+      "bytes": 3302984,
+      "mtime_ns": 1790055499513525574
+    },
+    {
+      "suite": "openwepp-legacy-bridge::hbp_error_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hbp_error_contract-10f66486240ce5dc",
+      "sha256": "3fd896158325788b07ec060cd60401999f06f0a90bf45a56db1a7958f8295e43",
+      "bytes": 2842392,
+      "mtime_ns": 1789945505638350008
+    },
+    {
+      "suite": "openwepp-legacy-bridge::sidecar_error_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/sidecar_error_contract-b15bbdb61f9f1d5d",
+      "sha256": "9f1ee954aa58c71ca12633cf4862aef0601c96d02899651473a2c11c44b8c629",
+      "bytes": 2882872,
+      "mtime_ns": 1789945506012369568
+    },
+    {
+      "suite": "openwepp-management-schema",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_management_schema-0dd2a67fdbd64d64",
+      "sha256": "fd0d105d16575d266ed6bc98fc2bcaf706b4e16ef2a8bf84bb02412e55d0ad07",
+      "bytes": 11986600,
+      "mtime_ns": 1790055501732641895
+    },
+    {
+      "suite": "openwepp-meteorology",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_meteorology-813c821b68ea230b",
+      "sha256": "3a7299e88f3564b0e93e4c2b059bc593c0ab08f5ba38f0615e082b73b7e88bab",
+      "bytes": 1938456,
+      "mtime_ns": 1790055489670009596
+    },
+    {
+      "suite": "openwepp-meteorology::turbulent_fluxes_public_shape",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/turbulent_fluxes_public_shape-c909f6799d7a6f6f",
+      "sha256": "d12d4b661afb0f3af46ab9f427f72218a4b2a0806e837a2a1b49860c5913e5d4",
+      "bytes": 1345856,
+      "mtime_ns": 1789945539145102253
+    },
+    {
+      "suite": "openwepp-persisted-restart-v1",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_persisted_restart_v1-f89f16a145a30a78",
+      "sha256": "788b4ac31c1e7fcac965c401249f3c0e207ac14d677db011d1fbce21a3b133f3",
+      "bytes": 377629448,
+      "mtime_ns": 1790055498111452080
+    },
+    {
+      "suite": "openwepp-persisted-restart-v1::bin/restart-v1-benchmark",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/restart_v1_benchmark-572ed081e496d9a9",
+      "sha256": "e70863e3b5de26fd643ff86f16f42eb15cf3fa09522e406bd3ff0003deec5961",
+      "bytes": 1306352,
+      "mtime_ns": 1790055465178725809
+    },
+    {
+      "suite": "openwepp-plant-phenology",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_plant_phenology-5c3f9bea0845ecc9",
+      "sha256": "fa97d2bcfd57e3b3f3e2162a415577bee670a964ef95697e00487bfae29d625a",
+      "bytes": 1792760,
+      "mtime_ns": 1790055500568580878
+    },
+    {
+      "suite": "openwepp-plant-phenology::native_canopy_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/native_canopy_contract-43c26bd6025501ae",
+      "sha256": "cfc50152ac839ca39ccd8efa33559198eb3703a398ca9eb49c2dfbdb5e666123",
+      "bytes": 2026136,
+      "mtime_ns": 1789945539953144510
+    },
+    {
+      "suite": "openwepp-plant-phenology::restart",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/restart-966f5a3504744349",
+      "sha256": "4dfb89b14033c00094d4e19191fa2cf84d9cf13f498b817fe7d06ddfe57b9356",
+      "bytes": 1802600,
+      "mtime_ns": 1789945539511121394
+    },
+    {
+      "suite": "openwepp-runner",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_runner-5fbc583914199d5a",
+      "sha256": "037bb89ed6ecb0e13d47bf266775c8dff42fa818caef6f7f674393eb83fcbf19",
+      "bytes": 541143304,
+      "mtime_ns": 1790055485716802376
+    },
+    {
+      "suite": "openwepp-runner::bin/open_wepp_runner",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/open_wepp_runner-748ce20bd8a3363b",
+      "sha256": "37ed48d46bb2e76090cc5fe5e3e88205af1c5ed69132711e2b39f6da58e12f99",
+      "bytes": 399035528,
+      "mtime_ns": 1790055449089882465
+    },
+    {
+      "suite": "openwepp-runner::bin/openwepp-cli-hill",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_cli_hill-99703ffae620902f",
+      "sha256": "3131bdb37700f3982176fcb1720f1746ae6e29e8b96317b47f0fb27683086aed",
+      "bytes": 503922056,
+      "mtime_ns": 1790055469586956880
+    },
+    {
+      "suite": "openwepp-runner::bin/openwepp-cli-totalwatsed3",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_cli_totalwatsed3-6382cecf86a42d96",
+      "sha256": "1595ad60e613d1f810196ddc37f2eadc17c617293e300c8c2f4a3e707258f804",
+      "bytes": 1306312,
+      "mtime_ns": 1790055454371159298
+    },
+    {
+      "suite": "openwepp-runner::bin/openwepp-cli-watershed",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_cli_watershed-e28c9d6264c6bd58",
+      "sha256": "1e106cd572d24d4a73c717b3c4e6222f753bc3d2c1d582711f2619a6a3b907bd",
+      "bytes": 401408216,
+      "mtime_ns": 1790055453880133560
+    },
+    {
+      "suite": "openwepp-runner::bin/openwepp-snowbench",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_snowbench-16d16a3b452ec7ef",
+      "sha256": "d1ddc1a7e455417f86e45f2c771663e74ab21bdd7090cb249c7b8cc890571dc2",
+      "bytes": 510166240,
+      "mtime_ns": 1790055459202412543
+    },
+    {
+      "suite": "openwepp-runner::mt3_hbp_hourly_consumer_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/mt3_hbp_hourly_consumer_contract-130f9676a3fbc936",
+      "sha256": "4d50437a69d5ec301d8632cd72b999b811b2e9a28c3c28ebb9616d936486adda",
+      "bytes": 93713224,
+      "mtime_ns": 1790055445027669531
+    },
+    {
+      "suite": "openwepp-runner::simimpl04_runner_kernel_execution_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/simimpl04_runner_kernel_execution_contract-1bfc543a1235ff37",
+      "sha256": "459ed31bafa960a65b18131df25adb89cb272b86b930e4e403024ef00ea63316",
+      "bytes": 500692360,
+      "mtime_ns": 1790055429816872211
+    },
+    {
+      "suite": "openwepp-runner::simimpl04_wb13_publication_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/simimpl04_wb13_publication_contract-1c4d9bd7257e63c1",
+      "sha256": "ebc2ad33afe1bb97c2e8ee31c6a5f2fc2d0ff4aab824c330293e559cbf894272",
+      "bytes": 507491192,
+      "mtime_ns": 1790055434925139977
+    },
+    {
+      "suite": "openwepp-runner::simimpl04_wepp_ui_mode_closure_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/simimpl04_wepp_ui_mode_closure_contract-57b037be817ab982",
+      "sha256": "6beea160934e02e33ebd1f68694fb8673386b2ed907c267d927b6d6bd475937c",
+      "bytes": 500699048,
+      "mtime_ns": 1790055449381897771
+    },
+    {
+      "suite": "openwepp-runner::snowbench_error_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowbench_error_contract-511f97d20829a674",
+      "sha256": "6c507095fb86f3acc1ebcb14e6922a5ebc77cef86bff58b3a69f884294309347",
+      "bytes": 398000832,
+      "mtime_ns": 1790055453449110966
+    },
+    {
+      "suite": "openwepp-runner::test_fixture_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/test_fixture_authority_contract-ecffa2706ad2a2a9",
+      "sha256": "9c491b72ec234e5035ca5eb868dbe48e40e94fe1fedcf2cc2d26cf68c0d80670",
+      "bytes": 423107760,
+      "mtime_ns": 1790055443879609352
+    },
+    {
+      "suite": "openwepp-runner::totalwatsed3_cli_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/totalwatsed3_cli_contract-4b201c4f1039c90d",
+      "sha256": "1a6283d5b7252d0cc035b90de9b4cebef4dc7e3b1daa1ee24f4ef557f816a17d",
+      "bytes": 432198112,
+      "mtime_ns": 1790055443734601751
+    },
+    {
+      "suite": "openwepp-runner::watershed_cli_behavior_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/watershed_cli_behavior_contract-cc13a6a08cac0508",
+      "sha256": "c5a9f5ba28c14ca61582e01206ab7c9e9fe5eedd9351c88da61cb9fa4bcaf1d1",
+      "bytes": 435015408,
+      "mtime_ns": 1790055439352372043
+    },
+    {
+      "suite": "openwepp-runner::wshedw10_chaninp_absent_default_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/wshedw10_chaninp_absent_default_contract-313ccf7b97d219a3",
+      "sha256": "434943a2d150ae1c0838935fc833f51d09b7a23d7042975a526d13253b5758ea",
+      "bytes": 422796792,
+      "mtime_ns": 1790055428101782309
+    },
+    {
+      "suite": "openwepp-sim-contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_sim_contract-af35cf137ccc54fb",
+      "sha256": "2b5eb3646a0ca7fc98834882bd6dfe1293811b77a92bbefccffae764c0b798f9",
+      "bytes": 2854848,
+      "mtime_ns": 1790055501861648658
+    },
+    {
+      "suite": "openwepp-summary-accumulator",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_summary_accumulator-ac636705b69678bb",
+      "sha256": "81d3494f8ac489a4c287415b956984d865cfeb6330d684880ff28e7f05e926e8",
+      "bytes": 5378112,
+      "mtime_ns": 1789945506964419355
+    },
+    {
+      "suite": "openwepp-topology",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_topology-e066010b99edee44",
+      "sha256": "15fb660744f0412415eb7b37f4395e7a82a8ce98d747d4f59cdb03bad541c6be",
+      "bytes": 1306144,
+      "mtime_ns": 1790055498528473939
+    },
+    {
+      "suite": "openwepp-unit-boundary",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_unit_boundary-3fb05d9467965816",
+      "sha256": "1fdf886ceda70fe777e412b40a26c5960997c6ade492365421b392390f3d67b0",
+      "bytes": 1533648,
+      "mtime_ns": 1790055499958548901
+    },
+    {
+      "suite": "openwepp-vegetation",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_vegetation-108f287c965dfa51",
+      "sha256": "6d922bddb62d3b308f98bb6dbb08254917cdf7f92fc1d80b36d2c661afa205a6",
+      "bytes": 99103744,
+      "mtime_ns": 1790039060724937628
+    },
+    {
+      "suite": "openwepp-vegetation::cold_canopy_m1_expected_red",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/cold_canopy_m1_expected_red-d8f4ea6b64412c63",
+      "sha256": "e9e9847646f920e10dcc9e1625643e23fc5f2ea2e3933cfbce3725ca2f05f825",
+      "bytes": 57822888,
+      "mtime_ns": 1790039061523979680
+    },
+    {
+      "suite": "openwepp-watershed-orchestrator",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_watershed_orchestrator-74240c45d7f19fd0",
+      "sha256": "9ee8230bbbdf31ad997f3c2cdf283efd933c8f94967070a3bc53b5f8c65f6c21",
+      "bytes": 34080240,
+      "mtime_ns": 1789945544398376975
+    },
+    {
+      "suite": "openwepp-watershed-orchestrator::network_frame_error_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/network_frame_error_contract-057500dd566b90ed",
+      "sha256": "86f62a943bdcd49e711f062890cd1a2b87b2a49885d48c9279713e10650044b3",
+      "bytes": 26897456,
+      "mtime_ns": 1789945510304594030
+    },
+    {
+      "suite": "openwepp-watershed-output",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_watershed_output-941f98b2fee373a3",
+      "sha256": "988b23da89b712c63ccfec989783d1c6ba822c8e34aec99d5995f337e121e4ab",
+      "bytes": 128599928,
+      "mtime_ns": 1789945509713563122
+    },
+    {
+      "suite": "openwepp::adr0017_comparator_distrust_ratification_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/adr0017_comparator_distrust_ratification_contract-be3406cea523a98d",
+      "sha256": "44e4f3af0fed0a08e6a99f83b310802f370370ce6566e0da86f6456a66574831",
+      "bytes": 1673896,
+      "mtime_ns": 1790055302346190447
+    },
+    {
+      "suite": "openwepp::advisory_linter_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/advisory_linter_authority_contract-4251d20f604976e1",
+      "sha256": "d3d69b0595cedd1eb90ff0d0cc80320b5d64b034fefa4ded9aac7e71808318c9",
+      "bytes": 46274552,
+      "mtime_ns": 1790055351410762317
+    },
+    {
+      "suite": "openwepp::arch22_typed_state_surface_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/arch22_typed_state_surface_contract-d0a356b16606fcd8",
+      "sha256": "23ba48894278f0f74d9d99315aaaac629a48f5f29e9b75be09d86157f6d849c0",
+      "bytes": 8746640,
+      "mtime_ns": 1790055317776999301
+    },
+    {
+      "suite": "openwepp::assurance_dossier_build_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/assurance_dossier_build_contract-ae71718149593726",
+      "sha256": "c3ea9f770e0bd0b3c727e7497b80ff9883a16a76b665fb9e555e75375d551586",
+      "bytes": 43954376,
+      "mtime_ns": 1790055401327378848
+    },
+    {
+      "suite": "openwepp::assurance_v2_amendment_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/assurance_v2_amendment_contract-41c97409c40457a6",
+      "sha256": "912a72110ebe28d46360621901f7f98087e1dca5307206691604e3871b31e5c6",
+      "bytes": 83343768,
+      "mtime_ns": 1790055379159216837
+    },
+    {
+      "suite": "openwepp::assurance_v2_assembly_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/assurance_v2_assembly_contract-ec05e262bd104407",
+      "sha256": "271fe40b9005e855871f645b9db868f9f4bff49cf7c49c450b1f5bb42b4539a0",
+      "bytes": 44259248,
+      "mtime_ns": 1790055357589086172
+    },
+    {
+      "suite": "openwepp::assurance_v2_groundwater_report_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/assurance_v2_groundwater_report_contract-88b285584a516e82",
+      "sha256": "6384f3bf869235f7b38f41092e1e88801de13036bc98252070351783bcdce865",
+      "bytes": 4616984,
+      "mtime_ns": 1790055358608139589
+    },
+    {
+      "suite": "openwepp::assurance_v2_normalization_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/assurance_v2_normalization_contract-59e66a1e793b591e",
+      "sha256": "71baf105b71dc6571f40c216cd07b212dc7e2568435563df4ab59c46ae1b9f1f",
+      "bytes": 39843392,
+      "mtime_ns": 1790055385494548923
+    },
+    {
+      "suite": "openwepp::assurance_v2_planner_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/assurance_v2_planner_contract-c7b99be1cdd18927",
+      "sha256": "2c6bee18c225ce091366dde5c0bb208bb8d49cc8c698b59ae0a38dc643bc1bba",
+      "bytes": 44846344,
+      "mtime_ns": 1790055297191920271
+    },
+    {
+      "suite": "openwepp::assurance_v2_publication_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/assurance_v2_publication_contract-971e291d8462207b",
+      "sha256": "7c708968bd4eeda9ae3f4ac9b3a4fa414cf124299c84c0e1827646594bbf248e",
+      "bytes": 45077648,
+      "mtime_ns": 1790055375051001492
+    },
+    {
+      "suite": "openwepp::assurance_v2_source_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/assurance_v2_source_contract-fc4958e03824d83e",
+      "sha256": "59bd1f97d608a47d2616677348280c9062576dd286fe8015d71bdd05bb09a60f",
+      "bytes": 85245408,
+      "mtime_ns": 1790055347923579526
+    },
+    {
+      "suite": "openwepp::auth04_release_gate_authority_stack_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/auth04_release_gate_authority_stack_contract-0cd22d5172fb9196",
+      "sha256": "90b46f64ded40ede682e8a96af127e75b7ffc00c3de7a75dd9b0713f9b117d07",
+      "bytes": 1572520,
+      "mtime_ns": 1790055391427859935
+    },
+    {
+      "suite": "openwepp::auth05_level4_constitutive_authority_hardening_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/auth05_level4_constitutive_authority_hardening_contract-2881c5d5defc7cfc",
+      "sha256": "c67fd0de1d4334b11f4e44774323e07d609d62a5ffaed65d8a7992f597af50fa",
+      "bytes": 262029160,
+      "mtime_ns": 1790055374132953370
+    },
+    {
+      "suite": "openwepp::auth06_fixture_provenance_hash_enforcement_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/auth06_fixture_provenance_hash_enforcement_contract-764eb7c28708c196",
+      "sha256": "a46330991c1466c0817f5de063d44914ec368e3d77d831e97e7a5742313e83ce",
+      "bytes": 2202088,
+      "mtime_ns": 1790055395542075594
+    },
+    {
+      "suite": "openwepp::auth07_fc_authority_cohort_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/auth07_fc_authority_cohort_contract-75edb30977d7addd",
+      "sha256": "4f3056b3360ac84596809d2c037ff70eb81b4e095208e10d4a7742a4834b1fda",
+      "bytes": 262091152,
+      "mtime_ns": 1790055305331346923
+    },
+    {
+      "suite": "openwepp::auth11_required_suite_obligation_guards_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/auth11_required_suite_obligation_guards_contract-606464a77dfe7898",
+      "sha256": "d27bf173be633fea7990c1ea2f8904eec63c5e7ce22eefeaabaa2871adfc6f12",
+      "bytes": 5189176,
+      "mtime_ns": 1790055400278323859
+    },
+    {
+      "suite": "openwepp::c3_vegetation_implementation_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/c3_vegetation_implementation_contract-9db98ebefe051731",
+      "sha256": "db463eb4b0e6ec9a3c5280b5897b427cbfb4fba5eef281e1d3ef37381d5c5c51",
+      "bytes": 272587696,
+      "mtime_ns": 1790055351326757913
+    },
+    {
+      "suite": "openwepp::c3_woody_v11_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/c3_woody_v11_authority_contract-ae137f6b8ac3de77",
+      "sha256": "c838e4a2f98557ad6dcc85768813dc698a7237e33b6fcdebbef19ca9df60192a",
+      "bytes": 4348584,
+      "mtime_ns": 1790055413226002551
+    },
+    {
+      "suite": "openwepp::cancov_stratified_observations",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/cancov_stratified_observations-755656ad222bb999",
+      "sha256": "c1b4540be3e39e80641a86774e73774f797bd509da08dbbe31afb167e50f49e4",
+      "bytes": 1611744,
+      "mtime_ns": 1790055310141599069
+    },
+    {
+      "suite": "openwepp::canopy_litter_external_boundary_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/canopy_litter_external_boundary_contract-08c9fef193f5c2da",
+      "sha256": "82b53deca2686b70b8adce177491cb3175f153638e2effd3c2a1c5c7327197ec",
+      "bytes": 11983712,
+      "mtime_ns": 1790055384820513591
+    },
+    {
+      "suite": "openwepp::cli01_runner_contract_derived_tests",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/cli01_runner_contract_derived_tests-55bab2988fb990d6",
+      "sha256": "3d5d066d457777682a69ffb82be99c4c675a97b48a63e703fa3493448d5e2c0d",
+      "bytes": 398961440,
+      "mtime_ns": 1790055409424803300
+    },
+    {
+      "suite": "openwepp::cli01_runner_hillslope_integration",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/cli01_runner_hillslope_integration-378bfd0df8c10cf3",
+      "sha256": "5e67320ecd2584dc4120971ab1840f8f2bfd4bfcf90bb9e3a723b5fe2a369873",
+      "bytes": 503695176,
+      "mtime_ns": 1790055356729041090
+    },
+    {
+      "suite": "openwepp::cli03_runner_contract_derived_tests",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/cli03_runner_contract_derived_tests-71f14e5214323ac3",
+      "sha256": "ddc039712aed09637fae67ecba212ee140b57a8f4313aac8b02ed54ba2faa585",
+      "bytes": 509461176,
+      "mtime_ns": 1790055407348694474
+    },
+    {
+      "suite": "openwepp::cli04_runner_wat_parquet_contract_derived_tests",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/cli04_runner_wat_parquet_contract_derived_tests-d5c1225728484873",
+      "sha256": "6ebbaa7112a5ea4e6757daab5267dee3fddb8a45b4f0f6bc6846192e96a6685c",
+      "bytes": 504081184,
+      "mtime_ns": 1790055376323068172
+    },
+    {
+      "suite": "openwepp::comparator_tier_routing_metadata",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/comparator_tier_routing_metadata-32db628bb4833cd4",
+      "sha256": "f6f8054b55abcfa1ea1e8b0aa279e998b16f30fd46d0d6f0ab574405519b0fd2",
+      "bytes": 4694552,
+      "mtime_ns": 1790055297787951514
+    },
+    {
+      "suite": "openwepp::coupled_time_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/coupled_time_authority_contract-d2e9e851c3225c44",
+      "sha256": "f7638bd306aefa5bd0651701c24e8c5ead33490741d542dcd4f3b56ff9013584",
+      "bytes": 4813640,
+      "mtime_ns": 1790055257299829206
+    },
+    {
+      "suite": "openwepp::cqr_quality_evidence_handoff_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/cqr_quality_evidence_handoff_contract-40cc1e343513e4c2",
+      "sha256": "0ba3260ff2506092b1e8813a51d73c6129686d87ae1ed880359817e04644d9b3",
+      "bytes": 4117288,
+      "mtime_ns": 1790055301765159991
+    },
+    {
+      "suite": "openwepp::dff_ws1_native_forest_cli",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/dff_ws1_native_forest_cli-e62e7dc38efffa97",
+      "sha256": "19f32228aa78b003bf784a712138863a5922a0a8cc832e513e746b98addce0f4",
+      "bytes": 504067456,
+      "mtime_ns": 1790055323692309370
+    },
+    {
+      "suite": "openwepp::dff_ws2_ksatadj_direct_runtime",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/dff_ws2_ksatadj_direct_runtime-663369be47fe4518",
+      "sha256": "cde78bba9e2466ff56612e80251411a39ee3365c22f59faa53a7669f635b95e2",
+      "bytes": 504297016,
+      "mtime_ns": 1790055330634673275
+    },
+    {
+      "suite": "openwepp::dff_ws3_directional_burn_validation",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/dff_ws3_directional_burn_validation-9fb9ea79fa0d9d75",
+      "sha256": "76a0306e9ae9367be6d6c1fc4d93a79a4ec7756004152e2ae0733c079850aeef",
+      "bytes": 509960952,
+      "mtime_ns": 1790055277862907082
+    },
+    {
+      "suite": "openwepp::direct_hydrology_persisted_restart_implementation_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/direct_hydrology_persisted_restart_implementation_contract-25d25de2e27fa708",
+      "sha256": "70950a3195b15a5e17974dfe4bbeacc2952897e54ab46e272b118e3bce88107b",
+      "bytes": 295142176,
+      "mtime_ns": 1790055377875149529
+    },
+    {
+      "suite": "openwepp::direct_hydrology_restart_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/direct_hydrology_restart_authority_contract-2c32fc910f9a6e57",
+      "sha256": "014553d56e4221fbd63a7631b840bd3f47c1d7fd55e9739d511d905bd26c796e",
+      "bytes": 46126280,
+      "mtime_ns": 1790055312028697987
+    },
+    {
+      "suite": "openwepp::direct_v10_real_consumer_checkpoint_v1_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/direct_v10_real_consumer_checkpoint_v1_contract-8dcf268a00874432",
+      "sha256": "b276c817fcd4487d35c885c321b29b9203d915c746a263a248b2481407da0d3f",
+      "bytes": 297669368,
+      "mtime_ns": 1790055395181056670
+    },
+    {
+      "suite": "openwepp::erod11_alias_boundary_ownership_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/erod11_alias_boundary_ownership_contract-a6aeb967d684054a",
+      "sha256": "ddb0b3878f0b70ace0498b29374c1dcf2a88b3647aabd071d073cb6b03e25a57",
+      "bytes": 8814184,
+      "mtime_ns": 1790055396200110087
+    },
+    {
+      "suite": "openwepp::erod12_cross_domain_contract_closure_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/erod12_cross_domain_contract_closure_contract-ec8e90b9e370b272",
+      "sha256": "5eb3f6239b07538117c4f32e9a694274df9cc7727c6a210a94c244e1ef670f89",
+      "bytes": 1693752,
+      "mtime_ns": 1790055388536708387
+    },
+    {
+      "suite": "openwepp::erod13_contract_authority_closure_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/erod13_contract_authority_closure_contract-cabeff1d82e9c31c",
+      "sha256": "349e01df485f4dd542a1855779ff638b49fe071bac8394e720c833d535955894",
+      "bytes": 1563272,
+      "mtime_ns": 1790055344028375347
+    },
+    {
+      "suite": "openwepp::erod14_contract_authority_closure_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/erod14_contract_authority_closure_contract-3a66a2a38e0bbbc4",
+      "sha256": "82c5ccd22f00d60180bfd9da041e29cd125d423483a3ea5660375cd348f9006f",
+      "bytes": 1617104,
+      "mtime_ns": 1790055335000902144
+    },
+    {
+      "suite": "openwepp::erod15_wave3_contract_authority_closure_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/erod15_wave3_contract_authority_closure_contract-490a26f3d5b7496f",
+      "sha256": "129da3ff9910ebcaecbe5520b3edee57896c1d051caa60b1543365ce4ebfa9ba",
+      "bytes": 4243824,
+      "mtime_ns": 1790055307153442434
+    },
+    {
+      "suite": "openwepp::erod16_wave1_continuity_fixture_conservation",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/erod16_wave1_continuity_fixture_conservation-24080cb8df570ead",
+      "sha256": "0f0c47db44032043137f3e8f2db0f103951b50e94ae80dbff42c0be402b01515",
+      "bytes": 508945240,
+      "mtime_ns": 1790055317330975922
+    },
+    {
+      "suite": "openwepp::erosion_multi_ofe_p102_chain",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/erosion_multi_ofe_p102_chain-d408fac115ff0b12",
+      "sha256": "aa57c8135257e40c0095abf0a2d67922e4d21399da6037d283bfa1cd0729bc52",
+      "bytes": 510844480,
+      "mtime_ns": 1790055391555866645
+    },
+    {
+      "suite": "openwepp::erosion_single_ofe_p61_sediment",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/erosion_single_ofe_p61_sediment-2c732c4fd1cd699c",
+      "sha256": "69c096841a7b358a65b1ccd20a2622f98da826240610166031c1b54576468870",
+      "bytes": 510952624,
+      "mtime_ns": 1790055357619087745
+    },
+    {
+      "suite": "openwepp::hbp_subhourly_exclusion_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hbp_subhourly_exclusion_contract-e57e8a3df3de3e90",
+      "sha256": "1b966f2a5047d66a9c5cb428e8d2b447250f960cbc6bc46b3d9d237514398276",
+      "bytes": 1704088,
+      "mtime_ns": 1790055307883480702
+    },
+    {
+      "suite": "openwepp::hparity01_hillslope_wat_lineage_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hparity01_hillslope_wat_lineage_contract-ce8c1ddc772f9c5e",
+      "sha256": "dc568a1731f16ee2a8af32f5133850da7f867ee6d58c3658abd20d6521b73fb0",
+      "bytes": 1606384,
+      "mtime_ns": 1790055394244007552
+    },
+    {
+      "suite": "openwepp::hphys0208_fc_threshold_coupled_residual_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0208_fc_threshold_coupled_residual_contract-0091d2b5c6f1a92d",
+      "sha256": "9c7203d528100a0854d7a9369b4825536e04bd9f91f55cb61c9c253726003e84",
+      "bytes": 508918488,
+      "mtime_ns": 1790055285242293895
+    },
+    {
+      "suite": "openwepp::hphys0209_profilewp_adjudication_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0209_profilewp_adjudication_contract-c2b7bb84c6fe0360",
+      "sha256": "35f1604aaf04f6c18a2659d0e261fa4bc7e879fd79975794234109075a569c77",
+      "bytes": 508907688,
+      "mtime_ns": 1790055405028572858
+    },
+    {
+      "suite": "openwepp::hphys0224_wb19_withdrawal_soilwater_cap_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0224_wb19_withdrawal_soilwater_cap_contract-98b8262dc7028fc2",
+      "sha256": "8158e3b2ac8ed0cf6fb16d25f47c909e259aea80735fee928a91b936e7e8657c",
+      "bytes": 261069840,
+      "mtime_ns": 1790055413562020164
+    },
+    {
+      "suite": "openwepp::hphys0225_wb19_layer_pool_withdrawal_cap_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0225_wb19_layer_pool_withdrawal_cap_contract-8d3d8c55e62103f5",
+      "sha256": "931d8c37d19a8a6999bfa2c8cd56121ace82a62728509dbd648fbb6b1948b740",
+      "bytes": 260995600,
+      "mtime_ns": 1790055333239809831
+    },
+    {
+      "suite": "openwepp::hphys0226_wb19_lateral_saturated_thickness_response_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0226_wb19_lateral_saturated_thickness_response_contract-4244d8af8d18828e",
+      "sha256": "a57a716960e61e0eda95138f961b69f4ab2ada338f1bf78270675022a0bd95b4",
+      "bytes": 260977184,
+      "mtime_ns": 1790055417049202955
+    },
+    {
+      "suite": "openwepp::hphys0227_wb19_fcwp_coca_watyld_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0227_wb19_fcwp_coca_watyld_authority_contract-2b64d7982fe78ec5",
+      "sha256": "8c3208deaa040c07c9d81610302d000e40b69be436797e8fcfee75915eff5baa",
+      "bytes": 260978152,
+      "mtime_ns": 1790055393928991039
+    },
+    {
+      "suite": "openwepp::hphys0276_raw_unit_conversion_guard_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0276_raw_unit_conversion_guard_contract-070152d0e6d3b171",
+      "sha256": "095796692cb94aa30fac1e27b9740482413be443233253c04de57c2ed5611fbe",
+      "bytes": 1799880,
+      "mtime_ns": 1790055358886154162
+    },
+    {
+      "suite": "openwepp::hphys0279_sc_unit_compliance_lint_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0279_sc_unit_compliance_lint_contract-432d4e3f2a59e4e1",
+      "sha256": "8987ff2c4775824350664bd92032acac9e9bf80017f21012560039769fa0aa3f",
+      "bytes": 1820976,
+      "mtime_ns": 1790055333048799819
+    },
+    {
+      "suite": "openwepp::hphys0296_snow_rm_acceptance_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0296_snow_rm_acceptance_authority_contract-76731b80147a8853",
+      "sha256": "6bf82d26baf68986333a9120b11dbc6c2bfb536e9d426b19bf54fd21f58f2bde",
+      "bytes": 1949912,
+      "mtime_ns": 1790055358603139327
+    },
+    {
+      "suite": "openwepp::hphys0297_snow_rm_defect_ledger_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0297_snow_rm_defect_ledger_contract-375b2a08fed26c73",
+      "sha256": "189edc01f9fc1455b51c0c3f7386268392ea77e5dee260dd91a2202be1c9ee51",
+      "bytes": 1589776,
+      "mtime_ns": 1790055319151071327
+    },
+    {
+      "suite": "openwepp::hphys0298_paired_lineage_partition_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0298_paired_lineage_partition_contract-fb4067a1a5707e3b",
+      "sha256": "c5d6a61820b79fb8fa7af1ebc83aa19e3203344e851193dcc9a1fff29a223efc",
+      "bytes": 1784848,
+      "mtime_ns": 1790055308476511788
+    },
+    {
+      "suite": "openwepp::hphys0300_raw_hourly_melt_post_raw_routing_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0300_raw_hourly_melt_post_raw_routing_contract-6e9f29c9c4c22f8c",
+      "sha256": "8f65fafb2ead11e9a1e97a3f7d4874b5d16a2a40aa0d902d9dca4966f5f4fed2",
+      "bytes": 3851504,
+      "mtime_ns": 1790055307448457898
+    },
+    {
+      "suite": "openwepp::hphys0301_h39_forcing_melt_term_producer_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0301_h39_forcing_melt_term_producer_contract-72979ae6fc513297",
+      "sha256": "e119f6e36727fef91651d06d0502afbb14d64ceced6f291e4e000720bf68de85",
+      "bytes": 3666224,
+      "mtime_ns": 1790055413558019955
+    },
+    {
+      "suite": "openwepp::hphys0302_comparator_surface_audit_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0302_comparator_surface_audit_contract-50b46284338da649",
+      "sha256": "f0a864e47966ca6ae69fb925eb3168288f2e17b28b89feaacc5bec20299a08f9",
+      "bytes": 3685168,
+      "mtime_ns": 1790055310410613170
+    },
+    {
+      "suite": "openwepp::hphys0303_adr0016_comparator_ratification_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0303_adr0016_comparator_ratification_contract-5bda4d1784d97d1b",
+      "sha256": "66e6124e48b3225bf8f1731f821d30361d2efe9df7de62e58953fbec95e050ce",
+      "bytes": 3689712,
+      "mtime_ns": 1790055388837724165
+    },
+    {
+      "suite": "openwepp::hphys0304_fixed_comparator_semantic_rerun_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0304_fixed_comparator_semantic_rerun_contract-e6e1fe0d8139884b",
+      "sha256": "1366f70e2831e7371cf147a86d80cb28ff0e6eea828bad7348d3cd7004cbf149",
+      "bytes": 3876880,
+      "mtime_ns": 1790055390693821458
+    },
+    {
+      "suite": "openwepp::hphys0306_baseline_melt_observe_semantics_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0306_baseline_melt_observe_semantics_contract-7fa930d9c38ff9e9",
+      "sha256": "66311d10f4f6e17a7a0f075630876ea6701e11a61cf0ff68c7526070cb8f990b",
+      "bytes": 3834952,
+      "mtime_ns": 1790055334568879498
+    },
+    {
+      "suite": "openwepp::hphys0307_melt_call_branch_activation_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0307_melt_call_branch_activation_contract-f41a1bbfee9a83a6",
+      "sha256": "8d2ddb1876ee672557523183803f9c809ce24838ea1dd816e0a45d81de279c8a",
+      "bytes": 3843120,
+      "mtime_ns": 1790055271803589465
+    },
+    {
+      "suite": "openwepp::hphys0308_snowd_branch_state_ordering_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0308_snowd_branch_state_ordering_contract-b8a74af141199eeb",
+      "sha256": "7581007b331c2602d8546e24f1dd43c477fe40106fe16b497ef9b79736f85af2",
+      "bytes": 3835216,
+      "mtime_ns": 1790055367896626474
+    },
+    {
+      "suite": "openwepp::hphys0309_snow_carry_depletion_lineage_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0309_snow_carry_depletion_lineage_contract-8d7b9af4124a6083",
+      "sha256": "917b9099cb936041e4ce966b01162edce297eb77ca2c11708be86993c080360c",
+      "bytes": 3867592,
+      "mtime_ns": 1790055278645948128
+    },
+    {
+      "suite": "openwepp::hphys0310_prior_day_snow_carry_divergence_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0310_prior_day_snow_carry_divergence_contract-75d5dbd22ae2cee1",
+      "sha256": "18729bb7341337e510b91707f4102f8d4693a7c83d77a62f1dd68717ab7c14f7",
+      "bytes": 4064784,
+      "mtime_ns": 1790055395859092212
+    },
+    {
+      "suite": "openwepp::hphys0311_snow_carry_source_line_parity_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0311_snow_carry_source_line_parity_contract-fbd45745d19242dd",
+      "sha256": "7467e7f90ab370582405dbe2d07b4a145a8c9b21605f993fc7a91522fac1739c",
+      "bytes": 3912024,
+      "mtime_ns": 1790055306536410090
+    },
+    {
+      "suite": "openwepp::hphys0312_prior_year_terminal_snowpack_lineage_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0312_prior_year_terminal_snowpack_lineage_contract-b9a057a5175609c9",
+      "sha256": "03c1f7b490c5eddfb5bdda968181e3e42039b683ce266afd8d6b23f78117264c",
+      "bytes": 3921920,
+      "mtime_ns": 1790055384513497498
+    },
+    {
+      "suite": "openwepp::hphys0313_snowpack_settling_carry_recursion_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0313_snowpack_settling_carry_recursion_contract-ee0b6d3f54f51064",
+      "sha256": "d0397bcd30c1bb9b1aef502e8bb9d81da922097cf310fc22b5294fb2c21c1699",
+      "bytes": 4012288,
+      "mtime_ns": 1790055310977642892
+    },
+    {
+      "suite": "openwepp::hphys0314_adr0017_snow_rm_reclassification_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0314_adr0017_snow_rm_reclassification_contract-093c88c0d9ed5bfa",
+      "sha256": "c0128e65525f571f2c6d8823b18e50879c35cd5ba1faa57290a87bba3aadc1ee",
+      "bytes": 1614816,
+      "mtime_ns": 1790055396502125918
+    },
+    {
+      "suite": "openwepp::hphys0315_hourly_snowfall_input_lineage_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0315_hourly_snowfall_input_lineage_contract-c2abce12c9d5e20e",
+      "sha256": "4fb800160b9cbb989771c6d93319c92b79a5a49a5350a9250f970beec15a03ab",
+      "bytes": 1617600,
+      "mtime_ns": 1790055379741247346
+    },
+    {
+      "suite": "openwepp::hphys0316_2013_terminal_carry_recursion_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0316_2013_terminal_carry_recursion_contract-68f87ec5bd400883",
+      "sha256": "006837670da757267bbe589385824eb704585b828c6e065295c151da24552ef8",
+      "bytes": 1617568,
+      "mtime_ns": 1790055359151168054
+    },
+    {
+      "suite": "openwepp::hphys0317_hourly_snowfall_input_surface_parity_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0317_hourly_snowfall_input_surface_parity_contract-adb6bb929ae97c8b",
+      "sha256": "ac010b945ebe12eaff38d98fa67426a27ef225f201207b746c018fb92d38c409",
+      "bytes": 1618664,
+      "mtime_ns": 1790055308202497424
+    },
+    {
+      "suite": "openwepp::hphys0319_fixed_baseline_stmtim_observe_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0319_fixed_baseline_stmtim_observe_contract-690118f35c90ffc2",
+      "sha256": "069d42bd1479255e7ae143e0f4807e96678185f9d522942aca576cd799af5aaa",
+      "bytes": 1618152,
+      "mtime_ns": 1790055351709777991
+    },
+    {
+      "suite": "openwepp::hphys0320_stmtim_start_time_source_line_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/hphys0320_stmtim_start_time_source_line_contract-5046aba9e06a669e",
+      "sha256": "9c6fce79458df3864d534e31f6a360534316fc1bafdf408451d03fbadedd03c1",
+      "bytes": 1595216,
+      "mtime_ns": 1790055399617289209
+    },
+    {
+      "suite": "openwepp::infile_chaninp_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_chaninp_parser_contract-14e52799189c67bf",
+      "sha256": "cb895270c0f67853f72290444441f266b4332b60b0afea0f346a51471e800269",
+      "bytes": 14213032,
+      "mtime_ns": 1790055308945536373
+    },
+    {
+      "suite": "openwepp::infile_climate_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_climate_parser_contract-5e1642d4776cdbb8",
+      "sha256": "ebbdbde18fff96f64498faaf52a9abcaa87928b81b354d94a156456fadbd6209",
+      "bytes": 261427728,
+      "mtime_ns": 1790055383272432443
+    },
+    {
+      "suite": "openwepp::infile_frost_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_frost_parser_contract-029c9279367d5677",
+      "sha256": "5a709fb6b5812a62f895da2e2e659ea1d31791e667fd68806780188ab3a18dd3",
+      "bytes": 13502160,
+      "mtime_ns": 1790055292909695805
+    },
+    {
+      "suite": "openwepp::infile_gwcoeff_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_gwcoeff_parser_contract-1f69a534ee71f73e",
+      "sha256": "d517bcfc04fa61a6ba10ad9120eac96ed3bfd6ed9f026b3a659403e53b00ebe0",
+      "bytes": 13286744,
+      "mtime_ns": 1790055380560290278
+    },
+    {
+      "suite": "openwepp::infile_hbp_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_hbp_parser_contract-6b483a1b127e3261",
+      "sha256": "d7c0c1fedacc02edc948b161bfaf6856ac925acd8fe7f7f8fbec6359b45143d1",
+      "bytes": 15982192,
+      "mtime_ns": 1790055358319124439
+    },
+    {
+      "suite": "openwepp::infile_irrigation_depletion_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_irrigation_depletion_parser_contract-b4f1d7f937c25c3e",
+      "sha256": "6aaeb54ee67535361c14dc69951449da6c61926b1241818b79f65a14e2a0d2ba",
+      "bytes": 13680752,
+      "mtime_ns": 1790055279483992056
+    },
+    {
+      "suite": "openwepp::infile_irrigation_fixeddate_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_irrigation_fixeddate_parser_contract-06b1c90b07b8c4eb",
+      "sha256": "d3daad0737b371e58df8d6ecf15fb2dbd4f194a267ca849311406a954f128af7",
+      "bytes": 14002472,
+      "mtime_ns": 1790055289660525490
+    },
+    {
+      "suite": "openwepp::infile_lcwb_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_lcwb_parser_contract-1fe0a16937d5126b",
+      "sha256": "0f835b94999fb36f467a8fae12459d0a1c9446b3da52b9025a2580aefd8b2ebb",
+      "bytes": 13183024,
+      "mtime_ns": 1790055380150268786
+    },
+    {
+      "suite": "openwepp::infile_management_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_management_parser_contract-9f1e0bb7f36ea65b",
+      "sha256": "3261da33ee070ac4dfd76afdc05949879d25435c009d052712244b5000a41f96",
+      "bytes": 14297664,
+      "mtime_ns": 1790055298543991143
+    },
+    {
+      "suite": "openwepp::infile_management_yaml_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_management_yaml_contract-4c09cefdc72ef89c",
+      "sha256": "70f97a42c6ed2387608eaf20ad745c3c548cccd0f75f70f6203aa0a7e0978faf",
+      "bytes": 264883768,
+      "mtime_ns": 1790055317457982579
+    },
+    {
+      "suite": "openwepp::infile_phosphorus_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_phosphorus_parser_contract-40bc5b742b119cc0",
+      "sha256": "35e8b641294997dbbaabfd73de2b9028df633aa9ccab06ae05f1e56b36f2730c",
+      "bytes": 13360656,
+      "mtime_ns": 1790055391113843475
+    },
+    {
+      "suite": "openwepp::infile_pmetpara_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_pmetpara_parser_contract-d0419ed16cba9a2f",
+      "sha256": "b40d0e7f8112259dd91513ac56ae6846d2efce4e867db4ccc1f7b69fde77cf51",
+      "bytes": 13454680,
+      "mtime_ns": 1790055394646028625
+    },
+    {
+      "suite": "openwepp::infile_slope_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_slope_parser_contract-e079445e92fffe75",
+      "sha256": "b517489b7e5f5accd986eb02a171d6407c8cac4fe85affa4ed410d691247b798",
+      "bytes": 13400104,
+      "mtime_ns": 1790055412887984833
+    },
+    {
+      "suite": "openwepp::infile_snow_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_snow_parser_contract-1e18b7dc3c7af538",
+      "sha256": "aeba7b75c0a187737ba64555cafd9be573d0049fc1ebf54d31f6cb922488649a",
+      "bytes": 13257808,
+      "mtime_ns": 1790055278361933240
+    },
+    {
+      "suite": "openwepp::infile_soil_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_soil_parser_contract-1568b8117e9e333c",
+      "sha256": "5c5fc0d5164753fe20bb33733945f9cb551a6d800b5ecd9494f32271b9dfa3cc",
+      "bytes": 261083576,
+      "mtime_ns": 1790055332718782520
+    },
+    {
+      "suite": "openwepp::infile_tc_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_tc_parser_contract-2b9bb0216153fb04",
+      "sha256": "7b21498eb2c67740ca92d998956f27aaaa6ffe38b470919d201747fe26f515d9",
+      "bytes": 13126056,
+      "mtime_ns": 1790055271533575311
+    },
+    {
+      "suite": "openwepp::infile_tcr_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_tcr_parser_contract-9c9977bb2a312a58",
+      "sha256": "b6266a89684d6e84c31c87cd3ce17c5776689b9753ee62a9969182daea8c9236",
+      "bytes": 13417320,
+      "mtime_ns": 1790055279072970512
+    },
+    {
+      "suite": "openwepp::infile_watershed_channel_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_watershed_channel_parser_contract-2537e10584572a71",
+      "sha256": "141ceb27fce82f920984ea03183de20184866bc631abf150d36da75073592040",
+      "bytes": 13762792,
+      "mtime_ns": 1790055309819582189
+    },
+    {
+      "suite": "openwepp::infile_watershed_impoundment_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_watershed_impoundment_parser_contract-f12f35d1bad5ca47",
+      "sha256": "f23007d2544cc8e5a446b9f0713373a7ec79844810f8988b107d66dc94d34582",
+      "bytes": 13702312,
+      "mtime_ns": 1790055317933007479
+    },
+    {
+      "suite": "openwepp::infile_watershed_structure_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_watershed_structure_parser_contract-38f707bb19a46a5f",
+      "sha256": "179fd28b9f73d67a176d0cae0f0f928f842d8e3be3c25abab42bf5b2f27c9548",
+      "bytes": 14873392,
+      "mtime_ns": 1790055417869245941
+    },
+    {
+      "suite": "openwepp::infile_weppui_parser_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/infile_weppui_parser_contract-f5d0ac5d748dcc93",
+      "sha256": "342f121acf463e3d57aadc530e61fd8dea53e1f1e18e7c30907179f065748800",
+      "bytes": 13269328,
+      "mtime_ns": 1790055407880722362
+    },
+    {
+      "suite": "openwepp::land_surface_energy_balance_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/land_surface_energy_balance_authority_contract-601271757004595c",
+      "sha256": "ea4f11ba3fcf8514f8bac11d1f513cca5fcbe50d2c1e90f84aa79e00b6298c7e",
+      "bytes": 4966328,
+      "mtime_ns": 1790055309352557708
+    },
+    {
+      "suite": "openwepp::land_surface_energy_real_hydrology_shadow_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/land_surface_energy_real_hydrology_shadow_contract-d6349126f4bde46a",
+      "sha256": "1425cbcb2e4e3be5c7adc716c3d5291f22e0504a146006f89cfbec38f0e4e2e9",
+      "bytes": 288081368,
+      "mtime_ns": 1790055384380490526
+    },
+    {
+      "suite": "openwepp::landuse_migration_cli_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/landuse_migration_cli_contract-b7adddff7e5a0bc2",
+      "sha256": "6c4e66b17ea1485277b11b0c5cef65967779f65cb8fd1a351c3f06d9543e8e30",
+      "bytes": 277909648,
+      "mtime_ns": 1790055296293873197
+    },
+    {
+      "suite": "openwepp::laned_shadow_h2637",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/laned_shadow_h2637-6b0179920c28b03b",
+      "sha256": "e025a7eb818f43d5417f7ffa1e271fedc20b6b958265241891795f1432dcc5d2",
+      "bytes": 500626096,
+      "mtime_ns": 1790055329784628717
+    },
+    {
+      "suite": "openwepp::mofe01_inter_ofe_route_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/mofe01_inter_ofe_route_contract-58eb235b5fca840d",
+      "sha256": "1c7f10edabb897fff1d02892a958510221daf8074afb812666d7a11069ff3f4a",
+      "bytes": 1676512,
+      "mtime_ns": 1790055306818424873
+    },
+    {
+      "suite": "openwepp::mofe04_publication_contract_authority_closure_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/mofe04_publication_contract_authority_closure_contract-1dfc1f7a1b933f61",
+      "sha256": "efe351056d6d0759f69ef43e3ae29d1af90c05756660c06d0827c41fc8713804",
+      "bytes": 1553752,
+      "mtime_ns": 1790055302027173725
+    },
+    {
+      "suite": "openwepp::mofe05_watershed_contributor_metadata_contract_authority_closure_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/mofe05_watershed_contributor_metadata_contract_authority_closure_contract-9d61c456320b7968",
+      "sha256": "c62e5e6bc1a68112f9a23b73a0dc13069608b8adfd09987c2fd2500d4309ee76",
+      "bytes": 1547120,
+      "mtime_ns": 1790055293186710326
+    },
+    {
+      "suite": "openwepp::owcmp_agent_config_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/owcmp_agent_config_contract-9b7885c5bc290c23",
+      "sha256": "52379aa149f32d858a5820c13880c4d79b90ec36b3b8dd63ea5846f3e36c079b",
+      "bytes": 1498368,
+      "mtime_ns": 1790055302308188455
+    },
+    {
+      "suite": "openwepp::owcmp_cli_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/owcmp_cli_contract-1ac6c991604625f7",
+      "sha256": "96d260d16d7e689da688c476a172eee7889a27b2ea4ea8817cb4ce06db94df95",
+      "bytes": 2165496,
+      "mtime_ns": 1790055352011793822
+    },
+    {
+      "suite": "openwepp::paradigm2_multilayer_promotion",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/paradigm2_multilayer_promotion-7d8b456fdc202f71",
+      "sha256": "65083aa3802da24c3a8a1a54c03d99191569367bf0de32390f9d56b09c1779e5",
+      "bytes": 75239440,
+      "mtime_ns": 1790055367903626841
+    },
+    {
+      "suite": "openwepp::paradigm2_stage0_surface_energy_balance_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/paradigm2_stage0_surface_energy_balance_contract-65cc1619df7e9cdf",
+      "sha256": "a4083a14d424f26b1e426d5884d363f839c181a9b8cab86f024c1a9df14dafdd",
+      "bytes": 1794304,
+      "mtime_ns": 1790055343832365072
+    },
+    {
+      "suite": "openwepp::paradigm2_stage1_layered_snow_density",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/paradigm2_stage1_layered_snow_density-79f179cfa2013966",
+      "sha256": "004ef5ec12ac3a79e78ca2c42705a89dacec18280319c6198bb42c16e81667d5",
+      "bytes": 261075816,
+      "mtime_ns": 1790055388199690721
+    },
+    {
+      "suite": "openwepp::paradigm2_stage2_snow_frost_insulation_profile",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/paradigm2_stage2_snow_frost_insulation_profile-6f65ca9d9e57fc37",
+      "sha256": "a318e8ced73b1332de52aeb69892d3bd239554de62a1add15a3a95be1c0812f9",
+      "bytes": 1630968,
+      "mtime_ns": 1790055385581553483
+    },
+    {
+      "suite": "openwepp::paradigm2_stage3_decouple_water_temperature",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/paradigm2_stage3_decouple_water_temperature-cf48b70ec30bb942",
+      "sha256": "13d77a931ca7080345b161e72079b432e5a9dd61f54eae54834d8c989239fe5c",
+      "bytes": 262563112,
+      "mtime_ns": 1790055346485504144
+    },
+    {
+      "suite": "openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/paradigm2_stage3_liquid_routing_meltwater_temperature-d15a6d076fd168c3",
+      "sha256": "d653da4ea69cbc0c31db750f4387944ae21c08196c5ca5ae4bdb045feb4eb52f",
+      "bytes": 262626528,
+      "mtime_ns": 1790055371509815871
+    },
+    {
+      "suite": "openwepp::peak_hourly_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/peak_hourly_authority_contract-bf0d8b7d8935095e",
+      "sha256": "58fe6aafd2831ebc73fdedd0a4172371294c2850381ea2997f99e8b27f05e147",
+      "bytes": 1607328,
+      "mtime_ns": 1790055297482935525
+    },
+    {
+      "suite": "openwepp::pl14_tier_a_candidate_replay_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/pl14_tier_a_candidate_replay_contract-1531e348cc32c0ad",
+      "sha256": "9ef7edc6ada4e0e671caeb1d1fb5923a5b5ece87c0819775eb9d147d2dab1aa4",
+      "bytes": 5085072,
+      "mtime_ns": 1790055379480233664
+    },
+    {
+      "suite": "openwepp::pl14r_tier_a_replay_rerun_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/pl14r_tier_a_replay_rerun_contract-4e6a93bd150de92d",
+      "sha256": "50a609a544207c9f700b705adb16245bb2cfcb3c249625ad7afb2b3f88d09437",
+      "bytes": 4836408,
+      "mtime_ns": 1790055413852035366
+    },
+    {
+      "suite": "openwepp::pl14s_tier_a_candidate_emission_and_replay_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/pl14s_tier_a_candidate_emission_and_replay_contract-b9f72752a2a78c70",
+      "sha256": "592ff4dd52e82a4d7fda2fcc5c2740669e2c8b620328e0897c4b348303294eb9",
+      "bytes": 509080400,
+      "mtime_ns": 1790055419770345592
+    },
+    {
+      "suite": "openwepp::pl15_tier_a_delta_closeout_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/pl15_tier_a_delta_closeout_contract-fe0cec32636efb8d",
+      "sha256": "2f1cb5fd3914e0302f996b62f5fb981f2062891540b226a3bec64d6f6945529e",
+      "bytes": 1585512,
+      "mtime_ns": 1790055405387591677
+    },
+    {
+      "suite": "openwepp::pl15r_tier_a_delta_recloseout_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/pl15r_tier_a_delta_recloseout_contract-cf53eebe0a599c05",
+      "sha256": "8f804c970b87e3645248960c53fbebad11602470df10cc8babcdf8108709711c",
+      "bytes": 1595696,
+      "mtime_ns": 1790055302601203814
+    },
+    {
+      "suite": "openwepp::quality_observatory_merged_coverage_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/quality_observatory_merged_coverage_contract-385d9a30ccff5c77",
+      "sha256": "3d0dab0f6213e841e31c1d62140f54702f15bf1cb1156704279606c07bdd89fa",
+      "bytes": 4607624,
+      "mtime_ns": 1790055257905860974
+    },
+    {
+      "suite": "openwepp::quality_observatory_workflow_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/quality_observatory_workflow_contract-aad087af17b7b0e3",
+      "sha256": "84693aa1251ff2260c669ce647b532a8b1be9bc4e3da63969110f81cfb692243",
+      "bytes": 5252056,
+      "mtime_ns": 1790055334290864925
+    },
+    {
+      "suite": "openwepp::root_zone_hydraulic_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/root_zone_hydraulic_authority_contract-5bfbc9bd212c041c",
+      "sha256": "952c2cc6cb1922007060748e1e0b8220ad9986b5c3d99eb27c4a116b8b7afc7e",
+      "bytes": 6453312,
+      "mtime_ns": 1790055389251745868
+    },
+    {
+      "suite": "openwepp::sim_contract_boundary_unit_registry",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/sim_contract_boundary_unit_registry-16e575dde1b831d4",
+      "sha256": "5c6b390c5d5933cee45670dbad7a5ec7f241d54d3ad669dffd6124e3d7b37e41",
+      "bytes": 99455864,
+      "mtime_ns": 1790055289106496449
+    },
+    {
+      "suite": "openwepp::sim_contract_closure_checks",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/sim_contract_closure_checks-4832bdf26049859c",
+      "sha256": "fc37de08ce9eb105b835de6e6d36b7e44e26b0f8f1dd9a11b7e0998bc18faab7",
+      "bytes": 3812216,
+      "mtime_ns": 1790055367584610119
+    },
+    {
+      "suite": "openwepp::sim_contract_status_taxonomy",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/sim_contract_status_taxonomy-dbbfca09fee0d41e",
+      "sha256": "ddec05dc4303f578196a5deb8d500741bd4514fff16355ce4b20ed17c15f2173",
+      "bytes": 3937416,
+      "mtime_ns": 1790055318070014660
+    },
+    {
+      "suite": "openwepp::sim_contract_symbol_alias_registry",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/sim_contract_symbol_alias_registry-992c6365daa01087",
+      "sha256": "6a754b299a32fcd0cd7937022aa66c6e68e32fb580e672b530137005f1a5eac9",
+      "bytes": 4375064,
+      "mtime_ns": 1790055333362816279
+    },
+    {
+      "suite": "openwepp::snow_free_half_hour_forcing_adapter_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_free_half_hour_forcing_adapter_contract-43aa9cb8eb9fb8ef",
+      "sha256": "07b4d0e041457f209c8615d98115c2803e2223f1391673f4f27c101a6c3fb94b",
+      "bytes": 303925456,
+      "mtime_ns": 1790055379709245669
+    },
+    {
+      "suite": "openwepp::snow_free_half_hour_forcing_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_free_half_hour_forcing_authority_contract-a638c155343d29f5",
+      "sha256": "4ae49a90e623eb2fe61000f1ba5b81b1b38eaf5af70ec1c806945129f75e1ee4",
+      "bytes": 46250696,
+      "mtime_ns": 1790055384186480356
+    },
+    {
+      "suite": "openwepp::snow_mass_transition_ledger_persistence_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_mass_transition_ledger_persistence_contract-1acd3292da85976d",
+      "sha256": "bdc5657d5e6f80094d82e5de8f457354708715f74ad0363435ff6560079ed42e",
+      "bytes": 263872744,
+      "mtime_ns": 1790055346427501104
+    },
+    {
+      "suite": "openwepp::snow_stage3_adaptive_compositional_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_adaptive_compositional_contract-204c9ea140616235",
+      "sha256": "8c5aff482d4ae9af14aef70006f43bdc4336bcebd9f57a852056b1f9faab550d",
+      "bytes": 1639888,
+      "mtime_ns": 1790055400583339847
+    },
+    {
+      "suite": "openwepp::snow_stage3_evaluation_shadow_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_evaluation_shadow_authority_contract-d8456c2f625781fc",
+      "sha256": "96d3600df38d3d692438c49ef1aaf016aaeb1743c4705a12629cce79a189af90",
+      "bytes": 1657288,
+      "mtime_ns": 1790055337942056314
+    },
+    {
+      "suite": "openwepp::snow_stage3_legacy_predecessor_bridge_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_legacy_predecessor_bridge_contract-4b79ba59edb6b1db",
+      "sha256": "8fe79f21f1b1b5b8536ef4be5ce5ffbb37ce42094290983d1028152026b9a73d",
+      "bytes": 1637056,
+      "mtime_ns": 1790055333955847364
+    },
+    {
+      "suite": "openwepp::snow_stage3_persistent_accumulation_shadow_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_persistent_accumulation_shadow_contract-d54d0018c9393c30",
+      "sha256": "94697fe2b2063f726796af8dec3b4a581ebaf3840d81a394db597360f727956d",
+      "bytes": 1577512,
+      "mtime_ns": 1790055385853567742
+    },
+    {
+      "suite": "openwepp::snow_stage3_shadow_observability_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_shadow_observability_contract-f0e36f70ffbbb44c",
+      "sha256": "ad3de360fe4b398a3de339c78a379ef4febedd237a75caf4a4c543a56187122d",
+      "bytes": 1776944,
+      "mtime_ns": 1790055318621043544
+    },
+    {
+      "suite": "openwepp::snow_stage3_shared_carrier_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_shared_carrier_authority_contract-1001bbcfb05862d2",
+      "sha256": "831123b1dc6106ac4ff0c906eb44898d48b9fc4413744bdceb591f3cd167eed7",
+      "bytes": 47136648,
+      "mtime_ns": 1790055390117791264
+    },
+    {
+      "suite": "openwepp::snow_stage3_shared_carrier_terminal_handoff_implementation",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_shared_carrier_terminal_handoff_implementation-5327f81bc30fcc4e",
+      "sha256": "3760be43396ac11792eebc04448e0ce6bb7b02dc1bcda96d0281dc960e884559",
+      "bytes": 290400096,
+      "mtime_ns": 1790055337595038124
+    },
+    {
+      "suite": "openwepp::snow_stage3_terminal_batch_temporal_v20_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_terminal_batch_temporal_v20_contract-c9bb71c3340ecb86",
+      "sha256": "2ea34fc948e67e3f1ee2b4d7f2a8809fee6922ea02af1280b3b15fd4591dc603",
+      "bytes": 1787720,
+      "mtime_ns": 1790055310686627638
+    },
+    {
+      "suite": "openwepp::snow_stage3_terminal_batch_temporal_v21_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_terminal_batch_temporal_v21_contract-06635a50c429daa7",
+      "sha256": "735d05379dec996f51e2bd40ba6954684d2c058a5403492a04d6225415441854",
+      "bytes": 1789176,
+      "mtime_ns": 1790055408469753238
+    },
+    {
+      "suite": "openwepp::snow_stage3_terminal_chronology_v19_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_terminal_chronology_v19_contract-4d3a352b37b3dd28",
+      "sha256": "5e29f6364e968fd0f2e733f9da5fab26b623dae0ee3e59669dcf6f2c394d42cb",
+      "bytes": 1802544,
+      "mtime_ns": 1790055312343714499
+    },
+    {
+      "suite": "openwepp::snow_stage3_terminal_receiver_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_terminal_receiver_authority_contract-d9fe15e82c748819",
+      "sha256": "f27bbc6be42963ddfee5a4be5fe8eca8444ca91212a3b4869c3bba707cf8cddc",
+      "bytes": 1872488,
+      "mtime_ns": 1790055305671364746
+    },
+    {
+      "suite": "openwepp::snow_stage3_turbulent_operator_reconciliation_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_turbulent_operator_reconciliation_contract-fcc9137f1c4ec860",
+      "sha256": "0f38ff76d5438af122bb422eef6eb53053f548b624d543d312623c441c60c18d",
+      "bytes": 260773352,
+      "mtime_ns": 1790055287827429403
+    },
+    {
+      "suite": "openwepp::snow_stage3_v11_constitutive_boundary_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_v11_constitutive_boundary_contract-7c2b3b148b0969af",
+      "sha256": "7208a8f6bf08699f67bb581849df6336d7d962e5ee9bd1b665829c6e74d1b75c",
+      "bytes": 1575256,
+      "mtime_ns": 1790055390398805994
+    },
+    {
+      "suite": "openwepp::snow_stage3_wind_source_custody_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_stage3_wind_source_custody_contract-42876788ac795412",
+      "sha256": "d886bd08f95cd97da5250fd1ee586b361dd3d21de432688b2eb717f2d8a61fa5",
+      "bytes": 1587048,
+      "mtime_ns": 1790055318879057069
+    },
+    {
+      "suite": "openwepp::snow_surface_eb03_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_surface_eb03_contract-95fb27bd32b2d1da",
+      "sha256": "a100822e9f79bef1a277917a3e011ed43e54c5eb698a484b0f283f615e452f46",
+      "bytes": 1662088,
+      "mtime_ns": 1790055414383063202
+    },
+    {
+      "suite": "openwepp::snow_surface_eb03_runtime",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_surface_eb03_runtime-bc373978c0dbc0ba",
+      "sha256": "24705b49c11dc89d95afc5174b6cef5dfa95086ce1becca843013aa53f8cf3fc",
+      "bytes": 262558504,
+      "mtime_ns": 1790055307508461044
+    },
+    {
+      "suite": "openwepp::snow_surface_eb04v_density_process_diagnostics_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_surface_eb04v_density_process_diagnostics_contract-156b9239e7112f8e",
+      "sha256": "ca420360d10e62d37fd86d7a5f5a0cad01622ce094565f63f08021c62836a126",
+      "bytes": 1572256,
+      "mtime_ns": 1790055399252270075
+    },
+    {
+      "suite": "openwepp::snow_surface_eb04w_accumulation_melt_diagnostics_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_surface_eb04w_accumulation_melt_diagnostics_contract-25795ca6fd4685b9",
+      "sha256": "7c8dc40338ce318bdc7bf6fd60d17e8a70e065a6972a5faa2bb18af42811c245",
+      "bytes": 262484032,
+      "mtime_ns": 1790055366882573320
+    },
+    {
+      "suite": "openwepp::snow_terminal_enthalpy_event_numerics_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_terminal_enthalpy_event_numerics_contract-03b45e9bae17810f",
+      "sha256": "358c88e60669320a83c63227ccc6f289c765deb540dcb64787d415941ec7bfdc",
+      "bytes": 2286952,
+      "mtime_ns": 1790055368513658818
+    },
+    {
+      "suite": "openwepp::snow_wet_compaction_operand_authority",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snow_wet_compaction_operand_authority-39229f6c0d6c7358",
+      "sha256": "289494e6f980433346dd1810a051bf5e658d0dd716742fb2a232656424c2216d",
+      "bytes": 263153528,
+      "mtime_ns": 1790055367263593292
+    },
+    {
+      "suite": "openwepp::snowdensity02_contract_adr_guard",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity02_contract_adr_guard-a60c128ed24cea4d",
+      "sha256": "be042182958e0eb4fe43c7e3dcbb52b530dee0f0c9c71a1a2f35bd829ca9cc48",
+      "bytes": 1579816,
+      "mtime_ns": 1790055357856100169
+    },
+    {
+      "suite": "openwepp::snowdensity03_physics_bulk_offline_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity03_physics_bulk_offline_contract-d25a9fc6a4307294",
+      "sha256": "9aea7075321a654bf5aadcb855fc5c182831a8a8d25cb8badd1ec408d5b59b73",
+      "bytes": 509452376,
+      "mtime_ns": 1790055340509190878
+    },
+    {
+      "suite": "openwepp::snowdensity05a_melt_contract_guard",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity05a_melt_contract_guard-dc86e05ac6566314",
+      "sha256": "c05d9fe2a9ea23000fed5f4adce87e2e9757b119651b04e8b9da168b72ee4999",
+      "bytes": 1579864,
+      "mtime_ns": 1790055293464724898
+    },
+    {
+      "suite": "openwepp::snowdensity05b_shortwave_source_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity05b_shortwave_source_contract-dfd86c2c81af8ee3",
+      "sha256": "a531ab62805945e0398571ceacbb27ec49ae5448b48d57926a42bacbe0f651e8",
+      "bytes": 1581088,
+      "mtime_ns": 1790055319420085429
+    },
+    {
+      "suite": "openwepp::snowdensity05c_albedo_state_core",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity05c_albedo_state_core-22b3fe25d20f938c",
+      "sha256": "56b16f5411ae68869085e4b681755ab105fc4cbaf5b1991020cb36c9f8be4f47",
+      "bytes": 260615272,
+      "mtime_ns": 1790055292347666345
+    },
+    {
+      "suite": "openwepp::snowdensity05d_opt_in_coe_melt",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity05d_opt_in_coe_melt-88b5a045c9797d24",
+      "sha256": "83a4c63b20f8a23bb8b622958a2782b0acda82baefb2ab8e5a7fd39d9f9fdd54",
+      "bytes": 262730176,
+      "mtime_ns": 1790055370491762506
+    },
+    {
+      "suite": "openwepp::snowdensity05e_melt_adjudication",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity05e_melt_adjudication-58bb236990808e5d",
+      "sha256": "dfc85c72d3d680c940dc90c396342c01853dff53dc22b868da82816c28083d72",
+      "bytes": 509622128,
+      "mtime_ns": 1790055343465345833
+    },
+    {
+      "suite": "openwepp::snowdensity05f_melt_closure_handoff",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity05f_melt_closure_handoff-9f858c6f88b9dd2c",
+      "sha256": "f90a54ff2551f8544268c3269043516d5f03560f823db494cd15c217c1251648",
+      "bytes": 1583688,
+      "mtime_ns": 1790055271131554238
+    },
+    {
+      "suite": "openwepp::snowdensity05g_harness_fidelity_rerun",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity05g_harness_fidelity_rerun-c207499ecdac81e1",
+      "sha256": "8a4c6fa098cef9f7ca5cdd2ec0cd954ea9884da57f0d6fe91b03de585453429c",
+      "bytes": 509599712,
+      "mtime_ns": 1790055301959170160
+    },
+    {
+      "suite": "openwepp::snowdensity06_density_compaction",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity06_density_compaction-e1c5cd09aa6ca012",
+      "sha256": "2beb661ae94cf8f52abcc58de9617c9602e34e20c1fc6cfa0319ed48e3496f0c",
+      "bytes": 509457296,
+      "mtime_ns": 1790055264067183938
+    },
+    {
+      "suite": "openwepp::snowdensity06b_coe_bound_density_replay",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity06b_coe_bound_density_replay-67806c95638d04b7",
+      "sha256": "37eb4edcecac79e0a3db07e88c24c0f769c73ed1aa423f8c6b6bcb71fd55ccd0",
+      "bytes": 509917848,
+      "mtime_ns": 1790055325022379090
+    },
+    {
+      "suite": "openwepp::snowdensity07_runtime_opt_in",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity07_runtime_opt_in-8b0d735ec7bda21e",
+      "sha256": "0879aa54acd654f73234f49fb75f1bfe208474ca705c735d0fc60b7803f1e10d",
+      "bytes": 262655608,
+      "mtime_ns": 1790055304915325116
+    },
+    {
+      "suite": "openwepp::snowdensity08_gate_rerun",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity08_gate_rerun-e7f1db66394e4105",
+      "sha256": "870e70bc4a1efa0dfc3e850dfbc5dd535e15acc474c68e5058909d1a757d0cc6",
+      "bytes": 3764608,
+      "mtime_ns": 1790055279764006734
+    },
+    {
+      "suite": "openwepp::snowdensity09_coupled_wat_rerun",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity09_coupled_wat_rerun-c57cd647e9d2bd49",
+      "sha256": "0d8e6592978ea50a909ef83d195fb962d11887b1295be08c0637f55ea454baec",
+      "bytes": 3881880,
+      "mtime_ns": 1790055333695833735
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_10_spring_pack_depletion_compaction",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_10_spring_pack_depletion_compaction-9595c370b5e5f117",
+      "sha256": "9fdb0b3e90e5c23f4c701431d972a05d5d9cdad8f6da1958442367ff26d4bd48",
+      "bytes": 3768760,
+      "mtime_ns": 1790055298072966453
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_11_spring_compaction_densification",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_11_spring_compaction_densification-b4d330ca2080f6bb",
+      "sha256": "c9901c7760957183701e2da3c549bc95407e573094cf387d7901e2fcc7e07724",
+      "bytes": 262894488,
+      "mtime_ns": 1790055410966884132
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_12_bundle_activation_adjudication",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_12_bundle_activation_adjudication-7fbe2b4f53d1fa80",
+      "sha256": "c38261fb17d1e875f1c4ad5c154723d018bbcdffe33b45b17049118bc86aba88",
+      "bytes": 3762288,
+      "mtime_ns": 1790055357990107193
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_13_residual_policy_b_diagnostic",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_13_residual_policy_b_diagnostic-4bc5e0aa16aeb6b6",
+      "sha256": "bf23a2d32a49060d13e9e3aac324ffa33543628179f34780abd776acbec9a489",
+      "bytes": 3770328,
+      "mtime_ns": 1790055368809674335
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_14_policy_b_no_regression_cap_authority",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_14_policy_b_no_regression_cap_authority-24e19cc333ce6180",
+      "sha256": "cb79bb2e7c72a220d53e2b50f2bd6b086f38328a9e39184dbcba3c045f3fcec8",
+      "bytes": 3762376,
+      "mtime_ns": 1790055368195642148
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_15_default_activation_active_cap",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_15_default_activation_active_cap-f5303a4744ea6dd8",
+      "sha256": "e46ee2a53cc65a09d7acf69242c8a7b722eaacb0fbd702fcbdb30275fa822e09",
+      "bytes": 3786216,
+      "mtime_ns": 1790055409788822381
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_16_open_surface_ablation_stage_a",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_16_open_surface_ablation_stage_a-ca26255a49e43afa",
+      "sha256": "5e80fd7a67b2a7f28faccd0f025f9cec7bff005d82011ae68d6b4219eb9b0f20",
+      "bytes": 399717424,
+      "mtime_ns": 1790055364341440118
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_17_shallow_pack_compaction_guard",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_17_shallow_pack_compaction_guard-7e449d544a192081",
+      "sha256": "37e8ca6857d1fc0b47e7f87addb037a1b06444c4ee1722793e06c155301b905f",
+      "bytes": 261205448,
+      "mtime_ns": 1790055314775841986
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_18_cross_snotel_mechanism_rubric",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_18_cross_snotel_mechanism_rubric-6c095f8b8e3a79e6",
+      "sha256": "41408f48a05decadf9793e87556ac84186dd62523ba035ccccf6185ec7c635e9",
+      "bytes": 1567904,
+      "mtime_ns": 1790055414648077093
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_19_harder_pomeroy_default_activation",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_19_harder_pomeroy_default_activation-08979abec6c9751d",
+      "sha256": "9e751258902c1fb6011acb29aebf1813d1cc8867a701fa010272b42e7b3ba463",
+      "bytes": 3775888,
+      "mtime_ns": 1790055324067329028
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_1a_per_day_cancov",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_1a_per_day_cancov-cc263187fdefe04e",
+      "sha256": "a92e4b4c8c20f1da76715a02dcfa4eb51b744ba6c5c37d14f274649249d50da3",
+      "bytes": 509559648,
+      "mtime_ns": 1790055270472519693
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_20_sublimation_stage_b_unlock",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_20_sublimation_stage_b_unlock-0b25b4f264fa8584",
+      "sha256": "4b544bab39dcd605619c74a366490c8bb5ba6306a6341402239803109deb9292",
+      "bytes": 262910392,
+      "mtime_ns": 1790055398954254454
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_21_post_partition_residual_decomposition",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_21_post_partition_residual_decomposition-54955cd0c9cd9c8a",
+      "sha256": "911c9ba9143ffc9ffff4ead5f887711a87e866faddfe50cd29a95681864018ee",
+      "bytes": 3770552,
+      "mtime_ns": 1790055358279122343
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_22_climate_class_density_specialization",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_22_climate_class_density_specialization-572bcee8f0304d65",
+      "sha256": "42d9158cd6fe6a9094d02957bb2718536de73da835069826b68e99568eb7d3e7",
+      "bytes": 261280760,
+      "mtime_ns": 1790055412413959985
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_3_gradient_melt_adjudication",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_3_gradient_melt_adjudication-35d0084e5ec24643",
+      "sha256": "e60e28a8d47c6e4893702201ad0af536a2a8bc9130a655cb6f0ca891249025e6",
+      "bytes": 3781288,
+      "mtime_ns": 1790055257582844042
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_4_maritime_overaccumulation_diagnosis",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_4_maritime_overaccumulation_diagnosis-7dec787bb3cc9a0e",
+      "sha256": "096104fcb4cc2179ee97c9242c29daae55f0e963109e9aa58b0451119541652a",
+      "bytes": 3778560,
+      "mtime_ns": 1790055306230394049
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_5a_meteorology_crate_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_5a_meteorology_crate_contract-508883c67b8225cb",
+      "sha256": "f59eebc885435bf2455b39a11bda13ccfeff0f90b78b94f8f4f518cebced5688",
+      "bytes": 1589144,
+      "mtime_ns": 1790055408151736568
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_5b_hourly_partition_jennings_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_5b_hourly_partition_jennings_contract-452fb938752a55e0",
+      "sha256": "31d322c56ad1c41e9f3aa741b44886450e92497a86641f23e033aa642716f162",
+      "bytes": 398349672,
+      "mtime_ns": 1790055311559673401
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_5c_phase_partition_snowdepth_impact",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_5c_phase_partition_snowdepth_impact-cc52c852a097082c",
+      "sha256": "6a33c93897bca95283ef0eb0e25ab9c47b341238a87194dfa84420749400e0a9",
+      "bytes": 1593856,
+      "mtime_ns": 1790055399916304883
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_6_winter_thaw_melt_response",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_6_winter_thaw_melt_response-e45cd4422858daf7",
+      "sha256": "c4fa19f97f6664e9c496b3ffe3c35b8fdbd1910a7dbd17135b1c6a3fa10537b6",
+      "bytes": 1593408,
+      "mtime_ns": 1790055414103048524
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_7_winter_thaw_melt_response_correction",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_7_winter_thaw_melt_response_correction-22452743b0c42aa5",
+      "sha256": "18a09ed5263d539a94edca9f9b089ba08f283ce9f615879a6a23c5fa9c909f8a",
+      "bytes": 399759016,
+      "mtime_ns": 1790055350508715033
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_8_liquid_holding_capacity",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_8_liquid_holding_capacity-bd5420f0107e1d2d",
+      "sha256": "134299edfb62b86e6cd623e28f25ceb06c9b1619cafc5b3bd6fbfe7bd8ff0fbd",
+      "bytes": 399707032,
+      "mtime_ns": 1790055398602236002
+    },
+    {
+      "suite": "openwepp::snowdensity10_3_9_march_april_residual_attribution",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowdensity10_3_9_march_april_residual_attribution-3a35834841b6252b",
+      "sha256": "9212b7a2e552dfef53623f480090e03f81e89f21e9a7b5d23a0585edca349893",
+      "bytes": 3792736,
+      "mtime_ns": 1790055340887210693
+    },
+    {
+      "suite": "openwepp::snowfreeze_observed_frost_depth_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowfreeze_observed_frost_depth_contract-188b3bf50e48eeef",
+      "sha256": "aafd1040bbc637edb7a1c3fdcdd213f2635fb97ea3fcb8f6f3702b1e771a349f",
+      "bytes": 4753624,
+      "mtime_ns": 1790055360332229963
+    },
+    {
+      "suite": "openwepp::snowfrost_fidelity_c_diagnostics_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowfrost_fidelity_c_diagnostics_contract-3b7e57aff0dea1c8",
+      "sha256": "48a74f7743c09bd6db28d155a976e5c3e8406b1d1c489ba819be2c1106e6e0cd",
+      "bytes": 4402296,
+      "mtime_ns": 1790055272114605768
+    },
+    {
+      "suite": "openwepp::snowfrost_fidelity_g0_pysnobal_bridge_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/snowfrost_fidelity_g0_pysnobal_bridge_contract-227eaf37bfbffb3a",
+      "sha256": "833aeead3e7ffaafbeab78f2cee0571854a149e9973b411c4c547b4885eff442",
+      "bytes": 509477672,
+      "mtime_ns": 1790055364483447561
+    },
+    {
+      "suite": "openwepp::soilauth02_soil_producer_reconciliation_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/soilauth02_soil_producer_reconciliation_contract-c8a7a05a98de3333",
+      "sha256": "cf0494b223968fbc559b2b5b00a386e20acafcda7f1d6046c9f6b52baa55e390",
+      "bytes": 13291712,
+      "mtime_ns": 1790055380143268419
+    },
+    {
+      "suite": "openwepp::soilauth03_soil_producer_contract_drift_guards_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/soilauth03_soil_producer_contract_drift_guards_contract-f6ba0e504036bc5d",
+      "sha256": "dd4d298a5fab5d25f3c7fdb7651d9559ad230a6c200f0673c51ff4f21ecd3f24",
+      "bytes": 18690352,
+      "mtime_ns": 1790055359978211406
+    },
+    {
+      "suite": "openwepp::solver_architecture_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/solver_architecture_authority_contract-77e56e13eb7c45f7",
+      "sha256": "a232ed37c0ebb268dcc5645a2cb250f4b73819b8f8f848d13b1ef72f6dd7e36e",
+      "bytes": 1739056,
+      "mtime_ns": 1790055270869540504
+    },
+    {
+      "suite": "openwepp::stage3_native_vegetation_laned_throughput_recovery",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/stage3_native_vegetation_laned_throughput_recovery-047361eb73de1d79",
+      "sha256": "b8b71f3eb76540865236789819de466de7b86c2cebb120e89eef07eb73c32720",
+      "bytes": 4695320,
+      "mtime_ns": 1790055330192650105
+    },
+    {
+      "suite": "openwepp::subhourly_generation_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/subhourly_generation_contract-def12b0af4a422cd",
+      "sha256": "deb57df3dd588049969358f6a98fcd77e9c5aaf5f3239a03599a8348d5450cfd",
+      "bytes": 1657752,
+      "mtime_ns": 1790055318347029181
+    },
+    {
+      "suite": "openwepp::subhourly_generation_properties",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/subhourly_generation_properties-09adfbb0dfddb5b0",
+      "sha256": "16ea52f4e6f6f734725694c8a9c323d31427341674adee424268dc2d35f12246",
+      "bytes": 1570800,
+      "mtime_ns": 1790055305950379372
+    },
+    {
+      "suite": "openwepp::subhourly_water_output_roundtrip",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/subhourly_water_output_roundtrip-21ae9fd57879ddee",
+      "sha256": "df9341e0fb461f34703a725e72bcc3a136cbe6df73a7dfed6127224dbbea291a",
+      "bytes": 107907632,
+      "mtime_ns": 1790055334703886575
+    },
+    {
+      "suite": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/surface_liquid_hydrology_custody_authority_contract-40c0b786ee006a37",
+      "sha256": "6db42d4f11a2c5c3f079fdb9773fdd35dff27fe16d1efde968968fcd64061de3",
+      "bytes": 261881648,
+      "mtime_ns": 1790055343717359044
+    },
+    {
+      "suite": "openwepp::topology_graph_validation_gate",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/topology_graph_validation_gate-46fac1c48ae4beff",
+      "sha256": "d1a56bb986b658c1f7f3bb8ee5741173f3151c05eefa5e52949142dcba2962ce",
+      "bytes": 6083184,
+      "mtime_ns": 1790055358923156102
+    },
+    {
+      "suite": "openwepp::v10_nighttime_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/v10_nighttime_authority_contract-73fca576bd010823",
+      "sha256": "9351d978451fa429d5a85d41ae3b3767a8964c66b810df57d67f3157b5958c85",
+      "bytes": 57717896,
+      "mtime_ns": 1790055385293538386
+    },
+    {
+      "suite": "openwepp::vegetation_boundary_authority_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/vegetation_boundary_authority_contract-9cd8f39bcef8b8bf",
+      "sha256": "2472b0eba37c21f9b09aa05dfce1af9737209ca86c9b0793725fa1ae5af87c16",
+      "bytes": 5554648,
+      "mtime_ns": 1790055264533208366
+    },
+    {
+      "suite": "openwepp::vegetation_real_hydrology_shadow_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/vegetation_real_hydrology_shadow_contract-8bc0a2e4b84cfa13",
+      "sha256": "d7a95462788096129b7e8459b1461415af8feeba59bfff2679822f82c9e63378",
+      "bytes": 272150744,
+      "mtime_ns": 1790055301423142063
+    },
+    {
+      "suite": "openwepp::wb13_daily_water_balance_output_surface_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/wb13_daily_water_balance_output_surface_contract-81581e006133beb8",
+      "sha256": "5688cdbda8defdb0e1f96409a9b629d80c6e01b584a06007d1de20f996c5f8b2",
+      "bytes": 5069152,
+      "mtime_ns": 1790055417406221670
+    },
+    {
+      "suite": "openwepp::workspace_integration_ownership_acceptance",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/workspace_integration_ownership_acceptance-417630ffbe3f566d",
+      "sha256": "ee98c52d6499fad82069f992eccfecd5c922fb9956a7ac57d8a608468d5b5864",
+      "bytes": 1488856,
+      "mtime_ns": 1790055359399181054
+    },
+    {
+      "suite": "openwepp::wshedw5_typed_watershed_runtime_contract",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/wshedw5_typed_watershed_runtime_contract-7fc1bc1ffef1f992",
+      "sha256": "5f9dda3d184e58ed4bf215e3e8c61dd431fc1771ffc7c46ed0d265dbb98d70fb",
+      "bytes": 31526120,
+      "mtime_ns": 1790055399323273797
+    }
+  ]
+}

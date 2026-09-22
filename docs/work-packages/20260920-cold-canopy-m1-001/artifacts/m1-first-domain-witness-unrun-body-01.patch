@@ -1,0 +1,40 @@
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
+@@
++    static M1_LAST_CONTROLLER_FAILURE_ACTIVITY: RefCell<Option<M1PhaseJoinActivity>> = const { RefCell::new(None) };
+@@
+     fn into_source(self) -> M1CoupledError {
++        #[cfg(test)]
++        M1_LAST_CONTROLLER_FAILURE_ACTIVITY.with(|observation| {
++            *observation.borrow_mut() = Some(self.activity);
++        });
+         self.error
+     }
+ }
++
++fn m1_consume_first_domain_valid_halved_trial(
++    exponent: u32,
++    first_domain_valid_seen: &mut bool,
++) -> bool {
++    if exponent == 0 || *first_domain_valid_seen {
++        return false;
++    }
++    *first_domain_valid_seen = true;
++    true
++}
+@@
+-        let mut first_halved_witness_seen = false;
++        let mut first_domain_valid_halved_seen = false;
+@@
+             if !fd_trial_is_admissible(&candidate) {
+                 continue;
+             }
++            let is_first_halved_witness = m1_consume_first_domain_valid_halved_trial(
++                exponent,
++                &mut first_domain_valid_halved_seen,
++            );
+@@
+-            let is_first_halved_witness = exponent > 0 && !first_halved_witness_seen;
+-            if exponent > 0 && !first_halved_witness_seen {
+-                first_halved_witness_seen = true;
+-            }

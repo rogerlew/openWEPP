@@ -1,0 +1,46 @@
+{
+  "observations_path": "target/openwepp_snowbench_cli_tests/jennings_minimal/file2.csv",
+  "thresholds_path": "target/openwepp_snowbench_cli_tests/jennings_minimal/file3.csv",
+  "output_dir": "target/openwepp_snowbench_cli_tests/jennings_minimal/out",
+  "rows_read": 2,
+  "rows_scored": 2,
+  "rows_skipped": 0,
+  "stations_scored": 1,
+  "rh_normalized_to_saturation": 0,
+  "harder_pomeroy_hourly": {
+    "rows_scored": 2,
+    "accuracy": 1.0,
+    "observed_rain_predicted_rain": 1,
+    "observed_rain_predicted_snow": 0,
+    "observed_snow_predicted_rain": 0,
+    "observed_snow_predicted_snow": 1
+  },
+  "legacy_rst_0c": {
+    "rows_scored": 2,
+    "accuracy": 1.0,
+    "observed_rain_predicted_rain": 1,
+    "observed_rain_predicted_snow": 0,
+    "observed_snow_predicted_rain": 0,
+    "observed_snow_predicted_snow": 1
+  },
+  "threshold_summary": {
+    "station_count": 1,
+    "mean_predicted_temp50_c": 1.0,
+    "mean_observed_temp50_c": 0.0,
+    "mean_bias_c": 1.0,
+    "mean_absolute_error_c": 1.0,
+    "max_absolute_error_c": 1.0
+  },
+  "humidity_threshold_contrast": {
+    "low_rh_station_count": 1,
+    "high_rh_station_count": 1,
+    "low_rh_mean_observed_temp50_c": 0.0,
+    "high_rh_mean_observed_temp50_c": 0.0,
+    "low_rh_mean_predicted_temp50_c": 1.0,
+    "high_rh_mean_predicted_temp50_c": 1.0,
+    "observed_high_minus_low_c": 0.0,
+    "predicted_high_minus_low_c": 0.0
+  },
+  "report_json_path": "target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.json",
+  "report_markdown_path": "target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.md"
+}

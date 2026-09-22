@@ -1,0 +1,289 @@
+{
+  "utc": "2026-09-22T05:58:03.585176+00:00",
+  "evidence_class": "Independent Decimal60 reconstruction of actual prescribed receiver primitive state differences; not installed-owner or complete M1 donor/cycle evidence",
+  "method": "Compare each source contribution with pre-run frozen independent reference; independently sum actual m*f and m*f*h; reconstruct liquid storage from raw layers+residual porosity; subtract actual thermal and area-weighted LSE states. No producer closure totals are used as acceptance oracle.",
+  "run_receipt": "m1-receiver-raw-primitives-15.json",
+  "source_tree_sha256": "e43e56c6f8c896ec28e7e0d7d3d1f1a5ae880e2fb9d722f4f4c9c431116ac2c5",
+  "binary_sha256": null,
+  "raw_stderr_sha256": "777c7f09aecaaff5477a14ceca9a69e165c42775953741b285cbbd845fba1e16",
+  "frozen_reference_sha256": "a0400e74fdb4100dcfa099ef9a4627cee7b9310e4aefb4ef1aa094835bdcc0ef",
+  "checks": [
+    {
+      "name": "upper_stemflow tile mass",
+      "actual": "0.002251893424227986",
+      "expected": "0.00225189342422798595805662531403575562554577003665077345716244",
+      "difference": "4.194337468596424437445422996334922654283756E-20",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "upper_stemflow source enthalpy",
+      "actual": "21090.0",
+      "expected": "21090",
+      "difference": "0.0",
+      "tolerance": "1e-9",
+      "pass": true
+    },
+    {
+      "name": "upper_stemflow once-area OFE mass",
+      "actual": "0.00085571950120663468",
+      "expected": "0.000855719501206634664061517619333587137707392613927293913721727",
+      "difference": "1.5938482380666412862292607386072706086278273E-20",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "upper_stemflow OFE energy",
+      "actual": "18.047124280447925401200",
+      "expected": "18.0471242804479250650574065917453527342489102277266286403912",
+      "difference": "3.361425934082546472657510897722733713596088E-16",
+      "tolerance": "1e-8",
+      "pass": true
+    },
+    {
+      "name": "upper_throughfall_stemflow tile mass",
+      "actual": "0.0026016843462896497",
+      "expected": "0.00260168434628964965593317612357304499257324722622004908735938",
+      "difference": "4.406682387642695500742675277377995091264062E-20",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "upper_throughfall_stemflow source enthalpy",
+      "actual": "21090.0",
+      "expected": "21090",
+      "difference": "0.0",
+      "tolerance": "1e-9",
+      "pass": true
+    },
+    {
+      "name": "upper_throughfall_stemflow once-area OFE mass",
+      "actual": "0.000988640051590066886",
+      "expected": "0.000988640051590066869254606926957757097177833945963618653196564",
+      "difference": "1.6745393073042242902822166054036381346803436E-20",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "upper_throughfall_stemflow OFE energy",
+      "actual": "20.8504186880345106257400",
+      "expected": "20.8504186880345102725796600895390971794805179203727173959155",
+      "difference": "3.531603399104609028205194820796272826040845E-16",
+      "tolerance": "1e-8",
+      "pass": true
+    },
+    {
+      "name": "upper_throughfall_throughfall tile mass",
+      "actual": "0.010406737385158599",
+      "expected": "0.0104067373851585986237327044942921799702929889048801963494375",
+      "difference": "3.762672955057078200297070110951198036505625E-19",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "upper_throughfall_throughfall source enthalpy",
+      "actual": "21090.0",
+      "expected": "21090",
+      "difference": "0.0",
+      "tolerance": "1e-9",
+      "pass": true
+    },
+    {
+      "name": "upper_throughfall_throughfall once-area OFE mass",
+      "actual": "0.00395456020636026762",
+      "expected": "0.00395456020636026747701842770783102838871133578385447461278625",
+      "difference": "1.4298157229216897161128866421614552538721375E-19",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "upper_throughfall_throughfall OFE energy",
+      "actual": "83.401674752138044105800",
+      "expected": "83.4016747521380410903186403581563887179220716814908695836621",
+      "difference": "3.0154813596418436112820779283185091304163379E-15",
+      "tolerance": "1e-8",
+      "pass": true
+    },
+    {
+      "name": "upper_drainage_stemflow tile mass",
+      "actual": "0.0007702212778805854",
+      "expected": "0.000770221277880585347513133730165143082095080901239542987140668",
+      "difference": "5.2486866269834856917904919098760457012859332E-20",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "upper_drainage_stemflow source enthalpy",
+      "actual": "0.0",
+      "expected": "0",
+      "difference": "0.0",
+      "tolerance": "1e-9",
+      "pass": true
+    },
+    {
+      "name": "upper_drainage_stemflow once-area OFE mass",
+      "actual": "0.000292684085594622452",
+      "expected": "0.000292684085594622432054990817462754371196130742471026335113454",
+      "difference": "1.9945009182537245628803869257528973664886546E-20",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "upper_drainage_stemflow OFE energy",
+      "actual": "0E-22",
+      "expected": "0E-65",
+      "difference": "0E-65",
+      "tolerance": "1e-8",
+      "pass": true
+    },
+    {
+      "name": "upper_drainage_throughfall tile mass",
+      "actual": "0.003080885111522341",
+      "expected": "0.00308088511152234139005253492066057232838032360495817194856267",
+      "difference": "-3.9005253492066057232838032360495817194856267E-19",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "upper_drainage_throughfall source enthalpy",
+      "actual": "0.0",
+      "expected": "0",
+      "difference": "0.0",
+      "tolerance": "1e-9",
+      "pass": true
+    },
+    {
+      "name": "upper_drainage_throughfall once-area OFE mass",
+      "actual": "0.00117073634237848958",
+      "expected": "0.00117073634237848972821996326985101748478452296988410534045381",
+      "difference": "-1.4821996326985101748478452296988410534045381E-19",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "upper_drainage_throughfall OFE energy",
+      "actual": "0E-21",
+      "expected": "0E-64",
+      "difference": "0E-64",
+      "tolerance": "1e-8",
+      "pass": true
+    },
+    {
+      "name": "lower_drainage tile mass",
+      "actual": "0.002",
+      "expected": "0.002",
+      "difference": "0.000",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "lower_drainage source enthalpy",
+      "actual": "8436.0",
+      "expected": "8436",
+      "difference": "0.0",
+      "tolerance": "1e-9",
+      "pass": true
+    },
+    {
+      "name": "lower_drainage once-area OFE mass",
+      "actual": "0.00076",
+      "expected": "0.00076",
+      "difference": "0.00000",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "lower_drainage OFE energy",
+      "actual": "6.411360",
+      "expected": "6.41136",
+      "difference": "0.000000",
+      "tolerance": "1e-8",
+      "pass": true
+    },
+    {
+      "name": "receipt mass vs independent frozen terminal input",
+      "actual": "0.008022340187130082",
+      "expected": "0.00802234018713008117060950634143614447957721605610051885527180",
+      "difference": "8.2939049365856385552042278394389948114472820E-19",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "receipt energy vs independent frozen terminal input",
+      "actual": "128.7105777206214",
+      "expected": "128.710577720620476427955707039440838631651499829590215619969",
+      "difference": "9.23572044292960559161368348500170409784380031E-13",
+      "tolerance": "1e-8",
+      "pass": true
+    },
+    {
+      "name": "receipt mass vs actual six primitive contributions",
+      "actual": "0.008022340187130082",
+      "expected": "0.008022340187130081218",
+      "difference": "7.82E-19",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "receipt energy vs actual six primitive contributions",
+      "actual": "128.7105777206214",
+      "expected": "128.7105777206204801327400",
+      "difference": "9.198672600E-13",
+      "tolerance": "1e-8",
+      "pass": true
+    },
+    {
+      "name": "receipt Q=m*Cw*(T-Tf)",
+      "actual": "128.7105777206214",
+      "expected": "128.71057772062066280031802007141784",
+      "difference": "7.3719968197992858216E-13",
+      "tolerance": "1e-8",
+      "pass": true
+    },
+    {
+      "name": "soil beginning from layer primitives",
+      "actual": "0.119998640816405070",
+      "expected": "0.11999864081640507",
+      "difference": "0E-18",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "soil ending from layer primitives",
+      "actual": "0.120006663156592200",
+      "expected": "0.12000666315659221",
+      "difference": "-1.0E-17",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "actual layer water increase vs delivered mass",
+      "actual": "0.008022340187130000",
+      "expected": "0.008022340187130082",
+      "difference": "-8.2E-17",
+      "tolerance": "1e-12",
+      "pass": true
+    },
+    {
+      "name": "actual thermal state energy increase vs delivered energy",
+      "actual": "128.7105777206",
+      "expected": "128.7105777206214",
+      "difference": "-2.14E-11",
+      "tolerance": "1e-8",
+      "pass": true
+    },
+    {
+      "name": "actual LSE energy increase for zero-retention fixture",
+      "actual": "0E-12",
+      "expected": "0",
+      "difference": "0E-12",
+      "tolerance": "1e-8",
+      "pass": true
+    }
+  ],
+  "all_pass": true,
+  "actual_infiltration_mass_kg_m2_ofe_ground": "0.008022340187130082",
+  "actual_thermal_delta_j_m2_ofe_ground": "128.7105777206",
+  "actual_received_energy_j_m2_ofe_ground": "128.7105777206214",
+  "limitations": "Development Nextest run has no frozen executable SHA. Raw receipt ID indicates infiltration and every actual layer/thermal increment agrees, but explicit disposition/recipient fields and surface liquid mass snapshots were not emitted. No actual vegetation donor M/H debit, local-owner rollback, full coupled evolution, restart or cost acceptance is inferred."
+}

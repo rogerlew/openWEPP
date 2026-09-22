@@ -1,0 +1,7 @@
+{
+  "utc": "2026-09-22T06:16:23.383293+00:00",
+  "run_receipt": "m1-receiver-terminal-full-workspace-01.json",
+  "reason": "Same correctness reviewer found missing destination-tile/basis receipt guard on frozen cut. Preserve failed full run and release source for bounded in-scope fix before06:21 edit cutoff; no full PASS or waiver claimed. Corrected-head full regression remains unmet within remaining clock.",
+  "signal": "SIGTERM",
+  "process_group": 2477801
+}

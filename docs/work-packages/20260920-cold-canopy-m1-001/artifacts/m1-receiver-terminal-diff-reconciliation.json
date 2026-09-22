@@ -1,0 +1,42 @@
+{
+  "utc": "2026-09-22T06:27:49.135223+00:00",
+  "start": "c3a681205c5c19dba5f50034b7f219694ec5f43485f9f6ceb6c06f10dc4c1565",
+  "final": "3dc8f4e09d1feae4f8c08b572505edb63697f3f9077add8f0049a725845459a6",
+  "changed_paths": {
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs": {
+      "before": null,
+      "after": "288d4e383f4cb0f222df59fb858baa0343290bd1119b8e7dd9c20174dc965c3f"
+    },
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs": {
+      "before": "b1634ba4919b4b8d571b1e87b25a763b831465a1b135125d9a6bc7c1532a115b",
+      "after": "496056fd1ee7b36c7d7142a93c8d0b9714fc285f1ba77a3cda891ec856c89c60"
+    },
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/multi_tile_runtime.rs": {
+      "before": "f8fb1779263190f257734f34df4c7a6f5dc1c08c635815ad587e6087097ee530",
+      "after": "ea0efec2391790af1a3460a3f0dff5d944a46f60a384078b5e2a80a6937c7642"
+    },
+    "crates/openwepp-land-surface-energy/src/lib.rs": {
+      "before": "907b4b27cef08d2731bbaf89990cbe540ebc7389bc910ecd70e7edbba43e35dc",
+      "after": "f3c7c9d3ef680740b1e03836e02bb25938dce0a99aebb8ea4629de658cf6f3b9"
+    },
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": {
+      "before": "ae7f690b710dc0518017a46c73a3398b163ba9a85b6420f48307b3d3f49d2a4e",
+      "after": "03e5100479ba65fc85fc0af6c2e47bff3ad06e4e29886a9dc0c301079ff2aa88"
+    },
+    "crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs": {
+      "before": null,
+      "after": "13f85b6967be9a918772094cf832b6f910a73bfa07d8bffa3bce68ff4bc8debd"
+    },
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": {
+      "before": "66eac7d30113a7c3809fd285fc3f357cc6bfdd77f5b2cf931ed50c32041c5141",
+      "after": "38670b1a333fc5a69d66d5ac0fd5d2d8b58d9e9eb37d2dd3cac3969df5dceeef"
+    },
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs": {
+      "before": "e6e9c25f27ff080a8f9438b3c6c57ec5002135b4fd4d68bd38f0386df2925da3",
+      "after": "10a1d3d502bc36a52aceffd7604d66469d065f5e3a2d3a9afa83405cd810bf1b"
+    }
+  },
+  "disposition": "HOLD; no main Rust adoption; incomplete Critical validation and M1 acceptance",
+  "independent_correctness": "Same /root/correctness: final guard statically clear, PA/owner/cycles/restart/cost HOLD",
+  "independent_qa": "Same /root/qa: final custody adequate, final-source quality/correctness unqualified; HOLD"
+}

@@ -1,0 +1,2476 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/litter_phase_tests.rs:229:65
+    |
+229 |         post_vapor_ice.min(2.0 * (920.0 * 2106.0 * 0.04 * 5.0 / 333700.0_f64).min(post_vapor_ice));
+    |                                                                 ^^^^^^^^^^^^ help: consider: `333_700.0_f64`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+    = note: `-D clippy::unreadable-literal` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unreadable_literal)]`
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/litter_phase_tests.rs:232:62
+    |
+232 |     assert!((candidate.receipt.transfer.fusion_energy_j_m2 + 333700.0 * melted).abs() < 1e-8);
+    |                                                              ^^^^^^^^ help: consider: `333_700.0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:311:77
+    |
+311 |                 * crate::physics::saturation_specific_humidity(temperature, 101325.0).unwrap()
+    |                                                                             ^^^^^^^^ help: consider: `101_325.0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:334:30
+    |
+334 |             air_pressure_pa: 101325.0,
+    |                              ^^^^^^^^ help: consider: `101_325.0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:336:49
+    |
+336 |             atmospheric_downward_longwave_w_m2: 5.670374419e-8 * temperature.powi(4),
+    |                                                 ^^^^^^^^^^^^^^ help: consider: `5.670_374_419e-8`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:345:39
+    |
+345 |                 heat_capacity_j_m2_k: 120000.0,
+    |                                       ^^^^^^^^ help: consider: `120_000.0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:522:70
+    |
+522 |         let radiation = problem.atmospheric_downward_longwave_w_m2 - 5.670374419e-8 * t.powi(4);
+    |                                                                      ^^^^^^^^^^^^^^ help: consider: `5.670_374_419e-8`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:531:48
+    |
+531 |         let ql = ml * (4218.0 * (t - 273.15) + 2501000.0 - 2369.0 * (t - 273.15));
+    |                                                ^^^^^^^^^ help: consider: `2_501_000.0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:532:48
+    |
+532 |         let qi = mi * (2106.0 * (t - 273.15) + 2501000.0 - 2369.0 * (t - 273.15) + 333700.0);
+    |                                                ^^^^^^^^^ help: consider: `2_501_000.0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:532:84
+    |
+532 |         let qi = mi * (2106.0 * (t - 273.15) + 2501000.0 - 2369.0 * (t - 273.15) + 333700.0);
+    |                                                                                    ^^^^^^^^ help: consider: `333_700.0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:548:27
+    |
+548 |         let soil_energy = 120000.0 * (soil_t - problem.soil_nodes[0].beginning_temperature_k);
+    |                           ^^^^^^^^ help: consider: `120_000.0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: 5 bindings with single-character names in scope
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:641:13
+    |
+641 |     let mut c = column();
+    |             ^
+642 |     c.top_rain_kg_m2_tile = 2.0;
+643 |     let o = &mut c.occupancies[0];
+    |         ^
+...
+653 |     let f = transparent_test_forcing(&c, vec![(2.0, 280.0)]);
+    |         ^
+...
+657 |     let mut x = initial_trial();
+    |             ^
+658 |     x[8] = 300.0;
+659 |     let r = crate::evaluate_covered_occupancy_block(
+    |         ^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#many_single_char_names
+    = note: `-D clippy::many-single-char-names` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::many_single_char_names)]`
+
+error: 5 bindings with single-character names in scope
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:726:13
+    |
+726 |     let mut c = column();
+    |             ^
+...
+729 |     let mut o = c.occupancies[0].clone();
+    |             ^
+...
+846 |     let mut x = initial_trial()[..10].to_vec();
+    |             ^
+...
+861 |         let l = &o.liquid;
+    |             ^
+862 |         let m = l.stemflow_kg_m2_tile
+    |             ^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#many_single_char_names
+
+error: 6 bindings with single-character names in scope
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:726:13
+    |
+726 |     let mut c = column();
+    |             ^
+...
+729 |     let mut o = c.occupancies[0].clone();
+    |             ^
+...
+846 |     let mut x = initial_trial()[..10].to_vec();
+    |             ^
+...
+879 |     let n = 64.0 * (2.0 + 4.0 * 2.0 + 8.0);
+    |         ^
+...
+886 |     let p = crate::evaluate_covered_column(&c, &perturbed, None, None).unwrap();
+    |         ^
+...
+898 |         let crate::CoveredColumnSolveOutcome::Accepted(a) = ordinary else {
+    |                                                        ^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#many_single_char_names
+
+error: 5 bindings with single-character names in scope
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:726:13
+    |
+726 |     let mut c = column();
+    |             ^
+...
+729 |     let mut o = c.occupancies[0].clone();
+    |             ^
+...
+846 |     let mut x = initial_trial()[..10].to_vec();
+    |             ^
+...
+879 |     let n = 64.0 * (2.0 + 4.0 * 2.0 + 8.0);
+    |         ^
+...
+886 |     let p = crate::evaluate_covered_column(&c, &perturbed, None, None).unwrap();
+    |         ^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#many_single_char_names
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:937:29
+    |
+937 |     c.top_rain_kg_m2_tile = 9.400473273461845e-8;
+    |                             ^^^^^^^^^^^^^^^^^^^^ help: consider: `9.400_473_273_461_845e-8`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:946:71
+    |
+946 |     let f = transparent_test_forcing(&c, vec![(c.top_rain_kg_m2_tile, 265.28179297231515)]);
+    |                                                                       ^^^^^^^^^^^^^^^^^^ help: consider: `265.281_792_972_315_15`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:967:54
+    |
+967 |         assert_eq!(ledger.wet_surface_temperature_k, 265.28179297231515);
+    |                                                      ^^^^^^^^^^^^^^^^^^ help: consider: `265.281_792_972_315_15`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:977:71
+    |
+977 |             crate::covered_liquid::finalize_covered_liquid(prep, 0.0, 265.28179297231515, pass)
+    |                                                                       ^^^^^^^^^^^^^^^^^^ help: consider: `265.281_792_972_315_15`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:997:53
+    |
+997 |     let f = transparent_test_forcing(&c, vec![(2.0, 265.28179297231515)]);
+    |                                                     ^^^^^^^^^^^^^^^^^^ help: consider: `265.281_792_972_315_15`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:722:32
+    |
+722 |     for canopy_temperature in [266.85496453757526, 273.15, 280.0] {
+    |                                ^^^^^^^^^^^^^^^^^^ help: consider: `266.854_964_537_575_26`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:254:75
+    |
+254 |                 0.3 * crate::physics::saturation_specific_humidity(285.0, 101325.0).unwrap();
+    |                                                                           ^^^^^^^^ help: consider: `101_325.0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:289:51
+    |
+289 |                         enthalpy_j_m2_ofe_ground: 120000.0 * (285.0 - 273.15),
+    |                                                   ^^^^^^^^ help: consider: `120_000.0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: long literal lacking separators
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:343:30
+    |
+343 |         problem.interval_s = 59.999999999;
+    |                              ^^^^^^^^^^^^ help: consider: `59.999_999_999`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal
+
+error: redundant closure
+   --> crates/openwepp-land-surface-energy/src/covered_liquid.rs:217:65
+    |
+217 |     let temperature = proof.map_or(numerical_wet_temperature_k, |p| p.release_temperature_k());
+    |                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `super::transparent_canopy::TransparentCanopyPassageProofV1::release_temperature_k`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure_for_method_calls
+    = note: `-D clippy::redundant-closure-for-method-calls` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::redundant_closure_for_method_calls)]`
+
+error: the `Err`-variant returned from this function is very large
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs:21:6
+    |
+ 21 | ) -> Result<M1FullSupplyHydraulics, M1CoupledError> {
+    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |     Numerical(crate::numerics::NumericalFailure),
+    |     -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+    = note: `-D clippy::result-large-err` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::result_large_err)]`
+
+error: usage of wildcard import
+ --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3:5
+  |
+3 | use super::*;
+  |     ^^^^^^^^ help: try: `super::{Digest, CoveredColumnInputs, M1CoupledError, LandSurfaceEnergyError, CoveredColumnAuthority, validate_covered_shortwave_inputs, M1ZeroParLeafState, m1_zero_par_leaf_state, inactive_component_temperature_anchor_k, StepNorms, solve_m1_full_supply_hydraulics, NormalizedResidual, ResidualUnit}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#wildcard_imports
+  = note: `-D clippy::wildcard-imports` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::wildcard_imports)]`
+
+error: the `Err`-variant returned from this function is very large
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:143:10
+    |
+143 |     ) -> Result<Self, M1CoupledError> {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |     Numerical(crate::numerics::NumericalFailure),
+    |     -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: this function has a `#[must_use]` attribute with no message, but returns a type already marked as `#[must_use]`
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:219:5
+    |
+219 |     pub fn jacobian(&self) -> Result<&[Vec<f64>], M1CoupledError> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: either add some descriptive message or remove the attribute
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#double_must_use
+    = note: `-D clippy::double-must-use` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::double_must_use)]`
+
+error: the `Err`-variant returned from this function is very large
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:219:31
+    |
+219 |     pub fn jacobian(&self) -> Result<&[Vec<f64>], M1CoupledError> {
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |     Numerical(crate::numerics::NumericalFailure),
+    |     -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: this function has a `#[must_use]` attribute with no message, but returns a type already marked as `#[must_use]`
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:225:5
+    |
+225 |     pub fn jacobian_column(&self, index: usize) -> Result<Vec<f64>, M1CoupledError> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: either add some descriptive message or remove the attribute
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#double_must_use
+
+error: the `Err`-variant returned from this function is very large
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:225:52
+    |
+225 |     pub fn jacobian_column(&self, index: usize) -> Result<Vec<f64>, M1CoupledError> {
+    |                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |     Numerical(crate::numerics::NumericalFailure),
+    |     -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this function is very large
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:244:42
+    |
+244 |     pub fn occupancy(&self, id: &str) -> Result<&M1OccupancyEvaluation, M1CoupledError> {
+    |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |     Numerical(crate::numerics::NumericalFailure),
+    |     -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this function is very large
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:267:6
+    |
+267 | ) -> Result<(), M1CoupledError> {
+    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |     Numerical(crate::numerics::NumericalFailure),
+    |     -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:346:12
+    |
+346 |         if !(trial.coordinates[base + 3] > 0.0)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#neg_cmp_op_on_partial_ord
+    = note: `-D clippy::neg-cmp-op-on-partial-ord` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::neg_cmp_op_on_partial_ord)]`
+
+error: the `Err`-variant returned from this function is very large
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:425:6
+    |
+425 | ) -> Result<(), M1CoupledError> {
+    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |     Numerical(crate::numerics::NumericalFailure),
+    |     -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: unnecessary closure used to substitute value for `Option::None`
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:461:20
+    |
+461 |       let boundary = input
+    |  ____________________^
+462 | |         .column
+463 | |         .stage3_lower_boundary
+464 | |         .as_ref()
+465 | |         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+    | |___________________________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_lazy_evaluations
+    = note: `-D clippy::unnecessary-lazy-evaluations` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unnecessary_lazy_evaluations)]`
+help: use `ok_or` instead
+    |
+465 -         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+465 +         .ok_or(LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+    |
+
+error: unnecessary closure used to substitute value for `Option::None`
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:467:19
+    |
+467 |       let optical = input
+    |  ___________________^
+468 | |         .column
+469 | |         .stage3_optical
+470 | |         .as_ref()
+471 | |         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+    | |___________________________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_lazy_evaluations
+help: use `ok_or` instead
+    |
+471 -         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+471 +         .ok_or(LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+    |
+
+error: casting `f64` to `u128` may truncate the value
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:511:27
+    |
+511 |             requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_possible_truncation
+    = note: `-D clippy::cast-possible-truncation` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::cast_possible_truncation)]`
+
+error: casting `f64` to `u128` may lose the sign of the value
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:511:27
+    |
+511 |             requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_sign_loss
+    = note: `-D clippy::cast-sign-loss` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::cast_sign_loss)]`
+
+error: the `Err`-variant returned from this function is very large
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:627:6
+    |
+627 | ) -> Result<(Option<f64>, f64, f64), M1CoupledError> {
+    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |     Numerical(crate::numerics::NumericalFailure),
+    |     -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this function is very large
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:650:6
+    |
+650 | ) -> Result<Core, M1CoupledError> {
+    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |     Numerical(crate::numerics::NumericalFailure),
+    |     -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: unnecessary closure used to substitute value for `Option::None`
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:659:20
+    |
+659 |       let boundary = column
+    |  ____________________^
+660 | |         .stage3_lower_boundary
+661 | |         .as_ref()
+662 | |         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+    | |___________________________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_lazy_evaluations
+help: use `ok_or` instead
+    |
+662 -         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+662 +         .ok_or(LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+    |
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1445:6
+     |
+1445 | ) -> Result<(), M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1505:6
+     |
+1505 | ) -> Result<(Core, Vec<Vec<f64>>, Vec<Vec<f64>>), M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: very complex type used. Consider factoring parts into `type` definitions
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1505:6
+     |
+1505 | ) -> Result<(Core, Vec<Vec<f64>>, Vec<Vec<f64>>), M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#type_complexity
+     = note: `-D clippy::type-complexity` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::type_complexity)]`
+
+error: these match arms have identical bodies
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1528:13
+     |
+1528 |             3 | 9 => 1.0e-8,
+     |             ^^^^^^^^^^^^^^^
+...
+1531 |             13 => 1.0e-8,
+     |             ^^^^^^^^^^^^
+     |
+     = help: if this is unintentional make the arms return different values
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#match_same_arms
+     = note: `-D clippy::match-same-arms` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::match_same_arms)]`
+help: otherwise merge the patterns into a single arm
+     |
+1528 ~             4 | 10 => 1.0e-3,
+1529 |             5 | 11 => 1.0e-10,
+1530 ~             3 | 9 | 13 => 1.0e-8,
+     |
+
+error: the `Err`-variant returned from this closure is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1588:23
+     |
+1588 |                 .then(|| core(input, &high_trial))
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this closure is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1597:23
+     |
+1597 |                 .then(|| core(input, &low_trial))
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1712:6
+     |
+1712 | ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1857:6
+     |
+1857 | ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1865:6
+     |
+1865 | ) -> Result<Vec<f64>, M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: very complex type used. Consider factoring parts into `type` definitions
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2066:6
+     |
+2066 | ) -> Result<(Vec<f64>, f64, f64, [bool; 2], usize), M1DrainageLinearFailure> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#type_complexity
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2259:6
+     |
+2259 | ) -> Result<([f64; 21], f64, f64, [bool; 2], usize), M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: very complex type used. Consider factoring parts into `type` definitions
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2259:6
+     |
+2259 | ) -> Result<([f64; 21], f64, f64, [bool; 2], usize), M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#type_complexity
+
+error: this function has too many arguments (10/7)
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2248:1
+     |
+2248 | / fn solve_selected_drainage_system(
+2249 | |     matrix: &[Vec<f64>],
+2250 | |     rhs: &[f64],
+2251 | |     raw: &[Vec<f64>],
+...    |
+2258 | |     activity: &mut M1PhaseJoinActivity,
+2259 | | ) -> Result<([f64; 21], f64, f64, [bool; 2], usize), M1CoupledError> {
+     | |____________________________________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_arguments
+     = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2393:6
+     |
+2393 | ) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinControllerError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the `Err`-variant is at least 288 bytes
+     |
+     = help: try reducing the size of `solver::m1_coupled::M1PhaseJoinControllerError`, for example by boxing large elements or replacing it with `Box<solver::m1_coupled::M1PhaseJoinControllerError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: this function has too many arguments (9/7)
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3329:1
+     |
+3329 | / fn m1_failure(
+3330 | |     kind: crate::numerics::NumericalFailureKind,
+3331 | |     iterations: u32,
+3332 | |     input: &M1CoupledColumnInput,
+...    |
+3338 | |     matrix_norm: Option<f64>,
+3339 | | ) -> M1CoupledError {
+     | |___________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_arguments
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3398:6
+     |
+3398 | ) -> Result<Vec<f64>, M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3423:6
+     |
+3423 | ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: unnecessary closure used to substitute value for `Option::None`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3447:20
+     |
+3447 |       let boundary = input
+     |  ____________________^
+3448 | |         .column
+3449 | |         .stage3_lower_boundary
+3450 | |         .as_ref()
+3451 | |         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+     | |___________________________________________________________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_lazy_evaluations
+help: use `ok_or` instead
+     |
+3451 -         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+3451 +         .ok_or(LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
+     |
+
+error: casting `u32` to `i32` may wrap around the value
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3578:39
+     |
+3578 |             let factor = 0.5_f64.powi(exponent as i32);
+     |                                       ^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_possible_wrap
+     = note: `-D clippy::cast-possible-wrap` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::cast_possible_wrap)]`
+
+error: the `Err`-variant returned from this function is very large
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:741:6
+    |
+676 |     Numerical(crate::numerics::NumericalFailure),
+    |     -------------------------------------------- the largest variant contains at least 248 bytes
+...
+741 | ) -> Result<M1ZeroParLeafState, M1CoupledError> {
+    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: casting `u128` to `f64` may cause a loss of precision (`u128` is 128 bits wide, but `f64`'s mantissa is only 52 bits wide)
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:2255:29
+     |
+2255 |                         || ((exchange.end_ns - exchange.start_ns) as f64 / 1e9).to_bits()
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_precision_loss
+     = note: `-D clippy::cast-precision-loss` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::cast_precision_loss)]`
+
+error: this argument (360 byte) is passed by value, but might be more efficient if passed by reference (limit: 256 byte)
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:164:16
+    |
+164 |         vapor: V3OpenVapor,
+    |                ^^^^^^^^^^^ help: consider passing by reference instead: `&V3OpenVapor`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#large_types_passed_by_value
+    = note: `-D clippy::large-types-passed-by-value` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::large_types_passed_by_value)]`
+
+error: adding items after statements is confusing, since items exist from the start of the scope
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:217:5
+    |
+217 | /     struct Detail {
+218 | |         natural: Option<V3PhaseFreeOpenEvaluation>,
+219 | |         branches: PhaseBranches,
+220 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#items_after_statements
+    = note: `-D clippy::items-after-statements` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::items_after_statements)]`
+
+error: item in documentation is missing backticks
+  --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:73:51
+   |
+73 |     /// Positive/zero executed component area, or not_applicable for other coordinates.
+   |                                                   ^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#doc_markdown
+   = note: `-D clippy::doc-markdown` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::doc_markdown)]`
+help: try
+   |
+73 -     /// Positive/zero executed component area, or not_applicable for other coordinates.
+73 +     /// Positive/zero executed component area, or `not_applicable` for other coordinates.
+   |
+
+error: item in documentation is missing backticks
+  --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:75:20
+   |
+75 |     /// lifecycle, finite_difference, or identity_anchor.
+   |                    ^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#doc_markdown
+help: try
+   |
+75 -     /// lifecycle, finite_difference, or identity_anchor.
+75 +     /// lifecycle, `finite_difference`, or identity_anchor.
+   |
+
+error: item in documentation is missing backticks
+  --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:75:42
+   |
+75 |     /// lifecycle, finite_difference, or identity_anchor.
+   |                                          ^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#doc_markdown
+help: try
+   |
+75 -     /// lifecycle, finite_difference, or identity_anchor.
+75 +     /// lifecycle, finite_difference, or `identity_anchor`.
+   |
+
+error: item in documentation is missing backticks
+   --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:428:60
+    |
+428 | /// Bounded test-support evidence; the full-supply Covered FixedFinal vector is
+    |                                                            ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#doc_markdown
+help: try
+    |
+428 - /// Bounded test-support evidence; the full-supply Covered FixedFinal vector is
+428 + /// Bounded test-support evidence; the full-supply Covered `FixedFinal` vector is
+    |
+
+error: large size difference between variants
+   --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:440:1
+    |
+440 | /  enum ObserverSolveResult {
+441 | |      Covered(Result<crate::CoveredColumnSolveOutcome, crate::LandSurfaceEnergyError>),
+    | |      -------------------------------------------------------------------------------- the second-largest variant contains at least 256 bytes
+442 | |/     V3(
+443 | ||         Result<
+444 | ||             crate::NormalizedSolveOutcome<crate::V3PhaseFreeCoveredEvaluation>,
+445 | ||             crate::LandSurfaceEnergyError,
+446 | ||         >,
+447 | ||     ),
+    | ||_____- the largest variant contains at least 816 bytes
+448 | |  }
+    | |__^ the entire enum is at least 816 bytes
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#large_enum_variant
+    = note: `-D clippy::large-enum-variant` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::large_enum_variant)]`
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+    |
+443 ~         Box<Result<
+444 +             crate::NormalizedSolveOutcome<crate::V3PhaseFreeCoveredEvaluation>,
+445 +             crate::LandSurfaceEnergyError,
+446 ~         >>,
+    |
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/transaction.rs:2211:12
+     |
+2211 |         && ground_vapor != boundary.vapor_to_canopy_air_kg_m2_s
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(ground_vapor - boundary.vapor_to_canopy_air_kg_m2_s).abs() > error_margin`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+     = note: `-D clippy::float-cmp` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/transaction.rs:2219:12
+     |
+2219 |         && ground_sensible != boundary.sensible_to_canopy_air_w_m2
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(ground_sensible - boundary.sensible_to_canopy_air_w_m2).abs() > error_margin`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: this method could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/transaction.rs:2999:12
+     |
+2999 |     pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+     = note: `-D clippy::must-use-candidate` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::must_use_candidate)]`
+help: add the attribute
+     |
+2999 ~     #[must_use] 
+3000 ~     pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {
+     |
+
+error: this method could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/transaction.rs:3006:12
+     |
+3006 |     pub fn accuracy_observation_beginning(&self) -> &CoveredColumnInputs {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+3006 ~     #[must_use] 
+3007 ~     pub fn accuracy_observation_beginning(&self) -> &CoveredColumnInputs {
+     |
+
+error: usage of wildcard import
+ --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:4:5
+  |
+4 | use crate::*;
+  |     ^^^^^^^^ help: try: `crate::{RuntimeTileIdentity, OpenSurfaceProblem, V3LitterResidualContext, V3PhaseFreeOpenEvaluation, PotentialWaterRequestBatch, V3PhaseSpecificVaporAuthorization, WaterProtocol, SoilThermalTileCandidate, OwnerRollbackHash, NormalizedSolveOutcome, LandSurfaceEnergyError, SurfaceClass, SurfaceClassKind, WaterSourceType, LitterPhaseConfiguration, BeginningLitterPhaseState, solve_v3_phase_free_open_surface, WaterAmount, Sha256Digest, WaterAuthorization, SoilThermalFinalizationBeginning, validate_ground_heat_join}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#wildcard_imports
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:15:12
+   |
+15 |     pub fn identity(&self) -> &RuntimeTileIdentity {
+   |            ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+   |
+15 ~     #[must_use] 
+16 ~     pub fn identity(&self) -> &RuntimeTileIdentity {
+   |
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:18:12
+   |
+18 |     pub fn accepted(&self) -> &V3PhaseFreeOpenEvaluation {
+   |            ^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+   |
+18 ~     #[must_use] 
+19 ~     pub fn accepted(&self) -> &V3PhaseFreeOpenEvaluation {
+   |
+
+error: this method could have a `#[must_use]` attribute
+  --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:21:12
+   |
+21 |     pub fn request_batch(&self) -> &PotentialWaterRequestBatch {
+   |            ^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+   |
+21 ~     #[must_use] 
+22 ~     pub fn request_batch(&self) -> &PotentialWaterRequestBatch {
+   |
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:359:12
+    |
+359 |     pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+359 ~     #[must_use] 
+360 ~     pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {
+    |
+
+error: docs for function returning `Result` missing `# Errors` section
+  --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:45:5
+   |
+45 | /     pub fn try_new(
+46 | |         forcing: &LandSurfaceForcing,
+47 | |         ofe_id: &OfeId,
+48 | |         tile_id: &TileId,
+49 | |         tile_fraction: f64,
+50 | |     ) -> Result<Self, LandSurfaceEnergyError> {
+   | |_____________________________________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_errors_doc
+   = note: `-D clippy::missing-errors-doc` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::missing_errors_doc)]`
+
+error: docs for function returning `Result` missing `# Errors` section
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:109:5
+    |
+109 | /     pub fn validate_against_actual_forcing(
+110 | |         &self,
+111 | |         forcing: &LandSurfaceForcing,
+112 | |         ofe: &OfeId,
+113 | |         tile: &TileId,
+114 | |         fraction: f64,
+115 | |     ) -> Result<(), LandSurfaceEnergyError> {
+    | |___________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_errors_doc
+
+error: assigning the result of `Clone::clone()` may be inefficient
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:117:9
+    |
+117 |         expected.configuration_sha256 = self.configuration_sha256.clone();
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use `clone_from()`: `expected.configuration_sha256.clone_from(&self.configuration_sha256)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#assigning_clones
+    = note: `-D clippy::assigning-clones` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::assigning_clones)]`
+
+error: this method could have a `#[must_use]` attribute
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:136:12
+    |
+136 |     pub fn is_wholly_transparent_canopy(&self) -> bool {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+    |
+136 ~     #[must_use] 
+137 ~     pub fn is_wholly_transparent_canopy(&self) -> bool {
+    |
+
+error: docs for function returning `Result` missing `# Errors` section
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:151:5
+    |
+151 | /     pub fn bind_transparent_liquid(
+152 | |         &mut self,
+153 | |         forcing: &LandSurfaceForcing,
+154 | |         identity: &RuntimeTileIdentity,
+155 | |     ) -> Result<(), LandSurfaceEnergyError> {
+    | |___________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_errors_doc
+
+error: docs for function returning `Result` missing `# Errors` section
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:171:5
+    |
+171 | /     pub fn validate_transparent_liquid(
+172 | |         &self,
+173 | |         identity: Option<&RuntimeTileIdentity>,
+174 | |     ) -> Result<(), LandSurfaceEnergyError> {
+    | |___________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_errors_doc
+
+error: unused `self` argument
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:212:47
+    |
+212 |     pub(crate) fn inactive_component_anchor_k(&self, component: usize, canopy: f64) -> f64 {
+    |                                               ^^^^^
+    |
+    = help: consider refactoring to an associated function
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unused_self
+    = note: `-D clippy::unused-self` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unused_self)]`
+
+error: this `if` statement can be collapsed
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:333:9
+    |
+333 | /         if l.transparent_passage.is_some() {
+334 | |             if l.stemflow_kg_m2_tile.to_bits()
+335 | |                 != product(occupancy.stemflow_fraction, l.incident_rain_kg_m2_tile)?.to_bits()
+336 | |                 || l.throughfall_kg_m2_tile.to_bits()
+...   |
+347 | |         }
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+333 ~         if l.transparent_passage.is_some()
+334 ~             && (l.stemflow_kg_m2_tile.to_bits()
+335 |                 != product(occupancy.stemflow_fraction, l.incident_rain_kg_m2_tile)?.to_bits()
+...
+340 |                     )?
+341 ~                     .to_bits())
+342 |             {
+...
+345 |                 ));
+346 ~             }
+    |
+
+error: docs for function returning `Result` missing `# Errors` section
+   --> crates/openwepp-land-surface-energy/src/transparent_canopy.rs:355:5
+    |
+355 | /     pub fn rebind_transparent_liquid_native_configuration(
+356 | |         &mut self,
+357 | |         forcing: &LandSurfaceForcing,
+358 | |         predecessor: &RuntimeTileIdentity,
+359 | |         native: &RuntimeTileIdentity,
+360 | |     ) -> Result<(), LandSurfaceEnergyError> {
+    | |___________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_errors_doc
+
+error: could not compile `openwepp-land-surface-energy` (lib) due to 65 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: this function could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1328:8
+     |
+1328 | pub fn m1_phase_join_set_matches_direction(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+     = note: `-D clippy::must-use-candidate` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::must_use_candidate)]`
+help: add the attribute
+     |
+1328 + #[must_use] 
+1329 | pub fn m1_phase_join_set_matches_direction(
+     |
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1833:13
+     |
+1833 | /             evaluation.occupancies[0]
+1834 | |                 .hydraulics
+1835 | |                 .root_fluxes_kg_m2_tile_s[0] = f64::NAN
+     | |_______________________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+     = note: `-D clippy::semicolon-if-nothing-returned` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::semicolon_if_nothing_returned)]`
+help: add a `;` here
+     |
+1833 |             evaluation.occupancies[0]
+1834 |                 .hydraulics
+1835 ~                 .root_fluxes_kg_m2_tile_s[0] = f64::NAN;
+     |
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1838:13
+     |
+1838 | /             evaluation.occupancies[0]
+1839 | |                 .hydraulics
+1840 | |                 .continuity_residuals_kg_m2_tile_s[0] = f64::NAN
+     | |________________________________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+help: add a `;` here
+     |
+1838 |             evaluation.occupancies[0]
+1839 |                 .hydraulics
+1840 ~                 .continuity_residuals_kg_m2_tile_s[0] = f64::NAN;
+     |
+
+error: this function could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2368:8
+     |
+2368 | pub fn m1_controller_failure_activity_for_test(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+2368 + #[must_use] 
+2369 | pub fn m1_controller_failure_activity_for_test(
+     |
+
+error: this function could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2381:8
+     |
+2381 | pub fn m1_last_controller_failure_activity_for_test() -> Option<M1PhaseJoinActivity> {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+2381 + #[must_use] 
+2382 | pub fn m1_last_controller_failure_activity_for_test() -> Option<M1PhaseJoinActivity> {
+     |
+
+error: docs for function which may panic missing `# Panics` section
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2715:1
+     |
+2715 | / pub fn m1_current_unreduced_candidate_for_test(
+2716 | |     coordinates: [f64; 21],
+2717 | |     direction: [f64; 21],
+2718 | |     alpha: f64,
+2719 | |     drainage_selected: [bool; 2],
+2720 | | ) -> [f64; 21] {
+     | |______________^
+     |
+note: first possible panic found here
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2722:9
+     |
+2722 | /         m1_candidate_coordinate(
+2723 | |             coordinates[index],
+2724 | |             direction[index],
+2725 | |             alpha,
+...    |
+2729 | |         .expect("test candidate inputs valid")
+     | |______________________________________________^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_panics_doc
+     = note: `-D clippy::missing-panics-doc` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::missing_panics_doc)]`
+
+error: this function could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2715:8
+     |
+2715 | pub fn m1_current_unreduced_candidate_for_test(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+2715 + #[must_use] 
+2716 | pub fn m1_current_unreduced_candidate_for_test(
+     |
+
+error: this function could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2734:8
+     |
+2734 | pub fn m1_trial_coordinates_for_test(trial: &M1CoupledColumnTrial) -> [f64; 21] {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+2734 + #[must_use] 
+2735 | pub fn m1_trial_coordinates_for_test(trial: &M1CoupledColumnTrial) -> [f64; 21] {
+     |
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2742:6
+     |
+2742 | ) -> Result<(), M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2782:6
+     |
+2782 | ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2797:6
+     |
+2797 | ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2804:17
+     |
+2804 |                 M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(4))
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(4));`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2807:17
+     |
+2807 |                 M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(1))
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(1));`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2810:17
+     |
+2810 |                 M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(2))
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(2));`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2813:17
+     |
+2813 |                 M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(3))
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(3));`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2816:17
+     |
+2816 |                 M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(5))
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(5));`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2819:17
+     |
+2819 |                 M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(6))
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(6));`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2822:17
+     |
+2822 |                 M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(7))
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(7));`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2825:17
+     |
+2825 |                 core.occupancies[0].non_vapor = f64::NAN
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `core.occupancies[0].non_vapor = f64::NAN;`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2828:17
+     |
+2828 |                 input.column.interval_s = f64::NAN
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `input.column.interval_s = f64::NAN;`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2835:17
+     |
+2835 |                 trial.coordinates[5] = -f64::MIN_POSITIVE
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `trial.coordinates[5] = -f64::MIN_POSITIVE;`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2846:17
+     |
+2846 |                 core.occupancies[0].mass_residual = 1.0
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `core.occupancies[0].mass_residual = 1.0;`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2849:17
+     |
+2849 |                 core.occupancies[0].enthalpy_residual = 1.0
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `core.occupancies[0].enthalpy_residual = 1.0;`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2857:17
+     |
+2857 |                 core.occupancies[0].capacity = f64::NAN
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `core.occupancies[0].capacity = f64::NAN;`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: docs for function which may panic missing `# Panics` section
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2872:1
+     |
+2872 | / pub fn m1_materialize_captured_accepted_poison_for_test(
+2873 | |     poison: M1AcceptedMaterializationPoison,
+2874 | | ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+     | |________________________________________________^
+     |
+note: first possible panic found here
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2875:32
+     |
+2875 |       let (input, trial, core) = M1_ACCEPTED_CAPTURE
+     |  ________________________________^
+2876 | |         .with(|capture| capture.borrow().clone())
+2877 | |         .expect("accepted materialization capture");
+     | |___________________________________________________^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_panics_doc
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2874:6
+     |
+2874 | ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: docs for function which may panic missing `# Panics` section
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2882:1
+     |
+2882 | pub fn m1_materialize_captured_accepted_for_test() -> Result<M1CoupledEvaluation, M1CoupledError> {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: first possible panic found here
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2883:32
+     |
+2883 |       let (input, trial, core) = M1_ACCEPTED_CAPTURE
+     |  ________________________________^
+2884 | |         .with(|capture| capture.borrow().clone())
+2885 | |         .expect("accepted materialization capture");
+     | |___________________________________________________^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_panics_doc
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2882:55
+     |
+2882 | pub fn m1_materialize_captured_accepted_for_test() -> Result<M1CoupledEvaluation, M1CoupledError> {
+     |                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: docs for function which may panic missing `# Panics` section
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2890:1
+     |
+2890 | pub fn m1_captured_finite_overcapacity_core_for_test() -> Result<(f64, f64, f64), M1CoupledError> {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: first possible panic found here
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2891:43
+     |
+2891 |       let (input, mut trial, core_result) = M1_ACCEPTED_CAPTURE
+     |  ___________________________________________^
+2892 | |         .with(|capture| capture.borrow().clone())
+2893 | |         .expect("accepted materialization capture");
+     | |___________________________________________________^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_panics_doc
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2890:59
+     |
+2890 | pub fn m1_captured_finite_overcapacity_core_for_test() -> Result<(f64, f64, f64), M1CoupledError> {
+     |                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: docs for function which may panic missing `# Panics` section
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2903:1
+     |
+2903 | pub fn m1_captured_accepted_guard_binding_for_test() -> (f64, f64, f64, f64, f64, f64) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: first possible panic found here
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2904:32
+     |
+2904 |       let (input, trial, core) = M1_ACCEPTED_CAPTURE
+     |  ________________________________^
+2905 | |         .with(|capture| capture.borrow().clone())
+2906 | |         .expect("accepted materialization capture");
+     | |___________________________________________________^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_panics_doc
+
+error: this function could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2903:8
+     |
+2903 | pub fn m1_captured_accepted_guard_binding_for_test() -> (f64, f64, f64, f64, f64, f64) {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+2903 + #[must_use] 
+2904 | pub fn m1_captured_accepted_guard_binding_for_test() -> (f64, f64, f64, f64, f64, f64) {
+     |
+
+error: very complex type used. Consider factoring parts into `type` definitions
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2949:6
+     |
+2949 | ) -> (Result<(Vec<f64>, f64, f64), &'static str>, u32) {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#type_complexity
+
+error: this argument is passed by value, but not consumed in the function body
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2948:15
+     |
+2948 |     metadata: M1DrainageMetadataTestView,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: or consider marking this type as `Copy`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2923:1
+     |
+2923 | pub struct M1DrainageMetadataTestView {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value
+     = note: `-D clippy::needless-pass-by-value` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::needless_pass_by_value)]`
+help: consider taking a reference instead
+     |
+2948 |     metadata: &M1DrainageMetadataTestView,
+     |               +
+
+error: redundant closure
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3320:107
+     |
+3320 | ...s[3], trial.coordinates[4]).ok().map(|value| value.liquid_mass_kg_m2()),
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `openwepp_vegetation::cold_canopy_m1::M1PhaseReservoir::liquid_mass_kg_m2`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure_for_method_calls
+
+error: redundant closure
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3321:108
+     |
+3321 | ...[9], trial.coordinates[10]).ok().map(|value| value.liquid_mass_kg_m2()),
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `openwepp_vegetation::cold_canopy_m1::M1PhaseReservoir::liquid_mass_kg_m2`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure_for_method_calls
+
+error: redundant closure
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3354:107
+     |
+3354 | ...s[3], trial.coordinates[4]).ok().map(|value| value.liquid_mass_kg_m2()),
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `openwepp_vegetation::cold_canopy_m1::M1PhaseReservoir::liquid_mass_kg_m2`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure_for_method_calls
+
+error: redundant closure
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3355:108
+     |
+3355 | ...[9], trial.coordinates[10]).ok().map(|value| value.liquid_mass_kg_m2()),
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `openwepp_vegetation::cold_canopy_m1::M1PhaseReservoir::liquid_mass_kg_m2`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure_for_method_calls
+
+error: very complex type used. Consider factoring parts into `type` definitions
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3873:6
+     |
+3873 |   ) -> (
+     |  ______^
+3874 | |     Result<M1CoupledEvaluation, M1CoupledError>,
+3875 | |     Vec<(u32, bool)>,
+3876 | |     Vec<(u32, bool)>,
+3877 | | ) {
+     | |_^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#type_complexity
+
+error: this function could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3894:8
+     |
+3894 | pub fn m1_solve_with_halved_hydraulic_incomplete_for_test(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+3894 + #[must_use] 
+3895 | pub fn m1_solve_with_halved_hydraulic_incomplete_for_test(
+     |
+
+error: very complex type used. Consider factoring parts into `type` definitions
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3897:6
+     |
+3897 | ) -> (Vec<(u32, bool)>, Vec<(u32, bool)>) {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#type_complexity
+
+error: this function could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3962:8
+     |
+3962 | pub fn m1_solve_with_full_witness_for_test(input: &M1CoupledColumnInput) -> Vec<(u32, bool)> {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+3962 + #[must_use] 
+3963 | pub fn m1_solve_with_full_witness_for_test(input: &M1CoupledColumnInput) -> Vec<(u32, bool)> {
+     |
+
+error: the `Err`-variant returned from this function is very large
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4017:6
+     |
+4017 | ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+     |
+ 676 |     Numerical(crate::numerics::NumericalFailure),
+     |     -------------------------------------------- the largest variant contains at least 248 bytes
+     |
+     = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: this function could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4028:8
+     |
+4028 | pub fn m1_solve_with_first_halved_step_poison_for_test(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+4028 + #[must_use] 
+4029 | pub fn m1_solve_with_first_halved_step_poison_for_test(
+     |
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:395:9
+    |
+395 |         assert_eq!(detail.vapor.liquid_signed_mass_kg_m2, 0.0);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+    = note: `-D clippy::float-cmp` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:396:9
+    |
+396 | /         assert_eq!(
+397 | |             detail.vapor.ice_signed_mass_kg_m2,
+398 | |             1e-8 * problem.interval_s
+399 | |         );
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:518:9
+    |
+518 |         assert_eq!(detail.post_vapor.liquid_kg_m2_tile, wl);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:519:9
+    |
+519 |         assert_eq!(detail.post_vapor.ice_kg_m2_tile, wi);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/solver_litter_open.rs:521:9
+    |
+521 |         assert_eq!(detail.post_vapor.sensible_energy_j_m2_tile, u);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs:1100:17
+     |
+1100 | /                 cell.borrow_mut().as_mut().unwrap().last =
+1101 | |                     Some(start + std::time::Duration::from_secs(1))
+     | |___________________________________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+help: add a `;` here
+     |
+1100 |                 cell.borrow_mut().as_mut().unwrap().last =
+1101 ~                     Some(start + std::time::Duration::from_secs(1));
+     |
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:1084:13
+     |
+1084 | /             active.borrow_mut().as_mut().expect("active").current =
+1085 | |                 Some((Family::GenericV3, Pass::Potential, vec![[1.0; 4]; 2], 25))
+     | |_________________________________________________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+help: add a `;` here
+     |
+1084 |             active.borrow_mut().as_mut().expect("active").current =
+1085 ~                 Some((Family::GenericV3, Pass::Potential, vec![[1.0; 4]; 2], 25));
+     |
+
+error: consider adding a `;` to the last statement for consistent formatting
+    --> crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs:1150:13
+     |
+1150 | /             active.borrow_mut().as_mut().expect("active").current = Some((
+1151 | |                 Family::Covered,
+1152 | |                 Pass::FixedFinal,
+1153 | |                 vec![[1.0, 0.0, 2.0, 0.0]; 30],
+1154 | |                 305,
+1155 | |             ))
+     | |______________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+help: add a `;` here
+     |
+1150 |             active.borrow_mut().as_mut().expect("active").current = Some((
+ ...
+1154 |                 305,
+1155 ~             ));
+     |
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/transaction.rs:2211:12
+     |
+2211 |         && ground_vapor != boundary.vapor_to_canopy_air_kg_m2_s
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(ground_vapor - boundary.vapor_to_canopy_air_kg_m2_s).abs() > error_margin`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: this method could have a `#[must_use]` attribute
+    --> crates/openwepp-land-surface-energy/src/transaction.rs:2999:12
+     |
+2999 |     pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#must_use_candidate
+help: add the attribute
+     |
+2999 ~     #[must_use] 
+3000 ~     pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {
+     |
+
+error: this function has too many lines (124/100)
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:509:1
+    |
+509 | fn native_snow_shared_node_evaluates_constitutive_fluxes_independent_of_guess() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:587:9
+    |
+587 |         assert_eq!(actual.ground_sensible_to_canopy_air_w_m2, expected_h);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:588:9
+    |
+588 | /         assert_eq!(
+589 | |             actual.lower_boundary_vapor_to_canopy_air_kg_m2_s,
+590 | |             expected_v
+591 | |         );
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:668:5
+    |
+668 | /     assert_eq!(
+669 | |         r[8], 0.0,
+670 | |         "transparent numerical coordinate retains canonical anchor; passage temperature is separate"
+671 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: this function has too many lines (203/100)
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:724:1
+    |
+724 | fn transparent_liquid_source_poisons_two_ranks_and_solver_parity() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:769:5
+    |
+769 |     assert_eq!(c.inactive_component_anchor_k(2, 310.0), 310.0);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:796:17
+    |
+796 | /                 foreign.precipitation_parcels[0].temperature_provider =
+797 | |                     crate::LiquidTemperatureProvider::AcceptedUpstreamOutletParcel
+    | |__________________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+help: add a `;` here
+    |
+796 |                 foreign.precipitation_parcels[0].temperature_provider =
+797 ~                     crate::LiquidTemperatureProvider::AcceptedUpstreamOutletParcel;
+    |
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:802:17
+    |
+802 | /                 foreign.precipitation_parcels[0].amount_kg_m2_destination_tile_ground =
+803 | |                     f64::from_bits(1)
+    | |_____________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+help: add a `;` here
+    |
+802 |                 foreign.precipitation_parcels[0].amount_kg_m2_destination_tile_ground =
+803 ~                     f64::from_bits(1);
+    |
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:845:5
+    |
+845 |     assert_eq!(dry.inactive_component_anchor_k(2, 300.0), 300.0);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:949:5
+    |
+949 |     assert_eq!(c.inactive_component_anchor_k(2, 265.0), 273.15);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:950:5
+    |
+950 |     assert_eq!(c.inactive_component_anchor_k(2, 300.0), 300.0);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs:967:9
+    |
+967 |         assert_eq!(ledger.wet_surface_temperature_k, 265.28179297231515);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64` arrays
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:171:5
+    |
+171 | /     assert_ne!(
+172 | |         installed_current_coordinates,
+173 | |         installed_candidate_coordinates
+174 | |     );
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:732:17
+    |
+732 | /                 assert_eq!(
+733 | |                     column[inactive_row],
+734 | |                     if column_index == inactive_row {
+735 | |                         1.0
+...   |
+739 | |                 );
+    | |_________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:758:5
+    |
+758 |     assert_eq!(solved.support_duration_s(), 60.);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:768:9
+    |
+768 |         assert_eq!(operand.beginning_mass_kg_m2, 0.018);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:769:9
+    |
+769 |         assert_eq!(operand.beginning_enthalpy_j_m2, 0.0);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:773:13
+    |
+773 |             operand.ending_mass_kg_m2 != operand.beginning_mass_kg_m2
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(operand.ending_mass_kg_m2 - operand.beginning_mass_kg_m2).abs() > error_margin`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:774:20
+    |
+774 |                 || operand.ending_enthalpy_j_m2 != operand.beginning_enthalpy_j_m2
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(operand.ending_enthalpy_j_m2 - operand.beginning_enthalpy_j_m2).abs() > error_margin`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: this function has too many lines (153/100)
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:825:1
+    |
+825 | fn m1_guard_expected_red_actual_materializer_rejects_published_and_accepted_state_poisons() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:857:5
+    |
+857 |     assert_eq!(beginning_mass, 0.018, "captured accepted M0");
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:970:17
+    |
+970 |                 unexpected.push(format!("{poison:?}: {}, expected {code}", error.code()))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `unexpected.push(format!("{poison:?}: {}, expected {code}", error.code()));`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: this function has too many lines (136/100)
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:982:1
+    |
+982 | fn m1_guard_expected_red_empty_positive_components_reject_external_supersaturation() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1394:5
+     |
+1394 |     assert_ne!(matrix[0][5], 0.0);
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1395:5
+     |
+1395 |     assert_ne!(matrix[1][11], 0.0);
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1404:9
+     |
+1404 |         assert_eq!(direction[0], 0.5);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1405:9
+     |
+1405 |         assert_eq!(direction[1], -1.5);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1406:9
+     |
+1406 |         assert_eq!(direction[5], -2.0);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1407:9
+     |
+1407 |         assert_eq!(direction[11], -3.0);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1410:17
+     |
+1410 |                 assert_eq!(*value, 0.0, "closed-form row {index}");
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1419:13
+     |
+1419 |             assert_eq!(reconstructed, rhs[row], "reconstructed full row {row}");
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1457:9
+     |
+1457 |         assert_eq!(direction[5], expected_d5, "E/F upper");
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1458:9
+     |
+1458 |         assert_eq!(direction[11], expected_d11, "E/F lower");
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1460:13
+     |
+1460 | /             assert_eq!(
+1461 | |                 matrix[row]
+1462 | |                     .iter()
+1463 | |                     .zip(&direction)
+...    |
+1467 | |                 "E/F reconstructed row {row}"
+1468 | |             );
+     | |_____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1494:5
+     |
+1494 | /     assert_ne!(
+1495 | |         current.direction[5], 0.0,
+1496 | |         "actual coupled LU supplies the release delta"
+1497 | |     );
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1505:5
+     |
+1505 | /     assert_ne!(
+1506 | |         candidate[5], coordinates[5],
+1507 | |         "capacity-selected D remains a solved nonzero release coordinate"
+1508 | |     );
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: this function has too many lines (151/100)
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1512:1
+     |
+1512 | fn m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls() {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1543:9
+     |
+1543 | /         assert_eq!(
+1544 | |             current.raw_jacobian[row][row], 60.0,
+1545 | |             "reported selected raw affine diagonal"
+1546 | |         );
+     | |_________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1547:9
+     |
+1547 | /         assert_eq!(
+1548 | |             current.raw_residuals[row],
+1549 | |             60.0 * join_coordinates[row],
+1550 | |             "reported selected raw affine residual"
+1551 | |         );
+     | |_________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1552:9
+     |
+1552 | /         assert_eq!(
+1553 | |             current.rhs[row],
+1554 | |             -current.raw_residuals[row]
+1555 | |                 / (current.raw_jacobian[row][row] / current.normalized_jacobian[row][row])
+1556 | |         );
+     | |_________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1629:5
+     |
+1629 |     assert_eq!(60.0 * exact_drainage, capacity_value - 0.018);
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1810:5
+     |
+1810 |     assert_eq!(norm, 1.0, "actual reduced F norm");
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: the loop variable `row` is used to index `norm_control`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1811:16
+     |
+1811 |     for row in 0..21 {
+     |                ^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop
+     = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+     |
+1811 -     for row in 0..21 {
+1811 +     for (row, <item>) in norm_control.iter().enumerate().take(21) {
+     |
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1812:9
+     |
+1812 | /         assert_eq!(
+1813 | |             norm_control[row]
+1814 | |                 .iter()
+1815 | |                 .zip(&direction)
+...    |
+1819 | |             "reconstructed reduced row {row}"
+1820 | |         );
+     | |_________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1822:5
+     |
+1822 |     assert_eq!(direction[5], 0.0, "upper affine dD=-D");
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1823:5
+     |
+1823 |     assert_eq!(direction[11], 0.0, "lower affine dD=-D");
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: the loop variable `index` is used to index `matrix`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1831:18
+     |
+1831 |     for index in 0..21 {
+     |                  ^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+     |
+1831 -     for index in 0..21 {
+1831 +     for (index, <item>) in matrix.iter_mut().enumerate().take(21) {
+     |
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1841:5
+     |
+1841 | /     assert_eq!(
+1842 | |         matrix[5][5],
+1843 | |         metadata.duration_s[0] / metadata.row_scales[0]
+1844 | |     );
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1845:5
+     |
+1845 | /     assert_eq!(
+1846 | |         rhs[5],
+1847 | |         -(metadata.raw_drainage_residual[0] / metadata.row_scales[0])
+1848 | |     );
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:2002:5
+     |
+2002 |     assert_eq!(-333_700.0 / 8192.0 + 333_700.0 * (1.0 / 8192.0), 0.0);
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:2003:5
+     |
+2003 |     assert_eq!(1.0 / 8192.0 + (-333_700.0 / 8192.0) / 333_700.0, 0.0);
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: this function has too many lines (166/100)
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:2124:1
+     |
+2124 | fn m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work() {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: this argument is passed by value, but not consumed in the function body
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:2520:41
+     |
+2520 | fn assert_m1_diagnostic_envelope(error: M1CoupledError) {
+     |                                         ^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value
+help: consider taking a reference instead
+     |
+2520 | fn assert_m1_diagnostic_envelope(error: &M1CoupledError) {
+     |                                         +
+
+error: this function has too many lines (109/100)
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:2557:1
+     |
+2557 | fn m1_diagnostic_envelope_binds_actual_topology_and_rejects_structural_poison_first() {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:2709:5
+     |
+2709 | /     assert_eq!(
+2710 | |         evaluation.reservoir_operands()[0].incident_enthalpy_j_kg,
+2711 | |         0.0
+2712 | |     );
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: these match arms have identical bodies
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:2905:13
+     |
+2905 |             3 | 9 => 1e-8,
+     |             ^^^^^^^^^^^^^
+...
+2908 |             13 => 1e-8,
+     |             ^^^^^^^^^^
+     |
+     = help: if this is unintentional make the arms return different values
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#match_same_arms
+help: otherwise merge the patterns into a single arm
+     |
+2905 ~             4 | 10 => 1e-3,
+2906 |             5 | 11 => 1e-10,
+2907 ~             3 | 9 | 13 => 1e-8,
+     |
+
+error: this function has too many lines (200/100)
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:2952:1
+     |
+2952 | fn m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs() {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:3057:9
+     |
+3057 |         assert_eq!(actual.sun.beta, decimal(&sun["beta"]));
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:3058:9
+     |
+3058 |         assert_eq!(actual.shade.beta, decimal(&shade["beta"]));
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:3096:9
+     |
+3096 |         assert_eq!(actual.sun.vapor_kg_m2_tile_s, 0.0);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:3097:9
+     |
+3097 |         assert_eq!(actual.sun.net_assimilation, 0.0);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: this function has too many lines (173/100)
+  --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:34:1
+   |
+34 | fn m1_internal_liquid_zero_par_rows_match_frozen_gas_controls() {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: strict comparison of `f32` or `f64`
+  --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:85:9
+   |
+85 |         assert_eq!(sun.beta, decimal(&leaves[0]["beta"]));
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+  --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:86:9
+   |
+86 |         assert_eq!(shade.beta, decimal(&leaves[1]["beta"]));
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+  --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:98:9
+   |
+98 |         assert_eq!(sun.gross_assimilation_umol_co2_m2_leaf_s, 0.0);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+  --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:99:9
+   |
+99 |         assert_eq!(sun.net_assimilation_umol_co2_m2_leaf_s, 0.0);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:100:9
+    |
+100 |         assert_eq!(sun.dark_respiration_umol_co2_m2_leaf_s, 0.0);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+   --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:136:9
+    |
+136 |         assert_eq!(sun.vapor_kg_m2_tile_s, 0.0);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: the `Err`-variant returned from this closure is very large
+   --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:218:18
+    |
+218 |       let invoke = |leaf, q, pressure| {
+    |  __________________^
+219 | |         m1_zero_par_leaf_state(
+220 | |             leaf,
+221 | |             column.occupancies[0].biochemical,
+...   |
+231 | |     };
+    | |_____^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |       Numerical(crate::numerics::NumericalFailure),
+    |       -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: this function has too many lines (176/100)
+   --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:265:1
+    |
+265 | fn m1_zero_par_leaf_rejects_every_nonfinite_gas_operand_with_saturation_code() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: the `Err`-variant returned from this closure is very large
+   --> crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs:271:18
+    |
+271 |       let invoke = |leaf, leaf_t, canopy_t, q, p, ca, gb, g0, fw| {
+    |  __________________^
+272 | |         m1_zero_par_leaf_state(leaf, biochemical, leaf_t, canopy_t, q, p, ca, gb, g0, fw)
+273 | |     };
+    | |_____^
+    |
+   ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:676:5
+    |
+676 |       Numerical(crate::numerics::NumericalFailure),
+    |       -------------------------------------------- the largest variant contains at least 248 bytes
+    |
+    = help: try reducing the size of `solver::M1CoupledError`, for example by boxing large elements or replacing it with `Box<solver::M1CoupledError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err
+
+error: strict comparison of `f32` or `f64`
+  --> crates/openwepp-land-surface-energy/src/snow_accuracy_policy_tests.rs:47:9
+   |
+47 |         assert_eq!(support_seconds(), 60.0);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64`
+  --> crates/openwepp-land-surface-energy/src/snow_accuracy_policy_tests.rs:49:5
+   |
+49 |     assert_eq!(support_seconds(), 600.0);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: items after a test module
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:204:1
+    |
+204 | mod tests {
+    | ^^^^^^^^^
+...
+357 | impl V3OpenPotentialPhase {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#items_after_test_module
+    = note: `-D clippy::items-after-test-module` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::items_after_test_module)]`
+    = help: move the items to before the test module was defined
+
+error: this function has too many lines (110/100)
+   --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:242:5
+    |
+242 |     fn v3_open_transaction_phase_custody_and_rejection() {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 214 previous errors

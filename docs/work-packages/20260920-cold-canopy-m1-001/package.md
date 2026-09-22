@@ -1,5 +1,902 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Receiver/cycle continuation — adopted 2026-09-22
+
+Owner adopted `/tmp/openwepp_cold_canopy_m1_receiver_cycle_authorization.md` by
+explicit execution instruction. **IMPLEMENTATION STOPPED / M1 INCOMPLETE / HOLD**; prior stops and
+source-specific results below remain historical. This continuation implements
+existing authority, with no new model/method, initial-state/forcing changes,
+public/persisted diagnostic schema, generic LU change or production activation.
+
+The local `structural-drainage-publication-02.json` was read once: actual carry
+**224800.097857 s**; adopted supplement **14400 s**; fixed cumulative ceiling
+**239200.097857 s**. Conservative first-reading anchor **2026-09-22T02:51:00Z**;
+fixed hard deadline **06:51:00Z**, launch/edit cutoff **06:21:00Z**, final reserve
+**1800 s**. All elapsed concurrency charged once; no wait deductions, historical
+refunds, old-reserve addition or uncertain mixed-outcome history reset. Check
+clock before dispatch/mutation and after interruption; commands must fit their
+full declared bound plus reserve. Physical processes retain 180-second cap.
+
+Ran: all **754** actual detached entries match terminal source manifest
+`structural-drainage-critical-full-04-source.json`, SHA256
+`c3a681205c5c19dba5f50034b7f219694ec5f43485f9f6ceb6c06f10dc4c1565`.
+No recovery patch was applied. Reuse the sole mutable tree at
+`/home/roger/openwepp-experiments/cold-canopy-m1-20260920`, immutable observer
+`85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963`,
+existing recorder and separate Cargo target. Root owns this narrative/evidence
+and recorder deadline; one assigned Terra implementer owns detached Rust/tests.
+Only root is reachable; one attributable replacement each for independent
+correctness (Sol) and QA (Terra) will retain affected-fix verification. At most
+two concurrent children; no nested spawning or redundant verifier wave.
+
+Intent and sequence: discriminating first-domain-valid/full-witness and activity
+controls with actual error provenance; correct those bodies and introduced
+warnings; same-reviewer verification and affected original60/acceptance runs;
+then real routing/receiver APIs and local transaction/rollback using existing
+contract-derived expected-red tests; fixed coupled cycles/checkpoint/restart and
+release cost paths. Original60-13 remains a source-bound numerical root with
+zero drainage, never evidence of positive delivery. Preserve prior accepted
+materializer/empty-store/latent fixes and independent operand-lineage table.
+
+Validation is Critical: focused contract controls/format/lint/feature builds;
+unchanged-original60 on corrected source; actual positive/negative recipient and
+rollback with independent water/energy; both fixed72h cases and fresh-process
+ice/mixed/release splits; early release support cost followed by prescribed
+1/10/19-OFE and six balanced warm pairs only under their prerequisites. Run full
+workspace correctness after real missing APIs exist. Applicable A0/A1/A3 and
+39 individually retained historical failures remain unwaived. All four existing
+M1 acceptance axes and absolute cost screens bind. No witness-only return is
+an intended successful disposition. Two unsuccessful corrections or60 charged
+minutes require internal supported reassessment, not renewed allowance.
+
+Stop only at adopted boundaries (owner, ceiling, uncontained integrity loss,
+indispensable source/review unavailable after bounded recovery, completed
+disposition, or necessary out-of-envelope change). Scoped current-main evidence
+commit/push and exact remote-byte verification remain authorized; detached Rust
+is not adopted. Preserve all unrelated dirty work and every failure.
+
+### Terminal disposition — implementation cutoff 06:21 UTC
+
+**HOLD, incomplete at the authorized time boundary.** No implementation or
+scientific validation command was launched after the cutoff. The remaining
+reserve is used only for review, custody, evidence reconciliation and authorized
+publication. This is a budget stop, not a scientific impossibility claim or a
+successful witness-only completion. No experimental Rust is adopted into main.
+
+Static + Ran: lawful local admission/activity and canonical prescribed routing
+have bounded evidence below. The final detached source is
+`3dc8f4e09d1feae4f8c08b572505edb63697f3f9077add8f0049a725845459a6`;
+[final manifest](artifacts/m1-receiver-final-source.json) and
+[complete observer-relative patch](artifacts/m1-receiver-final-from-observer-cut02.patch)
+recover it from the immutable observer. A fresh inspection-only reconstruction
+[verified every one of 756 entries](artifacts/m1-receiver-final-reconstruction.json),
+not merely patch applicability. The continuation changed exactly eight detached
+source paths, confined to LSE admission/activity/routing and orchestrator
+receiver plumbing; no equations, forcing, generic LU, public persisted schema,
+V9/V10 fingerprints, authority suite bindings or production activation changed.
+The final formatting pass touched four affected files only. Earlier source cuts,
+failures, counterfactual limitations and recovery patches remain intact.
+
+The prescribed diagnostic now supplies six genuine contributor lineages through
+a canonically merged terminal handoff into the actual direct ingress and native
+hydrology/thermal receiver. It uses an authentic warm V8 producer fixture as
+resource context, with cloned 60-second support/hash rebinding. That is a
+prescribed receiver diagnostic, not continuous coupled M1 evolution. Plant area
+is only checked finite/positive and is not authenticated against the accepted
+configuration/state. The local candidate clone/reset is **not caller-owned
+transaction rollback**: actual vegetation donor M/H, chronology and consumed
+identities have not been evolved and restored across an owning boundary.
+Generic terminal publication/WAT5 remains unqualified.
+
+Ran: final guard check
+[`m1-receiver-receipt-destination-22`](artifacts/m1-receiver-receipt-destination-22.json)
+passed **1/1**, 21.022 s, on its own source
+`fc230102f22f18fe7d0efeb0685136490141b7cdcebd5791272079542a795920`.
+It preceded final formatting and preservation of generated target files. No
+wrong-destination poison discriminator was added before cutoff. Same correctness
+reviewer `/root/correctness` verified final receiver SHA
+`288d4e383f4cb0f222df59fb858baa0343290bd1119b8e7dd9c20174dc965c3f`:
+all receipts must match source/kind/transaction, exact support, origin OFE/tile,
+destination OFE/tile, basis OFE and aggregate contributor mass/energy. The guard
+is **statically clear**, with a non-discriminating passing observation only.
+Plant-area provenance, real owner rollback, cycles/restart/performance remain HOLD.
+
+Ran: frozen **pre-final-guard** binaries passed **63** focused component cases
+(including unchanged original60) and **3** receiver controls, with source/binary
+unchanged. Their compiled source is
+`bee0dad16f8db38aac3338deb12e2033408f0c96c81250fd17df44b70edcd833`;
+[executable identities](artifacts/m1-receiver-terminal-frozen-binaries-01.json),
+[component receipt](artifacts/m1-terminal-frozen-components-01.json) and
+[receiver receipt](artifacts/m1-terminal-frozen-receiver-01.json) retain exact
+argv, input/authority pins and outputs. These are not final-source binaries.
+Exact raw JSON equality [binds the frozen receiver execution](artifacts/m1-receiver-independent-frozen-binding-02.json)
+to the independent Decimal60 reconstruction's **34 passing checks**. It observes
+0.008022340187130082 kg/m² OFE delivered and 128.7105777206214 J/m² OFE received;
+layer-water and thermal differences close within retained dimensional tolerances.
+Missing explicit disposition/surface-liquid snapshots, donor debit and true owner
+rollback still limit that evidence. No complete M1 conservation claim follows.
+
+Ran: required workspace/quality results remain failed or unexecuted, without a
+waiver. First full regression hit its 900-second cap: 4,100 passed, 289 failed,
+111 skipped. Terminal pre-guard full regression was deliberately interrupted to
+fix the reviewed recipient guard, exit −15 at 748.220 s: **4,101 passed, 288
+failed, 111 skipped**. [All 288 unique failed identities](artifacts/m1-terminal-full-failure-records-01.json)
+are retained: 249 FAIL, 38 SIGABRT, 1 SIGTERM; prior individual classifications
+are contextual, not blanket inheritance claims. Final-source full regression
+**NOT RUN**. Earlier format check **FAIL**, 37 diff sections; strict lint **FAIL**,
+221 LSE test errors, with no completed ORCH lint acceptance. Final formatting
+was not followed by a format gate. Feature build **PASS** is compilation only.
+No final-source full/lint/format gate can be inferred from these receipts.
+
+The concurrent full/feature source-drift flags are preserved as recorded:
+[four generated nested-target files](artifacts/m1-terminal-generated-drift-attribution-01.json)
+were the only additions; original source entries were unchanged. They were moved
+intact outside the source snapshot and copied into evidence. The full regression
+also changed a shared main reference Cargo.lock by one dependency; its exact
+bytes/patch were preserved and [only that owned mutation restored](artifacts/m1-full-workspace-shared-lock-restoration-02.json)
+to HEAD. The failed earlier restoration assertion and the actual terminal-run
+lock input are disclosed in its mutation receipt; neither full run is upgraded.
+
+Same QA reviewer `/root/qa` verified final custody and retained **HOLD**: final
+source lacks final full/lint/format gates; frozen tests are pre-final limited
+evidence; destination22 is non-discriminating; no whole receiver/release acceptance.
+Both independent reviewers retain their earlier cleared narrow scopes and the
+remaining package blockers. No fresh terminal reviewer wave was used.
+
+**Outstanding required work:** authenticate plant-area provenance; implement and
+prove actual owning-boundary transaction commit/late rollback; retain typed
+failure precedence without fragile message matching; add discriminating final
+receipt identity poisons; connect genuine solved nonzero release to receiver;
+complete both immutable 72-hour/4,320-support cases with required phase events;
+complete coupled checkpoint and fresh-process ice/mixed/release splits and
+corruption/rejection controls; independently reconstruct donor/recipient/global
+water and energy; complete required corrected-source quality/authority/full gates;
+measure coupled release CPU/wall/work/memory, nonidentical 1/10/19-OFE scaling and
+six balanced warm pairs. These remain **NOT RUN or unmet**, not deferred acceptance.
+Early release original60 timing below is a different source, with unresolved
+inner CPU and no annual/OFE-day projection. The package does not reach
+FUNCTIONAL_EVIDENCE_PASS, performance qualification, B01 closure or production readiness.
+
+Publication and charged ledger are recorded below after remote-byte verification.
+
+### Admission test checkpoint
+
+Static: attributable replacement correctness `/root/correctness` (Sol/high)
+identifies four blocking affected defects in detached `m1_coupled.rs`: first
+halved witness consumed after Core/residual/hydraulic evaluation; no explicit
+b0 refusal eligibility; `f64::max` can hide a NaN current residual and nominal
+factor-times-direction is not actual applied displacement, while ci/beta are
+not reconstructed; `into_source` drops controller activity. Required corrections
+retain exact current state, finite complete residuals, actual T/q/hydraulic/beta
+thresholds and finite diagnostic ci, with no new ci threshold. This is static
+inspection of existing canonical admission, not independent executed evidence.
+
+Ran: `artifacts/m1-first-domain-witness-red-01.json` is compile-negative only
+(missing test helper), not demonstrated behavioral red. Author disclosed unrun
+body edits made afterward. Root directed preservation of those edits and scoped
+restoration before real-loop cfg(test) injection/aggregate discriminating
+controls, retaining original behavior until expected-red is reviewed. No physical
+result or body acceptance is claimed. Existing recorder now additionally pins
+nonlinear-solve, numerical-methods, solve-boundary, terminal-support and vegetation
+transaction authority; Python AST parsing passes. Old receipts remain unchanged.
+
+Internal test reassessment **CONTINUE**, 2026-09-22 approximately03:00UTC:
+red02 reaches the real loop but observes no halved trial because original60
+accepts the full witness first. This is a test-reachability failure, not a
+scientific failure or evidence for the intended control. Preserve red01/red02
+and `m1-first-domain-witness-unrun-body-01.patch`. The supported next action is
+a separately attributed test-only invalid b0 candidate before its actual domain
+predicate, retaining the unchanged original60 fixture and unpoisoned full-priority
+control. Do not suppress a passing full-witness rule merely to reach b1. Continue
+within the same allowance; numerical bodies remain unreleased.
+
+Ran: `m1-first-domain-witness-seam-red-03.json` at source
+`ddf4a10c592ade25f2f96820b8c69e04d804365a5f9c6d24a1b5f1c38f74074c`
+executes one failing real-loop control (exit100,3.579s), with source/base/pins
+unchanged. After actual domain rejection of an injected b0 coordinate and an
+injected incomplete b1 Core evaluation, the old code labels b2 the first witness.
+This demonstrates marker ordering; the run itself reaches iteration limit and
+does not establish the stronger passing-current/tempting-no-update discriminator.
+Aggregate eligibility/finite/step/activity controls remain in preparation.
+
+Static + inspected recorded execution: replacement QA `/root/qa` (Terra/medium)
+accepts resumption custody and recorder changes, retaining **QUALITY/QUALIFICATION
+HOLD**. QA distinguishes red01 compile-negative from red02 executed test failure
+(1 selected/214 skipped,4.631s) and requires observable no-update/refusal versus
+strict-install outcomes, not a green trace-shape check. It verifies fixed-clock
+arithmetic, five added authority pins and their unchanged-run checks, and754-entry
+custody without a claimed recovery application. Both reviewers retain the39
+historical failures, lint HOLD and absent receiver/cycle/restart/cost evidence.
+Same reviewers will verify affected fixes; no additional verifier wave.
+
+Ran: terminal-current red04/red05 preserve the original trajectory through
+iteration3 before explicit test-only injections. Red05, source
+`68e9be1d5ba4d6fed0476f6de9c86a6400670cd2a2dac644c7effa5ef5a5036f`,
+selects/fails1 case in3.226s: b1 domain-valid/Core-incomplete, b2 incorrectly
+first=true with an actual no-update success. Original60's physical predicate
+is unchanged. Red05 was already dispatched when root requested batching; no
+additional assertion-only rerun is planned.
+
+Ran by root: `m1-activity-conversion-red-01` selects/fails1 case in4.229s, with
+unchanged source/base/pins. Real controller work reaches the selected-assembly
+failure and retains `LSEB-E-034`, but the private observation is None after
+`into_source`. The test expects actual2 assemblies/1linear solve and zero
+candidate/backtracking work. This is a narrow error-conversion control, not
+complete evaluator/hydraulic/materialization accounting.
+
+Same QA independently accepts red05 and activity-red01 as suitable expected-red
+controls for those named defects, retaining **QUALITY/QUALIFICATION HOLD** for
+body/green verification, full-witness eligibility, actual finite governed steps,
+ci, later strict decrease and remaining M1 axes. Runtime initially refused the
+correctness wake while author remained active. After the writer completed and
+was stopped, the same correctness thread resumed; review independence remains
+available. Writer and reviewer phases are now serialized; no replacement wave.
+
+Same correctness independently **CLEARs the two narrow body changes** after
+red05 and activity-red01, source `514c204448e6d6cbee7d68a444b1623b90028eecaa04b75b09019a850abcd893`
+for the latter. Correctness also clears recorder deadline/authority pins. Both
+review scopes distinguish those controls from the still-missing full matrix.
+Root releases first-valid consumption and activity-conversion preservation only;
+same writer resumes for focused green, then remaining controls before their
+respective bodies. No changed solver method, original fixture, or acceptance
+threshold is released. Whole admission and M1 remain HOLD.
+
+Ran: `m1-first-domain-activity-green-01.json` passes2 selected controls,
+source `ab0a186fffe138d3041e0672b9665144a925cbc7794f10616fd7711c720734c3`,
+exit0 in3.328s, source/base/pins unchanged. Only released
+first-domain consumption and private activity-conversion capture bodies changed.
+Same-reviewer body verification is pending; full eligibility/finite/exact-step/
+beta/ci/strict-decrease and complete work accounting remain unreleased. The
+same writer continues that full remaining control matrix. This is not complete
+witness acceptance, accepted physical support, receiver or M1 completion.
+
+Internal reassessment **REASSIGN**, 2026-09-22 03:10:55UTC:
+after the two narrow green fixes, the implementation thread returned twice
+without delivering the explicitly assigned remaining test matrix (the latter
+return was acknowledgment only). No in-progress claim substitutes for source
+or runs. Root stopped that writer and reassigns the coherent remaining admission,
+receiver and cycle implementation to one replacement Terra writer. Existing
+source/evidence and both independent reviewer identities remain; no scope,
+allowance, acceptance or scientific retry reset follows.
+
+### Additional admission body sequencing failure and containment
+
+Replacement writer disclosed that it wrote full-refusal/finite-current/exact-
+step/ci/beta bodies before the corresponding new controls. Root stopped edits
+and dispatches immediately. `m1-admission-full-matrix-01` is exit4/zero selected;
+`m1-admission-full-matrix-02` is **post-implementation green**,6 passed/213 skipped
+in3.377s, source `d9843a0ecfa1535d4f8b4e101ea2ac16f49ad34237555bb6010bee4ca137287a`.
+Neither is historical expected-red. Despite its label, `m1-admission-loop-compile-01` executed the existing first-valid
+nextest control, exit0 in8.499s; it was not merely compilation.
+After matrix02, the writer added only an unrun private activity-observer scaffold.
+
+Root's `m1-admission-interrupted-source-seal-01` seals actual current source
+`b2cc3bfc031c13048f9c214223e3a2e9e14ffa651fd417e0eb7d47ff452ba854`
+with complete observer-relative patch. Its `/bin/true` command is **source
+preservation only**, not compilation, validation or a physical result. Only
+detached `m1_coupled.rs` and `m1_coupled_tests.rs` changed since narrow green.
+Same correctness reviews this stopped cut; QA follows serially because its
+concurrent wake hit runtime capacity. No source/history is silently reverted,
+no body is accepted from test count, and any needed counterfactual will be
+labeled post-fix. Remaining genuine strict-decrease, all governed norm/finite/
+rounding, complete activity and no-update backtracking evidence remains open.
+
+Static: same correctness on sealed `b2cc3bfc…ba854` finds three HIGHs:
+ordinary and iteration-limit post-installed acceptance omit beta and finite ci;
+halved no-update does not add its actual exponent to cumulative backtracking;
+and `into_source` still discards activity in non-test builds because capture is
+cfg(test)-only. The latter narrows the earlier green claim to test-build
+observation, not actual runtime carry. The private work scaffold is uninstrumented
+and proves no work counts. Candidate-current witness T/q/wet/hydraulic/beta/ci
+norm derivation and full-refusal classification are statically clearable.
+
+Root accepts these findings. Supported correction remains within existing
+authority: one complete accepted-step predicate at both post-install seams,
+exact cumulative exponent, always-compiled private activity observation without
+public/persisted schema change, and actual entry instrumentation. Add missing
+controls and explicitly labeled **POST-FIX COUNTERFACTUALS**, individually undoing
+the named behavior to expose selected failures, then restore and verify. This
+cannot erase the sequencing breach or become historical expected-red. Same QA
+will adjudicate evidence scope before writer resumes; wholeM1 remains HOLD.
+
+Same correctness final adds a fourth HIGH: nonfinite current normalized
+residual/raw Jacobian returns `VEG-E-142` instead of canonical nonfinite
+`VEG-E-141`; the new `.is_err()` assertion misses that code/precedence defect.
+Required control asserts exact141 and zero acceptance/materialization, separate
+from finite residual excess. Correctness retains **HOLD**, with candidate norm
+reconstruction, first-valid consumption and full-refusal classification only
+statically clearable. Its safe correction/counterfactual course above is
+accepted by root; same QA now reviews serially. No new scientific authority is
+required for these compliance corrections.
+
+Same QA independently confirms all four HIGHs on the stopped cut and retains
+HOLD. Both reviewers permit the bounded compliance corrections, with genuine
+test-first controls for still-unfixed defects and honestly labeled post-fix
+counterfactuals for predicates implemented prematurely. No sequencing waiver
+or new scientific authority was granted. Runtime thread limits required serial
+review; the same two reviewers remain responsible for fix verification.
+
+Author-reported checkpoint at approximately03:33UTC: exact-code
+`m1-nonfinite-precedence-red-01` fails with old142, then green01 passes with141;
+`m1-admission-final-focused-01` reports45 passed/174 skipped. Author reports
+always-compiled private observation and the other three corrections, but the
+full admission matrix and counterfactuals remain incomplete and unreviewed.
+`m1-activity-runtime-green-01` actually failed an overstrong full-dimension
+assertion for a selected-only poison; its failure is retained, and the assertion
+was corrected to the relevant reduced dimension. Test names are not verdicts.
+Root continued the same sole-writer assignment to complete the missing controls
+before review; this partial checkpoint is not accepted admission or M1 success.
+
+Ran: root inspected the immutable receipts for the above checks; source, observer
+and pinned inputs remained unchanged. Early development runs have no captured
+executable digest and are explicitly **source-bound only**, not retroactively
+binary-bound. New direct libtest runs use the existing recorder's `--binary`
+for exact executable binding. `m1-finite-ci-diagnostic-binary-01` passes on source
+`0a57c1a2f082294fff3ad732b1bde1a426cadb06b56be8105b947656447a38f6`,
+binary `66a60f25c93d3ccb5c8f8371df4be4eb5b5098e2d543d1a747a9f31b2c75d0d1`;
+`m1-hydraulic-first-valid-binary-01` passes on source
+`efaf1017a949d2b1b4ecc249022e72e7c8d31de8c947419c26208167e8ad9177`,
+binary `6c3a27559fd9803f3081de73d29a1528e2a179b9235a16546f0fd105ae6fb21f`.
+Both receipts confirm unchanged source/binary/pins during execution. These are
+post-implementation controls, not historical expected-red or reviewer verdicts.
+The author also reports49 passing M1 controls including a real early-iteration
+later strict-decrease branch. Exact displacement/count/work assertions and
+counterfactuals remain assigned before same-reviewer verification. Original60
+assertion bytes remain frozen; no receiver/cycle/restart/cost completion claimed.
+
+Internal reassessment **CONTINUE**, approximately03:45UTC: new strict-decrease
+operand assertions in `m1-b1-b2-strict-work-final-01` and02 selected the latest
+attempt observation, overwritten after the earlier genuine installation. Root
+inspected both failures; author classifies them as observation defects, not a
+new physical limitation. Supported correction captures current/candidate norms
+and coordinates at the actual strict-decrease installation seam, preserving
+the fixture and solver decision. Author reports03 passes; all failed artifacts
+remain. Final selected controls must run without fail-fast and with executable
+binding, before same-reviewer verification.
+
+Ran: unchanged-original60 `m1-original60-binary-01` passes on source
+`c52ac8f69bf2061e7b73f8736c7884c1d4e50572e3d05812497faa48d3cc4474`,
+executable `572c1ba676ddbf61b1db38b4af6c9bb28e2736bd95e2961daad21d2e145a65a8`;
+receipt elapsed0.367862s includes its recorded process envelope and is not a
+release benchmark. Root re-extracted the1447-byte original assertion function:
+SHA256 `f2beb1d2d55fc295d2054881ab995a429a11c33c933e4bfdbd8c4169b2d94cd3`,
+unchanged. Source/binary/pins remained unchanged during that run. Current-cut
+admission still awaits complete displacement/full-priority/counterfactual
+controls and both same-reviewer verdicts. No original60 zero-drainage result is
+reclassified as positive transfer.
+
+At the60-minute internal reassessment, **CONTINUE within the fixed allowance**.
+At03:51:35UTC, cumulative charge is228435.097857s and ceiling balance10765s;
+the06:21 edit cutoff and06:51 hard deadline are unchanged. Concrete progress is
+the unchanged-original60 pass plus added full-priority/displacement and actual
+installation/count controls. A remaining test-discrimination gap is bounded
+within the existing assignment, not a demonstrated new scientific limitation.
+
+Ran: `m1-final-whole-matrix-binary-01` records53 passing M1 controls on source
+`23dbfd6553e57a68f43b863b1642a7bc1e22081c8e744946b2b4b8970365f199`,
+frozen binary `9aade85a13f18b0aae29e1c1c7303e26a59185038d711f9fa00ced592baef9d6`.
+Root rechecked the unchanged original1447-byte function hash at this cut. The
+author's different extraction hash is not a change to that frozen predicate.
+The attempted `m1-postfix-counterfactual-halved-beta-01` **passes with the beta
+threshold removed** and therefore proves no beta discrimination. Author restored
+the intended bytes; all other required post-fix counterfactuals remain unrun.
+Root stopped the writer and dispatched the same correctness/QA reviewers on
+this stable cut to verify fixes and identify precise remaining bounded controls.
+Neither the53-test count nor the unchanged-original60 result closes admission.
+
+Static: same QA verifies the four targeted corrections are present but finds a
+new blocking duration-retention defect: always-compiled runtime observation
+appends solve dimensions to vectors without a production reset. Replace with
+bounded storage while retaining actual-entry accounting; no-duration-retention
+is required. QA retains HOLD for this defect and incomplete counterfactual/
+downstream evidence. Root additionally inspects `m1_test_step_poison`: the supposed
+finite-excess cases actually inject infinity (or NaN). Thus the beta-only
+counterfactual still rejects via the finite guard, and the author's explanation
+of competing T/q/hydraulic refusal is unsupported. These tests prove nonfinite
+refusal only; finite just-over-threshold discriminators remain missing. Root
+sent the precise cause to both author and correctness reviewer before correction.
+
+Static: same correctness independently confirms both HIGHs and additionally
+requires per-solve observation freshness: production counts/error/last-step
+fields currently accumulate or become stale because reset is test-only. Add a
+sequential multi-solve control without external resets, and bounded retained
+dimensions. Its MEDIUM finding is duplicated threshold constants/predicates in
+candidate, refusal and installed-step paths; centralize under the same canonical
+values and finite-only ci rule. First-domain consumption, hydraulic-incomplete
+refusal, later strict decrease, full priority/eligibility, unchanged-current
+materialization and the original four corrections are statically clearable;
+admission remains HOLD pending the two HIGH fixes and same-reviewer verification.
+Ran: root's `m1-admission-feature-check-01` passes LSE `test-support` feature
+compilation in12.863832s with source/base unchanged. This is a validator, not
+receiver/cycle or performance execution.
+
+Ran: `m1-runtime-observation-retention-red-01` genuinely fails before the
+observer-lifetime correction; green01 then passes. Author replaced unbounded
+dimension vectors with fixed22-bin counters and reset private observation at
+each public solve entry. These source-bound development runs do not have an
+executable digest. The final executable-bound54-test matrix
+`m1-admission-retention-threshold-final-binary-01` passes on source
+`4d9620e25c1a31a9671d8f199d92b5d4dad92d945fea2fe151a64f1540b72b71`,
+binary `7d633fb5e86f06aaa0bb7b8a98ccb7466d0d65882786b0cd93c4326dd1a54473`.
+Root inspected its receipt and stdout:54 passed,174 filtered, no failures,
+source/binary unchanged. Separate temperature/humidity/hydraulic/beta threshold-
+removal post-fix counterfactuals now fail as intended (exit100), with restored
+source; the earlier non-discriminating beta01 remains preserved. Remaining
+eligibility/finite-current/installed-step/error-carry/count counterfactuals and
+threshold centralization are the next bounded author increment, not waived.
+
+Internal counterfactual reassessment **CONTINUE**, approximately04:08UTC:
+error-carry and no-update-count removals now fail discriminating controls and
+restore exactly. Full-refusal01 mutated an unvisited Core-error arm while its
+fixture skipped earlier, so its exit0 is non-discriminating. Installed beta/ci01
+also exit0; root rejects the unsupported explanation that disabling no-update
+necessarily disables ordinary acceptance. Author must inspect actual stored
+non-target diagnostics and isolate the ordinary decision with clearly attributed
+test-only passing diagnostic operands plus one poison, preserving real installed
+state/Core and unchanged physical residuals/forcing. Keep that scope distinct
+from separately proved computed-norm reconstruction. Finite-current exact141
+red/green is retained; do not weaken multiple redundant protective guards merely
+to force a downstream predicate-removal failure. Same reviewers adjudicate that
+ordered evidence and the remaining counterfactuals. Shared canonical threshold
+constants/predicates are now authored, awaiting verification.
+
+Ran/Static: installed beta/ci02 counterfactuals now fail with an explicit
+decision-only diagnostic record and passing sister. Full-refusal03 fails and
+restored `m1-fullrefusal-final-binary-03` passes57 M1 tests/174 filtered on source
+`b6185399e27074ef48ed3bacb23ab9c61b583799d90d893d59ff2dd381ff8276`,
+binary `a6ecac1f5e91df5dd8a5de197929415597332a16e74e99783ebfb01cb460648d`.
+Root compares actual observer-relative source patches and resolves the02/03
+conflict:02's installed-step test helper overwrote diagnostics even when no
+poison was requested;03 restores `None => original steps`. This is a substantive
+test-seam correction, not merely a no-capture/logging rerun. Earlier affected
+cuts cannot prove unpoisoned admission; final pass-through and affected claims
+are explicitly sent to the same reviewers. Original function-byte preservation
+alone never establishes that an injected test runtime was unmodified.
+
+Same QA initially clears bounded observation/admission progress, with wholeM1
+HOLD; root requested correction of its53-count report to actual57 and review of
+the above newly identified seam change. Correctness is verifying the stable cut.
+Ran: `m1-admission-strict-lint-01` **FAIL**, exit101 in8.501307s, source/base
+unchanged. Its M1 large-error, wildcard/import, formatting/style and other
+findings remain current quality work; no inherited waiver or qualifiedPASS.
+
+Same-reviewer disposition on `ae9c3ba2…0b702` / `de36677f…9f12`:
+correctness **PASS for bounded nonlinear admission/activity correction**;
+QA **cleared for receiver progress**, wholeM1 quality/qualification HOLD. Both
+verify bounded/reset observations, centralized thresholds, finite-excess and
+installed-step controls/counterfactuals, error carry and exact examined exponent.
+Both independently adjudicate contaminated full-refusal02 as inconclusive and
+final03 as restored/discriminating. Correctness accepts current-residual NaN at
+actual iteration-three with exact141 as sufficient ordered evidence: the earlier
+canonical finite guard intentionally prevents reaching the later admission
+predicate, so weakening multiple guards is neither needed nor authorized.
+Reviews inspected primary execution artifacts rather than independently rerunning
+them. Applicable final execution is57 passing controls on the above exact frozen
+binary. Receiver/conservation/cycle/restart, strict lint, performance and
+wholeM1/production remain unaccepted. Proceed to authorized real receiver work
+and early release-support measurement within the unchanged clock.
+
+Execution reassessment: missing receiver APIs and their size are authorized
+implementation work, not a stop boundary. Root split the next deliverables into
+early release-support timing, shared routing, and actual receiver/local transaction.
+The detached tree has no`.git`; run instruction discovery from main with intended
+relative write paths. Root confirms both proposed routing/receiver surfaces use
+root plus`crates/AGENTS.md`. A bounded read-only Luna extraction
+`/root/receiver_api_map` maps existing receiver builders while the same Terra
+writer handles timing; it edits nothing and supplies no acceptance review. This
+retains one source writer and at most two concurrent children.
+
+Ran: early release support and unchanged-original60 closure both pass in
+`m1-release-support-timing-binary-01` and
+`m1-release-support-original60-binary-01`, executable
+`0bdd1869bd0375c109b54523adfcc9b192bec3b543743d864d9fb1ca61e8e515`.
+Separate timing test leaves the original assertion function unchanged. Reported
+inner solve wall is0.006843594s, with cfg(test) trace overhead; inner CPU is
+UNRESOLVED. Outer timing envelope (including Nix/startup) reports1.32s wall,
+0.95s user CPU,0.23s system CPU and340280KB maximum RSS. None is an OFE-day,
+complete-receiver, kernel-memory or annual-cost result. Actual observed counts:
+210 evaluator entries,4 trials,1 materialization,4 predictor+1 final assembly,
+five reduced19-dimensional solves. Root corrects the author's hydraulic claim:
+the8 entries count only`hydraulic_potentials`; nested calls from the evaluator
+to`solve_m1_full_supply_hydraulics` are not instrumented. Complete hydraulic work
+remains unmeasured until its actual entry is counted. This narrows activity
+evidence without reopening the reviewed nonlinear decision order.
+
+The receiver extraction confirms the existing unified candidate path invokes
+actual ingress and applies real recipient updates to working/cloned state;
+existing envelopes deliberately expose no commit API. The required local atomic
+installation/rollback remains implementation, not an assumed existing commit.
+Writer now owns the bounded shared-LSE-routing increment and actual nested
+hydraulic entry instrumentation, followed immediately by real receiver assembly.
+
+Internal execution reassessment **REASSIGN**,04:25UTC: the writer repeatedly
+returned inspection-only statements without implementing the explicitly assigned
+routing increment. Timing is preserved, but this is not implementation delivery.
+Root stopped that writer and the completed extraction agent; reuse the sole
+detached tree and source custody, with a fresh bounded Terra implementation
+assignment. No source branch, allowance, reviewer identity or acceptance resets.
+
+Static extraction sharpens receiver mechanics: unified request batches reject
+empty cardinality, so no empty-protocol bypass is permissible. Existing LSE
+ending-state sealing and hydrology-adapter reconstruction are reusable; the
+fixture's older thermal snapshot lacks an installation helper. This absence is
+an in-scope typed owner-adaptation requirement under the owner's explicit local
+transaction authorization, not evidence that implementation is forbidden.
+An extractor's inference that every new installation helper would be fabricated
+is not authority. Actual candidate physics, state/identity validation, resealing,
+receipt lineage and rollback remain mandatory; no fake zero protocol/receipts.
+
+Ran: fresh writer delivers shared LSE routing module/exports and actual-core
+interception reuse. `m1-lse-routing-lib-02` passes233 tests; executable-bound
+`m1-lse-routing-focused-binary-02` passes on source
+`bdb3902a886d624ef131b34e934cc74af483ddde57f47373c6f1d566bb28b27a`,
+binary `0d0bf497861fd94b858a6c75cc15318e2fc36e00e962801b02e7681227a0a799`.
+The first focused failure compared OFE-ground receipt mass with the fixture's
+tile-ground terminal total. Root independently sums the frozen decimal terminal
+rows: tile-ground0.02111142154507916097528817458; OFE-ground
+0.008022340187130081170609506341. The author's claim that the larger total
+included captured mass was incorrect; this was an area-basis test-oracle error.
+The local smoke assertion now uses the OFE-ground terminal sum. Full existing per-contributor ORCH
+assertions remain unexecuted until receiver APIs compile; no receipt claim yet.
+Private observation now retains wrapper counts separately from actual hydraulic
+function-entry counts; the library control checks actual entries exceed wrapper
+entries. Same correctness reviews stable LSE routing/finite/enthalpy guards while
+the sole writer works only in ORCH on real receiving and transaction integration.
+
+Static: same correctness places routing on **HOLD** for two HIGH findings:
+positive liquid source enthalpy/temperature and derived-product/aggregate
+finiteness were unguarded (zero tile fraction also admitted); authenticated
+occupancy IDs were validated then discarded, leaving positional branch labels
+without contributor/destination lineage. The arithmetic, frozen terminal order,
+source enthalpies and separate actual hydraulic-entry counter were otherwise
+accepted in this narrow review. Same writer owns discriminating guards and
+lineage corrections; same reviewer will verify the affected fixes.
+
+Ran: ORCH draft attempts `m1-orch-receiver-compile-01` through `-04` are retained
+failures, not implemented receivers. The first stub was removed. The later
+source calls actual direct ingress using a fixture V8 resource, but root found
+that it discards the resulting ingress candidate and returns the unrelated V8
+candidate; all negative injections also return expected labels without reaching
+or poisoning actual validation. Root explicitly rejects that scaffold and the
+writer acknowledges it. `-04` passes shared routing only; positive and late
+controls fail at ingress with its detail masked by `actual_ingress`. No actual
+M1 receiving, owner mutation or rollback is established. Supported next work is
+typed integration through existing unified finalization/real receiver checks,
+canonical conservative branch merge with authenticated contributors, preserved
+underlying errors and actual negative seams. No test assertions are removed.
+Fixture V8 resource production cannot substitute for M1 coupled physics.
+
+Ran: `m1-routing-guards-green-02` passes two focused routing controls at
+`a324a51e3711c1eab7c6a0766afb34a3281255d3e513090254220fa9de94d57a`,
+4.2806s, source/base/pins unchanged. The preceding `m1-routing-zero-tile-red-01`
+genuinely failed on zero tile admission. Earlier `m1-routing-guards-01` was
+post-implementation green; it is not historical red for the enthalpy checks.
+Captures now carry source/destination occupancy and contributor branch, and
+terminal parcels carry source/path identities. Same correctness verification
+is pending. The invalid ORCH scaffold was removed before this green source cut;
+real receiver APIs remain incomplete, with existing required tests preserved.
+
+Internal120-minute reassessment **CONTINUE**,2026-09-22T04:51:15Z:
+charged continuation7215s, cumulative232015.097857s,7185s to fixed ceiling;
+source/launch cutoff remains06:21 and hard deadline06:51. Admission is narrowly
+cleared, routing fixes have focused green evidence with same-reviewer check
+pending, and receiver integration remains in-scope implementation. No physical
+method boundary or source-loss stop has been established. Root rejects repeated
+inspection-only author returns as completion and gives the sole writer the
+concrete unified-finalization adapter/body/run assignment. Actual pre-ingress
+values exist in the existing multi-tile runtime; safe typed plumbing is allowed.
+No new allowance, retuning, unreviewed physics or production adoption follows.
+
+Ran by root: `m1-routing-corrected-inventory-01` binds the corrected LSE
+executable to tree`f25b8e59fc42902300bf9aaf85640ee525b0434da8e3dc0cf1956e92aa2109d7`.
+Root copied that listed executable to an immutable local path recorded in
+`m1-routing-corrected-binary.json`, SHA256
+`94e67dc0b6d7ab60b4847cf93063e975fd1c4e86c5047c2c962f8c953969980d`.
+`m1-routing-corrected-frozen-binary-01` passes2 and
+`m1-routing-original60-frozen-binary-01` passes the exact original60 test
+(233 filtered), all source/base/pins/binary unchanged. Direct libtest here binds
+the exact preserved executable, not an inferred later Cargo artifact. The
+unchanged1447-byte physical predicate retains SHA256
+`f2beb1d2d55fc295d2054881ab995a429a11c33c933e4bfdbd8c4169b2d94cd3`.
+This remains accepted local-support/routing evidence, not positive delivery,
+continuous evolution or a release benchmark.
+
+Same correctness, Static: routing arithmetic and lineage HIGHs are now
+structurally addressed at moduleSHA`edb2dd6e…d7bc`; free-string identities only
+preserve lineage, while authentication remains the future receiver join's duty.
+Evidence **HOLD** remains for source-product overflow masked by the current
+invalid-h temperature rejection, a separate finite-parcel aggregate-overflow
+case, and exhaustive nine-capture/six-terminal lineage assertions. The reviewer
+also requires reuse of existing physics constants instead of new273.15/4218
+literals. Those bounded corrections are assigned to the same sole writer.
+The same reviewer independently confirms the removed ORCH draft disconnected
+actual ingress and synthesized negative labels. Existing legitimate receiver
+arguments reside at the pre-ingress unified-finalization seam; no integration
+design or real receiver has been accepted. Warm finalized uses must remain
+visible in whole-frame closure, distinct from the receiver-only increment.
+
+Same QA accepts receipt custody and these explicitly limited diagnostics,
+retaining **QUALITY / ROUTING / M1 HOLD** for missing discriminating routing
+controls, real receivers, cycles/restart, cost, full-workspace and lint gates.
+Inventory is listing only; the separate frozen-binary invocations provide runs.
+The early release result is a release-built cfg(test) support measurement with
+inner wall only, outer startup-inclusive CPU and wrapper-only hydraulic counts;
+it is not qualified coupled-envelope or OFE-day performance evidence.
+
+Exact source reconciliation: frozen debug binary94e67d was built/listed at
+f25b8e59. Its routing invocation records whole-tree9208246cbd8dff09df6823ac87e931b74a041785032316a6ac27c55151cc5c43;
+the original60 invocation records912053f199aeb0e2224b6d3b5574e908a88e99946bc7001726f5f083c7c03696.
+Root compares all manifest entries: the first differs only in ORCH
+`multi_tile_runtime.rs`; the second adds ORCH `mod.rs` and `m1_receiver.rs`.
+Every LSE/dependency/build input remains identical. Source was stable within
+each invocation and the exact frozen binary remained unchanged. These runs
+validate that LSE executable, never the intervening ORCH drafts. The separate
+inventory/binary manifest remains the authoritative executable build identity.
+
+Internal receiver reassessment **REASSIGN**,2026-09-22T04:58:49Z:
+`m1-orch-seam-03` reaches the authenticated producer-side physical path but
+fails the positive test at tree1bf6e230d5765920f285cbf153579237952eb0757e3034ef8b096fc511150923,
+exit100/59.5257s. Its wrapper still masks the underlying failure as WrongSupport
+and reintroduced synthetic early injection returns. Root had explicitly
+rejected these defects; repeated acknowledgment/inspection-only returns and
+another masked run do not discharge implementation. The writer is stopped;
+new sole Terra implementer `/root/receiver_completion_writer` owns bounded
+receiver completion from the retained source. Same correctness/QA reviewers
+remain, no allowance reset or physical-method change. Root explicitly requires
+actual typed error propagation, real poison seams, scoped cleanup of test
+injection, and canonical mixture construction before the next physical attempt.
+
+Static authority clarification: water-vapor21–37 defines positive mixture
+T=Tf+sum(m*h)/(Cw*sum m), with each published parcel h_l(T); existing
+`covered_derived_ingress::ingress_amount` constructs that canonical h from T.
+Prospective construction with retained source energies and unchanged closure
+checks is distinguished from silently normalizing a rejected input. The direct
+ingress exact-bit h(T) guard remains untouched. The producer hook is diagnostic
+only; warm V8 fixture resources cannot count as coupled M1 physical evolution.
+
+Internal receiver correction reassessment **CONTINUE**,approximately05:09UTC:
+new writer preserves real typed error sources and uses scoped ingress cleanup.
+The former masked WrongSupport is first a real forcing-operand identity error
+(`m1-receiver-source-provenance-03`), then E008 Authorization cadence/continuation
+(`m1-receiver-forcing-join-01`). Static cause is the generic endpoint fixture's
+1800s context versus frozen M1 receiver0..60s. A cloned diagnostic60s context
+must retain all physical initial/forcing scalars and reseal all affected identity
+joins through the unchanged validators; the original caller owners remain
+untouched. This is prescribed-receiver plumbing, not M1 physical evolution.
+`m1-receiver-sixty-context-compile-01` is compile-negative;02 rejects invalid V8
+state;03 advances to the precise LSE state/configuration digest mismatch. Those
+failures are retained. Correct remaining duration-bound joins; no validator is
+relaxed, physical input tuned, or scientific impossibility inferred.
+
+Ran: the corrected60s producer context reaches authentic candidate construction
+at `m1-receiver-mixture-diagnosis-01`, source
+a26508172a4d1dfab901f5a99ed2461932d87a8d7a9a2b47336ac2be631b2ae2.
+The frozen positive test fails line1081, source-group energy versus original
+contributor energy. This is not the already-passed receipt h(T) check. Canonical
+direct ingress mixes co-timed supply and redistributes energy by mass. Root's
+independent Decimal60 `m1-receiver-mixture-reconstruction-01.json` compares
+printed real receipt operands with pre-run frozen source controls: total mass
+difference−1.7061e-19kg/m² and energy+7.9572e-14J/m² close, while original branch
+energy differences−1.17132,+5.78209,−4.61077J/m² do not. This receipt-only result
+is not independent owner closure, installed transfer or receiver acceptance.
+
+Same correctness independently reviews root's concrete proposed conservative
+merge and returns **CONFORMING for the bounded candidate diagnostic**, Static.
+SC-VEGETATION3242–3259 permits explicit conservative merge with retained branch/
+contributor lineage; SC-SURFACELIQUID2527–2534 permits covered terminal ground
+posture. The direct `TerminalReceiver` is generic, unlike the separate LSE
+forcing `SnowTerminalReceiver`; direct admission has no universal0°C constraint.
+Root releases one same-destination/same-support terminal parcel conserving all
+six source masses/energies, canonical mixture construction, zero canopy release
+(no duplicate ground credit), and an authenticated six-row original branch/
+occupancy/source-h join bound BEFORE receiver use. Existing assertions, physical
+mixing and tolerances stay intact. The reviewer did not author the design.
+
+**Downstream WAT5/publication HOLD:** `stage3_committed_publication_wat5.rs`
+currently projects every generic direct TerminalReceiver as SnowTerminalReceiver.
+That projector would misclassify M1 vegetation liquid. No WAT5 use, external
+physical publication or production readiness is cleared; scoped main evidence
+publication remains a separate authorized action. Local diagnostic candidate
+work continues, and actual owner installation/rollback still needs evidence.
+
+Ran: `m1-routing-overflow-lineage-01` passes focused routing controls after
+shared-constant reuse, admissible-finite-h product overflow, finite-parcel
+aggregate overflow and complete capture/terminal/second-drainage lineage tests.
+Same correctness verifies the stable LSE cut while the sole writer implements
+the reviewed ORCH merge. The writer's earlier bare fmt/cargo-test report is
+not a source-bound recorded acceptance result; only retained recorder runs
+supply the stated evidence. No historical expected-red is invented.
+
+Same correctness and same QA both **PASS the bounded LSE routing fixes** at
+moduleSHA736fcbbd507ade9e924dd78ef47f3fff288d27f44bccc4097b017c40d3760d0d.
+The actual recorder run is5/5 controls,232 filtered,4.431s, source/base/pins/
+support unchanged. Their clearance is limited to shared constants, finite
+product/aggregate guards and complete contributor-path coverage; authentication
+and complete M1 remain open. Header wording may be aligned to the already
+adopted conservative-merge allowance without changing routing behavior.
+
+Ran: `m1-receiver-terminal-merge-01` now passes the original prescribed positive
+receiver test (1passed/1484filtered) at tree
+3d88f9047f6d1a6e6d81cf327b02d9eec6f1b6cdce3322979d073b257ec21b9b,
+exit0/35.6933s, source/base/pins unchanged. This source-bound development run
+has no frozen executable hash. It constructs one actual generic terminal
+parcel, zero canopy release, real receiver candidate and original six source
+rows; the frozen raw receiver/closure assertions pass. **Not yet receiver
+acceptance:** root finds that contributor rows still attach returned receipt
+IDs after runtime rather than authenticating the complete branch/occupancy/
+owner/phase/support/area handoff before transfer. That condition of the reviewed
+merge is assigned for correction with real negative poisons. Actual local
+installation/late restoration and independent raw owner reconstruction remain
+unexecuted. No WAT5 path is invoked.
+
+
+Ran: subsequent receiver development labels `UNIQUE`,
+`m1-receiver-local-rollback-02`, and `m1-receiver-native-support-03` are retained
+without renaming or overwriting. The last focused run passes at tree
+`a409a27989ee192c36b3c4cf05e8706d4058ddade393d6eb20a5e11d24416916`.
+Root reconstructs all **756/756** manifest file bytes from the immutable observer
+plus its complete patch in a separate temporary directory; no mismatch, patch
+exit0, identical tree hash (`m1-receiver-source-reconstruction-01.json`). This
+proves source recoverability, not physical or whole-system acceptance.
+
+Static root review at05:28UTC retains **receiver HOLD despite focused green**:
+merged handoff authenticates selected owner/destination/support but lacks the
+six-row occupancy/rank/branch/source-h/area authentication promised by the merge;
+wrong-area uses MAX overflow, wrong-branch changes destination, and exposed
+rejection labels follow the injection selector rather than establishing the
+actual cause. Returned receipt check is existential. Zero terminal mass divides
+by zero. Assigned correction requires meaningful finite area/branch poisons,
+pre-transfer complete lineage, full receipt reconciliation and typed failures.
+Same correctness reviews the immutable reconstructed source independently.
+
+The local draft installs actual candidate frame/LSE into disposable local owner
+clones and restores those clones on late rejection. It retains beginning thermal/
+vegetation records and therefore **does not establish complete authoritative
+owner installation/rollback**, M1 reservoir evolution, chronology or consumed
+identity rollback. Existing thermal candidate data and necessary private typed
+owner plumbing remain implementation work within authorization, not a claimed
+scientific boundary merely because a convenience installer does not exist.
+Fixed72h cycles, complete checkpoint/fresh-process splits, complete-envelope cost,
+1/10/19 lanes and balanced warm pairs remain NOT RUN. Source work continues
+under the same deadline; mandatory900s validation must launch by06:06UTC.
+
+
+Same correctness `/root/correctness`, **Static HOLD** on reconstructed
+native-support03 (`m1_receiver.rs`bd8285b5…), verifies five HIGH findings:
+(1) six contributors absent from preflight and attached post-success;
+(2) handoff binds original vegetation digest while execution consumes the
+reconfigured60s clone; (3) injection-selected error strings plus nondiscriminating
+area/branch poisons; (4) existential rather than complete receipt validation;
+(5) incomplete owner staging, including original rather than execution-beginning
+LSE identity, omitted real thermal candidates and tautological clone restoration.
+MEDIUM: duplicate thermodynamic constants and missing positive-finite mass guard.
+The reviewer independently confirms authentic direct ingress/receiver execution
+and meaningful aggregate raw surface/hydrology/thermal/LSE closure for this
+fixture; that bounded physical evidence does not clear the five findings.
+
+Ran: `m1-receiver-pretransfer-root-01` selected only the prescribed physical
+21-coordinate evaluator due to root's overly narrow filter:1PASS, **not a receiver
+run**. Corrected filter in `m1-receiver-pretransfer-root-02` runs all3 receiver
+tests:2PASS/1FAIL, rejection-stage `receiver` versus expected `preflight` at1273.
+Its frozen cut b78d9b0b… adds finite area and occupancy poisons, route-row
+comparison and aggregate receipt checks; latest stage-reporting correction still
+fails. Preserve lineage-pretransfer04–06 and root01–02 as distinct attempts.
+Internal reassessment **CONTINUE**: inspect actual nested typed runtime error
+and exact canonical failure site, stop guessing formatted-string matches. The
+root also finds that copied-row versus route comparison alone does not bind
+control occupancy/rank/area to the actual configuration; this remains assigned.
+
+At05:32:47UTC, root launches `m1-receiver-api-full-workspace-01`, required
+`cargo nextest run --workspace --profile full --no-fail-fast`,900s bound, on the
+frozen actual-API source. Sole writer holds all source edits during validation
+and reads continuous-state integration. No missing-import scaffold is substituted
+for implementation. Correctness findings remain pending; QA reviews the same
+recorded evidence surface independently. No source or allowance reset.
+
+
+Same QA `/root/qa`, **HOLD**, independently verifies root02 selects3 receiver
+tests and exits100, root01 is evaluator-only, and both bind the same newer tree
+`bac5958b…dc1f` while the756-file reconstruction is the distinct native-support03
+`a409a279…` source. Receipt custody is sound; no source-recovery result clears
+receiver correctness. QA retains44 orchestrator lib-test warnings and the failed
+lint requirement, and reuses only the previously bounded LSE/admission clearance.
+Complete-owner installation, cycles, checkpoint/restart and qualified cost remain
+unmet. Both independent receiver verdicts are HOLD; no acceptance is inferred
+from compile/test counts.
+
+Scope clarification during source hold: narrow immutable accessors on the
+existing routing-input type are necessary typed API mechanics expressly covered
+by the authorization; they do not introduce a new public/persisted diagnostic
+record or scientific method. Root releases those accessors after validation to
+bind actual source occupancy/rank/plant-area/tile-fraction configuration before
+routing transfer. Hard-coded expected IDs or copied-output self-comparison are
+not a substitute for that authentication. No serialization schema change.
+
+
+Ran: full-workspace API validation compiled successfully in5m33s, then reached
+all4389 selected tests across247 binaries under the canonical full profile.
+Recorder900s cap sends SIGTERM; Nextest emits terminal summary **4100passed,
+289failed,111skipped**. Failures comprise250 ordinary FAIL,38 stack-overflow
+SIGABRT, and1 long-running runner test interrupted by the cap. This is
+**FAIL_TIMEOUT / full correctness unmet**, not a qualified regression pass.
+`m1-full-workspace-failure-attribution-02.json` retains every unique failed
+binary/test and primary message. It corrects the preserved01 extraction, which
+double-counted initial/final FAIL lines and overlooked the SIGTERM summary.
+Classes are observational, not historical-equivalence claims:26 missing supports,
+84 assurance symlink/confinement failures,38 stack overflows,1 current M1
+receiver-stage failure,1 fingerprint message,138 other unresolved behavioral/
+environment failures and1 timeout. Prior39 authority cases remain separately
+retained; these289 are not silently collapsed into that history.
+
+The recorder reports `source_unchanged=false`. Root containment establishes all
+756 original entries remained byte-identical; the only additions were4 runner
+snowbench-generated files under nested crate `target`. Those outputs are copied
+to `m1-full-workspace-generated-01/` and moved intact to detached
+`preserved-validation-generated/`; no deletion or old receipt rewriting.
+The actual source returns exactly to `bac5958ba1fc65451209ee597606d9694de85bbc48340eb6f561a7195859dc1f`.
+`m1-full-workspace-generated-source-drift-01.json` records this distinction.
+Observer/pins/support stayed unchanged. This is contained generated-output
+pollution of the snapshot, not an unexplained source writer or integrity loss.
+
+`m1-receiver-api-full-inventory-01` records252 compiled binaries (including5
+profile-excluded); `m1-receiver-api-full-binaries-01.json` hashes their actual
+bytes. Its manifest includes the4 generated files, so its tree differs from the
+full-run source; failure-attribution02 verifies no original entry differs and
+all252 binary mtimes remain unchanged after inventory. No source identity is
+silently transferred, and no default-filter exclusion is newly introduced.
+
+At05:49UTC source hold releases. Internal60-minute reassessment at05:51UTC:
+**CONTINUE in scope**, retaining full/lint/receiver HOLD. Sole writer corrects
+actual configuration/source identity and typed rejection joins, local touched-owner
+staging/thermal custody and raw evidence, then exact accepted-state continuation
+and fixed-case prerequisites. Target source freeze06:03 permits quality/feature
+checks and a required corrected-cut full run before the latest900s launch06:06.
+All unchanged independent admission/routing clearances remain narrowly scoped;
+no scientific model, forcing, tolerance, method, public/persisted schema or
+allowance is changed. Missing complete cycle/restart/performance obligations
+remain implementation gaps, not excused by this validation result.
+
+
+Ran: corrected receiver `m1-receiver-green-typed-12` passes3 controls at source
+`ae2c9969f2c3c3439002f98883403e81d3ac0c72c31cddacee326cd89932f31e`.
+Same correctness **clears the exact60s cloned source identity and genuine finite
+area/source-occupancy negative subscopes**, but retains HIGH overall HOLD:
+configuration authentication still compared literals rather than actual strata/
+rank/area configuration, and receipt reconciliation filtered a matching subset
+without rejecting extras or binding every support/destination. Those are assigned
+again as concrete source fixes, not accepted merely because tests pass. Typed
+native Failure phase/detail preserves the real source; free-form detail taxonomy
+and duplicated thermodynamic constants remain medium issues.
+
+Ran: `m1-receiver-raw-primitives-15` emits actual6 contributor, receipt, layer,
+thermal and LSE primitive rows. Root's independent Decimal60 reconstruction
+(`m1-receiver-independent-primitive-reconstruction-01.json`) passes34 checks
+against the frozen independent reference and raw state differences. Delivered
+mass0.008022340187130082kg/m²OFE and energy128.7105777206214J/m²OFE agree with
+layer storage increase to−8.2e−17kg/m² and thermal increase to−2.14e−11J/m².
+This is prescribed candidate receiver evidence only: no actual vegetation donor
+M/H debit, complete owner installation, cycle or restart acceptance. The raw run
+has no frozen executable hash and omits explicit disposition/recipient and
+surface-liquid mass fields; those limits remain explicit.
+
+Ran: owner-thermal16 and accepted-coordinates17 focused checks pass. The latter
+retains exact accepted `[f64;21]` in the existing evaluation from its trial,
+without recomputation; no continuous driver/checkpoint is completed. Root
+reconstructs source17's756 files exactly at tree
+`7569e83883eed65892f82c005feafa77aebfece7a593fb6c4ec8fc9f403efca2`.
+Owner16 adds real pre/post thermal candidate vectors and uses actual cloned
+execution LSE/vegetation beginnings, but **still only assigns/restores a local
+clone and discards it**. Root retains complete-owner rollback HIGH HOLD; a
+candidate vector is not a canonical persisted/retained thermal owner transaction.
+
+The recorder now also prospectively pins `SC-SURFACELIQUID-001.md`; earlier
+receipts are unchanged and did not contain this explicit pin. Python AST passes.
+A QA follow-up encounters agent thread capacity, including an unused old
+receiver_implementer pending-init session. Root interrupts the unused session;
+bounded recovery still refuses dispatch. No new reviewer wave or repeated retry
+loop: retry same QA only after the active writer is released. Existing independent
+HOLDs remain binding; unreviewed new fixes are not silently cleared.
+
 ## Structural drainage continuation — adopted 2026-09-21
 
 Owner adopted `/tmp/openwepp_cold_canopy_m1_structural_drainage_authorization.md`.

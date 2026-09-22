@@ -1,0 +1,6 @@
+
+running 1 test
+test m1_coupled_tests::m1_no_update_records_exact_b1_and_b2_cumulative_backtracking ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.01s
+

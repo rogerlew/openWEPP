@@ -1,0 +1,11 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+
+running 2 tests
+test m1_liquid_routing::tests::routing_refuses_nonliquid_source_enthalpy_overflow_and_unbound_area ... ok
+test m1_liquid_routing::tests::routing_preserves_contributions_and_converts_area_once ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 232 filtered out; finished in 0.00s
+

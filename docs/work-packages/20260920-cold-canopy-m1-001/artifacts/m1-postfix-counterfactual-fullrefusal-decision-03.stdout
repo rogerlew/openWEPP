@@ -1,0 +1,15 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test m1_coupled_tests::m1_full_evaluation_failure_cannot_enable_halved_witness ... FAILED
+
+failures:
+
+failures:
+    m1_coupled_tests::m1_full_evaluation_failure_cannot_enable_halved_witness
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 230 filtered out; finished in 0.01s
+

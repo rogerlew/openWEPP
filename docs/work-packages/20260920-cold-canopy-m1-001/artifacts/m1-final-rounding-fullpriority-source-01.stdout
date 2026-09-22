@@ -1,0 +1,16 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test m1_coupled_tests::m1_actual_candidate_current_norms_use_rounded_primitives_and_derived_beta_ci ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 226 filtered out; finished in 0.01s
+
+
+running 1 test
+test m1_coupled_tests::m1_full_witness_has_priority_without_halved_admission ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 226 filtered out; finished in 0.01s
+

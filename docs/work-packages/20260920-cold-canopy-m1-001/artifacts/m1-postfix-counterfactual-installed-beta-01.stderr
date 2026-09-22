@@ -1,0 +1,18 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused variable: `beta`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3110:76
+     |
+3110 |             .is_some_and(|((temperature_k, humidity_kg_kg), (hydraulic_mm, beta))| {
+     |                                                                            ^^^^ help: if this is intentional, prefix it with an underscore: `_beta`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib) generated 1 warning (run `cargo fix --lib -p openwepp-land-surface-energy` to apply 1 suggestion)
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.15s
+────────────
+ Nextest run ID 31ceaf70-90cd-42ea-b2a9-13468caaec97 with nextest profile: default
+    Starting 1 test across 1 binary (229 tests skipped)
+────────────
+     Summary [   0.014s] 1 test run: 1 passed, 229 skipped

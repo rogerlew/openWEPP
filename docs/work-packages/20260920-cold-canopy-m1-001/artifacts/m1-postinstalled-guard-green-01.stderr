@@ -1,0 +1,31 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find value `M1_DISABLE_NO_UPDATE` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3763:21
+     |
+3763 |                 && !M1_DISABLE_NO_UPDATE.with(Cell::get)
+     |                     ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `Cell` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3763:47
+     |
+3763 |                 && !M1_DISABLE_NO_UPDATE.with(Cell::get)
+     |                                               ^^^^ use of undeclared type `Cell`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:9:16
+     |
+   8 | #[cfg(test)]
+     |       ---- the item is gated here
+   9 | use std::cell::Cell;
+     |                ^^^^
+help: consider importing this struct
+     |
+   3 + use std::cell::Cell;
+     |
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy` exited with code 101

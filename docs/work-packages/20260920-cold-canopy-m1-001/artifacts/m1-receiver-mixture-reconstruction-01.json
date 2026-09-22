@@ -1,0 +1,47 @@
+{
+  "evidence_class": "Independent decimal reconstruction from retained actual receiver debug rows and pre-run frozen contributor control; NOT full owner closure or receiver acceptance",
+  "method": "Decimal precision60; sum frozen per-contributor OFE mass/energy by original canonical branch; compare actual printed receipt groups and global sums",
+  "run_receipt": "m1-receiver-mixture-diagnosis-01.json",
+  "run_source_tree_sha256": "a26508172a4d1dfab901f5a99ed2461932d87a8d7a9a2b47336ac2be631b2ae2",
+  "run_exit_code": 100,
+  "input_sha256": "a0400e74fdb4100dcfa099ef9a4627cee7b9310e4aefb4ef1aa094835bdcc0ef",
+  "stderr_sha256": "5a030b3fdcb45a924d5f26240bb76b21d6759772113acf752b13d5098ad5cf67",
+  "groups": [
+    {
+      "kind": "CanopyThroughfall",
+      "observed_mass": "0.005125296548738757",
+      "observed_energy": "82.23035478300535",
+      "expected_source_mass": "0.00512529654873875720523839097768204587349585875373857995324006",
+      "expected_source_energy": "83.4016747521380410903186403581563887179220716814908695836621",
+      "mass_difference": "-2.0523839097768204587349585875373857995324006E-19",
+      "energy_difference": "-1.1713199691326910903186403581563887179220716814908695836621",
+      "observed_energy_per_mass": "16044.0189169621329620207188720461253178288915271126047596856"
+    },
+    {
+      "kind": "CanopyInitialDrainage",
+      "observed_mass": "0.00076",
+      "observed_energy": "12.193454376891221",
+      "expected_source_mass": "0.00076",
+      "expected_source_energy": "6.41136",
+      "mass_difference": "0.00000",
+      "energy_difference": "5.782094376891221",
+      "observed_energy_per_mass": "16044.0189169621328947368421052631578947368421052631578947368"
+    },
+    {
+      "kind": "CanopyStemflow",
+      "observed_mass": "0.002137043638391324",
+      "observed_energy": "34.286768560723985",
+      "expected_source_mass": "0.00213704363839132396537111536375409860608135730236193890203174",
+      "expected_source_energy": "38.8975429684824353376370666812844499137294281480993460363067",
+      "mass_difference": "3.462888463624590139391864269763806109796826E-20",
+      "energy_difference": "-4.6107744077584503376370666812844499137294281480993460363067",
+      "observed_energy_per_mass": "16044.0189169621324042137835367185166348377408268856117334277"
+    }
+  ],
+  "total_mass_difference": "-1.7060950634143614447957721605610051885527180E-19",
+  "total_energy_difference": "7.9572044292960559161368348500170409784380031E-14",
+  "global_mass_closes": true,
+  "global_energy_closes": true,
+  "all_original_branch_energies_close": false,
+  "limitations": "Printed receipt mass/energy only; no raw layer/thermal/LSE owner reconstruction, contributor authentication, actual install/rollback, or complete M1 cycle evidence."
+}

@@ -1,0 +1,18 @@
+{
+  "utc": "2026-09-22T05:49:00.495099+00:00",
+  "full_run_receipt": "m1-receiver-api-full-workspace-01.json",
+  "original_recorded_source_unchanged": false,
+  "existing_manifest_entries_byte_unchanged": true,
+  "detected_additions": {
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/file2.csv": "394113e9ce33bfdb3b27170b485828d0bb5e74d071ae115d0ec09b445fc0da2a",
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/file3.csv": "424c3b09cf3978a96bf20b4b1910da2ea72551d78eeb6104f3666271dac5d713",
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.json": "cd20a3a4b1b573b5c74bfdf76245f0d067c9a08fa325f894ee1b7fada5285885",
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.md": "642e6ce73be75bc27b7dfa923efe3a655861353631a22c283a9cad14916a4e13"
+  },
+  "cause": "Workspace runner snowbench test generated four files below its nested target; snapshot traversal includes nested crate target outputs. No original source entry changed.",
+  "preservation_action": "Moved generated directory intact out of crate snapshot to preserved-validation-generated; no deletion or receipt rewriting.",
+  "preserved_directory": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/preserved-validation-generated/m1-full-workspace-01/jennings_minimal",
+  "after_preservation_tree_sha256": "bac5958ba1fc65451209ee597606d9694de85bbc48340eb6f561a7195859dc1f",
+  "matches_run_source_after_preservation": true,
+  "gate_disposition": "FAIL_TIMEOUT; do not relabel original receipt source_unchanged flag or infer full regression PASS"
+}

@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-22T05:53:59.372068+00:00",
+  "manifest": "m1-receiver-typed-errors-11-source.json",
+  "source_tree_sha256": "1275019c82fd2c7f1b4736c7ed32c4e04c6bc8d0fc9ecd69dcaf62f279877901",
+  "reconstruction_directory": "/tmp/openwepp-m1-receiver-reconstruction-02",
+  "patch_exit_code": 0,
+  "entries_expected": 756,
+  "entries_verified": 756,
+  "mismatches": [],
+  "reconstructed_tree_sha256": "1275019c82fd2c7f1b4736c7ed32c4e04c6bc8d0fc9ecd69dcaf62f279877901",
+  "pass": true
+}

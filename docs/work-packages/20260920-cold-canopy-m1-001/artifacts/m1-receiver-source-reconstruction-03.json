@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-22T05:54:31.219493+00:00",
+  "manifest": "m1-receiver-green-typed-12-source.json",
+  "source_tree_sha256": "ae2c9969f2c3c3439002f98883403e81d3ac0c72c31cddacee326cd89932f31e",
+  "reconstruction_directory": "/tmp/openwepp-m1-receiver-reconstruction-03",
+  "patch_exit_code": 0,
+  "entries_expected": 756,
+  "entries_verified": 756,
+  "mismatches": [],
+  "reconstructed_tree_sha256": "ae2c9969f2c3c3439002f98883403e81d3ac0c72c31cddacee326cd89932f31e",
+  "pass": true
+}

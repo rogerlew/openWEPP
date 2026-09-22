@@ -1,0 +1,30 @@
+{
+  "utc": "2026-09-22T06:13:45.033714+00:00",
+  "compiled_source_tree_sha256": "bee0dad16f8db38aac3338deb12e2033408f0c96c81250fd17df44b70edcd833",
+  "inventory_tree_sha256": "ee8b55dd7889481682818b581860da95e39f387fd6251ddd9021f08fac9f82b1",
+  "changed_original_entries": [],
+  "inventory_only_entries": {
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/file2.csv": "394113e9ce33bfdb3b27170b485828d0bb5e74d071ae115d0ec09b445fc0da2a",
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/file3.csv": "424c3b09cf3978a96bf20b4b1910da2ea72551d78eeb6104f3666271dac5d713",
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.json": "cd20a3a4b1b573b5c74bfdf76245f0d067c9a08fa325f894ee1b7fada5285885",
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.md": "642e6ce73be75bc27b7dfa923efe3a655861353631a22c283a9cad14916a4e13"
+  },
+  "inventory_receipt": "m1-receiver-terminal-inventory-01.json",
+  "binaries": [
+    {
+      "suite": "openwepp-land-surface-energy",
+      "built_path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-33cde06998c3108c",
+      "frozen_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/frozen-terminal-debug/openwepp_land_surface_energy-33cde06998c3108c",
+      "sha256": "1e827097ee258b8bf3c12122e43337cc99c8b861ba5d4b44b2cbd8b7237a6a6c",
+      "bytes": 105054176
+    },
+    {
+      "suite": "openwepp-hillslope-orchestrator",
+      "built_path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_orchestrator-7511e2228ab2a6cb",
+      "frozen_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/frozen-terminal-debug/openwepp_hillslope_orchestrator-7511e2228ab2a6cb",
+      "sha256": "44e60f36f6903464852d989cd3b0de10ab75073f74eadd93654004be2d4fab07",
+      "bytes": 456033376
+    }
+  ],
+  "scope": "Frozen debug executables for bounded original60 and prescribed receiver evidence; no release performance qualification."
+}

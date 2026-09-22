@@ -1,0 +1,39 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: type `M1LoopActivityObservation` is more private than the item `m1_coupled::m1_solve_with_early_first_witness_incomplete_for_test`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3799:1
+     |
+3799 | / pub fn m1_solve_with_early_first_witness_incomplete_for_test(
+3800 | |     input: &M1CoupledColumnInput,
+3801 | | ) -> (Vec<(u32, bool)>, M1LoopActivityObservation) {
+     | |__________________________________________________^ function `m1_coupled::m1_solve_with_early_first_witness_incomplete_for_test` is reachable at visibility `pub`
+     |
+note: but type `M1LoopActivityObservation` is only usable at visibility `pub(crate)`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1083:1
+     |
+1083 | pub(crate) struct M1LoopActivityObservation {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: `#[warn(private_interfaces)]` on by default
+
+warning: type `M1LoopActivityObservation` is more private than the item `m1_coupled::m1_solve_with_no_update_exponent_for_test`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3818:1
+     |
+3818 | / pub fn m1_solve_with_no_update_exponent_for_test(
+3819 | |     input: &M1CoupledColumnInput,
+3820 | |     exponent: u32,
+3821 | | ) -> M1LoopActivityObservation {
+     | |______________________________^ function `m1_coupled::m1_solve_with_no_update_exponent_for_test` is reachable at visibility `pub`
+     |
+note: but type `M1LoopActivityObservation` is only usable at visibility `pub(crate)`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1083:1
+     |
+1083 | pub(crate) struct M1LoopActivityObservation {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.73s
+────────────
+ Nextest run ID b856ab8c-f48c-4f69-a7f9-b00841313dc1 with nextest profile: default
+    Starting 51 tests across 1 binary (174 tests skipped)
+────────────
+     Summary [   0.117s] 51 tests run: 51 passed, 174 skipped

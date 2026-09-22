@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-22T06:26:16.465065+00:00",
+  "feature_and_full_source_same": true,
+  "original_entries_changed": [],
+  "inventory_additions": {
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/file2.csv": "394113e9ce33bfdb3b27170b485828d0bb5e74d071ae115d0ec09b445fc0da2a",
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/file3.csv": "424c3b09cf3978a96bf20b4b1910da2ea72551d78eeb6104f3666271dac5d713",
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.json": "cd20a3a4b1b573b5c74bfdf76245f0d067c9a08fa325f894ee1b7fada5285885",
+    "crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.md": "642e6ce73be75bc27b7dfa923efe3a655861353631a22c283a9cad14916a4e13"
+  },
+  "scope": "Before/after source manifests bracket concurrent full/feature commands; generated files explain observed source drift. Recorded false flags remain unchanged."
+}

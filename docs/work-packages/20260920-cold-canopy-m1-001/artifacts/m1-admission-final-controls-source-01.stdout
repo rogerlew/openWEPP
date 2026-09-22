@@ -1,0 +1,28 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test m1_coupled_tests::m1_complete_success_observes_real_evaluator_hydraulic_trial_materialization_work ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.01s
+
+
+running 1 test
+test m1_coupled_tests::m1_early_incomplete_first_witness_keeps_real_later_strict_decrease_installable ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.01s
+
+
+running 1 test
+test m1_coupled_tests::m1_first_domain_valid_halving_is_consumed_before_hydraulics ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.01s
+
+
+running 1 test
+test m1_coupled_tests::m1_no_update_records_exact_b1_and_b2_cumulative_backtracking ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.02s
+

@@ -1,0 +1,9 @@
+{
+  "utc": "2026-09-22T06:24:21.848006+00:00",
+  "manifest": "m1-receiver-final-source.json",
+  "directory": "/tmp/openwepp-m1-receiver-reconstruction-final",
+  "patch_exit": 0,
+  "entries_verified": 756,
+  "tree_sha256": "3dc8f4e09d1feae4f8c08b572505edb63697f3f9077add8f0049a725845459a6",
+  "all_bytes_match": true
+}

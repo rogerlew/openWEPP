@@ -1,0 +1,8 @@
+
+running 3 tests
+test land_surface_energy_shadow::m1_coupled_expected_red::m1_receiver_fixed_failures_restore_each_actual_owner_byte_record ... ok
+test land_surface_energy_shadow::m1_coupled_expected_red::m1_receiver_prescribed_routing_uses_shared_geometry_and_once_only_tile_conversion ... ok
+test land_surface_energy_shadow::m1_coupled_expected_red::m1_receiver_uses_prescribed_release_components_and_actual_raw_owners ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1526 filtered out; finished in 0.34s
+

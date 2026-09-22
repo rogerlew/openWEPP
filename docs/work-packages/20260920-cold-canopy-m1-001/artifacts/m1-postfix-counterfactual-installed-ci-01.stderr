@@ -1,0 +1,8 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.30s
+────────────
+ Nextest run ID 5b04fbfa-c8d5-434e-a877-0de157d8a4f5 with nextest profile: default
+    Starting 1 test across 1 binary (229 tests skipped)
+────────────
+     Summary [   0.018s] 1 test run: 1 passed, 229 skipped

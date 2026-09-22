@@ -1,0 +1,7 @@
+{
+  "source_tree_sha256": "f25b8e59fc42902300bf9aaf85640ee525b0434da8e3dc0cf1956e92aa2109d7",
+  "inventory_receipt": "m1-routing-corrected-inventory-01.json",
+  "binary": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/frozen-routing-corrected-debug/openwepp_land_surface_energy-6930b921f1500e71",
+  "sha256": "94e67dc0b6d7ab60b4847cf93063e975fd1c4e86c5047c2c962f8c953969980d",
+  "bytes": 104915216
+}

@@ -16,7 +16,7 @@ HERE = Path(__file__).resolve().parent
 SOURCE = Path('/home/roger/openwepp-experiments/cold-canopy-m1-20260920')
 BASE = Path('/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918')
 LOGS = Path('/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts')
-DEADLINE = dt.datetime.fromisoformat('2026-09-22T02:56:04.819748+00:00')
+DEADLINE = dt.datetime.fromisoformat('2026-09-22T06:51:00+00:00')
 SPEC = importlib.util.spec_from_file_location(
     'snapshot_tool',
     Path('/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/execution-discretion-20260915/run-recorded.py'),
@@ -85,6 +85,12 @@ def main():
         'SC-LANDSURFACEENERGY-001/interface.md',
         'SC-LANDSURFACEENERGY-001/water-vapor.md',
         'SC-LANDSURFACEENERGY-001/binding-index.md',
+        'SC-LANDSURFACEENERGY-001/nonlinear-solve.md',
+        'SC-LANDSURFACEENERGY-001/numerical-methods.md',
+        'SC-LANDSURFACEENERGY-001/solve-boundary.md',
+        'SC-LANDSURFACEENERGY-001/terminal-support.md',
+        'SC-VEGETATIONTRANSACTION-001.md',
+        'SC-SURFACELIQUID-001.md',
     ):
         authority_path = authority_root / name
         pinned[str(authority_path)] = sha(authority_path)

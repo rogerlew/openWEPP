@@ -1,0 +1,45 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: variable does not need to be mutable
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1701:9
+     |
+1701 |     let mut evaluation = M1CoupledEvaluation {
+     |         ----^^^^^^^^^^
+     |         |
+     |         help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `capacity`, `current_drainage`, and `linear_dimension` are never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1757:5
+     |
+1750 | pub struct M1PhaseJoinControllerReport {
+     |            --------------------------- fields in this struct
+...
+1757 |     capacity: [openwepp_vegetation::cold_canopy_m1::M1CapacityBranch; 2],
+     |     ^^^^^^^^
+1758 |     current_drainage: [f64; 2],
+     |     ^^^^^^^^^^^^^^^^
+1759 |     eliminated_coordinates: [bool; 2],
+1760 |     linear_dimension: usize,
+     |     ^^^^^^^^^^^^^^^^
+     |
+     = note: `M1PhaseJoinControllerReport` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `activity` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2205:5
+     |
+2203 | struct M1PhaseJoinControllerError {
+     |        -------------------------- field in this struct
+2204 |     error: M1CoupledError,
+2205 |     activity: M1PhaseJoinActivity,
+     |     ^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib) generated 3 warnings (run `cargo fix --lib -p openwepp-land-surface-energy` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.83s
+────────────
+ Nextest run ID 643d8e8a-c3ba-4ef4-a372-5d7ed15d83f7 with nextest profile: default
+    Starting 6 tests across 1 binary (213 tests skipped)
+────────────
+     Summary [   0.021s] 6 tests run: 6 passed, 213 skipped

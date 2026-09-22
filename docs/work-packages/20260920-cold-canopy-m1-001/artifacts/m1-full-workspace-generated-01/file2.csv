@@ -1,0 +1,3 @@
+Station_ID,Date,Hour,Air_Temp,Dewpoint,RH,gridded_data_pres,Prec_Type,Snow_Phase,Rain_Phase
+STATION,2020-01-01,1,1.0,0.0,95.0,0.01,rain,0,1
+STATION,2020-01-01,2,-1.0,-2.0,80.0,0.01,snow,1,0

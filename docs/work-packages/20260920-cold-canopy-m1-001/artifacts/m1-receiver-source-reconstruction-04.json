@@ -1,0 +1,12 @@
+{
+  "utc": "2026-09-22T05:59:31.060954+00:00",
+  "manifest": "m1-accepted-coordinates-17-source.json",
+  "source_tree_sha256": "7569e83883eed65892f82c005feafa77aebfece7a593fb6c4ec8fc9f403efca2",
+  "reconstruction_directory": "/tmp/openwepp-m1-receiver-reconstruction-04",
+  "patch_exit_code": 0,
+  "entries_expected": 756,
+  "entries_verified": 756,
+  "mismatches": [],
+  "reconstructed_tree_sha256": "7569e83883eed65892f82c005feafa77aebfece7a593fb6c4ec8fc9f403efca2",
+  "pass": true
+}

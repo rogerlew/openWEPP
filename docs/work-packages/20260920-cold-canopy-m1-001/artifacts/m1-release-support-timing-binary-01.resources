@@ -1,0 +1,23 @@
+	Command being timed: "nix develop /workdir/openWEPP --command /home/roger/openwepp-experiments/cold-canopy-m1-20260920/frozen-release-timing/openwepp_land_surface_energy-release-timing m1_coupled_tests::m1_release_support_timing_observes_inner_solve_and_real_work --exact --nocapture"
+	User time (seconds): 0.95
+	System time (seconds): 0.23
+	Percent of CPU this job got: 89%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.32
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 340280
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 55005
+	Voluntary context switches: 45584
+	Involuntary context switches: 44
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 536
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

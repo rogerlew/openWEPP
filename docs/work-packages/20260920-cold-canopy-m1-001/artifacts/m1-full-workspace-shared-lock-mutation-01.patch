@@ -1,0 +1,12 @@
+diff --git a/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/Cargo.lock b/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/Cargo.lock
+index b312c31fa..c89614c71 100644
+--- a/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/Cargo.lock
++++ b/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/Cargo.lock
+@@ -251,6 +251,7 @@ name = "openwepp-land-surface-energy"
+ version = "0.1.0"
+ dependencies = [
+  "openwepp-kernel-contract",
++ "openwepp-vegetation",
+  "serde",
+  "serde_json",
+  "sha2",

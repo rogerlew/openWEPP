@@ -1,0 +1,7 @@
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.11s
+────────────
+ Nextest run ID ed6951a7-e5a7-42f0-ba4e-60612db375b8 with nextest profile: default
+    Starting 2 tests across 1 binary (214 tests skipped)
+────────────
+     Summary [   0.016s] 2 tests run: 2 passed, 214 skipped

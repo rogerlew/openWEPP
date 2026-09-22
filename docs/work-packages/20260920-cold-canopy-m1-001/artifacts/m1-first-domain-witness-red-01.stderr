@@ -1,0 +1,9 @@
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find function `m1_first_domain_valid_halved_witness_for_test` in module `super`
+  --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:75:16
+   |
+75 |         super::m1_first_domain_valid_halved_witness_for_test(
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error

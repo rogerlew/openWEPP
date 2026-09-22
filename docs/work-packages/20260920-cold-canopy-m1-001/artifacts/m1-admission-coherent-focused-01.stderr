@@ -1,0 +1,7 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID 24fb1c97-a719-44a1-a171-c0fb1fd92aec with nextest profile: default
+    Starting 46 tests across 1 binary (174 tests skipped)
+────────────
+     Summary [   0.114s] 46 tests run: 46 passed, 174 skipped

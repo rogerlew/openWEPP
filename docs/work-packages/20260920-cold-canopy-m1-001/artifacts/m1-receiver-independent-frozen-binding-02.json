@@ -1,0 +1,13 @@
+{
+  "utc": "2026-09-22T06:25:46.427589+00:00",
+  "method": "Exact parsed raw JSON equality; reuse unchanged independent Decimal60 calculation and frozen reference, no repeated physical execution",
+  "earlier_raw_run": "m1-receiver-raw-primitives-15",
+  "frozen_raw_run": "m1-terminal-frozen-receiver-01",
+  "raw_json_equal": true,
+  "independent_reconstruction": "m1-receiver-independent-primitive-reconstruction-01.json",
+  "checks_reused": 34,
+  "binary_sha256": "44e60f36f6903464852d989cd3b0de10ab75073f74eadd93654004be2d4fab07",
+  "source_tree_sha256": "ee8b55dd7889481682818b581860da95e39f387fd6251ddd9021f08fac9f82b1",
+  "raw_stderr_sha256": "a2bfb51f027594db735adec239e6c1e63b4ec8d4a1e743187e344a3d490d55ee",
+  "scope": "Pre-final-guard prescribed local candidate receiver only; not donor debit, caller-owned rollback, final-source, cycles or restart"
+}
