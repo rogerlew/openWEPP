@@ -157,7 +157,25 @@ Early release original60 timing below is a different source, with unresolved
 inner CPU and no annual/OFE-day projection. The package does not reach
 FUNCTIONAL_EVIDENCE_PASS, performance qualification, B01 closure or production readiness.
 
-Publication and charged ledger are recorded below after remote-byte verification.
+Publication: scoped main evidence commit
+[`ae317513449efb9ff9e4ebda85c0777408b858ef`](https://github.com/rogerlew/openWEPP/commit/ae317513449efb9ff9e4ebda85c0777408b858ef)
+was pushed to origin/main. [Remote-byte verification](artifacts/m1-receiver-publication-01.json)
+fetched every one of its **896 changed files** by HTTPS at the immutable commit;
+all SHA-256 values matched committed bytes. This includes the complete recovery
+patch, final manifest, failed runs and the limited passing evidence. Main contains
+only package narrative/evidence and scoped recorder changes. No Rust, science
+contract, unrelated primary-source download or B01 log was staged; the historical
+local structural-drainage-publication-02 receipt was neither reread nor published.
+Narrative/recorder `git diff --check` passed; raw logs/patches are retained verbatim.
+
+Charged ledger at **2026-09-22T06:29:12.172835Z**: carry224800.097857 s plus
+13092.172835 s elapsed = **237892.270692 s**; fixed ceiling239200.097857 s,
+remaining1307.827165 s. This is a publication checkpoint, not a renewed allowance
+or refund. The follow-up evidence commit records this verification; its exact
+remote-byte check and later final charge are preserved locally in
+`artifacts/m1-receiver-publication-02.json`, avoiding a recursive self-hash commit.
+That later receipt governs subsequent carry if greater. Implementation remains
+stopped; unused final-preservation time does not authorize resumed source work.
 
 ### Admission test checkpoint
 
