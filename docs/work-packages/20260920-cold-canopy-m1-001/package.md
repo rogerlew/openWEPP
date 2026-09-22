@@ -1,5 +1,95 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Diagnostic metadata and complete-parent resumption — adopted 2026-09-22
+
+Owner execution of `/tmp/openwepp_cold_canopy_m1_parent_metadata_authorization.md`
+adopts its prospective diagnostic metadata and resumes this same checkpoint;
+no additional time or acceptance waiver. Intent: privately bind the unchanged
+frozen workload to a proleptic Gregorian fixed +00:00 calendar, origin
+2000-06-20T00:00:00+00:00 at integer-nanosecond tick zero, 86400-second days,
+no daylight-saving/leap-second events, exclusive 72-hour endpoint. Preserve
+all ordered original supports and the rain change at 60 seconds. This is a new
+private fixed-sequence provider, not recovered historical provenance or the
+climate-derived SC-SNOWFREEFORCING-001 provider. New identities require reviewed
+payload encoding, actual input/implementation binding and real beginning owners.
+
+Permitted work remains the detached A–F integration corrections, genuine snow
+initialization/inactive envelope, canonical seven-owner staging/commit and
+positive late rejection. Frozen physics, scalars, solver, tolerances, coupled-time
+closed fields/tags and production selectors remain unchanged. Original60, both
+72-hour cycles, independent balances, restart/cost and Critical/A0/A1/A3 obligations
+remain required and incomplete; all previous failures remain evidence.
+
+Ran: all 757 recorded source entries rehashed equal in both the mutable tree and
+durable reconstruction, aggregate b503934ab509cce8f46e5e8b9cf3c3487037672b5b25c97ec7084ef1f5d3fc5d.
+No patch reapplied. The final local publication receipt was read once and carries
+248645.872164 seconds; retained balance is 3687.849836 seconds against ceiling
+252333.722177, with 0.000177 seconds unreclaimed. Conservative first-reading
+anchor 2026-09-22T18:19:00Z fixes deadline 2026-09-22T19:20:27.849836Z and
+implementation/launch cutoff 2026-09-22T18:50:27.849836Z. Concurrent elapsed is
+charged once including reading/waits; final review/preservation reserves 1800s.
+
+Independent correctness `/root/metadata_correctness` and QA `/root/metadata_qa`
+are dispatched read-only; functioning return and a functioning sole-implementer
+route remain prerequisites to source/physical work. Prospective private-provider
+authority needs both reviews before derived controls and implementation.
+Selected checks: metadata and identity mutation, missing/reordered record and
+snow, wrong day/origin/support/sequence, incomplete/premature parent refusal;
+exact-source/manifest review precedes corrected physical support and parent runs,
+all physical commands capped at 180s and full declared bounds fitting reserve.
+Reuse unchanged recorder controls only; no physical run has been released.
+Independence/input failure after bounded recovery, out-of-envelope correction,
+owner stop or hard budget stops remain binding. Main Rust stays unchanged.
+
+### Capacity stop and preserved disposition
+
+**CAPACITY STOP / M1 INCOMPLETE / HOLD.** Both independent conversations returned
+static preimplementation findings. A Terra implementer dispatch failed with
+`agent thread limit reached`; after interrupting the completed QA role, the one
+bounded recovery dispatch failed identically. [Observed capacity events](artifacts/parent-metadata-capacity-01.json)
+are retained. No repeated saturation loop, runtime-limit change, nested workaround
+or substitution of a reviewer as author followed. The required functioning
+implementation route remains unavailable; the adopted stop applies.
+
+Static: [correctness /root/metadata_correctness](artifacts/parent-metadata-correctness-01.md)
+confirms coherent bounded direction but retains HOLD: private canonical payload
+encoding and digest, real source/forcing joins, seven-owner inactive-snow
+classification and mutation controls remain prerequisites. Its scope is current
+authority/preimplementation only, not final-source acceptance.
+[QA /root/metadata_qa](artifacts/parent-metadata-qa-01.md) confirms functioning
+preimplementation review and retains payload, owner, and manifest requirements.
+Root rejects its assertion that owner adoption is absent: the user's explicit
+execute instruction adopts the incoming document under bounded-agent-execution;
+the new top section records that direction. QA's cited end-of-file failure counts
+are historical evidence, not a new review of the latest source cut. Both original
+responses are preserved verbatim; no final source or launch approval is claimed.
+
+Ran: [complete custody inventory](artifacts/parent-metadata-recovery-01.json)
+checks actual snapshot path sets as well as hashes: live and reconstruction both
+match exactly 757 entries at b503934a…fc5d; observer85b8314e…9963 and patch
+e43e03b2…a90a also match. Existing exact reconstruction remains reusable; no
+new recovery patch is needed because detached source is unchanged. No Rust,
+canonical science authority, recorder, fixture, support manifest or binary was
+changed; no compiler, physical test or scientific workflow ran in this resumption.
+The unapproved E002 run and all historical failed qualification remain unchanged.
+
+The new calendar semantics are adopted but **no authenticated new metadata
+identity has been produced**. Physical inputs remain unchanged, not newly
+qualified. Seven-owner admission/staging/commit, first/adjacent supports,
+positive late rejection, A–F clearance, balances, both cycles, restart and cost
+remain unestablished. Neither M1 completion nor production readiness is claimed.
+Next work requires a functioning sole implementation route with these distinct
+independent review scopes retained; then narrow authority encoding review,
+contract-derived controls, and the previously authorized integration work within
+the remaining allowance. No additional time is granted by this stop.
+
+[Terminal ledger](artifacts/parent-metadata-terminal-ledger-01.json) records
+248983.143412 seconds charged and 3350.578588 seconds remaining at 2026-09-22T18:24:37.271248+00:00.
+Final local `artifacts/parent-metadata-final-publication-01.json` will include
+subsequent publication charges and remote verification; it supersedes this
+interim observation. Scope for current-main publication is this package update
+and the five new raw custody/capacity/review/ledger artifacts only.
+
 ## Parent correction — adopted 2026-09-22 16:17 UTC
 
 **TERMINAL INPUT/CAPACITY STOP / M1 INCOMPLETE / HOLD.** No accepted first or

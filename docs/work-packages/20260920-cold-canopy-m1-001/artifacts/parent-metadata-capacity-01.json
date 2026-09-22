@@ -1,0 +1,36 @@
+{
+  "evidence_class": "Observed tool outcomes; no source or physical work",
+  "observed_utc": "2026-09-22T18:23:03.319425+00:00",
+  "events": [
+    {
+      "role": "/root/metadata_correctness",
+      "action": "spawn rust_code_reviewer",
+      "result": "accepted; review running"
+    },
+    {
+      "role": "/root/metadata_qa",
+      "action": "spawn rust_qa_reviewer",
+      "result": "accepted; static response returned"
+    },
+    {
+      "role": "/root/metadata_implementation",
+      "action": "spawn implementer read-only initial assignment",
+      "result": "collab spawn failed: agent thread limit reached"
+    },
+    {
+      "role": "/root/metadata_qa",
+      "action": "interrupt completed role for bounded slot recovery",
+      "result": "previous_status completed"
+    },
+    {
+      "role": "/root/metadata_implementation",
+      "action": "one bounded recovery spawn",
+      "result": "collab spawn failed: agent thread limit reached"
+    }
+  ],
+  "disposition": "CAPACITY_STOP / M1_INCOMPLETE / HOLD",
+  "runtime_limit_modified": false,
+  "nested_workaround": false,
+  "source_edits": false,
+  "physical_runs": 0
+}

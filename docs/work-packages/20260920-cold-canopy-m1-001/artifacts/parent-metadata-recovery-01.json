@@ -1,0 +1,22 @@
+{
+  "observed_utc": "2026-09-22T18:22:50.092786+00:00",
+  "evidence_class": "Ran: source custody checks only; no physical execution",
+  "roots": [
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+      "entries": 757,
+      "tree_sha256": "b503934ab509cce8f46e5e8b9cf3c3487037672b5b25c97ec7084ef1f5d3fc5d",
+      "exact_recorded_entries_match": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-parent-correction-reconstruction-20260922",
+      "entries": 757,
+      "tree_sha256": "b503934ab509cce8f46e5e8b9cf3c3487037672b5b25c97ec7084ef1f5d3fc5d",
+      "exact_recorded_entries_match": true
+    }
+  ],
+  "patch_sha256": "e43e03b26922b6496b7b45195feed56667dd30c7bc6c5c542ef50a0fe248a90a",
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "source_modified": false,
+  "patch_reapplied": false
+}

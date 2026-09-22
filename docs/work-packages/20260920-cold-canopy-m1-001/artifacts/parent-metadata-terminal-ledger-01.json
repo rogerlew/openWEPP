@@ -1,0 +1,15 @@
+{
+  "observed_utc": "2026-09-22T18:24:37.271248+00:00",
+  "resumption_anchor_utc": "2026-09-22T18:19:00+00:00",
+  "prior_carried_seconds": "248645.872164",
+  "session_elapsed_seconds": "337.271248",
+  "charged_cumulative_seconds": "248983.143412",
+  "remaining_carried_allowance_seconds": "3350.578588",
+  "cumulative_ceiling_seconds": "252333.722177",
+  "unreclaimed_rounding_gap_seconds": "0.000177",
+  "fixed_deadline_utc": "2026-09-22T19:20:27.849836Z",
+  "reserve_seconds": 1800,
+  "disposition": "CAPACITY_STOP / M1_INCOMPLETE / HOLD",
+  "physical_runs": 0,
+  "scope": "Adoption and custody/capacity evidence only; source unchanged. Publication costs still accrue."
+}
