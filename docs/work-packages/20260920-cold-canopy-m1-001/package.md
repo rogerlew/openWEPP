@@ -778,6 +778,17 @@ only. Current cumulative accounting is in the
 publication/return accounting in provider-parent-final-publication-02.json.
 Unspent protected time is not a renewed implementation allowance.
 
+Ran: substantive publication commit
+`66493c8dbdf91bc5c034a37fe9f88371df34ea6c` was pushed to main. A separate bare
+fetch verified all274 scoped changed blobs against the local bytes, including
+final source/recovery and both reviews; see
+[publication01](artifacts/provider-parent-final-publication-01.json).
+The initial fetch used an absent bare-repository origin remote and failed;
+its raw error is preserved. Fetching the actual repository URL succeeded.
+Only this package's artifacts and narrative differ from the pinned main commit;
+main crates/src/tests/Cargo remain unchanged. Final publication02 is a local
+post-publication receipt, avoiding a self-referential commit identity.
+
 ## Diagnostic metadata and complete-parent resumption — adopted 2026-09-22
 
 Owner execution of `/tmp/openwepp_cold_canopy_m1_parent_metadata_authorization.md`

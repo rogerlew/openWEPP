@@ -1,14 +1,14 @@
 {
-  "observed_utc": "2026-09-22T23:30:27.277622+00:00",
+  "observed_utc": "2026-09-22T23:32:34.271132+00:00",
   "anchor_utc": "2026-09-22T19:53:00+00:00",
   "prior_charged_seconds": "250793.051684",
-  "session_elapsed_seconds": "13047.277622",
-  "charged_cumulative_seconds": "263840.329306",
+  "session_elapsed_seconds": "13174.271132",
+  "charged_cumulative_seconds": "263967.322816",
   "fixed_ceiling_seconds": "265193.051684",
-  "remaining_seconds": "1352.722378",
+  "remaining_seconds": "1225.728868",
   "hard_deadline_utc": "2026-09-22T23:53:00Z",
   "implementation_cutoff_utc": "2026-09-22T23:23:00Z",
   "reserve_seconds": 1800,
   "clock_policy": "Concurrent elapsed charged once, including reading, waits, review and preservation. No refunds.",
-  "state": "IMPLEMENTATION STOPPED at23:23; final source03 e53295 frozen and reconstructed; provider04 PASS; parent uncompiled/runtime HOLD; final review/preservation/publication reserve only."
+  "state": "HOLD. Final source/recovery and independent reviews published/remote verified at66493c8; final accounting/publication receipt only."
 }
