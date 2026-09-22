@@ -1,0 +1,22 @@
+{
+  "evidence_class": "Static independent review with inspected Ran evidence; no reviewer physical rerun",
+  "source_tree_sha256": "6ebea65085383a1c63a6a8ac2ffdf9ef6f7051e3cb3a7573d20e5dc125950803",
+  "scope": "Accepted-current Core materialization without FD Jacobian rebuild; explicit optional diagnostic Jacobian; existing empty-surface guard on actual occupancy I=0 before physiology",
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "verdict": "GO bounded body; physical acceptance HOLD",
+    "verification": "All3successpaths authenticate Core/None; diagnosticSome remains actual matrix; LSEB-E-030 absence typed. Hydraulic reconstruction uses actual accepted leaf vapor/branch. Empty rule applies own area/T/phase, support identities/conduction already validated. Uppercapture/lowercapture*(through+D) same actualI reused in ledger."
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "verdict": "GO bounded body; broader qualification HOLD",
+    "verification": "Original60 predicate unchanged. Final206PASS6existingignored, source/pins/support unchanged. Exactfinalformat01PASS bothchangedfiles. Earlier focused02 source6953 is supporting predecessor evidence only."
+  },
+  "checks": {
+    "tests": "structural-drainage-guards-lse-lib-02.json",
+    "format": "structural-drainage-guards-final-format-01.json",
+    "clippy": "structural-drainage-guards-clippy-01.json",
+    "clippy_status": "FAIL, no waiver"
+  },
+  "remaining": "Accepted finite/cap/phase/raw+scaled+independentledger guards; first-domain-valid witness/activity; real routing/receivers/rollback/cycles/restart/release cost; Critical/A0/A1/A3/full qualification."
+}

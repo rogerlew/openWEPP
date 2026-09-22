@@ -1,0 +1,17 @@
+{
+  "command": [
+    "patch",
+    "--dry-run",
+    "--batch",
+    "-p1",
+    "-d",
+    "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+    "-i",
+    "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/structural-drainage-critical-full-04-from-observer-cut02.patch"
+  ],
+  "exit_code": 0,
+  "stdout": "checking file Cargo.lock\nchecking file crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs\nchecking file crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs\nchecking file crates/openwepp-land-surface-energy/Cargo.toml\nchecking file crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs\nchecking file crates/openwepp-land-surface-energy/src/covered_oracle_conformance_tests.rs\nchecking file crates/openwepp-land-surface-energy/src/diagnostics.rs\nchecking file crates/openwepp-land-surface-energy/src/error.rs\nchecking file crates/openwepp-land-surface-energy/src/lib.rs\nchecking file crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs\nchecking file crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs\nchecking file crates/openwepp-land-surface-energy/src/numerics.rs\nchecking file crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs\nchecking file crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs\nchecking file crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs\nchecking file crates/openwepp-land-surface-energy/src/transaction.rs\nchecking file crates/openwepp-land-surface-energy/src/transaction_tests.rs\nchecking file crates/openwepp-vegetation/src/cold_canopy_m1.rs\nchecking file crates/openwepp-vegetation/src/energy.rs\nchecking file crates/openwepp-vegetation/src/lib.rs\nchecking file crates/openwepp-vegetation/tests/cold_canopy_m1_expected_red.rs\n",
+  "stderr": "",
+  "evidence": "Dry-run applicability against preserved exact observer; no source copy or mutation",
+  "observed_utc": "2026-09-22T02:24:12.930583+00:00"
+}

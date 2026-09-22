@@ -1,0 +1,47 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.78s
+────────────
+ Nextest run ID b552c092-6662-4194-9593-82cd6742cdc2 with nextest profile: default
+    Starting 1 test across 1 binary (213 tests skipped)
+        FAIL [   0.005s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 213 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain' (2068966) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:62:5:
+    latent heat precedence: ["NaN: VEG-E-140, expected VEG-E-141", "inf: VEG-E-140, expected VEG-E-141", "-inf: VEG-E-140, expected VEG-E-141"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.007s] 1 test run: 0 passed, 1 failed, 213 skipped
+        FAIL [   0.005s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 213 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain' (2068966) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:62:5:
+    latent heat precedence: ["NaN: VEG-E-140, expected VEG-E-141", "inf: VEG-E-140, expected VEG-E-141", "-inf: VEG-E-140, expected VEG-E-141"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

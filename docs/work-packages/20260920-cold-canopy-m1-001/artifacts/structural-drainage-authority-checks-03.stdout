@@ -1,0 +1,17 @@
+COMMAND ['.venv/bin/python', 'tools/check_sc_binding_exposure.py', '--strict', 'docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md']
+PASS docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md: 20 binding exposure row(s) fully consolidated
+EXIT 0
+COMMAND ['.venv/bin/python', 'tools/check_sc_binding_exposure.py', '--strict', 'docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md']
+PASS docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md: directory-v1, 24 binding exposure row(s), 106 actual definition(s); structural evidence only
+EXIT 0
+COMMAND ['.venv/bin/python', 'tools/release/check_sc_unit_compliance.py', '--path', 'docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md']
+PASS: SC unit compliance lint found no findings
+EXIT 0
+COMMAND ['.venv/bin/python', 'tools/release/check_sc_unit_compliance.py', '--path', 'docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md']
+PASS: SC unit compliance lint found no findings
+EXIT 0
+COMMAND ['bash', 'tools/release/check_science_contract_admission.sh', '--base-ref', 'a7103a47dd7c6a412013ae756654743782aedae1', '--worktree']
+A0_ADMITTED contracts=49 science_surfaces=0 base=a7103a47dd7c6a412013ae756654743782aedae1 head=WORKTREE authority_sha256=c2561ed52d20bc29d55232ac20520be4bc8ed84d5bcfd5655186ab6397eafc72
+EXIT 0
+COMMAND ['git', 'diff', '--check']
+EXIT 0

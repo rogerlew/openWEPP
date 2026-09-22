@@ -1,0 +1,30 @@
+{
+  "commit": "a7103a47dd7c6a412013ae756654743782aedae1",
+  "remote_head": "a7103a47dd7c6a412013ae756654743782aedae1",
+  "verified_utc": "2026-09-21T19:26:55.180252+00:00",
+  "files": {
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original60-first-ledger.json": {
+      "sha256": "8e0fc413f0fbe763cc613695339f928549e5374aca8c990e9c7c1abf30f4d3ff",
+      "bytes": 724,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/a7103a47dd7c6a412013ae756654743782aedae1/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original60-first-ledger.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original60-first-publication-01.json": {
+      "sha256": "2e16a9c4fd8ae4cb9a40984b552682587dfe7d697faf770acc87e50112131158",
+      "bytes": 13691,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/a7103a47dd7c6a412013ae756654743782aedae1/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original60-first-publication-01.json"
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/package.md": {
+      "sha256": "146133d4726fb779508d4f4472b7fcce67af319d544ad86fb6967a3f04c0b827",
+      "bytes": 156417,
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/a7103a47dd7c6a412013ae756654743782aedae1/docs/work-packages/20260920-cold-canopy-m1-001/package.md"
+    }
+  },
+  "file_count": 3,
+  "all_exact_remote_bytes_match": true,
+  "evidence_publication": "original60-first-publication-01.json (32 exact files)",
+  "final_conservative_carried_charge_seconds": 212951.46242199998,
+  "ceiling_seconds": 226516.28217,
+  "remaining_seconds": 13564.819748000009,
+  "wait_deductions_seconds": 0,
+  "decision": "STOP at numerical-method boundary; safe publication complete"
+}

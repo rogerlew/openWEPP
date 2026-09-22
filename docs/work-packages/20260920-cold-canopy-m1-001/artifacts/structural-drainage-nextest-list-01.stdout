@@ -1,0 +1,7 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls
+openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage
+openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction

@@ -1,0 +1,23 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find function `core` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:319:28
+    |
+319 |         let error = super::core(&input, &M1CoupledColumnTrial::from_coordinates(coordinates))
+    |                            ^^^^ not found in `super`
+    |
+note: function `crate::solver::m1_coupled::core` exists but is inaccessible
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:442:1
+    |
+442 | / fn core(
+443 | |     input: &M1CoupledColumnInput,
+444 | |     trial: &M1CoupledColumnTrial,
+445 | | ) -> Result<Core, M1CoupledError> {
+...   |
+727 | |     })
+728 | | }
+    | |_^ not accessible
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101

@@ -1,0 +1,57 @@
+{
+  "evidence_class": "Static independent test review with inspected expected-red log",
+  "source_tree_sha256": "2e7af3a22be5954a09bda1b77df329c3dbac81f758982512f34ba49643927d4a",
+  "receipt": "structural-drainage-accepted-red-07.json",
+  "prior_review_retained": {
+    "evidence_class": "Static independent test review with inspected expected-red log",
+    "source_tree_sha256": "3720daeaf028ab7730ad9abc73b0af359a509baadbd218613b15b7bdb977aa11",
+    "receipt": "structural-drainage-accepted-red-06.json",
+    "prior_review_retained": {
+      "evidence_class": "Static independent test review with inspected expected-red log",
+      "source_tree_sha256": "37a327810ee43fb17383f71462d209bae2d9211e5515d84dea2bfd2811af3752",
+      "receipt": "structural-drainage-accepted-red-01.json",
+      "disposition": "HOLD, first NaN residual accepted is valid red but combined guard set is not released",
+      "reviewers": [
+        "/root/correctness",
+        "/root/qa"
+      ],
+      "required_corrections": [
+        "Start at actual successful accepted Core/trial materialization boundary; prove unpoisoned baseline passes so generic residual failure cannot false-green finite-state guards.",
+        "Aggregate all cases; first expect_err currently hides later cases.",
+        "Actual liquid M=capacity.next_up,H=0 core must evaluate and diagnosedml>cap must be asserted.",
+        "Independent H ledger poison must alter actual Q/non-vapor operand while cached residual stays accepted.",
+        "Cover original raw and binding scaled RM/RH/Rcap tolerances, preserving no exact-zero/product-zero criterion.",
+        "Cover NaN/Inf published residual, leaf, hydraulic potential/flux/continuity, reservoir operand/derived value and duration with141. Finite state/residual/ledger violations use142.",
+        "Preserve diagnostic Some evaluation and no extra Jacobian/controller work."
+      ]
+    },
+    "qa": {
+      "reviewer": "/root/qa",
+      "verdict": "GO bounded accepted-materialization guard body",
+      "verification": "Actual converged Core/trial one-shot capture; same unpoisoned None boundary passes; no extra Jacobian/controller;16aggregated poison cases,14unexpectedaccepted. Cap-only poison preserves M/H/ledger; separate genuine core-overcap control; actual Q ledger operand; scaledmass binding belowabs."
+    },
+    "correctness": {
+      "reviewer": "/root/correctness",
+      "verdict": "HOLD four specific discriminator fixes",
+      "findings": [
+        "EmptyMass must set both M/H zero; Mzero with old negativeH already fails inversion.",
+        "RawCapacity wrongly setsNaNcapacity and expects142; finite Rcap residual row5 must test142, nonfinitecapacity141.",
+        "Coreovercap control must expose and assert actualml>Cliq, not only coreOk.",
+        "LeafNaN must be postconstruction rather than prehydraulics; add postconstruction derived-reservoir NaN141."
+      ],
+      "verified_good": "Realacceptedcapture/aggregate/noextraJac; Q+1operandledger, scaledmass and exactcapdown controls are sound."
+    },
+    "remaining": "Witness/activity/receiver and physical/release qualification remain HOLD; clippy FAIL retained."
+  },
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "verdict": "GO bounded accepted-materializer guard body",
+    "same_reviewer_fix_verification": "Allfourholdsclosed: validemptyMH0; finiterow5Rcap2e-9 separateNaNcapacity141; actualovercapM/liquid/capassertions; postconstructionleafandderivedreservoirNaNs. All20aggregatecases unexpectedlyaccepted. Prioractualbaseline/Qledger/scaledmass/capdown/noextraworkvalid."
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "verdict": "GO bounded accepted-materializer guard body",
+    "same_reviewer_fix_verification": "Samefourfixesverified; exactsource/list/rawrecord/pins/support unchanged, zero retries. All20categoriesexercisedfromrealacceptedNonebaseline."
+  },
+  "remaining": "First-domain-valid witness/activity/receiver/physicalacceptance/fullqualification remainHOLD."
+}

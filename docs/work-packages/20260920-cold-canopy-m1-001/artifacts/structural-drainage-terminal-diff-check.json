@@ -1,0 +1,20 @@
+{
+  "raw_diff_check_exit": 2,
+  "diagnostics_by_file_suffix": {
+    ".patch": 1750,
+    ".stdout": 39,
+    ".stderr": 23
+  },
+  "classification": "Preserve raw logs and unified recovery patches byte-for-byte; whitespace on empty unified context lines is patch syntax. Separate maintained-source diff check required.",
+  "maintained_diff_command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check",
+    "--",
+    "docs/specifications",
+    "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py"
+  ],
+  "maintained_diff_exit": 0
+}

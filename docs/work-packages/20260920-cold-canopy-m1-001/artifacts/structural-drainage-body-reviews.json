@@ -1,0 +1,46 @@
+{
+  "evidence_class": "Static independent review plus inspected recorded run; no reviewer physical rerun",
+  "source_tree_sha256": "9aebf297a8485d66c2e8bcdd15e1b4b5ab9c338693514197f6687e2a37b832b8",
+  "focused_receipt": "structural-drainage-body-finish-focused-07.json",
+  "focused_result": "25 selected / 25 PASS",
+  "format_receipt": "structural-drainage-body-finish-format-check-02.json",
+  "generic_lu_body_sha256": "2a4ee398c169cc7b39f83e8969aecba6e7bad0c7bc7db3b9fef43c284f7f400d",
+  "generic_lu_body_unchanged_from_observer": true,
+  "prior_review_retained": {
+    "evidence_class": "Static independent review plus inspected recorded run; no reviewer physical rerun",
+    "source_tree_sha256": "59d25d2ed7c1b45ff4cca8609065523fb97216bb2bc6d5a2556eac1b34ae515f",
+    "focused_receipt": "structural-drainage-body-finish-focused-02.json",
+    "focused_result": "20 selected / 20 PASS, source/observer/pins/support unchanged",
+    "format_receipt": "structural-drainage-body-finish-format-check-01.json",
+    "format_scope": "rustfmt --edition 2024 --check on changed m1_coupled.rs; exact final source, exit0",
+    "generic_lu_body_sha256": "2a4ee398c169cc7b39f83e8969aecba6e7bad0c7bc7db3b9fef43c284f7f400d",
+    "generic_lu_body_unchanged_from_observer": true,
+    "qa": {
+      "reviewer": "/root/qa",
+      "verdict": "GO for bounded body and isolated unchanged-original60 diagnostic only",
+      "findings": "One shared production reducer and checked candidate path, actual E/F masks, pre-LU integrity/no second solve, canonical row/identity guards, typed034 vs nonfinite032. Original60 predicate byte-identical to attempt12,1455bytes. Exact final targeted formatting confirmed after correcting wrong historical receipt reference.",
+      "nonblocking": "Stale metadata adapter comment/name; cleanup after original60."
+    },
+    "correctness": {
+      "reviewer": "/root/correctness",
+      "verdict": "HOLD pending bounded fixes",
+      "findings": [
+        "Duplicate exact normalized RHS assembly must use one helper for initial/final; accepted endpoint trace must include phases (green5807 correction retained).",
+        "Global nonfinite precheck wrongly classifies unrelated F data and E-empty systems as drainage integrity. Narrow to selected affine rows; preserve existing singular/nonfinite taxonomy elsewhere. Add discriminating negatives."
+      ],
+      "clarification": "Earlier reviewer shorthand nonfinite A/rhs before multiplication implies integrity was too broad. Adopted authority refers to selected affine members and their metadata/rows. No retained test demands global nonfinite=>integrity. This is a review clarification/correction, not new physical authority."
+    },
+    "not_cleared": "Physical acceptance, materialization/finite/cap/empty-store/witness/activity debt, real receivers/rollback/conservation/fixed72h/restart/cost, lint/full workspace/Critical qualification."
+  },
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "verdict": "GO for single unchanged original60 diagnostic",
+    "same_reviewer_fix_verification": "Final9aeb body/taxonomy/counters/floor/reduced-norm/coupling/actualE/sharedRHS/endpoint fixes verified; no remaining finding in bounded structural body."
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "verdict": "GO for single unchanged original60 diagnostic",
+    "same_reviewer_fix_verification": "Final9aeb cfg witness carries actual step norms; exact final format-check02/list08/focused07, frozen original predicate verified."
+  },
+  "not_cleared": "Physical acceptance, materialization/finite/cap/empty-store/witness/activity debt, real receivers/rollback/conservation/fixed72h/restart/cost, lint/full workspace/Critical qualification."
+}

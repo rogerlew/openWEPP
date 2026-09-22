@@ -1,0 +1,21 @@
+error:
+       … while calling the 'derivationStrict' builtin
+         at «nix-internal»/derivation-internal.nix:37:12:
+           36|
+           37|   strict = derivationStrict drvAttrs;
+             |            ^
+           38|
+
+       … while evaluating derivation 'nix-shell'
+         whose name attribute is located at «github:NixOS/nixpkgs/02e08985a27c65ffd33d434eeb2e660a2e4dc84d?narHash=sha256-QvnceIGTBeDvDd9oCn%2BGvdsnkquliuwbVgpiRH68qaQ%3D»/pkgs/stdenv/generic/make-derivation.nix:647:11
+
+       … while evaluating attribute 'shellHook' of derivation 'nix-shell'
+         at «github:NixOS/nixpkgs/02e08985a27c65ffd33d434eeb2e660a2e4dc84d?narHash=sha256-QvnceIGTBeDvDd9oCn%2BGvdsnkquliuwbVgpiRH68qaQ%3D»/pkgs/build-support/mkshell/default.nix:44:7:
+           43|
+           44|       shellHook = lib.concatStringsSep "\n" (
+             |       ^
+           45|         lib.catAttrs "shellHook" (lib.reverseList inputsFrom ++ [ attrs ])
+
+       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
+
+       error: access to absolute path '/workdir/openWEPP/tools/dev/openwepp-env' is forbidden in pure evaluation mode (use '--impure' to override)

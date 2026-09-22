@@ -230,7 +230,7 @@ The ordinary covered-canopy release remains distinct from the authenticated tran
 | <a id="OBL-LANDSURFACEENERGY-P-004"></a> `OBL-LANDSURFACEENERGY-P-004` | reject all schema-v8 terminal payloads until a reviewed atomic cutover revises both snow and receiving-surface authority. | All LSE producer paths; retain named model/regime and reviewed terminal-cutover limits | v31:L317-L318 | [Guards/errors](#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
 | <a id="OBL-LANDSURFACEENERGY-C-001"></a> `OBL-LANDSURFACEENERGY-C-001` | ET supplies one actual evaporation debit and consumes no second latent debit. | ET consumers of actual evaporation and latent energy | v31:L326-L327 | [Guards/errors](#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
 | <a id="OBL-LANDSURFACEENERGY-C-002"></a> `OBL-LANDSURFACEENERGY-C-002` | infiltration/runoff consumes one water offer, returns sealed partition terms, and remains sole water-partition owner. | Infiltration/runoff consumers of the LSE water offer | v31:L328-L329 | [Guards/errors](#errors) | [Tests](common-details.md#tests); [Detail](common-details.md#tests); named fixtures/tests/real consumers |
-| <a id="OBL-LANDSURFACEENERGY-C-023"></a> `OBL-LANDSURFACEENERGY-C-023` | Before M1 implementation, bind A0 independent saturation/M-H/receipt operand reconstructions, A1 phase-cap-empty-init-restart-rollback and two-occupancy custody vectors, and A3 source-byte/join-derivative vectors. | M1 only; HOLD pending both authority reviews | SC-VEGETATION-001 M1 | required expected-red gate failure blocks implementation | named contract-derived expected-red vectors and real receiver test |
+| <a id="OBL-LANDSURFACEENERGY-C-023"></a> `OBL-LANDSURFACEENERGY-C-023` | Before M1 implementation, bind A0 independent saturation/M-H/receipt and selected-drainage reduced/full operand reconstructions, A1 phase/cap/empty/init/restart/rollback/two-occupancy custody and affine-integrity vectors, and A3 source-byte/join-derivative vectors. | M1 only; HOLD pending both authority reviews | SC-VEGETATION-001 M1 | required expected-red gate failure blocks implementation | named contract-derived expected-red vectors and real receiver test |
 
 
 <a id="isolated-b01-transparent-canopy-liquid"></a>
@@ -385,6 +385,20 @@ numerical kinds map to `LSEB-E-034`. The phase-join amendment is
 `IMPLEMENTATION RELEASED / integrated acceptance HOLD` after its two independent
 authority reviews and corrected red07 review. This releases bounded numerical
 implementation only and cannot activate M1.
+
+The prospective selected-drainage affine-elimination amendment in
+SC-VEGETATION-001 applies only after the existing predictor/final phase and
+capacity selection identifies the `dt*D` branch. It replaces one eligible full
+linear solve with its verified reduced representation, retains every normalized
+coupling and existing pivot/finiteness guard, and evaluates `D_candidate` from
+the derived affine step. `OBL-LANDSURFACEENERGY-C-023` additionally requires
+independent reduced/full reconstruction, one/two-coordinate, zero/positive,
+halving, capacity-selected noneligibility, exact-tie capacity-selected
+noneligibility and final drainage-selected eligibility, signed-zero/underflow,
+and integrity-failure vectors.
+It has `BOUNDED IMPLEMENTATION RELEASE / dual review and expected-red recorded`;
+physical acceptance remains on HOLD. It cannot change a capacity-selected branch,
+relax physical admission, or activate M1.
 
 This section is `HOLD / dual review and expected-red required`; it neither
 activates M1 nor changes a V35 equation or receiver. The immutable source

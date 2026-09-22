@@ -1,0 +1,34 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0382]: borrow of moved value: `poison`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:384:48
+     |
+ 337 |     for (poison, code) in [
+     |          ------ move occurs because `poison` has type `m1_coupled::M1AcceptedMaterializationPoison`, which does not implement the `Copy` trait
+...
+ 383 |         match super::m1_materialize_captured_accepted_poison_for_test(poison) {
+     |                                                                       ------ value moved here
+ 384 |             Ok(_) => unexpected.push(format!("{poison:?}: accepted, expected {code}")),
+     |                                                ^^^^^^ value borrowed here after move
+     |
+note: consider changing this parameter type in function `m1_materialize_captured_accepted_poison_for_test` to borrow instead if owning the value isn't necessary
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2447:13
+     |
+2446 | pub fn m1_materialize_captured_accepted_poison_for_test(
+     |        ------------------------------------------------ in this function
+2447 |     poison: M1AcceptedMaterializationPoison,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this parameter takes ownership of the value
+note: if `m1_coupled::M1AcceptedMaterializationPoison` implemented `Clone`, you could clone the value
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2368:1
+     |
+2368 | pub enum M1AcceptedMaterializationPoison {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ consider implementing `Clone` for this type
+     |
+    ::: crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:383:71
+     |
+ 383 |         match super::m1_materialize_captured_accepted_poison_for_test(poison) {
+     |                                                                       ------ you could clone this value
+
+For more information about this error, try `rustc --explain E0382`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101

@@ -1,0 +1,20 @@
+{
+  "binary": "/home/roger/openwepp-experiments/cold-canopy-m1-structural-terminal-binary/openwepp_land_surface_energy_tests",
+  "binary_sha256": "672767a412fe69e4e05cdf3d495e1f0d457835ff81418af826768bb25f05c8b1",
+  "source_sha256": {
+    "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "66eac7d30113a7c3809fd285fc3f357cc6bfdd77f5b2cf931ed50c32041c5141",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "ae7f690b710dc0518017a46c73a3398b163ba9a85b6420f48307b3d3f49d2a4e",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs": "a68bc2a99c3c13f3a424ffe35c129e7bcd095f7642bf134f52d5edd7347b92c0"
+  },
+  "build_receipt": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/structural-drainage-latent-lse-lib-01.json",
+  "critical_full_receipt": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/structural-drainage-critical-full-04.json",
+  "input_scope": "source-defined local component fixtures",
+  "source_tree_sha256": "c3a681205c5c19dba5f50034b7f219694ec5f43485f9f6ceb6c06f10dc4c1565",
+  "source_receipt": "structural-drainage-critical-full-04-source.json",
+  "observer_relative_patch": "structural-drainage-critical-full-04-from-observer-cut02.patch",
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "original_input_sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+  "original60_predicate_sha256": "f2beb1d2d55fc295d2054881ab995a429a11c33c933e4bfdbd8c4169b2d94cd3",
+  "verified_utc": "2026-09-22T02:23:33.638925+00:00",
+  "classification": "Final detached debug test binary custody, not release throughput or physical acceptance"
+}

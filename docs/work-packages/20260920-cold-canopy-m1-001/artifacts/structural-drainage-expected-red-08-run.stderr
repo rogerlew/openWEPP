@@ -1,0 +1,358 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID f58689bc-3006-4eb8-a2b9-43bc1eb32e0d with nextest profile: default
+    Starting 17 tests across 1 binary (185 tests skipped)
+        FAIL [   0.005s] ( 4/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_reduced_failures_are_numerical_without_unreduced_fallback
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_reduced_failures_are_numerical_without_unreduced_fallback ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_reduced_failures_are_numerical_without_unreduced_fallback
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_reduced_failures_are_numerical_without_unreduced_fallback' (1835606) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:659:25:
+    reduced singular/pivot numerical refusal: ([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 1.0, 2.0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] ( 5/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage' (1835612) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:312:5:
+    expected-red old candidate differs at [(5, 0), (11, 0), (5, 1), (11, 1), (5, 2), (11, 2), (5, 3), (11, 3), (5, 4), (11, 4), (5, 5), (11, 5), (5, 6), (11, 6), (5, 7), (11, 7), (5, 8), (11, 8), (5, 9), (11, 9), (5, 10), (11, 10), (5, 11), (11, 11), (5, 12), (11, 12), (5, 13), (11, 13), (5, 14), (11, 14), (5, 15), (11, 15), (5, 16), (11, 16), (5, 17), (11, 17), (5, 18), (11, 18), (5, 19), (11, 19), (5, 20), (11, 20)]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 6/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_normalized_row_and_rhs_poison
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_normalized_row_and_rhs_poison ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_normalized_row_and_rhs_poison
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_normalized_row_and_rhs_poison' (1835613) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:385:5:
+    expected-red missing affine row/RHS failures: ["normalized_row: accepted", "normalized_rhs: accepted", "selected_row_offdiagonal: accepted"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 8/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_candidate_boundary_vectors_preserve_masked_current_expression
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_candidate_boundary_vectors_preserve_masked_current_expression ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_candidate_boundary_vectors_preserve_masked_current_expression
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_candidate_boundary_vectors_preserve_masked_current_expression' (1835616) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:434:5:
+    expected-red boundary candidate disagreements: [("negative_zero", 0), ("negative_zero", 1), ("negative_zero", 2), ("negative_zero", 3), ("negative_zero", 4), ("negative_zero", 5), ("negative_zero", 6), ("negative_zero", 7), ("negative_zero", 8), ("negative_zero", 9), ("negative_zero", 10), ("negative_zero", 11), ("negative_zero", 12), ("negative_zero", 13), ("negative_zero", 14), ("negative_zero", 15), ("negative_zero", 16), ("negative_zero", 17), ("negative_zero", 18), ("negative_zero", 19), ("negative_zero", 20), ("positive_subnormal", 1)]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 9/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction' (1835608) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:279:9:
+    assertion `left == right` failed: expected-red: current full LU must be replaced by source-derived affine drainage direction
+      left: 13528309464168606646
+     right: 13528275359691865771
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (10/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu' (1835615) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:400:5:
+    assertion `left == right` failed
+      left: "singular_pivot"
+     right: "drainage_elimination_integrity"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (11/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_single_field_integrity_poison
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_single_field_integrity_poison ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_single_field_integrity_poison
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_single_field_integrity_poison' (1835603) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:354:5:
+    expected-red missing attributable integrity failures: ["row: accepted", "identity: accepted", "duration_positive: accepted", "support_finite: accepted", "scale_positive: accepted", "current_negative: accepted", "current_nonfinite: accepted", "raw_diagonal_nonfinite: accepted", "raw_residual_nonfinite: accepted"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.010s] (14/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_selected_assembly_integrity_refuses_before_old_lu
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_selected_assembly_integrity_refuses_before_old_lu ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_selected_assembly_integrity_refuses_before_old_lu
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_selected_assembly_integrity_refuses_before_old_lu' (1835618) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:630:7:
+    LSEB-E-034 selected-affine integrity before LU: M1PhaseJoinControllerReport { phases: [Ice, Ice], direction: [0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], activity: M1PhaseJoinActivity { assemblies: 1, linear_solves: 1, candidate_attempts: 0, backtracking_attempts: 0, materialization_attempts: 0, receipt_attempts: 0, state_install_attempts: 0 }, .. }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.013s] (17/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls' (1835619) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:591:7:
+    actual capacity-selected final controller: Source { error: Numerical(NumericalFailure { kind: SingularPivot, iterations: 0, normalized_residuals: [-6149385.061493828, 35870107.621167555, -2384412.645572173, 100000000.0, 8965761180.186035, 76923076.92307693, -4149585.041495828, 22118535.326574296, -13657652.981637638, -100000000.0, 3601956641.919906, 0.0, -178933359.2617345, -9681724.360406445, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], ordered_residuals: [NormalizedResidual { identity: "m1_row_0", raw: -6.149999999999977, scale: 0.0, tolerance: 1.0001e-6, normalized: -6149385.061493828, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_1", raw: 36.01036720911794, scale: 39.1020817198827, tolerance: 1.0039102081719881e-6, normalized: 35870107.621167555, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_2", raw: -2.3849813235349018, scale: 2.3849813235349018, tolerance: 1.0002384981323534e-6, normalized: -2384412.645572173, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_3", raw: 0.06184008339038941, scale: 0.06184008339038941, tolerance: 6.184008339038941e-10, normalized: 100000000.0, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_4", raw: 8965.761180186035, scale: 8965.761180186035, tolerance: 1e-6, normalized: 8965761180.186035, unit: JoulesPerSquareMeter }, NormalizedResidual { identity: "m1_row_5", raw: 0.06, scale: 0.0, tolerance: 7.8e-10, normalized: 76923076.92307693, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_6", raw: -4.149999999999977, scale: 0.0, tolerance: 1.0001e-6, normalized: -4149585.041495828, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_7", raw: 22.180862387500124, scale: 28.178656500346538, tolerance: 1.0028178656500345e-6, normalized: 22118535.326574296, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_8", raw: -13.67633164079882, scale: 13.67633164079882, tolerance: 1.0013676331640799e-6, normalized: -13657652.981637638, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_9", raw: -0.03753719814698315, scale: 0.03753719814698315, tolerance: 3.753719814698315e-10, normalized: -100000000.0, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_10", raw: 3601.956641919906, scale: 3601.956641919906, tolerance: 1e-6, normalized: 3601956641.919906, unit: JoulesPerSquareMeter }, NormalizedResidual { identity: "m1_row_11", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_12", raw: -183.08038392716963, scale: 231.76363996883833, tolerance: 1.0231763639968838e-6, normalized: -178933359.2617345, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_13", raw: -1.0153386062767522e-5, scale: 4.871670425672764e-5, tolerance: 1.0487167042567277e-12, normalized: -9681724.360406445, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "m1_row_14", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_15", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_16", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_17", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_18", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_19", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_20", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }], occupancy_id: None, active_bounds: [], backtracking_count: 0, step_norms: StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, pivot_magnitude: Some(0.0), matrix_norm: Some(1949099539156.1433), .. }), activity: M1PhaseJoinActivity { assemblies: 1, linear_solves: 1, candidate_attempts: 0, backtracking_attempts: 0, materialization_attempts: 0, receipt_attempts: 0, state_install_attempts: 0 } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.014s] 17 tests run: 8 passed, 9 failed, 185 skipped
+        FAIL [   0.005s] ( 4/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_reduced_failures_are_numerical_without_unreduced_fallback
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_reduced_failures_are_numerical_without_unreduced_fallback ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_reduced_failures_are_numerical_without_unreduced_fallback
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_reduced_failures_are_numerical_without_unreduced_fallback' (1835606) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:659:25:
+    reduced singular/pivot numerical refusal: ([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 1.0, 2.0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] ( 5/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage' (1835612) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:312:5:
+    expected-red old candidate differs at [(5, 0), (11, 0), (5, 1), (11, 1), (5, 2), (11, 2), (5, 3), (11, 3), (5, 4), (11, 4), (5, 5), (11, 5), (5, 6), (11, 6), (5, 7), (11, 7), (5, 8), (11, 8), (5, 9), (11, 9), (5, 10), (11, 10), (5, 11), (11, 11), (5, 12), (11, 12), (5, 13), (11, 13), (5, 14), (11, 14), (5, 15), (11, 15), (5, 16), (11, 16), (5, 17), (11, 17), (5, 18), (11, 18), (5, 19), (11, 19), (5, 20), (11, 20)]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 6/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_normalized_row_and_rhs_poison
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_normalized_row_and_rhs_poison ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_normalized_row_and_rhs_poison
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_normalized_row_and_rhs_poison' (1835613) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:385:5:
+    expected-red missing affine row/RHS failures: ["normalized_row: accepted", "normalized_rhs: accepted", "selected_row_offdiagonal: accepted"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 8/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_candidate_boundary_vectors_preserve_masked_current_expression
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_candidate_boundary_vectors_preserve_masked_current_expression ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_candidate_boundary_vectors_preserve_masked_current_expression
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_candidate_boundary_vectors_preserve_masked_current_expression' (1835616) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:434:5:
+    expected-red boundary candidate disagreements: [("negative_zero", 0), ("negative_zero", 1), ("negative_zero", 2), ("negative_zero", 3), ("negative_zero", 4), ("negative_zero", 5), ("negative_zero", 6), ("negative_zero", 7), ("negative_zero", 8), ("negative_zero", 9), ("negative_zero", 10), ("negative_zero", 11), ("negative_zero", 12), ("negative_zero", 13), ("negative_zero", 14), ("negative_zero", 15), ("negative_zero", 16), ("negative_zero", 17), ("negative_zero", 18), ("negative_zero", 19), ("negative_zero", 20), ("positive_subnormal", 1)]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 9/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction' (1835608) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:279:9:
+    assertion `left == right` failed: expected-red: current full LU must be replaced by source-derived affine drainage direction
+      left: 13528309464168606646
+     right: 13528275359691865771
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (10/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu' (1835615) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:400:5:
+    assertion `left == right` failed
+      left: "singular_pivot"
+     right: "drainage_elimination_integrity"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (11/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_single_field_integrity_poison
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_single_field_integrity_poison ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_single_field_integrity_poison
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_valid_baseline_single_field_integrity_poison' (1835603) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:354:5:
+    expected-red missing attributable integrity failures: ["row: accepted", "identity: accepted", "duration_positive: accepted", "support_finite: accepted", "scale_positive: accepted", "current_negative: accepted", "current_nonfinite: accepted", "raw_diagonal_nonfinite: accepted", "raw_residual_nonfinite: accepted"]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.010s] (14/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_selected_assembly_integrity_refuses_before_old_lu
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_selected_assembly_integrity_refuses_before_old_lu ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_selected_assembly_integrity_refuses_before_old_lu
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_selected_assembly_integrity_refuses_before_old_lu' (1835618) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:630:7:
+    LSEB-E-034 selected-affine integrity before LU: M1PhaseJoinControllerReport { phases: [Ice, Ice], direction: [0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], activity: M1PhaseJoinActivity { assemblies: 1, linear_solves: 1, candidate_attempts: 0, backtracking_attempts: 0, materialization_attempts: 0, receipt_attempts: 0, state_install_attempts: 0 }, .. }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.013s] (17/17) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls' (1835619) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:591:7:
+    actual capacity-selected final controller: Source { error: Numerical(NumericalFailure { kind: SingularPivot, iterations: 0, normalized_residuals: [-6149385.061493828, 35870107.621167555, -2384412.645572173, 100000000.0, 8965761180.186035, 76923076.92307693, -4149585.041495828, 22118535.326574296, -13657652.981637638, -100000000.0, 3601956641.919906, 0.0, -178933359.2617345, -9681724.360406445, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], ordered_residuals: [NormalizedResidual { identity: "m1_row_0", raw: -6.149999999999977, scale: 0.0, tolerance: 1.0001e-6, normalized: -6149385.061493828, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_1", raw: 36.01036720911794, scale: 39.1020817198827, tolerance: 1.0039102081719881e-6, normalized: 35870107.621167555, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_2", raw: -2.3849813235349018, scale: 2.3849813235349018, tolerance: 1.0002384981323534e-6, normalized: -2384412.645572173, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_3", raw: 0.06184008339038941, scale: 0.06184008339038941, tolerance: 6.184008339038941e-10, normalized: 100000000.0, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_4", raw: 8965.761180186035, scale: 8965.761180186035, tolerance: 1e-6, normalized: 8965761180.186035, unit: JoulesPerSquareMeter }, NormalizedResidual { identity: "m1_row_5", raw: 0.06, scale: 0.0, tolerance: 7.8e-10, normalized: 76923076.92307693, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_6", raw: -4.149999999999977, scale: 0.0, tolerance: 1.0001e-6, normalized: -4149585.041495828, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_7", raw: 22.180862387500124, scale: 28.178656500346538, tolerance: 1.0028178656500345e-6, normalized: 22118535.326574296, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_8", raw: -13.67633164079882, scale: 13.67633164079882, tolerance: 1.0013676331640799e-6, normalized: -13657652.981637638, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_9", raw: -0.03753719814698315, scale: 0.03753719814698315, tolerance: 3.753719814698315e-10, normalized: -100000000.0, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_10", raw: 3601.956641919906, scale: 3601.956641919906, tolerance: 1e-6, normalized: 3601956641.919906, unit: JoulesPerSquareMeter }, NormalizedResidual { identity: "m1_row_11", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: KilogramsPerSquareMeter }, NormalizedResidual { identity: "m1_row_12", raw: -183.08038392716963, scale: 231.76363996883833, tolerance: 1.0231763639968838e-6, normalized: -178933359.2617345, unit: WattsPerSquareMeter }, NormalizedResidual { identity: "m1_row_13", raw: -1.0153386062767522e-5, scale: 4.871670425672764e-5, tolerance: 1.0487167042567277e-12, normalized: -9681724.360406445, unit: KilogramsPerSquareMeterSecond }, NormalizedResidual { identity: "m1_row_14", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_15", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_16", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_17", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_18", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_19", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }, NormalizedResidual { identity: "m1_row_20", raw: 0.0, scale: 0.0, tolerance: 1e-9, normalized: 0.0, unit: Kelvin }], occupancy_id: None, active_bounds: [], backtracking_count: 0, step_norms: StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, pivot_magnitude: Some(0.0), matrix_norm: Some(1949099539156.1433), .. }), activity: M1PhaseJoinActivity { assemblies: 1, linear_solves: 1, candidate_attempts: 0, backtracking_attempts: 0, materialization_attempts: 0, receipt_attempts: 0, state_install_attempts: 0 } }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

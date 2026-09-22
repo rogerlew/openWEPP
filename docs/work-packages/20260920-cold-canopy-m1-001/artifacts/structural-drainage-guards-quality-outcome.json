@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Ran: warnings-denied affected LSE all-targets clippy; Static: diagnostic extraction only",
+  "source_tree_sha256": "6ebea65085383a1c63a6a8ac2ffdf9ef6f7051e3cb3a7573d20e5dc125950803",
+  "exit_code": 101,
+  "receipt": "structural-drainage-guards-clippy-01.json",
+  "disposition": "FAIL, not waived; inherited versus introduced classification is incomplete",
+  "diagnostic_error_lines": 183,
+  "compiler_terminal_messages": [
+    "error: could not compile `openwepp-land-surface-energy` (lib) due to 60 previous errors",
+    "error: could not compile `openwepp-land-surface-energy` (lib test) due to 175 previous errors"
+  ],
+  "notable_unresolved": [
+    "M1 controller report capacity/current_drainage/linear_dimension fields unread in production",
+    "M1 controller error activity unread/discarded",
+    "M1 large-error and other lint diagnostics",
+    "Inherited litter/transaction and other diagnostics; raw log retained"
+  ]
+}

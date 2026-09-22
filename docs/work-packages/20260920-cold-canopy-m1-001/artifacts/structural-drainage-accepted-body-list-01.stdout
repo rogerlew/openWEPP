@@ -1,0 +1,12 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+openwepp-land-surface-energy m1_coupled_tests::m1_guard_accepted_output_has_no_diagnostic_jacobian
+openwepp-land-surface-energy m1_coupled_tests::m1_guard_expected_red_accepted_materialization_does_not_rebuild_jacobian
+openwepp-land-surface-energy m1_coupled_tests::m1_guard_expected_red_actual_materializer_rejects_published_and_accepted_state_poisons
+openwepp-land-surface-energy m1_coupled_tests::m1_guard_expected_red_empty_positive_components_reject_external_supersaturation
+openwepp-land-surface-energy m1_coupled_tests::m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work
+openwepp-land-surface-energy m1_coupled_tests::m1_phase_join_expected_red_fails_closed_without_mutation_or_backtracking
+openwepp-land-surface-energy m1_coupled_tests::m1_phase_join_expected_red_rejects_nonfinite_and_final_set_mismatch_before_backtracking
+openwepp-land-surface-energy m1_coupled_tests::m1_phase_join_expected_red_selects_directional_phase_and_capacity_controls

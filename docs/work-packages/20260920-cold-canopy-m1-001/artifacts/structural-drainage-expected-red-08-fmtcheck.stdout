@@ -1,0 +1,531 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:33:
+ }
+ 
+ fn structural_identity_matrix() -> Vec<Vec<f64>> {
+-    (0..21).map(|row| (0..21).map(|column| f64::from(row == column)).collect()).collect()
++    (0..21)
++        .map(|row| (0..21).map(|column| f64::from(row == column)).collect())
++        .collect()
+ }
+ 
+ fn structural_metadata() -> super::M1DrainageMetadataTestView {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:40:
+     super::M1DrainageMetadataTestView {
+-        rows: [5, 11], raw_row_identity: [5, 11], drainage_selected: [true, true],
+-        duration_s: [60.0, 60.0], support_s: [60.0, 60.0], row_scales: [60.0, 60.0], current_drainage: [0.0, 0.0],
+-        raw_drainage_residual: [0.0, 0.0], raw_drainage_diagonal: [60.0, 60.0],
++        rows: [5, 11],
++        raw_row_identity: [5, 11],
++        drainage_selected: [true, true],
++        duration_s: [60.0, 60.0],
++        support_s: [60.0, 60.0],
++        row_scales: [60.0, 60.0],
++        current_drainage: [0.0, 0.0],
++        raw_drainage_residual: [0.0, 0.0],
++        raw_drainage_diagonal: [60.0, 60.0],
+     }
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:63:
+         assert!(metadata.duration_s[slot].is_finite() && metadata.duration_s[slot] > 0.0);
+         assert!(metadata.support_s[slot].is_finite() && metadata.support_s[slot] > 0.0);
+         assert!(metadata.row_scales[slot].is_finite() && metadata.row_scales[slot] > 0.0);
+-        assert_eq!(metadata.raw_drainage_diagonal[slot].to_bits(), metadata.duration_s[slot].to_bits());
+         assert_eq!(
++            metadata.raw_drainage_diagonal[slot].to_bits(),
++            metadata.duration_s[slot].to_bits()
++        );
++        assert_eq!(
+             metadata.raw_drainage_residual[slot].to_bits(),
+             (metadata.duration_s[slot] * metadata.current_drainage[slot]).to_bits(),
+         );
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:74:
+         );
+         let expected_rhs = -metadata.raw_drainage_residual[slot] / metadata.row_scales[slot];
+         assert!(
+-            rhs[row].to_bits() == expected_rhs.to_bits() || (rhs[row] == 0.0 && expected_rhs == 0.0),
++            rhs[row].to_bits() == expected_rhs.to_bits()
++                || (rhs[row] == 0.0 && expected_rhs == 0.0),
+             "normalized RHS row {row}"
+         );
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:256:
+     // Static iteration-three evidence is an analytic discriminator only. The
+     // test invokes no physical solve and asks the test-only seam for no new
+     // numerical algorithm: its stored direction is current full-LU behavior.
+-    let witness: Value = STRUCTURAL_DRAINAGE_TRACE.lines()
++    let witness: Value = STRUCTURAL_DRAINAGE_TRACE
++        .lines()
+         .filter_map(|line| line.strip_prefix("m1-linear-witness "))
+         .map(|json| serde_json::from_str(json).expect("witness JSON"))
+         .find(|value: &Value| value["iteration"] == 3)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:263:
+         .expect("preserved iteration-three witness");
+-    let matrix = witness["normalized_jacobian"].as_array().expect("matrix").iter()
+-        .map(|row| row.as_array().expect("row").iter().map(|value| value.as_f64().expect("number")).collect()).collect::<Vec<Vec<f64>>>();
+-    let rhs = witness["rhs"].as_array().expect("rhs").iter().map(|value| value.as_f64().expect("number")).collect::<Vec<_>>();
+-    let current = witness["coordinates"].as_array().expect("coordinates").iter().map(|value| value.as_f64().expect("number")).collect::<Vec<_>>();
++    let matrix = witness["normalized_jacobian"]
++        .as_array()
++        .expect("matrix")
++        .iter()
++        .map(|row| {
++            row.as_array()
++                .expect("row")
++                .iter()
++                .map(|value| value.as_f64().expect("number"))
++                .collect()
++        })
++        .collect::<Vec<Vec<f64>>>();
++    let rhs = witness["rhs"]
++        .as_array()
++        .expect("rhs")
++        .iter()
++        .map(|value| value.as_f64().expect("number"))
++        .collect::<Vec<_>>();
++    let current = witness["coordinates"]
++        .as_array()
++        .expect("coordinates")
++        .iter()
++        .map(|value| value.as_f64().expect("number"))
++        .collect::<Vec<_>>();
+     let (old_direction, _, _) = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+-        &matrix, &rhs,
++        &matrix,
++        &rhs,
+         super::M1DrainageMetadataTestView {
+-            rows: [5, 11], raw_row_identity: [5, 11], drainage_selected: [true, true],
+-            duration_s: [60.0, 60.0], support_s: [60.0, 60.0], row_scales: [1e-9, 1e-9],
++            rows: [5, 11],
++            raw_row_identity: [5, 11],
++            drainage_selected: [true, true],
++            duration_s: [60.0, 60.0],
++            support_s: [60.0, 60.0],
++            row_scales: [1e-9, 1e-9],
+             current_drainage: [current[5], current[11]],
+             raw_drainage_residual: [60.0 * current[5], 60.0 * current[11]],
+             raw_drainage_diagonal: [60.0, 60.0],
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:276:
+         },
+-    ).expect("old full LU");
++    )
++    .expect("old full LU");
+     for index in [5, 11] {
+         assert_eq!(
+             old_direction[index].to_bits(),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:301:
+     for exponent in 0..=20 {
+         let alpha = 2.0_f64.powi(-exponent);
+         let old = super::m1_current_unreduced_candidate_for_test(
+-            coordinates, direction, alpha, [true, true],
++            coordinates,
++            direction,
++            alpha,
++            [true, true],
+         );
+         for index in [5, 11] {
+             if old[index].to_bits() != ((1.0 - alpha) * coordinates[index]).to_bits() {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:309:
+             }
+         }
+     }
+-    assert!(disagreements.is_empty(), "expected-red old candidate differs at {disagreements:?}");
++    assert!(
++        disagreements.is_empty(),
++        "expected-red old candidate differs at {disagreements:?}"
++    );
+ }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:318:
+     let rhs = [0.0; 21];
+     let metadata = structural_metadata();
+     assert_structural_baseline(&matrix, &rhs, &metadata);
+-    assert!(super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&matrix, &rhs, metadata).is_ok());
++    assert!(
++        super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&matrix, &rhs, metadata)
++            .is_ok()
++    );
+ }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:329:
+     assert_structural_baseline(&matrix, &rhs, &metadata);
+     let mut poisons = Vec::new();
+     for name in [
+-        "row", "identity", "duration_positive", "support_finite", "scale_positive",
+-        "current_negative", "current_nonfinite", "raw_diagonal_nonfinite", "raw_residual_nonfinite",
++        "row",
++        "identity",
++        "duration_positive",
++        "support_finite",
++        "scale_positive",
++        "current_negative",
++        "current_nonfinite",
++        "raw_diagonal_nonfinite",
++        "raw_residual_nonfinite",
+     ] {
+         let mut poisoned = structural_metadata();
+         match name {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:345:
+             "raw_residual_nonfinite" => poisoned.raw_drainage_residual[0] = f64::NAN,
+             _ => unreachable!(),
+         }
+-        match super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&matrix, &rhs, poisoned) {
++        match super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&matrix, &rhs, poisoned)
++        {
+             Ok(_) => poisons.push(format!("{name}: accepted")),
+-            Err("drainage_elimination_integrity") => {},
++            Err("drainage_elimination_integrity") => {}
+             Err(other) => poisons.push(format!("{name}: wrong {other}")),
+         }
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:354:
+-    assert!(poisons.is_empty(), "expected-red missing attributable integrity failures: {poisons:?}");
++    assert!(
++        poisons.is_empty(),
++        "expected-red missing attributable integrity failures: {poisons:?}"
++    );
+ }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:363:
+     let mut poisons = Vec::<String>::new();
+     let mut wrong_normalized_row = structural_identity_matrix();
+     wrong_normalized_row[5][5] = 2.0;
+-    match super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&wrong_normalized_row, &rhs, structural_metadata()) {
++    match super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
++        &wrong_normalized_row,
++        &rhs,
++        structural_metadata(),
++    ) {
+         Ok(_) => poisons.push("normalized_row: accepted".to_owned()),
+-        Err("drainage_elimination_integrity") => {},
++        Err("drainage_elimination_integrity") => {}
+         Err(other) => poisons.push(format!("normalized_row: wrong {other}")),
+     }
+     let mut wrong_rhs = rhs;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:372:
+     wrong_rhs[11] = 1.0;
+-    match super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&matrix, &wrong_rhs, structural_metadata()) {
++    match super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
++        &matrix,
++        &wrong_rhs,
++        structural_metadata(),
++    ) {
+         Ok(_) => poisons.push("normalized_rhs: accepted".to_owned()),
+-        Err("drainage_elimination_integrity") => {},
++        Err("drainage_elimination_integrity") => {}
+         Err(other) => poisons.push(format!("normalized_rhs: wrong {other}")),
+     }
+     let mut coupled_selected_row = structural_identity_matrix();
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:379:
+     coupled_selected_row[5][4] = 1.0;
+-    match super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&coupled_selected_row, &rhs, structural_metadata()) {
++    match super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
++        &coupled_selected_row,
++        &rhs,
++        structural_metadata(),
++    ) {
+         Ok(_) => poisons.push("selected_row_offdiagonal: accepted".to_owned()),
+-        Err("drainage_elimination_integrity") => {},
++        Err("drainage_elimination_integrity") => {}
+         Err(other) => poisons.push(format!("selected_row_offdiagonal: wrong {other}")),
+     }
+-    assert!(poisons.is_empty(), "expected-red missing affine row/RHS failures: {poisons:?}");
++    assert!(
++        poisons.is_empty(),
++        "expected-red missing affine row/RHS failures: {poisons:?}"
++    );
+ }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:394:
+     let rhs = [0.0; 21];
+     let metadata = structural_metadata();
+     assert_structural_baseline(&matrix, &rhs, &metadata);
+-    let accepted = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+-        &matrix, &rhs, metadata,
++    let accepted =
++        super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&matrix, &rhs, metadata);
++    assert_eq!(
++        accepted.expect_err("expected-red integrity failure"),
++        "drainage_elimination_integrity"
+     );
+-    assert_eq!(accepted.expect_err("expected-red integrity failure"), "drainage_elimination_integrity");
+ }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:415:
+         for exponent in 0..=20 {
+             let alpha = 2.0_f64.powi(-exponent);
+             let eligible = super::m1_current_unreduced_candidate_for_test(
+-                coordinates, direction, alpha, [true, false],
++                coordinates,
++                direction,
++                alpha,
++                [true, false],
+             );
+             let capacity = super::m1_current_unreduced_candidate_for_test(
+-                coordinates, direction, alpha, [false, false],
++                coordinates,
++                direction,
++                alpha,
++                [false, false],
+             );
+             if eligible[5].to_bits() != ((1.0 - alpha) * drainage).to_bits() {
+                 disagreements.push((name, exponent));
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:431:
+             assert!(eligible[5].is_finite());
+         }
+     }
+-    assert!(disagreements.is_empty(), "expected-red boundary candidate disagreements: {disagreements:?}");
++    assert!(
++        disagreements.is_empty(),
++        "expected-red boundary candidate disagreements: {disagreements:?}"
++    );
+ }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:453:
+         selected.drainage_selected = drainage_selected;
+         selected.current_drainage = [2.0, 3.0];
+         selected.raw_drainage_residual = [120.0, 180.0];
+-        let (direction, _, _) = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+-            &matrix, &rhs, selected,
+-        ).expect("current full LU control");
++        let (direction, _, _) =
++            super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&matrix, &rhs, selected)
++                .expect("current full LU control");
+         assert_eq!(direction[0], 0.5);
+         assert_eq!(direction[1], -1.5);
+         assert_eq!(direction[5], -2.0);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:462:
+         assert_eq!(direction[11], -3.0);
+         for (index, value) in direction.iter().enumerate() {
+-            if ![0, 1, 5, 11].contains(&index) { assert_eq!(*value, 0.0, "closed-form row {index}"); }
++            if ![0, 1, 5, 11].contains(&index) {
++                assert_eq!(*value, 0.0, "closed-form row {index}");
++            }
+         }
+         for row in 0..21 {
+-            let reconstructed = matrix[row].iter().zip(&direction).map(|(a, b)| a * b).sum::<f64>();
++            let reconstructed = matrix[row]
++                .iter()
++                .zip(&direction)
++                .map(|(a, b)| a * b)
++                .sum::<f64>();
+             assert_eq!(reconstructed, rhs[row], "reconstructed full row {row}");
+         }
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:484:
+         let mut rhs = [0.0; 21];
+         matrix[0][5] = 0.25;
+         matrix[1][11] = -0.5;
+-        if selected_mask[0] { rhs[5] = -2.0; } else { matrix[5][3] = 0.5; rhs[5] = 4.0; }
+-        if selected_mask[1] { rhs[11] = -3.0; } else { matrix[11][4] = -0.25; rhs[11] = 7.0; }
++        if selected_mask[0] {
++            rhs[5] = -2.0;
++        } else {
++            matrix[5][3] = 0.5;
++            rhs[5] = 4.0;
++        }
++        if selected_mask[1] {
++            rhs[11] = -3.0;
++        } else {
++            matrix[11][4] = -0.25;
++            rhs[11] = 7.0;
++        }
+         let mut metadata = structural_metadata();
+         metadata.drainage_selected = selected_mask;
+         metadata.current_drainage = [2.0, 3.0];
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:492:
+         metadata.raw_drainage_residual = [120.0, 180.0];
+-        let (direction, _, _) = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+-            &matrix, &rhs, metadata,
+-        ).expect("old full LU effective-set control");
++        let (direction, _, _) =
++            super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&matrix, &rhs, metadata)
++                .expect("old full LU effective-set control");
+         assert_eq!(direction[5], expected_d5, "E/F upper");
+         assert_eq!(direction[11], expected_d11, "E/F lower");
+         for row in 0..21 {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:499:
+-            assert_eq!(matrix[row].iter().zip(&direction).map(|(a, b)| a * b).sum::<f64>(), rhs[row], "E/F reconstructed row {row}");
++            assert_eq!(
++                matrix[row]
++                    .iter()
++                    .zip(&direction)
++                    .map(|(a, b)| a * b)
++                    .sum::<f64>(),
++                rhs[row],
++                "E/F reconstructed row {row}"
++            );
+         }
+     }
+ }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:515:
+     );
+     let mut capacity_limited = trial();
+     for (coordinate, offset) in [(3, -0.008), (4, 6395.68), (5, 0.005)] {
+-        capacity_limited = capacity_limited.with_coordinate_offset(coordinate, offset).expect("capacity trial");
++        capacity_limited = capacity_limited
++            .with_coordinate_offset(coordinate, offset)
++            .expect("capacity trial");
+     }
+     let current = super::m1_current_unreduced_linear_system_for_test(&input, &capacity_limited)
+         .expect("real capacity controller");
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:522:
+     assert_eq!(current.capacity[0], M1CapacityBranch::Capacity);
+-    assert_ne!(current.direction[5], 0.0, "actual coupled LU supplies the release delta");
++    assert_ne!(
++        current.direction[5], 0.0,
++        "actual coupled LU supplies the release delta"
++    );
+     let coordinates = super::m1_trial_coordinates_for_test(&capacity_limited);
+     let candidate = super::m1_current_unreduced_candidate_for_test(
+-        coordinates, current.direction, 1.0, [false, false],
++        coordinates,
++        current.direction,
++        1.0,
++        [false, false],
+     );
+-    assert_ne!(candidate[5], coordinates[5], "capacity-selected D remains a solved nonzero release coordinate");
++    assert_ne!(
++        candidate[5], coordinates[5],
++        "capacity-selected D remains a solved nonzero release coordinate"
++    );
+ }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:560:
+     assert_eq!(current.drainage_selected, [true, true]);
+     let join_coordinates = super::m1_trial_coordinates_for_test(&join);
+     for row in [5, 11] {
+-        assert_eq!(current.raw_jacobian[row][row], 60.0, "reported selected raw affine diagonal");
+-        assert_eq!(current.raw_residuals[row], 60.0 * join_coordinates[row], "reported selected raw affine residual");
+-        assert_eq!(current.rhs[row], -current.raw_residuals[row] / (current.raw_jacobian[row][row] / current.normalized_jacobian[row][row]));
++        assert_eq!(
++            current.raw_jacobian[row][row], 60.0,
++            "reported selected raw affine diagonal"
++        );
++        assert_eq!(
++            current.raw_residuals[row],
++            60.0 * join_coordinates[row],
++            "reported selected raw affine residual"
++        );
++        assert_eq!(
++            current.rhs[row],
++            -current.raw_residuals[row]
++                / (current.raw_jacobian[row][row] / current.normalized_jacobian[row][row])
++        );
+     }
+     // These are report-owned diagnostics from the exact matrix/RHS that the
+     // controller supplied to LU.  In particular, RHS is not reconstructed as
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:569:
+     // `-normalized(base)`: inactive anchors have their raw residual RHS.
+     assert!(current.direction.iter().all(|value| value.is_finite()));
+-    let report = super::m1_phase_join_controller_iteration(&input, &join)
+-        .expect("real controller report");
++    let report =
++        super::m1_phase_join_controller_iteration(&input, &join).expect("real controller report");
+     assert_eq!(report.assembled_system_residual().len(), 21);
+     assert_eq!(report.original_system_residual().len(), 21);
+-    assert!(report.assembled_system_residual().iter().all(|value| value.is_finite()));
+-    assert!(report.original_system_residual().iter().all(|value| value.is_finite()));
+-    assert!(report.source_affine_residuals().iter().all(|value| value.is_some_and(f64::is_finite)));
+-
++    assert!(
++        report
++            .assembled_system_residual()
++            .iter()
++            .all(|value| value.is_finite())
++    );
++    assert!(
++        report
++            .original_system_residual()
++            .iter()
++            .all(|value| value.is_finite())
++    );
++    assert!(
++        report
++            .source_affine_residuals()
++            .iter()
++            .all(|value| value.is_some_and(f64::is_finite))
++    );
+ }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:587:
+             M1PhaseReservoirInput::new("stratum-z-upper::forest", 0.018, 0.0),
+             M1PhaseReservoirInput::new("stratum-a-lower::forest", 0.018, 0.0),
+         ],
+-        conditions(), topology_binding(),
++        conditions(),
++        topology_binding(),
+     );
+     let trial = M1CoupledColumnTrial::from_coordinates([
+         267., 266., 268., 0.018, 0., 0., 269., 267., 270., 0.018, 0., 0., 268., 0.0015, 265.15,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:601:
+     // before its existing old LU.  The expected guard is deliberately absent,
+     // so this test remains red until the released controller rejects it.
+     let failure = super::m1_phase_join_controller_with_selected_assembly_poison(
+-        &input, &trial, drainage_direction,
+-        super::M1SelectedAffineAssemblyPoison { row: 5, column: 0, value: 1.0 },
+-    ).expect_err("LSEB-E-034 selected-affine integrity before LU");
++        &input,
++        &trial,
++        drainage_direction,
++        super::M1SelectedAffineAssemblyPoison {
++            row: 5,
++            column: 0,
++            value: 1.0,
++        },
++    )
++    .expect_err("LSEB-E-034 selected-affine integrity before LU");
+     assert_eq!(failure.code(), "LSEB-E-034");
+     assert_eq!(failure.controller_activity().assemblies, 2);
+     assert_eq!(failure.controller_activity().linear_solves, 1);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:627:
+     singular[5][0] = 1.0;
+     let rhs = [0.0; 21];
+     let reduced_norm_threshold = 64.0 * f64::EPSILON;
+-    assert!(0.0 < reduced_norm_threshold, "explicit reduced A_FF pivot threshold");
++    assert!(
++        0.0 < reduced_norm_threshold,
++        "explicit reduced A_FF pivot threshold"
++    );
+     let metadata = structural_metadata();
+-    let singular = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+-        &singular, &rhs, metadata,
++    let singular =
++        super::m1_current_full_lu_ignoring_drainage_metadata_for_test(&singular, &rhs, metadata);
++    assert_eq!(
++        singular.expect_err("reduced singular/pivot numerical refusal"),
++        "reduced_singular_pivot"
+     );
+-    assert_eq!(singular.expect_err("reduced singular/pivot numerical refusal"), "reduced_singular_pivot");
+ 
+     // A finite full-LU result also cannot certify a reduced result whose
+     // reconstruction overflows.  This remains a numerical failure class, not
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:642:
+     let mut overflow_rhs = [0.0; 21];
+     overflow_rhs[5] = 2.0;
+     let overflow = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+-        &overflow, &overflow_rhs, structural_metadata(),
++        &overflow,
++        &overflow_rhs,
++        structural_metadata(),
+     );
+-    assert_eq!(overflow.expect_err("reduced nonfinite-result numerical refusal"), "reduced_nonfinite_result");
++    assert_eq!(
++        overflow.expect_err("reduced nonfinite-result numerical refusal"),
++        "reduced_nonfinite_result"
++    );
+ }
+ 
+ #[test]

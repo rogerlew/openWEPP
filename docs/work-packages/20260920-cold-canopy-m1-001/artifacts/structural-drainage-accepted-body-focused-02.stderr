@@ -1,0 +1,19 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: variable does not need to be mutable
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1561:13
+     |
+1561 |         let mut hydraulics = solve_m1_full_supply_hydraulics(
+     |             ----^^^^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.61s
+────────────
+ Nextest run ID bd5a8dbf-ec35-4c75-9589-0ec26e4ea441 with nextest profile: default
+    Starting 8 tests across 1 binary (205 tests skipped)
+────────────
+     Summary [   0.020s] 8 tests run: 8 passed, 205 skipped

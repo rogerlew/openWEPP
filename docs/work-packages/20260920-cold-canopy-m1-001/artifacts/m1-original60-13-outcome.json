@@ -1,0 +1,114 @@
+{
+  "evidence_class": "Ran: recorded unchanged original60; Static: extracted actual trace and independently reviewed interpretation",
+  "disposition": "PASS isolated numerical-root diagnostic; HOLD accepted physical support and M1 completion",
+  "source_tree_sha256": "9aebf297a8485d66c2e8bcdd15e1b4b5ab9c338693514197f6687e2a37b832b8",
+  "binary_sha256": "cf33b53dc4a18b4ad21d40f9aaa8c2da17daf8b50fafa6ccb918288434c29b60",
+  "receipt": "m1-original60-13.json",
+  "binary_custody": "m1-original60-13-binary.json",
+  "exit_code": 0,
+  "actual_installed_newton_updates": 3,
+  "actual_linear_assemblies": 5,
+  "retained_dimensions": [
+    19,
+    19,
+    19,
+    19,
+    19
+  ],
+  "max_original_normalized_linear_residual_by_assembly": [
+    9.5367431640625e-07,
+    4.76837158203125e-07,
+    1.127773430198431e-10,
+    7.105427357601002e-15,
+    4.235164736271502e-22
+  ],
+  "endpoint": {
+    "capacity": [
+      0.2970000000000001,
+      0.2970000000000001
+    ],
+    "coordinates": [
+      273.15,
+      264.2363988323834,
+      264.25480550163076,
+      0.017071735073803156,
+      -5104.003596321261,
+      0.0,
+      273.15,
+      264.3069211254105,
+      264.3807486571596,
+      0.017081575448084092,
+      -5025.792712595023,
+      0.0,
+      264.21322772815387,
+      0.0007696326264291949,
+      265.15,
+      291.5,
+      289.8,
+      293.0,
+      293.0,
+      293.0,
+      270.0
+    ],
+    "drainage": [
+      0.0,
+      0.0
+    ],
+    "liquid_mass": [
+      0.0017765489895320702,
+      0.00202076420266898
+    ],
+    "normalized_residuals": [
+      0.0,
+      -7.430986718724069e-07,
+      -1.147023237870156e-07,
+      3.0116727013486235e-09,
+      9.094947017729282e-07,
+      0.0,
+      0.0,
+      5.354080390947432e-07,
+      -1.5807193913900806e-07,
+      2.4093381610788987e-09,
+      9.094947017729282e-07,
+      0.0,
+      1.0583339584251602e-06,
+      -6.461481494982997e-09,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "phases": [
+      "Mixed",
+      "Mixed"
+    ],
+    "raw_residuals": [
+      0.0,
+      -7.431884968545077e-13,
+      -1.147137940193943e-13,
+      5.421010862427522e-19,
+      9.094947017729282e-13,
+      0.0,
+      0.0,
+      5.356661295086163e-13,
+      -1.580957587066223e-13,
+      4.336808689942018e-19,
+      9.094947017729282e-13,
+      0.0,
+      1.0942358130705543e-12,
+      -6.776263578034403e-21,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "step_norms": "StepNorms { temperature_k: Some(3.013418449017629e-14), humidity_kg_kg: Some(2.5096488606428284e-19), ci_pa: None, hydraulic_mm: Some(0.0), beta: Some(0.0) }"
+  },
+  "physical_acceptance_limit": "Unchanged test independently reconstructs mass/enthalpy closures; final finite/phase/cap/empty-store/materialization/receiver guards and campaign remain unmet."
+}

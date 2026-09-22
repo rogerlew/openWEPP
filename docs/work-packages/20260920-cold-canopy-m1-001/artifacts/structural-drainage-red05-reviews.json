@@ -1,0 +1,21 @@
+{
+  "source_tree_sha256": "e20f52ef723092fed36c0ace2cd8dc7a5d88689781799725e5ffc0cfb2c27edb",
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "verdict": "HOLD; six red failures are real old-path discriminators, but C-009 coverage remains incomplete.",
+    "findings": [
+      "Eligibility masks share the same affine systems/results and cannot catch wrong selection.",
+      "Missing selected-row offdiagonal/raw diagonal/raw residual/current-D/support/scale/nonfinite poison families.",
+      "No distinct reduced-A_FF singular/pivot/nonfinite-result controls and reduced norm discriminator.",
+      "Exact-tie selected branches are not bound to actual reduction eligibility.",
+      "No real-controller integrity poison with typed provenance, no downstream activity, unchanged input/trial.",
+      "Actual reducer/report original-system and affine residual diagnostics are not bound."
+    ]
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "verdict": "HOLD \u2014 required C-009 real-controller integrity/no-candidate family remains unbound.",
+    "custody": "PASS for corrected source/recorded invocation/pins and unchanged original60 predicate/input. Earlier failed and invalid attempts retained.",
+    "clarification": "For this pre-body scope use actual controller typed failure/activity and unchanged input/trial; no fabricated receipt or early receiver project. Real receiver/rollback remains later M1."
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "evidence_class": "Static review plus inspected recorded run; reviewers did not rerun Rust",
+  "source_tree_sha256": "807fc24c296b03c748f4b312956555a2c29ec3d9e041ab488692640c07bc1972",
+  "record": "structural-drainage-expected-red-11-run.json",
+  "run": {
+    "selected": 19,
+    "passed": 9,
+    "expected_red": 10,
+    "skipped": 185,
+    "original60_run": false
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "verdict": "GO preserved for bounded production body",
+    "verification": "Actual full matrix LU in both old assemblies supports honest false/false E and dimension21 observation; exact Drainage tie now expected-red. Established invocation, hashes/pins/source stable, original60 untouched."
+  },
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "verdict": "GO for bounded production body",
+    "verification": "Finite wrong raw diagonal/residual poisons retained. Actual old full solve reports false/false E and dimension21, independently of branches. Exact-tie Drainage test now fails requiring actual E0 and reduced dimension; Capacity E0 false. Production must populate observations from the actual reducer result used, not branch labels. All prior findings closed."
+  },
+  "nonfinite_mapping_clarification": {
+    "reviewer": "/root/correctness",
+    "verdict": "Compatible",
+    "valid_source_arithmetic_overflow": "LandSurfaceEnergyError::NonFinite(\"m1_reduced_linear_result\"), LSEB-E-032/domain; before reduced LU/candidates, no full fallback",
+    "invalid_source_metadata_or_rows": "DrainageEliminationIntegrity, LSEB-E-034",
+    "norm_discriminator": "Full-matrix eliminated-coefficient floor and reduced F-matrix pivot floor independently distinguished"
+  },
+  "exclusions": "No physical acceptance, original60 outcome, receiver/restart/conservation/cost, full lint or Critical qualification clearance.",
+  "prior_run09_review": {
+    "correctness": {
+      "reviewer": "/root/correctness",
+      "verdict": "HOLD on run09; two remaining controls",
+      "findings": [
+        "Exact-tie Drainage branch label/work counts do not bind actual E eligibility: assert dD bitwise -currentD and affine Some zero; Capacity tie affine None.",
+        "Finite wrong raw diagonal/residual are missing; nonfinite poisons do not prove exact dt and dt*D validation."
+      ],
+      "other_findings": "All other red05 concerns materially closed; recording coherent."
+    },
+    "qa": {
+      "reviewer": "/root/qa",
+      "verdict": "GO for bounded production body only",
+      "findings": "Prior real-controller integrity/no-candidate blocker closed. Actual selected raw poison occurs before second LU; expected code034 and DrainageEliminationIntegrity, two assemblies/one solve, downstream zero, unchanged input/trial. Both exact ties, actual RHS and dD diagnostics, reduced norm/singular/overflow covered. No test-only future algorithm. Original60 body text-identical to attempt12; frozen supports and established recording verified."
+    }
+  },
+  "release_utc": "2026-09-22T00:19:50Z"
+}

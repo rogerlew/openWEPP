@@ -1,0 +1,26 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0004]: non-exhaustive patterns: `&numerics::NumericalFailureKind::DrainageEliminationIntegrity` not covered
+  --> crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs:66:22
+   |
+66 |     let kind = match kind {
+   |                      ^^^^ pattern `&numerics::NumericalFailureKind::DrainageEliminationIntegrity` not covered
+   |
+note: `numerics::NumericalFailureKind` defined here
+  --> crates/openwepp-land-surface-energy/src/numerics.rs:12:10
+   |
+12 | pub enum NumericalFailureKind {
+   |          ^^^^^^^^^^^^^^^^^^^^
+...
+18 |     DrainageEliminationIntegrity,
+   |     ---------------------------- not covered
+   = note: the matched value is of type `&numerics::NumericalFailureKind`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown
+   |
+71 ~         NumericalFailureKind::PhaseActiveSetUnrepresentable => "phase_active_set_unrepresentable",
+72 ~         &numerics::NumericalFailureKind::DrainageEliminationIntegrity => todo!(),
+   |
+
+For more information about this error, try `rustc --explain E0004`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101

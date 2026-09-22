@@ -1,0 +1,220 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning: field `activity` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1338:5
+     |
+1336 | struct M1PhaseJoinControllerError {
+     |        -------------------------- field in this struct
+1337 |     error: M1CoupledError,
+1338 |     activity: M1PhaseJoinActivity,
+     |     ^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: `openwepp-land-surface-energy` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.93s
+────────────
+ Nextest run ID 1e075902-4d4a-4017-b7a1-521da884bfb9 with nextest profile: default
+    Starting 7 tests across 1 binary (189 tests skipped)
+        FAIL [   0.003s] (1/7) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_foreign_row_identity_is_not_ignored
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_foreign_row_identity_is_not_ignored ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_foreign_row_identity_is_not_ignored
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_foreign_row_identity_is_not_ignored' (1806131) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:266:5:
+    expected-red: foreign row requires typed integrity failure
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 6 tests still running
+        FAIL [   0.004s] (2/7) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_nonfinite_support_scale_is_not_ignored
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_nonfinite_support_scale_is_not_ignored ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_nonfinite_support_scale_is_not_ignored
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_nonfinite_support_scale_is_not_ignored' (1806133) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:276:5:
+    expected-red: support/scale requires typed integrity failure
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (3/7) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu' (1806132) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:286:5:
+    expected-red: selected affine coefficient needs complete-matrix pivot validation
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (5/7) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage' (1806129) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:250:13:
+    assertion `left == right` failed: expected-red old candidate differs from feasible affine candidate index=5 alpha=1
+      left: 13492508030392929024
+     right: 0
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (6/7) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction' (1806130) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:225:9:
+    assertion `left == right` failed: expected-red: current full LU must be replaced by source-derived affine drainage direction
+      left: 13528309464168606646
+     right: 13528275359691865771
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.008s] 7 tests run: 2 passed, 5 failed, 189 skipped
+        FAIL [   0.003s] (1/7) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_foreign_row_identity_is_not_ignored
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_foreign_row_identity_is_not_ignored ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_foreign_row_identity_is_not_ignored
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_foreign_row_identity_is_not_ignored' (1806131) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:266:5:
+    expected-red: foreign row requires typed integrity failure
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (2/7) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_nonfinite_support_scale_is_not_ignored
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_nonfinite_support_scale_is_not_ignored ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_nonfinite_support_scale_is_not_ignored
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_nonfinite_support_scale_is_not_ignored' (1806133) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:276:5:
+    expected-red: support/scale requires typed integrity failure
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (3/7) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_affine_pivot_is_checked_before_lu' (1806132) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:286:5:
+    expected-red: selected affine coefficient needs complete-matrix pivot validation
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.004s] (5/7) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_current_candidate_cancels_positive_drainage' (1806129) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:250:13:
+    assertion `left == right` failed: expected-red old candidate differs from feasible affine candidate index=5 alpha=1
+      left: 13492508030392929024
+     right: 0
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] (6/7) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_expected_red_current_lu_rejects_affine_zero_direction' (1806130) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:225:9:
+    assertion `left == right` failed: expected-red: current full LU must be replaced by source-derived affine drainage direction
+      left: 13528309464168606646
+     right: 13528275359691865771
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

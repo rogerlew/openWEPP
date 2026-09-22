@@ -1,0 +1,50 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID 7a52e70d-5a4a-4898-bc9f-4b44faa6533e with nextest profile: default
+    Starting 24 tests across 1 binary (184 tests skipped)
+        FAIL [   0.004s] (14/24) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_selected_nan_coupling_or_retained_rhs_is_nonfinite_result
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_selected_nan_coupling_or_retained_rhs_is_nonfinite_result ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_selected_nan_coupling_or_retained_rhs_is_nonfinite_result
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 207 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_selected_nan_coupling_or_retained_rhs_is_nonfinite_result' (1926281) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:991:5:
+    assertion `left == right` failed
+      left: "drainage_elimination_integrity"
+     right: "nonfinite_reduced_result"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.021s] 24 tests run: 23 passed, 1 failed, 184 skipped
+        FAIL [   0.004s] (14/24) openwepp-land-surface-energy m1_coupled_tests::m1_structural_drainage_selected_nan_coupling_or_retained_rhs_is_nonfinite_result
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_structural_drainage_selected_nan_coupling_or_retained_rhs_is_nonfinite_result ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_structural_drainage_selected_nan_coupling_or_retained_rhs_is_nonfinite_result
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 207 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_structural_drainage_selected_nan_coupling_or_retained_rhs_is_nonfinite_result' (1926281) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:991:5:
+    assertion `left == right` failed
+      left: "drainage_elimination_integrity"
+     right: "nonfinite_reduced_result"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

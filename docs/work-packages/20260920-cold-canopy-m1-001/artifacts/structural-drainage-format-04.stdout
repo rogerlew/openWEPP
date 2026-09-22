@@ -1,0 +1,1140 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:208:
+     // Static iteration-three evidence is an analytic discriminator only. The
+     // test invokes no physical solve and asks the test-only seam for no new
+     // numerical algorithm: its stored direction is current full-LU behavior.
+[31m-    let witness: Value = STRUCTURAL_DRAINAGE_TRACE.lines()
+[m[32m+    let witness: Value = STRUCTURAL_DRAINAGE_TRACE
+[m[32m+        .lines()
+[m         .filter_map(|line| line.strip_prefix("m1-linear-witness "))
+         .map(|json| serde_json::from_str(json).expect("witness JSON"))
+         .find(|value: &Value| value["iteration"] == 3)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:215:
+         .expect("preserved iteration-three witness");
+[31m-    let matrix = witness["normalized_jacobian"].as_array().expect("matrix").iter()
+[m[31m-        .map(|row| row.as_array().expect("row").iter().map(decimal).collect()).collect::<Vec<Vec<f64>>>();
+[m[31m-    let rhs = witness["rhs"].as_array().expect("rhs").iter().map(decimal).collect::<Vec<_>>();
+[m[31m-    let current = witness["coordinates"].as_array().expect("coordinates").iter().map(decimal).collect::<Vec<_>>();
+[m[32m+    let matrix = witness["normalized_jacobian"]
+[m[32m+        .as_array()
+[m[32m+        .expect("matrix")
+[m[32m+        .iter()
+[m[32m+        .map(|row| row.as_array().expect("row").iter().map(decimal).collect())
+[m[32m+        .collect::<Vec<Vec<f64>>>();
+[m[32m+    let rhs = witness["rhs"]
+[m[32m+        .as_array()
+[m[32m+        .expect("rhs")
+[m[32m+        .iter()
+[m[32m+        .map(decimal)
+[m[32m+        .collect::<Vec<_>>();
+[m[32m+    let current = witness["coordinates"]
+[m[32m+        .as_array()
+[m[32m+        .expect("coordinates")
+[m[32m+        .iter()
+[m[32m+        .map(decimal)
+[m[32m+        .collect::<Vec<_>>();
+[m     let (old_direction, _, _) = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+[31m-        &matrix, &rhs,
+[m[31m-        super::M1DrainageMetadataTestView { rows: [5, 11], drainage_selected: [true, true], support_s: [60.0, 60.0], row_scales: [1e-9, 1e-9] },
+[m[31m-    ).expect("old full LU");
+[m[32m+        &matrix,
+[m[32m+        &rhs,
+[m[32m+        super::M1DrainageMetadataTestView {
+[m[32m+            rows: [5, 11],
+[m[32m+            drainage_selected: [true, true],
+[m[32m+            support_s: [60.0, 60.0],
+[m[32m+            row_scales: [1e-9, 1e-9],
+[m[32m+        },
+[m[32m+    )
+[m[32m+    .expect("old full LU");
+[m     for index in [5, 11] {
+         assert_eq!(
+             old_direction[index].to_bits(),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:260:
+ fn m1_structural_drainage_expected_red_foreign_row_identity_is_not_ignored() {
+     let matrix = vec![vec![1.0]];
+     let accepted = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+[31m-        &matrix, &[1.0],
+[m[31m-        super::M1DrainageMetadataTestView { rows: [0, 99], drainage_selected: [true, false], support_s: [60.0, 60.0], row_scales: [1e-9, 1e-9] },
+[m[32m+        &matrix,
+[m[32m+        &[1.0],
+[m[32m+        super::M1DrainageMetadataTestView {
+[m[32m+            rows: [0, 99],
+[m[32m+            drainage_selected: [true, false],
+[m[32m+            support_s: [60.0, 60.0],
+[m[32m+            row_scales: [1e-9, 1e-9],
+[m[32m+        },
+[m     );
+[31m-    assert!(accepted.is_err(), "expected-red: foreign row requires typed integrity failure");
+[m[32m+    assert!(
+[m[32m+        accepted.is_err(),
+[m[32m+        "expected-red: foreign row requires typed integrity failure"
+[m[32m+    );
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:270:
+ fn m1_structural_drainage_expected_red_nonfinite_support_scale_is_not_ignored() {
+     let matrix = vec![vec![1.0]];
+     let accepted = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+[31m-        &matrix, &[1.0],
+[m[31m-        super::M1DrainageMetadataTestView { rows: [0, 0], drainage_selected: [true, false], support_s: [f64::NAN, 60.0], row_scales: [0.0, f64::INFINITY] },
+[m[32m+        &matrix,
+[m[32m+        &[1.0],
+[m[32m+        super::M1DrainageMetadataTestView {
+[m[32m+            rows: [0, 0],
+[m[32m+            drainage_selected: [true, false],
+[m[32m+            support_s: [f64::NAN, 60.0],
+[m[32m+            row_scales: [0.0, f64::INFINITY],
+[m[32m+        },
+[m     );
+[31m-    assert!(accepted.is_err(), "expected-red: support/scale requires typed integrity failure");
+[m[32m+    assert!(
+[m[32m+        accepted.is_err(),
+[m[32m+        "expected-red: support/scale requires typed integrity failure"
+[m[32m+    );
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:208:
+     // Static iteration-three evidence is an analytic discriminator only. The
+     // test invokes no physical solve and asks the test-only seam for no new
+     // numerical algorithm: its stored direction is current full-LU behavior.
+[31m-    let witness: Value = STRUCTURAL_DRAINAGE_TRACE.lines()
+[m[32m+    let witness: Value = STRUCTURAL_DRAINAGE_TRACE
+[m[32m+        .lines()
+[m         .filter_map(|line| line.strip_prefix("m1-linear-witness "))
+         .map(|json| serde_json::from_str(json).expect("witness JSON"))
+         .find(|value: &Value| value["iteration"] == 3)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:215:
+         .expect("preserved iteration-three witness");
+[31m-    let matrix = witness["normalized_jacobian"].as_array().expect("matrix").iter()
+[m[31m-        .map(|row| row.as_array().expect("row").iter().map(decimal).collect()).collect::<Vec<Vec<f64>>>();
+[m[31m-    let rhs = witness["rhs"].as_array().expect("rhs").iter().map(decimal).collect::<Vec<_>>();
+[m[31m-    let current = witness["coordinates"].as_array().expect("coordinates").iter().map(decimal).collect::<Vec<_>>();
+[m[32m+    let matrix = witness["normalized_jacobian"]
+[m[32m+        .as_array()
+[m[32m+        .expect("matrix")
+[m[32m+        .iter()
+[m[32m+        .map(|row| row.as_array().expect("row").iter().map(decimal).collect())
+[m[32m+        .collect::<Vec<Vec<f64>>>();
+[m[32m+    let rhs = witness["rhs"]
+[m[32m+        .as_array()
+[m[32m+        .expect("rhs")
+[m[32m+        .iter()
+[m[32m+        .map(decimal)
+[m[32m+        .collect::<Vec<_>>();
+[m[32m+    let current = witness["coordinates"]
+[m[32m+        .as_array()
+[m[32m+        .expect("coordinates")
+[m[32m+        .iter()
+[m[32m+        .map(decimal)
+[m[32m+        .collect::<Vec<_>>();
+[m     let (old_direction, _, _) = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+[31m-        &matrix, &rhs,
+[m[31m-        super::M1DrainageMetadataTestView { rows: [5, 11], drainage_selected: [true, true], support_s: [60.0, 60.0], row_scales: [1e-9, 1e-9] },
+[m[31m-    ).expect("old full LU");
+[m[32m+        &matrix,
+[m[32m+        &rhs,
+[m[32m+        super::M1DrainageMetadataTestView {
+[m[32m+            rows: [5, 11],
+[m[32m+            drainage_selected: [true, true],
+[m[32m+            support_s: [60.0, 60.0],
+[m[32m+            row_scales: [1e-9, 1e-9],
+[m[32m+        },
+[m[32m+    )
+[m[32m+    .expect("old full LU");
+[m     for index in [5, 11] {
+         assert_eq!(
+             old_direction[index].to_bits(),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:260:
+ fn m1_structural_drainage_expected_red_foreign_row_identity_is_not_ignored() {
+     let matrix = vec![vec![1.0]];
+     let accepted = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+[31m-        &matrix, &[1.0],
+[m[31m-        super::M1DrainageMetadataTestView { rows: [0, 99], drainage_selected: [true, false], support_s: [60.0, 60.0], row_scales: [1e-9, 1e-9] },
+[m[32m+        &matrix,
+[m[32m+        &[1.0],
+[m[32m+        super::M1DrainageMetadataTestView {
+[m[32m+            rows: [0, 99],
+[m[32m+            drainage_selected: [true, false],
+[m[32m+            support_s: [60.0, 60.0],
+[m[32m+            row_scales: [1e-9, 1e-9],
+[m[32m+        },
+[m     );
+[31m-    assert!(accepted.is_err(), "expected-red: foreign row requires typed integrity failure");
+[m[32m+    assert!(
+[m[32m+        accepted.is_err(),
+[m[32m+        "expected-red: foreign row requires typed integrity failure"
+[m[32m+    );
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:270:
+ fn m1_structural_drainage_expected_red_nonfinite_support_scale_is_not_ignored() {
+     let matrix = vec![vec![1.0]];
+     let accepted = super::m1_current_full_lu_ignoring_drainage_metadata_for_test(
+[31m-        &matrix, &[1.0],
+[m[31m-        super::M1DrainageMetadataTestView { rows: [0, 0], drainage_selected: [true, false], support_s: [f64::NAN, 60.0], row_scales: [0.0, f64::INFINITY] },
+[m[32m+        &matrix,
+[m[32m+        &[1.0],
+[m[32m+        super::M1DrainageMetadataTestView {
+[m[32m+            rows: [0, 0],
+[m[32m+            drainage_selected: [true, false],
+[m[32m+            support_s: [f64::NAN, 60.0],
+[m[32m+            row_scales: [0.0, f64::INFINITY],
+[m[32m+        },
+[m     );
+[31m-    assert!(accepted.is_err(), "expected-red: support/scale requires typed integrity failure");
+[m[32m+    assert!(
+[m[32m+        accepted.is_err(),
+[m[32m+        "expected-red: support/scale requires typed integrity failure"
+[m[32m+    );
+[m }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:812:
+ 
+ #[derive(Clone, Debug, PartialEq)]
+ pub enum M1PhaseJoinFailure {
+[31m-    InconsistentFinalSet { activity: M1PhaseJoinActivity },
+[m[31m-    UnrepresentableProbe { activity: M1PhaseJoinActivity },
+[m[31m-    Source { error: Box<M1CoupledError>, activity: M1PhaseJoinActivity },
+[m[32m+    InconsistentFinalSet {
+[m[32m+        activity: M1PhaseJoinActivity,
+[m[32m+    },
+[m[32m+    UnrepresentableProbe {
+[m[32m+        activity: M1PhaseJoinActivity,
+[m[32m+    },
+[m[32m+    Source {
+[m[32m+        error: Box<M1CoupledError>,
+[m[32m+        activity: M1PhaseJoinActivity,
+[m[32m+    },
+[m }
+ impl M1PhaseJoinFailure {
+     #[must_use]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:821:
+[31m-    pub fn code(&self) -> &str { match self { Self::Source { error, .. } => error.code(), _ => "LSEB-E-034" } }
+[m[32m+    pub fn code(&self) -> &str {
+[m[32m+        match self {
+[m[32m+            Self::Source { error, .. } => error.code(),
+[m[32m+            _ => "LSEB-E-034",
+[m[32m+        }
+[m[32m+    }
+[m     #[must_use]
+     pub const fn controller_activity(&self) -> M1PhaseJoinActivity {
+[31m-        match self { Self::InconsistentFinalSet { activity } | Self::UnrepresentableProbe { activity } | Self::Source { activity, .. } => *activity }
+[m[32m+        match self {
+[m[32m+            Self::InconsistentFinalSet { activity }
+[m[32m+            | Self::UnrepresentableProbe { activity }
+[m[32m+            | Self::Source { activity, .. } => *activity,
+[m[32m+        }
+[m     }
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:848:
+     duration_s: f64,
+ }
+ impl M1PhaseJoinSelection {
+[31m-    #[must_use] pub const fn phase(self) -> openwepp_vegetation::cold_canopy_m1::M1Phase { self.phase }
+[m[31m-    #[must_use] pub const fn capacity_branch(self) -> openwepp_vegetation::cold_canopy_m1::M1CapacityBranch { self.capacity }
+[m[31m-    #[must_use] pub const fn requires_corrected_solve(self) -> bool { self.corrected }
+[m[32m+    #[must_use]
+[m[32m+    pub const fn phase(self) -> openwepp_vegetation::cold_canopy_m1::M1Phase {
+[m[32m+        self.phase
+[m[32m+    }
+[m[32m+    #[must_use]
+[m[32m+    pub const fn capacity_branch(self) -> openwepp_vegetation::cold_canopy_m1::M1CapacityBranch {
+[m[32m+        self.capacity
+[m[32m+    }
+[m[32m+    #[must_use]
+[m[32m+    pub const fn requires_corrected_solve(self) -> bool {
+[m[32m+        self.corrected
+[m[32m+    }
+[m }
+ 
+ fn classify_m1_phase_join_active_set(
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:857:
+[31m-    reservoir: M1PhaseReservoir, capacity: f64, drainage: f64, duration_s: f64,
+[m[31m-    d_mass: f64, d_enthalpy: f64, d_drainage: f64,
+[m[32m+    reservoir: M1PhaseReservoir,
+[m[32m+    capacity: f64,
+[m[32m+    drainage: f64,
+[m[32m+    duration_s: f64,
+[m[32m+    d_mass: f64,
+[m[32m+    d_enthalpy: f64,
+[m[32m+    d_drainage: f64,
+[m ) -> Result<M1PhaseJoinSelection, M1PhaseJoinFailure> {
+[31m-    if ![capacity, drainage, duration_s, d_mass, d_enthalpy, d_drainage].iter().all(|x| x.is_finite()) {
+[m[31m-        return Err(M1PhaseJoinFailure::UnrepresentableProbe { activity: M1PhaseJoinActivity::default() });
+[m[32m+    if ![
+[m[32m+        capacity, drainage, duration_s, d_mass, d_enthalpy, d_drainage,
+[m[32m+    ]
+[m[32m+    .iter()
+[m[32m+    .all(|x| x.is_finite())
+[m[32m+    {
+[m[32m+        return Err(M1PhaseJoinFailure::UnrepresentableProbe {
+[m[32m+            activity: M1PhaseJoinActivity::default(),
+[m[32m+        });
+[m     }
+     let current = reservoir.phase();
+     let phase = if reservoir.enthalpy_j_m2() == 0.0 && reservoir.mass_kg_m2() > 0.0 {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:865:
+[31m-        if d_enthalpy < 0.0 { openwepp_vegetation::cold_canopy_m1::M1Phase::Mixed } else { openwepp_vegetation::cold_canopy_m1::M1Phase::Liquid }
+[m[31m-    } else if reservoir.enthalpy_j_m2() + LF * reservoir.mass_kg_m2() == 0.0 && reservoir.mass_kg_m2() > 0.0 {
+[m[31m-        if d_enthalpy + LF * d_mass < 0.0 { openwepp_vegetation::cold_canopy_m1::M1Phase::Ice } else { openwepp_vegetation::cold_canopy_m1::M1Phase::Mixed }
+[m[31m-    } else { current };
+[m[32m+        if d_enthalpy < 0.0 {
+[m[32m+            openwepp_vegetation::cold_canopy_m1::M1Phase::Mixed
+[m[32m+        } else {
+[m[32m+            openwepp_vegetation::cold_canopy_m1::M1Phase::Liquid
+[m[32m+        }
+[m[32m+    } else if reservoir.enthalpy_j_m2() + LF * reservoir.mass_kg_m2() == 0.0
+[m[32m+        && reservoir.mass_kg_m2() > 0.0
+[m[32m+    {
+[m[32m+        if d_enthalpy + LF * d_mass < 0.0 {
+[m[32m+            openwepp_vegetation::cold_canopy_m1::M1Phase::Ice
+[m[32m+        } else {
+[m[32m+            openwepp_vegetation::cold_canopy_m1::M1Phase::Mixed
+[m[32m+        }
+[m[32m+    } else {
+[m[32m+        current
+[m[32m+    };
+[m     let d_liquid = match phase {
+         openwepp_vegetation::cold_canopy_m1::M1Phase::Liquid => d_mass,
+         openwepp_vegetation::cold_canopy_m1::M1Phase::Mixed => d_mass + d_enthalpy / LF,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:872:
+[31m-        openwepp_vegetation::cold_canopy_m1::M1Phase::Empty | openwepp_vegetation::cold_canopy_m1::M1Phase::Ice => 0.0,
+[m[32m+        openwepp_vegetation::cold_canopy_m1::M1Phase::Empty
+[m[32m+        | openwepp_vegetation::cold_canopy_m1::M1Phase::Ice => 0.0,
+[m     };
+     let lower_normal = d_enthalpy + LF * d_mass;
+     let capacity_normal = duration_s * d_drainage + d_liquid;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:876:
+     if !d_liquid.is_finite() || !lower_normal.is_finite() || !capacity_normal.is_finite() {
+[31m-        return Err(M1PhaseJoinFailure::UnrepresentableProbe { activity: M1PhaseJoinActivity::default() });
+[m[32m+        return Err(M1PhaseJoinFailure::UnrepresentableProbe {
+[m[32m+            activity: M1PhaseJoinActivity::default(),
+[m[32m+        });
+[m     }
+     let cap_tie = duration_s * drainage == capacity - reservoir.liquid_mass_kg_m2();
+     let capacity_branch = if cap_tie {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:881:
+[31m-        if capacity_normal >= 0.0 { openwepp_vegetation::cold_canopy_m1::M1CapacityBranch::Capacity } else { openwepp_vegetation::cold_canopy_m1::M1CapacityBranch::Drainage }
+[m[32m+        if capacity_normal >= 0.0 {
+[m[32m+            openwepp_vegetation::cold_canopy_m1::M1CapacityBranch::Capacity
+[m[32m+        } else {
+[m[32m+            openwepp_vegetation::cold_canopy_m1::M1CapacityBranch::Drainage
+[m[32m+        }
+[m     } else if duration_s * drainage < capacity - reservoir.liquid_mass_kg_m2() {
+         openwepp_vegetation::cold_canopy_m1::M1CapacityBranch::Drainage
+     } else {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:893:
+         phase,
+         capacity: capacity_branch,
+         corrected: phase != current || capacity_branch != current_capacity,
+[31m-        mass: reservoir.mass_kg_m2(), enthalpy: reservoir.enthalpy_j_m2(),
+[m[31m-        capacity_value: capacity, drainage, duration_s,
+[m[32m+        mass: reservoir.mass_kg_m2(),
+[m[32m+        enthalpy: reservoir.enthalpy_j_m2(),
+[m[32m+        capacity_value: capacity,
+[m[32m+        drainage,
+[m[32m+        duration_s,
+[m     })
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:902:
+ // The production controller classifies first and performs the same probe in
+ // the selected assembly, so failed work belongs to that actual assembly.
+ pub fn select_m1_phase_join_active_set(
+[31m-    reservoir: M1PhaseReservoir, capacity: f64, drainage: f64, duration_s: f64,
+[m[31m-    d_mass: f64, d_enthalpy: f64, d_drainage: f64,
+[m[32m+    reservoir: M1PhaseReservoir,
+[m[32m+    capacity: f64,
+[m[32m+    drainage: f64,
+[m[32m+    duration_s: f64,
+[m[32m+    d_mass: f64,
+[m[32m+    d_enthalpy: f64,
+[m[32m+    d_drainage: f64,
+[m ) -> Result<M1PhaseJoinSelection, M1PhaseJoinFailure> {
+[31m-    let selected = classify_m1_phase_join_active_set(reservoir, capacity, drainage, duration_s, d_mass, d_enthalpy, d_drainage)?;
+[m[32m+    let selected = classify_m1_phase_join_active_set(
+[m[32m+        reservoir, capacity, drainage, duration_s, d_mass, d_enthalpy, d_drainage,
+[m[32m+    )?;
+[m     let mut direction = [0.0; 21];
+[31m-    direction[3] = d_mass; direction[4] = d_enthalpy; direction[5] = d_drainage;
+[m[32m+    direction[3] = d_mass;
+[m[32m+    direction[4] = d_enthalpy;
+[m[32m+    direction[5] = d_drainage;
+[m     let factor = m1_probe_factor(&direction);
+[31m-    check_m1_probe_side(&selected, d_mass, d_enthalpy, d_drainage,
+[m[31m-        selected.mass + factor * d_mass, selected.enthalpy + factor * d_enthalpy,
+[m[31m-        drainage + factor * d_drainage)?;
+[m[32m+    check_m1_probe_side(
+[m[32m+        &selected,
+[m[32m+        d_mass,
+[m[32m+        d_enthalpy,
+[m[32m+        d_drainage,
+[m[32m+        selected.mass + factor * d_mass,
+[m[32m+        selected.enthalpy + factor * d_enthalpy,
+[m[32m+        drainage + factor * d_drainage,
+[m[32m+    )?;
+[m     Ok(selected)
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:918:
+ #[cfg(test)]
+[31m-pub fn m1_phase_join_set_matches_direction(selection: &M1PhaseJoinSelection, d_mass: f64, d_enthalpy: f64, d_drainage: f64) -> bool {
+[m[31m-    let Ok(reservoir) = M1PhaseReservoir::from_mass_enthalpy(selection.mass, selection.enthalpy) else { return false; };
+[m[31m-    classify_m1_phase_join_active_set(reservoir, selection.capacity_value, selection.drainage, selection.duration_s, d_mass, d_enthalpy, d_drainage)
+[m[31m-        .is_ok_and(|next| next.phase == selection.phase && next.capacity == selection.capacity)
+[m[32m+pub fn m1_phase_join_set_matches_direction(
+[m[32m+    selection: &M1PhaseJoinSelection,
+[m[32m+    d_mass: f64,
+[m[32m+    d_enthalpy: f64,
+[m[32m+    d_drainage: f64,
+[m[32m+) -> bool {
+[m[32m+    let Ok(reservoir) = M1PhaseReservoir::from_mass_enthalpy(selection.mass, selection.enthalpy)
+[m[32m+    else {
+[m[32m+        return false;
+[m[32m+    };
+[m[32m+    classify_m1_phase_join_active_set(
+[m[32m+        reservoir,
+[m[32m+        selection.capacity_value,
+[m[32m+        selection.drainage,
+[m[32m+        selection.duration_s,
+[m[32m+        d_mass,
+[m[32m+        d_enthalpy,
+[m[32m+        d_drainage,
+[m[32m+    )
+[m[32m+    .is_ok_and(|next| next.phase == selection.phase && next.capacity == selection.capacity)
+[m }
+ 
+ fn m1_probe_factor(direction: &[f64; 21]) -> f64 {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:926:
+     let mut factor = 1.0_f64;
+     for (column, value) in direction.iter().enumerate() {
+[31m-        let step = match column { 3 | 9 | 13 => 1.0e-8, 4 | 10 => 1.0e-3, 5 | 11 => 1.0e-10, _ => 1.0e-4 };
+[m[31m-        if *value != 0.0 { factor = factor.min(step / value.abs()); }
+[m[32m+        let step = match column {
+[m[32m+            3 | 9 | 13 => 1.0e-8,
+[m[32m+            4 | 10 => 1.0e-3,
+[m[32m+            5 | 11 => 1.0e-10,
+[m[32m+            _ => 1.0e-4,
+[m[32m+        };
+[m[32m+        if *value != 0.0 {
+[m[32m+            factor = factor.min(step / value.abs());
+[m[32m+        }
+[m     }
+     factor
+ }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:933:
+ 
+ fn check_m1_probe_side(
+[31m-    selected: &M1PhaseJoinSelection, dm: f64, dh: f64, dd: f64,
+[m[31m-    mass: f64, enthalpy: f64, drainage: f64,
+[m[32m+    selected: &M1PhaseJoinSelection,
+[m[32m+    dm: f64,
+[m[32m+    dh: f64,
+[m[32m+    dd: f64,
+[m[32m+    mass: f64,
+[m[32m+    enthalpy: f64,
+[m[32m+    drainage: f64,
+[m ) -> Result<(), M1PhaseJoinFailure> {
+[31m-    let unrepresentable = || M1PhaseJoinFailure::UnrepresentableProbe { activity: M1PhaseJoinActivity::default() };
+[m[31m-    let next = M1PhaseReservoir::from_mass_enthalpy(mass, enthalpy)
+[m[31m-        .map_err(|error| M1PhaseJoinFailure::Source { error: Box::new(error.into()), activity: M1PhaseJoinActivity::default() })?;
+[m[32m+    let unrepresentable = || M1PhaseJoinFailure::UnrepresentableProbe {
+[m[32m+        activity: M1PhaseJoinActivity::default(),
+[m[32m+    };
+[m[32m+    let next = M1PhaseReservoir::from_mass_enthalpy(mass, enthalpy).map_err(|error| {
+[m[32m+        M1PhaseJoinFailure::Source {
+[m[32m+            error: Box::new(error.into()),
+[m[32m+            activity: M1PhaseJoinActivity::default(),
+[m[32m+        }
+[m[32m+    })?;
+[m     if selected.mass > 0.0 {
+[31m-        let normal = if selected.enthalpy == 0.0 { dh }
+[m[31m-            else if selected.enthalpy + LF * selected.mass == 0.0 { dh + LF * dm }
+[m[31m-            else { 0.0 };
+[m[32m+        let normal = if selected.enthalpy == 0.0 {
+[m[32m+            dh
+[m[32m+        } else if selected.enthalpy + LF * selected.mass == 0.0 {
+[m[32m+            dh + LF * dm
+[m[32m+        } else {
+[m[32m+            0.0
+[m[32m+        };
+[m         if normal != 0.0 {
+[31m-            let observed = if selected.enthalpy == 0.0 { enthalpy } else { enthalpy + LF * mass };
+[m[31m-            if observed == 0.0 || !observed.is_finite() || observed.is_sign_negative() != normal.is_sign_negative() || next.phase() != selected.phase {
+[m[32m+            let observed = if selected.enthalpy == 0.0 {
+[m[32m+                enthalpy
+[m[32m+            } else {
+[m[32m+                enthalpy + LF * mass
+[m[32m+            };
+[m[32m+            if observed == 0.0
+[m[32m+                || !observed.is_finite()
+[m[32m+                || observed.is_sign_negative() != normal.is_sign_negative()
+[m[32m+                || next.phase() != selected.phase
+[m[32m+            {
+[m                 return Err(unrepresentable());
+             }
+         }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:951:
+     }
+[31m-    let current = M1PhaseReservoir::from_mass_enthalpy(selected.mass, selected.enthalpy)
+[m[31m-        .map_err(|error| M1PhaseJoinFailure::Source { error: Box::new(error.into()), activity: M1PhaseJoinActivity::default() })?;
+[m[31m-    if selected.duration_s * selected.drainage == selected.capacity_value - current.liquid_mass_kg_m2() {
+[m[32m+    let current = M1PhaseReservoir::from_mass_enthalpy(selected.mass, selected.enthalpy).map_err(
+[m[32m+        |error| M1PhaseJoinFailure::Source {
+[m[32m+            error: Box::new(error.into()),
+[m[32m+            activity: M1PhaseJoinActivity::default(),
+[m[32m+        },
+[m[32m+    )?;
+[m[32m+    if selected.duration_s * selected.drainage
+[m[32m+        == selected.capacity_value - current.liquid_mass_kg_m2()
+[m[32m+    {
+[m         use openwepp_vegetation::cold_canopy_m1::M1Phase;
+[31m-        let dml = match selected.phase { M1Phase::Liquid => dm, M1Phase::Mixed => dm + dh / LF, M1Phase::Ice | M1Phase::Empty => 0.0 };
+[m[32m+        let dml = match selected.phase {
+[m[32m+            M1Phase::Liquid => dm,
+[m[32m+            M1Phase::Mixed => dm + dh / LF,
+[m[32m+            M1Phase::Ice | M1Phase::Empty => 0.0,
+[m[32m+        };
+[m         let normal = selected.duration_s * dd + dml;
+         if normal != 0.0 {
+[31m-            let observed = selected.duration_s * drainage - (selected.capacity_value - next.liquid_mass_kg_m2());
+[m[31m-            if observed == 0.0 || !observed.is_finite() || observed.is_sign_negative() != normal.is_sign_negative() { return Err(unrepresentable()); }
+[m[32m+            let observed = selected.duration_s * drainage
+[m[32m+                - (selected.capacity_value - next.liquid_mass_kg_m2());
+[m[32m+            if observed == 0.0
+[m[32m+                || !observed.is_finite()
+[m[32m+                || observed.is_sign_negative() != normal.is_sign_negative()
+[m[32m+            {
+[m[32m+                return Err(unrepresentable());
+[m[32m+            }
+[m         }
+     }
+     Ok(())
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:964:
+ }
+ 
+ fn m1_selected_probe(
+[31m-    input: &M1CoupledColumnInput, trial: &M1CoupledColumnTrial,
+[m[31m-    selected: &[M1PhaseJoinSelection; 2], direction: &[f64; 21],
+[m[31m-    base: &Core, iteration: u32, backtracking_count: u32,
+[m[32m+    input: &M1CoupledColumnInput,
+[m[32m+    trial: &M1CoupledColumnTrial,
+[m[32m+    selected: &[M1PhaseJoinSelection; 2],
+[m[32m+    direction: &[f64; 21],
+[m[32m+    base: &Core,
+[m[32m+    iteration: u32,
+[m[32m+    backtracking_count: u32,
+[m ) -> Result<(), M1CoupledError> {
+     let has_tie = selected.iter().any(|value| {
+         value.mass > 0.0 && (value.enthalpy == 0.0 || value.enthalpy + LF * value.mass == 0.0)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:973:
+[31m-            || M1PhaseReservoir::from_mass_enthalpy(value.mass, value.enthalpy).is_ok_and(|reservoir|
+[m[31m-                value.duration_s * value.drainage == value.capacity_value - reservoir.liquid_mass_kg_m2())
+[m[32m+            || M1PhaseReservoir::from_mass_enthalpy(value.mass, value.enthalpy).is_ok_and(
+[m[32m+                |reservoir| {
+[m[32m+                    value.duration_s * value.drainage
+[m[32m+                        == value.capacity_value - reservoir.liquid_mass_kg_m2()
+[m[32m+                },
+[m[32m+            )
+[m     });
+[31m-    if !has_tie { return Ok(()); }
+[m[32m+    if !has_tie {
+[m[32m+        return Ok(());
+[m[32m+    }
+[m     let factor = m1_probe_factor(direction);
+     let mut probe = trial.clone();
+[31m-    for (value, delta) in probe.coordinates.iter_mut().zip(direction) { *value += factor * delta; }
+[m[32m+    for (value, delta) in probe.coordinates.iter_mut().zip(direction) {
+[m[32m+        *value += factor * delta;
+[m[32m+    }
+[m     validate(input, &probe)?;
+     for (occupancy, selection) in selected.iter().enumerate() {
+         let offset = occupancy * 6;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:983:
+[31m-        check_m1_probe_side(selection, direction[offset+3], direction[offset+4], direction[offset+5], probe.coordinates[offset+3], probe.coordinates[offset+4], probe.coordinates[offset+5])
+[m[31m-            .map_err(|failure| match failure {
+[m[31m-                M1PhaseJoinFailure::Source { error, .. } => *error,
+[m[31m-                _ => m1_failure(crate::numerics::NumericalFailureKind::PhaseActiveSetUnrepresentable, iteration, input, base, trial, backtracking_count,
+[m[31m-                    StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, None, None),
+[m[31m-            })?;
+[m[32m+        check_m1_probe_side(
+[m[32m+            selection,
+[m[32m+            direction[offset + 3],
+[m[32m+            direction[offset + 4],
+[m[32m+            direction[offset + 5],
+[m[32m+            probe.coordinates[offset + 3],
+[m[32m+            probe.coordinates[offset + 4],
+[m[32m+            probe.coordinates[offset + 5],
+[m[32m+        )
+[m[32m+        .map_err(|failure| match failure {
+[m[32m+            M1PhaseJoinFailure::Source { error, .. } => *error,
+[m[32m+            _ => m1_failure(
+[m[32m+                crate::numerics::NumericalFailureKind::PhaseActiveSetUnrepresentable,
+[m[32m+                iteration,
+[m[32m+                input,
+[m[32m+                base,
+[m[32m+                trial,
+[m[32m+                backtracking_count,
+[m[32m+                StepNorms {
+[m[32m+                    temperature_k: None,
+[m[32m+                    humidity_kg_kg: None,
+[m[32m+                    ci_pa: None,
+[m[32m+                    hydraulic_mm: None,
+[m[32m+                    beta: Some(0.0),
+[m[32m+                },
+[m[32m+                None,
+[m[32m+                None,
+[m[32m+            ),
+[m[32m+        })?;
+[m     }
+     // This is the canonical primal evaluator, not a selected-phase surrogate.
+     core(input, &probe)?;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1000:
+     validate(input, trial)?;
+     let result = core(input, trial)?;
+     if let Some((selected, direction, iteration, backtracking_count)) = selected_probe {
+[31m-        m1_selected_probe(input, trial, selected, direction, &result, iteration, backtracking_count)?;
+[m[32m+        m1_selected_probe(
+[m[32m+            input,
+[m[32m+            trial,
+[m[32m+            selected,
+[m[32m+            direction,
+[m[32m+            &result,
+[m[32m+            iteration,
+[m[32m+            backtracking_count,
+[m[32m+        )?;
+[m     }
+     let selected_set = selected_probe.map(|value| value.0);
+     let base_normalized = normalized(&result, input);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1058:
+             let h = trial.coordinates[base + 4];
+             let lower = h + LF * trial.coordinates[base + 3] == 0.0;
+             (selected[occupancy].phase == openwepp_vegetation::cold_canopy_m1::M1Phase::Mixed
+[31m-                && h == 0.0 && column == base + 4)
+[m[32m+                && h == 0.0
+[m[32m+                && column == base + 4)
+[m                 || (selected[occupancy].phase == openwepp_vegetation::cold_canopy_m1::M1Phase::Ice
+[31m-                    && lower && matches!(column, c if c == base + 3 || c == base + 4))
+[m[32m+                    && lower
+[m[32m+                    && matches!(column, c if c == base + 3 || c == base + 4))
+[m         });
+         let high = if force_backward {
+             None
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1107:
+             let capacity = input.column.occupancies[base / 6].liquid_capacity_kg_m2_plant
+                 * (input.column.occupancies[base / 6].lai + input.column.occupancies[base / 6].sai);
+             jacobian[base + 5][column] = selected_set.map_or_else(
+[31m-                || capacity_selected_derivative(
+[m[31m-                    reservoir,
+[m[31m-                    capacity,
+[m[31m-                    trial.coordinates[base + 5],
+[m[31m-                    input.column.interval_s,
+[m[31m-                    column,
+[m[31m-                    base,
+[m[31m-                ),
+[m[32m+                || {
+[m[32m+                    capacity_selected_derivative(
+[m[32m+                        reservoir,
+[m[32m+                        capacity,
+[m[32m+                        trial.coordinates[base + 5],
+[m[32m+                        input.column.interval_s,
+[m[32m+                        column,
+[m[32m+                        base,
+[m[32m+                    )
+[m[32m+                },
+[m                 |selected| match selected[base / 6].capacity {
+                     openwepp_vegetation::cold_canopy_m1::M1CapacityBranch::Drainage => {
+[31m-                        if column == base + 5 { input.column.interval_s } else { 0.0 }
+[m[32m+                        if column == base + 5 {
+[m[32m+                            input.column.interval_s
+[m[32m+                        } else {
+[m[32m+                            0.0
+[m[32m+                        }
+[m                     }
+                     openwepp_vegetation::cold_canopy_m1::M1CapacityBranch::Capacity => {
+                         let (mass, enthalpy) = match selected[base / 6].phase {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1126:
+                             openwepp_vegetation::cold_canopy_m1::M1Phase::Empty
+                             | openwepp_vegetation::cold_canopy_m1::M1Phase::Ice => (0.0, 0.0),
+                         };
+[31m-                        if column == base + 3 { -mass } else if column == base + 4 { -enthalpy } else { 0.0 }
+[m[32m+                        if column == base + 3 {
+[m[32m+                            -mass
+[m[32m+                        } else if column == base + 4 {
+[m[32m+                            -enthalpy
+[m[32m+                        } else {
+[m[32m+                            0.0
+[m[32m+                        }
+[m                     }
+                 },
+             );
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1301:
+     }
+ }
+ impl M1PhaseJoinControllerReport {
+[31m-    #[must_use] pub fn selected_raw_jacobian_times(&self, direction: &[f64; 21]) -> Vec<f64> {
+[m[31m-        self.raw_jacobian.iter().map(|row| row.iter().zip(direction).map(|(a, b)| a * b).sum()).collect()
+[m[32m+    #[must_use]
+[m[32m+    pub fn selected_raw_jacobian_times(&self, direction: &[f64; 21]) -> Vec<f64> {
+[m[32m+        self.raw_jacobian
+[m[32m+            .iter()
+[m[32m+            .map(|row| row.iter().zip(direction).map(|(a, b)| a * b).sum())
+[m[32m+            .collect()
+[m     }
+[31m-    #[must_use] pub fn selected_normalized_jacobian_times(&self, direction: &[f64; 21]) -> Vec<f64> {
+[m[31m-        self.normalized_jacobian.iter().map(|row| row.iter().zip(direction).map(|(a, b)| a * b).sum()).collect()
+[m[32m+    #[must_use]
+[m[32m+    pub fn selected_normalized_jacobian_times(&self, direction: &[f64; 21]) -> Vec<f64> {
+[m[32m+        self.normalized_jacobian
+[m[32m+            .iter()
+[m[32m+            .map(|row| row.iter().zip(direction).map(|(a, b)| a * b).sum())
+[m[32m+            .collect()
+[m     }
+[31m-    #[must_use] pub const fn selected_phase(&self, occupancy: usize) -> openwepp_vegetation::cold_canopy_m1::M1Phase { self.phases[occupancy] }
+[m[31m-    #[must_use] pub const fn work_counts(&self) -> M1PhaseJoinActivity { self.activity }
+[m[31m-    #[must_use] pub const fn direction(&self) -> [f64; 21] { self.direction }
+[m[32m+    #[must_use]
+[m[32m+    pub const fn selected_phase(
+[m[32m+        &self,
+[m[32m+        occupancy: usize,
+[m[32m+    ) -> openwepp_vegetation::cold_canopy_m1::M1Phase {
+[m[32m+        self.phases[occupancy]
+[m[32m+    }
+[m[32m+    #[must_use]
+[m[32m+    pub const fn work_counts(&self) -> M1PhaseJoinActivity {
+[m[32m+        self.activity
+[m[32m+    }
+[m[32m+    #[must_use]
+[m[32m+    pub const fn direction(&self) -> [f64; 21] {
+[m[32m+        self.direction
+[m[32m+    }
+[m }
+ 
+[31m-
+[m fn phase_join_selections(
+     input: &M1CoupledColumnInput,
+     trial: &M1CoupledColumnTrial,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1319:
+     direction: &[f64; 21],
+ ) -> Result<[M1PhaseJoinSelection; 2], M1PhaseJoinFailure> {
+[31m-    let reservoir = |base| M1PhaseReservoir::from_mass_enthalpy(
+[m[31m-        trial.coordinates[base + 3], trial.coordinates[base + 4],
+[m[31m-    ).map_err(|error| M1PhaseJoinFailure::Source { error: Box::new(error.into()), activity: M1PhaseJoinActivity::default() });
+[m[32m+    let reservoir = |base| {
+[m[32m+        M1PhaseReservoir::from_mass_enthalpy(
+[m[32m+            trial.coordinates[base + 3],
+[m[32m+            trial.coordinates[base + 4],
+[m[32m+        )
+[m[32m+        .map_err(|error| M1PhaseJoinFailure::Source {
+[m[32m+            error: Box::new(error.into()),
+[m[32m+            activity: M1PhaseJoinActivity::default(),
+[m[32m+        })
+[m[32m+    };
+[m     let selection = |base: usize| {
+         let occupancy = &input.column.occupancies[base / 6];
+         classify_m1_phase_join_active_set(
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1327:
+             reservoir(base)?,
+             occupancy.liquid_capacity_kg_m2_plant * (occupancy.lai + occupancy.sai),
+[31m-            trial.coordinates[base + 5], input.column.interval_s,
+[m[31m-            direction[base + 3], direction[base + 4], direction[base + 5],
+[m[32m+            trial.coordinates[base + 5],
+[m[32m+            input.column.interval_s,
+[m[32m+            direction[base + 3],
+[m[32m+            direction[base + 4],
+[m[32m+            direction[base + 5],
+[m         )
+     };
+     Ok([selection(0)?, selection(6)?])
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1338:
+     activity: M1PhaseJoinActivity,
+ }
+ impl M1PhaseJoinControllerError {
+[31m-    fn into_source(self) -> M1CoupledError { self.error }
+[m[32m+    fn into_source(self) -> M1CoupledError {
+[m[32m+        self.error
+[m[32m+    }
+[m }
+ 
+ fn m1_phase_join_controller(
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1345:
+[31m-    input: &M1CoupledColumnInput, trial: &M1CoupledColumnTrial,
+[m[31m-    iteration: u32, backtracking_count: u32,
+[m[31m-    forced_predictor: Option<[f64; 21]>, forced_final: Option<[f64; 21]>,
+[m[32m+    input: &M1CoupledColumnInput,
+[m[32m+    trial: &M1CoupledColumnTrial,
+[m[32m+    iteration: u32,
+[m[32m+    backtracking_count: u32,
+[m[32m+    forced_predictor: Option<[f64; 21]>,
+[m[32m+    forced_final: Option<[f64; 21]>,
+[m ) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinControllerError> {
+     let mut activity = M1PhaseJoinActivity::default();
+     activity.assemblies += 1;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1351:
+[31m-    let (base, mut raw_jacobian, mut normalized_jacobian) = evaluate_core_with_jacobian(input, trial, None)
+[m[31m-        .map_err(|error| M1PhaseJoinControllerError { error, activity })?;
+[m[31m-    let numerical = |kind, pivot, matrix_norm| m1_failure(kind, iteration, input, &base, trial, backtracking_count,
+[m[31m-        StepNorms { temperature_k: None, humidity_kg_kg: None, ci_pa: None, hydraulic_mm: None, beta: Some(0.0) }, pivot, matrix_norm);
+[m[32m+    let (base, mut raw_jacobian, mut normalized_jacobian) =
+[m[32m+        evaluate_core_with_jacobian(input, trial, None)
+[m[32m+            .map_err(|error| M1PhaseJoinControllerError { error, activity })?;
+[m[32m+    let numerical = |kind, pivot, matrix_norm| {
+[m[32m+        m1_failure(
+[m[32m+            kind,
+[m[32m+            iteration,
+[m[32m+            input,
+[m[32m+            &base,
+[m[32m+            trial,
+[m[32m+            backtracking_count,
+[m[32m+            StepNorms {
+[m[32m+                temperature_k: None,
+[m[32m+                humidity_kg_kg: None,
+[m[32m+                ci_pa: None,
+[m[32m+                hydraulic_mm: None,
+[m[32m+                beta: Some(0.0),
+[m[32m+            },
+[m[32m+            pivot,
+[m[32m+            matrix_norm,
+[m[32m+        )
+[m[32m+    };
+[m     let selection_error = |failure| match failure {
+         M1PhaseJoinFailure::Source { error, .. } => *error,
+[31m-        _ => numerical(crate::numerics::NumericalFailureKind::PhaseActiveSetUnrepresentable, None, None),
+[m[32m+        _ => numerical(
+[m[32m+            crate::numerics::NumericalFailureKind::PhaseActiveSetUnrepresentable,
+[m[32m+            None,
+[m[32m+            None,
+[m[32m+        ),
+[m     };
+[31m-    let mut rhs: Vec<f64> = normalized(&base, input).iter().map(|value| -value).collect();
+[m[32m+    let mut rhs: Vec<f64> = normalized(&base, input)
+[m[32m+        .iter()
+[m[32m+        .map(|value| -value)
+[m[32m+        .collect();
+[m     for (index, occupancy) in input.column.occupancies.iter().enumerate() {
+[31m-        for (offset, area) in [occupancy.sun.leaf_area_m2_m2_tile, occupancy.shade.leaf_area_m2_m2_tile, occupancy.stem_area_m2_m2_tile].into_iter().enumerate() {
+[m[31m-            if area == 0.0 { rhs[index*6+offset] = -base.residuals[index*6+offset]; }
+[m[32m+        for (offset, area) in [
+[m[32m+            occupancy.sun.leaf_area_m2_m2_tile,
+[m[32m+            occupancy.shade.leaf_area_m2_m2_tile,
+[m[32m+            occupancy.stem_area_m2_m2_tile,
+[m[32m+        ]
+[m[32m+        .into_iter()
+[m[32m+        .enumerate()
+[m[32m+        {
+[m[32m+            if area == 0.0 {
+[m[32m+                rhs[index * 6 + offset] = -base.residuals[index * 6 + offset];
+[m[32m+            }
+[m         }
+     }
+     activity.linear_solves += 1;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1366:
+[31m-    let (solution, mut pivot, mut matrix_norm) = crate::numerics::solve_linear(&normalized_jacobian, &rhs)
+[m[31m-        .map_err(|error| M1PhaseJoinControllerError { error: numerical(crate::numerics::NumericalFailureKind::SingularPivot, Some(error.pivot), Some(error.matrix_norm)), activity })?;
+[m[31m-    let mut solved = [0.0; 21]; solved.copy_from_slice(&solution);
+[m[32m+    let (solution, mut pivot, mut matrix_norm) =
+[m[32m+        crate::numerics::solve_linear(&normalized_jacobian, &rhs).map_err(|error| {
+[m[32m+            M1PhaseJoinControllerError {
+[m[32m+                error: numerical(
+[m[32m+                    crate::numerics::NumericalFailureKind::SingularPivot,
+[m[32m+                    Some(error.pivot),
+[m[32m+                    Some(error.matrix_norm),
+[m[32m+                ),
+[m[32m+                activity,
+[m[32m+            }
+[m[32m+        })?;
+[m[32m+    let mut solved = [0.0; 21];
+[m[32m+    solved.copy_from_slice(&solution);
+[m     let predictor = forced_predictor.unwrap_or(solved);
+[31m-    let selections = phase_join_selections(input, trial, &predictor)
+[m[31m-        .map_err(|failure| M1PhaseJoinControllerError { error: selection_error(failure), activity })?;
+[m[32m+    let selections = phase_join_selections(input, trial, &predictor).map_err(|failure| {
+[m[32m+        M1PhaseJoinControllerError {
+[m[32m+            error: selection_error(failure),
+[m[32m+            activity,
+[m[32m+        }
+[m[32m+    })?;
+[m     let changed = selections.iter().any(|selection| selection.corrected);
+     let direction = if changed {
+         // Count the invocation even when a probe inside this assembly refuses.
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1375:
+         activity.assemblies += 1;
+[31m-        let (_, raw, normalized_matrix) = evaluate_core_with_jacobian(input, trial, Some((&selections, &predictor, iteration, backtracking_count)))
+[m[31m-            .map_err(|error| M1PhaseJoinControllerError { error, activity })?;
+[m[31m-        raw_jacobian = raw; normalized_jacobian = normalized_matrix;
+[m[32m+        let (_, raw, normalized_matrix) = evaluate_core_with_jacobian(
+[m[32m+            input,
+[m[32m+            trial,
+[m[32m+            Some((&selections, &predictor, iteration, backtracking_count)),
+[m[32m+        )
+[m[32m+        .map_err(|error| M1PhaseJoinControllerError { error, activity })?;
+[m[32m+        raw_jacobian = raw;
+[m[32m+        normalized_jacobian = normalized_matrix;
+[m         activity.linear_solves += 1;
+[31m-        let (solution, selected_pivot, selected_norm) = crate::numerics::solve_linear(&normalized_jacobian, &rhs)
+[m[31m-            .map_err(|error| M1PhaseJoinControllerError { error: numerical(crate::numerics::NumericalFailureKind::SingularPivot, Some(error.pivot), Some(error.matrix_norm)), activity })?;
+[m[31m-        pivot = selected_pivot; matrix_norm = selected_norm;
+[m[31m-        let mut direction = [0.0; 21]; direction.copy_from_slice(&solution); direction
+[m[31m-    } else { predictor };
+[m[32m+        let (solution, selected_pivot, selected_norm) =
+[m[32m+            crate::numerics::solve_linear(&normalized_jacobian, &rhs).map_err(|error| {
+[m[32m+                M1PhaseJoinControllerError {
+[m[32m+                    error: numerical(
+[m[32m+                        crate::numerics::NumericalFailureKind::SingularPivot,
+[m[32m+                        Some(error.pivot),
+[m[32m+                        Some(error.matrix_norm),
+[m[32m+                    ),
+[m[32m+                    activity,
+[m[32m+                }
+[m[32m+            })?;
+[m[32m+        pivot = selected_pivot;
+[m[32m+        matrix_norm = selected_norm;
+[m[32m+        let mut direction = [0.0; 21];
+[m[32m+        direction.copy_from_slice(&solution);
+[m[32m+        direction
+[m[32m+    } else {
+[m[32m+        predictor
+[m[32m+    };
+[m     let final_direction = forced_final.unwrap_or(direction);
+[31m-    let final_selections = phase_join_selections(input, trial, &final_direction)
+[m[31m-        .map_err(|failure| M1PhaseJoinControllerError { error: selection_error(failure), activity })?;
+[m[32m+    let final_selections =
+[m[32m+        phase_join_selections(input, trial, &final_direction).map_err(|failure| {
+[m[32m+            M1PhaseJoinControllerError {
+[m[32m+                error: selection_error(failure),
+[m[32m+                activity,
+[m[32m+            }
+[m[32m+        })?;
+[m     if final_selections != selections {
+[31m-        return Err(M1PhaseJoinControllerError { error: numerical(crate::numerics::NumericalFailureKind::PhaseActiveSetInconsistent, Some(pivot), Some(matrix_norm)), activity });
+[m[32m+        return Err(M1PhaseJoinControllerError {
+[m[32m+            error: numerical(
+[m[32m+                crate::numerics::NumericalFailureKind::PhaseActiveSetInconsistent,
+[m[32m+                Some(pivot),
+[m[32m+                Some(matrix_norm),
+[m[32m+            ),
+[m[32m+            activity,
+[m[32m+        });
+[m     }
+[31m-    m1_selected_probe(input, trial, &selections, &final_direction, &base, iteration, backtracking_count)
+[m[31m-        .map_err(|error| M1PhaseJoinControllerError { error, activity })?;
+[m[31m-    Ok(M1PhaseJoinControllerReport { base, raw_jacobian, normalized_jacobian,
+[m[31m-        phases: [selections[0].phase, selections[1].phase], direction, pivot, matrix_norm, activity })
+[m[32m+    m1_selected_probe(
+[m[32m+        input,
+[m[32m+        trial,
+[m[32m+        &selections,
+[m[32m+        &final_direction,
+[m[32m+        &base,
+[m[32m+        iteration,
+[m[32m+        backtracking_count,
+[m[32m+    )
+[m[32m+    .map_err(|error| M1PhaseJoinControllerError { error, activity })?;
+[m[32m+    Ok(M1PhaseJoinControllerReport {
+[m[32m+        base,
+[m[32m+        raw_jacobian,
+[m[32m+        normalized_jacobian,
+[m[32m+        phases: [selections[0].phase, selections[1].phase],
+[m[32m+        direction,
+[m[32m+        pivot,
+[m[32m+        matrix_norm,
+[m[32m+        activity,
+[m[32m+    })
+[m }
+ 
+[31m-
+[m #[cfg(test)]
+[31m-fn phase_test_result(result: Result<M1PhaseJoinControllerReport, M1PhaseJoinControllerError>) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinFailure> {
+[m[31m-    result.map_err(|failure| {
+[m[31m-        match &failure.error {
+[m[31m-            M1CoupledError::Numerical(numerical) if numerical.kind == crate::numerics::NumericalFailureKind::PhaseActiveSetInconsistent =>
+[m[31m-                M1PhaseJoinFailure::InconsistentFinalSet { activity: failure.activity },
+[m[31m-            M1CoupledError::Numerical(numerical) if numerical.kind == crate::numerics::NumericalFailureKind::PhaseActiveSetUnrepresentable =>
+[m[31m-                M1PhaseJoinFailure::UnrepresentableProbe { activity: failure.activity },
+[m[31m-            _ => M1PhaseJoinFailure::Source { error: Box::new(failure.error), activity: failure.activity },
+[m[32m+fn phase_test_result(
+[m[32m+    result: Result<M1PhaseJoinControllerReport, M1PhaseJoinControllerError>,
+[m[32m+) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinFailure> {
+[m[32m+    result.map_err(|failure| match &failure.error {
+[m[32m+        M1CoupledError::Numerical(numerical)
+[m[32m+            if numerical.kind
+[m[32m+                == crate::numerics::NumericalFailureKind::PhaseActiveSetInconsistent =>
+[m[32m+        {
+[m[32m+            M1PhaseJoinFailure::InconsistentFinalSet {
+[m[32m+                activity: failure.activity,
+[m[32m+            }
+[m         }
+[32m+        M1CoupledError::Numerical(numerical)
+[m[32m+            if numerical.kind
+[m[32m+                == crate::numerics::NumericalFailureKind::PhaseActiveSetUnrepresentable =>
+[m[32m+        {
+[m[32m+            M1PhaseJoinFailure::UnrepresentableProbe {
+[m[32m+                activity: failure.activity,
+[m[32m+            }
+[m[32m+        }
+[m[32m+        _ => M1PhaseJoinFailure::Source {
+[m[32m+            error: Box::new(failure.error),
+[m[32m+            activity: failure.activity,
+[m[32m+        },
+[m     })
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1411:
+ #[cfg(test)]
+[31m-pub fn m1_phase_join_controller_iteration(input: &M1CoupledColumnInput, trial: &M1CoupledColumnTrial) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinFailure> {
+[m[32m+pub fn m1_phase_join_controller_iteration(
+[m[32m+    input: &M1CoupledColumnInput,
+[m[32m+    trial: &M1CoupledColumnTrial,
+[m[32m+) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinFailure> {
+[m     phase_test_result(m1_phase_join_controller(input, trial, 0, 0, None, None))
+ }
+ #[cfg(test)]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1416:
+[31m-pub fn m1_phase_join_controller_with_forced_predictor_direction(input: &M1CoupledColumnInput, trial: &M1CoupledColumnTrial, predictor: [f64; 21]) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinFailure> {
+[m[31m-    phase_test_result(m1_phase_join_controller(input, trial, 0, 0, Some(predictor), Some(predictor)))
+[m[32m+pub fn m1_phase_join_controller_with_forced_predictor_direction(
+[m[32m+    input: &M1CoupledColumnInput,
+[m[32m+    trial: &M1CoupledColumnTrial,
+[m[32m+    predictor: [f64; 21],
+[m[32m+) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinFailure> {
+[m[32m+    phase_test_result(m1_phase_join_controller(
+[m[32m+        input,
+[m[32m+        trial,
+[m[32m+        0,
+[m[32m+        0,
+[m[32m+        Some(predictor),
+[m[32m+        Some(predictor),
+[m[32m+    ))
+[m }
+ #[cfg(test)]
+[31m-pub fn m1_phase_join_controller_with_forced_directions(input: &M1CoupledColumnInput, trial: &M1CoupledColumnTrial, predictor: [f64; 21], final_direction: [f64; 21]) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinFailure> {
+[m[31m-    phase_test_result(m1_phase_join_controller(input, trial, 0, 0, Some(predictor), Some(final_direction)))
+[m[32m+pub fn m1_phase_join_controller_with_forced_directions(
+[m[32m+    input: &M1CoupledColumnInput,
+[m[32m+    trial: &M1CoupledColumnTrial,
+[m[32m+    predictor: [f64; 21],
+[m[32m+    final_direction: [f64; 21],
+[m[32m+) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinFailure> {
+[m[32m+    phase_test_result(m1_phase_join_controller(
+[m[32m+        input,
+[m[32m+        trial,
+[m[32m+        0,
+[m[32m+        0,
+[m[32m+        Some(predictor),
+[m[32m+        Some(final_direction),
+[m[32m+    ))
+[m }
+ 
+ /// Test-only observation of the current, unreduced controller.  This is not a
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1440:
+ ) -> Result<M1CurrentLinearSystemTestView, M1PhaseJoinFailure> {
+     let report = phase_test_result(m1_phase_join_controller(input, trial, 0, 0, None, None))?;
+     let selections = phase_join_selections(input, trial, &report.direction)?;
+[31m-    let mut rhs: Vec<f64> = normalized(&report.base, input).iter().map(|value| -value).collect();
+[m[32m+    let mut rhs: Vec<f64> = normalized(&report.base, input)
+[m[32m+        .iter()
+[m[32m+        .map(|value| -value)
+[m[32m+        .collect();
+[m     for (index, occupancy) in input.column.occupancies.iter().enumerate() {
+[31m-        for (offset, area) in [occupancy.sun.leaf_area_m2_m2_tile, occupancy.shade.leaf_area_m2_m2_tile, occupancy.stem_area_m2_m2_tile].into_iter().enumerate() {
+[m[31m-            if area == 0.0 { rhs[index * 6 + offset] = -report.base.residuals[index * 6 + offset]; }
+[m[32m+        for (offset, area) in [
+[m[32m+            occupancy.sun.leaf_area_m2_m2_tile,
+[m[32m+            occupancy.shade.leaf_area_m2_m2_tile,
+[m[32m+            occupancy.stem_area_m2_m2_tile,
+[m[32m+        ]
+[m[32m+        .into_iter()
+[m[32m+        .enumerate()
+[m[32m+        {
+[m[32m+            if area == 0.0 {
+[m[32m+                rhs[index * 6 + offset] = -report.base.residuals[index * 6 + offset];
+[m[32m+            }
+[m         }
+     }
+     Ok(M1CurrentLinearSystemTestView {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1485:
+     crate::numerics::solve_linear(matrix, rhs).map_err(|_| "singular_pivot")
+ }
+ 
+[31m-
+[m #[cfg(test)]
+[31m-pub fn m1_phase_join_controller_unrepresentable_probe(input: &M1CoupledColumnInput) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinFailure> {
+[m[32m+pub fn m1_phase_join_controller_unrepresentable_probe(
+[m[32m+    input: &M1CoupledColumnInput,
+[m[32m+) -> Result<M1PhaseJoinControllerReport, M1PhaseJoinFailure> {
+[m     let mut input = input.clone();
+     let mass = (2_f64).powi(44) / LF;
+     input.reservoirs[0].mass_kg_m2 = mass;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1509:
+     coordinates[15..].copy_from_slice(&[291.5, 289.8, 293.0, 293.0, 293.0, 270.0]);
+     let mut predictor = [0.0; 21];
+     predictor[4] = -1.0;
+[31m-    phase_test_result(m1_phase_join_controller(&input, &M1CoupledColumnTrial::from_coordinates(coordinates), 0, 0, Some(predictor), None))
+[m[32m+    phase_test_result(m1_phase_join_controller(
+[m[32m+        &input,
+[m[32m+        &M1CoupledColumnTrial::from_coordinates(coordinates),
+[m[32m+        0,
+[m[32m+        0,
+[m[32m+        Some(predictor),
+[m[32m+        None,
+[m[32m+    ))
+[m }
+ 
+ fn m1_tolerances(input: &M1CoupledColumnInput, core: &Core) -> [f64; 21] {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1720:
+         // The controller owns the only predictor and optional corrected solve
+         // for this Newton base.  It is deliberately called before candidate
+         // construction so a frozen-set failure cannot enter backtracking.
+[31m-        let phase_report = m1_phase_join_controller(
+[m[31m-            input,
+[m[31m-            &trial,
+[m[31m-            iteration,
+[m[31m-            backtracking_count,
+[m[31m-            None,
+[m[31m-            None,
+[m[31m-        ).map_err(M1PhaseJoinControllerError::into_source)?;
+[m[32m+        let phase_report =
+[m[32m+            m1_phase_join_controller(input, &trial, iteration, backtracking_count, None, None)
+[m[32m+                .map_err(M1PhaseJoinControllerError::into_source)?;
+[m         let base = phase_report.base.clone();
+         let residuals = normalized(&base, input);
+         if residuals.iter().any(|x| !x.is_finite())
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1734:
+[31m-            || phase_report.raw_jacobian.iter().flatten().any(|x| !x.is_finite())
+[m[32m+            || phase_report
+[m[32m+                .raw_jacobian
+[m[32m+                .iter()
+[m[32m+                .flatten()
+[m[32m+                .any(|x| !x.is_finite())
+[m         {
+             return Err(domain_error());
+         }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1741:
+         if iteration == 0 || iteration == 3 {
+             let mut rhs: Vec<f64> = residuals.iter().map(|value| -value).collect();
+             for (index, occupancy) in input.column.occupancies.iter().enumerate() {
+[31m-                for (offset, area) in [occupancy.sun.leaf_area_m2_m2_tile, occupancy.shade.leaf_area_m2_m2_tile, occupancy.stem_area_m2_m2_tile].into_iter().enumerate() {
+[m[31m-                    if area == 0.0 { rhs[index * 6 + offset] = -base.residuals[index * 6 + offset]; }
+[m[32m+                for (offset, area) in [
+[m[32m+                    occupancy.sun.leaf_area_m2_m2_tile,
+[m[32m+                    occupancy.shade.leaf_area_m2_m2_tile,
+[m[32m+                    occupancy.stem_area_m2_m2_tile,
+[m[32m+                ]
+[m[32m+                .into_iter()
+[m[32m+                .enumerate()
+[m[32m+                {
+[m[32m+                    if area == 0.0 {
+[m[32m+                        rhs[index * 6 + offset] = -base.residuals[index * 6 + offset];
+[m[32m+                    }
+[m                 }
+             }
+             eprintln!(

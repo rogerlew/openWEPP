@@ -1,0 +1,15 @@
+{
+  "anchor_utc": "2026-09-21T23:10:00+00:00",
+  "carry_seconds": 212951.462422,
+  "ceiling_seconds": 226516.28217,
+  "deadline_utc": "2026-09-22T02:56:04.819748+00:00",
+  "launch_cutoff_utc": "2026-09-22T02:26:04.819748+00:00",
+  "reserve_seconds": 1800,
+  "observed_utc": "2026-09-22T02:24:48.529956+00:00",
+  "charged_seconds": 224639.992378,
+  "wait_deductions_seconds": 0,
+  "outcome_count": "historical mixed outcomes uncertain; no reset or invented exact count",
+  "remaining_total_seconds": 1876.289792,
+  "remaining_implementation_seconds": 0,
+  "status": "Implementation stopped; final review/preservation/publication in progress; final charge pending"
+}

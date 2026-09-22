@@ -1,0 +1,30 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: fields `capacity`, `current_drainage`, and `linear_dimension` are never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1483:5
+     |
+1476 | pub struct M1PhaseJoinControllerReport {
+     |            --------------------------- fields in this struct
+...
+1483 |     capacity: [openwepp_vegetation::cold_canopy_m1::M1CapacityBranch; 2],
+     |     ^^^^^^^^
+1484 |     current_drainage: [f64; 2],
+     |     ^^^^^^^^^^^^^^^^
+1485 |     eliminated_coordinates: [bool; 2],
+1486 |     linear_dimension: usize,
+     |     ^^^^^^^^^^^^^^^^
+     |
+     = note: `M1PhaseJoinControllerReport` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `activity` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1883:5
+     |
+1881 | struct M1PhaseJoinControllerError {
+     |        -------------------------- field in this struct
+1882 |     error: M1CoupledError,
+1883 |     activity: M1PhaseJoinActivity,
+     |     ^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.17s

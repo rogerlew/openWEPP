@@ -1,0 +1,33 @@
+{
+  "evidence_class": "Static independent reviews and inspected Ran receipts",
+  "test_source_tree_sha256": "b01e2cd4441be49d7ee4e0c8fd33ced4b6aea8cc4a67ea585795a38ded794c84",
+  "test_receipt": "structural-drainage-latent-red-02.json",
+  "prior_hold": {
+    "reviewer": "/root/correctness",
+    "finding": "red01 immediate assertion stops after NaN and does not execute four remaining cases",
+    "resolution": "Aggregate all five actual public evaluator outcomes before final assertion"
+  },
+  "correctness_test": {
+    "reviewer": "/root/correctness",
+    "verdict": "GO",
+    "response": "Verified aggregate executes all five real public-evaluator cases: NaN/+Inf/-Inf independently red as140 vs141; finite0/-1 already140. Release only ordered split nonfinite141 then finite<=0 condition140, no validation reordering."
+  },
+  "qa_test": {
+    "reviewer": "/root/qa",
+    "verdict": "GO",
+    "response": "red02 exact b01e2c source unchanged exit100, aggregate exactly three nonfinite mismatches; finite0/-1 correctly140. Lint/full-workspace/M1 holds unchanged."
+  },
+  "body": {
+    "source_tree_sha256": "c3a681205c5c19dba5f50034b7f219694ec5f43485f9f6ceb6c06f10dc4c1565",
+    "correctness": {
+      "reviewer": "/root/correctness",
+      "verdict": "GO bounded structural/accepted/latent bodies; whole M1 HOLD",
+      "response": "Final ordered split preserves nonfinite141 before finite<=0140. Exact focused9/9, lib208/208 six skipped, format pass. Source receipt matches live three-file hashes. Original13 is earlier isolated root diagnostic, not final physical acceptance. First-domain-valid witness marking too late, eligibility/activity, routing/receiver/rollback,72h/restart/conservation/cost,Critical and lint remain HOLD."
+    },
+    "qa": {
+      "reviewer": "/root/qa",
+      "verdict": "GO narrow functional latent fix; quality/qualification HOLD",
+      "response": "Minimal split verified at lines497-502. Exact focused9/9, lib208/208 six skipped, format allthree pass, source unchanged. Red02 aggregate independently exposes three nonfinite cases. cfgtest-only mutable evaluation warns in production, unused report/activity fields remain; criticalfull04 fails two known missing API import groups. No successful exact warnings-denied clippy; physical/receiver/witness/activity acceptance held."
+    }
+  }
+}

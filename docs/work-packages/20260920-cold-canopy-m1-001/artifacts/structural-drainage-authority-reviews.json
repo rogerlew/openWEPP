@@ -1,0 +1,24 @@
+{
+  "observed_utc": "2026-09-21T23:25:46.830772+00:00",
+  "scope": "Prospective authority and expected-red authoring only; no body release or M1 acceptance",
+  "files": {
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": "e8ec0b81347306d39565b572c677611c6144d38a96fb98abbebe994f77ab5ee8",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "7d2d5f3d2e0758b9ecccb5f9725793cac289382356d01a40c4a7575fd1e427bd",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md": "eea4cd9be5ab317b41c58f9b1191fca8418f31570ade709ee9f546a59657d163",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "3d19ea3c700a4870122ae16b26a51f1cc5cecbfa3bf022ac35d20a675611861f"
+  },
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "initial": "HOLD: two medium ambiguities, exact-tie eligibility and reduced pivot norm",
+    "fixes": "Both exact-tie selected outcomes explicit; reduced LU uses 64 eps ||A_FF||inf, eliminated coefficient fullnorm. Integrity failure provenance explicit.",
+    "same_reviewer_verdict": "GO / no correctness blocker for adopting this prospective authority and authoring contract-derived expected-red tests. This release is tests-only: implementation remains HOLD until expected-red evidence is recorded and the same correctness reviewer verifies the test/oracle coverage and red result.",
+    "evidence": "Static canonical diff plus independent nonphysical reconstruction; no Rust evaluator/physical run"
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "initial": "PASS/GO for four-file authority draft only; no blocking QA/evidence finding",
+    "same_reviewer_verdict": "Static same-reviewer fix check: CLEAR.",
+    "evidence": "Bindings, versions, physical-definition preservation, work/custody/failure limits, documentary checks and affected clarifications inspected.",
+    "followup": "Record exact forthcoming tests/commands/oracle provenance."
+  }
+}

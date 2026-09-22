@@ -1,0 +1,17 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0616]: field `coordinates` of struct `m1_coupled::M1CoupledColumnTrial` is private
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:469:26
+    |
+469 |         capacity_limited.coordinates, current.direction, 1.0, [false, false],
+    |                          ^^^^^^^^^^^ private field
+
+error[E0616]: field `coordinates` of struct `m1_coupled::M1CoupledColumnTrial` is private
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:471:47
+    |
+471 |     assert_ne!(candidate[5], capacity_limited.coordinates[5], "capacity-selected D remains a solved nonzero release coordinate");
+    |                                               ^^^^^^^^^^^ private field
+
+For more information about this error, try `rustc --explain E0616`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101

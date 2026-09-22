@@ -1,0 +1,77 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:205:
+     // test invokes no physical solve and asks the test-only seam for no new
+     // numerical algorithm: its stored direction is current full-LU behavior.
+     let witness: Value = serde_json::from_str(STRUCTURAL_DRAINAGE).expect("witness");
+[31m-    for row in witness["drainage_rows"].as_array().expect("two drainage rows") {
+[m[32m+    for row in witness["drainage_rows"]
+[m[32m+        .as_array()
+[m[32m+        .expect("two drainage rows")
+[m[32m+    {
+[m         let current = row["current"].as_f64().expect("current");
+         let old_direction = row["direction"].as_f64().expect("old full LU direction");
+         assert_eq!(
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:229:
+     coordinates[11] = lower["current"].as_f64().expect("lower current");
+     direction[5] = upper["direction"].as_f64().expect("upper direction");
+     direction[11] = lower["direction"].as_f64().expect("lower direction");
+[31m-    for alpha in [1.0, 0.5, 2.0_f64.powi(-1), 2.0_f64.powi(-20), 2.0_f64.powi(-19),
+[m[31m-                  2.0_f64.powi(-18), 2.0_f64.powi(-17), 2.0_f64.powi(-16),
+[m[31m-                  2.0_f64.powi(-15), 2.0_f64.powi(-14), 2.0_f64.powi(-13),
+[m[31m-                  2.0_f64.powi(-12), 2.0_f64.powi(-11), 2.0_f64.powi(-10),
+[m[31m-                  2.0_f64.powi(-9), 2.0_f64.powi(-8), 2.0_f64.powi(-7),
+[m[31m-                  2.0_f64.powi(-6), 2.0_f64.powi(-5), 2.0_f64.powi(-4),
+[m[31m-                  2.0_f64.powi(-3), 2.0_f64.powi(-2)] {
+[m[32m+    for alpha in [
+[m[32m+        1.0,
+[m[32m+        0.5,
+[m[32m+        2.0_f64.powi(-1),
+[m[32m+        2.0_f64.powi(-20),
+[m[32m+        2.0_f64.powi(-19),
+[m[32m+        2.0_f64.powi(-18),
+[m[32m+        2.0_f64.powi(-17),
+[m[32m+        2.0_f64.powi(-16),
+[m[32m+        2.0_f64.powi(-15),
+[m[32m+        2.0_f64.powi(-14),
+[m[32m+        2.0_f64.powi(-13),
+[m[32m+        2.0_f64.powi(-12),
+[m[32m+        2.0_f64.powi(-11),
+[m[32m+        2.0_f64.powi(-10),
+[m[32m+        2.0_f64.powi(-9),
+[m[32m+        2.0_f64.powi(-8),
+[m[32m+        2.0_f64.powi(-7),
+[m[32m+        2.0_f64.powi(-6),
+[m[32m+        2.0_f64.powi(-5),
+[m[32m+        2.0_f64.powi(-4),
+[m[32m+        2.0_f64.powi(-3),
+[m[32m+        2.0_f64.powi(-2),
+[m[32m+    ] {
+[m         let old = super::m1_current_unreduced_candidate_for_test(coordinates, direction, alpha);
+         for index in [5, 11] {
+             assert_eq!(
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:263:
+         topology_binding(),
+     );
+     let join = M1CoupledColumnTrial::from_coordinates([
+[31m-        267., 266., 268., 0.018, 0., 0., 269., 267., 270., 0.018, 0., 0., 268., 0.0015,
+[m[31m-        265.15, 291.5, 289.8, 293., 293., 293., 270.,
+[m[32m+        267., 266., 268., 0.018, 0., 0., 269., 267., 270., 0.018, 0., 0., 268., 0.0015, 265.15,
+[m[32m+        291.5, 289.8, 293., 293., 293., 270.,
+[m     ]);
+     let current = super::m1_current_unreduced_linear_system_for_test(&input, &join)
+         .expect("real current controller");
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:272:
+     assert_eq!(current.rhs.len(), 21);
+     assert_eq!(current.activity.assemblies, 2);
+     assert_eq!(current.activity.linear_solves, 2);
+[31m-    assert_eq!(current.capacity, [M1CapacityBranch::Drainage, M1CapacityBranch::Drainage]);
+[m[32m+    assert_eq!(
+[m[32m+        current.capacity,
+[m[32m+        [M1CapacityBranch::Drainage, M1CapacityBranch::Drainage]
+[m[32m+    );
+[m     assert!(current.direction.iter().all(|value| value.is_finite()));
+ }
+ 

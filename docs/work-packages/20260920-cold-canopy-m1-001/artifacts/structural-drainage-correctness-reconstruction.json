@@ -1,0 +1,130 @@
+{
+  "artifact_identity": {
+    "script": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/structural-drainage-correctness-reconstruction.py",
+    "script_sha256": "323e9b1c627c7013ded429ddc11d474a6de44c64834099e5f7abdb3b6c50b2ca"
+  },
+  "binary64_replay": {
+    "drainage_row_remainders": {
+      "11": "0.0",
+      "5": "0.0"
+    },
+    "eliminated_direction": {
+      "11": "-0.0",
+      "5": "-6.3715768494897124e-21"
+    },
+    "full_step_drainage": {
+      "11": "0.0",
+      "5": "0.0"
+    },
+    "line_search_drainage": [
+      {
+        "alpha": "1.0",
+        "coordinates": {
+          "11": "0.0",
+          "5": "0.0"
+        }
+      },
+      {
+        "alpha": "0.5",
+        "coordinates": {
+          "11": "0.0",
+          "5": "3.1857884247448562e-21"
+        }
+      },
+      {
+        "alpha": "9.5367431640625e-07",
+        "coordinates": {
+          "11": "0.0",
+          "5": "6.371570773080516e-21"
+        }
+      }
+    ],
+    "maximum_absolute_original_system_remainder": "1.9912249626941048e-09",
+    "maximum_remaining_direction_change_from_recorded_full_lu": "8.881784197001252e-16",
+    "reduced_minimum_pivot": "1.0"
+  },
+  "evidence_class": "Static independent analytic reconstruction; no Rust evaluator or physical run",
+  "high_precision_emitted_literals": {
+    "drainage_row_remainders": {
+      "11": "0.000000000000000000000000000000E-55862",
+      "5": "-4.400000000000000000000000000000E-26"
+    },
+    "eliminated_direction": {
+      "11": "0.000000000000000000000000000000E+29",
+      "5": "-6.371576849489712400000000000000E-21"
+    },
+    "maximum_absolute_original_system_remainder": "4.400000000000000000000000000000E-26",
+    "reduced_minimum_pivot": "1.000000000000000000000000000000E+0"
+  },
+  "interpretation": [
+    "The reconstructed direction enforces the source affine identity dD+D=0 for both selected drainage rows.",
+    "The recorded upper and lower D columns affect noneliminated mass/enthalpy rows, so solving A_FF without subtracting A_FE*d_E would solve a different system.",
+    "For this witness, the binary64 upper-row product rounds exactly to the recorded normalized RHS, while exact arithmetic over the emitted decimal literals exposes -4.4e-26. This witness supports explicit verification and honest reporting, not an assumption that every normalized row is bit-exact.",
+    "The calculation establishes only the linear representation relationship. It is not physical convergence, nonlinear acceptance, or complete Jacobian validation."
+  ],
+  "method": {
+    "affine_direction": "dD=-D from the selected unscaled dt*D row",
+    "binary_residual": "math.fsum([A_ij*d_j..., -b_i]) after binary64 scalar solve",
+    "decimal_residual": "100-digit Decimal arithmetic over exact emitted JSON decimal literals",
+    "eligible_coordinates": [
+      5,
+      11
+    ],
+    "reduction": "A_FF*d_F=b_F-A_FE*d_E",
+    "retained_coordinates": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "solve": "partial-pivot Gaussian elimination in retained coordinate order"
+  },
+  "source": {
+    "iteration": 3,
+    "source_tree_sha256": "3b1fab62f385f7ec57bfedc81b734cbdcd8f7020de81f7d48fc3a8d28bac8bc9",
+    "trace": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-original60-12.stderr",
+    "trace_sha256": "08ac08c43762bd9ae5e9fd2e4f5ee948056f439cdc76320af29a44c54b70bd1c",
+    "upstream_reconstruction": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1-original60-12-linear-reconstruction.json",
+    "upstream_reconstruction_sha256": "f2049668aacf886ff679549ac1b52d638d9439f329c7e92c96afd85b904fb61e"
+  },
+  "structural_coupling": {
+    "conclusion": "Rows 3 and 9 retain physical D coupling; A_FE substitution is mandatory.",
+    "nonzero_d_columns": [
+      {
+        "lower_d_column": "0.0",
+        "row": 3,
+        "upper_d_column": "333333333332.5572"
+      },
+      {
+        "lower_d_column": "0.0",
+        "row": 5,
+        "upper_d_column": "60000000000.0"
+      },
+      {
+        "lower_d_column": "333333333338.58716",
+        "row": 9,
+        "upper_d_column": "-212686300049.64505"
+      },
+      {
+        "lower_d_column": "60000000000.0",
+        "row": 11,
+        "upper_d_column": "0.0"
+      }
+    ]
+  }
+}

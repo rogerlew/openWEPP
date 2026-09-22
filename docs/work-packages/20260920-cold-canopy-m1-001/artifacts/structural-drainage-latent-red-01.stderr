@@ -1,0 +1,50 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID cd2335e4-ef3c-4e2a-846e-f1d1e4cbcddb with nextest profile: default
+    Starting 1 test across 1 binary (213 tests skipped)
+        FAIL [   0.006s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 213 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain' (2064944) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:52:9:
+    assertion `left == right` failed
+      left: "VEG-E-140"
+     right: "VEG-E-141"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.007s] 1 test run: 0 passed, 1 failed, 213 skipped
+        FAIL [   0.006s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 213 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_expected_red_latent_heat_nonfinite_precedes_finite_domain' (2064944) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:52:9:
+    assertion `left == right` failed
+      left: "VEG-E-140"
+     right: "VEG-E-141"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

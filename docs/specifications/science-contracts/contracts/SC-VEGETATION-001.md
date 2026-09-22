@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 34
+contract_version: 35
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -1461,7 +1461,8 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
 `INV-VEGETATION-126`, `INV-VEGETATION-127`, `INV-VEGETATION-128`,
 `INV-VEGETATION-133`, `INV-VEGETATION-134`,
 `INV-VEGETATION-140`, `INV-VEGETATION-141`, `INV-VEGETATION-142`,
-`INV-VEGETATION-143`, `INV-VEGETATION-144`, `OBL-VEGETATION-C-008`,
+`INV-VEGETATION-143`, `INV-VEGETATION-144`, `INV-VEGETATION-145`,
+`OBL-VEGETATION-C-008`, `OBL-VEGETATION-C-009`,
 `VEG-E-095`, `VEG-E-096`, `VEG-E-097`, `VEG-E-098`, `VEG-E-099`,
 `VEG-E-100`, and `VEG-E-133`.
 
@@ -1488,7 +1489,7 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
 | `BEI-VEGETATION-017` | Validated In-Memory Vegetation-State Handoff Amendment below | `active` | `maps-to-existing-INV` | `INV-VEGETATION-134, OBL-VEGETATION-C-006` | `flagged-binding-addition` | Private immutable revision-bound typestate may remove duplicate trusted in-process validation; every mutation and restart/external/untrusted boundary retains full validation. |
 | `BEI-VEGETATION-018` | [Liquid-canopy support clarification](#liquid-canopy-supported-domain-clarification) | `active` | `maps-to-existing-INV` | `INV-VEGETATION-022, INV-VEGETATION-051, INV-VEGETATION-062, INV-VEGETATION-065, INV-VEGETATION-066, INV-VEGETATION-067, INV-VEGETATION-073, INV-VEGETATION-075, INV-VEGETATION-110, INV-VEGETATION-111, INV-VEGETATION-114, INV-VEGETATION-118, INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `none` | Existing liquid-only component-domain, ownership, release-enthalpy, shared-air, represented-snow, and refusal authority is clarified; no cold-canopy phase model or runtime selector is admitted. |
 | `BEI-VEGETATION-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `flagged-binding-addition` | Shared canopy-air carrier, sealed exposure, exact-once canopy fluxes, and event-bounded snow regime. |
-| `BEI-VEGETATION-019` | Cold-canopy M1 amendment | `active` | `unpromoted-binding` | `INV-VEGETATION-140, INV-VEGETATION-141, INV-VEGETATION-142, INV-VEGETATION-143, INV-VEGETATION-144, OBL-VEGETATION-C-008` | `flagged-binding-addition` | Review-pending V33 bulk external-water phase, narrow conducting-tissue domain, conserved phase ledger, liquid receipt and diagnostic restart. |
+| `BEI-VEGETATION-019` | Cold-canopy M1 amendment | `active` | `unpromoted-binding` | `INV-VEGETATION-140, INV-VEGETATION-141, INV-VEGETATION-142, INV-VEGETATION-143, INV-VEGETATION-144, INV-VEGETATION-145, OBL-VEGETATION-C-008, OBL-VEGETATION-C-009` | `flagged-binding-addition` | Review-pending V33 bulk external-water phase, narrow conducting-tissue domain, conserved phase ledger, liquid receipt, diagnostic restart, and selected-branch affine drainage representation. |
 
 ## Gap Register and Promotability Labels
 
@@ -3131,6 +3132,7 @@ constitutive behavior unchanged.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-09-21 | 35 | Codex | Prospective M1 selected-drainage affine-elimination amendment: verifies the selected unscaled `dt*D` row, reduces/reconstructs the same normalized system, and evaluates derived nonnegative drainage candidates without changing the primal capacity law, branch/tie selection, solver budget, physical acceptance, or production HOLD. |
 | 2026-09-21 | 34 | Codex | Prospective M1 phase-join directional-linearization amendment: bounded two-solve predictor/final active-set selection with deterministic phase/capacity ties, representable-boundary refusal, and final-direction consistency failure. Primal equations, phase definition, acceptance, solver limits, and production HOLD remain unchanged. |
 | 2026-09-20 | 32 | Codex | Owner-adopted existing-domain liquid-canopy clarification: distinguished active component, shared-air, dry-stem, ground-snow, and transparent-passage temperature roles; preserved existing guard/error seams and expanded the non-promotable cold-canopy authority gap. No equation, historical model-definition byte, guard position, acceptance, runtime selector, or phase law changed. |
 | 2026-08-29 | 30 | Codex | Bound accepted terminal composition to every exact physical child's ordered resource/material custody, canonical same-key enclosing debit folds, the exact sequential BGC ending, and an audit-only one-ULP binary64 regrouping bound with one-bit-over rejection. |
@@ -3268,6 +3270,7 @@ execution must equal uninterrupted stable-ice, mixed and liquid-release endings.
 | <a id="INV-VEGETATION-142"></a> `INV-VEGETATION-142` | M/H inversion, event and capacity active set close water/enthalpy once without fusion duplication. | first law + M1 selection | `[INFERENCE][Static]` | full residual/closure validator | `VEG-E-142` |
 | <a id="INV-VEGETATION-143"></a> `INV-VEGETATION-143` | Only diagnosed liquid enters the typed real receiver once; any failure is atomic. | SC-VEGETATIONTRANSACTION-001 | `[DIRECT+INFERENCE][Static]` | receipt/owner validator | `VEG-E-143` |
 | <a id="INV-VEGETATION-144"></a> `INV-VEGETATION-144` | M1 restart carries explicit M/H and cannot infer it from a V32 warm start. | state custody | `[INFERENCE][Static]` | V1 restart parser | `VEG-E-144` |
+| <a id="INV-VEGETATION-145"></a> `INV-VEGETATION-145` | A selected M1 drainage tangent may eliminate only its verified affine `dt*D` capacity row, while the reduced solve and reconstructed direction retain every remaining normalized coupling and the complete primal candidate/acceptance checks. | M1 `R_cap`, first-order algebra, and numerical-solver architecture | `[DIRECT+INFERENCE][Static]` | selected-row reduction validator and reduced-solve guard | typed `LSEB-E-034` numerical failure; no candidate, mutation, receipt, fallback, or extra solve |
 
 `OBL-VEGETATION-C-008`: freeze source bytes/equation map and vectors at each
 saturation boundary, prove `p_liq>p_ice` below freezing and no semantic alias;
@@ -3289,6 +3292,17 @@ recipient state/use; and `m1_restart_matrix` covers ice/mixed/liquid, malformed
 identity/units/area/support, forcing-as-state, parse precedence, split restart,
 and late rollback. These are A0 M/H/receipt closure, A1 guards/phase/state/
 custody, and A3 complete saturation/vapor-law vectors respectively.
+
+`OBL-VEGETATION-C-009`: before the selected-drainage representation is
+implemented, bind independent reduction/reconstruction controls for one and two
+eligible occupancies, current `D=+0/-0` and finite positive `D`, nonzero retained
+drainage columns in other rows, each permitted halving through the full-step
+zero, signed-zero and subnormal/underflow cases, capacity-selected noneligibility, exact-tie capacity-selected noneligibility and
+exact-tie final drainage-selected eligibility, predictor/final set changes, and invalid row/metadata/scale,
+pivot, and nonfinite cases. The oracle uses the primal equation and independent
+arithmetic, never the reduction helper. It proves unchanged one/two
+assembly-and-solve accounting, original/full residual reporting, no candidate or
+mutation on typed failure, and unchanged physical admission.
 
 M1 error taxonomy is fixed: `VEG-E-140` is missing or false supplied cold
 condition/domain; `VEG-E-141` is saturation/pressure/nonfinite input;
@@ -3409,6 +3423,85 @@ backtracking for inconsistent/unrepresentable vectors. The latter vectors must
 also prove no receipt or state mutation occurs. The retained original60 trace
 is a diagnostic vector for this amendment, never a convergence or acceptance
 oracle.
+
+### M1 prospective selected-drainage affine-elimination amendment
+
+**Status: `BOUNDED IMPLEMENTATION RELEASE / dual review and expected-red recorded`.**
+Physical acceptance remains on HOLD; the bounded structural body has separate
+review evidence in the M1 package. This is one representation inside the already selected M1 Newton algorithm. It changes no
+primal phase or capacity equation, branch or tie rule, state/forcing/seed,
+normalizer definition, pivot policy, 21-coordinate/29-coordinate structure,
+50-update/20-halving limit, or accepted-state predicate. It does not add a
+linear-algebra dependency, an active-set loop, iterative refinement, projection,
+clamp, fallback solver, third assembly, or retained matrix/history. Bounded
+per-assembly scratch is permitted only for the reduced system and is discarded
+with that assembly. A capacity-selected coordinate remains in the ordered `F`
+block whenever another occupancy is eligible; only an assembly with `E` empty
+uses the existing complete solve.
+
+For each complete predictor or final assembly separately, let `E` be the set
+of occupancy drainage coordinates whose **already selected** `R_cap` branch is
+the drainage argument `dt*D`; `E` contains at most the two M1 occupancies. The
+selection is read from trusted current branch metadata before a linear solve,
+and never inferred from a small residual, output, rejected trial, or prior LU
+result. Each member requires finite `dt>0`, finite nonnegative `D`, and the
+existing finite positive row normalizer/coordinate scale. Its unscaled source
+row must verify as `R_cap=dt*D`, `dR_cap/dD=dt`, and zero derivative for every
+other coordinate. Missing or foreign row identity, nonfinite
+support/normalizer/scale/state, or unexpected selected-row coupling is a typed
+`NumericalFailureKind::DrainageEliminationIntegrity`, stable provenance
+`drainage_elimination_integrity`, with `LSEB-E-034`; it is
+not ineligibility and reaches no candidate, mutation, receipt, or publication.
+
+For every verified member, the unscaled affine relation prescribes `dD=-D`.
+Build the existing normalized `A*d=b` first, preserving its defined binary64
+assembly and dynamic normalization. In particular, for selected row `r`, with
+its already computed positive tolerance `t_r`, verify the stored expressions
+`A[r,D] = dt/t_r` and `b[r] = -(R_cap/t_r)` in the existing division/negation
+order, plus all other stored row entries equal to zero. Require that finite
+`abs(A[r,D])` meets the existing pivot floor `64*epsilon*||A||_infinity` of the
+complete assembled normalized matrix before removing the row. Thus elimination
+cannot hide an invalid affine coefficient; it does not assert that `b[r]/A[r,D]`
+is bit-identical to `-D`.
+
+Order `E` and `F` by their original coordinate indices. Set each `d_E=-D` by
+unary negation. Copy `A_FF` from the stored matrix in ascending row/column
+order. For each `i` in `F`, begin with stored `b[i]`, then, for each `e` in
+ascending `E`, evaluate the binary64 product `A[i,e]*d[e]` and subtract that
+product from the running RHS in that order; neither a fused multiply-add nor a
+reassociation is permitted. Solve the sole reduced system with the existing
+pivot/singularity and finite-result checks: reduced pivots use
+`64*epsilon*||A_FF||_infinity`, computed from the stored reduced matrix by the
+unchanged generic LU. The separate eliminated-coefficient check above uses the
+complete matrix norm. Then place `d_E,d_F` back into the original coordinate order. Every drainage column in every noneliminated row
+remains in `A_FE`, including upper-to-lower mass and enthalpy routing. It is
+forbidden to solve the full system then overwrite drainage, discard a coupling
+column, or claim a manufactured zero residual. A reduced pivot, singularity,
+overflow, or nonfinite result retains its existing attributable numerical
+failure and cannot fall through to an unreduced solve.
+
+Before candidate evaluation, report the reconstructed direction against the
+actual original normalized assembled system and separately report the unscaled
+affine identity `dD+D=0`. The former may expose binary64 roundoff and cannot be
+replaced by a claimed exact matrix zero. Neither report relaxes a raw/normalized
+residual, independent mass/enthalpy reconstruction, phase/capacity normal, or
+final acceptance. Apply this rule independently to predictor and final
+assemblies; a branch-set change retains the existing at-most-two complete
+assemblies/solves and phase-direction consistency check.
+
+For an eligible coordinate and each existing line-search factor `alpha`, form
+`D_candidate=(1-alpha)*D_current`, including full-step zero. This is not
+`max(0,D_candidate)` and does not alter beginning or accepted water. Positive
+and negative zero are one physical zero class under the existing nonnegative
+guard; retain their produced IEEE-754 sign for diagnostics without
+canonicalization. A finite positive `D_current` whose prescribed multiplication
+underflows to zero is retained and reported, never replaced by a smallest
+positive value or tolerance projection. A nonfinite product or negative nonzero
+candidate is `NumericalFailureKind::DrainageEliminationIntegrity`
+(`drainage_elimination_integrity`, `LSEB-E-034`) before candidate evaluation. Every
+candidate still evaluates the complete natural residual/domain/capacity/phase
+system and existing ordered admission guards; affine elimination cannot force a
+drainage branch or admit a different physical branch.
 
 For nonempty M1, `rho=p/(Rdry*Tcan)`,
 `Awet=fwet*(Asun+Ashade+Astem)`, and `gb_wet>0` are the retained V10 dry-air

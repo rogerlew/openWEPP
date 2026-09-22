@@ -1,0 +1,39 @@
+{
+  "evidence_class": "Static independent review plus inspected Ran receipts",
+  "source_tree_sha256": "86d5bbea19e15746211d84aa128be432327547d2ba4a6b5eb895d7468e1d366d",
+  "prior_review": {
+    "evidence_class": "Static independent body review plus inspected Ran receipts",
+    "source_tree_sha256": "f30b36b440d20c3ba73bc6a64ee2f9166bd067bcce6111b5ca00598bb858a39c",
+    "checks": {
+      "focused": "structural-drainage-accepted-body-focused-05.json",
+      "lib": "structural-drainage-accepted-body-lse-lib-02.json",
+      "format": "structural-drainage-accepted-final-format-01.json",
+      "critical": "structural-drainage-critical-full-02.json",
+      "clippy": "structural-drainage-accepted-clippy-01.json"
+    },
+    "correctness": {
+      "reviewer": "/root/correctness",
+      "verdict": "HOLD actual reconstructed Rcap tolerance omission",
+      "finding": "Actual Rcap=min(dtD,Cliq-ml) is checked only finite; bounds apply to cached row5. Apply originalabs1e-9/scaled1e-8 toactualRcap too. New poison D=2e-9/dt,Mending-=2e-9 atMixedTwTF preservesRM/RH/cachedRcap andisolatesmissingguard.",
+      "cleared": "Finite-firstallpublishedfields, MH/D/mlcapbounds, canonicalRM/RHscales/cached+independentledger, noTFfallback, acceptedNoneonly."
+    },
+    "qa": {
+      "reviewer": "/root/qa",
+      "verdict": "HOLD introduced unused_mut; broadqualificationnotpassed",
+      "finding": "Remove unnecessary mut on reconstructed hydraulics; exactlib207PASS6ignored andformatPASS verified, original60predicateunchanged."
+    },
+    "root_additional_finding": "Criticalfull02 reveals2newdiagnosticJacobianResultconsumer compileerrors in orchestrator m1_coupled_expected_red.rs624/667, alongside2retainedmissingrouting/receiverAPIerrors. Mechanical explicitdiagnosticexpect adaptsAPI whilepreservingassertions.",
+    "disposition": "Author correcting3boundedfindings, no physicalacceptance."
+  },
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "verdict": "GO bounded accepted-materializer guard body",
+    "response": "Rcap blocker closed. Counterfactual/restore diff is exactly two checks. New poison preserves RM/RH and cached Rcap, is sole unexpected acceptance when checks are removed, and restored focused tests pass8/8. This is valid post-fix counterfactual evidence, not historical preimplementation red. No remaining blocker for the bounded finite/domain/raw-scaled/independent-ledger validator. Full Critical/consumer/first-valid-witness/activity/receiver/physical acceptance remain separate HOLD."
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "verdict": "Rcap and consumer fixes verified; quality gate HOLD",
+    "response": "Actual Rcap has independent absolute/capacity-scaled bounds. Counterfactual c33bea fails sole ActualCapacityResidual, restored86d5 focused8/8 with custody unchanged. Format02 passes all three files. Former mut hydraulics removed; consumer diagnostic expect fixes len/index. Critical03 still warns unused_mut evaluation (cfgtest mutation), dead report fields and error activity. No successful warnings-denied clippy; missing routing/receiver imports stop full workspace. No clean bounded QA release."
+  },
+  "disposition": "INCOMPLETE/HOLD overall; finite/domain/closure guard correctness accepted, code-quality and full physical qualification remain unmet."
+}

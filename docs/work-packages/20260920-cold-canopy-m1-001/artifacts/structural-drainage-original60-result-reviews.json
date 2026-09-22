@@ -1,0 +1,64 @@
+{
+  "evidence_class": "Static independent review plus inspected Ran receipts; no reviewer physical rerun",
+  "source_tree_sha256": "9aebf297a8485d66c2e8bcdd15e1b4b5ab9c338693514197f6687e2a37b832b8",
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "verdict": "GO isolated numerical-root diagnostic/custody; HOLD physical support/receiver/M1 release",
+    "findings": [
+      "Actual five reduced dimension19 solves, three installed updates and iteration3 unchanged-current no-update witness verified. Affine identities exact, original assembled matrix residuals nonzero and honestly reported.",
+      "Unchanged original test reconstructs mass/enthalpy closure but is not all-output/phase/complementarity acceptance.",
+      "All three successful solve returns rebuild finite-difference Jacobian; accepted materialization must reuse current Core.",
+      "Production accepted phase/M/D/cap/finite and empty-positive-surface supersaturation guards remain missing.",
+      "Canonical first DOMAINvalid halved witness must be consumed before downstream core/hydraulic failure; later factors cannot become replacement witnesses. Earlier review sentence describing current ordering as right was corrected by this reviewer.",
+      "Error/activity provenance and real receiver/rollback/campaign work remain."
+    ]
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "verdict": "GO isolated original60 custody; HOLD broader acceptance",
+    "findings": [
+      "Exact one-test selector, preserved/executed binary hashes match, frozen predicate/input identity recorded, all source/base/pins/support/binary unchanged, raw stderr1pass208skipped.",
+      "Diagnostic identity supplies no release-performance or complete support acceptance claim."
+    ]
+  },
+  "guard_test_reviews": [
+    {
+      "source_tree_sha256": "e5ca0276ce281ae9c7156621805726cdd590fe48c28e452223b0fbc03f1c7e97",
+      "receipt": "structural-drainage-guards-red-03.json",
+      "qa_verdict": "GO materialization counter; HOLD empty-component discrimination",
+      "qa_findings": "Actual Jacobian entry6 vs controller5 is discriminating. Empty loop leaves sun positive in later cases, uses canopy-air temperature, lacks zero-area pair."
+    },
+    {
+      "source_tree_sha256": "47adf198424f0eba4d8fe0b93d3ea12356d6d929876fa33f1e3d626fa7fc8056",
+      "receipt": "structural-drainage-guards-red-04.json",
+      "qa_verdict": "HOLD pending paired zero-area exemption",
+      "root_findings": "Oracle phase loop also needs actual target temperature on the matching side of freezing, not alternate phase calls at a fixed temperature. Author correcting diagnostic cases without changing original60."
+    },
+    {
+      "source_tree_sha256": "47adf198424f0eba4d8fe0b93d3ea12356d6d929876fa33f1e3d626fa7fc8056",
+      "reviewer": "/root/correctness",
+      "verdict": "HOLD before body",
+      "findings": [
+        "Actual work test needs nonvacuous controller count5 plus equality. Rename entries to invocations.",
+        "Other occupancy must not be competing empty supersaturation source. Actual phase must follow temperature side; ice midpoint humidity distinguishes internal-liquid physiology from external ice.",
+        "Keep positive foliage; remove capacity100 fixture retune; warm other leaves and add paired zeroarea actual core. Beginningpositive endingempty is an unsolved guard trial only."
+      ]
+    },
+    {
+      "source_tree_sha256": "08de73cebf08b96445c271d683d9b39ec8e0b357388503655d2ec19ac9e0673f",
+      "receipt": "structural-drainage-guards-red-07.json",
+      "result": "26 selected:24PASS,2 intended expectedRED; source/base/pins/support unchanged",
+      "correctness": {
+        "reviewer": "/root/correctness",
+        "verdict": "GO bounded materialization-reuse and empty-surface body only",
+        "verification": "Actual controller5/Jacobian6 work discriminator; upperendingempty/lowerpositive; eachsurfaceownIce263.15 orLiquid283.15, non-targetwarmundersat, positivefoliage, zeroarea pairedcontrols executeandpassfirst; all6positive failures discriminate."
+      },
+      "qa": {
+        "reviewer": "/root/qa",
+        "verdict": "GO bounded body implementation",
+        "verification": "Fresh cases and target-positive/target-zero actual core, exact q inequalities and unchanged custody. Zero-area exemption no longer hidden behind expected-red assertion."
+      },
+      "not_released": "Exact accepted cap/finalfinite/error precedence/firstdomainvalid witness/activity/receiver/physical acceptance remain subsequent scope."
+    }
+  ]
+}

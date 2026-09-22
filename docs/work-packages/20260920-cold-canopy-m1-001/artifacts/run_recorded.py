@@ -16,7 +16,7 @@ HERE = Path(__file__).resolve().parent
 SOURCE = Path('/home/roger/openwepp-experiments/cold-canopy-m1-20260920')
 BASE = Path('/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918')
 LOGS = Path('/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts')
-DEADLINE = dt.datetime.fromisoformat('2026-09-21T23:13:00+00:00')
+DEADLINE = dt.datetime.fromisoformat('2026-09-22T02:56:04.819748+00:00')
 SPEC = importlib.util.spec_from_file_location(
     'snapshot_tool',
     Path('/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/execution-discretion-20260915/run-recorded.py'),
@@ -101,6 +101,15 @@ def main():
     for name, digest in recovered_support['files'].items():
         assert sha(name) == digest, name
         pinned[name] = digest
+    # Retained diagnostic operands and independent oracle used by drainage controls.
+    for name in (
+        'm1-original60-12.stderr',
+        'm1-original60-12-linear-reconstruction.json',
+        'structural-drainage-correctness-reconstruction.py',
+        'structural-drainage-correctness-reconstruction.json',
+    ):
+        input_path = HERE / name
+        pinned[str(input_path)] = sha(input_path)
     component_inventory_path = HERE / 'm1-frozen-component-inventory.json'
     component_inventory = json.loads(component_inventory_path.read_text())
     pinned[str(component_inventory_path)] = sha(component_inventory_path)

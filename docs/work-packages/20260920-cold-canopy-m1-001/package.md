@@ -1,5 +1,651 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Structural drainage continuation — adopted 2026-09-21
+
+Owner adopted `/tmp/openwepp_cold_canopy_m1_structural_drainage_authorization.md`.
+Current disposition: **IMPLEMENTATION STOPPED / INCOMPLETE / HOLD**. Earlier stops are historical.
+The final local original60-first-publication-02 receipt was read once and confirms
+carry **212951.462422 s**, unchanged ceiling **226516.282170 s**, remaining
+**13564.819748 s**. Conservative first-reading anchor **2026-09-21T23:10:00Z**
+precedes the first instrumented clock; fixed hard deadline **2026-09-22T02:56:04.819748Z**,
+launch/edit cutoff **02:26:04.819748Z**, 1800-second final reserve. Charge elapsed
+concurrency once with no wait deductions, reserve refunds or historical count reset.
+
+Intent: minimum canonical numerical amendment for selected affine drainage
+elimination, independently reviewed in both scopes; contract-derived expected-red
+controls; confined detached implementation; promptly run unchanged original60;
+then supported existing accepted-output/receiver/conservation/restart/cost work.
+All four acceptance axes, outstanding guard fixes, Critical qualification,
+39 historical authority failures and frozen physical definitions remain binding.
+No generic LU change, new dependency, new physical model, tolerance relaxation,
+extra assemblies/halvings, fixture retuning, production activation or excluded
+campaign is authorized. Two unsuccessful corrections or60 charged minutes require
+internal reassessment; indispensable out-of-envelope changes stop execution.
+
+Ran: all754 detached source entries exactly match attempt12 source manifest,
+SHA256 `3b1fab62f385f7ec57bfedc81b734cbdcd8f7020de81f7d48fc3a8d28bac8bc9`.
+Observer cut02 remains `85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963`;
+preserved attempt12 binary rehash matches `fcdc2879cdb4d1144d0704ee0db22bdecb17bbf79799ddd8bb76c70e88b3eca4`.
+Existing complete recovery patch is retained and has not been reapplied.
+Only root is reachable from the earlier agent tree; attributable replacement
+independent correctness/QA reviewers will own both amendment and fix verification.
+Sole author `/root/structural_author` first owns canonical amendment only; root
+owns this record, recorder deadline and evidence custody. Experimental Rust stays
+in `/home/roger/openwepp-experiments/cold-canopy-m1-20260920`.
+
+Validation selection remains Critical: canonical schema/BEI/unit/definition
+preservation checks, analytic/high-precision drainage controls and expected-red,
+phase/capacity/work/failure controls, then the exact original60 selector with
+prelaunch source/binary/input/authority binding and180s process cap. Applicable
+A0/A1/A3, warnings-denied lint/full correctness, real receiver/rollback,
+independent boundary closure, fixed72h/fresh-process restart and release cost
+requirements remain mandatory for completion; diagnostic clearance cannot waive them.
+Scoped current-main canonical/evidence commit/push and exact remote-byte checks
+remain authorized. Preserve unrelated dirty work and every failed attempt.
+
+### Terminal disposition and publication
+
+Implementation stopped before the fixed02:26:04.819748Z cutoff; final review,
+custody and authorized publication use the unchanged reserve. The final detached
+source is `c3a681205c5c19dba5f50034b7f219694ec5f43485f9f6ceb6c06f10dc4c1565`.
+Both same reviewers clear the narrow latent-precedence fix; correctness also
+clears the reviewed structural drainage and accepted-materializer bodies.
+[Final attributable reviews](artifacts/structural-drainage-latent-reviews.json)
+retain **whole-M1 HOLD** and QA's **quality/qualification HOLD**. No complete
+accepted support, real receiver, fixed72h cycle, restart or release-cost result
+was obtained in this continuation. The unchanged original60-13 PASS is the
+isolated root diagnostic described below.
+
+Ran: final focused9/9, LSE library208/208 with6 skipped, three-file format PASS.
+[Critical full04](artifacts/structural-drainage-critical-full-04.json) **FAIL**,
+exit101 after39.305s on the two missing routing/receiver API import groups;
+no workspace tests executed. Required lint is not clean. All failed attempts and
+the39 historical authority failures remain retained and unwaived. No manifests
+or dependencies changed in this continuation; no new dependency-audit result is
+claimed. A0/BEI/unit authority checks03 passed for the unchanged final canonical
+amendment; broader applicable A1/A3/Critical qualification remains incomplete.
+
+The [terminal binary custody](artifacts/structural-drainage-terminal-binary.json)
+rehashes the live source and durable debug test executable, SHA256
+`672767a412fe69e4e05cdf3d495e1f0d457835ff81418af826768bb25f05c8b1`, under
+`/home/roger/openwepp-experiments/cold-canopy-m1-structural-terminal-binary/`.
+The original13 binary remains separately preserved and reverified. Recovery uses
+[final source manifest](artifacts/structural-drainage-critical-full-04-source.json)
+and [observer-relative patch](artifacts/structural-drainage-critical-full-04-from-observer-cut02.patch)
+against unchanged immutable observer cut02; [dry-run applicability](artifacts/structural-drainage-terminal-patch-check.json)
+passes. No patch was applied to the already patched tree, and no experimental
+Rust was installed into main.
+
+Terminal diff reconciliation: main changes are exactly four canonical contract
+files, the existing recorder's fixed deadline/input pins, this sole narrative,
+and scoped evidence/recovery records. Detached changes remain the reviewed M1
+numerical/guard bodies and tests plus the mechanical diagnostic-Jacobian consumer
+adaptation. No generic LU, physical model/initialization/forcing/phase/capacity,
+physiology domain, tolerance, iteration/halving/assembly bounds, dependency,
+production selector or branch changed. No required test was removed. Unrelated
+B01 logs and downloaded primary sources remain untouched and unstaged. The prior
+local publication02 budget receipt is intentionally included as carried evidence.
+
+Publication is authorized on current main; commit and exact remote-byte results
+will be recorded here after execution. The next implementation action, requiring
+a renewed owner allowance after this bounded disposition, is the discriminating
+first-domain-valid witness/eligibility and activity-provenance correction, then
+real routing/receivers/rollback and the unchanged physical qualification campaign.
+This is a time-bounded incomplete disposition, not a physical impossibility finding.
+
+### Exact remaining implementation obligations
+
+Static: the current halved no-update witness marks the first witness only after
+successful Core, finite residual and hydraulic reconstruction. Canonical
+`nonlinear-solve.md` requires consuming the first **domain-valid** halved candidate
+even when its subsequent evaluation is incomplete; a later smaller candidate may
+still install a strict residual decrease but cannot replace that no-update witness.
+The current full-witness refusal eligibility and complete ci/beta witness evidence
+also need their discriminating controls. These are established implementation
+obligations, not a proposed numerical-method change. Controller failure conversion
+still discards activity provenance through `into_source()`; no fabricated activity
+receipt or warning suppression resolves it. These defects remain after the bounded
+accepted-output and latent-heat fixes.
+
+### Latent-heat precedence test checkpoint
+
+Ran: [latent red01](artifacts/structural-drainage-latent-red-01.json) exposes
+NaN returning VEG-E-140 instead of141 through the real public evaluator.
+Correctness held its immediate assertion because it masked later cases; QA
+cleared the initial narrow test. [Aggregate red02](artifacts/structural-drainage-latent-red-02.json),
+source `b01e2cd4441be49d7ee4e0c8fd33ced4b6aea8cc4a67ea585795a38ded794c84`,
+executes all five cases: NaN/+Inf/-Inf each return140 instead of141; finite0/-1
+correctly return140. Both same reviewers cleared the aggregate red02 before the narrow body
+release. The body splits the existing latent-heat check into nonfinite141 followed
+by finite nonpositive140, without any other validation reordering.
+[Focused green01](artifacts/structural-drainage-latent-focused-green-01.json) passes;
+[exact LSE library](artifacts/structural-drainage-latent-lse-lib-01.json) passes208
+with6 skipped, and [three-file format check](artifacts/structural-drainage-latent-format-check-01.json) passes.
+All bind source `c3a681205c5c19dba5f50034b7f219694ec5f43485f9f6ceb6c06f10dc4c1565`.
+The original60 predicate remains1447 bytes, SHA256
+`f2beb1d2d55fc295d2054881ab995a429a11c33c933e4bfdbd8c4169b2d94cd3`.
+No physiology, forcing, tolerance or physical equation changed.
+
+### Latest accepted-output verification and terminal work
+
+Ran: actual capacity-residual correction is restored at detached tree
+`86d5bbea19e15746211d84aa128be432327547d2ba4a6b5eb895d7468e1d366d`.
+[Counterfactual red01](artifacts/structural-drainage-accepted-rcap-counterfactual-red-01.json)
+removes only the two actual Rcap tolerance checks and fails solely because
+`ActualCapacityResidual` is accepted instead of VEG-E-142. This is a **post-fix
+counterfactual**, not historical pre-implementation red; the missed sequencing
+requirement remains recorded. [Restored focused02](artifacts/structural-drainage-accepted-rcap-focused-02.json)
+passes8/8. [LSE library](artifacts/structural-drainage-accepted-rcap-lse-lib-01.json)
+passes207, with6 skipped, before the mechanical consumer adaptation. The
+unnecessary mutable hydraulic binding was removed. Correctness independently
+clears the bounded accepted validator. Same-reviewer QA verifies the Rcap and
+consumer fixes but retains quality HOLD: the cfg-test-only mutable evaluation
+binding and unused activity/report fields still warn, and warnings-denied clippy
+has no passing receipt. See [accepted-body reviews](artifacts/structural-drainage-accepted-body-reviews.json).
+
+Ran: [Critical full03](artifacts/structural-drainage-critical-full-03.json) fails
+compilation, exit101 after35.791s, on the two retained missing routing/receiver
+API import groups. The two introduced diagnostic-Jacobian Result consumer errors
+are fixed by explicit test-only diagnostic extraction, preserving assertions.
+No workspace tests ran. Lint remains failed and the39 historical authority
+failures remain unwaived. No physical-support, receiver,72h, restart or release-cost
+acceptance follows from these component results.
+
+CONTINUE / DECOMPOSE before the fixed cutoff: the sole author owns only a compact
+latent-heat nonfinite-precedence test (NaN/+Inf/-Inf require141; finite zero/negative
+retain140), expected-red review and supported correction if time permits.
+First-domain-valid witness consumption, full-witness eligibility and activity
+provenance remain known unresolved obligations. Routing/receiver implementation,
+authoritative six-owner rollback, both fixed72h fixtures, fresh-process restart,
+independent whole-boundary conservation and release cost remain pending. This is
+a budget-bounded continuation, not a scope reduction or acceptance waiver.
+
+### Unchanged original60 outcome and supported continuation
+
+Ran: [unchanged original60 attempt13](artifacts/m1-original60-13.json) **PASS**
+(1 selected/1 pass; no fixture or predicate change), after both same independent
+reviewers cleared final structural source
+`9aebf297a8485d66c2e8bcdd15e1b4b5ab9c338693514197f6687e2a37b832b8`.
+[Final body reviews](artifacts/structural-drainage-body-reviews.json) preserve prior
+holds and their verification. [Actual endpoint](artifacts/m1-original60-13-outcome.json)
+records three installed Newton updates and five actual linear assemblies/solves,
+all dimension19, followed by the full-trial no-update witness at iteration3.
+Both reservoirs finish Mixed, D=+0, with liquid masses0.0017765489895320702 and
+0.00202076420266898 kg/m2 under capacities0.2970000000000001 kg/m2.
+Maximum normalized physical residual is1.0583339584251602e-6 (threshold1).
+Actual witness T/q/hydraulic norms are3.013418449017629e-14 K,
+2.5096488606428284e-19 kg/kg and0 mm. Maximum recorded original normalized
+linear residual across assemblies is9.5367431640625e-7, not exact matrix zero.
+The unchanged test independently reconstructs reservoir mass/enthalpy closure.
+
+Source/base/pins/support/binary stayed unchanged. The preserved executable
+SHA256 is `cf33b53dc4a18b4ad21d40f9aaa8c2da17daf8b50fafa6ccb918288434c29b60`;
+[binary custody](artifacts/m1-original60-13-binary.json), complete source manifest
+and observer-relative recovery patch accompany the raw logs. Debug runtime is
+not release throughput. This establishes a numerical root, **not accepted physical
+support or M1 completion**: materialization and finite/phase/cap/empty-store/
+witness/activity guards, real receiver/rollback and all campaign axes remain.
+
+Ran: [Critical full-workspace baseline01](artifacts/structural-drainage-critical-full-01.json)
+FAIL, exit101 after66.311s: compilation stops on missing real M1 routing and
+orchestrator receiver API imports; no workspace tests execute. Existing39
+historical authority failures remain unwaived. No tests/imports are removed.
+
+CONTINUE / DECOMPOSE: sole author now owns guard tests in detached M1 core/tests.
+Actual entry counters expose six Jacobian builds versus five controller assemblies
+on the successful support, proving the forbidden output rebuild. Empty M=H=I=0
+positive-area sun/shade/stem supersaturation controls demand VEG-E-142 but current
+core returns140. [Guard red03](artifacts/structural-drainage-guards-red-03.json)
+preserves24 pass/2 fail. QA/root then identify a discrimination defect in the
+empty-store test: it leaves other components positive across cases and uses
+canopy-air rather than each target component temperature. Materialization test
+is cleared; empty-store test remains HOLD pending isolated ice/liquid component
+cases and zero-area exemption. The sole author corrects only those tests before
+both scopes review body release. The fixed clock and reserve do
+not reset. Required routing/cycle/restart/cost work follows supported guard work.
+
+### Guard test release after discriminating corrections
+
+Static + inspected Ran evidence: both `/root/correctness` and `/root/qa` clear
+[guard red07](artifacts/structural-drainage-guards-red-07.json), source
+`08de73cebf08b96445c271d683d9b39ec8e0b357388503655d2ec19ac9e0673f`,
+for bounded materialization-reuse and empty-surface implementation only.
+[Same-reviewer findings and verification](artifacts/structural-drainage-original60-result-reviews.json)
+retain earlier HOLDs; red04/05/06 are preserved. The final test observes actual
+controller5/Jacobian6 calls. It isolates each sun/shade/stem target at263.15K
+(ice midpoint humidity) and283.15K (liquid supersaturation), with positive foliage,
+original capacity coefficient, other dry surfaces warm/undersaturated, and lower
+ending reservoir positive. Paired target-zero cases run and pass **before** the
+aggregate expected-red assertion. All three ice cases and liquid stem wrongly
+pass the old core; liquid sun/shade return140 instead of142. This is an unsolved
+trial guard test, not a changed original60 or claimed accepted empty support.
+
+CONTINUE: sole author implements the two released behaviors in detached M1
+core/tests: materialize each successful solve from its authenticated current Core,
+make missing accepted-output Jacobian explicit rather than rebuild/fabricate it,
+and invoke the existing external-phase empty-surface guard before dry physiology.
+Exact accepted-cap/final finite/error precedence, first-domain-valid witness and
+activity fixes follow as separate bounded obligations; their absence remains HOLD.
+Correctness clarifies that exact accepted bounds mean finite M>0, D>=0 and
+0<=ml<=Cliq, with unchanged absolute/scaled R_M/R_H/R_cap tolerances. No exact
+D*(Cliq-ml)==0 or exact physical residual-zero predicate is authorized.
+Both reviewers approve the narrow canonical status alignment; [authority checks03](artifacts/structural-drainage-authority-checks-03.json)
+passes strict BEI/unit/A0 structural admission and diff checks with unchanged pins.
+
+### First guard body and remaining acceptance work
+
+Ran: [guard body focused02](artifacts/structural-drainage-guards-body-focused-02.json)
+passes22/22 selected structural/guard controls on source
+`69530855ca852095201f599276104a78b2d762687bb736db9ddcada78059b86a`.
+Body-focused01 is retained as the intermediate empty-guard PASS/materialization
+RED cut. The completed narrow body uses a shared materializer with explicit
+optional Jacobian: diagnostic evaluation provides its actual21x21 matrix; all
+three successful solve returns use the authenticated current Core and no matrix
+rebuild. Missing diagnostic matrix access has a typed unsupported-domain error.
+Empty M/H with zero **occupancy incident** liquid invokes the existing saturation
+guard before physiology for every dry component, using support-derived conducting
+tissue. Root caught and corrected an initial top-rain proxy: lower incident liquid
+also contains routed upper drainage, and upper capture can be zero despite rain.
+The actual incident expression is now computed once and reused.
+
+Ran: [broad LSE library02](artifacts/structural-drainage-guards-lse-lib-02.json)
+passes206 tests with6 existing ignored tests skipped on final source
+`6ebea65085383a1c63a6a8ac2ffdf9ef6f7051e3cb3a7573d20e5dc125950803`.
+Library01's wrong expected missing-Jacobian code is retained and corrected to
+LSEB-E-030; diagnostic21x21 assertions remain. [Exact final formatting01](artifacts/structural-drainage-guards-final-format-01.json)
+passes both files. [Both same independent reviewers](artifacts/structural-drainage-guards-body-reviews.json)
+verify this source and clear the narrow body. [Warnings-denied clippy01](artifacts/structural-drainage-guards-clippy-01.json)
+FAILS, including M1 dead fields/activity and existing litter/transaction lint;
+this failure is not waived or represented as a test failure. The lib-test compiler
+reports175 errors, including lint groups, and exact diagnostics are retained.
+This batch still does not enforce every accepted cap/finite/phase residual guard
+or first-domain-valid witness/provenance requirement; accepted support remains HOLD.
+CONTINUE: sole author now writes actual accepted-materializer expected-red controls
+for finite/domain/cap/residual/independent-ledger admission; diagnostic evaluations
+retain finite trial over-cap behavior. Production guards await both test reviews.
+
+### Accepted-output test reassessment
+
+Ran: [accepted red01](artifacts/structural-drainage-accepted-red-01.json) exposes
+an actual NaN residual returned by the None-Jacobian materializer (23 pass/1 fail).
+Both reviewers [HOLD the combined test release](artifacts/structural-drainage-accepted-test-reviews.json):
+first-failure control flow hides later poisons, an unconverged radiation trial
+would let generic closure rejection falsely satisfy finite-bound tests, and the
+cached-H-residual mutation is not independent ledger reconstruction. Root also
+requires proven liquid over-cap, complete finite-output categories and binding
+raw/scaled residual controls. CONTINUE / substantive test correction: capture or
+poison the actual successful-solve materialization boundary, prove its unpoisoned
+baseline, aggregate all independent cases, and retain the failed cut. No accepted
+state guard body is released before both corrected test reviews. The fixed budget
+and final reserve remain unchanged.
+
+### Corrected accepted-output controls
+
+Ran: [accepted red06](artifacts/structural-drainage-accepted-red-06.json), source
+`3720daeaf028ab7730ad9abc73b0af359a509baadbd218613b15b7bdb977aa11`,
+aggregates16 poison cases from the actual converged None-materialization boundary;
+14 missing rejections are explicitly named. The same unpoisoned captured boundary
+passes and adds no controller/Jacobian work. Intermediate red02–05 and formatting
+attempts remain. The exact cap poison changes only capacity to actual diagnosed
+liquid.next_down(), preserving M/H and ledger operands. A separate M=original
+capacity.next_up(), H=0 trial proves finite liquid over-cap Core evaluation stays
+valid. Scaled mass5e-10 passes1e-9 absolute but fails1e-8 relative at M0=.018.
+The enthalpy poison changes actual non-vapor heat by1W/m2 with cached R_H unchanged.
+Post-construction hydraulic finite poisons occur inside the real materializer,
+not after its return. QA clears this corrected test cut, but correctness finds
+four remaining discriminators: valid empty M=H=0; finite R_cap rather than
+NaN-capacity with the wrong error code; explicit core-overcap ml>Cliq proof; and
+post-construction leaf/derived-reservoir NaN. Root accepts these HOLD findings and
+returns the same author to the four targeted corrections. No production
+accepted-state guard body is implemented yet.
+
+### Accepted guard implementation release
+
+Static + inspected Ran evidence: both same reviewers verify all four corrections
+and clear [accepted red07](artifacts/structural-drainage-accepted-red-07.json),
+source `2e7af3a22be5954a09bda1b77df329c3dbac81f758982512f34ba49643927d4a`,
+for the bounded accepted-materializer body. All20 poison categories are now
+independently exercised and unexpectedly accepted before implementation. Valid
+empty M=H=0 reaches materialization; finite R_cap row5=2e-9 is distinct from
+NaN-capacity141; actual positive over-cap M/liquid/capacity are asserted; leaf and
+wet-fraction/wet-temperature/capacity NaNs are post-construction. [Both reviews](artifacts/structural-drainage-accepted-test-reviews.json)
+preserve every prior HOLD and same-reviewer verification.
+
+CONTINUE: sole author implements finite-first141, exact accepted mass/drainage/
+liquid-cap/phase bounds142, unchanged raw/scaled residual admission, and independent
+published-operand mass/enthalpy reconstruction. Diagnostic Some-Jacobian trial
+behavior remains distinct from accepted None-Jacobian publication. Existing
+hydraulic4+4 validation and current-Core reuse stay intact. First-domain-valid
+witness, activity, real routing/receivers and campaign qualification remain next.
+
+### Accepted body verification and narrow corrections
+
+Ran: [accepted body library02](artifacts/structural-drainage-accepted-body-lse-lib-02.json)
+passes207 tests (6 existing ignored), [focused05](artifacts/structural-drainage-accepted-body-focused-05.json)
+passes8/8 guard/phase controls, and [exact format01](artifacts/structural-drainage-accepted-final-format-01.json)
+passes on source `f30b36b440d20c3ba73bc6a64ee2f9166bd067bcce6111b5ca00598bb858a39c`.
+Intermediate attempts preserve an incorrect draft normalization and finite/domain
+classification correction; neither is claimed as a released numerical rule.
+Final body uses existing canonical normalized<=1 and raw/scaled operand bounds,
+requires actual wet temperature, and scans finite fields before domain/closure.
+
+[Independent review](artifacts/structural-drainage-accepted-body-reviews.json) still
+HOLDs one actual capacity omission: reconstructed R_cap was checked finite but its
+absolute/scaled limits were applied only to the cached row. Author adds a
+mass/enthalpy-closed actual-D poison, records red, then applies the existing bounds
+to reconstructed R_cap too. QA also requires removing introduced unused_mut.
+[Clippy01](artifacts/structural-drainage-accepted-clippy-01.json) FAIL remains unwaived.
+
+Ran: [Critical full02](artifacts/structural-drainage-critical-full-02.json) FAILS at
+compilation (62.403s; no workspace tests execute). Alongside the retained two
+missing routing/receiver import errors, the explicit-Jacobian API exposed two new
+consumer errors at detached hillslope orchestrator
+`src/land_surface_energy_shadow/m1_coupled_expected_red.rs` (len/index on Result).
+Authorized write scope expands only to mechanical explicit diagnostic-matrix
+access at those two test sites, preserving every matrix assertion. Required API
+imports/tests remain intact; no receiver stub or assertion removal is permitted.
+
+### Reconstructed-capacity correction and evidence limitation
+
+Ran: [R_cap focused01](artifacts/structural-drainage-accepted-rcap-focused-01.json)
+and [R_cap library01](artifacts/structural-drainage-accepted-rcap-lse-lib-01.json)
+pass after adding actual reconstructed-capacity absolute/scaled bounds and removing
+the unused hydraulic mutability. The new poison preserves mass/enthalpy closure
+and cached row5 while actual dt*D=2e-9. The author **did not retain the requested
+pre-fix red run**; no historical expected-red claim is made for this correction.
+Root requires an explicitly post-fix counterfactual run with only these two bounds
+removed, followed by exact restoration and green verification. This will establish
+regression discrimination, not rewrite the sequencing gap.
+
+The author's reported missing orchestrator path was a search-root error: the file
+exists in the authorized detached tree under `crates/openwepp-hillslope-orchestrator`.
+Root supplies that absolute path; the same author completes the two mechanical
+Result-access adaptations and required affected compilation check. No source/API
+stub or required-test removal is authorized.
+
+### Authority release and contract-test stage
+
+Static + nonphysical Ran evidence: both replacement independent scopes clear
+only the prospective numerical authority and contract-derived test authoring.
+[Review identity, findings and same-reviewer verification](artifacts/structural-drainage-authority-reviews.json)
+binds the four canonical files. Correctness initially held two ambiguities:
+exact ties must cover both selected branches, and reduced pivots must explicitly
+use the reduced matrix norm. Root made those small clarifications while the
+sole author was paused; both same reviewers verified them. The eliminated
+coefficient separately retains the complete-matrix pivot floor. Stable typed
+integrity provenance is explicit. No physical definition or generic LU changed.
+
+Ran: [documentary checks02](artifacts/structural-drainage-authority-checks-02.json)
+passes both binding/unit checks, A0 structural admission49contracts and diff
+check, with source/base/pins unchanged. Checks01 is preserved. These are
+structural evidence, not physical acceptance. Correctness independently retained
+[iteration-three arithmetic](artifacts/structural-drainage-correctness-reconstruction.json)
+and its script: coupled columns require substitution; prescribed affine dD
+is exact while source-decimal and binary64 matrix residuals must be distinguished.
+Neither arithmetic calculation is a physical rerun or convergence claim.
+The separately preserved attempt11 binary also rehashes to its existing identity.
+
+Sole author `/root/structural_author` now owns contract-test changes only in the
+detached existing M1 harness and necessary test-only old-behavior seams. No
+production body is released before expected-red and both test reviews. Original60
+predicate/physical helpers, prior negatives and all physical inputs stay frozen.
+Every Rust build/test/format command uses the current recorder; unchanged
+original60 follows promptly after body/focused review clearance. Runtime retains
+completed children against capacity; sending verdicts then interrupting a waiting
+reviewer successfully frees slots without replacing the independent scopes.
+
+Test intent: detached `crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs`
+and cfg(test) inspectors in `solver_covered_evaluation/m1_coupled.rs` expose the
+current controller/matrices/direction and old candidate arithmetic. New controls
+use the `m1_structural_drainage_expected_red` prefix plus retained phase-controller
+regressions, unchanged original-input JSON/helpers and the independent arithmetic
+artifact. They must discriminate selected-row integrity, noneligible nonzero
+release, both tie outcomes, coupled one/two-coordinate reduction, signed zero/
+underflow and work/failure bounds. Test-only implementation of the new algorithm
+is prohibited at this stage. Select nextest build/list (up to300s) then focused
+execution (physical180s), with exact argv/source/pins in the recorder receipt;
+no original60 launch before body clearance.
+
+### Test-stage reassessment and preserved unsuccessful draft
+
+Ran: `structural-drainage-expected-red-01` executes3tests (1pass,2fail), but the
+immutable-JSON direction comparison is **INVALID as implementation expected-red**:
+it never invokes the solver and cannot turn green after a body correction. The
+old candidate-expression failure is a narrower discriminator; required invalid
+metadata/pivot/finite and noneligible-release coverage is still absent. Root
+withholds test release and directs one bounded substantive correction using
+actual old-LU adapters, independent analytic operands and separate controls.
+No production numerical body is released. The same author retains sole ownership.
+
+All formatter/build attempts are retained: format01 fails missing PATH cargo,
+format02 fails Nix pure-path lookup, format03 finds formatting differences,
+format-apply01 succeeds with expected source mutation, list01 builds/lists,
+red01 executes. These initially used bare detached `nix develop --impure` and a
+different cache target, contrary to the established invocation. Root directs
+all subsequent commands back to explicit `nix develop /workdir/openWEPP --command
+env CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-target CARGO_BUILD_JOBS=2`.
+The newly included historical reconstruction was not separately pinned in red01;
+root adds all four existing trace/reconstruction/oracle support files to recorder
+pins prospectively. No old receipt is rewritten or represented as qualified.
+This is a supported CONTINUE decision to correct test/evidence integrity before
+independent release, not new allowance or an unexplained physical rerun.
+
+### Corrected expected-red cut05 — independent review pending
+
+Ran: [red05](artifacts/structural-drainage-expected-red-05.json) selects14tests,
+8pass/6fail/185skipped, no original60. Exact source is
+`e20f52ef723092fed36c0ace2cd8dc7a5d88689781799725e5ffc0cfb2c27edb`.
+Selector: `test(m1_structural_drainage) + test(m1_phase_join_expected_red)`;
+nextest `--lib --no-fail-fast`, established explicit Nix/target, 180s cap.
+Source/base/pins remain unchanged. The six observed negatives concern affine
+pivot classification, missing integrity checks, normalized row/RHS validation,
+retained actual-LU direction, candidate arithmetic and signed-zero/subnormal
+behavior. Both independent reviewers now inspect whether coverage suffices for
+body release. No implementation release is inferred from the expected failures.
+
+Earlier corrected attempts remain visible: red02 fails parsing numeric JSON as
+strings; red03/04 exercise incomplete control drafts; list04 fails compilation
+on private coordinate-field access. Each retains its source patch/raw records;
+list05 builds after the existing accessor correction. Format04 still reports
+formatting differences. Root's internal reassessment is **CONTINUE to independent
+test review**: a supported corrected cut exists, the invalid immutable-value test
+is replaced with actual old LU, and no production body has been installed.
+No run is relabeled PASS_WITH_RETRY and no allowance or historical count resets.
+
+Static QA custody verification confirms original60 predicate body matches the
+attempt12 recovery patch and original input matches frozen inventory. New
+trace/reconstruction/oracle support pins are present under the correct invocation.
+The author is paused; same correctness and QA own test/oracle review. Every
+future original60 still needs exact build/list and pre/post binary binding.
+
+### Same-reviewer red05 HOLD and consolidated correction
+
+Static + inspected run evidence: correctness and QA both retain **test-stage
+HOLD / no body release**. Red05's six negatives are real old-path discriminators,
+but the identical affine systems under every eligibility mask do not distinguish
+wrong selection; guard coverage omits raw coupling/identity and finite/state
+families; reduced-system failure and actual residual-reporting obligations need
+controls; exact-tie selection is not yet bound to elimination; and no real
+controller integrity poison proves typed pre-candidate refusal with unchanged
+inputs. QA limits that last requirement to real controller activity and immutable
+input/trial proof here; actual owner/receiver rollback remains later M1 scope.
+
+Internal reassessment: **CONTINUE one consolidated test correction with the same
+sole author**, retaining all recorded cuts and both reviewers. Accepted controls
+(actual iteration-three LU, all21 candidate factors, signed-zero/subnormal,
+real noneligible release, and unchanged phase work checks) are reused. The writer
+must make distinct analytic one/two-eligible systems and add missing guard,
+reduced-failure, selected-tie and actual-controller/report controls without
+implementing reduction/guards in test-only code. The source remains recoverable
+from red05's complete patch. No additional time, physical rerun or authority
+relaxation is introduced.
+
+### Test completion reassignment
+
+Ran: red06 selects15tests,9pass/6fail, source `0bbd48f2b274436ded8acfd5212ef6d786f0c02501eec860a06ea98082ff270a`;
+list06 compilation failure (raw-residual Vec/array mismatch) and corrected list07
+are retained. The author added distinct noneligible-coordinate analytic results
+and more raw/finite poisons, but explicitly returned without the required real
+controller integrity poison and reduced-system failure controls. These are
+expected-red test hooks/observations, not authorization to implement guards in
+cfg(test). Both prior reviewer HOLDs remain unresolved.
+
+Internal reassessment: **REASSIGN bounded test completion** to
+`/root/drainage_tests_finish`; `/root/structural_author` is stopped. One source
+writer remains, using the same two detached files and existing recorder. The
+replacement must finish the named controller, reduced-failure, selected-tie and
+actual residual-report controls before the same two reviewers assess body release.
+No production algorithm, physical fixture, allowance or acceptance changed.
+
+### Selected-assembly controls and further test correction
+
+Ran: the replacement writer's `structural-drainage-expected-red-08-*` records
+retain compilation, formatting and focused attempts. The old controller reaches
+the poisoned second selected assembly and still invokes its second LU; that is
+the required missing-guard negative, not acceptance. Original60 remains unrun.
+The report now exposes the actual assembled RHS, including inactive anchor rows.
+
+Static root inspection catches additional invalid draft controls: a purported
+reduced-singular witness coupled an eliminated row and therefore should fail
+integrity first; an overflow fixture had inconsistent normalized operands; its
+assertion required success rather than the future typed refusal; and a source
+affine diagnostic reconstructed D by rounded division instead of retaining the
+original trial D. These drafts and all run receipts remain preserved. None is
+represented as passed contract coverage. Exact-tie controls keep wet fraction
+interior because setting the store to full capacity removes dry equations and
+can create an unrelated singularity; the frozen original60 fixture is untouched.
+
+Internal reassessment: **CONTINUE bounded individual test corrections**, still
+one source writer and no production release. Correctness independently checks
+the existing nonfinite-error mapping and a separate reduced-norm discriminator
+while the writer finishes. The full coefficient floor and reduced pivot norm
+remain distinct requirements. Both same reviewers must clear the stable final
+test cut before body implementation. No new allowance or physical assumption.
+
+### Stable test cut and sixty-minute reassessment
+
+Ran: `structural-drainage-expected-red-08-run09` freezes source
+`62be8d7d6b3e5a40cb53c29b95d42129b15e8d6e13ca2d18bb29d5acc73c88bc`:
+19 selected, 10 pass, 9 expected-red, exit100, no timeout; source, observer,
+support links and pins unchanged. The old generic-LU adapter has no test-only
+future finite guard: root caught that invalid run08 addition and required its
+removal. Overflow is now an independent expected failure. Norm, singularity and
+overflow run separately. Both exact-tie controller paths pass. The writer is
+stopped and both same independent reviewers inspect this stable source.
+
+Static independent correctness clarification: valid finite source operands
+whose reduction product/RHS overflows use existing
+`LandSurfaceEnergyError::NonFinite("m1_reduced_linear_result")`, code
+`LSEB-E-032`/domain; invalid source metadata/rows instead use the new integrity
+kind/code034. No new generic numerical kind or shared LU edit is needed.
+The full-norm versus reduced-norm discriminator is independently confirmed.
+
+At **2026-09-22T00:10:13Z**, the sixty-minute internal reassessment is
+**CONTINUE**: authority cleared, stable test evidence available, both reviewers
+active, no indispensable external blocker or new physics/method assumption.
+The fixed cutoff/deadline and 1800-second final reserve remain unchanged; no
+wait deductions or additional allowance. Original60 still awaits bounded body
+release and focused implementation review, then takes run priority.
+
+### Dual test clearance and bounded body release
+
+Both independent scopes clear source
+`807fc24c296b03c748f4b312956555a2c29ec3d9e041ab488692640c07bc1972`
+for **bounded body implementation only**, at **2026-09-22T00:19:50Z**.
+[Maintained test-review receipt](artifacts/structural-drainage-test-reviews.json)
+retains the earlier HOLD and both same-reviewer corrections. Red10 added finite
+wrong raw operands, but its tie direction happened to match old LU; correctness
+required an actual solve-representation discriminator. Red11 reports the real
+old full solve's empty E/dimension21 and now fails the exact-Drainage-tie E test.
+Ran: red11 selects19, passes9, expected-red10; source/pins/support unchanged.
+The finite raw-value controls and all prior discriminators remain preserved.
+
+Implementation intent: sole detached writer `/root/drainage_tests_finish` owns
+the shared selected-row validation/reduction helper, predictor/final integration,
+actual E/F diagnostics and feasible line-search arithmetic in `m1_coupled.rs`,
+plus required typed enum/error/diagnostic mappings and their focused tests in
+the LSE crate. The generic LU body, dependencies, physical inputs/predicates,
+seed, tolerances, iteration/halving bounds and two-assembly maximum are frozen.
+Test adapters must call the real helper. Source corruption is typed034; valid
+reduction arithmetic overflow uses existing NonFinite/code032. Actual work counts
+increment at the real solve, after integrity checks. No test-only substitute.
+
+A small test-gated terminal observation is authorized now to retain actual
+coordinates, raw/normalized residuals, last step norms and phase/cap/drainage
+evidence if unchanged original60 reaches materialization. This named missing
+discriminator avoids an otherwise unnecessary physical diagnostic rerun. It
+does not fix or waive the known materialization/finite/cap/empty-store/witness
+guard debt. Body/focused review precedes original60; original60 precedes broader
+lint/receiver recovery. Canonical numerical status now records this bounded
+release, with physical acceptance/body verification explicitly pending.
+
+### Incomplete body cuts and factoring reassessment
+
+Ran: the writer preserves initial `structural-drainage-body-*` builds/runs;
+body01 and body03 compile but remain incomplete and red. They are not body
+clearance or physical evidence. Root catches that cfg(test) candidate/metadata
+adapters still duplicate or bypass the intended production helper. Green
+synthetic assertions under such duplication would not prove actual integration.
+
+Internal reassessment: **DECOMPOSE / CONTINUE**, with the same sole writer.
+Before further Rust execution, finish a pure production linear helper consumed
+by both predictor/final controller assemblies and the metadata adapter, and a
+production candidate helper consumed by both real line search and candidate
+adapter. Root checks static factoring before the next coherent build. Existing
+typed mappings and endpoint observations remain in scope. No production-body
+or original60 clearance is inferred from compilation; no new allowance.
+
+### Body completion reassignment
+
+At **2026-09-22T00:35:08Z**, internal reassessment is **REASSIGN bounded body
+completion**. The previous writer returned incomplete again without an
+indispensable blocker. Root stopped it and recorded
+`structural-drainage-body-static-handoff-01`: exact source/recovery preserved,
+source and observer unchanged, no Rust execution. `/root/structural_author`
+now owns the sole detached write lease; the previous writer is stopped.
+
+Remaining immediate body gaps are concrete: count actual LU attempts at the
+invocation, derive observed E/dimension from the actual helper result, and use
+one checked candidate helper in both real line search and test adapter. Verify
+that raw-row/identity/support guards are all shared production logic and that
+the predictor actually uses it. Then finish the bounded diagnostics, compile,
+run focused controls and correct in-scope failures. This reassignment changes
+neither authority nor budget and does not authorize original60 before body
+review. No incomplete body run is acceptance evidence.
+
+### Green body controls and same-reviewer corrections
+
+Ran: `structural-drainage-body-finish-focused-02` selects20/passes20 on source
+`59d25d2ed7c1b45ff4cca8609065523fb97216bb2bc6d5a2556eac1b34ae515f`;
+targeted M1 rustfmt check passes on that exact cut. Root rechecks generic LU:
+body SHA256 `2a4ee398c169cc7b39f83e8969aecba6e7bad0c7bc7db3b9fef43c284f7f400d`,
+byte-identical to observer cut02. Root first caught and removed an extra initial
+selected-side probe introduced by passing a zero-direction selected set to the
+initial assembler; the original `None` assembly call is restored. Trusted
+natural branch metadata separately feeds the shared reducer.
+
+QA clears that cut for the isolated diagnostic, confirming original60's1455-byte
+predicate unchanged. Correctness holds for shared RHS assembly and fuller
+endpoint tracing; source `5807c853528698c3594d867329fe2573b2b4044fbe87854b3188f92784595192`
+records those initial corrections passing20/20. Root then catches the trace was
+placed at accepted Newton steps rather than actual materialization returns;
+all three real returns need the returned trial/current Core/acceptance steps.
+No original60 has run. Prelaunch list01 selects the exact single test but its
+source59 binding becomes historical when the corrected body changes.
+
+Correctness also corrects its earlier overbroad nonfinite shorthand: integrity
+is for structural envelope and selected affine members/rows, not arbitrary F
+data. E-empty retains direct complete LU and its attempted-solve count, then
+finite-output handling. E-nonempty validates selected rows first; unrelated
+nonfinite normalized F operands/RHS or finite-operand complete-norm overflow
+uses existing NonFinite/code032 before the affine coefficient floor. With a
+finite complete norm the selected coefficient floor still applies. Selected
+row infinities must explicitly fail integrity even when both sides of a
+rounded identity become infinity. Unrelated raw F data retains the existing
+outer domain guard. These are same-method error-precedence corrections, not
+new science authority. Both reviewer and root require discriminating negatives
+and actual solve counts before diagnostic release; source writer remains sole.
+
 ## Original60-first continuation — adopted 2026-09-21 19:13 UTC
 
 Owner adopted `/tmp/openwepp_cold_canopy_m1_original60_first_authorization.md`.

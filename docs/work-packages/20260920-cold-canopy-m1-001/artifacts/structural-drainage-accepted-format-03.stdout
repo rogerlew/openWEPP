@@ -1,0 +1,305 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:312:
+     let original: Value = serde_json::from_str(ORIGINAL).expect("original input");
+     let input = M1CoupledColumnInput::from_covered_column(
+         covered_input(&original),
+-        [M1PhaseReservoirInput::new("stratum-z-upper::forest", 0.018, 0.0), M1PhaseReservoirInput::new("stratum-a-lower::forest", 0.018, 0.0)],
+-        conditions(), topology_binding(),
++        [
++            M1PhaseReservoirInput::new("stratum-z-upper::forest", 0.018, 0.0),
++            M1PhaseReservoirInput::new("stratum-a-lower::forest", 0.018, 0.0),
++        ],
++        conditions(),
++        topology_binding(),
+     );
+     super::m1_reset_accepted_capture_for_test();
+     let accepted = solve_m1_coupled_column(&input).expect("actual accepted boundary capture");
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:320:
+-    assert!(accepted.jacobian().is_err(), "captured boundary is actual None-Jacobian materialization");
++    assert!(
++        accepted.jacobian().is_err(),
++        "captured boundary is actual None-Jacobian materialization"
++    );
+     let after_solve = super::m1_work_observation_for_test();
+-    super::m1_materialize_captured_accepted_for_test().expect("unpoisoned captured accepted boundary");
+-    assert_eq!(super::m1_work_observation_for_test(), after_solve, "materializer seam must not add controller or Jacobian work");
++    super::m1_materialize_captured_accepted_for_test()
++        .expect("unpoisoned captured accepted boundary");
++    assert_eq!(
++        super::m1_work_observation_for_test(),
++        after_solve,
++        "materializer seam must not add controller or Jacobian work"
++    );
+     let mut unexpected = Vec::new();
+     for (poison, code) in [
+-        (super::M1AcceptedMaterializationPoison::NonfiniteResidual, "VEG-E-141"),
+-        (super::M1AcceptedMaterializationPoison::NonfiniteScale, "VEG-E-141"),
+-        (super::M1AcceptedMaterializationPoison::NonfiniteLeaf, "VEG-E-141"),
+-        (super::M1AcceptedMaterializationPoison::NonfiniteReservoirOperand, "VEG-E-141"),
+-        (super::M1AcceptedMaterializationPoison::NonfiniteDuration, "VEG-E-141"),
+-        (super::M1AcceptedMaterializationPoison::EmptyMass, "VEG-E-142"),
+-        (super::M1AcceptedMaterializationPoison::NegativeDrainage, "VEG-E-142"),
+-        (super::M1AcceptedMaterializationPoison::OverCapacityOneUlp, "VEG-E-142"),
+-        (super::M1AcceptedMaterializationPoison::RawMassResidual, "VEG-E-142"),
+-        (super::M1AcceptedMaterializationPoison::RawEnthalpyResidual, "VEG-E-142"),
+-        (super::M1AcceptedMaterializationPoison::EnthalpyLedger, "VEG-E-142"),
++        (
++            super::M1AcceptedMaterializationPoison::NonfiniteResidual,
++            "VEG-E-141",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::NonfiniteScale,
++            "VEG-E-141",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::NonfiniteLeaf,
++            "VEG-E-141",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::NonfiniteReservoirOperand,
++            "VEG-E-141",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::NonfiniteDuration,
++            "VEG-E-141",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::EmptyMass,
++            "VEG-E-142",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::NegativeDrainage,
++            "VEG-E-142",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::OverCapacityOneUlp,
++            "VEG-E-142",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::RawMassResidual,
++            "VEG-E-142",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::RawEnthalpyResidual,
++            "VEG-E-142",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::EnthalpyLedger,
++            "VEG-E-142",
++        ),
+     ] {
+         match super::m1_materialize_captured_accepted_poison_for_test(poison) {
+             Ok(_) => unexpected.push(format!("{poison:?}: accepted, expected {code}")),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:340:
+-            Err(error) if error.code() != code => unexpected.push(format!("{poison:?}: {}, expected {code}", error.code())),
++            Err(error) if error.code() != code => {
++                unexpected.push(format!("{poison:?}: {}, expected {code}", error.code()))
++            }
+             Err(_) => {}
+         }
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:344:
+-    assert!(unexpected.is_empty(), "expected-red actual accepted materializer guards: {unexpected:?}");
++    assert!(
++        unexpected.is_empty(),
++        "expected-red actual accepted materializer guards: {unexpected:?}"
++    );
+ }
+ 
+ #[test]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2390:
+     trial: &M1CoupledColumnTrial,
+     poison: M1AcceptedMaterializationPoison,
+ ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+-    m1_materialize_accepted_from_parts_for_test(input.clone(), trial.clone(), core(input, trial)?, Some(poison))
++    m1_materialize_accepted_from_parts_for_test(
++        input.clone(),
++        trial.clone(),
++        core(input, trial)?,
++        Some(poison),
++    )
+ }
+ 
+ #[cfg(test)]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2403:
+     match poison {
+         None => {}
+         Some(poison) => match poison {
+-        M1AcceptedMaterializationPoison::NonfiniteResidual => core.residuals[0] = f64::NAN,
+-        M1AcceptedMaterializationPoison::NonfiniteScale => core.scales[0] = f64::NAN,
+-        M1AcceptedMaterializationPoison::NonfiniteLeaf => core.occupancies[0].sun.vapor_kg_m2_tile_s = f64::NAN,
+-        M1AcceptedMaterializationPoison::NonfiniteReservoirOperand => core.occupancies[0].non_vapor = f64::NAN,
+-        M1AcceptedMaterializationPoison::NonfiniteDuration => input.column.interval_s = f64::NAN,
+-        M1AcceptedMaterializationPoison::EmptyMass => trial.coordinates[3] = 0.0,
+-        M1AcceptedMaterializationPoison::NegativeDrainage => trial.coordinates[5] = -f64::MIN_POSITIVE,
+-        M1AcceptedMaterializationPoison::OverCapacityOneUlp => {
+-            let capacity = core.occupancies[0].capacity;
+-            trial.coordinates[3] = capacity.next_up();
+-            trial.coordinates[4] = 0.0;
+-        }
+-        M1AcceptedMaterializationPoison::RawMassResidual => core.occupancies[0].mass_residual = 1.0,
+-        M1AcceptedMaterializationPoison::RawEnthalpyResidual => core.occupancies[0].enthalpy_residual = 1.0,
+-        M1AcceptedMaterializationPoison::EnthalpyLedger => core.occupancies[0].enthalpy_residual = 1.0,
++            M1AcceptedMaterializationPoison::NonfiniteResidual => core.residuals[0] = f64::NAN,
++            M1AcceptedMaterializationPoison::NonfiniteScale => core.scales[0] = f64::NAN,
++            M1AcceptedMaterializationPoison::NonfiniteLeaf => {
++                core.occupancies[0].sun.vapor_kg_m2_tile_s = f64::NAN
++            }
++            M1AcceptedMaterializationPoison::NonfiniteReservoirOperand => {
++                core.occupancies[0].non_vapor = f64::NAN
++            }
++            M1AcceptedMaterializationPoison::NonfiniteDuration => {
++                input.column.interval_s = f64::NAN
++            }
++            M1AcceptedMaterializationPoison::EmptyMass => trial.coordinates[3] = 0.0,
++            M1AcceptedMaterializationPoison::NegativeDrainage => {
++                trial.coordinates[5] = -f64::MIN_POSITIVE
++            }
++            M1AcceptedMaterializationPoison::OverCapacityOneUlp => {
++                let capacity = core.occupancies[0].capacity;
++                trial.coordinates[3] = capacity.next_up();
++                trial.coordinates[4] = 0.0;
++            }
++            M1AcceptedMaterializationPoison::RawMassResidual => {
++                core.occupancies[0].mass_residual = 1.0
++            }
++            M1AcceptedMaterializationPoison::RawEnthalpyResidual => {
++                core.occupancies[0].enthalpy_residual = 1.0
++            }
++            M1AcceptedMaterializationPoison::EnthalpyLedger => {
++                core.occupancies[0].enthalpy_residual = 1.0
++            }
+         },
+     }
+     materialize_m1_coupled_column(&input, &trial, core, None)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2427:
+ pub fn m1_materialize_captured_accepted_poison_for_test(
+     poison: M1AcceptedMaterializationPoison,
+ ) -> Result<M1CoupledEvaluation, M1CoupledError> {
+-    let (input, trial, core) = M1_ACCEPTED_CAPTURE.with(|capture| capture.borrow().clone()).expect("accepted materialization capture");
++    let (input, trial, core) = M1_ACCEPTED_CAPTURE
++        .with(|capture| capture.borrow().clone())
++        .expect("accepted materialization capture");
+     m1_materialize_accepted_from_parts_for_test(input, trial, core, Some(poison))
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2434:
+ #[cfg(test)]
+ pub fn m1_materialize_captured_accepted_for_test() -> Result<M1CoupledEvaluation, M1CoupledError> {
+-    let (input, trial, core) = M1_ACCEPTED_CAPTURE.with(|capture| capture.borrow().clone())
++    let (input, trial, core) = M1_ACCEPTED_CAPTURE
++        .with(|capture| capture.borrow().clone())
+         .expect("accepted materialization capture");
+     m1_materialize_accepted_from_parts_for_test(input, trial, core, None)
+ }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:312:
+     let original: Value = serde_json::from_str(ORIGINAL).expect("original input");
+     let input = M1CoupledColumnInput::from_covered_column(
+         covered_input(&original),
+-        [M1PhaseReservoirInput::new("stratum-z-upper::forest", 0.018, 0.0), M1PhaseReservoirInput::new("stratum-a-lower::forest", 0.018, 0.0)],
+-        conditions(), topology_binding(),
++        [
++            M1PhaseReservoirInput::new("stratum-z-upper::forest", 0.018, 0.0),
++            M1PhaseReservoirInput::new("stratum-a-lower::forest", 0.018, 0.0),
++        ],
++        conditions(),
++        topology_binding(),
+     );
+     super::m1_reset_accepted_capture_for_test();
+     let accepted = solve_m1_coupled_column(&input).expect("actual accepted boundary capture");
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:320:
+-    assert!(accepted.jacobian().is_err(), "captured boundary is actual None-Jacobian materialization");
++    assert!(
++        accepted.jacobian().is_err(),
++        "captured boundary is actual None-Jacobian materialization"
++    );
+     let after_solve = super::m1_work_observation_for_test();
+-    super::m1_materialize_captured_accepted_for_test().expect("unpoisoned captured accepted boundary");
+-    assert_eq!(super::m1_work_observation_for_test(), after_solve, "materializer seam must not add controller or Jacobian work");
++    super::m1_materialize_captured_accepted_for_test()
++        .expect("unpoisoned captured accepted boundary");
++    assert_eq!(
++        super::m1_work_observation_for_test(),
++        after_solve,
++        "materializer seam must not add controller or Jacobian work"
++    );
+     let mut unexpected = Vec::new();
+     for (poison, code) in [
+-        (super::M1AcceptedMaterializationPoison::NonfiniteResidual, "VEG-E-141"),
+-        (super::M1AcceptedMaterializationPoison::NonfiniteScale, "VEG-E-141"),
+-        (super::M1AcceptedMaterializationPoison::NonfiniteLeaf, "VEG-E-141"),
+-        (super::M1AcceptedMaterializationPoison::NonfiniteReservoirOperand, "VEG-E-141"),
+-        (super::M1AcceptedMaterializationPoison::NonfiniteDuration, "VEG-E-141"),
+-        (super::M1AcceptedMaterializationPoison::EmptyMass, "VEG-E-142"),
+-        (super::M1AcceptedMaterializationPoison::NegativeDrainage, "VEG-E-142"),
+-        (super::M1AcceptedMaterializationPoison::OverCapacityOneUlp, "VEG-E-142"),
+-        (super::M1AcceptedMaterializationPoison::RawMassResidual, "VEG-E-142"),
+-        (super::M1AcceptedMaterializationPoison::RawEnthalpyResidual, "VEG-E-142"),
+-        (super::M1AcceptedMaterializationPoison::EnthalpyLedger, "VEG-E-142"),
++        (
++            super::M1AcceptedMaterializationPoison::NonfiniteResidual,
++            "VEG-E-141",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::NonfiniteScale,
++            "VEG-E-141",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::NonfiniteLeaf,
++            "VEG-E-141",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::NonfiniteReservoirOperand,
++            "VEG-E-141",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::NonfiniteDuration,
++            "VEG-E-141",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::EmptyMass,
++            "VEG-E-142",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::NegativeDrainage,
++            "VEG-E-142",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::OverCapacityOneUlp,
++            "VEG-E-142",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::RawMassResidual,
++            "VEG-E-142",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::RawEnthalpyResidual,
++            "VEG-E-142",
++        ),
++        (
++            super::M1AcceptedMaterializationPoison::EnthalpyLedger,
++            "VEG-E-142",
++        ),
+     ] {
+         match super::m1_materialize_captured_accepted_poison_for_test(poison) {
+             Ok(_) => unexpected.push(format!("{poison:?}: accepted, expected {code}")),
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:340:
+-            Err(error) if error.code() != code => unexpected.push(format!("{poison:?}: {}, expected {code}", error.code())),
++            Err(error) if error.code() != code => {
++                unexpected.push(format!("{poison:?}: {}, expected {code}", error.code()))
++            }
+             Err(_) => {}
+         }
+     }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:344:
+-    assert!(unexpected.is_empty(), "expected-red actual accepted materializer guards: {unexpected:?}");
++    assert!(
++        unexpected.is_empty(),
++        "expected-red actual accepted materializer guards: {unexpected:?}"
++    );
+ }
+ 
+ #[test]
