@@ -1,0 +1,703 @@
+--- a/tests/integration/advisory_linter_authority_contract.rs
++++ b/tests/integration/advisory_linter_authority_contract.rs
+@@ -187,7 +187,7 @@
+             .iter()
+             .filter(|entry| entry["contracts"] == serde_json::json!(["SC-OUTPUT-WAT5-001"]))
+             .count(),
+-        27,
++        22,
+         "every changed WAT5 science-crate path requires an atomic contract binding"
+     );
+     for shared_path in [
+@@ -351,7 +351,9 @@
+         .expect("completed catalog entry body");
+     assert!(completed_entry.contains("COMPLETE / HISTORICAL UNDER ADR-0043"));
+ 
+-    assert!(!root()
+-        .join("tests/integration/testgate_ci_executor_contract.rs")
+-        .exists());
+-}
++    assert!(
++        !root()
++            .join("tests/integration/testgate_ci_executor_contract.rs")
++            .exists()
++    );
++}
+--- a/tests/integration/land_surface_energy_balance_authority_contract.rs
++++ b/tests/integration/land_surface_energy_balance_authority_contract.rs
+@@ -1,103 +1,4 @@
+-#[path = "support/sc_contract_text.rs"]
+-mod sc_contract_text;
+-
+ use std::fs;
+-
+-#[test]
+-fn version_thirty_three_binds_experimental_residual_jacobian_policy() {
+-    let contract = read(CONTRACT);
+-    let method = contract
+-        .split("## Version 33 experimental residual/Jacobian representation\n")
+-        .nth(1)
+-        .expect("v33 experimental numerical-method authority")
+-        .split("\n## ")
+-        .next()
+-        .expect("v33 method body");
+-    for required in [
+-        "r(x; u, b0)",
+-        "R_raw(x; u, b0) / s(x; u, b0)",
+-        "every active dry-stem temperature coordinate",
+-        "upward propagation for `i<o`",
+-        "downward propagation for `i>o`",
+-        "same-layer sun/shade/wet rows are exact zeros",
+-        "ordinary non-represented-snow ground-energy row",
+-        "The second term is mandatory",
+-        "structurally unsupported before candidate execution",
+-        "there is no FD retry",
+-        "paired active sun/shade\nleaf-temperature block",
+-        "Differentiating the finite\niteration program is not admitted",
+-        "h_k=2^k*h0",
+-        "k=-4..4",
+-        "J_oracle=(4*D_q-D_(q+1))/3",
+-        "8*U + 2e-7 K^-1",
+-        "5e-5*max",
+-        "Independent directional checks use eight vectors",
+-        "[3.2,4.8]",
+-        "2e-8 K + 2e-10*max(abs(A),abs(J))",
+-        "A.complete_residual_calls/J.complete_residual_calls >= 10",
+-        "paired release-mode median block-time ratio at most `0.50`",
+-        "at least 75% of baseline\nJacobian-construction wall time",
+-        "candidate median CPU ratio at most `1.03`",
+-        "CALIBRATION_NOT_APPLICABLE",
+-    ] {
+-        assert!(method.contains(required), "v33 method missing {required}");
+-    }
+-
+-    assert!(
+-        row(&contract, "INV-LANDSURFACEENERGY-165")
+-            .contains("actual normalized canonical residual")
+-    );
+-    assert!(
+-        row(&contract, "OBL-LANDSURFACEENERGY-C-021")
+-            .contains("Isolated v33 residual/Jacobian prototype only")
+-    );
+-    let exposure = row(&contract, "LSE-V33-EXPERIMENTAL-RESIDUAL-JACOBIAN");
+-    assert!(exposure.contains("INV-LANDSURFACEENERGY-165, OBL-LANDSURFACEENERGY-C-021"));
+-    assert!(exposure.contains("| `maps-to-existing-INV` |"));
+-    assert!(contract.contains(
+-        "| `INV-LANDSURFACEENERGY-165` | numerical-methods.md#INV-LANDSURFACEENERGY-165 |"
+-    ));
+-    assert!(contract.contains(
+-        "| `OBL-LANDSURFACEENERGY-C-021` | numerical-methods.md#OBL-LANDSURFACEENERGY-C-021 |"
+-    ));
+-    assert!(contract.contains("2026-09-08 v33:"));
+-    assert!(contract.contains("It does not activate a production algorithm"));
+-    assert!(read(INDEX).contains("`SC-LANDSURFACEENERGY-001`"));
+-}
+-
+-#[test]
+-fn version_thirty_four_binds_inactive_affine_column_authority() {
+-    let contract = read(CONTRACT);
+-    assert!(contract.contains("contract_version: 34"));
+-    for required in [
+-        "# Version 34 experimental inactive-leaf Jacobian",
+-        "INV-LANDSURFACEENERGY-166",
+-        "OBL-LANDSURFACEENERGY-C-022",
+-        "D=10*N+3+S",
+-        "j=10*o+6 (sun) or j=10*o+7 (shade)",
+-        "successful ordinary same-state evaluation",
+-        "positive zero",
+-        "GenericV3 replacement vapor/surface/soil rows",
+-        "J_y[:,j]=J_x[:,j]*D_scale[j]",
+-        "then retain existing inactive-row",
+-        "There is no FD retry after derivative entry or failure",
+-        "abs(J_ij-reference_ij)+U_ij <= E_ij",
+-        "No nonzero second-order remainder or convergence-ratio prerequisite applies",
+-        "observation on/off equivalence through actual solvers",
+-        "Covered\nPotential and GenericV3 Potential/FixedFinal solves",
+-        "Count opportunity is not a runtime fraction",
+-        "No production activation",
+-        "CALIBRATION_NOT_APPLICABLE",
+-    ] {
+-        assert!(contract.contains(required), "v34 missing {required}");
+-    }
+-    assert!(
+-        row(&contract, "LSE-V34-INACTIVE-LEAF-JACOBIAN")
+-            .contains("INV-LANDSURFACEENERGY-166, OBL-LANDSURFACEENERGY-C-022")
+-    );
+-    assert!(row(&contract, "INV-LANDSURFACEENERGY-166").contains("coordinate-aware assembly"));
+-    assert!(row(&contract, "OBL-LANDSURFACEENERGY-C-022").contains("Isolated v34 package only"));
+-}
+ 
+ #[test]
+ fn prospective_20260906_replay_binds_stencil_oracle_and_scientific_separation() {
+@@ -181,13 +82,13 @@
+ ];
+ 
+ fn read(path: &str) -> String {
+-    sc_contract_text::read(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
++    fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
+ }
+ 
+ fn read_existing(paths: &[&str]) -> String {
+     paths
+         .iter()
+-        .filter_map(|path| sc_contract_text::read(path).ok())
++        .filter_map(|path| fs::read_to_string(path).ok())
+         .collect::<Vec<_>>()
+         .join("\n")
+ }
+@@ -625,25 +526,10 @@
+     );
+ }
+ 
+-fn contains_text(text: &str, required: &str) -> bool {
+-    let normalized = text
+-        .replace("&#124;", "|")
+-        .split_whitespace()
+-        .collect::<Vec<_>>()
+-        .join(" ");
+-    let expected = required.split_whitespace().collect::<Vec<_>>().join(" ");
+-    normalized.contains(&expected)
+-}
+-
+ fn row<'a>(contract: &'a str, key: &str) -> &'a str {
+     contract
+         .lines()
+-        .find(|line| line.starts_with(&format!("| <a id=\"{key}\"></a> `{key}` |")))
+-        .or_else(|| {
+-            contract
+-                .lines()
+-                .find(|line| line.starts_with(&format!("| `{key}` |")))
+-        })
++        .find(|line| line.starts_with(&format!("| `{key}` |")))
+         .unwrap_or_else(|| panic!("{CONTRACT} missing row {key}"))
+ }
+ 
+@@ -657,7 +543,7 @@
+             "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+         )
+     );
+-    assert!(lifecycle.contains("| `2026-09-08` |"));
++    assert!(lifecycle.contains("| `2026-09-04` |"));
+ }
+ 
+ #[test]
+@@ -688,10 +574,7 @@
+         "surface records\n   `G`, while the sole soil/frost consumer records `-G`",
+         "runon to `Q_runon`, infiltration to `Q_inf`, and\n   runoff to `Q_runoff`",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ }
+ 
+@@ -714,10 +597,7 @@
+         "legacy `surtmp(hour)` / `Thra` | not an alias of `T_s` in v1",
+         "future named `degC <-> K` conversion and atomic cutover required",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ }
+ 
+@@ -725,7 +605,7 @@
+ fn current_version_releases_named_authority_without_production_claims() {
+     let contract = read(CONTRACT);
+     for required in [
+-        "contract_version: 34",
++        "contract_version: 31",
+         "status: approved",
+         "maturity: active",
+         "OPENWEPP_SNOW_FREE_LSE_V1",
+@@ -782,10 +662,7 @@
+         "OBL-LANDSURFACEENERGY-C-014",
+         "LSE-V24-VALIDATED-IN-MEMORY-HANDOFF",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ }
+ 
+@@ -809,10 +686,7 @@
+         "O(1)-with-history direct install",
+         "complete rollback",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+     assert_lse_registry_lifecycle(&read(INDEX));
+     assert!(
+@@ -829,7 +703,7 @@
+ fn version_thirty_binds_parent_static_and_same_map_validation_once_to_existing_invariant() {
+     let contract = read(CONTRACT);
+     for required in [
+-        "contract_version: 34",
++        "contract_version: 31",
+         "## Carrier Parent-Static and Same-Map Validation-Once Amendment",
+         "extends the already admitted private validation-once custody of\n`INV-LANDSURFACEENERGY-159`; it creates no new invariant",
+         "private non-Clone, non-wire,\ngeneration-bound structural plan",
+@@ -860,51 +734,25 @@
+         "CALIBRATION_NOT_APPLICABLE",
+         "no process physics, solver, tolerance, output, publication, or wire change",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ 
+     let invariant_rows = contract
+         .lines()
+-        .filter(|line| {
+-            line.starts_with("| `INV-LANDSURFACEENERGY-")
+-                || line.starts_with("| <a id=\"INV-LANDSURFACEENERGY-")
+-        })
++        .filter(|line| line.starts_with("| `INV-LANDSURFACEENERGY-"))
+         .collect::<Vec<_>>();
+     assert!(invariant_rows.iter().any(|line| {
+-        (line.starts_with("| `INV-LANDSURFACEENERGY-159` |")
+-            || line.starts_with(
+-                "| <a id=\"INV-LANDSURFACEENERGY-159\"></a> `INV-LANDSURFACEENERGY-159` |",
+-            ))
++        line.starts_with("| `INV-LANDSURFACEENERGY-159` |")
+             && line.contains("parent-static structural plan")
+             && line.contains("resident-revision-sourced native proof")
+     }));
+     assert_eq!(
+         invariant_rows
+             .iter()
+-            .filter(|line| line.starts_with(
+-                "| <a id=\"INV-LANDSURFACEENERGY-164\"></a> `INV-LANDSURFACEENERGY-164` |"
+-            ))
+-            .count(),
+-        1,
+-        "one actual canonical definition is required",
+-    );
+-    let guard_map = contract
+-        .split("### Invariant Guard Map")
+-        .nth(1)
+-        .expect("guard map")
+-        .split("## Producer Obligations")
+-        .next()
+-        .expect("guard map body");
+-    assert_eq!(
+-        guard_map
+-            .lines()
+             .filter(|line| line.starts_with("| `INV-LANDSURFACEENERGY-164` |"))
+             .count(),
+-        1,
+-        "one producer guard mapping is required separately from registry mentions"
++        2,
++        "v31 must register INV-164 once in the authority table and once in the producer guard map",
+     );
+ 
+     let exposure = contract
+@@ -929,7 +777,7 @@
+ fn version_thirty_one_binds_component_temperature_dependency_replay() {
+     let contract = read(CONTRACT);
+     for required in [
+-        "contract_version: 34",
++        "contract_version: 31",
+         "## Component-Temperature Jacobian Dependency-Replay Amendment",
+         "INV-LANDSURFACEENERGY-164",
+         "OBL-LANDSURFACEENERGY-C-020",
+@@ -1002,10 +850,7 @@
+         "`maps-to-existing-INV`",
+         "CALIBRATION_NOT_APPLICABLE",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+     assert!(
+         !contract.contains("Paired physical poisons at every ordered node boundary"),
+@@ -1071,10 +916,7 @@
+         "stale configuration/digest",
+         "complete rollback",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+     assert!(
+         read("docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md")
+@@ -1098,10 +940,7 @@
+         "does not invoke a second vapor/phase evaluation",
+         "preserves the complete LSE,\nsurface-liquid, exact-enthalpy, soil, WB14 parent",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ 
+     let liquid_capacity = 6.0_f64;
+@@ -1138,10 +977,7 @@
+         "Every finalized row is accounted exactly once",
+         "one resource candidate and ingress",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ 
+     let phase_adjusted_liquid = 2.5_f64;
+@@ -1183,10 +1019,7 @@
+         "exact\n`60000000000 ns` physical fallback floor",
+         "steps substantially larger than 60 seconds",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ 
+     for invariant in 140..=149 {
+@@ -1303,10 +1136,7 @@
+         "exact `60000000000 ns` fallback floor are unchanged",
+         "LSEB-E-049",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ 
+     let wat5_credit = -8.067_033_983_233_015e-19_f64;
+@@ -1365,10 +1195,7 @@
+         "exact `60000000000 ns` fallback floor remains unchanged",
+         "LSEB-E-050",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ 
+     assert_lse_registry_lifecycle(&read(INDEX));
+@@ -1409,10 +1236,7 @@
+         "zero-area component contributes no physical",
+         "Active components,\nphysical residual equations, tolerances, ledgers, receipts, events, the exact\n60-second raw fallback",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ }
+ 
+@@ -1428,10 +1252,7 @@
+         "it does not shrink `delta_i`, clamp a probe, infer a\nderivative, or continue",
+         "diagonal coordinate scaling admitted by `INV-LANDSURFACEENERGY-112` remains\nexclusive",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ 
+     let index = read(INDEX);
+@@ -1461,10 +1282,7 @@
+         "No second\nauthorization",
+         "No wind floor",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ }
+ 
+@@ -1888,10 +1706,7 @@
+         "LSEB-E-021",
+         "`git show\ndac3c950d8b16cc73774bf5ce2e7e11f80baac70:<path>`",
+     ] {
+-        assert!(
+-            contains_text(&contract, required),
+-            "{CONTRACT} missing {required}"
+-        );
++        assert!(contract.contains(required), "{CONTRACT} missing {required}");
+     }
+ 
+     let guard_map = contract
+--- a/tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs
++++ b/tests/integration/land_surface_energy_real_hydrology_shadow_contract/precedence_tests.rs
+@@ -193,7 +193,11 @@
+                     DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+                     | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+                     | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
+-                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
++                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. }
++                    | DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround {
++                        tile_id,
++                        ..
++                    } => {
+                         *tile_id = TileId::try_new("unknown-tile").expect("unknown tile");
+                     }
+                 }
+@@ -711,7 +715,11 @@
+                     DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+                     | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+                     | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
+-                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
++                    | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. }
++                    | DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround {
++                        tile_id,
++                        ..
++                    } => {
+                         *tile_id = TileId::try_new("unknown-tile").expect("tile");
+                     }
+                 },
+--- a/tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs
++++ b/tests/integration/land_surface_energy_real_hydrology_shadow_contract/raw_hash_tests.rs
+@@ -221,7 +221,8 @@
+             DirectTileGroundIngress::OpenRawPrecipitation { tile_id, .. }
+             | DirectTileGroundIngress::OpenLiquidParcels { tile_id, .. }
+             | DirectTileGroundIngress::CoveredCanopyReleaseAndRunon { tile_id, .. }
+-            | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. } => {
++            | DirectTileGroundIngress::CoveredCanopyRelease { tile_id, .. }
++            | DirectTileGroundIngress::CoveredCanopyReleaseAndTerminalGround { tile_id, .. } => {
+                 *tile_id = TileId::try_new("unknown-tile").expect("tile");
+             }
+         }
+--- a/tests/integration/snow_stage3_shared_carrier_authority_contract.rs
++++ b/tests/integration/snow_stage3_shared_carrier_authority_contract.rs
+@@ -1,6 +1,3 @@
+-#[path = "support/sc_contract_text.rs"]
+-mod sc_contract_text;
+-
+ use std::collections::{BTreeMap, BTreeSet};
+ use std::fs;
+ use std::path::PathBuf;
+@@ -14,7 +11,7 @@
+ }
+ 
+ fn read(relative: &str) -> String {
+-    sc_contract_text::read(root().join(relative)).expect("authority file must exist")
++    fs::read_to_string(root().join(relative)).expect("authority file must exist")
+ }
+ 
+ fn approx(actual: &Value, expected: &Value, label: &str) {
+@@ -232,7 +229,7 @@
+     let lse_contract =
+         read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
+     for required in [
+-        "contract_version: 34",
++        "contract_version: 31",
+         "INV-LANDSURFACEENERGY-124",
+         "INV-LANDSURFACEENERGY-125",
+         "INV-LANDSURFACEENERGY-126",
+--- a/tests/integration/snow_stage3_terminal_receiver_authority_contract.rs
++++ b/tests/integration/snow_stage3_terminal_receiver_authority_contract.rs
+@@ -1,5 +1,4 @@
+-#[path = "support/sc_contract_text.rs"]
+-mod sc_contract_text;
++use std::fs;
+ 
+ const ENERGY: &str = "docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md";
+ const FREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
+@@ -9,7 +8,7 @@
+ const INDEX: &str = "docs/specifications/science-contracts/index.md";
+ 
+ fn read(path: &str) -> String {
+-    sc_contract_text::read(path)
++    fs::read_to_string(path)
+         .unwrap_or_else(|error| panic!("read {path}: {error}"))
+         .split_whitespace()
+         .collect::<Vec<_>>()
+@@ -236,7 +235,7 @@
+         ),
+         (TXN, &["INV-VEGTRANSACTION-008"][..]),
+     ] {
+-        let raw = sc_contract_text::read(path).unwrap();
++        let raw = fs::read_to_string(path).unwrap();
+         for invariant in invariants {
+             assert!(
+                 table_has_row(&raw, invariant),
+--- a/tests/integration/solver_architecture_authority_contract.rs
++++ b/tests/integration/solver_architecture_authority_contract.rs
+@@ -1,6 +1,4 @@
+-#[path = "support/sc_contract_text.rs"]
+-mod sc_contract_text;
+-
++use std::fs;
+ use std::path::PathBuf;
+ 
+ const RECOVERY_PACKAGE: &str =
+@@ -11,7 +9,7 @@
+ }
+ 
+ fn text(path: &str) -> String {
+-    sc_contract_text::read(root().join(path))
++    fs::read_to_string(root().join(path))
+         .unwrap_or_else(|error| panic!("expected readable {path}: {error}"))
+ }
+ 
+--- a/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
++++ b/tests/integration/stage3_native_vegetation_laned_throughput_recovery.rs
+@@ -1,6 +1,3 @@
+-#[path = "support/sc_contract_text.rs"]
+-mod sc_contract_text;
+-
+ use std::fs;
+ use std::path::{Path, PathBuf};
+ 
+@@ -1256,7 +1253,7 @@
+         ),
+         (
+             "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+-            "contract_version: 34",
++            "contract_version: 31",
+             "INV-LANDSURFACEENERGY-160",
+             "OBL-LANDSURFACEENERGY-C-015",
+         ),
+@@ -1267,7 +1264,7 @@
+             "OBL-SURFACELIQUID-C-023",
+         ),
+     ] {
+-        let contract = sc_contract_text::read(repository.join(path)).expect("read contract");
++        let contract = fs::read_to_string(repository.join(path)).expect("read contract");
+         assert!(contract.contains(version), "{path} missing {version}");
+         assert!(contract.contains(invariant), "{path} missing {invariant}");
+         assert!(contract.contains(obligation), "{path} missing {obligation}");
+@@ -1309,7 +1306,7 @@
+             "SNOWENERGY-ADR0044-NATIVE-INACTIVE-PREFIX-TRANSITION",
+         ),
+     ] {
+-        let contract = sc_contract_text::read(repository.join(path)).expect("read contract");
++        let contract = fs::read_to_string(repository.join(path)).expect("read contract");
+         for binding in [version, invariant, obligation, exposure] {
+             assert!(contract.contains(binding), "{path} missing {binding}");
+         }
+@@ -1351,7 +1348,7 @@
+         ),
+         (
+             "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+-            "contract_version: 34",
++            "contract_version: 31",
+             "INV-LANDSURFACEENERGY-161",
+             "OBL-LANDSURFACEENERGY-C-016",
+             "LSE-V27-PENDING-ADJUDICATION",
+@@ -1378,7 +1375,7 @@
+             "CT-COVERED-NONFINAL-PHYSICAL-ONLY",
+         ),
+     ] {
+-        let contract = sc_contract_text::read(repository.join(path)).expect("read contract");
++        let contract = fs::read_to_string(repository.join(path)).expect("read contract");
+         for binding in [version, invariant, obligation, exposure] {
+             assert!(contract.contains(binding), "{path} missing {binding}");
+         }
+--- a/tests/integration/surface_liquid_hydrology_custody_authority_contract.rs
++++ b/tests/integration/surface_liquid_hydrology_custody_authority_contract.rs
+@@ -1,6 +1,3 @@
+-#[path = "support/sc_contract_text.rs"]
+-mod sc_contract_text;
+-
+ use std::fs;
+ use std::path::Path;
+ 
+@@ -18,7 +15,7 @@
+     "docs/work-packages/20260814-persistent-snow-free-surface-liquid-hydrology-custody-001";
+ 
+ fn read(path: &str) -> String {
+-    sc_contract_text::read(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
++    fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
+ }
+ 
+ fn read_rust_tree(path: &Path) -> String {
+--- a/tests/integration/vegetation_boundary_authority_contract.rs
++++ b/tests/integration/vegetation_boundary_authority_contract.rs
+@@ -1,6 +1,3 @@
+-#[path = "support/sc_contract_text.rs"]
+-mod sc_contract_text;
+-
+ use std::fs;
+ use std::io::Write;
+ use std::process::Command;
+@@ -64,7 +61,7 @@
+ }
+ 
+ fn read(path: &str) -> String {
+-    sc_contract_text::read(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
++    fs::read_to_string(path).unwrap_or_else(|error| panic!("read {path}: {error}"))
+ }
+ 
+ fn section<'a>(text: &'a str, start: &str, end: &str) -> &'a str {
+@@ -78,9 +75,7 @@
+ 
+ fn contains_table_row(table: &str, id: &str) -> bool {
+     table.lines().any(|line| {
+-        line.starts_with(&format!("| {id} |"))
+-            || line.starts_with(&format!("| `{id}` |"))
+-            || line.starts_with(&format!("| <a id=\"{id}\"></a> `{id}` |"))
++        line.starts_with(&format!("| {id} |")) || line.starts_with(&format!("| `{id}` |"))
+     })
+ }
+ 
+@@ -545,15 +540,7 @@
+         ),
+     ] {
+         let adjacent = read(path);
+-        let invariant_table = if adjacent.contains("contract_format: directory-v1") {
+-            section(
+-                &adjacent,
+-                "## Canonical invariants",
+-                "## Canonical obligations",
+-            )
+-        } else {
+-            section(&adjacent, invariant_start, invariant_end)
+-        };
++        let invariant_table = section(&adjacent, invariant_start, invariant_end);
+         let guard_table = section(&adjacent, guard_start, guard_end);
+         assert!(
+             contains_table_row(invariant_table, invariant),
+@@ -571,19 +558,11 @@
+ 
+     let energy =
+         read("docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md");
+-    let energy_invariants = if energy.contains("contract_format: directory-v1") {
+-        section(
+-            &energy,
+-            "## Canonical invariants",
+-            "## Canonical obligations",
+-        )
+-    } else {
+-        section(
+-            &energy,
+-            "## Invariants and Invariant Guard Map",
+-            "### Invariant Guard Map",
+-        )
+-    };
++    let energy_invariants = section(
++        &energy,
++        "## Invariants and Invariant Guard Map",
++        "### Invariant Guard Map",
++    );
+     let energy_guards = section(
+         &energy,
+         "### Invariant Guard Map",

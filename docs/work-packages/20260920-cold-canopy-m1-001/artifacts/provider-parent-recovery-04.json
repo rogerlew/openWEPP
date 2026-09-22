@@ -1,0 +1,12 @@
+{
+  "observed_utc": "2026-09-22T21:50:06.029511+00:00",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-provider04-reconstruction-20260922",
+  "entries": 759,
+  "source_tree_sha256": "a717cc043b64603c19238642f5db0c1aefc09577ca2d0907dcede15eeaedfdd2",
+  "exact_source04_match": true,
+  "observer_base": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/provider-parent-body-review-04-from-observer-cut02.patch",
+  "patch_sha256": "6828b4a2af6e1f7e0dbf0486f6c99fe8596e9a39496d3aaa087813bd71b9f143",
+  "scope": "Fresh exact source04 reconstruction; runtime external support is separately pinned by build/run manifests."
+}

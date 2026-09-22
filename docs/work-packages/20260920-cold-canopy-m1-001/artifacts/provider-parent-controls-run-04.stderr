@@ -1,0 +1,371 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning: unused import: `DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:109:13
+    |
+109 | use crate::{DirectRunConstructorInputs, vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:132:16
+    |
+132 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `diagnostic_source_climate_sha256_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/09_snow_free_half_hour_forcing.rs:1229:19
+     |
+1227 | impl HillslopeClimateRuntimeRequest {
+     | ----------------------------------- method in this implementation
+1228 |     #[cfg(test)]
+1229 |     pub(crate) fn diagnostic_source_climate_sha256_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `diagnostic_native_field` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:644:4
+    |
+644 | fn diagnostic_native_field<T: serde::de::DeserializeOwned>(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `position` and `lse_configuration_sha256` are never read
+  --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:13:5
+   |
+ 9 | pub struct NativeSoilRestartAdmissionV1 {
+   |            ---------------------------- fields in this struct
+...
+13 |     position: NativeSoilRestartPositionV1,
+   |     ^^^^^^^^
+...
+17 |     lse_configuration_sha256: openwepp_land_surface_energy::Sha256Digest,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated items `diagnostic_validate_inactive_scheduler_v1` and `validate_constructor_context` are never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:189:19
+    |
+ 20 | impl NativeSoilRestartAdmissionV1 {
+    | --------------------------------- associated items in this implementation
+...
+189 |     pub(crate) fn diagnostic_validate_inactive_scheduler_v1(count: u64,
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+257 |     fn validate_constructor_context(&self, resident: &DirectSoilThermalResident,
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `count`, `surface_bytes`, and `configuration_sha256` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:303:5
+    |
+302 | struct NativeInactiveSchedulerCustodyV1 {
+    |        -------------------------------- fields in this struct
+303 |     count: u64,
+    |     ^^^^^
+304 |     surface_bytes: Vec<u8>,
+    |     ^^^^^^^^^^^^^
+305 |     configuration_sha256: String,
+    |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `diagnostic_restore_native_lane_maps_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1692:19
+     |
+ 797 | impl DirectV10RealConsumerShadow {
+     | -------------------------------- associated function in this implementation
+...
+1692 |     pub(crate) fn diagnostic_restore_native_lane_maps_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `diagnostic_install_hydrology_constructor_inputs_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:4329:19
+     |
+3339 | impl DirectV10RealConsumerShadow {
+     | -------------------------------- method in this implementation
+...
+4329 |     pub(crate) fn diagnostic_install_hydrology_constructor_inputs_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `publication_input_from_constructor` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:487:8
+    |
+487 |     fn publication_input_from_constructor(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `native_archive_day_input` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:528:8
+    |
+528 |     fn native_archive_day_input(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validated_native_archive_publication_input` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:576:8
+    |
+576 |     fn validated_native_archive_publication_input(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `native_complete_attachment_supports` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:770:8
+    |
+770 |     fn native_complete_attachment_supports(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `assert_bound_native_destinations_materialized` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:957:8
+    |
+957 |     fn assert_bound_native_destinations_materialized(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `assert_no_snow_free_physics_calls` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1695:8
+     |
+1695 |     fn assert_no_snow_free_physics_calls(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `with_effective_beginning_frame` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/vegetation_real_hydrology_shadow.rs:265:19
+    |
+259 | impl RealHydrologyShadowAdapter {
+    | ------------------------------- method in this implementation
+...
+265 |     pub(crate) fn with_effective_beginning_frame(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_covered_interval` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:671:4
+    |
+671 | fn restore_covered_interval(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_destination_capability` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:687:4
+    |
+687 | fn restore_destination_capability(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `provider_interval_for_destination` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:735:4
+    |
+735 | fn provider_interval_for_destination<'a>(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_prepared_support` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:773:4
+    |
+773 | fn restore_prepared_support(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_support_forcing` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:891:4
+    |
+891 | fn restore_support_forcing(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `active_snow_restore` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1004:4
+     |
+1004 | fn active_snow_restore(
+     |    ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `ProviderCaptureV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1165:8
+     |
+1165 | struct ProviderCaptureV1 {
+     |        ^^^^^^^^^^^^^^^^^
+
+warning: method `validate_against` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1212:19
+     |
+1190 | impl ProviderStaticConfigurationCaptureV1 {
+     | ----------------------------------------- method in this implementation
+...
+1212 |     pub(crate) fn validate_against(
+     |                   ^^^^^^^^^^^^^^^^
+
+warning: struct `PreparedDayCaptureV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1246:8
+     |
+1246 | struct PreparedDayCaptureV1 {
+     |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_row_for_test` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1864:15
+     |
+1864 | pub(crate) fn capture_row_for_test(
+     |               ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_coupled_clock` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2691:15
+     |
+2691 | pub(crate) fn restore_coupled_clock(
+     |               ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_parent_with_configured_bgc_scope` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2704:15
+     |
+2704 | pub(crate) fn restore_parent_with_configured_bgc_scope(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `reconstruct_provisional_on_clone` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2721:15
+     |
+2721 | pub(crate) fn reconstruct_provisional_on_clone(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `reconstruct_provisional_on_clone_for_constraint_owner` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2748:4
+     |
+2748 | fn reconstruct_provisional_on_clone_for_constraint_owner(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `reconstruct_provisional_on_clone_with_authorities` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2776:4
+     |
+2776 | fn reconstruct_provisional_on_clone_with_authorities(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `import_and_reconstruct_pre_child_context` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2845:15
+     |
+2845 | pub(crate) fn import_and_reconstruct_pre_child_context(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `PreChildProvisionalInputsV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2883:8
+     |
+2883 | struct PreChildProvisionalInputsV1 {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_pre_child_provisional_inputs` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2894:4
+     |
+2894 | fn restore_pre_child_provisional_inputs(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_pre_child_provisional_evidence` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3000:4
+     |
+3000 | fn validate_pre_child_provisional_evidence(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_pre_child_binding_and_owners` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3032:4
+     |
+3032 | fn validate_pre_child_binding_and_owners(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RestoredCapturedPreChildContextV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3324:19
+     |
+3324 | pub(crate) struct RestoredCapturedPreChildContextV1 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_captured_clock_parent` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3339:4
+     |
+3339 | fn restore_captured_clock_parent(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_captured_pre_child_context` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3391:4
+     |
+3391 | fn restore_captured_pre_child_context(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `attach_member_backed_value_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4185:4
+     |
+4185 | fn attach_member_backed_value_v1(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_member_backed_external_end_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4214:4
+     |
+4214 | fn validate_member_backed_external_end_v1(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `decode_member_backed_scalar_event_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4243:4
+     |
+4243 | fn decode_member_backed_scalar_event_v1(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `decode_member_backed_row_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4265:4
+     |
+4265 | fn decode_member_backed_row_v1(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 43 warnings (run `cargo fix --lib -p openwepp-hillslope-orchestrator --tests` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID addf8cf4-dc56-4a6d-92d1-7adc205b67bf with nextest profile: default
+    Starting 8 tests across 1 binary (1490 tests skipped)
+  stdout ───
+
+    running 1 test
+    test land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_canonical_ascii_escape_vectors_are_independent ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1497 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_actual_seven_owner_bytes_match_independent_canonical_projections ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1497 filtered out; finished in 0.16s
+
+
+  stdout ───
+
+    running 1 test
+    test land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_refusal_preserves_real_caller_owners_clock_staging_and_publication ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1497 filtered out; finished in 0.65s
+
+
+  stdout ───
+
+    running 1 test
+    test land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_real_source_encoding_and_parent_slice_oracle ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1497 filtered out; finished in 0.73s
+
+
+  stdout ───
+
+    running 1 test
+    test land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_rejects_missing_foreign_reordered_and_stale_gsi_receipts ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1497 filtered out; finished in 0.89s
+
+
+  stdout ───
+
+    running 1 test
+    test land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_actual_caller_refuses_wrong_cycle_and_out_of_sequence_parent ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1497 filtered out; finished in 1.19s
+
+
+  stdout ───
+
+    running 1 test
+    M1_PROVIDER_IDENTITY {"adapter_manifest_sha256":"2a46507c5c232e08fd88365469e0d3bb84e21aeabad1ce76b8fc1ef23ad8fab3","calendar_receipt":"459f39a8f480f63b33573ff9484a547ba853d72ac8dd193c5973c646fc9b4dd7","cycle_ordinal":0,"first_gsi_support_receipt":"1d536050e6aa0de3aee609a0a9e34423e22512f2fb6a0b77c85ce51af7de4cab","first_parent_forcing_receipt":"86ffc5a9d634a815a7437c3f99771c4167167dead918094f20b0d336b45bef7e","implementation_sha256":"6671ab7418a0719c2d395a5dfbed02e6ef1b52e4545a7ccaae11d4b9655d582d","parent_count":144,"payload_sha256":"63038bf854660c77576e4e37f9055299b52f3397bfb3fb25f1f2bd115ec96e7a","record_count":4320,"run_identity":"7963c642949184de9d0ac771b26943971d57b02e4f01ca9d437d46ccab273217"}
+    M1_PROVIDER_IDENTITY {"adapter_manifest_sha256":"2a46507c5c232e08fd88365469e0d3bb84e21aeabad1ce76b8fc1ef23ad8fab3","calendar_receipt":"2dc0757b7616e9fc7d73a4227d4dc158a136f9fe6321daa673294cde300f4115","cycle_ordinal":1,"first_gsi_support_receipt":"ac93742444ffae37f664ba2e977a8a5f3fbed4e8766832f5ed6930a94a8aff1e","first_parent_forcing_receipt":"d61dd2a129e9e15ce54075cdc3ef38ad9914e8d9eba7f9100cb60bcd9469e5fb","implementation_sha256":"6671ab7418a0719c2d395a5dfbed02e6ef1b52e4545a7ccaae11d4b9655d582d","parent_count":144,"payload_sha256":"3c8220289c3ed0f7a8513390a9ce22e9ba8adf892ec8b6dc5f059acc3e395437","record_count":4320,"run_identity":"8b759df698517370a33af20f675312db6c3541abddc4581b4246e605e03f21e7"}
+    test land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_both_cycles_expand_every_frozen_record_parent_day_and_phase ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1497 filtered out; finished in 13.04s
+
+
+        SLOW [> 60.000s] (───) openwepp-hillslope-orchestrator land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_rejects_each_contract_mutation_before_owner_staging
+  stdout ───
+
+    running 1 test
+    test land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_rejects_each_contract_mutation_before_owner_staging has been running for over 60 seconds
+    test land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_rejects_each_contract_mutation_before_owner_staging ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1497 filtered out; finished in 61.42s
+
+
+────────────
+     Summary [  61.425s] 8 tests run: 8 passed (1 slow), 1490 skipped

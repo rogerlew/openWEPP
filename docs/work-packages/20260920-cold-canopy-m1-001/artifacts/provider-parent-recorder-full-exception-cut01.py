@@ -187,8 +187,10 @@ def main():
         assert sha(input_path) == expected_sha256, str(input_path)
         pinned[str(input_path)] = expected_sha256
     remaining_for_command = (DEADLINE - dt.datetime.now(dt.timezone.utc)).total_seconds() - 1800
-    validate_declared_bound(command, args.timeout, args.physical,
-                            args.required_full_validation, remaining_for_command)
+    if args.physical and args.timeout > 180:
+        raise SystemExit('Physical command declared bound exceeds 180 seconds')
+    if args.timeout > remaining_for_command:
+        raise SystemExit('Full declared command bound cannot fit before review/preservation reserve')
     timeout = args.timeout
     expected_pins = {item['path']: item['sha256'] for item in support_record['files']}
     for path, digest in pinned.items():

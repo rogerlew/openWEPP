@@ -1,5 +1,567 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Provider implementation and complete-parent execution — adopted 2026-09-22 19:53 UTC
+
+Owner execution of `/tmp/openwepp_cold_canopy_m1_provider_parent_implementation_authorization.md`
+adopts the reviewed-provider implementation and complete-parent continuation in
+this same checkpoint. The complete incoming scope applies: contract-derived
+controls before provider bodies; actual seven typed source joins and canonical
+payload/4320-record admission; A–F integration corrections; real inactive snow;
+seven-owner staging/commit and meaningful late owning rejection; then both frozen
+72-hour cycles, independent balances, restart and cost as prerequisites permit.
+All four M1 acceptance axes remain binding. No physics, numerical, fixture,
+threshold, closed coupled-time domain, or main runtime adoption is authorized.
+
+Ran: before mutation the live and retained reconstruction each match all 757
+snapshot entries, aggregate `b503934ab509cce8f46e5e8b9cf3c3487037672b5b25c97ec7084ef1f5d3fc5d`.
+Observer cut02 remains `85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963`
+and recovery patch remains `e43e03b26922b6496b7b45195feed56667dd30c7bc6c5c542ef50a0fe248a90a`.
+No reconstruction or patch reapplication was necessary. The final local
+parent-metadata-final-publication-02 receipt was read once: carried charge is
+250793.051684 seconds. Owner adds 14400 seconds, fixed cumulative ceiling
+265193.051684 seconds. Conservative first-reading anchor **2026-09-22T19:53:00Z**
+fixes hard deadline **2026-09-22T23:53:00Z** and implementation/launch cutoff
+**2026-09-22T23:23:00Z**, preserving at least 1800 seconds. Concurrent elapsed,
+reading, waits, review and publication are charged once; no old reserve, gap or
+overrun is refunded. Prior uncertain outcome history is preserved.
+
+Intent and selection: Critical cross-owner chronology/state work retains
+immediate full-workspace correctness, current A0/A1/A3, test-inclusive owning
+and consumer checks, strict lint/format, source/manifest review, real negative
+admission controls, independent operand reconstruction and exact-source final
+qualification. Contract-derived controls and frozen source assessment precede
+physical runs. Each physical process retains its 180-second cap; every command
+must fit its full declared bound plus reserve. Original60, first/adjacent/all
+parent supports, positive receiver and late rejection, two immutable cycles,
+fresh-process splits and cost comparisons remain the prospective run allowance;
+no identical unexplained retry, seed search or physical fixture retuning.
+
+Astra owns package, recorder deadline/support and evidence; one Terra implementer
+owns detached Rust. Existing reviewer names are not reachable in this session's
+live agent inventory; attributable independent replacements will review only
+changed scopes, preserving accepted metadata/physics/recorder reviews. Writer
+and reviewer phases will be serialized with at most two children and no nesting.
+Controls must receive independent release before corresponding implementation.
+Stops: owner direction, hard allowance/reserve, uncontained integrity failure,
+indispensable source/independence unavailable after bounded recovery, completed
+bounded disposition, or necessary out-of-envelope change. Two unsuccessful
+corrections or 60 charged minutes require internal reassessment, not budget renewal.
+
+Static: replacement independent QA `/root/provider_qa` verifies the one-line
+recorder deadline delta, arithmetic, both reserve checks and the unchanged
+180-second cap: [deadline PASS](artifacts/provider-parent-deadline-qa-01.md).
+Root AST parsing passes. This reuses unchanged18-control recorder evidence;
+no source/manifest or physical launch clearance follows. `/root/provider_writer`
+is sole detached writer; `/root/provider_correctness` independently inspects
+existing owner/snow joins while test authoring proceeds. Prior reviewer names
+were absent from this session inventory; replacement roles are attributable.
+
+Static: initial provider-control draft is not released. Root found that every
+semantic mutation omitted final-LF canonical encoding, allowing formatting-only
+refusal to mask missing semantic guards; the claimed independent oracle and
+receipt mutations were delegated to planned production methods; receipt poison
+construction incorrectly placed derived receipts in payload; duplicate-key raw
+strings were invalid JSON rather than controlled mutations. Same writer is
+correcting these tests before any provider implementation. No physical run or
+provider acceptance is claimed. The retained E002 zero-terminal mode branch is
+already corrected in the starting source; its historical unapproved failure is
+not a current demonstrated mode failure and awaits qualified execution.
+
+Static: both independent reviewers HOLD the frozen controls cut:
+[correctness01](artifacts/provider-parent-controls-correctness-01.md) and
+[QA01](artifacts/provider-parent-controls-qa-01.md). Required corrections are
+full emitted two-cycle projection/phase/day/breakpoint comparison, independent
+canonical payload/all four receipt domains, authentic expected seven-source joins,
+complete source/implementation/locator mutations, canonical encoding vectors,
+and actual caller-state preservation rather than observer counters alone.
+Canonical recorder snapshot is758 entries `0bf36ce5bbbc96b6417883c9f7422989a448a6e83686ead17efcff23b9a68cb3`;
+writer's alternate aggregate is not used as execution identity. Only controls
+and cfg(test) wiring differ from the authorized initial Rust. No provider body.
+
+Same QA withdrew an incorrect manifest finding after checking actual traversal:
+workspace-root `src/**/*.rs` support pins differ from `crates/**`, which the
+canonical source snapshot seals. QA clears the concrete180-second nonphysical
+compile manifest only; control release remains HOLD. This is not a manifest or
+acceptance relaxation. One message to the completed writer while both reviewers
+were active hit the runtime thread limit; completed roles were interrupted and
+phases remain serialized, with no limit change or nested workaround.
+
+Ran: [preimplementation compile01](artifacts/provider-parent-controls-compile-01.json)
+executes test-inclusive `cargo check -p openwepp-hillslope-orchestrator --tests`
+through the bound Nix environment. Exit101 after30.468s: exactly two unresolved
+references to the deliberately absent private provider module. Source/base/pins
+remain unchanged. This is expected-red compilation evidence, not passing controls
+or executed admission behavior. The source receipt and observer-relative patch
+preserve this cut. Two existing unused imports remain visible.
+
+Internal reassessment **CONTINUE**,20:09UTC: the first root correction and dual
+review still expose concrete control omissions; no physical failure or new
+scientific design issue has occurred. Same sole writer receives all findings as
+one correction: full independent emitted-payload/four-domain/source-join oracles,
+both cycles and every slice/breakpoint, closed-schema/encoding mutations, and
+actual caller-owned no-mutation snapshots. Implementation remains unreleased
+until the corrected controls are independently accepted. Fixed allowance and
+review reserve remain unchanged; no identical retry is authorized.
+
+Static: controls02 is preserved with exact [source/patch](artifacts/provider-parent-controls-review-02-source.json),
+758 entries `17c71b369c3475c19cc173f1e6201796c7f1095313d43098dc17873a7f09e7d8`.
+Same [correctness02](artifacts/provider-parent-controls-correctness-02.md) and
+[QA02](artifacts/provider-parent-controls-qa-02.md) verify the prior full-payload,
+all-four-domain, both-cycle/record/parent and real-caller snapshot coverage fixes.
+Three concrete control defects remain HOLD: initial phase decimal values must
+be16-lowercase-hex binary64 strings; whole-object RFC6901 pointers must be empty,
+not `/`; and Cargo.toml does not supply adapter dependency paths/hashes.
+Additional top-level SourceV1 rows are permitted, not independently mandatory.
+Root retains these findings and directs the same writer to a bounded correction.
+The missing combined source accessor was resolved as authorized private-adapter
+work, not new science or grounds for an owner handoff. No provider body or
+physical run has been released; source and numerical fixtures remain protected.
+
+Static: same [QA03](artifacts/provider-parent-controls-qa-03.md) verifies all
+three controls02 findings and clears controls03 plus its619-pin nonphysical
+compile manifest. Manifest bytes `cff0ffc0…23d39` authenticate eight selected
+retained adapter dependencies, separately from the recorder's complete source
+and external support custody. Correctness03 fix verification is pending.
+
+Ran: [compile03](artifacts/provider-parent-controls-compile-03.json), source758
+`d22c7b3d70aa4b2c91b910e2a6b13b574c82c287b77410662a87d92ee99c9f23`,
+exits101 after17.633s. Full diagnostic inspection finds13 absent-provider
+include/import/API errors plus one introduced `Value == Vec<Value>` type error
+and an overlapping canonical-string match warning. Root's initial truncated
+summary to correctness said only missing-body errors; it was promptly corrected
+before any release. These mechanical defects remain assigned. Source/base/pins
+are unchanged and no tests/physical execution occurred.
+
+Static: same [correctness03](artifacts/provider-parent-controls-correctness-03.md)
+verifies all three substantive controls02 findings, matching QA03. **Private
+provider body authoring is RELEASED.** Executable controls remain HOLD until the
+separate `Value::Array` comparison fix and canonical-string pattern cleanup compile.
+The release is for implementation, not authenticated runtime provider/parent
+acceptance. Contract-derived source and expected-red evidence precede the body.
+
+Implementation intent: same sole writer now implements the reviewed private
+provider/source adapter, typed VEG-E-144 parser/admission and all source/receipt
+joins, including the genuine caller-initialization/admission seam required by
+controls. Real seven-owner inactive-snow beginning state and A–F integration
+remain authorized. Source adapters read actual constructor/accessor output;
+immutable validation/expansion belongs to provider lifetime. No fixture, solver,
+closed coupled-time tag, main Rust or physical acceptance changes. Mechanical
+test fixes and introduced-quality correction are included. Writer may compile
+and format through Nix, but root retains source freeze, manifest QA and every
+physical/test command launch. After test-inclusive compile, freeze the real
+implementation for same-reviewer source and command assessment; then execute
+provider controls and continue actual seven-owner parent progression.
+
+Internal reassessment **CONTINUE**,20:53UTC (first60 charged minutes):
+reviewed controls released body authoring, and the mutable provider plus real
+caller initialization compiles with tests included. Root inspection rejected
+ignored-caller admission wrappers and identified the still-unjoined complete-parent
+clock/state path. The sole writer now retains canonical Stage-3 inactive-snow
+bytes in actual caller ownership and is wiring provider-derived seven-owner
+clock admission. Several partial writer returns required narrower concrete
+assignments; these are execution friction, not external or scientific blockers.
+No physical run, provider-control pass, accepted support or completed parent is
+claimed. Both independent reviewers remain assigned to the frozen body and
+selected executable/manifest; complete-parent joins, late owning rejection,
+cycles, balances, restart, cost and exact-source quality remain required.
+Continuation has concrete in-scope edits and more than two hours before the
+unchanged23:23UTC cutoff. No allowance, reserve or acceptance change.
+
+Execution route maintenance,20:57UTC: `/root/provider_writer` explicitly
+reports turn exhaustion with final consumer guards unfinished. Earlier compilation
+was tool-streamed only, without retained raw logs; root does not treat those
+reports as recorded executable validation. Root interrupted that writer and the
+completed correctness role, then assigned fresh sole Terra `/root/provider_finish`
+a compact bounded handoff: actual cycle/phase/sequence admission guards, positive
+seven-owner/duplicate refusal controls, retained test-inclusive compile logs and
+source freeze. This is context recovery, not a capacity workaround or a new
+allowance. Existing correctness and QA reviewers remain assigned; no concurrent
+source writer, nested role, physical launch or main runtime edit is introduced.
+
+Ran: final body author reports and root verifies frozen759-entry source
+`5cfa36252496195644931d63d359bb253bf2ff1783fb1f5af41fe2b01bbabc25`,
+preserved by [body review source/patch](artifacts/provider-parent-body-review-01-source.json).
+[Retained test-inclusive compiler stderr](artifacts/provider-parent-body-compile-01.stderr)
+finishes successfully with43 warnings in prior restoration/helper/import surfaces;
+this is compilation, not provider or physical execution. Both-cycle consumer
+phase/run/sequence guards, actual seven-owner clock binding, active six/inactive
+snow, typed negative snapshots and genuine positive admission controls are now
+implemented. Authenticated GSI/projection hashing belongs to provider lifetime;
+source SHA checks precede parsing. Adapter manifest is9 actual unique source
+paths, SHA`2f0942ff787e493624ef86a5a639a563d8757df9015d9fc8ad09ded57db4a654`.
+Same independent correctness and QA now assess this frozen body plus controls;
+QA also assesses the619-pin [selected binary-build manifest](artifacts/provider-parent-body-build-support-01.json),
+180-second nonphysical `cargo nextest list -p openwepp-hillslope-orchestrator
+--lib --message-format json`. Complete-parent staging/clock/resource/material
+joins and physical execution remain separate, unfinished obligations.
+
+Static: same [body QA01](artifacts/provider-parent-body-qa-01.md) clears the
+frozen body custody/controls and concrete nonphysical binary-build manifest;
+no blocking QA finding. Correctness review remains pending. Root launches
+`provider-parent-body-build-01` with the exact reviewed180-second command,
+source and support. This build/list operation executes no tests or physics;
+actual binary and provider-run clearance remain subsequent obligations.
+
+Ran: [body binary build01](artifacts/provider-parent-body-build-01.json)
+PASS after63.821386883s, source/base/pins unchanged. Actual orchestrator unit
+binary SHA`9db3559ca5070f4422a8c729bef6e73974fd991d498009bc6e7fdb650b968fde`
+lists seven selected `m1_provider_` controls. Same QA is assessing the
+623-pin [provider-run manifest](artifacts/provider-parent-controls-run-support-01.json),
+180-second nonphysical exact selector with successful-output retention for
+actual two-cycle provider identities. No test has yet run; root also awaits
+independent correctness release.
+
+Static: same [selected-run QA01](artifacts/provider-parent-controls-run-qa-01.md)
+clears the exact executable,623-pin manifest and nonphysical seven-control
+selector. **Launch remains HOLD:** correctness identifies two accepted body
+blockers before execution. Exposure/topology/controller locator names do not
+name actual invoked typed accessors, and the GSI join value remains a literal;
+those extractions must genuinely consume named accessor output. The custom
+surface/thermal beginning-owner encodings differ from the existing canonical
+owner projection; real canonical bytes and independent controls are required.
+The duplicated provider/normal beginning constructors also need bounded shared
+initialization. No provider test was executed, and QA custody clearance does
+not override these correctness findings. Same-reviewer fix verification remains
+required before a revised frozen executable may run.
+
+Same [correctness body01](artifacts/provider-parent-body-correctness-01.md)
+finishes HOLD with two High findings plus the Medium shared-initialization
+correction; all accepted. Reviewer clarifies the existing V1 thermal bytes
+are presently equivalent, but must use the established owner route. Both
+reviewers are stopped and sole `/root/provider_finish` now owns the bounded
+source/accessor/canonical-encoder/initialization correction plus independent
+exact-owner-byte controls. Existing canonical helpers may be factored privately
+with byte-preserving native behavior; no physics/fixture/authority changes.
+Source01 and its successful build remain preserved as that unreleased cut.
+
+Ran: correction source02 is frozen759 entries
+`01c97d8d06a422163c87052342521b295c7e0c0a7384a73eccff631173696519`,
+preserved by [body source02/patch](artifacts/provider-parent-body-review-02-source.json).
+Compiler02's unresolved private-module path is preserved; the existing internal
+re-export fixes it, intermediate03 passes, and [final compile04](artifacts/provider-parent-body-compile-04.stderr)
+passes with tests included. Named source accessors now execute, GSI is selected
+from authenticated output, shared canonical surface/thermal encoding replaces
+the divergent path, both caller entries share one initializer, and controls
+independently construct all seven exact envelopes for both cycles. Full payload
+identity is also cached at initialization. Actual adapter dependency manifest
+now includes10 unique files. Same correctness verifies all three findings; same
+QA verifies affected canonical routing and revised619-pin build manifest before
+rebuilding. No provider controls or physics have run.
+
+Internal reassessment **CONTINUE**,21:26UTC after two unreleased body cuts:
+source01's production extraction/owner defects are corrected in source02, but
+same correctness catches a mechanical oracle defect before execution. The new
+independent owner reconstruction parses the continuous fixture's numeric M/H
+as hexadecimal strings; it must read the actual numeric binary64 source values.
+Same QA clears source02's build custody, but root does not launch that build
+while this known control failure remains. This is a bounded test correction,
+not a physical failure, authority ambiguity, or grounds for owner handoff.
+The existing writer and reviewers remain available, more than one hour remains
+before the fixed cutoff, and scope, acceptance, deadline and reserve are unchanged.
+No provider or physical test has executed.
+
+Same [correctness body02](artifacts/provider-parent-body-correctness-02.md)
+accepts all three production corrections, cached payload identity and actual
+10-file dependency custody. Its sole remaining HOLD is the independent
+owner-oracle numeric-source decoding. [QA body02](artifacts/provider-parent-body-qa-02.md)
+clears build custody only. Both reviewers are stopped; the same writer is
+correcting that control without changing production, fixtures or thresholds,
+then freezing a newly compiled cut for narrow same-reviewer verification.
+
+Ran: source03 is frozen759 entries
+`67b684300cb32e8a317559d6282bd2e6bd3f91139df667e12c96611b1936c971`;
+root snapshot comparison confirms only the control file differs from source02.
+The oracle now reads numeric source M/H with `as_f64`; [compile05](artifacts/provider-parent-body-compile-05.stderr)
+passes. [Source03/patch](artifacts/provider-parent-body-review-03-source.json)
+preserves the cut; same correctness verifies the sole remaining fix and QA
+rebinds the unchanged build command. No runtime control or physical result.
+
+Static: same [correctness body03](artifacts/provider-parent-body-correctness-03.md)
+verifies the sole numeric-source oracle fix and **releases bounded nonphysical
+provider controls**; body02 production hashes are unchanged. Same
+[QA body03](artifacts/provider-parent-body-qa-03.md) clears the exact revised
+build/list manifest. Root launches recorded binary build03,180-second bound;
+actual executable/run-manifest QA follows its result. This is provider/admission
+release only, not parent completion or physical acceptance.
+
+Ran: [provider controls03](artifacts/provider-parent-controls-run-03.json)
+executes the independently cleared eight-test selector: **7 PASS,1 FAIL**,74.0289s
+recorded command/59.309s test phase. Source/base/binary/pins/links remain unchanged.
+Both-cycle full projection/receipt oracles and actual canonical seven-owner,
+cycle/sequence/refusal controls pass. [Actual observed identities](artifacts/provider-parent-observed-identities-03.json)
+retain both payload/run/calendar/first-parent/GSI hashes from that passing oracle;
+[executable custody](artifacts/provider-parent-binary-preservation-03.json) retains
+the source-specific binary locally. Overall provider controls remain **HOLD**.
+
+First executed failure is in the contract-mutation control: setting every first
+segment override to zero leaves the already-zero first rain rate unchanged,
+then incorrectly expects that valid payload to be refused. The admitted-payload
+digest equals the passing baseline. Root assigns a guaranteed changed-bit
+mutation, explicit no-op detection and compact case diagnostics; no fixture or
+production behavior change is justified by this test defect. Full stderr retains
+the original large debug payload. No physical test has executed.
+
+Static: same [original60 correctness01](artifacts/provider-parent-original60-correctness-01.md)
+independently confirms the no-op mutation discriminator. It separately releases
+the exact authorized original60 constitutive/closure selector: the test matches
+the initial reconstruction byte-for-byte and does not invoke the private provider,
+native receiver, support staging or parent commit; solver and original fixture
+bytes are unchanged. QA now assesses the [623-pin original60 physical manifest](artifacts/provider-parent-original60-run-support-01.json),
+180-second cap. The unrelated provider control remains HOLD. Source stays frozen
+until this separately scoped launch decision/run; no provider or parent requirement
+is waived, and no changed-source retry is being disguised as original60.
+
+Ran: independently released [original60 physical01](artifacts/provider-parent-original60-01.json)
+**PASS**, one test/0.013s test phase,14.80511688s recorded command. Exact source,
+observer, executable, pins and links remain unchanged. This re-establishes the
+unchanged original geometry/active cold-shade/independent reservoir-closure
+control on source03; it is not receiver, parent, cycle or release-cost evidence.
+Both reviewers are stopped and the sole writer now corrects the independently
+confirmed no-op provider mutation, with explicit changed-byte assertion and
+compact failure diagnostics. Existing failing run03 remains intact.
+
+Ran: source04 freezes759 entries
+`a717cc043b64603c19238642f5db0c1aefc09577ca2d0907dcede15eeaedfdd2`;
+root verifies the sole source03 delta is the control file. It changes each
+binary64 override with `bits ^ 1`, asserts changed canonical bytes for semantic
+mutations, and avoids dumping the full admitted payload on refusal failure.
+[Compile06](artifacts/provider-parent-body-compile-06.stderr) passes; the
+[source04/patch](artifacts/provider-parent-body-review-04-source.json) preserves
+this supported correction. Same reviewers verify the fix and rebind the binary
+build/run; failed run03 and original60 PASS remain source03 evidence.
+
+Static: same [correctness body04](artifacts/provider-parent-body-correctness-04.md)
+releases the guaranteed changed-bit mutation and compact refusal correction.
+[QA build04](artifacts/provider-parent-body-qa-04.md) and
+[actual executable/run QA04](artifacts/provider-parent-controls-run-qa-04.md)
+clear the exact source04 command. Ran: [build04](artifacts/provider-parent-body-build-04.json)
+PASS,38.6499s, actual binary SHA-256
+`086205641a824e71c3acdf798ee881cb4dec5e3dd4faa82a42018fccc1698fbe`.
+All eight provider controls are now executing under the cleared180-second
+nonphysical bound, with no source edits. The implementer is read-only tracing
+parent joins; distinct support identity and parent-only persistent counter
+semantics remain required, not per-support M1/stratum revision increments.
+
+Ran: [provider controls04](artifacts/provider-parent-controls-run-04.json)
+**PASS8/8**,63.040960s command/61.425s test phase; source, observer, executable,
+pins and links all unchanged. Both-cycle [observed identities04](artifacts/provider-parent-observed-identities-04.json)
+match the passing source03 projection identities. Guaranteed mutation/refusal
+coverage now passes. This is the private provider/admission milestone only;
+complete-parent, late owning rejection, cycles, restart, cost and overall M1
+acceptance remain HOLD. [Source04 binary](artifacts/provider-parent-binary-preservation-04.json)
+is preserved locally before subsequent source edits.
+
+Ran: [fresh source04 recovery](artifacts/provider-parent-recovery-04.json)
+applies the full retained patch to a fresh copy of immutable observer cut02,
+then compares all759 entries exactly, aggregate
+`a717cc043b64603c19238642f5db0c1aefc09577ca2d0907dcede15eeaedfdd2`.
+Reconstruction lives at
+`/home/roger/openwepp-experiments/cold-canopy-m1-provider04-reconstruction-20260922`;
+external runtime support remains separately sealed by build/run manifests.
+No patch was reapplied to the live or already-patched reconstruction.
+
+Next implementation intent: the same sole writer authors real provider-to-solve
+first/adjacent/all30-support parent controls, accepted seven-owner/slab/resource/
+material chronology, parent-only counter and consuming atomic-install controls,
+and actual owning late rejection before the corresponding parent body. A typed
+five-override-to-input bridge must freshly solve each actual prescribed record,
+carry accepted endings forward, and preserve the60-second rain breakpoint.
+All physics, fixture values and numerical methods remain frozen. Independent
+review precedes body release and concrete executable QA precedes physical runs.
+
+Internal reassessment **CONTINUE**,21:53UTC (next60 charged-minute boundary):
+provider implementation/admission now has8/8 passing controls, independent
+correctness and QA release, exact executable custody and fresh recovery. The
+original60 constitutive control also passes. Parent control draft01 is preserved
+as760 entries `723cd1a81e42cbd8f297b99dba63f6263187d2ac1593b8f6ad1d4ed02947a21f`;
+[QA HOLD](artifacts/provider-parent-parent-controls-qa-01.md) and root inspection
+identify concrete test-oracle gaps: delegated balance, opaque receipt/consumption
+booleans and incomplete exact30-record input comparison. Correctness review is
+active; same writer will correct the consolidated findings before any parent body.
+This is supported in-scope progress, not a repeated unexplained physical attempt.
+Fixed23:53 deadline,23:23 implementation cutoff,1800-second reserve and all unmet
+acceptance remain unchanged. Two-cycle/restart/cost work stays downstream of the
+real owning-parent boundary, not waived by provider completion.
+
+Static: same [parent-controls correctness01](artifacts/provider-parent-parent-controls-correctness-01.md)
+concurs with QA HOLD and adds concrete complete-owner installation, all stratum
+counter, actual positive-receiver and owning-seam rejection requirements. The
+same writer now corrects tests only. Reviewer-requested positive evidence must
+come from actual frozen forcing; if parent0 has no positive transfer, retain its
+lawful zero-transfer result and keep genuine positive progression distinct from
+separately prescribed receiver controls. No positive event is assumed or forced.
+[Provider evidence QA04](artifacts/provider-parent-provider-evidence-qa-04.md)
+independently confirms the narrow8/8 provider PASS, observed identities, binary
+preservation and exact recovery. Full workspace may run physics and retains its
+explicit previously declared900-second bound; it is never classified nonphysical
+to bypass the180-second physical diagnostic cap. Final gate execution is pending.
+
+Static: parent-controls02 is preserved as760 entries
+`e89c3053500428381c70c825a45de024c2899d71cf276a0463f25349baf49eed`.
+[QA02](artifacts/provider-parent-parent-controls-qa-02.md) verifies exact all30
+provider-record comparisons and test-side reservoir M/H arithmetic, but retains
+HOLD: empty resource/material lists pass, post-commit/capability facts remain
+producer-reported, and the late test permits no-positive-event as a passing
+late-rejection outcome. Root concurs; correctness same-reviewer check is active.
+No parent body or parent physical run has occurred.
+
+Internal reassessment **CONTINUE with narrower authoring instructions**: replace
+monolithic parent report assertions with a test-owned loop over the actual
+caller: existing admission, one private typed per-record advancement, direct
+caller/clock/staged-owner inspection, then actual consuming parent completion.
+Use existing typed coupled-time/resource/material receipts and concrete amount
+folds rather than a new generic receipt/report framework. Keep a no-positive
+workload discriminator separate from the required positive late rejection; it
+cannot satisfy that test. These are controls/implementation corrections within
+the adopted envelope, with unchanged acceptance and allowance.
+
+Same [correctness parent-controls02](artifacts/provider-parent-parent-controls-correctness-02.md)
+releases the exact record/GSI/forcing bridge and independent reservoir arithmetic
+subscopes, while full parent controls remain HOLD. Writer receives the four
+remaining concrete fixes: actual typed resource/material amount folds, direct
+caller-owned support/commit inspection, real positive receipt/capability evidence,
+and pre-injection owning snapshots with only typed late rejection accepted.
+No-positive-event cannot pass the late requirement. No parent implementation body
+has been authored or executed under this test cut.
+
+Ran: a bounded custody check found ten selected external test files differ from
+pinned main; the live tests are the retained restoration support, not main tests.
+[External test recovery01](artifacts/provider-parent-external-test-recovery-01.json)
+reconstructs all231 unique selected support files exactly from main commit
+`c6dc28f55fc551d6f414d270c697ae1e60cc57f1` plus the
+[retained external-test patch](artifacts/provider-parent-external-tests-from-c6dc28f.patch),
+SHA-256 `77b718d4a13f6b8a656bbf9da7e462d67ef00a32b7271f5a0ce907b662883418`.
+Local reconstruction is `/home/roger/openwepp-experiments/cold-canopy-m1-external-test-support-20260922`.
+This closes an external-support recovery gap; it changes no live test, fixture,
+required-case binding, runtime source or prior result interpretation.
+
+Static: test-only direct-loop cut03 is preserved as760 entries
+`06763a26104e00e002361e03b94410b53021c35ef2815a1bf9cf31240063d8e8`.
+Root withholds independent release because it still references nonexistent
+canonical transition/material fields, delegates material-delta matching, and
+attempts late rejection on an already accepted positive support. The same writer
+is now explicitly inspecting actual typed source APIs before correcting tests.
+Only the new control module and cfg(test) wiring differ from source04, including
+a verified scoped format pass. No parent body or physical execution.
+
+Ran: [observer-base recovery02](artifacts/provider-parent-observer-base-recovery-02.json)
+reconstructs all747 immutable observer entries from selected paths at pinned
+main `c6dc28f55fc551d6f414d270c697ae1e60cc57f1` and the
+[base recovery patch](artifacts/provider-parent-observer-base-from-c6dc28f.patch).
+The exact aggregate is `85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963`.
+This supplies an explicit remote-publishable base path for the existing
+observer-relative runtime patches; it changes no live source. Initial
+[recovery attempt01](artifacts/provider-parent-observer-base-recovery-attempt01.json)
+failed exact byte comparison for one JSON fixture without final LF: raw difflib
+output concatenated the next header. Its failed patch/reconstruction are retained;
+explicit no-final-newline markers corrected the new patch, and fresh recovery02
+passes exact comparison. Neither a zero patch exit nor a hash alone was accepted
+as recovery proof. Remote publication is still pending.
+
+Static: actual API inspection confirms `AcceptedSlabReceiptV1::id()` returns
+`ReceiptId`, while `slab_id()` returns the distinct `AcceptedSlabId`; root withdraws
+its mistaken earlier claim that `id()` is absent. The actual transition/material
+field and late-after-acceptance findings remain. The existing native caller seam
+already constructs a real candidate before `LateReceiverFailure` and before
+staging, so controls can inject on a fresh chronological attempt after an accepted
+prefix rather than replay an accepted outcome. Ordered receipt folds retain the
+canonical explicit `+0.0` seed. Source edits remain tests-only.
+
+Static: [required-full bound QA01](artifacts/provider-parent-required-full-bound-qa-01.md)
+clears authoring a narrowly allowlisted recorder correction for the already
+required900-second physical Critical workspace command. Intent: explicit
+`--required-full-validation`, exact existing argv and900-second bound only;
+physical classification required, no general timeout extension, unchanged
+full-bound-plus1800 reserve, source/support custody and no retries. Existing full
+nextest profile may allow720-second slow tests; this is the explicit longer
+validation exception, not a claim that the profile enforces180 seconds. Ordinary
+M1 physical diagnostics remain capped180. Root retains the prior recorder bytes,
+authors executable boundary controls, then obtains same-QA fix verification
+before selecting a concrete full gate. No full gate has run.
+
+Ran:14 pure recorder boundary controls passed, but same
+[full-bound QA02](artifacts/provider-parent-required-full-bound-qa-02.md) correctly
+HOLDs the first implementation: the second pre-launch guard still unconditionally
+rejected900-second physics. Failed recorder bytes are preserved separately.
+Root now calls the same guarded validator at both pre-launch positions and adds
+an actual-main traversal through custody checks with `Popen` intercepted before
+any process launch. [Controls02](artifacts/provider-parent-full-bound-controls-02.json)
+passes15 cases, including both guards and zero launched processes; same-QA fix
+verification is pending. The earlier14 pure controls are not represented as a
+successful main-path check or a full regression.
+
+Static: corrected parent-controls04 is frozen760 entries
+`b5184360f6e397a2b25bc1c0d05788bffdaedd99f8d04b607f71055413559ef3`.
+Same [parent QA04](artifacts/provider-parent-parent-controls-qa-04.md) releases
+bounded implementation of the actual typed/direct-caller controls. Correctness
+same-reviewer verification remains pending, so the sole writer stays stopped.
+No parent body, first/adjacent support, complete parent or late owning rejection
+has run.
+
+Same [correctness parent-controls04](artifacts/provider-parent-parent-controls-correctness-04.md)
+accepts the typed resource/material, direct caller and independent balance
+corrections, with a narrow remaining HOLD: second-complete and capability replay
+must assert exact typed refusals, and the rejected positive candidate must show
+actual nonempty contribution mass/enthalpy/terminal identity and late stage/reason.
+Writer is correcting only those assertions and explicit accepted-prefix evidence.
+Raw accessor provenance remains for the later body review; test API names are
+not evidence of real producer wiring.
+
+Same [required-full bound QA03](artifacts/provider-parent-required-full-bound-qa-03.md)
+**PASS** verifies both real pre-launch guard positions and all15 non-launching
+controls. Recorder SHA-256 is now
+`6781d00a9e42d45418993c522b5a7796ce55e6261834964b7452149140faf042`.
+Every future selected manifest must bind these actual bytes. The prior recorder
+is preserved exactly as `provider-parent-recorder-before-full-exception.py`;
+old runs retain their old recorder/source-specific meaning. No900-second physical
+validation has been selected or executed yet.
+
+Static: controls05 is frozen760 entries
+`f7a99af6e8980694a183eb181b8ec13b3cc1e31a8f89d0343d8cc3db54bb88b3`.
+[QA05](artifacts/provider-parent-parent-controls-qa-05.md) passes its narrowed
+changes. Correctness initially issued a provisional PASS (original reported
+artifact SHA `1917809635ac9094a4c3558de07a02d2ba5f55da7be672a5e288cf73f7c2133b`),
+then **withdrew it before any body edit or physical launch** after root identified
+a hard finalization contradiction. Updated
+[correctness05 HOLD](artifacts/provider-parent-parent-controls-correctness-05.md)
+confirms that canonical parent finalization changes vegetation lineage/hashes;
+installed bytes cannot equal last-slab bytes and also increment those counters.
+The ambiguous parent-only counter getter could additionally hide increments in
+staged vegetation. Writer now corrects actual staged counter inspection and
+compares installed bytes to the distinct sealed finalized owner set, preserving
+physical values and inactive owners. Existing V11 ownership-transfer finalization
+is the mechanical reference; no new domain or physical policy is selected.
+
+Internal reassessment **CONTINUE**,22:27UTC: repeated test-authoring corrections
+have delayed parent body work, but exact remaining defects are now localized to
+finalization identity and staged-counter observability. Provider execution and
+recovery remain verified; no unsupported scientific retry occurred. Continue
+this narrow correction and then bounded body authoring under the fixed deadline;
+missing parent/cycle/restart/cost/quality requirements remain HOLD. No allowance
+or reserve is renewed, and no milestone authorizes a completion claim.
+
+Static: controls06 resolves the staged-versus-finalized owner distinction and
+checks actual staged M1/stratum lineage. Same [QA06](artifacts/provider-parent-parent-controls-qa-06.md)
+passes; [correctness06](artifacts/provider-parent-parent-controls-correctness-06.md)
+retains only the missing BGC physical-preservation assertion. Controls07 adds
+exact prior/final BGC JSON equality after removing only `last_transaction_id`,
+with the final transaction independently equal to finalized M1 revision.
+Same [correctness07](artifacts/provider-parent-parent-controls-correctness-07.md)
+**PASS** releases bounded parent body authoring. Frozen controls07 is760 entries
+`9ad8430be0c4a0763a0d2945bcbed3cac4747d8969bf4391516e7e15f769f076`;
+only the parent-control module and its test wiring differ from provider04.
+These are unexecuted contract-derived tests, not parent progression evidence.
+
+Implementation intent,22:39UTC: sole `/root/provider_finish` now implements actual
+per-record fresh solves, typed segment/support identities with parent-only lineage,
+real resource/material/complete-owner/clock joins, canonical finalization and
+consuming installation, plus owning late rejection. No numerical or fixture edits,
+new coupled-time tag, fabricated ledger or main Rust adoption. Test-inclusive
+nonphysical compilation precedes same-reviewer body and concrete executable QA;
+root retains all physical launches. The final Critical900-second command must
+start by23:08UTC to fit the unchanged23:23 implementation cutoff and1800-second
+review reserve. Missing current requirements remain HOLD rather than deferred.
+
 ## Diagnostic metadata and complete-parent resumption — adopted 2026-09-22
 
 Owner execution of `/tmp/openwepp_cold_canopy_m1_parent_metadata_authorization.md`

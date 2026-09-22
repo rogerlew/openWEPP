@@ -1,0 +1,76 @@
+{
+  "evidence": "Ran: boundary validation only; no command or physical process launched",
+  "passed": 14,
+  "cases": [
+    {
+      "case": "ordinary physical at cap",
+      "admitted": true,
+      "expected": true
+    },
+    {
+      "case": "ordinary physical over cap",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "case": "unflagged full cannot exceed cap",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "case": "exact required full exception",
+      "admitted": true,
+      "expected": true
+    },
+    {
+      "case": "full reserve cannot fit",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "case": "full exception wrong bound",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "case": "full exception shorter bound",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "case": "full cannot be called nonphysical",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "case": "unflagged full still cannot be nonphysical",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "case": "flag cannot admit another physical command",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "case": "extra selector changes required coverage",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "case": "altered environment is not allowlisted",
+      "admitted": false,
+      "expected": false
+    },
+    {
+      "case": "ordinary nonphysical existing bound",
+      "admitted": true,
+      "expected": true
+    },
+    {
+      "case": "ordinary bound still protects reserve",
+      "admitted": false,
+      "expected": false
+    }
+  ]
+}

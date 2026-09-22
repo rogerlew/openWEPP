@@ -1,0 +1,8 @@
+{
+  "source_tree_sha256": "67b684300cb32e8a317559d6282bd2e6bd3f91139df667e12c96611b1936c971",
+  "built_binary": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_orchestrator-0ad665558c5e4d7c",
+  "preserved_binary": "/home/roger/openwepp-experiments/cold-canopy-m1-provider-binaries-20260922/provider-body-03-a9d8f98ee77f",
+  "binary_sha256": "a9d8f98ee77fd750d54a1251889e585f640f79d719a810454f502c9269154fb6",
+  "build_receipt": "provider-parent-body-build-03.json",
+  "scope": "Local executable custody for frozen provider/admission controls; no execution or acceptance claim."
+}

@@ -1,0 +1,8 @@
+{
+  "evidence": "Ran: patch exited zero but exact reconstruction comparison failed for one no-final-LF JSON fixture; no live source affected.",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/provider-parent-observer-base-from-c6dc28f-attempt01.patch",
+  "failed_reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-observer-base-from-main-20260922",
+  "mismatch": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/fixtures/b01_wb14_owner_seed.json",
+  "cause": "difflib output omitted explicit no-final-newline marker; next file header joined fixture bytes.",
+  "disposition": "Preserved failed artifact; correct patch serialization and reconstruct fresh."
+}

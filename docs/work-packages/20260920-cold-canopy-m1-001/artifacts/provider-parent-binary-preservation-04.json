@@ -1,0 +1,7 @@
+{
+  "source_tree_sha256": "a717cc043b64603c19238642f5db0c1aefc09577ca2d0907dcede15eeaedfdd2",
+  "source_binary": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_orchestrator-0ad665558c5e4d7c",
+  "preserved_binary": "/home/roger/openwepp-experiments/cold-canopy-m1-provider-binaries-20260922/provider-body-04-086205641a82",
+  "sha256": "086205641a824e71c3acdf798ee881cb4dec5e3dd4faa82a42018fccc1698fbe",
+  "scope": "Source04 provider controls PASS only. No complete-parent evidence."
+}

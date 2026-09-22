@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/provider-parent-full-bound-controls.py", line 34, in <module>
+    recorder.validate_declared_bound(argv, timeout, physical, exception, available)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'recorder' has no attribute 'validate_declared_bound'

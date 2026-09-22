@@ -38,28 +38,6 @@ MATERIAL_ENVIRONMENT = (
     'LDFLAGS', 'PKG_CONFIG_PATH', 'SOURCE_DATE_EPOCH',
 )
 
-# Existing package Critical regression, explicitly retained at 900 seconds by
-# the adopted provider/parent authorization. This is not a generic cap override.
-REQUIRED_FULL_VALIDATION_ARGV = [
-    'nix', 'develop', '/workdir/openWEPP', '--command', 'env',
-    'CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-target', 'CARGO_BUILD_JOBS=2',
-    'cargo', 'nextest', 'run', '--workspace', '--profile', 'full', '--no-fail-fast',
-]
-
-
-def validate_declared_bound(command, timeout, physical, required_full_validation,
-                            remaining_for_command):
-    if command == REQUIRED_FULL_VALIDATION_ARGV and not physical:
-        raise SystemExit('Required full validation includes physical execution')
-    if required_full_validation and (
-        command != REQUIRED_FULL_VALIDATION_ARGV or timeout != 900 or not physical
-    ):
-        raise SystemExit('Required full validation needs exact established argv, physical classification and 900-second bound')
-    if physical and timeout > 180 and not required_full_validation:
-        raise SystemExit('Physical command declared bound exceeds 180 seconds')
-    if timeout > remaining_for_command:
-        raise SystemExit('Full declared command bound cannot fit before review/preservation reserve')
-
 
 def sha(path):
     with Path(path).open('rb') as stream:
@@ -82,7 +60,6 @@ def main():
     parser.add_argument('--timeout', type=int, required=True)
     parser.add_argument('--binary', type=Path)
     parser.add_argument('--physical', action='store_true')
-    parser.add_argument('--required-full-validation', action='store_true')
     parser.add_argument('--source-root', type=Path, required=True)
     parser.add_argument('--support-record', type=Path, required=True)
     parser.add_argument('command', nargs=argparse.REMAINDER)
@@ -96,8 +73,10 @@ def main():
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*', args.label):
         parser.error('label must be a basename containing only letters, digits, underscores and hyphens')
     remaining_for_command = (DEADLINE - dt.datetime.now(dt.timezone.utc)).total_seconds() - 1800
-    validate_declared_bound(command, args.timeout, args.physical,
-                            args.required_full_validation, remaining_for_command)
+    if args.physical and args.timeout > 180:
+        raise SystemExit('Physical command declared bound exceeds 180 seconds')
+    if args.timeout > remaining_for_command:
+        raise SystemExit('Full declared command bound cannot fit before review/preservation reserve')
     LOGS.mkdir(exist_ok=True)
     receipt_path = LOGS / (args.label + '.json')
     output_paths = [LOGS / (args.label + suffix) for suffix in
@@ -108,7 +87,6 @@ def main():
     assert command == support_record['intended_argv'], 'selected command mismatch'
     assert args.timeout == support_record['declared_timeout_seconds'], 'selected timeout mismatch'
     assert args.physical == support_record['physical'], 'selected physical policy mismatch'
-    assert args.required_full_validation == support_record.get('required_full_validation', False), 'selected required-full validation policy mismatch'
     assert Path(support_record['source_root']).resolve() == source, 'source root mismatch'
     assert support_record['authority_root'] == str(environment_root), 'canonical authority root mismatch'
     assert support_record['input_root'] == str(input_root), 'canonical input root mismatch'
@@ -187,8 +165,10 @@ def main():
         assert sha(input_path) == expected_sha256, str(input_path)
         pinned[str(input_path)] = expected_sha256
     remaining_for_command = (DEADLINE - dt.datetime.now(dt.timezone.utc)).total_seconds() - 1800
-    validate_declared_bound(command, args.timeout, args.physical,
-                            args.required_full_validation, remaining_for_command)
+    if args.physical and args.timeout > 180:
+        raise SystemExit('Physical command declared bound exceeds 180 seconds')
+    if args.timeout > remaining_for_command:
+        raise SystemExit('Full declared command bound cannot fit before review/preservation reserve')
     timeout = args.timeout
     expected_pins = {item['path']: item['sha256'] for item in support_record['files']}
     for path, digest in pinned.items():
@@ -216,7 +196,6 @@ def main():
                    deadline_utc=DEADLINE.isoformat(), reserve_seconds=1800,
                    start_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
                    timeout_seconds=timeout, address_space_bytes=16 * 1024**3, output_file_limit_bytes=1024**3,
-                   physical=args.physical, required_full_validation=args.required_full_validation,
                    automatic_retries=0, binary=str(args.binary) if args.binary else None,
                    binary_sha256=sha(args.binary) if args.binary else None,
                    environment_policy='Only manifest-bound MATERIAL_ENVIRONMENT values; explicit env assignments in argv',

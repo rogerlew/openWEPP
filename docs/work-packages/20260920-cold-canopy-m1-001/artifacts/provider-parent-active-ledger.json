@@ -1,0 +1,14 @@
+{
+  "observed_utc": "2026-09-22T22:40:21.845506+00:00",
+  "anchor_utc": "2026-09-22T19:53:00+00:00",
+  "prior_charged_seconds": "250793.051684",
+  "session_elapsed_seconds": "10041.845506",
+  "charged_cumulative_seconds": "260834.897190",
+  "fixed_ceiling_seconds": "265193.051684",
+  "remaining_seconds": "4358.154494",
+  "hard_deadline_utc": "2026-09-22T23:53:00Z",
+  "implementation_cutoff_utc": "2026-09-22T23:23:00Z",
+  "reserve_seconds": 1800,
+  "clock_policy": "Concurrent elapsed charged once, including reading, waits, review and preservation. No refunds.",
+  "state": "Provider04 PASS8/8; original60 PASS. Controls07 independent correctness PASS and QA06 reused; real complete-parent body authoring released22:39. No parent physical execution yet. Recorder exact full900 exception independently PASS."
+}

@@ -1,0 +1,33 @@
+{
+  "source_tree_sha256": "67b684300cb32e8a317559d6282bd2e6bd3f91139df667e12c96611b1936c971",
+  "binary_sha256": "a9d8f98ee77fd750d54a1251889e585f640f79d719a810454f502c9269154fb6",
+  "run_receipt": "provider-parent-controls-run-03.json",
+  "selected_control_result": "7 passed, 1 failed; no-op zero-rain mutation requires correction; overall provider controls HOLD",
+  "identity_evidence": "Actual output of passing both-cycle full-projection oracle; no physical execution or complete-parent acceptance.",
+  "cycles": [
+    {
+      "adapter_manifest_sha256": "2a46507c5c232e08fd88365469e0d3bb84e21aeabad1ce76b8fc1ef23ad8fab3",
+      "calendar_receipt": "459f39a8f480f63b33573ff9484a547ba853d72ac8dd193c5973c646fc9b4dd7",
+      "cycle_ordinal": 0,
+      "first_gsi_support_receipt": "1d536050e6aa0de3aee609a0a9e34423e22512f2fb6a0b77c85ce51af7de4cab",
+      "first_parent_forcing_receipt": "86ffc5a9d634a815a7437c3f99771c4167167dead918094f20b0d336b45bef7e",
+      "implementation_sha256": "6671ab7418a0719c2d395a5dfbed02e6ef1b52e4545a7ccaae11d4b9655d582d",
+      "parent_count": 144,
+      "payload_sha256": "63038bf854660c77576e4e37f9055299b52f3397bfb3fb25f1f2bd115ec96e7a",
+      "record_count": 4320,
+      "run_identity": "7963c642949184de9d0ac771b26943971d57b02e4f01ca9d437d46ccab273217"
+    },
+    {
+      "adapter_manifest_sha256": "2a46507c5c232e08fd88365469e0d3bb84e21aeabad1ce76b8fc1ef23ad8fab3",
+      "calendar_receipt": "2dc0757b7616e9fc7d73a4227d4dc158a136f9fe6321daa673294cde300f4115",
+      "cycle_ordinal": 1,
+      "first_gsi_support_receipt": "ac93742444ffae37f664ba2e977a8a5f3fbed4e8766832f5ed6930a94a8aff1e",
+      "first_parent_forcing_receipt": "d61dd2a129e9e15ce54075cdc3ef38ad9914e8d9eba7f9100cb60bcd9469e5fb",
+      "implementation_sha256": "6671ab7418a0719c2d395a5dfbed02e6ef1b52e4545a7ccaae11d4b9655d582d",
+      "parent_count": 144,
+      "payload_sha256": "3c8220289c3ed0f7a8513390a9ce22e9ba8adf892ec8b6dc5f059acc3e395437",
+      "record_count": 4320,
+      "run_identity": "8b759df698517370a33af20f675312db6c3541abddc4581b4246e605e03f21e7"
+    }
+  ]
+}

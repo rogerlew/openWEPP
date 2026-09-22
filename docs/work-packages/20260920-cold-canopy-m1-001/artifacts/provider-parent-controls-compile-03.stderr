@@ -1,0 +1,129 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator)
+error: couldn't read `crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs`: No such file or directory (os error 2)
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:374:16
+    |
+374 |     sha256_hex(include_bytes!("m1_fixed_sequence_provider.rs"))
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0432]: unresolved import `super::m1_fixed_sequence_provider`
+  --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:23:12
+   |
+23 | use super::m1_fixed_sequence_provider::{
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:647:16
+    |
+647 |         super::m1_fixed_sequence_provider::actual_m1_caller_beginning_for_provider_controls()
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:649:25
+    |
+649 |     let before = super::m1_fixed_sequence_provider::RealM1CallerSnapshot::capture(&caller)
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:651:24
+    |
+651 |     let error = super::m1_fixed_sequence_provider::admit_payload_into_actual_caller(
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:659:16
+    |
+659 |         super::m1_fixed_sequence_provider::RealM1CallerSnapshot::capture(&caller)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:666:23
+    |
+666 |     admitted: &super::m1_fixed_sequence_provider::AdmittedFixedSequenceProvider,
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:677:16
+    |
+677 |         super::m1_fixed_sequence_provider::actual_m1_caller_beginning_for_provider_controls()
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:679:25
+    |
+679 |     let before = super::m1_fixed_sequence_provider::RealM1CallerSnapshot::capture(&caller)
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:686:16
+    |
+686 |         super::m1_fixed_sequence_provider::RealM1CallerSnapshot::capture(&caller)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:1208:16
+     |
+1208 |         super::m1_fixed_sequence_provider::actual_m1_caller_beginning_for_provider_controls()
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:1218:25
+     |
+1218 |     let before = super::m1_fixed_sequence_provider::RealM1CallerSnapshot::capture(&caller)
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+error[E0433]: cannot find `m1_fixed_sequence_provider` in `super`
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:1229:16
+     |
+1229 |         super::m1_fixed_sequence_provider::RealM1CallerSnapshot::capture(&caller)
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `m1_fixed_sequence_provider` in `super`
+
+warning: unused import: `DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:109:13
+    |
+109 | use crate::{DirectRunConstructorInputs, vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:131:16
+    |
+131 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0277]: can't compare `Value` with `Vec<Value>`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:766:9
+    |
+766 | /         assert_eq!(
+767 | |             payload_value["cycle"]["initial_phase_records"],
+768 | |             expected_initial_phase_records(cycle)
+769 | |         );
+    | |_________^ no implementation for `Value == Vec<Value>`
+    |
+    = help: the trait `PartialEq<Vec<Value>>` is not implemented for `Value`
+    = help: the following other types implement trait `PartialEq<Rhs>`:
+              `&Value` implements `PartialEq<bool>`
+              `&Value` implements `PartialEq<f32>`
+              `&Value` implements `PartialEq<f64>`
+              `&Value` implements `PartialEq<i16>`
+              `&Value` implements `PartialEq<i32>`
+              `&Value` implements `PartialEq<i64>`
+              `&Value` implements `PartialEq<i8>`
+              `&Value` implements `PartialEq<isize>`
+            and 35 others
+
+warning: unreachable pattern
+  --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:76:49
+   |
+76 |             '/'..='~' | ' '..='!' | '#'..='.' | '0'..='[' | ']'..='\u{007f}' => {
+   |             ---------                           ^^^^^^^^^ no value can reach this
+   |             |
+   |             matches all the relevant values
+   |
+   = note: `#[warn(unreachable_patterns)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0277, E0432, E0433.
+For more information about an error, try `rustc --explain E0277`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 3 warnings
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 14 previous errors; 3 warnings emitted
