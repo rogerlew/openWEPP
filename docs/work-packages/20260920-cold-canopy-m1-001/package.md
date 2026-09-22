@@ -1,5 +1,51 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Independence resumption — adopted 2026-09-22 09:12:55 UTC
+
+**RECOVERY STOPPED / IMPLEMENTATION NOT REOPENED / M1 INCOMPLETE / HOLD.**
+Owner adopted `/tmp/openwepp_cold_canopy_m1_independence_resumption_authorization.md`.
+The condition for source work—both distinct independent review scopes actually
+receiving and returning work—could not be established. No complete caller-owned
+progression, parent commit or positive late-rejection result was added. All
+prior incomplete owner, conservation, fixed-cycle, restart, cost and Critical
+validation requirements remain unmet; prior source-specific evidence is retained.
+
+Ran: the existing correctness and QA reviewer resumptions each returned
+`agent thread limit reached`. Exactly one attributable replacement attempt for
+each unavailable scope returned the same error. No reviewer received or returned
+this work, no author/adviser was substituted, and no repeated saturation loop,
+runtime-limit change or nested CLI/API workaround was attempted. The adopted
+instruction explicitly requires preserving and returning when both scopes cannot
+be established after this bounded recovery. A repository session with working
+independent reviewer capacity, or actually supplied adequate distinct external
+reviews, remains necessary; another adoption alone does not demonstrate capacity.
+The earlier `/root/owner_correctness` and `/root/owner_qa` findings retain only
+their original inspected scope, with affected final verification still unavailable.
+
+Ran: [recovery evidence](artifacts/independence-resumption-recovery-01.json)
+verifies all756 detached source entries still match
+**00806bf2680470e92b13c64ee508b51e3d61f098bec782d59559e538ec50fc88**;
+immutable observer85b8314e…9963 and both durable terminal binary hashes also
+match. No reconstruction was needed. The actual local recorder diff remains
+byte-identical to its retained unreviewed recovery patch. It was not promoted,
+reverted or assigned the new deadline, and no physical command used it. **Zero
+Rust edits and zero physical runs** occurred in this resumption. Main Rust and
+all unrelated dirty/untracked work remain untouched.
+
+Budget: actual prior local publication02 was read once. Its241904.294809 observed
+charge does not exceed the adopted conservative **241904.295 s** carry; retain
+only **10429.427 s** of remaining allowance and ceiling **252333.722177 s**.
+No rounded fractional difference, prior gap or reserve was reclaimed. First
+resumed reading anchor **2026-09-22T09:12:55Z** gives the fixed new deadline
+**12:06:44.427Z**, cutoff **11:36:44.427Z**, and unchanged1800-second reserve.
+The old11:03 deadline was not reused. Charge concurrent elapsed time once, without
+wait deductions. At09:15:16.088796Z the charge is242045.383796s and remaining
+10288.338204s; record subsequent preservation/publication in local
+`artifacts/independence-resumption-publication-01.json`. This is an independence
+stop, not budget exhaustion. Only this package update and bounded recovery
+evidence are selected for the existing-main evidence publication.
+
+
 ## Caller-owned transaction continuation — adopted 2026-09-22
 
 **Current disposition: IMPLEMENTATION STOPPED / M1 INCOMPLETE / HOLD.**

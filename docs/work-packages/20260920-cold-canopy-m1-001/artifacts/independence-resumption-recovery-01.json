@@ -1,0 +1,59 @@
+{
+  "adopted_authorization": "/tmp/openwepp_cold_canopy_m1_independence_resumption_authorization.md",
+  "observed_utc": "2026-09-22T09:15:16.088796+00:00",
+  "anchor_utc": "2026-09-22T09:12:55+00:00",
+  "carry_seconds": "241904.295",
+  "authorized_remaining_seconds": "10429.427",
+  "ceiling_seconds": "252333.722177",
+  "fixed_deadline_utc": "2026-09-22T12:06:44.427000+00:00",
+  "launch_cutoff_utc": "2026-09-22T11:36:44.427000+00:00",
+  "reserve_seconds": 1800,
+  "elapsed_concurrency_once_seconds": "141.088796",
+  "charged_total_seconds": "242045.383796",
+  "remaining_seconds": "10288.338204",
+  "rounded_balance_policy": "Use reported10429.427 maximum and241904.295 minimum; local prior receipt did not increase carry. No fractional balance reclaimed.",
+  "source_tree_sha256": "00806bf2680470e92b13c64ee508b51e3d61f098bec782d59559e538ec50fc88",
+  "source_entries": 756,
+  "source_matches_final_manifest": true,
+  "observer_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "durable_binaries": [
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-final-binaries-20260922/openwepp_hillslope_orchestrator-0ad665558c5e4d7c",
+      "sha256": "7956780c4ec61704ecdfb11bbb9db023fa3ce50d954e38293802cc173bec9345",
+      "exact_match": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-final-binaries-20260922/openwepp_land_surface_energy-4b83c89d629ca132",
+      "sha256": "7a6789e474cfebe536991db50f759a5a8fab0c3ac51dbb4748c1a83a190c38a2",
+      "exact_match": true
+    }
+  ],
+  "live_recorder_delta_matches_retained_patch": true,
+  "recorder_deadline_changed": false,
+  "physical_runs": 0,
+  "rust_edits": 0,
+  "attempts": [
+    {
+      "scope": "correctness",
+      "action": "resume /root/owner_correctness",
+      "result": "agent thread limit reached"
+    },
+    {
+      "scope": "QA",
+      "action": "resume /root/owner_qa",
+      "result": "agent thread limit reached"
+    },
+    {
+      "scope": "correctness",
+      "action": "one replacement /root/m1_resumption_correctness",
+      "result": "agent thread limit reached"
+    },
+    {
+      "scope": "QA",
+      "action": "one replacement /root/m1_resumption_qa",
+      "result": "agent thread limit reached"
+    }
+  ],
+  "disposition": "STOPPED: neither independent scope established after bounded recovery; implementation not reopened; M1 INCOMPLETE/HOLD",
+  "preservation_publication_continues_charged": true
+}
