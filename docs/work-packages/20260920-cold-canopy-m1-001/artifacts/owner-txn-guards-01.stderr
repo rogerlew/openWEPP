@@ -1,0 +1,50 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator)
+error[E0106]: missing lifetime specifier
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:568:17
+    |
+565 |     receipts: &[crate::DirectSurfaceLiquidParcelReceipt],
+    |               ------------------------------------------
+566 |     handoff: &M1ReceiverAuthenticatedHandoff,
+    |              -------------------------------
+567 |     forest: &crate::DirectSurfaceLiquidConfigurationRecord,
+    |             ----------------------------------------------
+568 | ) -> Result<Vec<&crate::DirectSurfaceLiquidParcelReceipt>, M1ReceiverDiagnosticError> {
+    |                 ^ expected named lifetime parameter
+    |
+    = help: this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `receipts`, `handoff`, or `forest`
+help: consider introducing a named lifetime parameter
+    |
+564 ~ fn validate_terminal_receipts<'a>(
+565 ~     receipts: &'a [crate::DirectSurfaceLiquidParcelReceipt],
+566 ~     handoff: &'a M1ReceiverAuthenticatedHandoff,
+567 ~     forest: &'a crate::DirectSurfaceLiquidConfigurationRecord,
+568 ~ ) -> Result<Vec<&'a crate::DirectSurfaceLiquidParcelReceipt>, M1ReceiverDiagnosticError> {
+    |
+
+warning: unused import: `DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:109:13
+    |
+109 | use crate::{DirectRunConstructorInputs, vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:131:16
+    |
+131 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0616]: field `upper` of struct `M1ColumnLiquidRoutingInput` is private
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:657:30
+    |
+657 |         source_control.input.upper.plant_area_m2_m2_tile *= 0.5;
+    |                              ^^^^^ private field
+
+Some errors have detailed explanations: E0106, E0616.
+For more information about an error, try `rustc --explain E0106`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 2 warnings
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 2 previous errors; 2 warnings emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-hillslope-orchestrator --lib` exited with code 101

@@ -1,0 +1,9 @@
+{
+  "utc": "2026-09-22T07:28:26.510486+00:00",
+  "path": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/evidence_fixture.rs",
+  "original_sha256": "5d55e2d3d4a4caedfec4c9795f2b4bf23b7f941b26bc7775cb9a5e4475b81824",
+  "corrected_sha256": "b6ec627b9f20c19edd1aa2acdaabc4e436cf14256d657cf28ccb2fb5ff697e89",
+  "patch": "owner-txn-reference-fixture-api-01.patch",
+  "scope": "Two nonproduction retained-reference fixture accessors now explicitly assert their existing valid-owner precondition after canonical accessor became Result; no generated schema/expected hash/assertion changed; only isolated support edited",
+  "validation": "corrected workflow pending"
+}

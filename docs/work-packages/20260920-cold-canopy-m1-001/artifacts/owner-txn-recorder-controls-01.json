@@ -1,0 +1,62 @@
+{
+  "utc": "2026-09-22T07:27:02.045345+00:00",
+  "recorder_sha256": "51c0f75e6169aab853cae4a16506c47d31f132c505d28e89ff5e37e88369db13",
+  "results": [
+    {
+      "case": "declared_bound",
+      "argv": [
+        "/workdir/openWEPP/.venv/bin/python",
+        "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py",
+        "--timeout",
+        "99999999",
+        "owner-txn-recorder-bound-refusal-01",
+        "--",
+        "/usr/bin/touch",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support/recorder-must-not-launch"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Full declared command bound cannot fit before review/preservation reserve\n",
+      "marker_absent": true
+    },
+    {
+      "case": "physical_cap",
+      "argv": [
+        "/workdir/openWEPP/.venv/bin/python",
+        "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py",
+        "--timeout",
+        "181",
+        "--physical",
+        "owner-txn-recorder-physical-refusal-01",
+        "--",
+        "/usr/bin/touch",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support/recorder-must-not-launch"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Physical command declared bound exceeds 180 seconds\n",
+      "marker_absent": true
+    },
+    {
+      "case": "frozen_root",
+      "argv": [
+        "/workdir/openWEPP/.venv/bin/python",
+        "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py",
+        "--timeout",
+        "10",
+        "--source-root",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support",
+        "--support-record",
+        "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-recorder-root-control-input-01.json",
+        "owner-txn-recorder-root-control-01",
+        "--",
+        "/usr/bin/pwd"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"label\": \"owner-txn-recorder-root-control-01\", \"exit_code\": 0, \"elapsed_seconds\": 0.009789171162992716, \"source_unchanged\": true, \"observer_base_unchanged\": true}\n",
+      "stderr": "",
+      "marker_absent": true
+    }
+  ],
+  "scope": "Executed command-launch refusal and selected source/cwd control; no Rust compilation or scientific workflow, minimal control support manifest is not final qualification"
+}

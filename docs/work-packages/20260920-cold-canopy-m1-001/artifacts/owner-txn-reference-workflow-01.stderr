@@ -1,0 +1,57 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning: field `ending_snow_hint` is never read
+    --> /home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support/crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+error[E0308]: mismatched types
+   --> src/evidence_fixture.rs:163:58
+    |
+163 |         soil_thermal: SoilThermalStateRestartV1::project(shadow.restart_authority_soil_thermal())
+    |                       ---------------------------------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&SoilThermalSnapshot`, found `Result<&SoilThermalSnapshot, ...>`
+    |                       |
+    |                       arguments to this function are incorrect
+    |
+    = note: expected reference `&SoilThermalSnapshot`
+                    found enum `Result<&SoilThermalSnapshot, DirectV9RealConsumerError>`
+note: associated function defined here
+   --> src/scientific_owners.rs:737:12
+    |
+737 |     pub fn project(v: &SoilThermalSnapshot) -> Result<Self, ScientificOwnerRestartError> {
+    |            ^^^^^^^ -----------------------
+help: consider using `Result::expect` to unwrap the `Result<&SoilThermalSnapshot, DirectV9RealConsumerError>` value, panicking if the value is a `Result::Err`
+    |
+163 |         soil_thermal: SoilThermalStateRestartV1::project(shadow.restart_authority_soil_thermal().expect("REASON"))
+    |                                                                                                 +++++++++++++++++
+
+error[E0599]: the method `clone` exists for enum `Result<&SoilThermalSnapshot, DirectV9RealConsumerError>`, but its trait bounds were not satisfied
+    --> src/evidence_fixture.rs:404:68
+     |
+ 404 |     let mut soil_thermal = shadow.restart_authority_soil_thermal().clone();
+     |                                                                    ^^^^^
+     |
+    ::: /home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support/crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:2671:1
+     |
+2671 | pub enum DirectV9RealConsumerError {
+     | ---------------------------------- doesn't satisfy `DirectV9RealConsumerError: Clone`
+     |
+     = note: the following trait bounds were not satisfied:
+             `DirectV9RealConsumerError: Clone`
+             which is required by `Result<&SoilThermalSnapshot, DirectV9RealConsumerError>: Clone`
+note: the method `clone` exists on the type `&SoilThermalSnapshot`
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/clone.rs:236:4
+help: consider using `Result::expect` to unwrap the `&SoilThermalSnapshot` value, panicking if the value is a `Result::Err`
+     |
+ 404 |     let mut soil_thermal = shadow.restart_authority_soil_thermal().expect("REASON").clone();
+     |                                                                   +++++++++++++++++
+
+Some errors have detailed explanations: E0308, E0599.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `openwepp-restart-authority-reference` (lib) due to 2 previous errors

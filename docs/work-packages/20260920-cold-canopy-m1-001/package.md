@@ -1,5 +1,257 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Caller-owned transaction continuation — adopted 2026-09-22
+
+**Current disposition: IMPLEMENTATION STOPPED / M1 INCOMPLETE / HOLD.**
+Required independent reviewers are unavailable after bounded runtime recovery.
+See terminal owner-transaction disposition below; no complete-owner success is claimed.
+
+Owner explicitly adopted `/tmp/openwepp_cold_canopy_m1_owner_transaction_authorization.md`.
+Implementation is reopened within that envelope; earlier HOLDs remain historical,
+not accepted. Carry is **237933.722177 charged seconds**, confirmed by the actual
+local publication02 receipt read once (no greater charge). Supplement **14400 s**;
+fixed cumulative ceiling **252333.722177 s**. Conservative first-reading anchor
+**2026-09-22T07:03:00Z**, fixed deadline **11:03:00Z**, implementation/launch cutoff
+**10:33:00Z**, final reserve **1800 s**. Charge elapsed concurrency once without
+wait deductions or reclaimed balances. Check clock before mutation/dispatch and
+after interruption; each physical process retains the180-second cap and each
+command must fit its declared bound plus reserve.
+
+Ran: all **756 entries** of the actual detached source match
+`m1-receiver-final-source.json` (`3dc8f4e09d1feae4f8c08b572505edb63697f3f9077add8f0049a725845459a6`).
+No recovery was required or applied. The sole mutable Rust tree remains
+`/home/roger/openwepp-experiments/cold-canopy-m1-20260920`; immutable observer cut02
+and final recovery patch remain retained. Preserve pre-final63/3 binaries and
+34-check receiving arithmetic under their original identities only.
+
+Intent: complete configuration-derived plant-area authentication, actual returned
+receipt identity controls and typed errors; implement the diagnostic caller's
+complete owner staging, lawful no-transfer support, parent-only atomic commit,
+positive candidate late rejection and a consecutive support using actual endings.
+Then execute the unchanged fixed cycles/restart and integrated cost protocol under
+its prerequisites. No new physics, solver policy, tolerance, forcing, public or
+persisted schema, generic LU change, production activation or WAT5 repair.
+SC-VEGETATION-001 M1 transfer/admission clauses and
+SC-VEGETATIONTRANSACTION-001 steps9–12/INV004/010/012/013 bind owner progression.
+Root owns package/evidence/support plumbing; the assigned Terra implementer alone
+writes detached Rust/tests and focused checks. Distinct replacement correctness
+and QA reviewers are necessary because prior conversations are unavailable in
+this runtime; unchanged accepted findings are reused, affected fixes return to
+the same replacements. No nested agents, at most two children.
+
+Validation remains Critical: affected format, strict lint, component/admission/
+routing/original60/receiver/negative/state checks at each substantive correction;
+independent donor/recipient primitive balances; actual consecutive support and
+late rejection; fixed two72-hour4320-support cycles, fresh-process restart;
+minimal-observer corrected release timing then1/10/19-OFE and six warm pairs under
+prerequisites. Freeze stable source/build/inputs before mandatory full workspace
+regression, without concurrent source changes or heavy timing builds. Preserve
+all288 prior failures individually; do not relabel them inherited or rerun the
+full suite while the receiver moves. External generated targets and isolated
+reference support protect frozen source/lockfile custody. Applicable A0/A1/A3,
+full quality and exact-source correctness remain required. All four acceptance
+axes and original screens remain binding; incomplete functional scope remains
+M1 INCOMPLETE/HOLD. Two unsuccessful corrections or60 charged minutes trigger
+internal reassessment within the same fixed allowance. Publication authority on
+the existing branch persists for scoped reviewed evidence/recovery only.
+
+
+### Owner-transaction implementation and validation support
+
+Ran: `owner-txn-guards-01` is compile FAIL; `owner-txn-guards-02` reaches one
+actual test and fails the new area guard before injection: M1 lower area0.9
+versus warm-V8 resource fixture area1.35. This is a wrong provenance-boundary
+comparison, not permission to alter either physical input. Formatting01 also
+fails. Internal reassessment **CONTINUE** at07:12UTC after unsuccessful checks:
+same writer must authenticate actual validated M1 preparation and beginning
+revision, then connect actual solve/endings/owner staging. An absent accessor
+is within the adopted implementation envelope. No acceptance inferred.
+
+Static: replacement correctness `/root/owner_correctness` (Sol/high), independent
+of author/adviser, inspected initial receiver SHA288d4e38…65c3f and canonical
+M1/transaction clauses. Its preliminary **HOLD** names lawful zero-transfer
+incompatibility, detached contributor sidecar custody, positional unkeyed M/H
+endings, synthetic transaction41 chronology, string-based classification, and
+possible tile-conversion underflow. Its initial findings bind that source cut;
+new writer bytes require affected review. Required independent calculation needs
+occupancy-keyed M/H/I/E/D/Q/T operands, actual receipt/disposition, explicit
+surface and soil-water/thermal/LSE endpoints, and caller cursor/consumed identity.
+No actual caller output or independent complete conservation exists yet. Same
+reviewer will verify fixes and perform reconstruction when those operands exist.
+
+Static: [per-case retained failure extraction](artifacts/owner-txn-retained-failure-attribution-01.json)
+binds all288 identities to their first observed retained stderr:84 assurance
+symlink/non-directory failures,26 missing paths,9 missing Git/history contexts,
+38 explicit stack overflows,1 fingerprint assertion,1 other signal and129
+assertion/typed failures needing further attribution. These are observed failure
+classes, not blanket inherited/introduced verdicts or waived tests.
+
+Ran: isolated validation support copied to
+`/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support`
+([copy receipt](artifacts/owner-txn-validation-support-copy-01.json)); active
+source links remain untouched. A separate exact canonical718-file crate copy
+binds the reference generator's existing dependency source. Only the isolated
+reference manifest paths were explicitly relocated to those absolute canonical
+copies ([dependency binding](artifacts/owner-txn-reference-dependency-binding-01.json));
+no dependency version, equation or lock changed. [Locked offline metadata](artifacts/owner-txn-reference-metadata-01.json)
+passes with original reference lock SHA1a672660…41e83 unchanged. This is metadata
+validation, not generator workflow or full-suite evidence. Final validation
+support activation and complete source/input identity are pending source freeze.
+
+### Native-owner boundary reassessment — 07:30 UTC
+
+Root integration inspection **rejects** the previous writer's uncompiled caller
+cut ([exact source](artifacts/owner-txn-provisional-reassessment-01-source.json),
+SHA22f42a70…460dc3,756entries; retained complete observer-relative patch). It
+mutates staged caller state before fallible receiver work, clones non-reservoir
+owners without installing receiver endings, commits per support, re-intercepts
+already intercepted I, and supplies a default wet temperature. No actual owner
+success, rollback or continuation has been demonstrated. Previous writer
+`/root/owner_impl` is stopped after repeated untested returns. Replacement sole
+writer `/root/owner_native_impl` (Terra/medium) owns the actual native boundary;
+no simultaneous Rust authors. The bounded passing `owner-txn-receipt-01` result
+is only1/1 prescribed receipt-control evidence at source d222898d…d421a, with
+four affected source files, not actual caller-state proof.
+
+Named in-package architectural adviser `/root/owner_boundary_advisor`
+(Astra/high; read-only, **not an independent acceptance reviewer**) traced the
+existing native `execute_unified_real_hydrology_shadow` callback into
+`UnifiedLseFinalization`: real fixed-beginning root authorizations/final use,
+native ingress and receiver owners can be reached without another warm-V8
+physiology solve. Existing soil passthrough is consistent with the M1 prescribed
+snow/soil identity rows; native receiver adds actual advected enthalpy. Actual
+M1 vegetation/BGC admission/projection and complete parent staging remain
+implementation obligations, with explicit M/H identity and actual nitrogen
+protocol. The adviser found no missing physical law for this route. Existing
+V8 final-state model identity/liquid-only store cannot simply be relabelled M1.
+Same fixed forcing/model/tolerances and parent-only commit remain binding.
+
+QA `/root/owner_qa` (Terra/medium, independent) requires actual frozen source/cwd/
+support identity, bound material environment and full declared command fit.
+It withdrew an erroneous cutoff objection after checking that deadline minus
+1800s rejects at10:33, and corrected its hook attribution: Git-LFS generated
+hooks after the copied Git metadata, not during the copy. Generated hook/config
+bytes are retained and execution disabled by core.hooksPath=/dev/null
+([containment](artifacts/owner-txn-generated-hook-containment-01.json)).
+
+Root added paired source-root/support-record options to the existing recorder;
+default active source stays unchanged. It now pins selected actual source/cwd,
+local flake/tools/authority/input roots, support file bytes/link objects, and
+material inherited Cargo/Nix environment; rejects a declared command bound that
+cannot fit and physical bounds over180s. [Executed plumbing controls](artifacts/owner-txn-recorder-controls-01.json)
+prove both refusals leave the launch marker absent and pwd/receipt/cwd agree on
+the selected root. That control's intentionally minimal support manifest is not
+a final frozen campaign manifest. Same-QA fix verification remains pending;
+one concurrent resume was refused by runtime thread capacity, so review will be
+serialized without waiving independence. AST and scoped git diff --check pass.
+
+Reference-support workflow01 compiles unsuccessfully on two existing Result
+accessor adaptations (exit101,82.682s). Root made the two isolated nonproduction
+fixture adaptations ([retained patch](artifacts/owner-txn-reference-fixture-api-01.patch));
+main reference bytes and expected schemas/hashes remain unchanged. Corrected
+workflow02 compiles, then actually fails on a missing canonical configuration
+fixture (exit101,26.335s). Both locks stay SHA1a672660…41e83; no workflow pass
+is claimed. Supported internal reassessment CONTINUE: recover exact canonical
+fixture files in the isolated reference workspace and run from its actual
+workspace root. No model/expected-result correction or unexplained retry.
+
+### Terminal owner-transaction disposition — 2026-09-22 08:04 UTC
+
+**IMPLEMENTATION STOPPED / M1 INCOMPLETE / HOLD.** The caller-owned success and
+positive late-rejection requirements are **not met**. First unresolved
+implementation boundary: install actual thermal, vegetation and BGC endings
+alongside M1 M/H and native recipient owners through a complete slab/parent
+transaction. The provisional private `advance_m1_caller_support` still calls
+`commit()` per support, clones those other owners, and uses the separate fixture
+as native beginning; it is not an authorized parent commit or continuous caller.
+No legitimate subsequent support, real positive caller late rejection or complete
+independent donor/recipient reconstruction exists. A V8-only convenience API
+requiring a narrow M1 adapter is an in-scope implementation obligation, not proof
+that canonical physics is missing. Experimental Rust remains detached and is
+preserved as an explicitly rejected partial implementation.
+
+Stop basis is the adopted authorization's **“indispensable unavailable
+source/independence after bounded recovery”** condition. Same correctness and QA
+reviewer resumptions returned `agent thread limit reached`; a replacement
+correctness spawn failed identically. With all writers stopped and no active
+children, a final same-reviewer resume and replacement spawn also failed. Root
+self-inspection and the architectural adviser cannot replace the two independent
+reviewers. Earlier attributable preliminary correctness/QA findings above remain
+valid only for their inspected cuts; final fix verification and complete
+independent arithmetic remain **UNMET**. No additional runtime workaround or
+unapproved nested agent was attempted. This is not a time-budget exhaustion or
+owner-admission/physics impossibility claim.
+
+Ran: direct native M1 callback12 passed on source d1bbd3d0…82ef32 (18.330s):
+positive root requests match finalized withdrawals exactly; native hydrology
+frame changes; original60's zero terminal drainage yields zero receipts. The
+FullSupply correction preserves the positive-root obligation and treats exact
+zero rows under their actual zero disposition. Final-source caller-stage01
+passes its narrow frame/M/H staging assertions (26.615s), but its per-support
+commit and unchanged other owners prevent caller acceptance. These test names
+and PASS results do not supersede the above defects.
+
+Ran: frozen terminal source **00806bf2680470e92b13c64ee508b51e3d61f098bec782d59559e538ec50fc88**,
+756 entries, differs from adopted receiver terminal source in six files:
+LSE `m1_liquid_routing.rs`; ORCH `m1_receiver.rs`, `m1_coupled_expected_red.rs`,
+`multi_tile_runtime.rs`, `mod.rs`, and `v8_input_projection.rs`.
+[Terminal focused checks](artifacts/owner-txn-terminal-focused-01.json) pass
+**75/75** (14.175s command;0.514s test summary), with **1650 unselected**;
+[format](artifacts/owner-txn-terminal-format-01.json) passes (2.976s).
+[Strict affected-package all-target lint](artifacts/owner-txn-terminal-strict-lint-01.json)
+fails (exit101,8.648s; LSE lib-test reports222 errors). No inherited or Critical
+lint waiver is claimed. Every terminal command reports source/observer unchanged.
+[Built/listed terminal binaries](artifacts/owner-txn-terminal-binaries-01.json)
+retain exact ORCH/LSE SHA-256 identities and byte-verified durable copies;
+source-defined inputs and external fixture hashes remain in each run receipt.
+Exact-terminal full-workspace correctness is **NOT RUN / UNMET**: the affected
+owner path never reached stable accepted implementation, and the independent
+review stop was reached. The previous interrupted4101/288 outcome and individual
+failure attribution remain retained; neither it nor focused75/75 replaces full
+correctness. No cycle/timing run was dispatched without its owning prerequisites.
+Both fixed72-hour/4320-support cases, fresh-process restart, actual coupled cost,
+1/10/19 scaling and six warm pairs remain **NOT RUN / UNMET**. All four acceptance
+axes remain HOLD; known WAT5 generic-liquid/snow publication blocker is unchanged.
+
+Ran: [actual final reconstruction](artifacts/owner-txn-final-reconstruction.json)
+applies the retained [complete patch](artifacts/owner-txn-final-from-observer-cut02.patch)
+to immutable observer85b8314e…9963 in a separate durable directory and verifies all
+756 entries against the [final source manifest](artifacts/owner-txn-final-source.json).
+Recovered source is `/home/roger/openwepp-experiments/cold-canopy-m1-owner-final-reconstruction-20260922`;
+active source remains `/home/roger/openwepp-experiments/cold-canopy-m1-20260920`.
+This reconstruction is executable-source custody, not complete frozen campaign
+support: isolated support activation/full input manifest are still pending.
+
+Static: root integration inspection also retains open preparation authentication:
+`M1PreparedCallerContext::new` accepts independently supplied input/evaluation;
+area captured from that input is not itself an authenticated accepted-solve
+capability. The provisional route sets incident mass to zero; arbitrary rainy
+supports cannot be inferred correct from the original60 zero-ledger control.
+Contributor/receipt poisoning improvements remain partial controls. Required
+actual caller/staged snapshot rollback, consumed-capability lineage, donor heat/
+vapor/incident operands and full recipient thermal endpoints remain absent.
+
+Ran: isolated reference workflow03 first failed at generator field lookup484.
+The subsequent supported five-path relocation from runoff.rs to
+runoff_result_types.rs is preserved in
+[its exact patch](artifacts/owner-txn-reference-source-relocation-01.patch).
+[Workflow04](artifacts/owner-txn-reference-workflow-04.json) then failed at enum
+lookup520 (exit101,27.110s), retaining four generated checkpoint vectors. Original
+reference lock remains1a672660…41e83 throughout; no generator or full support
+workflow pass is claimed. That generator failure remains a concrete validation
+support obligation, not permission to alter expected V9/V10 identity assertions.
+
+The recorder's adopted deadline/frozen-root/environment changes have executed
+plumbing controls but lack same-QA fix verification. Its exact
+[unreviewed recovery patch](artifacts/owner-txn-recorder-unreviewed-recovery.patch)
+is preserved; live recorder edits remain local and will not be committed as
+reviewed canonical behavior. Only package evidence and recovery are selected
+for the authorized existing-main publication. No main Rust, authority, branch,
+production selector or unrelated pre-existing dirty/untracked work is changed.
+[Preservation ledger](artifacts/owner-txn-preservation-ledger-01.json) records the
+actual charged timestamp; subsequent preservation/publication continues against
+the same fixed ceiling. No unused balance is converted to a new allowance.
+
 ## Receiver/cycle continuation — adopted 2026-09-22
 
 Owner adopted `/tmp/openwepp_cold_canopy_m1_receiver_cycle_authorization.md` by

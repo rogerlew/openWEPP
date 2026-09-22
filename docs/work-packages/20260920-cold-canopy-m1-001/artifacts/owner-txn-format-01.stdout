@@ -1,0 +1,120 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:8:
+     UnifiedRealHydrologyCandidate,
+ };
+ use crate::{
+-    vegetation_real_hydrology_shadow::{
+-        RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,
+-    },
+     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
+     DirectOpenLiquidIngressParcel, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidParcelKind,
+     DirectTileGroundIngress,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:17:
++    vegetation_real_hydrology_shadow::{
++        RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,
++    },
+ };
+ 
+ struct FullNitrogen(Cell<u32>);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/multi_tile_runtime.rs:11:
+ 
+ use openwepp_kernel_contract::TileId;
+ use openwepp_land_surface_energy::{
+-    canonical_tile_fraction_sum_closes, solve_covered_potential_phase, solve_open_potential_phase,
+-    validate_weighted_ofe_energy, AcceptedOpenSurface, ClosureValue, CoveredColumnInputs,
+-    CoveredLowerBoundaryEnergyOperands, CoveredPotentialPhase, CoveredTileEnergyOperandSet,
+-    FinalCoveredTileCandidate, FinalTileCandidate, GroundWaterKey, OfeId, OpenPotentialPhase,
+-    OpenSurfaceProblem, PotentialWaterRequestBatch, RootRuntimeIdentity, RuntimeTileIdentity,
++    AcceptedOpenSurface, ClosureValue, CoveredColumnInputs, CoveredLowerBoundaryEnergyOperands,
++    CoveredPotentialPhase, CoveredTileEnergyOperandSet, FinalCoveredTileCandidate,
++    FinalTileCandidate, GroundWaterKey, OfeId, OpenPotentialPhase, OpenSurfaceProblem,
++    PotentialWaterRequestBatch, RootRuntimeIdentity, RuntimeTileIdentity,
+     StandGroundWaterAmountBasis, TileEnergyOperandSet, TileState, WaterAmount, WaterAuthorization,
+-    WaterProtocol, WeightedTileEnergyOperands,
++    WaterProtocol, WeightedTileEnergyOperands, canonical_tile_fraction_sum_closes,
++    solve_covered_potential_phase, solve_open_potential_phase, validate_weighted_ofe_energy,
+ };
+ 
+ use super::v8_input_projection::V8SoilThermalPhysicalBeginning;
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/multi_tile_runtime.rs:24:
+ use super::{
++    CoveredIngressSchedule, DirectSurfaceLiquidConfiguration,
++    LandSurfaceEnergyRealHydrologyAdapter, LandSurfaceEnergyShadowError, OwnerKind,
++    RealHydrologySourceKey, SoilThermalTileCandidate, UnifiedLseFinalization,
++    UnifiedRealHydrologyCandidate, UnifiedReceiverExpectations,
+     finalize_covered_phase_with_soil_thermal_beginning,
+-    finalize_open_phase_with_soil_thermal_beginning, CoveredIngressSchedule,
+-    DirectSurfaceLiquidConfiguration, LandSurfaceEnergyRealHydrologyAdapter,
+-    LandSurfaceEnergyShadowError, OwnerKind, RealHydrologySourceKey, SoilThermalTileCandidate,
+-    UnifiedLseFinalization, UnifiedRealHydrologyCandidate, UnifiedReceiverExpectations,
++    finalize_open_phase_with_soil_thermal_beginning,
+ };
+ 
+ #[cfg(test)]
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs:720:
+         input.lower.second_drainage_mass_kg_m2_tile = 0.004;
+         input.lower.second_drainage_enthalpy_j_kg = 8436.0;
+         let routed = route_m1_column_liquid(&input).expect("second drainage route");
+-        assert!(routed
+-            .captures()
+-            .iter()
+-            .any(|value| value.source_branch() == "upper_drainage_second"));
+-        assert!(routed
+-            .terminal_parcels()
+-            .iter()
+-            .any(|value| value.origin() == "upper_drainage_second_stemflow"));
+-        assert!(routed
+-            .terminal_parcels()
+-            .iter()
+-            .any(|value| value.origin() == "upper_drainage_second_throughfall"));
+-        assert!(routed
+-            .terminal_parcels()
+-            .iter()
+-            .any(|value| value.origin() == "lower_drainage_second"));
++        assert!(
++            routed
++                .captures()
++                .iter()
++                .any(|value| value.source_branch() == "upper_drainage_second")
++        );
++        assert!(
++            routed
++                .terminal_parcels()
++                .iter()
++                .any(|value| value.origin() == "upper_drainage_second_stemflow")
++        );
++        assert!(
++            routed
++                .terminal_parcels()
++                .iter()
++                .any(|value| value.origin() == "upper_drainage_second_throughfall")
++        );
++        assert!(
++            routed
++                .terminal_parcels()
++                .iter()
++                .any(|value| value.origin() == "lower_drainage_second")
++        );
+     }
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:8:
+     UnifiedRealHydrologyCandidate,
+ };
+ use crate::{
+-    vegetation_real_hydrology_shadow::{
+-        RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,
+-    },
+     DirectCanopyLiquidRelease, DirectIngressAmount, DirectOfeWb14Parameters,
+     DirectOpenLiquidIngressParcel, DirectSurfaceLiquidIngressInput, DirectSurfaceLiquidParcelKind,
+     DirectTileGroundIngress,
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:17:
++    vegetation_real_hydrology_shadow::{
++        RealHydrologyLaneLayerMap, RealHydrologyOfeLaneId, RealHydrologyShadowAdapter,
++    },
+ };
+ 
+ struct FullNitrogen(Cell<u32>);

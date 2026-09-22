@@ -1,0 +1,23 @@
+{
+  "source_tree_sha256": "00806bf2680470e92b13c64ee508b51e3d61f098bec782d59559e538ec50fc88",
+  "inventory_receipt": "owner-txn-terminal-binary-inventory-01.json",
+  "identity_scope": "Built/listed frozen-source binaries; nextest focused execution is separately recorded in terminal-focused01",
+  "binaries": [
+    {
+      "suite": "openwepp-hillslope-orchestrator",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_orchestrator-0ad665558c5e4d7c",
+      "sha256": "7956780c4ec61704ecdfb11bbb9db023fa3ce50d954e38293802cc173bec9345",
+      "bytes": 424013240,
+      "mtime_ns": 1790063888318334233,
+      "durable_path": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-final-binaries-20260922/openwepp_hillslope_orchestrator-0ad665558c5e4d7c"
+    },
+    {
+      "suite": "openwepp-land-surface-energy",
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-4b83c89d629ca132",
+      "sha256": "7a6789e474cfebe536991db50f759a5a8fab0c3ac51dbb4748c1a83a190c38a2",
+      "bytes": 105054096,
+      "mtime_ns": 1790064047910703286,
+      "durable_path": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-final-binaries-20260922/openwepp_land_surface_energy-4b83c89d629ca132"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+--- a/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/evidence_fixture.rs
++++ b/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/evidence_fixture.rs
+@@ -160,7 +160,7 @@
+             day_input_digests,
+         )
+         .unwrap(),
+-        soil_thermal: SoilThermalStateRestartV1::project(shadow.restart_authority_soil_thermal())
++        soil_thermal: SoilThermalStateRestartV1::project(shadow.restart_authority_soil_thermal().expect("retained reference fixture has a valid soil-thermal owner"))
+             .unwrap(),
+         biogeochemistry: BiogeochemistryStateRestartV1::project(
+             shadow.restart_authority_biogeochemistry(),
+@@ -401,7 +401,7 @@
+     lse_state.0.last_accepted_transaction_id =
+         Some(openwepp_kernel_contract::TransactionId(lineage));
+     lse_state.0.state_sha256 = lse_state.0.canonical_sha256().unwrap();
+-    let mut soil_thermal = shadow.restart_authority_soil_thermal().clone();
++    let mut soil_thermal = shadow.restart_authority_soil_thermal().expect("retained reference fixture has a valid soil-thermal owner").clone();
+     soil_thermal.last_accepted_transaction_id =
+         Some(openwepp_kernel_contract::TransactionId(lineage));
+     openwepp_hillslope_orchestrator::v9_real_consumer_shadow::restart_authority_seal_soil_thermal_digests(&mut soil_thermal)

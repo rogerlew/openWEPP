@@ -1,0 +1,16 @@
+{
+  "as_of_utc": "2026-09-22T08:04:43.148297+00:00",
+  "anchor_utc": "2026-09-22T07:03:00+00:00",
+  "carry_seconds": 237933.722177,
+  "supplement_seconds": 14400,
+  "elapsed_concurrency_once_seconds": 3703.148297,
+  "charged_total_seconds": 241636.870474,
+  "ceiling_seconds": 252333.722177,
+  "remaining_seconds": 10696.851703,
+  "deadline_utc": "2026-09-22T11:03:00+00:00",
+  "launch_cutoff_utc": "2026-09-22T10:33:00+00:00",
+  "reserve_seconds": 1800,
+  "wait_refund_seconds": 0,
+  "status": "Implementation stopped for unavailable required independence after bounded recovery; preservation/publication continues charged",
+  "mixed_outcome_history": "Carry preserved without inventing precision for older uncertain mixed-outcome history"
+}

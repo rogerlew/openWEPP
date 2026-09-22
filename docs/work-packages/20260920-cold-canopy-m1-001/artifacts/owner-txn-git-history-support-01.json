@@ -1,0 +1,7 @@
+{
+  "utc": "2026-09-22T07:15:21.096732+00:00",
+  "destination": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support/.git",
+  "scope": "Independent copied Git object/ref/index snapshot for frozen historical read tests; no branch checkout/switch, no shared Git writes, no remote config or hooks copied",
+  "head": "0cd0918d50c9be0ea6f271ddd11666d04bbf1b69",
+  "historical_policy_blob": "blob"
+}

@@ -1,0 +1,13 @@
+{
+  "reconstructed_at_utc": "2026-09-22T08:02:09.927470+00:00",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-final-reconstruction-20260922",
+  "base": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "base_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "patch": "owner-txn-final-from-observer-cut02.patch",
+  "patch_sha256": "6a8dc99d5ce4f42b82289da126f67275d1d97b9b63bb8042cd5d7d6b2260597e",
+  "entries": 756,
+  "actual_tree_sha256": "00806bf2680470e92b13c64ee508b51e3d61f098bec782d59559e538ec50fc88",
+  "exact_entries_match": true,
+  "patch_exit_code": 0
+}

@@ -1,0 +1,24 @@
+Command exited with non-zero status 100
+	Command being timed: "nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-target CARGO_BUILD_JOBS=2 cargo nextest run -p openwepp-hillslope-orchestrator owner_txn_original60_m1_executes_direct_unified_callback_without_v8_runtime"
+	User time (seconds): 18.48
+	System time (seconds): 2.19
+	Percent of CPU this job got: 127%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:16.26
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2228788
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 929851
+	Voluntary context switches: 10199
+	Involuntary context switches: 565
+	Swaps: 0
+	File system inputs: 56
+	File system outputs: 2065816
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 100

@@ -1,0 +1,19 @@
+{
+  "start_utc": "2026-09-22T07:08:36.804466+00:00",
+  "end_utc": "2026-09-22T07:08:51.158046+00:00",
+  "destination": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support",
+  "source": "/workdir/openWEPP",
+  "paths": [
+    "assurance",
+    "usersum",
+    "gate-policy",
+    ".github",
+    "AGENTS.md",
+    "docs",
+    "tools",
+    ".config"
+  ],
+  "method": "cp -a --reflink=auto; independent support copies, no active source links changed",
+  "source_commit": "0cd0918d50c9be0ea6f271ddd11666d04bbf1b69",
+  "status": "copied; exact required file binding and activation pending"
+}

@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "cargo",
+    "metadata",
+    "--offline",
+    "--locked",
+    "--no-deps",
+    "--format-version",
+    "1",
+    "--manifest-path",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/Cargo.toml"
+  ],
+  "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference",
+  "start_utc": "2026-09-22T07:12:58.924524+00:00",
+  "elapsed_seconds": 0.39826257806271315,
+  "exit_code": 0,
+  "reference_lock_before": "1a672660501cd806fdb4e21572624d18ccd367aea84342ffb5d9aefc5d541e83",
+  "reference_lock_after": "1a672660501cd806fdb4e21572624d18ccd367aea84342ffb5d9aefc5d541e83",
+  "scope": "locked offline metadata on explicitly relocated canonical reference; no tests or physical execution"
+}

@@ -1,0 +1,41 @@
+{
+  "argv": [
+    "nix",
+    "develop",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support",
+    "--command",
+    "env",
+    "CARGO_BUILD_JOBS=2",
+    "CARGO_TARGET_DIR=/home/roger/openwepp-experiments/cold-canopy-m1-owner-reference-target",
+    "cargo",
+    "run",
+    "--offline",
+    "--locked",
+    "--quiet",
+    "--manifest-path",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/Cargo.toml",
+    "--bin",
+    "generate_authority_artifacts",
+    "--",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-owner-reference-output-04"
+  ],
+  "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support",
+  "start_utc": "2026-09-22T07:58:20.541909+00:00",
+  "timeout_seconds": 180,
+  "reference_lock_before": "1a672660501cd806fdb4e21572624d18ccd367aea84342ffb5d9aefc5d541e83",
+  "generator_sha256": "fd52d35208fe8b8410318056b2609fc24119f32288e254ce36626851cf67ac92",
+  "support_correction": "owner-txn-reference-source-relocation-01.patch",
+  "dependency_binding": "owner-txn-reference-dependency-binding-01.json",
+  "scope": "Isolated canonical reference generator workflow; not M1 physical acceptance",
+  "end_utc": "2026-09-22T07:58:47.651629+00:00",
+  "elapsed_seconds": 27.109635173808783,
+  "exit_code": 101,
+  "timed_out": false,
+  "reference_lock_after": "1a672660501cd806fdb4e21572624d18ccd367aea84342ffb5d9aefc5d541e83",
+  "outputs": {
+    "checkpoint-in-progress-vector.json": "c12f7f8632f7043cc32609d9a963fe442a1775606db13440133654ba138b3e18",
+    "checkpoint-cross-midnight-vector.json": "76e2a1074e8d2ee36120bc98113e97d318002b6e448b805d6cc84ab953904b9b",
+    "checkpoint-vector.json": "c3f9df44452b491a9734ac55f765fbdfb124624fdbda22e83a1e7f2a563d805f",
+    "checkpoint-multi-destination-vector.json": "732c85d691259a3067c28107e569698995ea482cc7782bf21351d27d6c144050"
+  }
+}
