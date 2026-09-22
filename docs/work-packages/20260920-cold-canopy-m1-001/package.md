@@ -252,6 +252,15 @@ production selector or unrelated pre-existing dirty/untracked work is changed.
 actual charged timestamp; subsequent preservation/publication continues against
 the same fixed ceiling. No unused balance is converted to a new allowance.
 
+Published evidence/recovery commit `da54efaa330e07453a33c0cbb08adb925aeef6c2` on existing
+`main`; [publication01](artifacts/owner-txn-publication-01.json) verifies12
+critical remote files byte-for-byte, including package, final recovery, checks
+and recorder recovery. Ledger at 2026-09-22T08:08:12.755501+00:00 is
+**241846.477678 charged seconds**, with **10487.244499 s**
+remaining under the unchanged252333.722177 ceiling. Final publication preservation
+continues charged and is recorded in local publication02. Experimental Rust and
+unreviewed live recorder remain unadopted. No complete M1 result is asserted.
+
 ## Receiver/cycle continuation — adopted 2026-09-22
 
 Owner adopted `/tmp/openwepp_cold_canopy_m1_receiver_cycle_authorization.md` by

@@ -1,0 +1,102 @@
+{
+  "verified_at_utc": "2026-09-22T08:08:12.755501+00:00",
+  "published_commit": "da54efaa330e07453a33c0cbb08adb925aeef6c2",
+  "branch": "main",
+  "remote": "origin",
+  "remote_verified_files": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+      "sha256": "923699b9814bf979765640f96a11d6ec780f399a0ae5349da0157a6c7cd7bf90",
+      "bytes": 281209,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-final-source.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-final-source.json",
+      "sha256": "4e8d5874293b77c2f9e33badec56156299eca6470e9101a71a47d1a4fa4401fd",
+      "bytes": 110732,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-final-from-observer-cut02.patch",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-final-from-observer-cut02.patch",
+      "sha256": "6a8dc99d5ce4f42b82289da126f67275d1d97b9b63bb8042cd5d7d6b2260597e",
+      "bytes": 558927,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-final-reconstruction.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-final-reconstruction.json",
+      "sha256": "797d17d748ac34ebc8d19c9d460bdc85c210922d0a33226586642b028fe9ac2a",
+      "bytes": 727,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-focused-01.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-focused-01.json",
+      "sha256": "fe3b207fdf3a5e4d95f172e7e1684cfb403815ec6d0a2c85601955fbb8f33cca",
+      "bytes": 84403,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-focused-01.stderr",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-focused-01.stderr",
+      "sha256": "4772e3250df6f4b042cd5d1bd1c51077e1fe7980563b51dc52f4fe37ed2b06da",
+      "bytes": 14761,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-format-01.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-format-01.json",
+      "sha256": "af9f90711aef6162e21436dc5a4168a2e68894dd680070fc19ce75a246a6e9e4",
+      "bytes": 83937,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-strict-lint-01.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-strict-lint-01.json",
+      "sha256": "58b6c8c83ea9f5f2c7bd83ed3e37a4bb7cd3ac15acccb0e11d1a446d37edfdcd",
+      "bytes": 84382,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-strict-lint-01.stderr",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-strict-lint-01.stderr",
+      "sha256": "f6ffc52cea149f664797dd69c4506c67da3d13db0fd7a94452da48aea14d1d80",
+      "bytes": 129824,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-binaries-01.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-terminal-binaries-01.json",
+      "sha256": "2d6a25f9c54c0df756db7ac3b12e010c3981127242dc6c6f1fff3a595debaf8e",
+      "bytes": 1259,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-recorder-unreviewed-recovery.patch",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-recorder-unreviewed-recovery.patch",
+      "sha256": "880a1e3c417f1ba68039ed11c2d84180f5a6c25f878676b0c1578853e84ceb90",
+      "bytes": 12566,
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-preservation-ledger-01.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/da54efaa330e07453a33c0cbb08adb925aeef6c2/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/owner-txn-preservation-ledger-01.json",
+      "sha256": "12e7eb9fe08ce9dec4feab2b72caf0a83a91452d2e4b29a666ae0d5146450122",
+      "bytes": 743,
+      "remote_bytes_match": true
+    }
+  ],
+  "carry_seconds": 237933.722177,
+  "supplement_elapsed_seconds": 3912.755501,
+  "charged_total_seconds": 241846.477678,
+  "ceiling_seconds": 252333.722177,
+  "remaining_seconds": 10487.244499,
+  "final_source_sha256": "00806bf2680470e92b13c64ee508b51e3d61f098bec782d59559e538ec50fc88",
+  "status": "M1 INCOMPLETE/HOLD; independent review unavailable after bounded runtime recovery",
+  "local_uncommitted_owned_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py",
+  "local_recorder_recovery_patch": "owner-txn-recorder-unreviewed-recovery.patch",
+  "qualification": "Partial detached implementation; no complete caller success or positive late rollback; no final full correctness"
+}
