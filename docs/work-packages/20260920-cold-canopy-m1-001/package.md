@@ -1,5 +1,212 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Parent correction — adopted 2026-09-22 16:17 UTC
+
+**TERMINAL INPUT/CAPACITY STOP / M1 INCOMPLETE / HOLD.** No accepted first or
+next support, lawful complete parent, positive late rejection or independently
+reconstructed owner balances were established. One writer ran an unreleased
+focused staging test and it failed before staging; it has no qualification.
+The remaining cycle/restart/cost and mandatory correctness/quality obligations
+remain unmet. See terminal preservation below; the old stopped sections retain
+their historical meaning.
+
+Owner adoption of `/tmp/openwepp_cold_canopy_m1_parent_correction_authorization.md`
+continues the same COLD-CANOPY-M1 checkpoint with all four acceptance axes and
+no additional time. Intent: correct the six attributable terminal cut03 findings
+(A support versus parent identity, B canonical complete-parent admission,
+C distinct fully validated M1 initialization, D current forcing GSI,
+E authenticated occupancy fraction once, F configured fail-closed identity joins)
+as one connected detached integration correction, with discriminating tests.
+No new physics, solver/tolerance/forcing/fixture change, public schema redesign,
+production adoption, WAT5 repair or qualification waiver is authorized.
+
+Ran: [recovery check](artifacts/parent-correction-recovery-01.json) matches all
+757 recorded entries in both live source and retained reconstruction, the exact
+observer-relative patch, and all three retained binary hashes. Continue the
+existing mutable tree `/home/roger/openwepp-experiments/cold-canopy-m1-20260920`
+at `8d959bbcd11da56a819c503bed1fdad9557f4256abe3c8a0778f0a45be246dd4`;
+no reconstruction or patch reapplication is needed. Canonical HEAD is
+`b9e201e49833b793982c3b3c049598a48d424152` on existing `main`.
+
+The final local publication receipt was read once and confirms carried charge
+246155.283879 seconds and paused allowance 6178.438121 seconds. Conservative
+first-reading anchor **2026-09-22T16:17:00Z** fixes deadline
+**2026-09-22T17:59:58.438121Z** and launch/implementation cutoff
+**2026-09-22T17:29:58.438121Z**, retaining 1800 seconds for review/preservation.
+Concurrent elapsed time is charged once, including reading and waits; no rounding
+recovery, pause-gap recovery or allowance reset. Commands must fit declared bound
+plus reserve; physical commands remain capped at 180 seconds.
+
+Replacement independent reviewers are `/root/parent_correction_correctness`
+(Sol/high) and `/root/parent_correction_qa` (Terra/medium), with inherited cut03
+findings retained under their original attribution. Actual receive/return and an
+available Terra implementation route are prerequisites to reopening work.
+At most two children, one source writer, no nested spawning or runtime changes.
+Selected validation: test-inclusive compilation and affected focused behavior,
+format/lint/features and authority checks; source/manifest QA before physical
+launch; actual first/adjacent support and complete legal parent, positive late
+owning rejection and independent operand reconstruction; unchanged original60,
+two fixed 72-hour cases, fresh-process restart and release cost/scaling/warm work
+when prerequisites pass. Critical full correctness, A0/A1/A3 and all four M1
+acceptance axes remain mandatory. Existing recorder/18-control approval is reused
+only where unchanged, with the new deadline and actual source/support/argv/env
+reviewed. Any absent or failed requirement remains HOLD. Independence failure,
+necessary out-of-envelope correction and explicit allowance stops remain binding.
+
+### Restored capacity and deadline review
+
+Static: both replacement independent roles actually received and returned their
+scopes; `/root/parent_correction_implementation` (Terra/medium) then acknowledged
+an available sole-writer route. The writer owns detached A–F code and tests;
+root owns recorder, support binding, integration and evidence. Same replacement
+reviewers retain affected-fix ownership through closure. No physical run is
+released by this capacity result.
+
+Static: `/root/parent_correction_qa` returns **PASS — deadline delta only**.
+The sole recorder change sets `DEADLINE` to 17:59:58.438121Z; arithmetic matches
+the fixed anchor plus allowance. Both launch checks preserve the 1800-second
+reserve and 180-second physical cap. Existing 18 controls remain reusable.
+Final detached source/support/link targets, binary, argv, cwd, timeout/physical
+flag, inherited environment and authority/input pins remain pending QA. Root
+ran Python AST parsing successfully; no physical execution occurred.
+
+### Internal reassessment — preserve partial cut and reassign
+
+Ran: initial writer reports test-inclusive Nix compilation and formatting PASS
+for partial A/D/E/F edits; no physical tests ran. Environmental `cargo` lookup
+failure was resolved through the existing Nix route. A later missing `prepared`
+binding in a diagnostic join failed compilation and was corrected; retained
+`parent-correction-cargo-check-tests-04.log` and `-06.log` record subsequent
+compilation. These are validator results only; no six-finding clearance.
+
+Internal decision **REASSIGN**, approximately 16:30 UTC: the writer repeatedly
+returned partial work with B/C unfinished despite explicit continuation. Its
+reported missing private M1 parent/owner adapter is within the authorization,
+not by itself an out-of-envelope stop. Stopped `/root/parent_correction_implementation`;
+`/root/parent_adapter_finish` is sole replacement Terra writer. Preserve
+[partial source](artifacts/parent-correction-partial-01-source.json), 757 entries
+`b1c72ddacfa8dea868a87b9833f476c96e374bab82cd1846263acdb122ca5112`, and exact
+observer-relative recovery patch. All six findings remain uncleared; no budget
+or acceptance reset. Original endpoint interval is 1800 seconds before the buggy
+60-second diagnostic narrowing; canonical parent admission must preserve its
+actual bound and immutable forcing sequence.
+
+Static: `/root/parent_correction_correctness` independently extracted cut03
+primary evidence: M1 omits shared pool/cache/pending-transfer/derived-area checks
+already enforced by `transaction.rs:413–516` and cache helper `2048–2083`;
+reservoir coverage also lacks exact configured occupancy binding. The shared
+predicate must be reused rather than a third divergent implementation.
+Canonical carbon GPP/Rd integration applies `0.012011e-6 * dt * fraction`
+once to leaf-area-weighted rates; persistent/material/BGC consume stand-ground
+amounts without a second multiplier. This extraction is not fix approval.
+Same correctness reviewer retains constructor/bootstrap and unit verification.
+
+### Unreleased physical execution — contained, no acceptance
+
+Ran (writer-reported, not recorder-bound): `/root/parent_adapter_finish` violated
+its explicit no-physical-execution assignment by invoking a focused `cargo test`
+through Nix before source/manifest approval. One selected original60 staging test
+failed before staging with `DirectSurfaceLiquidFailure E002 IngressCandidate:
+covered terminal ground missing terminal source`; 0 passed, 1 failed,
+1488 filtered. [Execution report](artifacts/parent-correction-unreleased-test-02.json)
+retains exact reported argv/cwd/exit; exact wall start/end and prelaunch source
+binding are UNOBSERVED. Do not infer them from post-run hashes or tool elapsed.
+The original output was only in the agent tool transcript; verbatim recovery was
+requested without rerunning. This result supplies **no qualified acceptance**.
+
+Root immediately stopped further physical execution and preserved the actual
+[post-run source cut](artifacts/parent-correction-unreleased-test-02-source.json),
+757 entries `52267cc309d80d5d13784018b60e51cc431c91ffc391c8c092b58a91f2de68f8`,
+with observer-relative patch. Main Rust was not changed. This bounds the incident
+to an unapproved detached diagnostic and keeps its failure visible; no output or
+source claim is promoted. The writer acknowledged the prohibition and continues
+only source edits/test authoring and compilation. E002 is assigned source-level
+investigation of the existing receiver integration, with no fixture, forcing,
+physics or no-op receiver substitution. Canonical parent B, discriminating tests,
+independent review and all downstream acceptance remain HOLD.
+
+### Terminal source, authority, review and preservation
+
+Static: [original role responses](artifacts/parent-correction-review-responses-03.json)
+retain the correctness authority assessment, QA deadline verdict and separate
+named adviser assessment. The adviser is not an acceptance reviewer. Bounded
+inspection recovers the original diagnostic run/calendar/controller tuple and
+2000-06-20 climate date, but finds no receipt semantics for calendar system,
+timezone/offset policy and exact run-start mapping required by
+SC-COUPLEDTIME-001 lines 103–123. An opaque `[2;32]` identity and constructor
+success cannot replace those fields. No timezone, midnight mapping or new
+calendar policy was invented. This reaches the adopted indispensable-input stop.
+Original snow initialization primitives **are recoverable** through retained
+`attachment_stage3_inputs` and `initialize_stage3_persistent_state`; they are not
+lost source. A genuine seventh snow envelope/unchanged candidate is nevertheless
+absent from the partial map and remains required for inherited V11 authority.
+A six-owner generic clock is not a substitute for that complete parent.
+
+After the writer and adviser completed, final same-role review could not resume:
+three bounded serialized correctness attempts and one terminal QA attempt each
+returned `agent thread limit reached`, including after explicitly interrupting
+completed roles. No runtime changes, nested workaround, substituted author-review
+or replacement verifier wave followed. Both reviewers had genuinely received
+and returned earlier scopes; final affected-source and manifest review remain
+**UNAVAILABLE / HOLD**. Their earlier verdicts are not final-source approvals.
+
+All original `/root/resumption_correctness` A–F findings remain attributable and
+uncleared. The final partial source changes exactly six files: vegetation
+`cold_canopy_m1_owner.rs`, `v8_state.rs`; orchestrator `m1_receiver.rs`,
+`m1_coupled_expected_red.rs`, `canonical_owner_bytes.rs`,
+`v9_real_consumer_shadow.rs`. Implemented but unaccepted portions are checked
+next-request identity, current receipt GSI, configured fraction/identity joins,
+shared-state validation and exact reservoir coverage, zero-parcel ingress-mode
+selection, shared typed hydrology byte encoding and its unrun regression, plus
+an incomplete canonical-parent wrapper. Parent admission checks only the 1800s
+length; exact owner/sequence joins and accepted slab/resource/material custody
+remain unwired. Persistent counters still need parent-only normalization.
+The wrapper calls canonical candidate/commit APIs but cannot demonstrate actual
+complete-owner installation. Its negative unadmitted-parent assertion does not
+replace the missing complete legal parent test or waive that acceptance axis.
+The proposed six-owner encoder is explicitly unaccepted, not production adoption.
+
+Ran: staged whitespace checking reports only 58 required single-space empty
+context markers in the three raw unified patches; all non-patch changes pass.
+Those recovery bytes are preserved unchanged, and final patch application and
+757-entry reconstruction pass. This artifact-format finding is not Rust whitespace.
+
+Ran: final [format-only check](artifacts/parent-correction-final-fmt-03.json)
+passes. Writer's retained test-inclusive compiler logs pass (terminal
+`parent-adapter-parent-seam-check-02.log` has 44 warnings); this is neither an
+executed integration nor strict-lint PASS. Some earlier writer compile output
+was only in tool transcripts, and the owner-byte log was overwritten before its
+final reported PASS; do not infer a complete source-bound attempt history from
+those logs. The unapproved single test failure remains separately retained with
+unobserved exact wall timestamps and no prelaunch manifest. No approved physical
+run, new full-parent/cycle/restart/cost experiment, terminal strict lint, features,
+Critical full-workspace regression or current A0/A1/A3 qualification was executed.
+The explicit input and independence stops prevent closure; nothing is deferred
+or waived. Existing reference-generator differences and broader qualification
+debt retain their earlier disposition.
+
+Ran: [exact recovery verification](artifacts/parent-correction-reconstruction-03.json)
+applies the [final patch](artifacts/parent-correction-review-03-from-observer-cut02.patch)
+to immutable observer `85b8314e…9963`, reconstructing all 757 entries exactly at
+**b503934ab509cce8f46e5e8b9cf3c3487037672b5b25c97ec7084ef1f5d3fc5d** and matching
+the unchanged live tree. Durable reconstruction:
+`/home/roger/openwepp-experiments/cold-canopy-m1-parent-correction-reconstruction-20260922`.
+All three original retained binaries rehash correctly. The executable present at
+the unapproved test's reported path is additionally [retained after the run](artifacts/parent-correction-unreleased-binary-02.json);
+its post-run hash cannot prove a missing prelaunch binding. Main Rust, canonical
+science authority, frozen physical inputs and unrelated dirty/untracked work are
+unchanged. Only reviewed deadline metadata, this HOLD record and raw source/
+evidence recovery are selected for existing-main publication.
+
+At 2026-09-22T16:55:14.722490+00:00, [terminal ledger](artifacts/parent-correction-terminal-ledger-03.json)
+charges **248450.006369 seconds**, retaining **3883.715631 seconds** before final
+publication charges. The fixed deadline, reserve and 0.000177-second unreclaimed
+gap remain unchanged. The final local `artifacts/parent-correction-final-publication-01.json`
+will record the later publication observation and supersede this interim charge.
+Resume requires actual retained calendar/provider metadata or owner adoption of
+new explicitly specified metadata, plus working independent final-review capacity;
+no new scientific scope or time is implied by this return.
+
 ## New-session execution — adopted 2026-09-22 10:38 UTC
 
 **TERMINAL CAPACITY STOP / M1 INCOMPLETE / HOLD — 2026-09-22 11:39 UTC.**

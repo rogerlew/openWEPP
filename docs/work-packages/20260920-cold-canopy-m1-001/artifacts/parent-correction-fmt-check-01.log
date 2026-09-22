@@ -1,0 +1,29 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:503:
+         M1ReceiverDiagnosticError,
+     > {
+         let beginning = self.current_owners();
+-        let mut forcing = prepared
+-            .persistent_forcing(&beginning.m1_vegetation, &beginning.m1_configuration)?;
++        let mut forcing =
++            prepared.persistent_forcing(&beginning.m1_vegetation, &beginning.m1_configuration)?;
+         if !current_gsi.is_finite() || !(0.0..=1.0).contains(&current_gsi) {
+             return Err(m1_owner_identity_error());
+         }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:1774:
+     // Mint the M1 ending before native ingress, but retain it as a candidate.
+     // Native parcels can therefore prove their source is this exact sealed M1
+     // ending while any downstream failure leaves the parent uninstalled.
+-    let (m1_candidate, m1_bgc) = caller.prepared_m1_endings(
+-        &prepared,
+-        fixture.receipt.forcing().gsi,
+-    )?;
++    let (m1_candidate, m1_bgc) =
++        caller.prepared_m1_endings(&prepared, fixture.receipt.forcing().gsi)?;
+     let current = caller.native_fixture_from_current(fixture)?;
+     let native = execute_native_m1_receiver_from_m1_ending(
+         &current,

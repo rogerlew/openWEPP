@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "timeout",
+    "60",
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "cargo",
+    "fmt",
+    "--all",
+    "--",
+    "--check"
+  ],
+  "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "start_utc": "2026-09-22T16:52:34.081987+00:00",
+  "end_utc": "2026-09-22T16:52:37.105143+00:00",
+  "elapsed_seconds": 3.0231583416461945,
+  "exit_code": 0,
+  "source_receipt": "parent-correction-review-03-source.json",
+  "scope": "Read-only formatting verification of preserved partial source; no physical execution or qualification"
+}

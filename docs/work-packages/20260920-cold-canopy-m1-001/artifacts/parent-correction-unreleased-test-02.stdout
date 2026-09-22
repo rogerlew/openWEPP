@@ -1,0 +1,20 @@
+TRANSCRIPT-RECOVERED LOG (not a rerun)
+
+Running unittests src/lib.rs (/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_orchestrator-0ad665558c5e4d7c)
+
+running 1 test
+test land_surface_energy_shadow::m1_coupled_expected_red::owner_txn_original60_stages_native_ending_and_advances_cursor ... FAILED
+
+failures:
+
+---- land_surface_energy_shadow::m1_coupled_expected_red::owner_txn_original60_stages_native_ending_and_advances_cursor stdout ----
+
+thread 'land_surface_energy_shadow::m1_coupled_expected_red::owner_txn_original60_stages_native_ending_and_advances_cursor' panicked at crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_coupled_expected_red.rs:1292:14:
+native M1 caller stage: M1ReceiverDiagnosticError { injection: None, source: Runtime(Physical(SurfaceLiquid(Failure(DirectSurfaceLiquidFailure { code: E002, phase: IngressCandidate, context: DirectSurfaceLiquidErrorContext { transaction_id: Some(TransactionId(41)), owner_id: Some(ResourceOwnerId("production-hydrology")), ofe_id: Some(OfeId("ofe-1")), tile_id: Some(TileId("forest")), surface_id: Some(SurfaceId("surface:ofe-1:forest")), source_id: Some(SourceId("liquid:ofe-1:forest")), parcel_id: None }, rollback: DirectSurfaceLiquidRollbackHashes { beginning_owner_sha256: Some("5051c218a63d2e050adcd209ef8c8ee2ebfad077bcd9d16db7e59c96b82400d6"), attempted_owner_sha256: Some("5051c218a63d2e050adcd209ef8c8ee2ebfad077bcd9d16db7e59c96b82400d6") }, detail: "surface-liquid identity failure: covered terminal ground missing terminal source" }))), None), rejected_candidate: None }
+
+failures:
+    land_surface_energy_shadow::m1_coupled_expected_red::owner_txn_original60_stages_native_ending_and_advances_cursor
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1488 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p openwepp-hillslope-orchestrator --lib`

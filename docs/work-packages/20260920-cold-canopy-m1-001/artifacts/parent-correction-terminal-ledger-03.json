@@ -1,0 +1,35 @@
+{
+  "observed_utc": "2026-09-22T16:55:14.722490+00:00",
+  "anchor_utc": "2026-09-22T16:17:00+00:00",
+  "fixed_deadline_utc": "2026-09-22T17:59:58.438121Z",
+  "prior_charged_seconds": "246155.283879",
+  "session_elapsed_seconds": "2294.72249",
+  "charged_cumulative_seconds": "248450.006369",
+  "remaining_carried_allowance_seconds": "3883.715631",
+  "cumulative_ceiling_seconds": "252333.722177",
+  "unreclaimed_rounding_gap_seconds": "0.000177",
+  "reserve_seconds": 1800,
+  "clock_policy": "Concurrent elapsed charged once including reading/review/waits; no reset or wait deductions. Publication time remains chargeable.",
+  "terminal_disposition": "INDISPENSABLE_CALENDAR_INPUT_STOP / CAPACITY_STOP / M1_INCOMPLETE / HOLD",
+  "qualified_physical_runs": 0,
+  "unreleased_failed_physical_tests": 1,
+  "source_tree_sha256": "b503934ab509cce8f46e5e8b9cf3c3487037672b5b25c97ec7084ef1f5d3fc5d",
+  "capacity_events": [
+    {
+      "action": "resume correctness with writer completed, adviser active",
+      "result": "agent thread limit reached"
+    },
+    {
+      "action": "interrupt completed writer then resume same correctness",
+      "result": "agent thread limit reached"
+    },
+    {
+      "action": "adviser complete and interrupted, final serialized correctness resume",
+      "result": "agent thread limit reached"
+    },
+    {
+      "action": "terminal serialized QA resume",
+      "result": "agent thread limit reached"
+    }
+  ]
+}

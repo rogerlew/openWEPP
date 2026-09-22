@@ -1,0 +1,8 @@
+{
+  "observed_utc": "2026-09-22T16:45:41.198938+00:00",
+  "source_binary": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_orchestrator-0ad665558c5e4d7c",
+  "preserved_binary": "/home/roger/openwepp-experiments/cold-canopy-m1-parent-correction-unreleased-20260922/openwepp_hillslope_orchestrator-0ad665558c5e4d7c",
+  "source_sha256": "c4aab1b023b7fc095b7565db2759b09e9749832823b9ae21957804adb6f25d2b",
+  "preserved_sha256": "c4aab1b023b7fc095b7565db2759b09e9749832823b9ae21957804adb6f25d2b",
+  "scope": "Post-run retention of binary at reported failed-test path. No prelaunch hash was observed; this does not retroactively establish execution binding or qualify unapproved run."
+}

@@ -1,0 +1,35 @@
+{
+  "live": {
+    "entries_checked": 757,
+    "mismatches": []
+  },
+  "reconstruction": {
+    "entries_checked": 757,
+    "mismatches": []
+  },
+  "patch_matches": true,
+  "binaries": [
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-binaries-cut03-20260922/openwepp_hillslope_orchestrator-0ad665558c5e4d7c",
+      "sha256": "d379ada68ed49f561b555a391f036682179c3e7f678e5016a5feba7acd08a221",
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-binaries-cut03-20260922/openwepp_land_surface_energy-4b83c89d629ca132",
+      "sha256": "861ffb087a90a30b6d17198a1724a3fa8e15a571bf6f6805cb59b20beee72f1f",
+      "matches": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-binaries-cut03-20260922/openwepp_vegetation-88bd8b2ea7db2d5d",
+      "sha256": "814ea603c02e287e11fd5802e82c13ac1e659ef1ad6889671d732496451c596b",
+      "matches": true
+    }
+  ],
+  "observed_utc": "2026-09-22T16:18:37.728176+00:00",
+  "anchor_utc": "2026-09-22T16:17:00Z",
+  "deadline_utc": "2026-09-22T17:59:58.438121Z",
+  "reserve_seconds": 1800,
+  "prior_charged_seconds": "246155.283879",
+  "carried_seconds": "6178.438121",
+  "source_tree_sha256": "8d959bbcd11da56a819c503bed1fdad9557f4256abe3c8a0778f0a45be246dd4"
+}

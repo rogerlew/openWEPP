@@ -1,0 +1,4 @@
+TRANSCRIPT-RECOVERED LOG (not a rerun)
+
+The captured tool transcript interleaved cargo warnings and stderr with stdout.
+No separable complete stderr stream was captured; this file deliberately does not reconstruct omitted warning text.
