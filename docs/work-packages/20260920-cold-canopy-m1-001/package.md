@@ -86,8 +86,16 @@ production selector or branch changed. No required test was removed. Unrelated
 B01 logs and downloaded primary sources remain untouched and unstaged. The prior
 local publication02 budget receipt is intentionally included as carried evidence.
 
-Publication is authorized on current main; commit and exact remote-byte results
-will be recorded here after execution. The next implementation action, requiring
+Published canonical/evidence commit `7d339674c5beb50317650fa3f2c5cbd508326565`
+to current main. [Remote-byte verification](artifacts/structural-drainage-publication-01.json)
+fetched **all1075 changed files** from immutable GitHub commit URLs and matched
+every complete response SHA256 to the committed bytes. Remote main also matched
+the commit. A closing evidence commit records this result; the final local
+`structural-drainage-publication-02.json` receipt will bind that closing commit,
+its remote-byte verification and the final charged ledger without a self-hash loop.
+Raw patch/log whitespace is preserved: the staged raw diff check reports1750
+patch-context and62 stdout/stderr diagnostics, while the maintained canonical/
+recorder/narrative diff check passes. No raw evidence bytes were trimmed. The next implementation action, requiring
 a renewed owner allowance after this bounded disposition, is the discriminating
 first-domain-valid witness/eligibility and activity-provenance correction, then
 real routing/receivers/rollback and the unchanged physical qualification campaign.
