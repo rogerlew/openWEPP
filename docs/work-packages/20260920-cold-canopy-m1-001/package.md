@@ -2,6 +2,41 @@
 
 ## New-session execution — adopted 2026-09-22 10:38 UTC
 
+**TERMINAL CAPACITY STOP / M1 INCOMPLETE / HOLD — 2026-09-22 11:39 UTC.**
+Independent capacity was genuinely restored and used in this session, then
+became unavailable again at the next serialized correction boundary. Resuming
+the frozen-cut writer returned `agent thread limit reached`; after explicitly
+interrupting the retired completed writer, resuming the same QA reviewer also
+returned that error. The live list retained root and two completed children,
+while the required writer and QA were archived/unlisted. No runtime limits,
+nested workaround, substituted author-reviewer, new verifier wave or repeated
+saturation loop was used. The authorization's indispensable-independence stop
+therefore applies; remaining time is not permission to bypass it.
+
+Actual caller progression, lawful complete-parent commit and positive late
+owning-seam rejection are **NOT ESTABLISHED**. Frozen source compiles, but same
+correctness review proves its first support fails on a transaction identity
+guard before staging. There were **zero new M1 physical executions**. Fixed
+cycles, donor/recipient reconstruction, fresh-process restart, cost/scaling/warm
+comparisons, terminal strict lint, Critical full correctness and applicable
+A0/A1/A3 acceptance remain **NOT RUN / UNMET**, not deferred or waived.
+
+Exact terminal source is757 entries,
+**8d959bbcd11da56a819c503bed1fdad9557f4256abe3c8a0778f0a45be246dd4**:
+[source and observer-relative patch](artifacts/resumption-owner-integrated-partial-03-source.json).
+[Reconstruction](artifacts/resumption-final-reconstruction-01.json) applies the
+patch to immutable observer85b8314e…9963, matches every terminal entry and live
+source, and rehashes all three [retained build binaries](artifacts/resumption-focused-binaries-03.json).
+Detached source and binaries remain unadopted; main Rust and expected fixtures
+are unchanged. Recovery root:
+`/home/roger/openwepp-experiments/cold-canopy-m1-resumption-final-reconstruction-20260922`.
+
+[Ledger and capacity events](artifacts/resumption-terminal-ledger-01.json) at
+11:41:24.536958UTC carry245929.555008s, leaving6404.166992s before subsequent
+preservation/publication charges. The fixed deadline and1800s reserve are not
+reset. The final local `artifacts/resumption-final-publication-01.json` records
+the later actual publication observation and supersedes this interim balance.
+
 Owner again directs complete execution of the independence-resumption authorization
 in a new session. This continues the same checkpoint and acceptance; no additional
 time or scientific scope is granted. Prior stopped dispositions below remain
@@ -119,6 +154,115 @@ returned `agent thread limit reached`. The old completed writer was explicitly
 interrupted. Review will be serialized at the next source freeze; no repeated
 saturation loop or runtime-limit modification is authorized. Initial independent
 capacity and recorder verification remain real evidence, not final M1 review.
+
+### Serialized correctness review and material cut
+
+The same correctness reviewer resumed successfully after the writer returned;
+serialization restores actual review access. Static partialcut01 review rehashes
+757/757 entries and verifies the accepted input/result binding: only accepted
+materialization can mint the private result, and the exact input snapshot prevents
+foreign pairing. Raw-top-rain/capture equations match the evaluator; positive
+branch reaches direct native receiver before late injection, avoiding warm-V8
+execution. These bounded findings do not establish runtime acceptance.
+
+Same correctness retains **HOLD** for the actual test-compilation error (already
+corrected in the later material cut), unchanged transaction41 preventing a genuine
+second support, sidecar `parcel.origin()` IDs disagreeing with actual native
+`m1-native-terminal-{index}` IDs, and receipts claiming V8 beginning ownership for
+M1 ending mass/enthalpy. Full owners and parent-only commit remain incomplete;
+no positive/rainy/late-caller/adjacent test executes the new seams yet. The writer
+owns these concrete fixes and discriminating tests.
+
+Ran: replacement writer reports actual `cargo check --tests` PASS after correcting
+thermal helper visibility/path, plus vegetation compile and formatting. The
+unintegrated material adapter cut is757 entries **3c4de18b…58cff**, preserved by
+[exact source and patch](artifacts/resumption-owner-material-partial-02-source.json).
+It uses existing persistent C/N core, ending strata/material proposals/ledgers and
+BGC join; caller integration and acceptance are still pending. Root clarified
+from primary inputs that original60 has1.35 area in both occupancies, whereas the
+separate radiation reference has lower0.9; both remain unchanged. Shared physical
+bootstrap primitives may initialize a distinct validated M1 owner once without
+relabeling the V8 owner or forcing those separate fixtures to agree.
+
+The reviewed recorder/reference evidence and explicitly unaccepted partial source
+recovery are published at06b0de8fe2dd13888ed6adf6ddabbb2c8396cd4b;
+[remote verification](artifacts/resumption-progress-publication-01.json) matches
+the six selected primary package/recorder/receipt/source/patch byte sets.
+Main Rust remains unchanged. Subsequent detached material/caller work is local.
+
+### Material staging and isolated final support
+
+Ran: replacement writer's test-inclusive compile now reaches actual M1 caller
+staging. The caller owns a distinct M1 configuration/state bootstrapped once
+from generic physical strata, and constructs M1 persistent/material and BGC
+candidates from accepted operands and the actual nitrogen inventory. Native
+transfer capability and successor transaction integration are in progress;
+all statements here are implementation status, not executed owner acceptance.
+Root rejects a renamed `complete_parent` setter with no interval/coverage or
+complete-owner validation: that does not satisfy canonical parent installation.
+Full config/beginning authentication, lawful continuation, complete parent,
+positive late owning-seam rejection and affected independent review remain due.
+
+Ran: [isolated final support copy](artifacts/resumption-final-support-copy-01.json)
+preserves canonical support and Git history at
+`/home/roger/openwepp-experiments/cold-canopy-m1-resumption-final-validation-20260922`.
+[Active test support](artifacts/resumption-final-support-active-tests-01.json)
+overlays the exact experiment's existing test/fixture bytes, retaining ten test
+source differences from main; no assertion or expected fingerprint was changed.
+Canonical missing files remain available. The separate reference manifest still
+points to preserved canonical718 dependency crates, not future M1 validation
+source. The [support inventory](artifacts/resumption-final-support-inventory-01.json)
+binds50058 files, including copied history and actual support inputs. This is
+preparation only: final experimental source activation, exact command/environment
+binding and independent QA precede any physical workflow.
+
+### Same-correctness terminal cut03 disposition
+
+Static: `/root/resumption_correctness` reauthenticates757 entries at8d959bbc…46dd4
+and returns **HOLD** on the affected material/native/parent integration:
+
+- First support always fails: stage passes received transaction41 to an adapter
+  already at41; the new successor constructor rejects equality. A checked next
+  support identity is required, separately from the persistent parent sequence.
+- Persistent M1/stratum transaction counters advance each support; canonical
+  authority increments once at complete-parent finalization. Caller-provided
+  first/last counters and `complete_parent(0,0)` provide no parent authority.
+  The identified existing route is `CoupledClockStateV1`, accepted slab receipts,
+  `ParentCommitCandidateV1::new` and consuming `commit_parent`.
+- M1 admission uses historical configuration validation and omits centralized
+  shared pool/cache/area validation. The reviewer additionally characterizes
+  rewriting the V8 config digest and cloning strata as forbidden relabeling.
+- Current GSI is taken from `previous_gsi` and constrained equal across strata;
+  it must instead bind actual current segment forcing.
+- Carbon integration passes tile fraction1.0; canonical integration requires
+  the actual authenticated occupancy fraction once, affecting C/N/material units.
+- Occupancy joins use `stratum::forest`, native tile selection uses literal
+  `forest`, and contributor fractions use positional record0 with a zero default;
+  exact configured occupancy/OFE/tile bijection and fail-closed lookup are required.
+
+Same correctness verifies private accepted-input/result binding, raw rain
+routing, exact native parcel IDs, use of the M1 ending digest, and structural
+canonical nitrogen/material/BGC joins. These findings do not clear the defects
+above. No tests ran in that review. Root agrees with all concrete missing
+validation/identity/unit/parent fixes; it does **not** infer a ban on projecting
+generic physical primitives once from the user's explicitly permitted legitimate
+bootstrap. Old liquid-only owner admission is forbidden; fresh explicit M1 M/H,
+distinct identity and complete canonical validation remain mandatory. This
+distinction was sent to the reviewer; no affected-fix acceptance was obtained.
+
+Ran: [bound build/list](artifacts/resumption-focused-build-03.json) passes in
+86.527787s with source, observer, pins and links unchanged. Three actual binaries
+are preserved and hashed, with76 selected M1/owner tests identified, **not run**.
+The exact [pending physical manifest](artifacts/resumption-focused-run-support-03.json)
+includes their hashes; it was never launched because known source defects and
+unavailable final QA remain. Same QA's earlier **PASS** covers only the recorder,
+18 controls and isolated reference support/workflow launches. It does not qualify
+the terminal M1 source, physical manifest, owner integration or full campaign.
+
+The60-minute internal reassessment would otherwise continue these in-scope fixes
+with the same writer and reviewers; it grants neither time nor authority. Actual
+capacity failures prevent that continuation. This is a tooling/independence stop,
+not a demonstrated physical impossibility or an M1 performance disposition.
 
 ## Independence resumption — adopted 2026-09-22 09:12:55 UTC
 

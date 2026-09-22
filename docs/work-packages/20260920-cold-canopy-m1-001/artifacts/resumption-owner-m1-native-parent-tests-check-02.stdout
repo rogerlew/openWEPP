@@ -1,0 +1,10 @@
+2026-09-22T11:29:37Z
+/home/roger/openwepp-experiments/cold-canopy-m1-20260920
+383384ea8f719a3f3778c6c61c61eae642925d56fe6290abb194805e76973715  crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs
+09060190e3d1a4f687989b489ff6d30cc8331d58375d87ef0586f0fb82655955  crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs
+b9bde93c45d8f07ff0721e98b00591f6881697adfaa81357bed63a817c1bc4e4  crates/openwepp-hillslope-orchestrator/src/vegetation_real_hydrology_shadow.rs
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+EXIT=101

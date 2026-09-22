@@ -1,0 +1,43 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:80:
+             .map(|node| {
+                 let layer_id = SoilLayerId::try_new(node.layer_id.clone())
+                     .map_err(|_| m1_owner_identity_error())?;
+-                if !node.beginning_temperature_k.is_finite() || node.beginning_temperature_k <= 0.0 {
++                if !node.beginning_temperature_k.is_finite() || node.beginning_temperature_k <= 0.0
++                {
+                     return Err(m1_owner_identity_error());
+                 }
+                 Ok((layer_id, node.beginning_temperature_k))
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:88:
+             .collect::<Result<BTreeMap<_, _>, _>>()?;
+         let mut prior_gsi = beginning.strata().values().map(|state| state.previous_gsi);
+         let gsi = prior_gsi.next().ok_or_else(m1_owner_identity_error)?;
+-        if !gsi.is_finite() || !(0.0..=1.0).contains(&gsi)
++        if !gsi.is_finite()
++            || !(0.0..=1.0).contains(&gsi)
+             || prior_gsi.any(|value| value.to_bits() != gsi.to_bits())
+         {
+             return Err(m1_owner_identity_error());
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:95:
+         }
+-        Ok(openwepp_vegetation::cold_canopy_m1_owner::M1PersistentForcing {
+-            air_temperature_k: self.input.column.air_temperature_k,
+-            gsi,
+-            soil_temperature_k_by_layer,
+-            duration_s: self.evaluation.support_duration_s(),
+-        })
++        Ok(
++            openwepp_vegetation::cold_canopy_m1_owner::M1PersistentForcing {
++                air_temperature_k: self.input.column.air_temperature_k,
++                gsi,
++                soil_temperature_k_by_layer,
++                duration_s: self.evaluation.support_duration_s(),
++            },
++        )
+     }
+ 
+     fn construct_m1_owner_candidate(

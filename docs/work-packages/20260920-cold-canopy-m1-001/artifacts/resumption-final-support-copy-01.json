@@ -1,0 +1,10 @@
+{
+  "start_utc": "2026-09-22T11:24:16.285958+00:00",
+  "end_utc": "2026-09-22T11:25:02.303129+00:00",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support",
+  "destination": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-final-validation-20260922",
+  "method": "cp -a --reflink=auto; independent support and git history copy; no hardlinks or active source link changes",
+  "status": "support copy only; contains canonical dependency source, not final experimental source; activation and source freeze pending",
+  "exit_code": 0,
+  "reference_dependencies": "Absolute manifest paths remain bound to preserved canonical718 source under original support root; expected artifacts unchanged"
+}

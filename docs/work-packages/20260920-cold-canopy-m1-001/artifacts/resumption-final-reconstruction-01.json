@@ -1,0 +1,17 @@
+{
+  "observed_utc": "2026-09-22T11:40:46.994306+00:00",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-final-reconstruction-20260922",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source_tree_sha256": "8d959bbcd11da56a819c503bed1fdad9557f4256abe3c8a0778f0a45be246dd4",
+  "entries": 757,
+  "base": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "base_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/resumption-owner-integrated-partial-03-from-observer-cut02.patch",
+  "patch_sha256": "10c28d9611e23308f23226f2ca22c3260500f7dfc8194f26955de1da7403bc41",
+  "patch_check_exit": 0,
+  "patch_apply_exit": 0,
+  "exact_reconstruction": true,
+  "live_source_matches": true,
+  "retained_build_binaries_match": true,
+  "scope": "Exact recovery only. No physical workflow or M1 acceptance."
+}

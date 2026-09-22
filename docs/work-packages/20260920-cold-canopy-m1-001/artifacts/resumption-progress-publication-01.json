@@ -1,0 +1,43 @@
+{
+  "observed_utc": "2026-09-22T11:08:55.750463+00:00",
+  "commit": "06b0de8fe2dd13888ed6adf6ddabbb2c8396cd4b",
+  "verified_files": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/06b0de8fe2dd13888ed6adf6ddabbb2c8396cd4b/docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+      "sha256": "7939f87257bf48e629cb97e520a909a717a8c2c9977b20882df3e86c8cabab95",
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/06b0de8fe2dd13888ed6adf6ddabbb2c8396cd4b/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py",
+      "sha256": "399f79115d86ff5d80a46ae4967dab7293da10d54dc334b28f2665e8a9cb288c",
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/resumption-recorder-controls-02.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/06b0de8fe2dd13888ed6adf6ddabbb2c8396cd4b/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/resumption-recorder-controls-02.json",
+      "sha256": "3868fa83f34cc0e14530d12b678d2de3e1a918fb35070e187c2bf07ace045887",
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/resumption-reference-workflow-06.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/06b0de8fe2dd13888ed6adf6ddabbb2c8396cd4b/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/resumption-reference-workflow-06.json",
+      "sha256": "b34a1f999cf5dfe628c3f5c19898cd543317c6f7a5ceb4afbfe155950b7b9fd1",
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/resumption-owner-partial-01-source.json",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/06b0de8fe2dd13888ed6adf6ddabbb2c8396cd4b/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/resumption-owner-partial-01-source.json",
+      "sha256": "bf07ddf10068bc51f0e45c92ed523e078363c3959a62e32f8f68e4a33b5e55b4",
+      "remote_bytes_match": true
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/resumption-owner-partial-01-from-observer-cut02.patch",
+      "url": "https://raw.githubusercontent.com/rogerlew/openWEPP/06b0de8fe2dd13888ed6adf6ddabbb2c8396cd4b/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/resumption-owner-partial-01-from-observer-cut02.patch",
+      "sha256": "30210990ce5da22377fc9e0724a5cc96077405eca2beaf406b23722997e75d98",
+      "remote_bytes_match": true
+    }
+  ],
+  "scope": "Reviewed recorder/reference evidence and explicitly unaccepted partial recovery. Main Rust unchanged."
+}

@@ -1,0 +1,33 @@
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+error[E0277]: `?` couldn't convert the error to `M1Error`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:101:70
+    |
+101 |         configuration.validate_historical(M1_MODEL_DEFINITION_SHA256)?;
+    |                       -----------------------------------------------^ the trait `From<error::VegetationError>` is not implemented for `M1Error`
+    |                       |
+    |                       this can't be annotated with `?` because it has type `Result<_, error::VegetationError>`
+    |
+note: `M1Error` needs to implement `From<error::VegetationError>`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:86:1
+    |
+ 86 | pub struct M1Error {
+    | ^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+
+error[E0277]: `?` couldn't convert the error to `M1Error`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1_owner.rs:105:86
+    |
+105 |             || configuration.configuration_sha256 != configuration.canonical_sha256()?
+    |                                                                    ------------------^ the trait `From<error::VegetationError>` is not implemented for `M1Error`
+    |                                                                    |
+    |                                                                    this can't be annotated with `?` because it has type `Result<_, error::VegetationError>`
+    |
+note: `M1Error` needs to implement `From<error::VegetationError>`
+   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:86:1
+    |
+ 86 | pub struct M1Error {
+    | ^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `openwepp-vegetation` (lib) due to 2 previous errors

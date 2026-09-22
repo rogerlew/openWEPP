@@ -1,0 +1,35 @@
+{
+  "observed_utc": "2026-09-22T11:41:24.536958+00:00",
+  "anchor_utc": "2026-09-22T10:38:00+00:00",
+  "fixed_deadline_utc": "2026-09-22T13:28:08.703950Z",
+  "implementation_cutoff_utc": "2026-09-22T12:58:08.703950Z",
+  "ceiling_seconds": "252333.722177",
+  "carried_prior_seconds": "242125.01805",
+  "session_elapsed_seconds": "3804.536958",
+  "charged_cumulative_seconds": "245929.555008",
+  "remaining_carried_allowance_seconds": "6404.166992",
+  "unreclaimed_rounding_gap_seconds": "0.000177",
+  "reserve_seconds": 1800,
+  "stop_reason": "Required independent QA and sole writer resumption unavailable after bounded capacity recovery; source work stopped at frozen cut03. Preservation/publication time continues to charge; later publication receipt supersedes this observation.",
+  "capacity_events": [
+    {
+      "action": "resume /root/m1_owner_finish after completed same correctness review",
+      "result": "agent thread limit reached"
+    },
+    {
+      "action": "list agents",
+      "result": "root running; retired caller_implementation completed; resumption_correctness completed; writer and QA archived/unlisted"
+    },
+    {
+      "action": "interrupt retired /root/caller_implementation",
+      "result": "previous status completed; agent remains listed/available"
+    },
+    {
+      "action": "bounded resume /root/resumption_qa",
+      "result": "agent thread limit reached"
+    }
+  ],
+  "no_runtime_limit_change": true,
+  "no_nested_workaround": true,
+  "new_m1_physical_runs": 0
+}
