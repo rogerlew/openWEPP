@@ -1,0 +1,26 @@
+{
+  "observed_utc": "2026-09-22T10:40:01.593199+00:00",
+  "anchor_utc": "2026-09-22T10:38:00+00:00",
+  "carry_seconds": "242125.01805",
+  "authorized_remaining_seconds": "10208.70395",
+  "fixed_deadline_utc": "2026-09-22T13:28:08.703950+00:00",
+  "launch_cutoff_utc": "2026-09-22T12:58:08.703950+00:00",
+  "reserve_seconds": 1800,
+  "ceiling_seconds": "252333.722177",
+  "source_entries": 756,
+  "source_matches_final_manifest": true,
+  "source_tree_sha256": "00806bf2680470e92b13c64ee508b51e3d61f098bec782d59559e538ec50fc88",
+  "observer_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "binaries": [
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-final-binaries-20260922/openwepp_hillslope_orchestrator-0ad665558c5e4d7c",
+      "sha256": "7956780c4ec61704ecdfb11bbb9db023fa3ce50d954e38293802cc173bec9345",
+      "exact_match": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-owner-final-binaries-20260922/openwepp_land_surface_energy-4b83c89d629ca132",
+      "sha256": "7a6789e474cfebe536991db50f759a5a8fab0c3ac51dbb4748c1a83a190c38a2",
+      "exact_match": true
+    }
+  ]
+}

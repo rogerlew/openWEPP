@@ -1,0 +1,40 @@
+--- /workdir/openWEPP/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/bin/generate_authority_artifacts.rs
++++ /home/roger/openwepp-experiments/cold-canopy-m1-owner-validation-support/docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/src/bin/generate_authority_artifacts.rs
+@@ -319,23 +319,23 @@
+     ),
+     (
+         "DirectLiquidInputInputs",
+-        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
++        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff_result_types.rs",
+     ),
+     (
+         "DirectRunonCarryInputs",
+-        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
++        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff_result_types.rs",
+     ),
+     (
+         "DirectInfiltrationDepressionInputs",
+-        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
++        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff_result_types.rs",
+     ),
+     (
+         "DirectSaturationAddbackInputs",
+-        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
++        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff_result_types.rs",
+     ),
+     (
+         "DirectRunoffPartitionInputs",
+-        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs",
++        "crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff_result_types.rs",
+     ),
+     (
+         "DirectPercolationInputs",
+@@ -512,7 +512,7 @@
+         current.push_str(line);
+         if current.ends_with(',') {
+             let mut value = current.trim_end_matches(',');
+-            if value.starts_with("pub")
++            if (value.starts_with("pub ") || value.starts_with("pub("))
+                 && let Some((_, remainder)) = value.split_once(' ')
+             {
+                 value = remainder;

@@ -1,0 +1,906 @@
+{
+  "observed_utc": "2026-09-22T11:03:47.739476+00:00",
+  "comparison": [
+    {
+      "file": "artifact-manifest.json",
+      "expected_sha256": "d4338d1aed1caeebeb991d3cc378ac21c005e330adaa94eea0f7e6ea5da4117c",
+      "generated_sha256": "2e2adfcb59e27ba64c6bd1a4bbdf426936993b591150adfdd435aab3ef41684d",
+      "equal": false
+    },
+    {
+      "file": "checkpoint-cross-midnight-vector.json",
+      "expected_sha256": "9581e4b77a2dc71a45e7984ca00c39a2996d460088fda5bfadbceac24b06bdde",
+      "generated_sha256": "76e2a1074e8d2ee36120bc98113e97d318002b6e448b805d6cc84ab953904b9b",
+      "equal": false,
+      "differences": [
+        {
+          "path": "/payload_sha256",
+          "expected": "554636e1d54259b748adca347c68c9a1d2f62c0665b8d71b5e5276296d6cf176",
+          "generated": "3bfbd3167b01885499b7d37d9fd6ad2108d7b01ac2e45d8e7e29205e0dba2055"
+        },
+        {
+          "path": "/phase/staged_scientific/biogeochemistry/receivers/0/carbon",
+          "expected": "0x3ef3d761786db607",
+          "generated": "0x3ef3d761786db60f"
+        },
+        {
+          "path": "/phase/staged_scientific/biogeochemistry/receivers/0/dry_matter",
+          "expected": "0x3f04ab05881cf2f5",
+          "generated": "0x3f04ab05881cf2fb"
+        },
+        {
+          "path": "/phase/staged_scientific/biogeochemistry/receivers/0/nitrogen",
+          "expected": "0x3ea04330c9704e4f",
+          "generated": "0x3ea04330c9704e54"
+        },
+        {
+          "path": "/phase/staged_scientific/biogeochemistry/receivers/1/carbon",
+          "expected": "0x3efc9386a4b4cb2f",
+          "generated": "0x3efc9386a4b4cb38"
+        },
+        {
+          "path": "/phase/staged_scientific/biogeochemistry/receivers/1/dry_matter",
+          "expected": "0x3f0dc456eb91a8fd",
+          "generated": "0x3f0dc456eb91a902"
+        },
+        {
+          "path": "/phase/staged_scientific/biogeochemistry/receivers/1/nitrogen",
+          "expected": "0x3ea78a73c17b81c2",
+          "generated": "0x3ea78a73c17b81c7"
+        },
+        {
+          "path": "/phase/staged_scientific/biogeochemistry/receivers/2/carbon",
+          "expected": "0x3f037745ced22928",
+          "generated": "0x3f037745ced2292b"
+        },
+        {
+          "path": "/phase/staged_scientific/biogeochemistry/receivers/2/dry_matter",
+          "expected": "0x3f1446e8b7704034",
+          "generated": "0x3f1446e8b7704038"
+        },
+        {
+          "path": "/phase/staged_scientific/biogeochemistry/receivers/2/nitrogen",
+          "expected": "0x3eb07d7c92c21931",
+          "generated": "0x3eb07d7c92c21934"
+        },
+        {
+          "path": "/phase/staged_scientific/biogeochemistry/state_sha256",
+          "expected": "900c59e92c51a47ff5926d2e797921c384e77b2fd30128dbd5d073d1033b39cf",
+          "generated": "7e0d1744d17c0e44716520917614e3a99777b5a5c9a143dd7582f8e3feca0a8c"
+        },
+        {
+          "path": "/phase/staged_scientific/direct_hydrology/surface_liquid_owned_state/records/0/liquid_kg_m2_tile",
+          "expected": "0x3ffa39203c370b30",
+          "generated": "0x3ffa39203c39a9b2"
+        },
+        {
+          "path": "/phase/staged_scientific/direct_hydrology/surface_liquid_owned_state/state_sha256",
+          "expected": "c5e120810ee3b605a3b565773352501877798e81c04fdf1d082051bad24933d5",
+          "generated": "cac554fdf75429d4eb91d8df4b25420b79af5cd3b8a0aa20eceff11dfdbbd2e0"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/state_sha256",
+          "expected": "87bec83a382ead89fe170028ee8bc512118a567ad5e31e9b7ba3bcc184ffaeb8",
+          "generated": "3da10e4335a554acaedd1726a67a0d3fbe19554cc4f526849112feadfb8a8240"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/0/surface_enthalpy_j_m2_tile_ground",
+          "expected": "0x410c1a412675a184",
+          "generated": "0x410c1a4126775cc3"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/0/surface_temperature_warm_start_k",
+          "expected": "0x40727d58c32b4683",
+          "generated": "0x40727d58c32b442e"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/1/surface_enthalpy_j_m2_tile_ground",
+          "expected": "0x412efcd84406c7d3",
+          "generated": "0x412efcd84406b179"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/1/surface_temperature_warm_start_k",
+          "expected": "0x407295387aafadae",
+          "generated": "0x407295387aafac97"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/0/enthalpy_j_m2_ofe_ground",
+          "expected": "0x413b2d86e9c8e373",
+          "generated": "0x413b2d86e9c8c79f"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/0/temperature_k",
+          "expected": "0x4072a026771e3446",
+          "generated": "0x4072a026771e3351"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/1/enthalpy_j_m2_ofe_ground",
+          "expected": "0x4149622dc42c44c8",
+          "generated": "0x4149622dc42cdec9"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/1/temperature_k",
+          "expected": "0x407292c2f57eab6f",
+          "generated": "0x407292c2f57eb26f"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/2/enthalpy_j_m2_ofe_ground",
+          "expected": "0x414044ba98da4d45",
+          "generated": "0x414044ba98dc3604"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/2/temperature_k",
+          "expected": "0x40725bc37f5558d7",
+          "generated": "0x40725bc37f556f15"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/3/enthalpy_j_m2_ofe_ground",
+          "expected": "0x4137009b65852964",
+          "generated": "0x4137009b658bef7b"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/3/temperature_k",
+          "expected": "0x4072243882d561ee",
+          "generated": "0x4072243882d58966"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/4/enthalpy_j_m2_ofe_ground",
+          "expected": "0x413002cdf999f1b2",
+          "generated": "0x413002cdf9a3ab01"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/4/temperature_k",
+          "expected": "0x4071fb7e27fec51d",
+          "generated": "0x4071fb7e27fefdbe"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/5/enthalpy_j_m2_ofe_ground",
+          "expected": "0x4152e0d32f6f82de",
+          "generated": "0x4152e0d32f726cf5"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/5/temperature_k",
+          "expected": "0x4071e61ddf458ac1",
+          "generated": "0x4071e61ddf45cea7"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/restart_payload_sha256",
+          "expected": "69489982c1a3e84d4f12df48b290fe8649b4257a45f2c4916ef774e536880ccc",
+          "generated": "6ae3aff3bb190786e0c8abff0754545cf605dc48a1bb529625621a69809b9305"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/snapshot_sha256",
+          "expected": "df0c8512789ac7819c33b70c51b7472df5a3a6124740808179e8d39e0d0e3027",
+          "generated": "6169d54ce841d6c9ca79fbe405d173b73b42254ecb071f8a29f96f65b19f728f"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/state_sha256",
+          "expected": "3b528bfeb2775e9dd94e58b79fbda5ffb2f34673d162886e220b68de589c8259",
+          "generated": "b3119f3769878797082fda1a556fbabbc8c8895f41974e2c33bd8ad1ab9e9fd1"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/dry_stem_temperature_k",
+          "expected": "0x4072816ea146806a",
+          "generated": "0x4072816ea1467f61"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/root_node_potential_mm",
+          "expected": "0xc0a14b633188ee20",
+          "generated": "0xc0a14b633188edb7"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/shade_ci_pa",
+          "expected": "0x40aa0ae52f9e9222",
+          "generated": "0x40aa0ae52f9e80b4"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/shade_leaf_potential_mm",
+          "expected": "0xc0c3f3c404d61a82",
+          "generated": "0xc0c3f3c404d61a60"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/shade_leaf_temperature_k",
+          "expected": "0x40728263fd062659",
+          "generated": "0x40728263fd062562"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/stem_potential_mm",
+          "expected": "0xc0c3f3c402b920d4",
+          "generated": "0xc0c3f3c402b920b2"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/sun_leaf_potential_mm",
+          "expected": "0xc0c3f3c402b920d4",
+          "generated": "0xc0c3f3c402b920b2"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/sun_leaf_temperature_k",
+          "expected": "0x407283bfed231143",
+          "generated": "0x407283bfed234285"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/wet_surface_temperature_k",
+          "expected": "0x407283bfed231143",
+          "generated": "0x407283bfed234285"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/dry_stem_temperature_k",
+          "expected": "0x40727fba7d772e4d",
+          "generated": "0x40727fba7d772d7c"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/root_node_potential_mm",
+          "expected": "0xc0a14b1608940f25",
+          "generated": "0xc0a14b1608940ec7"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/shade_ci_pa",
+          "expected": "0x40a9faf0d93f0620",
+          "generated": "0x40a9faf0d93ef6fd"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/shade_leaf_potential_mm",
+          "expected": "0xc0ccbe2be6c091d2",
+          "generated": "0xc0ccbe2be6c091af"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/shade_leaf_temperature_k",
+          "expected": "0x40728165d5cf7600",
+          "generated": "0x40728165d5cf752a"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/stem_potential_mm",
+          "expected": "0xc0ccbe2be4af6f31",
+          "generated": "0xc0ccbe2be4af6f0d"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/sun_leaf_potential_mm",
+          "expected": "0xc0ccbe2be4af6f31",
+          "generated": "0xc0ccbe2be4af6f0d"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/sun_leaf_temperature_k",
+          "expected": "0x407283bfed231143",
+          "generated": "0x407283bfed234285"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/wet_surface_temperature_k",
+          "expected": "0x407283bfed231143",
+          "generated": "0x407283bfed234285"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/state_sha256",
+          "expected": "79d04aeadbbd7f22c2842ed5333f1a8f28be2f2fdfdaafc5682886427ace7619",
+          "generated": "01b52c0bec72a65c9def3c4b90c9fa3066e6abfd7a218c29b6edbfc9d94ff83a"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/0/leaf_area",
+          "expected": "0x3fda85b44dd318e5",
+          "generated": "0x3fda85b44dd318e8"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/0/root_area",
+          "expected": "0x3fe1e70ce7bb4a67",
+          "generated": "0x3fe1e70ce7bb4a69"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/0/stem_area",
+          "expected": "0x3fc290cb0346f7d3",
+          "generated": "0x3fc290cb0346f7d5"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/0/tissues/0/pool/display/carbon",
+          "expected": "0x3f9537c37175ad84",
+          "generated": "0x3f9537c37175ad86"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/0/tissues/0/pool/display/nitrogen",
+          "expected": "0x3f448f1773daa67b",
+          "generated": "0x3f448f1773daa682"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/0/tissues/1/pool/display/carbon",
+          "expected": "0x3f90f77a3967e606",
+          "generated": "0x3f90f77a3967e609"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/0/tissues/1/pool/display/nitrogen",
+          "expected": "0x3f3868216328a09b",
+          "generated": "0x3f3868216328a0a0"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/0/xs_c",
+          "expected": "0xbf9ed202647c3dd6",
+          "generated": "0xbf9ed202647c3d69"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/leaf_area",
+          "expected": "0x3fdaafbf90630b49",
+          "generated": "0x3fdaafbf90630b5c"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/root_area",
+          "expected": "0x3fe2036e1b0fa79e",
+          "generated": "0x3fe2036e1b0fa7ab"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/stem_area",
+          "expected": "0x3fc2ae394b7887e6",
+          "generated": "0x3fc2ae394b7887f3"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/tissues/0/pool/display/carbon",
+          "expected": "0x3f9559660d1c0907",
+          "generated": "0x3f9559660d1c0916"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/tissues/0/pool/display/nitrogen",
+          "expected": "0x3f44b2f819e16e86",
+          "generated": "0x3f44b2f819e16e94"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/tissues/1/pool/display/carbon",
+          "expected": "0x3f9112610c799177",
+          "generated": "0x3f9112610c799183"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/tissues/1/pool/display/nitrogen",
+          "expected": "0x3f388e63fb6f44ca",
+          "generated": "0x3f388e63fb6f44db"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/tissues/2/pool/display/nitrogen",
+          "expected": "0x3f467a8234faf0de",
+          "generated": "0x3f467a8234faf0df"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/tissues/3/pool/display/carbon",
+          "expected": "0x3fad76226761c945",
+          "generated": "0x3fad76226761c947"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/tissues/4/pool/display/nitrogen",
+          "expected": "0x3f26ba39e40b9e92",
+          "generated": "0x3f26ba39e40b9e93"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/tissues/5/pool/display/carbon",
+          "expected": "0x3f8f6831d32e0dd9",
+          "generated": "0x3f8f6831d32e0ddb"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/xs_c",
+          "expected": "0xbf9ecf90dfb66278",
+          "generated": "0xbf9ecf90dfb66214"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/tile_canopy_air/0/canopy_air_specific_humidity_kg_kg",
+          "expected": "0x3f917e1d33ae600d",
+          "generated": "0x3f917e1d33ae67f6"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/tile_canopy_air/0/canopy_air_temperature_k",
+          "expected": "0x407283bfed231143",
+          "generated": "0x407283bfed231066"
+        }
+      ]
+    },
+    {
+      "file": "checkpoint-in-progress-vector.json",
+      "expected_sha256": "f2ad9f4cd08dd6a64ac1a0288dc1ac833cd96e41d0c2122659eef7bcce08fad4",
+      "generated_sha256": "c12f7f8632f7043cc32609d9a963fe442a1775606db13440133654ba138b3e18",
+      "equal": false,
+      "differences": [
+        {
+          "path": "/payload_sha256",
+          "expected": "1c072c2a051cfbdbc366f312aa47ba95a8830e9b541bd5e48f78a4a22eed545c",
+          "generated": "e5c3355beb85afacd767ff9f4ceffb065617fca6da81a03e94399863da0441d8"
+        },
+        {
+          "path": "/phase/staged_scientific/direct_hydrology/surface_liquid_owned_state/records/0/liquid_kg_m2_tile",
+          "expected": "0x400cfadfa483e2a4",
+          "generated": "0x400cfadfa4849bfa"
+        },
+        {
+          "path": "/phase/staged_scientific/direct_hydrology/surface_liquid_owned_state/state_sha256",
+          "expected": "920d0ee712583d083a55417d1dd6a9bdccebc9898a406837ed1f179e2cae2b1a",
+          "generated": "286358ce920c4bd5961cff31286dd1763f14bb6597e651c5c5ff5dabe919332d"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/state_sha256",
+          "expected": "9748c9c17abbfdbf1ee20cc3ce863802c500dd0590fa39b12cdcb34413fe4a75",
+          "generated": "4bbd32c22144252b171555fa04c3c5219ea1b101d0e94622f012058f8056dc5e"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/0/surface_enthalpy_j_m2_tile_ground",
+          "expected": "0x4119597508c6806e",
+          "generated": "0x4119597508c6f301"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/0/surface_temperature_warm_start_k",
+          "expected": "0x4072794d506e0fc8",
+          "generated": "0x4072794d506e0eb8"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/1/surface_enthalpy_j_m2_tile_ground",
+          "expected": "0x412df5fca604224a",
+          "generated": "0x412df5fca6042a8a"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/1/surface_temperature_warm_start_k",
+          "expected": "0x40728867363959bc",
+          "generated": "0x4072886736395a23"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/0/enthalpy_j_m2_ofe_ground",
+          "expected": "0x413464689a5f777f",
+          "generated": "0x413464689a5f8f48"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/0/temperature_k",
+          "expected": "0x407264db4b09acf8",
+          "generated": "0x407264db4b09adc8"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/1/enthalpy_j_m2_ofe_ground",
+          "expected": "0x4142e805c3817175",
+          "generated": "0x4142e805c381a7d9"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/1/temperature_k",
+          "expected": "0x4072474c09ced298",
+          "generated": "0x4072474c09ced512"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/2/enthalpy_j_m2_ofe_ground",
+          "expected": "0x413890d22b045044",
+          "generated": "0x413890d22b05f9bf"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/2/temperature_k",
+          "expected": "0x40722d53ed22d2b9",
+          "generated": "0x40722d53ed22dc65"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/3/enthalpy_j_m2_ofe_ground",
+          "expected": "0x4132bd17a4d7c5df",
+          "generated": "0x4132bd17a4dd154c"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/3/temperature_k",
+          "expected": "0x40720b61fa319a19",
+          "generated": "0x40720b61fa31b908"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/4/enthalpy_j_m2_ofe_ground",
+          "expected": "0x4125ee92e57d3b4e",
+          "generated": "0x4125ee92e59616de"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/4/temperature_k",
+          "expected": "0x4071de1a853a5bfa",
+          "generated": "0x4071de1a853aa460"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/5/enthalpy_j_m2_ofe_ground",
+          "expected": "0x4150f70edfdfc743",
+          "generated": "0x4150f70edfe4b99c"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/5/temperature_k",
+          "expected": "0x4071b9897a46e2db",
+          "generated": "0x4071b9897a47561c"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/restart_payload_sha256",
+          "expected": "cb5d5a3af0bbc4bd86c96f8fd9f13f3d6a2f81c85074f3b0931b21ef3a01236d",
+          "generated": "687a1b00121012624b6b0481d9015752e98d4bc98154c26fb8ee7c82d5d4e4c5"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/snapshot_sha256",
+          "expected": "85a9e933fe448a3ad12a096a3df47f1f324eb8afeb9d65293fda19e6b0c62d3b",
+          "generated": "e11cb5b9b2543e52365d0282bfca4f98308601faffe42b2efe3cf2312b52727d"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/state_sha256",
+          "expected": "00b53cfdc39469f7ca6077a739fedade1b7d0c4f362fd9cf7e991431a249c782",
+          "generated": "d1c99358122bd1c42a4a33e7056c93ea233a9f7ab8d9754b664cc660372f33ef"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/dry_stem_temperature_k",
+          "expected": "0x40729dc9a004c287",
+          "generated": "0x40729dc9a004c23a"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/root_node_potential_mm",
+          "expected": "0xc0a14396737c8dd4",
+          "generated": "0xc0a14396737c8d2a"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/shade_ci_pa",
+          "expected": "0x40ac5703a3971e84",
+          "generated": "0x40ac5703a39719a7"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/shade_leaf_potential_mm",
+          "expected": "0xc0c3f2674093c31e",
+          "generated": "0xc0c3f2674093c32e"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/shade_leaf_temperature_k",
+          "expected": "0x4072a09a795adae2",
+          "generated": "0x4072a09a795ada94"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/stem_potential_mm",
+          "expected": "0xc0c3f2673d1cd836",
+          "generated": "0xc0c3f2673d1cd846"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/sun_leaf_potential_mm",
+          "expected": "0xc0c3f2673d1cd836",
+          "generated": "0xc0c3f2673d1cd846"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/sun_leaf_temperature_k",
+          "expected": "0x4072a49ef3ae3b52",
+          "generated": "0x4072a49ef3ae3b2c"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/wet_surface_temperature_k",
+          "expected": "0x4072a49ef3ae3b52",
+          "generated": "0x4072a49ef3ae3b2c"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/dry_stem_temperature_k",
+          "expected": "0x4072a16c67919bb4",
+          "generated": "0x4072a16c67919b6b"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/root_node_potential_mm",
+          "expected": "0xc0a1444d570282a8",
+          "generated": "0xc0a1444d570281f4"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/shade_ci_pa",
+          "expected": "0x40ac78a202384536",
+          "generated": "0x40ac78a20238404c"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/shade_leaf_potential_mm",
+          "expected": "0xc0ccbd83de479b9c",
+          "generated": "0xc0ccbd83de479bf4"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/shade_leaf_temperature_k",
+          "expected": "0x4072a2bd987b9036",
+          "generated": "0x4072a2bd987b8fe5"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/stem_potential_mm",
+          "expected": "0xc0ccbd83daad8a6e",
+          "generated": "0xc0ccbd83daad8ac6"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/sun_leaf_potential_mm",
+          "expected": "0xc0ccbd83daad8a6e",
+          "generated": "0xc0ccbd83daad8ac6"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/sun_leaf_temperature_k",
+          "expected": "0x4072a49ef3ae3b52",
+          "generated": "0x4072a49ef3ae3b2c"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/wet_surface_temperature_k",
+          "expected": "0x4072a49ef3ae3b52",
+          "generated": "0x4072a49ef3ae3b2c"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/state_sha256",
+          "expected": "93178dea4b26d2c3c49d64e550c7e54ac27b0b828220e2cf52d1232e97378ca3",
+          "generated": "b45d052ea5d2fc038ca52881a3f4c546b0ce467bd28ba3c1b0cefac4922ef0c5"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/0/xs_c",
+          "expected": "0xbf9ed879949faf51",
+          "generated": "0xbf9ed879949faf5b"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/xs_c",
+          "expected": "0xbf9ed881d848f996",
+          "generated": "0xbf9ed881d848f99f"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/tile_canopy_air/0/canopy_air_specific_humidity_kg_kg",
+          "expected": "0x3f91f9005ab9f196",
+          "generated": "0x3f91f9005aba268d"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/tile_canopy_air/0/canopy_air_temperature_k",
+          "expected": "0x4072a49ef3ae3b52",
+          "generated": "0x4072a49ef3ae3afc"
+        }
+      ]
+    },
+    {
+      "file": "checkpoint-multi-destination-vector.json",
+      "expected_sha256": "68620552c5b381be6c0500f0bbdc26d3376a588162151433275a0ccf37de0a90",
+      "generated_sha256": "732c85d691259a3067c28107e569698995ea482cc7782bf21351d27d6c144050",
+      "equal": false,
+      "differences": [
+        {
+          "path": "/payload_sha256",
+          "expected": "bef41b7cef657d7711a0ed25583c3e81329cd8ad4bb0d7f7bc6a07074f12c9f1",
+          "generated": "b4fc54ae3ebf5cb1631b27411c0952b8b7e052dd3dc013e8427b6a3ea08b7a07"
+        },
+        {
+          "path": "/phase/staged_scientific/direct_hydrology/surface_liquid_owned_state/records/0/liquid_kg_m2_tile",
+          "expected": "0x400f32cc529400ab",
+          "generated": "0x400f32cc529422e9"
+        },
+        {
+          "path": "/phase/staged_scientific/direct_hydrology/surface_liquid_owned_state/state_sha256",
+          "expected": "7fa7ece6e63dcd0dbc1f1b2e4b6ce23596a231bd22b0a6608e7bcf130ae72d12",
+          "generated": "9ba2c5c8b189c210f239f3f65def5bf4ffe8997cb3865ee05983818115f05785"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/state_sha256",
+          "expected": "0c6030b23e02015a6a0ac2d0c4c90363b86c0edc13f3780a88f254552dde361c",
+          "generated": "753e383f162dfd675d4c536bd11f3b7115193812343f2adb03e65bbefd6280ea"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/0/surface_enthalpy_j_m2_tile_ground",
+          "expected": "0x4118bbdce205fab7",
+          "generated": "0x4118bbdce20611c7"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/0/surface_temperature_warm_start_k",
+          "expected": "0x40725bc7398a3de2",
+          "generated": "0x40725bc7398a3de7"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/1/surface_enthalpy_j_m2_tile_ground",
+          "expected": "0x412a2c01e94fc8c6",
+          "generated": "0x412a2c01e94fceb4"
+        },
+        {
+          "path": "/phase/staged_scientific/lse_v2/tiles/1/surface_temperature_warm_start_k",
+          "expected": "0x4072591ae989349a",
+          "generated": "0x4072591ae98934e4"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/0/enthalpy_j_m2_ofe_ground",
+          "expected": "0x41318d8256024f4c",
+          "generated": "0x41318d8256025dfb"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/0/temperature_k",
+          "expected": "0x40724c0b8c6cc267",
+          "generated": "0x40724c0b8c6cc2e6"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/1/enthalpy_j_m2_ofe_ground",
+          "expected": "0x41423a70e87e025c",
+          "generated": "0x41423a70e87e0e54"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/1/temperature_k",
+          "expected": "0x40723f65aaeaa7dc",
+          "generated": "0x40723f65aaeaa867"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/2/enthalpy_j_m2_ofe_ground",
+          "expected": "0x413ac4f22594817c",
+          "generated": "0x413ac4f225945c87"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/2/temperature_k",
+          "expected": "0x40723a2a31301de3",
+          "generated": "0x40723a2a31301d0b"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/3/enthalpy_j_m2_ofe_ground",
+          "expected": "0x4136b5115ec77ae2",
+          "generated": "0x4136b5115ec7dde1"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/3/temperature_k",
+          "expected": "0x4072228076aa4a6e",
+          "generated": "0x4072228076aa4caf"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/4/enthalpy_j_m2_ofe_ground",
+          "expected": "0x412611879f7a4ab7",
+          "generated": "0x412611879f891ef3"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/4/temperature_k",
+          "expected": "0x4071de8056487ad3",
+          "generated": "0x4071de805648a603"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/5/enthalpy_j_m2_ofe_ground",
+          "expected": "0x414d8f12cc1f9d56",
+          "generated": "0x414d8f12cc2f5e06"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/ofes/0/ordered_layers/5/temperature_k",
+          "expected": "0x4071869baf2d8a02",
+          "generated": "0x4071869baf2e4188"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/restart_payload_sha256",
+          "expected": "e6768a52deeb23f59eca6f080f8168d10dc967eb37215e3baa6dc7094110e32c",
+          "generated": "4db5184fe34ee53226562a0127b03758f1e3e91d630e4bf0c1f6e37b9b158a93"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/snapshot_sha256",
+          "expected": "f27b9a18cd7450d6a8118c60401c90ead7bf7251044a7cf1114b91d8404795d5",
+          "generated": "44337b946303beddbb11302d43031f75764afebf7c8a2a220eb2264b660ae9b6"
+        },
+        {
+          "path": "/phase/staged_scientific/soil_thermal/state_sha256",
+          "expected": "19e1f7fe502a90b10901ab4ceab3bdcbef54c0adc870951521527f9c88b108f8",
+          "generated": "11b7f59a88c5ce5bd5cbe727cb978d6036f169444a9f8507979d5e33b4777abf"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/canopy_liquid_kg_h2o_m2_tile_ground",
+          "expected": "0x3f442ab339e36cf8",
+          "generated": "0x3f442ab33a1c1afe"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/dry_stem_temperature_k",
+          "expected": "0x407265c2e11234cb",
+          "generated": "0x407265c2e1123467"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/root_node_potential_mm",
+          "expected": "0xc0a1346df46c2bcc",
+          "generated": "0xc0a1346df46c2b77"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/shade_ci_pa",
+          "expected": "0x40a85ffbb6a4da91",
+          "generated": "0x40a85ffbb6a4d2b2"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/shade_leaf_potential_mm",
+          "expected": "0xc0c3ed72b1d721db",
+          "generated": "0xc0c3ed72b1d721b6"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/shade_leaf_temperature_k",
+          "expected": "0x407267039b20ad39",
+          "generated": "0x407267039b20acd0"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/stem_potential_mm",
+          "expected": "0xc0c3ed72b10e9248",
+          "generated": "0xc0c3ed72b10e9222"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/sun_leaf_potential_mm",
+          "expected": "0xc0c3ed72b10e9248",
+          "generated": "0xc0c3ed72b10e9222"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/sun_leaf_temperature_k",
+          "expected": "0x407268c625cf95a7",
+          "generated": "0x407268c625cf9538"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/0/wet_surface_temperature_k",
+          "expected": "0x40725b32d7a78bac",
+          "generated": "0x40725b32d7a78bbe"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/canopy_liquid_kg_h2o_m2_tile_ground",
+          "expected": "0x3f4550bfe1d6e0be",
+          "generated": "0x3f4550bfe21fcb66"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/dry_stem_temperature_k",
+          "expected": "0x40726527c7a992c7",
+          "generated": "0x40726527c7a99264"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/root_node_potential_mm",
+          "expected": "0xc0a134558410e733",
+          "generated": "0xc0a134558410e6d6"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/shade_ci_pa",
+          "expected": "0x40a8593c9cb4a68b",
+          "generated": "0x40a8593c9cb49eb9"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/shade_leaf_potential_mm",
+          "expected": "0xc0ccb79ab3199d84",
+          "generated": "0xc0ccb79ab3199d56"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/shade_leaf_temperature_k",
+          "expected": "0x407266a9cbd232df",
+          "generated": "0x407266a9cbd23277"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/stem_potential_mm",
+          "expected": "0xc0ccb79ab254c7f4",
+          "generated": "0xc0ccb79ab254c7c6"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/sun_leaf_potential_mm",
+          "expected": "0xc0ccb79ab254c7f4",
+          "generated": "0xc0ccb79ab254c7c6"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/sun_leaf_temperature_k",
+          "expected": "0x407268c625cf95a7",
+          "generated": "0x407268c625cf9538"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/occupancies/1/wet_surface_temperature_k",
+          "expected": "0x40725b0a1e5b5bf4",
+          "generated": "0x40725b0a1e5b5c07"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/state_sha256",
+          "expected": "454880430dc55008fc64a4a2daf066d0a45952a8d15f5d342765d4a2bb9ee61c",
+          "generated": "2eaac25821989f39efd11597ce6b84cd2ab4980ea6fc94787f9775bf731e9ebc"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/0/xs_c",
+          "expected": "0xbf9ec7abf485a79c",
+          "generated": "0xbf9ec7abf485a79f"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/strata/1/xs_c",
+          "expected": "0xbf9ec7a93efcb525",
+          "generated": "0xbf9ec7a93efcb527"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/tile_canopy_air/0/canopy_air_specific_humidity_kg_kg",
+          "expected": "0x3f91668c3c68492a",
+          "generated": "0x3f91668c3c684e62"
+        },
+        {
+          "path": "/phase/staged_scientific/vegetation_v10/tile_canopy_air/0/canopy_air_temperature_k",
+          "expected": "0x407268c625cf95a7",
+          "generated": "0x407268c625cf9538"
+        }
+      ]
+    },
+    {
+      "file": "checkpoint-schema.json",
+      "expected_sha256": "59b81be70e2bba759997f53f3bb622fa5c1556dc26e2477f7177af55d7155047",
+      "generated_sha256": "59b81be70e2bba759997f53f3bb622fa5c1556dc26e2477f7177af55d7155047",
+      "equal": true
+    },
+    {
+      "file": "checkpoint-vector.json",
+      "expected_sha256": "c3f9df44452b491a9734ac55f765fbdfb124624fdbda22e83a1e7f2a563d805f",
+      "generated_sha256": "c3f9df44452b491a9734ac55f765fbdfb124624fdbda22e83a1e7f2a563d805f",
+      "equal": true
+    },
+    {
+      "file": "direct-run-frame-field-classification.md",
+      "expected_sha256": "8efc05e961e38a7df2a54696527a4233832a1e1264a67355911463ec310b4ef1",
+      "generated_sha256": "29808db3f0558986bb4d4e91ba913ecbbcae31269c14d184d393d31d54c4912b",
+      "equal": false
+    },
+    {
+      "file": "generated-field-metadata.json",
+      "expected_sha256": "27afdab1588b3a9c5357b19bd88762d87684997f9bd62be0d786933077a6430a",
+      "generated_sha256": "7353209fc418c6cec05fedb83ac3b922a21607d26cff65aad2d31e7d69b30451",
+      "equal": false
+    },
+    {
+      "file": "poison-matrix.md",
+      "expected_sha256": "dbaea93ee55be51410c616d16e9c547d43dcbb613b64f03ca0f31041abf9ef71",
+      "generated_sha256": "dbaea93ee55be51410c616d16e9c547d43dcbb613b64f03ca0f31041abf9ef71",
+      "equal": true
+    }
+  ],
+  "decision": "Preserve existing expected reference identities. Generated outputs remain isolated; workflow success does not prove reference equivalence. No assertion/fingerprint replacement."
+}

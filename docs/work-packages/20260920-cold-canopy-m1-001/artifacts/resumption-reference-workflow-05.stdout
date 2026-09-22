@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-owner-validation-support-a340a1e1bd68
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-owner-validation-support-a340a1e1bd68
+  cache:   /workdir/.cache/openwepp

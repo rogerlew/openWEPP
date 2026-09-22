@@ -1,5 +1,125 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## New-session execution — adopted 2026-09-22 10:38 UTC
+
+Owner again directs complete execution of the independence-resumption authorization
+in a new session. This continues the same checkpoint and acceptance; no additional
+time or scientific scope is granted. Prior stopped dispositions below remain
+historical. Both replacement dispatches succeeded: `/root/resumption_correctness`
+(Sol/high) and `/root/resumption_qa` (Terra/medium), distinct read-only reviewers.
+Both scopes have now received and returned actual source/evidence findings;
+independent capacity is established and implementation is reopened.
+No nested agents; at most two children; one detached Rust writer once reopened.
+
+Ran: [new-session recovery](artifacts/independence-new-session-recovery-01.json)
+compares all756 live source entries with the final00806bf2…fc88 manifest and
+rehashes observer85b8314e…9963 and both retained terminal binaries: all match.
+No reconstruction or patch reapplication was necessary. Main Rust remains outside
+the implementation scope. The prior unreviewed recorder delta is assigned to QA;
+no physical execution precedes its actual support/environment/control verification.
+
+The actual local prior recovery publication receipt carries **242125.01805 s**,
+including the failed09:12 session. Retain only **10208.70395 s** paused balance;
+do not reclaim the0.000177s rounding gap to ceiling252333.722177s. Conservative
+first-reading anchor **2026-09-22T10:38:00Z** fixes this session's deadline at
+**13:28:08.703950Z**, implementation/launch cutoff **12:58:08.703950Z**, with
+the unchanged1800s reserve. Concurrent elapsed time is charged once with no wait
+deductions. Neither old deadline is reused; this fixed anchor will not move.
+
+Intent and checks: complete authenticated accepted M1 preparation; genuine
+current-state native receiver/vegetation/M/H/thermal/LSE/BGC staging; actual forcing
+and once-only transfers; complete parent validation and atomic installation;
+adjacent-support and positive late-rejection proof. Apply affected format/strict
+lint and focused guards first; independent donor/recipient balances and corrected
+source/support QA precede physical evidence. Proceed to unchanged fixed72-hour
+cycles, fresh-process restart and release cost/scaling/warm controls when their
+prerequisites pass. Critical full correctness and applicable A0/A1/A3 remain
+required at stable source. No accepted earlier science investigation is reopened,
+no fixture/physics/tolerance changes, no WAT5 repair or production activation.
+Scoped current-main evidence publication remains authorized. Stop conditions and
+internal reassessment are those in the adopted authorization, without allowance
+reset. All unmet acceptance remains HOLD until directly established.
+
+### Independent scopes and initial corrections
+
+Static: `/root/resumption_correctness` independently rehashed756/756 entries and
+returns **HOLD** on the affected00806 cut. Findings: positive transfer calls
+prescribed warm-V8 rather than direct M1; native beginnings come from the fixture;
+per-support commit and cloned/discarded vegetation/BGC/thermal owners violate
+complete parent staging; input/evaluation are independently supplied; rain and
+transfer custody are zeroed; late rejection resets only a diagnostic clone.
+It also retains positional M/H joins, string classification, synthetic41/60
+identity and `(mass*f)/mass` underflow concerns. These six concrete groups remain
+assigned to sole detached writer `/root/caller_implementation` (Terra/medium).
+Required adjacent support, actual complete parent, donor/recipient reconstruction
+and late caller rollback remain absent. Same correctness owns affected fixes.
+
+Static + inspected Ran evidence: `/root/resumption_qa` first returned recorder
+**HOLD** for stale deadline, unbound selected source/authority/input, imported
+helper executed before authentication, unbound inherited environment, unsafe/
+colliding output labels and incomplete link-target content binding. Root corrected
+the existing recorder and ran [15 nonphysical controls](artifacts/resumption-recorder-controls-01.json):
+14 launch refusals preserve outputs/leave marker absent; selected-root `pwd`
+agrees with receipt cwd and preserves source/pins/links. Same QA inspected actual
+fixes and returned **PASS for recorder/control scope only**. Future physical
+execution still requires its complete selected source/support manifest. The
+isolated13b900… control source is not a qualified M1 scientific cut.
+
+Root's static generator inspection corrects the earlier “enum lookup520” label:
+line520 splits a field on colon after `starts_with("pub")` strips identifiers
+such as `publication_rotation_sha256` as though they were visibility prefixes.
+The isolated correction recognizes `pub ` or `pub(` only, retaining all fields;
+its cumulative [recovery patch](artifacts/resumption-reference-generator-recovery.patch)
+includes the previously preserved path relocations. No expected fingerprint or
+physical equation changes. Generator execution remains pending bound support QA.
+
+### Owner-boundary reassessment and reference workflow
+
+Internal reassessment **CONTINUE / REASSIGN**,11:00UTC. The first writer made
+accepted-input binding and native hydrology/thermal/routing source changes,
+but repeatedly returned before implementing the assigned vegetation/BGC material
+boundary. Root rejects its metadata-only M1 owner scaffold (public forgeable
+candidate, noncanonical identity checks, unchecked revision, no C/N pool work).
+The exact unaccepted757-entry partial source **da4436e6…4040f0** and observer patch
+are preserved in [source receipt](artifacts/resumption-owner-partial-01-source.json),
+with immutable review cut at
+`/home/roger/openwepp-experiments/cold-canopy-m1-resumption-review-cut01-20260922`.
+`/root/caller_implementation` is stopped; `/root/m1_owner_finish` (Terra/medium)
+is sole replacement writer for actual shared canonical persistent/material core
+integration and parent transaction. Same independent reviewers, same fixed
+allowance, no new science or acceptance. No M1 physics execution yet.
+Static integration correction at11:05UTC: the first writer's library-only
+`cargo check -p openwepp-hillslope-orchestrator` excludes both `#[cfg(test)]`
+M1 receiver/test modules (`mod.rs:93–96`). Its repeated compile reports therefore
+do not validate most changed owner code. Actual `--tests` compilation and
+correction are assigned to the replacement before physical execution.
+
+QA additionally required exact manifest argv, timeout and physical-policy
+binding. Corrected recorder and [18 controls](artifacts/resumption-recorder-controls-02.json)
+pass same-QA verification:17 output-preserving refusals and one cwd success.
+Same QA separately reviewed each actual reference source/support/environment and
+launch. [Reference workflow05](artifacts/resumption-reference-workflow-05.json)
+fails first output write because the new directory was absent (26.001s); the
+receipt preserves source/base/pins. After creating a fresh empty output directory,
+[workflow06](artifacts/resumption-reference-workflow-06.json) **runs successfully**
+(exit0,9.753s), with unchanged source/base/pins/links. All nine generated artifacts
+are [retained with hashes](artifacts/resumption-reference-generated-06.json).
+Its four checkpoint vector hashes equal previously retained workflow04 outputs.
+This is an executed isolated reference generator, not M1 acceptance, and does
+not waive expected identity assertions or the pending complete Critical suite.
+Static: [reference equivalence comparison](artifacts/resumption-reference-equivalence-06.json)
+finds3 files equal and6 different from the existing canonical expected collection.
+Three continued checkpoint vectors contain46/74/48 field differences respectively,
+including actual owner values and derived digests; metadata/classification also
+differ. Expected files and fingerprints remain untouched; generated outputs stay
+isolated. Successful generation does not establish required reference equivalence.
+
+One attempted same-correctness resume while the replacement writer was active
+returned `agent thread limit reached`. The old completed writer was explicitly
+interrupted. Review will be serialized at the next source freeze; no repeated
+saturation loop or runtime-limit modification is authorized. Initial independent
+capacity and recorder verification remain real evidence, not final M1 review.
+
 ## Independence resumption — adopted 2026-09-22 09:12:55 UTC
 
 **RECOVERY STOPPED / IMPLEMENTATION NOT REOPENED / M1 INCOMPLETE / HOLD.**

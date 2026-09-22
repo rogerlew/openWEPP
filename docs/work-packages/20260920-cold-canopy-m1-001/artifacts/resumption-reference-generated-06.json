@@ -1,0 +1,56 @@
+{
+  "observed_utc": "2026-09-22T10:58:29.139783+00:00",
+  "workflow_receipt": "resumption-reference-workflow-06.json",
+  "exit_code": 0,
+  "elapsed_seconds": 9.752900619059801,
+  "source_unchanged": true,
+  "pinned_files_unchanged": true,
+  "outputs": [
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-reference-output-06/artifact-manifest.json",
+      "sha256": "2e2adfcb59e27ba64c6bd1a4bbdf426936993b591150adfdd435aab3ef41684d",
+      "bytes": 1028
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-reference-output-06/checkpoint-cross-midnight-vector.json",
+      "sha256": "76e2a1074e8d2ee36120bc98113e97d318002b6e448b805d6cc84ab953904b9b",
+      "bytes": 291196
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-reference-output-06/checkpoint-in-progress-vector.json",
+      "sha256": "c12f7f8632f7043cc32609d9a963fe442a1775606db13440133654ba138b3e18",
+      "bytes": 289093
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-reference-output-06/checkpoint-multi-destination-vector.json",
+      "sha256": "732c85d691259a3067c28107e569698995ea482cc7782bf21351d27d6c144050",
+      "bytes": 289093
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-reference-output-06/checkpoint-schema.json",
+      "sha256": "59b81be70e2bba759997f53f3bb622fa5c1556dc26e2477f7177af55d7155047",
+      "bytes": 115758
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-reference-output-06/checkpoint-vector.json",
+      "sha256": "c3f9df44452b491a9734ac55f765fbdfb124624fdbda22e83a1e7f2a563d805f",
+      "bytes": 22262
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-reference-output-06/direct-run-frame-field-classification.md",
+      "sha256": "29808db3f0558986bb4d4e91ba913ecbbcae31269c14d184d393d31d54c4912b",
+      "bytes": 9287639
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-reference-output-06/generated-field-metadata.json",
+      "sha256": "7353209fc418c6cec05fedb83ac3b922a21607d26cff65aad2d31e7d69b30451",
+      "bytes": 13901699
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-resumption-reference-output-06/poison-matrix.md",
+      "sha256": "dbaea93ee55be51410c616d16e9c547d43dcbb613b64f03ca0f31041abf9ef71",
+      "bytes": 11703
+    }
+  ],
+  "scope": "Executed isolated canonical generator; not M1 physical success, no expected identity changes"
+}
