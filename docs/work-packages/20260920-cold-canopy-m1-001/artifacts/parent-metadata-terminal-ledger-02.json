@@ -1,0 +1,19 @@
+{
+  "observed_utc": "2026-09-22T18:53:17.288115+00:00",
+  "resumption_anchor_utc": "2026-09-22T18:19:00+00:00",
+  "prior_carried_seconds": "248645.872164",
+  "session_elapsed_seconds": "2057.288115",
+  "charged_cumulative_seconds": "250703.160279",
+  "remaining_carried_allowance_seconds": "1630.561721",
+  "cumulative_ceiling_seconds": "252333.722177",
+  "unreclaimed_rounding_gap_seconds": "0.000177",
+  "fixed_deadline_utc": "2026-09-22T19:20:27.849836Z",
+  "implementation_cutoff_utc": "2026-09-22T18:50:27.849836Z",
+  "reserve_seconds": 1800,
+  "clock_policy": "Same original anchor; all concurrent elapsed counted once, no wait or pause deduction.",
+  "disposition": "BUDGET_RESERVE_STOP / M1_INCOMPLETE / HOLD",
+  "physical_runs": 0,
+  "qualified_nonphysical_smoke_runs": 1,
+  "author_reported_prereview_nonphysical_runs": 1,
+  "scope": "Reviewed diagnostic authority; supplemental smoke only; no actual provider identities or runtime changes. Publication costs still accrue."
+}

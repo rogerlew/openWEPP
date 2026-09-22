@@ -1,0 +1,7 @@
+**High — ineffective negative controls:** [m1_private_provider_metadata_controls.py](/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1_private_provider_metadata_controls.py:64) only asserts that malformed tuples differ from the valid tuple. It never calls a validator or proves refusal. Add a pure nonphysical receipt-slice validator for count, ordinal, exact support bounds, identity, and order; assert missing, foreign, and reordered inputs raise before any parent/staging analogue.
+
+**Medium — reduced framing KAT:** [m1_private_provider_metadata_controls.py](/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1_private_provider_metadata_controls.py:44) uses a reduced calendar and placeholder implementation/payload hashes. It is acceptable as a supplemental framing KAT, but cannot qualify the contract’s complete run frame or eventual payload known-answer. Label it accordingly and add a full-field frame control once the provider payload is instantiated.
+
+The fixed fixture hashes and support/segment checks are useful, and the proposed nonphysical manifest scope is appropriate: exact script, both fixtures, final contract hash, Python binary/environment, absolute argv, `/workdir/openWEPP` cwd, 30-second timeout, and `physical:false`.
+
+The author’s `python3` execution is exploratory only and must not be reused as the recorded prelaunch control.

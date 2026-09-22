@@ -1,0 +1,15 @@
+{
+  "observed_utc": "2026-09-22T18:47:38.558462+00:00",
+  "source_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1_private_provider_metadata_controls.py",
+  "post_report_source_sha256": "7ffb47a1ebbb9ba5ae4152a3fb37b1f8572d468ffd11d3321f4586716a92a3a2",
+  "reported_argv": [
+    "python3",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1_private_provider_metadata_controls.py"
+  ],
+  "reported_output": "PASS m1 private-provider metadata controls (nonphysical)",
+  "exact_start_end_utc": "UNOBSERVED",
+  "prelaunch_source_binding": "UNOBSERVED",
+  "physical": false,
+  "qualification": "EXPLORATORY AUTHOR-REPORTED ONLY; ran before requested static review; no receipt/provider/guard acceptance",
+  "finding": "Negative tuple inequalities distinguish altered data only; do not exercise admission/rejection."
+}

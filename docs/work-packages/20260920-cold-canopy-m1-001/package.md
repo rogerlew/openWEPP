@@ -41,7 +41,152 @@ Reuse unchanged recorder controls only; no physical run has been released.
 Independence/input failure after bounded recovery, out-of-envelope correction,
 owner stop or hard budget stops remain binding. Main Rust stays unchanged.
 
-### Capacity stop and preserved disposition
+### Owner-directed agent clearing and continued execution
+
+Owner directs “clear agents and continue.” Root interrupted both retained
+completed reviewers. Terra `/root/metadata_implementation_resume` then spawned
+successfully read-only. An immediate correctness resume failed on capacity while
+QA remained listed completed. A serialized QA receive/return followed by its
+interruption freed that slot: the same `/root/metadata_correctness` then also
+received and returned. Both independent conversations and the implementation
+route have therefore functioned; the earlier stop remains historical evidence.
+No runtime limits or nested workaround were used. This is the same fixed
+18:19:00Z anchor/deadline; no new balance or allowance is created.
+
+Sole writer `/root/metadata_implementation_resume` first owns only the narrow
+prospective private-provider specification in the existing SC-VEGETATION-001 M1
+section, after applicable authority reading. No Rust or physical runs are yet
+released. Both independent reviewers inspect that stable specification before
+contract-derived controls, then detached implementation. Root owns package,
+recorder/support changes and evidence. Selected checks and acceptance above remain
+unchanged. Current main commit83237bb79 preserves the preceding capacity stop.
+
+Static: same QA [deadline review](artifacts/parent-metadata-deadline-qa-02.md)
+accepts the sole recorder deadline change to19:20:27.849836Z, retaining both
+preflight reserve checks, 180-second physical cap and unchanged18-control reuse.
+Root Python AST parse passes. No source or physical launch is approved by this.
+
+Static: dual review of [authority draft02](artifacts/parent-metadata-authority-draft-02.json)
+returns HOLD ([correctness](artifacts/parent-metadata-authority-correctness-02.md),
+[QA](artifacts/parent-metadata-authority-qa-02.md)). Required corrections are closed
+canonical encoding and typed source locators/values, authentic complete source
+joins, framed source/implementation-bound receipts, explicit cycle/run/parent
+relations, and guard/vector/change-record updates. Final concrete payload and
+implementation hashes may be sealed after implementation but before parent
+admission; the preimplementation encoding rules must first be unambiguous.
+Same author owns this one consolidated specification correction. No Rust changes
+or physical execution have been released. Correctness is clarifying provider
+namespace versus unchanged coupled-time closed-tag authority before that edit.
+
+Internal reassessment **CONTINUE**, approximately18:40UTC. The first correction
+still lacked exact framing and source locator rules; root returned specific
+omissions before a second stable review. [QA03](artifacts/parent-metadata-authority-qa-03.md)
+accepts several encoding fixes but finds receipt coverage bypass, identical
+cycle run identities, unevaluable Rust locators and remaining schema gaps.
+Same author receives a bounded final correction: full noncircular payload content
+binding, complete projection binding, deterministic source-adapter custody,
+closed scalar/ordinal/schema rules and INV144/taxonomy/version maintenance.
+This has a concrete corrective path within the adopted envelope and unchanged
+budget; no scientific results, Rust or physical execution have occurred.
+[Framing clarification](artifacts/parent-metadata-framing-clarification-02.md)
+confirms private provider domains do not modify the coupled-time closed set.
+
+### Reviewed diagnostic provider authority
+
+Static: same correctness [final04 adjudication](artifacts/parent-metadata-authority-correctness-04.md)
+rejects the author's proposed missing-GSI stop: the retained endpoint fixture
+constructs1.0, seals it, and the current M1 caller actually consumes that field.
+The new identity needs a new receipt; its historical absence is not a missing
+physical input. Root assumes sole authority-file custody for the narrow
+acyclic correction: static payload excludes derived support receipts; run binds
+full payload; new private GSI-support receipts bind exact run/cycle/support/scalar
+and source join; parent forcing binds its ordered30 GSI receipts and records.
+No coupled-time closed tags or physical inputs change.
+
+Both same reviewers now approve [authority05](artifacts/parent-metadata-authority-reviewed-05.json):
+correctness PASS-WITH-NOTES and [QA PASS](artifacts/parent-metadata-authority-qa-05.md).
+Root applies the two nonblocking clarity fixes: derived support authority and
+explicit names for calendar/forcing raw32 inputs. Binding-exposure lint passes20
+rows and git diff whitespace passes. This permits contract-derived controls;
+it is not authenticated payload completion, source approval or physical launch.
+Same implementer now authors only metadata conformance controls in package
+artifacts, before any provider Rust. Root will source-bind and run reviewed
+nonphysical controls if their complete declared bound fits before18:50:27.849836Z.
+No solver/Rust edits, compiler workflow or physical execution has occurred.
+
+### Terminal source and evidence at the implementation cutoff
+
+**BUDGET/RESERVE STOP / M1 INCOMPLETE / HOLD.** Clearing retained roles succeeded;
+capacity is not the terminal blocker. The same two independent conversations
+accepted the narrow prospective diagnostic authority, including constructor-bound
+reuse of the actual retained GSI operand and new acyclic support receipts.
+Full contract-derived controls and the detached provider/parent implementation
+remain incomplete at the unchanged18:50:27.849836Z implementation cutoff. The
+remaining1800-second reserve is for review/preservation, not new implementation.
+No additional time or acceptance reduction follows this disposition.
+
+The writer executed a preliminary Python smoke script before the assigned static
+review. [Unreviewed report](artifacts/parent-metadata-controls-unreviewed-01.json)
+preserves that nonphysical, author-reported observation without invented timestamps
+or prelaunch binding. Both reviewers rejected its conformance claim: its negative
+checks were only tuple inequalities; payload hashes were synthetic; two receipt
+domains, real admission guards, canonicalization and full projection controls were
+missing. Root removed the tautological checks and limited its stated scope to
+supplemental framing/fixture smoke. [Review dispositions](artifacts/parent-metadata-controls-reviews-01.json)
+retain full contract-control HOLD; this is no retrospective gate waiver.
+
+Ran: after same-reviewer scope verification and actual final-manifest QA,
+[recorded smoke01](artifacts/parent-metadata-smoke-run-01.json) passes, exit0,
+0.027s approximately, at18:49:35UTC. Exact script, fixtures, authority, Python
+binary/configuration, argv/cwd/environment and30-second nonphysical bound are
+bound in [manifest01](artifacts/parent-metadata-smoke-manifest-01.json); all inputs
+remain unchanged. These are supplemental hash/framing checks only, not provider
+receipt known answers or rejection/rollback evidence. No Rust, Cargo, or physical
+workflow ran during this continuation.
+
+Final diff scope: SC-VEGETATION-001 version36 narrow private diagnostic metadata,
+reviewed recorder deadline, this maintained package, and raw review/control/custody
+artifacts. No coupled-time contract/tag/schema, production selector, physical
+fixture, solver or detached Rust source changed. Runtime recovery remains the
+same757-entry b503934a…fc5d tree and e43e03b2…a90a observer-relative patch; final
+source/observer/patch equality is rechecked before publication.
+
+No actual new provider/run/calendar/forcing identity has yet been minted. The
+synthetic framing digests are not M1 identities. Calendar semantics and encoding
+authority are reviewed; concrete provider payload/source adapter, seven-owner
+admission/staging/commit, accepted first/adjacent supports and positive late
+rejection remain NOT ESTABLISHED. All A–F findings remain uncleared. Independent
+balances, both72-hour cycles, restart, cost and Critical/A0/A1/A3 requirements
+remain unrun/unmet with prior failures retained. Production readiness is HOLD.
+Resume needs sufficient owner-authorized implementation time with review reserve;
+current remaining reserve cannot silently be repurposed. Next work is genuine
+contract-derived controls, private provider/source-adapter implementation and
+sealed actual payload before the same authorized parent integration.
+
+Same-reviewer [terminal dispositions](artifacts/parent-metadata-terminal-reviews-02.json)
+verify the smoke receipt/custody evidence and correct historical capacity labeling.
+[Final recovery02](artifacts/parent-metadata-final-recovery-02.json) matches live,
+reconstruction, observer and patch exactly. The unreviewed smoke source is also
+reconstructed byte-for-byte against its observed hash and retained separately.
+At 2026-09-22T18:53:17.288115+00:00, [ledger02](artifacts/parent-metadata-terminal-ledger-02.json)
+charges 250703.160279 seconds with 1630.561721 seconds remaining, all within the
+protected review/preservation reserve. Final local
+`artifacts/parent-metadata-final-publication-02.json` records subsequent charges,
+commit and remote bytes; it supersedes this interim observation. Scoped current-main
+publication includes reviewed authority/recorder, package and raw evidence only.
+
+Ran: final binding-exposure lint passes20 rows; JSON parse and Python AST checks
+pass for selected artifacts; non-patch staged whitespace is clean. The13 raw-patch
+whitespace warnings are exact single-space unified-diff context markers, retained
+without altering reviewed draft hashes. All three draft patch hashes and final
+reviewed authority hash match their recorded cuts. No Rust correctness, strict
+lint or physical qualification is inferred from these documentation checks.
+
+### Historical capacity stop — superseded by owner-directed clearing
+
+The capacity conclusions in this subsection apply only to the earlier stopped
+checkpoint. Capacity was subsequently restored; the terminal blocker above is
+the unchanged implementation cutoff and protected reserve.
 
 **CAPACITY STOP / M1 INCOMPLETE / HOLD.** Both independent conversations returned
 static preimplementation findings. A Terra implementer dispatch failed with

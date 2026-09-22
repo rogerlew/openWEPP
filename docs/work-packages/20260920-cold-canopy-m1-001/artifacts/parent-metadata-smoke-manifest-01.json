@@ -1,0 +1,62 @@
+{
+  "observed_utc": "2026-09-22T18:48:58.327390+00:00",
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1_private_provider_metadata_controls.py"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "timeout_seconds": 30,
+  "physical": false,
+  "files": [
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1_private_provider_metadata_controls.py",
+      "resolved": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1_private_provider_metadata_controls.py",
+      "sha256": "12102fe4d1154d7c82ee08b3dd75144dc8de1b02a0f6fa8e05caf1dda17533d7"
+    },
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json",
+      "resolved": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json",
+      "sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54"
+    },
+    {
+      "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/continuous-fixtures-draft01.json",
+      "resolved": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/continuous-fixtures-draft01.json",
+      "sha256": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1"
+    },
+    {
+      "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "resolved": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "sha256": "7ec410a4a60f2040d4225516a3fd7205f500dcacfbe14cfdbad320d1d1cdf70a"
+    },
+    {
+      "path": "/workdir/openWEPP/.venv/bin/python",
+      "resolved": "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/bin/python3.12",
+      "sha256": "59234be299f9d095852500c6a82abb68a718a65768e9a5b109e996c3fc2878ce"
+    },
+    {
+      "path": "/workdir/openWEPP/.venv/pyvenv.cfg",
+      "resolved": "/workdir/openWEPP/.venv/pyvenv.cfg",
+      "sha256": "14ae81bd044dd012dd56803a235748cd9c7a48a501d834174ef7cb28004413a1"
+    }
+  ],
+  "material_environment": {
+    "PATH": "/home/roger/.codex/packages/standalone/releases/0.155.1-x86_64-unknown-linux-musl/codex-path:/home/roger/.local/bin:/home/roger/.codex/tmp/arg0/codex-arg0JYYAp6:/home/roger/.codex/packages/standalone/releases/0.155.1-x86_64-unknown-linux-musl/codex-path:/home/roger/.local/bin:/home/roger/.local/bin:/home/roger/.local/bin:/home/roger/.local/bin:/home/roger/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+    "HOME": "/home/roger",
+    "LANG": "en_US.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "LC_CTYPE": "C.UTF-8",
+    "PYTHONPATH": null,
+    "PYTHONHOME": null,
+    "PYTHONHASHSEED": null,
+    "PYTHONSTARTUP": null,
+    "PYTHONUSERBASE": null,
+    "PYTHONSAFEPATH": null,
+    "PYTHONDONTWRITEBYTECODE": null,
+    "VIRTUAL_ENV": null,
+    "LD_LIBRARY_PATH": null,
+    "LD_PRELOAD": null
+  },
+  "deadline_utc": "2026-09-22T19:20:27.849836+00:00",
+  "reserve_seconds": 1800,
+  "scope": "Supplemental fixture hashes and framing smoke only; full contract controls HOLD; no provider/parent/physics result"
+}

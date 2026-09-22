@@ -1,0 +1,8 @@
+{
+  "observed_utc": "2026-09-22T18:46:12.342255+00:00",
+  "authority_path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+  "authority_sha256": "7ec410a4a60f2040d4225516a3fd7205f500dcacfbe14cfdbad320d1d1cdf70a",
+  "correctness": "/root/metadata_correctness PASS-WITH-NOTES final05; two suggested wording fixes applied",
+  "qa": "/root/metadata_qa PASS final05",
+  "scope": "Prospective narrow diagnostic provider authority only. Payload/implementation/parent/physical acceptance NOT ESTABLISHED."
+}

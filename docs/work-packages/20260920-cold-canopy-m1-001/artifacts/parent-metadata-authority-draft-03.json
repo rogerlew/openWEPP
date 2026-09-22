@@ -1,0 +1,8 @@
+{
+  "observed_utc": "2026-09-22T18:38:56.983707+00:00",
+  "base_commit": "83237bb79c689cb21f6d3fe304c740729099dd99",
+  "authority_path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+  "authority_sha256": "6325e53323dcedb9071416a8742bc0677ad008f57346fdd14f6c79dd27e6f411",
+  "diff_sha256": "677308cc3f5f3ecd3d3925594746c45cca9d3f61121e01ae531b4c38398d2c69",
+  "status": "CORRECTION UNDER DUAL REVIEW; NO IMPLEMENTATION RELEASE"
+}

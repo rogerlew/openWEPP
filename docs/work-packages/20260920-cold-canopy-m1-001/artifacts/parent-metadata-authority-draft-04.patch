@@ -1,0 +1,180 @@
+diff --git a/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md b/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+index 28abf7029..7fec35e90 100644
+--- a/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
++++ b/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
+ status: approved
+ maturity: active
+ owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
+-contract_version: 35
++contract_version: 36
+ producer_scope:
+   - Native vegetation configuration/runtime separation and stratum topology
+   - Stage A potential response and Stage C vegetation finalization boundaries
+@@ -13,7 +13,7 @@ producer_scope:
+ consumer_scope:
+   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
+ evidence_level: static
+-last_reviewed: 2026-09-21
++last_reviewed: 2026-09-22
+ supersedes: []
+ superseded_by: []
+ ---
+@@ -1489,7 +1489,7 @@ declaration surface: `INV-VEGETATION-087`, `INV-VEGETATION-088`,
+ | `BEI-VEGETATION-017` | Validated In-Memory Vegetation-State Handoff Amendment below | `active` | `maps-to-existing-INV` | `INV-VEGETATION-134, OBL-VEGETATION-C-006` | `flagged-binding-addition` | Private immutable revision-bound typestate may remove duplicate trusted in-process validation; every mutation and restart/external/untrusted boundary retains full validation. |
+ | `BEI-VEGETATION-018` | [Liquid-canopy support clarification](#liquid-canopy-supported-domain-clarification) | `active` | `maps-to-existing-INV` | `INV-VEGETATION-022, INV-VEGETATION-051, INV-VEGETATION-062, INV-VEGETATION-065, INV-VEGETATION-066, INV-VEGETATION-067, INV-VEGETATION-073, INV-VEGETATION-075, INV-VEGETATION-110, INV-VEGETATION-111, INV-VEGETATION-114, INV-VEGETATION-118, INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `none` | Existing liquid-only component-domain, ownership, release-enthalpy, shared-air, represented-snow, and refusal authority is clarified; no cold-canopy phase model or runtime selector is admitted. |
+ | `BEI-VEGETATION-CHILD2C` | `docs/work-packages/20260821-snow-stage3-shared-carrier-authority-closure-001/` | `active` | `maps-to-existing-INV` | `INV-VEGETATION-129, INV-VEGETATION-130, INV-VEGETATION-131, INV-VEGETATION-132` | `flagged-binding-addition` | Shared canopy-air carrier, sealed exposure, exact-once canopy fluxes, and event-bounded snow regime. |
+-| `BEI-VEGETATION-019` | Cold-canopy M1 amendment | `active` | `unpromoted-binding` | `INV-VEGETATION-140, INV-VEGETATION-141, INV-VEGETATION-142, INV-VEGETATION-143, INV-VEGETATION-144, INV-VEGETATION-145, OBL-VEGETATION-C-008, OBL-VEGETATION-C-009` | `flagged-binding-addition` | Review-pending V33 bulk external-water phase, narrow conducting-tissue domain, conserved phase ledger, liquid receipt, diagnostic restart, and selected-branch affine drainage representation. |
++| `BEI-VEGETATION-019` | Cold-canopy M1 amendment | `active` | `unpromoted-binding` | `INV-VEGETATION-140, INV-VEGETATION-141, INV-VEGETATION-142, INV-VEGETATION-143, INV-VEGETATION-144, INV-VEGETATION-145, OBL-VEGETATION-C-008, OBL-VEGETATION-C-009` | `flagged-binding-addition` | Review-pending V33 bulk external-water phase, private fixed-sequence provider receipt/admission, narrow conducting-tissue domain, conserved phase ledger, liquid receipt, diagnostic restart, and selected-branch affine drainage representation. |
+ 
+ ## Gap Register and Promotability Labels
+ 
+@@ -3132,6 +3132,7 @@ constitutive behavior unchanged.
+ 
+ | Date | Version | Author | Change |
+ |---|---:|---|---|
++| 2026-09-22 | 36 | Codex | Prospective private M1 fixed-sequence provider authority: closes canonical payload/extraction, private framed receipt, 60-second parent-slice, source-join, and mutation-vector obligations without admitting a physical result or parent. |
+ | 2026-09-21 | 35 | Codex | Prospective M1 selected-drainage affine-elimination amendment: verifies the selected unscaled `dt*D` row, reduces/reconstructs the same normalized system, and evaluates derived nonnegative drainage candidates without changing the primal capacity law, branch/tie selection, solver budget, physical acceptance, or production HOLD. |
+ | 2026-09-21 | 34 | Codex | Prospective M1 phase-join directional-linearization amendment: bounded two-solve predictor/final active-set selection with deterministic phase/capacity ties, representable-boundary refusal, and final-direction consistency failure. Primal equations, phase definition, acceptance, solver limits, and production HOLD remain unchanged. |
+ | 2026-09-20 | 32 | Codex | Owner-adopted existing-domain liquid-canopy clarification: distinguished active component, shared-air, dry-stem, ground-snow, and transparent-passage temperature roles; preserved existing guard/error seams and expanded the non-promotable cold-canopy authority gap. No equation, historical model-definition byte, guard position, acceptance, runtime selector, or phase law changed. |
+@@ -3269,7 +3270,7 @@ execution must equal uninterrupted stable-ice, mixed and liquid-release endings.
+ | <a id="INV-VEGETATION-141"></a> `INV-VEGETATION-141` | Internal liquid and external phase saturation retain distinct equations, derivatives and domains. | Ambaum 2020 + M1 selection | `[DIRECT+INFERENCE][Static]` | vapor primitive/domain validator | `VEG-E-141` |
+ | <a id="INV-VEGETATION-142"></a> `INV-VEGETATION-142` | M/H inversion, event and capacity active set close water/enthalpy once without fusion duplication. | first law + M1 selection | `[INFERENCE][Static]` | full residual/closure validator | `VEG-E-142` |
+ | <a id="INV-VEGETATION-143"></a> `INV-VEGETATION-143` | Only diagnosed liquid enters the typed real receiver once; any failure is atomic. | SC-VEGETATIONTRANSACTION-001 | `[DIRECT+INFERENCE][Static]` | receipt/owner validator | `VEG-E-143` |
+-| <a id="INV-VEGETATION-144"></a> `INV-VEGETATION-144` | M1 restart carries explicit M/H and cannot infer it from a V32 warm start. | state custody | `[INFERENCE][Static]` | V1 restart parser | `VEG-E-144` |
++| <a id="INV-VEGETATION-144"></a> `INV-VEGETATION-144` | Provider validation precedes parent/staging and M1 restart carries explicit M/H without V32 inference. | provider/state custody | `[INFERENCE][Static]` | provider validator then V1 restart parser | `VEG-E-144` |
+ | <a id="INV-VEGETATION-145"></a> `INV-VEGETATION-145` | A selected M1 drainage tangent may eliminate only its verified affine `dt*D` capacity row, while the reduced solve and reconstructed direction retain every remaining normalized coupling and the complete primal candidate/acceptance checks. | M1 `R_cap`, first-order algebra, and numerical-solver architecture | `[DIRECT+INFERENCE][Static]` | selected-row reduction validator and reduced-solve guard | typed `LSEB-E-034` numerical failure; no candidate, mutation, receipt, fallback, or extra solve |
+ 
+ `OBL-VEGETATION-C-008`: freeze source bytes/equation map and vectors at each
+@@ -3308,10 +3309,129 @@ M1 error taxonomy is fixed: `VEG-E-140` is missing or false supplied cold
+ condition/domain; `VEG-E-141` is saturation/pressure/nonfinite input;
+ `VEG-E-142` is empty supersaturation, invalid M/H/capacity, or residual
+ closure; `VEG-E-143` is phase/owner/lineage/duplicate/late real-receiver
+-failure; and `VEG-E-144` is restart parse, version, identity, unit, area,
+-support, occupancy, M/H, or forcing-as-state failure. The precedence is the
++failure; and `VEG-E-144` first covers provider parse/canonical framing/source/
++projection/join validation before parent/staging, then restart parse, version,
++identity, unit, area, support, occupancy, M/H, or forcing-as-state failure. The precedence is the
+ operational order stated above.
+ 
++### M1 private fixed-sequence diagnostic provider and receipt
++
++`OPENWEPP_COLD_M1_FIXED_SEQUENCE_PROVIDER_V1` is the sole private prescribed
++provider for the two M1 cycles.  It is neither the climate-derived
++`SC-SNOWFREEFORCING-001` provider nor a meteorological model, and changes no
++physical scalar, solar/radiation, GSI, or warm start.  The payload is canonical
++ASCII JSON: UTF-8 ASCII subset only; recursively lexicographic keys; no
++whitespace except one final LF; slash is unescaped; quote is `\"`, backslash
++is `\\`, and every U+0000..U+001F control is lowercase `\u00xx`; all other
++escape spellings and non-ASCII code points reject. Duplicate/unknown keys reject.
++JSON Pointer uses RFC 6901 `~0`/`~1` decoding and selects exactly one value.
++Integers are canonical base-10 without sign/leading zero; all emitted floats
++are exactly 16 lowercase hexadecimal IEEE-754 binary64 bits.  Source file
++hashes retain lexical provenance, so no source decimal-token grammar is reused.
++
++The closed top-level schema is `schema_version:u32=1`, `provider_id:String`,
++`calendar:CalendarV1`, `cycle:CycleV1`,
++`sources:[SourceV1]`, `implementation:ImplementationV1`, and
++`forcing_projection:ProjectionV1`.  `CalendarV1` has exactly
++`system:"proleptic_gregorian"`, `fixed_utc_offset_seconds:0`,
++`day_seconds:86400`, `daylight_saving:false`, `leap_seconds:false`,
++`origin:"2000-06-20T00:00:00+00:00"`, `tick_unit:"integer_nanoseconds"`, and
++`day_mapping:[DayV1;3]`, where each `DayV1` has exactly `day_ordinal:u32` and
++`civil_date:String`: `{0,"2000-06-20"}`, `{1,"2000-06-21"}`, and
++`{2,"2000-06-22"}`. `cycle_clock_resets:true` is an exact `CalendarV1` member.
++Each `CycleV1` has exactly `ordinal:u32`, `id:String`, and
++`initial_phase_records:[InitialPhaseV1]`; `InitialPhaseV1` has exactly
++`occupancy_id:String`, `mass_kg_m2_tile_ground:binary64_bits`, and
++`enthalpy_j_m2_tile_ground:binary64_bits`. The ordered cycles are ordinal zero
++`original_liquid_cold_thaw_refreeze_warm`, then ordinal one
++`distinct_phase_inventory_shifted_cycle`. Ordinal, id, initial phases, and the real independent
++seven-owner beginning set must agree before construction; that owner set remains
++the non-circular coupled-time `begin_owner_set` input.
++
++Each `SourceV1` has exactly `name`, `repository_relative_path`, and lowercase
++`sha256`; the array begins with these two mandatory entries, in this order:
++original input
++`docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json`
++`4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54`; then
++continuous fixture
++`docs/work-packages/20260920-cold-canopy-m1-001/artifacts/continuous-fixtures-draft01.json`
++`8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1`.
++Additional entries are admitted only for retained source-extraction adapters
++and their dependency manifests. Hashes are checked before parsing.
++`ImplementationV1` has exactly
++`provider_version`, `repository_relative_path`, and lowercase `sha256` for the
++selected expansion source; an unbound provider label rejects.
++
++`ProjectionV1` has exactly `projection_id:"OPENWEPP_COLD_M1_PIECEWISE_CONSTANT_V1"`, `support_unit:"s"`,
++`support_seconds:60`, `cycle_id`, `segments`, `records`, and `source_joins`.
++Each segment has exactly `ordinal`, `start_ns`, `end_ns`, and `overrides`; its
++`overrides` has exactly `air_temperature_k`, `air_specific_humidity_kg_kg`,
++`atmospheric_downward_longwave_w_m2`, `top_liquid_rate_kg_m2_tile_s`, and
++`top_liquid_temperature_k`, each binary64 bits.  Each record repeats that closed
++shape and has exactly `ordinal`, `start_ns`, `end_ns`, and `overrides`.
++The provider id is exactly `OPENWEPP_COLD_M1_FIXED_SEQUENCE_PROVIDER_V1`.
++Segments are contiguous, variable-duration half-open source ranges whose
++durations are divisible by 60 seconds; records are their contiguous fixed
++60-second expansion in source order. The first cycle preserves `[0,60)` then
++`[60,86400)`, and each cycle covers exactly `[0,259200000000000)` ns with
++records `0..4319`. Parent `n` is `u32` in `0..143`, selects exactly records
++`30n..30n+29`, and has support `[1800n,1800(n+1))` seconds; all tick strings
++are checked unsigned canonical decimal `u128` ns from the calendar origin and
++all full schedule breakpoints remain sealed.
++
++`source_joins` has exactly seven entries in this order: `current_gsi`,
++`exposure`, `destination`, `co2_pa`, `reference_height_m`, `topology`, and
++`controller_policy`. Each `SourceJoinV1` has exactly `field`, `source_path`,
++`source_sha256`, `locator_kind`, `locator`, `value_kind`, `value`, and
++`support_receipt_sha256`.
++`locator_kind` is `json_pointer` or `source_extraction_adapter`; `value_kind` is exactly
++`binary64_bits`, `utf8`, or `canonical_json_sha256`. A `json_pointer` locator
++is the RFC 6901 pointer above. A `source_extraction_adapter` locator is an
++`AdapterV1` object with exactly `adapter_path`, `adapter_sha256`,
++`dependency_manifest_path`, `dependency_manifest_sha256`,
++`constructor_accessor`, `output_canonical_json_sha256`, and `output_pointer`.
++It invokes only the named retained constructor/accessor, verifies every source
++in its dependency manifest, hashes the complete frozen constructor-output JSON,
++then applies `output_pointer`; regex/source-text evaluation or a new physical
++scalar rejects. The extracted value is then encoded exactly by `value_kind`:
++scalar bits, UTF-8 bytes, or canonical JSON bytes followed by SHA-256. Scalars (GSI, CO2, reference height) use binary64
++bits; destination uses UTF-8; exposure, topology, and controller use the SHA-256
++of their canonical structured value. A cardinality/order/kind/locator/path/hash/
++value/support-receipt mismatch rejects before receipt minting. For `current_gsi`,
++`support_receipt_sha256` is mandatory and the referenced receipt must bind the
++same run, cycle, `[start_ns,end_ns)`, and scalar bits; the receiver consumes it
++at `advance_m1_caller_support`, never the provisional zero placeholder. The
++retained endpoint fixture's scalar `1.0` and reference height `24` do not prove
++correspondence to the frozen M1 cycle and do not replace frozen original solver
++forcing. Original CO2 `42` and reference height `24` remain their own joins.
++
++Raw SHA-256 authenticates source content only. `payload_content_sha256` is the
++raw SHA-256 of the full canonical payload bytes (the payload has no run field).
++`run_identity` is derived with
++private domain `openwepp-m1-fixed-sequence-run-v1`, in this ordered frame:
++`schema_version:u32`, `provider_id:utf8`, `calendar:canonical_json`,
++`original_source_sha256:raw32`, `continuous_source_sha256:raw32`,
++`implementation_version:utf8`, `implementation_path:utf8`, and
++`implementation_sha256:raw32`, and `payload_content_sha256:raw32`.
++`calendar_receipt` uses private domain
++`openwepp-m1-fixed-sequence-calendar-provider-v1` and ordered fields
++`run_identity:raw32`, `cycle_ordinal:u32`, `cycle_id:utf8`, and
++`initial_phase_records:canonical_json`. `forcing_receipt` uses private domain
++`openwepp-m1-fixed-sequence-parent-forcing-v1` and ordered fields
++`calendar_receipt:raw32`, `full_projection_content_sha256:raw32`,
++`parent_ordinal:u32`, `support_start_ns:u128`,
++`support_end_ns:u128`, `record_count:u32`, and `ordered_records:canonical_json`.
++All three use `OPENWEPP_CANONICAL_FRAMED_SHA256_V1`; they are provider-owned
++domains, neither new nor repurposed coupled-time tags. The two latter raw32
++values feed existing coupled-time receipt fields.
++Admission rejects any mutation, omission, reorder, unknown/duplicate/noncanonical
++field, wrong source join, or projection mismatch as `VEG-E-144`, with no owner
++mutation. `OBL-VEGETATION-C-008` adds canonical-payload known-answer; every
++source/path/pointer/kind/value, calendar/run/cycle/phase, segment/record,
++breakpoint/support, implementation, and scalar-equality mutation; and requires
++no staged owner or parent publication on each rejection. A private receipt does
++not admit a parent; authentic unchanged snow remains the seventh owner.
++
+ ### M1 operational specification
+ 
+ The independent role domains are `263.15<=Tleaf_sun,Tleaf_shade,Tstem<=373.15

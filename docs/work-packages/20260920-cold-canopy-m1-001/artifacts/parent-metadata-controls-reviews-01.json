@@ -1,0 +1,29 @@
+{
+  "evidence_class": "Attributable control dispositions; complete original initial reviews retained in companion correctness/QA markdown artifacts",
+  "responses": [
+    {
+      "reviewer": "/root/metadata_correctness",
+      "scope": "Initial control source",
+      "response": "Static review of m1_private_provider_metadata_controls.py. High: negative controls are tautological: unequal tuples do not parse receipts, invoke admission, verify joins, return VEG-E-144 or prove rollback. High: KAT uses reduced calendar and synthetic implementation/payload/source hashes, not actual provider payload. High: calendar and parent-forcing receipt domains absent. Medium: canonicalization/adapter/cycle extraction/payload mutations absent. Medium: fixture checks omit independent 4320-record expansion and scalar equality. Verdict HOLD for qualifying controls. Retain artifact only as diagnostic framing KAT; independent digest derivation unrecorded.",
+      "response_form": "Attributable compact summary; original detailed response retained in agent conversation",
+      "original_response_file": "parent-metadata-controls-correctness-01.md"
+    },
+    {
+      "reviewer": "/root/metadata_qa",
+      "scope": "Initial control source",
+      "response": "High: ineffective negative tuple comparisons need actual validator refusal. Medium: reduced synthetic framing KAT cannot qualify complete provider payload. Fixture hashes/support checks useful; exact script, fixture/authority hashes, Python binary/environment, absolute argv, cwd and 30-second nonphysical bound are appropriate. Author execution exploratory only.",
+      "response_form": "Attributable compact summary; original detailed response retained in agent conversation",
+      "original_response_file": "parent-metadata-controls-qa-01.md"
+    },
+    {
+      "reviewer": "/root/metadata_correctness",
+      "scope": "Same-reviewer correction verification, classification only",
+      "response": "PASS \u2014 claim/classification only. The artifact now accurately labels itself as a supplemental nonphysical framing smoke test. It explicitly retains full payload KATs, all receipt domains, canonicalization, source correspondence, admission rejection, and rollback controls as HOLD. The tautological negative-control claim is removed, and the PASS message cannot reasonably be read as provider qualification. A source-bound nonphysical run may support only the stated hash/framing/parent-slice smoke claim. It cannot advance the provider gate or contract-control disposition."
+    },
+    {
+      "reviewer": "/root/metadata_qa",
+      "scope": "Actual final smoke manifest",
+      "response": "Static manifest QA PASS. The manifest matches the approved nonphysical smoke scope: exact argv/cwd, 30-second timeout, physical:false, correct script/fixture/contract hashes, resolved Python binary hash, pyvenv.cfg, and material environment. Its recorded 18:48:58Z observation leaves sufficient time before the stated 18:50:27Z cutoff for the declared 30-second command. The result remains supplemental smoke evidence only."
+    }
+  ]
+}

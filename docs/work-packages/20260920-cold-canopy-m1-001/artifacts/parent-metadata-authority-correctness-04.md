@@ -1,0 +1,15 @@
+Static final04 adjudication.
+
+- **High — the claimed indispensable GSI-input stop is not supported.** A historical receipt cannot preexist the newly authorized run/cycle identities. The physical operand is present: the retained endpoint fixture constructs `SnowFreeForcing.gsi = 1.0`, seals it inside `V8CanopyForcingReceipt`, and `advance_m1_caller_support` currently consumes exactly `fixture.receipt.forcing().gsi` at [m1_receiver.rs](/home/roger/openwepp-experiments/cold-canopy-m1-20260920-cold-canopy-m1-001/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:1875). The owner’s prospective private-provider authority may declare that exact retained scalar as prescribed M1 input and mint new support-specific receipts. This creates new identity/correspondence; it does not create new physics or substitute the provisional zero.
+
+- **High — final04 creates a circular identity.** `support_receipt_sha256` is inside `source_joins`, hence inside the payload; run identity derives from the payload hash, while that receipt must bind the same run. Remove support receipt identity from the immutable payload. Keep only the authenticated scalar source descriptor/value there.
+
+- **Required acyclic correction:** After deriving run identity, mint a private SC-VEGETATION GSI-support receipt over the new run identity, cycle identity/ordinal, exact 60-second support ordinal/start/end, `1.0` binary64 bits, and the immutable GSI source-join/content digest. The parent forcing receipt must bind the ordered 30 GSI-support receipt identities corresponding to its ordered 30 records. This is a provider-owned diagnostic receipt, not a climate-derived `DirectGsiDailyReceiptV1` and not reuse of the old transaction-41 receipt.
+
+- **Source correspondence:** The retained endpoint fixture source/output is evidence for the selected scalar because it is the value the current M1 seam actually consumes. The authority must label selection of `1.0` as prospective owner-prescribed reuse from that frozen fixture, authenticate the constructor/output and field locator, and prohibit inference that the old receipt authenticates the new support. No unavailable physical operand remains once that declaration and new receipt framing are present.
+
+- **Medium — `full_projection_content_sha256` remains undefined.** Define it as the raw SHA-256 content digest of the exact canonical `forcing_projection` member bytes, or remove it if the already bound whole-payload content digest is intentionally authoritative. Its meaning cannot remain implicit.
+
+The revised ASCII encoding, typed adapter joins, cycle/run payload binding, projection/cardinality rules, BEI/change log, and expanded `INV/VEG-E-144` mapping otherwise address my prior authority findings.
+
+**Verdict: GO-WITH-AMENDMENTS for authority correction; no input stop.** Root can apply the narrow acyclic receipt correction and explicit projection-digest definition, after which this same reviewer should verify the exact frame fields.

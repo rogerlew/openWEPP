@@ -1,0 +1,91 @@
+diff --git a/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md b/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+index 28abf7029..9e75595c5 100644
+--- a/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
++++ b/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+@@ -3312,6 +3312,86 @@ failure; and `VEG-E-144` is restart parse, version, identity, unit, area,
+ support, occupancy, M/H, or forcing-as-state failure. The precedence is the
+ operational order stated above.
+ 
++### M1 private fixed-sequence diagnostic provider and receipt
++
++`OPENWEPP_COLD_M1_FIXED_SEQUENCE_PROVIDER_V1` is the sole provider identity
++for the two private M1 diagnostic cycles.  It is prescribed test input, never
++the climate-derived `SC-SNOWFREEFORCING-001` provider, observed weather, or a
++meteorological model.  It does not alter any physical scalar, solar/radiation,
++GSI, or warm-start value.  Its provider payload is compact UTF-8 canonical JSON
++with recursively lexicographically sorted object keys, one trailing newline, no
++unknown fields, and binary64 values represented by their exact source JSON
++tokens.  `calendar_receipt` is SHA-256 of these payload bytes.  The separate
++`forcing_receipt` is SHA-256 of the canonical JSON `forcing_projection` member;
++the existing closed `parent-interval` framing consumes those two 32-byte values
++unchanged.  This names no new coupled-time framing domain or tag.
++
++The payload has exactly these members: `schema_version:1`,
++`provider_id:"OPENWEPP_COLD_M1_FIXED_SEQUENCE_PROVIDER_V1"`, `calendar`,
++`cycle`, `sources`, `implementation`, and `forcing_projection`.  `calendar` has exactly
++`system:"proleptic_gregorian"`, `fixed_utc_offset_seconds:0`,
++`day_seconds:86400`, `daylight_saving:false`, `leap_seconds:false`,
++`origin:"2000-06-20T00:00:00+00:00"`,
++`tick_unit:"integer_nanoseconds"`, and
++`day_mapping:["2000-06-20","2000-06-21","2000-06-22"]`.
++Ticks are checked integer nanoseconds from that origin; day zero is the first
++listed date and the 72-hour endpoint is exclusive.  `cycle` has exactly the
++zero-based `ordinal`, source `id`, and `initial_phase_records`.  A cycle begins
++from its own frozen initial state; it does not inherit either a clock or an
++owner from the other cycle.  The real seven-owner beginning digest remains the
++separate existing `begin_owner_set` parent-transaction input, avoiding a
++circular calendar receipt.
++
++`sources` has exactly the base input and continuous fixture names, repository
++relative paths, and SHA-256 values:
++`original-input-reference.json` at
++`docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json`
++is `4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54`, and
++`continuous-fixtures-draft01.json` at
++`docs/work-packages/20260920-cold-canopy-m1-001/artifacts/continuous-fixtures-draft01.json`
++is `8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1`.
++Both hashes are checked before parsing or projection.  `implementation` has
++exactly `provider_version`, `repository_relative_path`, and lowercase
++`sha256`; it is the selected expansion/projection source file and is hashed
++before either receipt is minted.  A provider/version string alone is not an
++implementation binding.  `forcing_projection`
++has exactly `projection_id:"OPENWEPP_COLD_M1_PIECEWISE_CONSTANT_V1"`,
++`support_unit:"s"`, `support_seconds:60`, `cycle_id`, and ordered source
++`segments`, `source_joins`, and `records`.  Each segment preserves source
++`ordinal`, `start_s`, `end_s`, complete `boundary_overrides`, and units.
++`records` is the projected ordered support sequence; each record has exactly
++`ordinal:u32`, `start_ns:String`, `end_ns:String`, and
++`boundary_overrides:object`.  Tick strings are canonical unsigned decimal
++`u128`; each floating override is a 16-lowercase-hex-digit IEEE-754 binary64
++bit pattern.  The source JSON byte hashes authenticate original decimal tokens;
++record bits authenticate the generated projection with no float-spelling
++ambiguity.  Each `source_joins` entry has exactly `field`, `source`,
++`json_pointer`, and `binary64_bits`, and binds current GSI, exposure,
++destination, CO2, reference-height, topology, and controller policy to an
++actual frozen source.  Projection emits every 60-second
++half-open support in source order without interpolation, averaging, repetition,
++or stretch.  The first cycle therefore has `[0,60)` with its original forcing
++and a distinct `[60,86400)` rain record; the first parent seals the first 30
++such supports, `[0,1800)`.  The projection implementation must identify this
++exact provider/version and prove byte-for-byte equality of its accepted ordered
++record sequence to the payload before either receipt is used.
++
++Provider admission rejects a changed calendar/origin/day mapping, source hash,
++cycle identity or initial state, omitted/reordered segment, changed support or
++60-second breakpoint, unknown field, noncanonical bytes, or a projection that
++does not reproduce the sealed `records` sequence or whose implementation/source
++join is missing or mismatched.  These are `VEG-E-144` identity/support
++failures before owner staging, parent construction, or physical execution.
++Mutation controls must additionally show that changing any listed provider
++field changes the applicable receipt and parent interval identity while frozen
++physical scalar bytes remain equal.  A private receipt and a seven-entry map do
++not admit a parent: the authentic inactive snow owner remains a required,
++unchanged seventh owner under `SC-VEGETATIONTRANSACTION-001`.
++This is prospective diagnostic metadata authority from the owner-adopted M1
++package direction, `[DIRECT][Static]`; its required provider mutation controls
++are additional `OBL-VEGETATION-C-008` contract vectors and do not establish a
++physical result or parent admission.
++
+ ### M1 operational specification
+ 
+ The independent role domains are `263.15<=Tleaf_sun,Tleaf_shade,Tstem<=373.15

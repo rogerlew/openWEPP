@@ -1,0 +1,22 @@
+{
+  "start_utc": "2026-09-22T18:49:35.029927+00:00",
+  "manifest_sha256": "1bc5dfdb9059308630abecb952975a3f63b487e92f6bbdf1009d43d28e634f48",
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/m1_private_provider_metadata_controls.py"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "timeout_seconds": 30,
+  "physical": false,
+  "scope": "Supplemental fixture hashes and framing smoke only; full contract controls HOLD; no provider/parent/physics result",
+  "reviews": [
+    "/root/metadata_correctness classification PASS",
+    "/root/metadata_qa actual-manifest PASS"
+  ],
+  "end_utc": "2026-09-22T18:49:35.057213+00:00",
+  "elapsed_seconds": 0.026831621769815683,
+  "exit": 0,
+  "source_and_inputs_unchanged": true,
+  "stdout_sha256": "d58896923b1790dfa0796e4a5be1758649aefb0c156de7d4f4eb2bab7cb2d468",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

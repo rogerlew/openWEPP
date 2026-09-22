@@ -1,0 +1,10 @@
+{
+  "correctness": {
+    "reviewer": "/root/metadata_correctness",
+    "response": "Static fix verification: PASS. The heading and explicit supersession paragraph clearly constrain the retained present-tense capacity language to the earlier checkpoint. The active terminal disposition now consistently identifies the implementation cutoff and protected reserve as the blocker. git diff --check passes. No correctness blocker remains for terminal preservation. This approves the documentation/evidence disposition only; provider controls, implementation, parent admission, physical validation, and M1 completion remain HOLD as recorded."
+  },
+  "qa": {
+    "reviewer": "/root/metadata_qa",
+    "response": "Static + inspected recorded evidence PASS \u2014 terminal preservation scope. smoke-run01 matches manifest1bc5df\u20264f48: approved argv/cwd,30-second nonphysical bound,exit0 in0.027s,unchanged inputs,expected smoke-only stdout,empty stderr. final-recovery02 confirms both runtime roots retain757 recorded entries and exact treeb503934a\u2026fc5d,unchanged observer/recovery patch. Package correctly preserves full provider controls,implementation and physical acceptanceHOLD. Approves no new conformance,Rust,physical claim."
+  }
+}
