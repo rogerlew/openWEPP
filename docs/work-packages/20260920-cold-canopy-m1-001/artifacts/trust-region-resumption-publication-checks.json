@@ -1,0 +1,1800 @@
+{
+  "observed_utc": "2026-09-23T20:19:34.737343+00:00",
+  "evidence_class": "Ran: document/authority structural checks only, no numerical or physical evaluation",
+  "checks": [
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "--strict",
+        "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"
+      ],
+      "exit": 0,
+      "stdout": "PASS docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md: 20 binding exposure row(s) fully consolidated\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "--strict",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "exit": 0,
+      "stdout": "PASS docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md: directory-v1, 24 binding exposure row(s), 106 actual definition(s); structural evidence only\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/release/check_sc_unit_compliance.py",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "exit": 0,
+      "stdout": "PASS: SC unit compliance lint found no findings\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "tools/release/check_science_contract_admission.sh",
+        "--base-ref",
+        "eda2930001917f0fa6d801914fb2a17925c2eb77",
+        "--worktree"
+      ],
+      "exit": 0,
+      "stdout": "A0_ADMITTED contracts=49 science_surfaces=0 base=eda2930001917f0fa6d801914fb2a17925c2eb77 head=WORKTREE authority_sha256=b39f73d659033334eddbc64c823276e9358623ce273b167014a8f2c52eb37011\n",
+      "stderr": ""
+    }
+  ],
+  "staged_raw_patch_whitespace": {
+    "exit": 2,
+    "classified_count": 346,
+    "all_required_unified_diff_context_markers": true,
+    "issues": [
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 121,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 255,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10537,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10541,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10577,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10609,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10632,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10655,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10657,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10660,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10667,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10672,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10682,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10692,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10743,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10883,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 10890,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 15490,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 15501,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 15510,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 15525,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 15606,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 15624,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 15891,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 20940,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 20947,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 21009,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 21013,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 21027,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 22744,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 22749,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 22771,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 22815,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 22842,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 22887,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 22897,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 23011,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 23161,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 23273,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 23289,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 23304,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red01-from-observer-cut02.patch",
+        "line": 23399,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 121,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 255,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10537,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10541,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10577,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10609,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10632,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10655,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10657,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10660,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10667,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10672,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10682,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10692,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10743,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10883,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 10890,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 15770,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 15781,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 15790,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 15805,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 15886,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 15904,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 16171,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 21220,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 21227,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 21289,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 21293,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 21307,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 22871,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 22876,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 22898,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 22942,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 22969,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 23014,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 23024,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 23138,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 23288,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 23400,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 23416,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 23431,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+        "line": 23526,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 24,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 52,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 70,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 83,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 177,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 188,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 338,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 472,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 619,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 919,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 931,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 943,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 955,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 1018,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 1123,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 1133,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 1143,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 1350,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 1489,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 1565,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 1849,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 1993,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 2010,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 2046,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 12411,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 12415,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 12451,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 12585,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 12638,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 12802,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 12998,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 13250,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 13348,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 13534,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 13630,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 13653,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 13668,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 13702,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 13725,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 13774,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14043,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14134,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14149,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14262,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14287,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14323,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14394,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14505,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14507,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14511,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14518,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14522,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 14533,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 15838,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 15854,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 15887,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 15949,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 15964,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 15975,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 15986,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 15997,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 16004,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 16053,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 17995,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 18000,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 18167,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 18183,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 18194,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 18205,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 18234,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 18299,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 18632,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 18637,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19460,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19482,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19707,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19736,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19746,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19753,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19761,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19874,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19886,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 19947,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 20477,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25323,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25335,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25347,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25359,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25376,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25410,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25414,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25454,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25782,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25803,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25813,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25833,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 25855,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 26144,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 26208,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 26232,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 27204,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 27209,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 27802,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 27807,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 27835,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 27844,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 27846,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 27889,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 27907,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 27935,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28058,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28064,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28068,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28079,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28122,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28197,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28296,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28300,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28617,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28628,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28638,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28648,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28658,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28670,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28837,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28906,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 28931,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 29212,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 29221,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 29254,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 29326,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 29384,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 29504,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 29610,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 30065,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 30084,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 30424,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 30458,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 30502,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 30509,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 30629,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 30656,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 30952,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 30956,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31056,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31214,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31293,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31305,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31457,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31523,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31631,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31704,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31799,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31857,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31887,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31898,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 31950,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32550,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32556,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32561,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32571,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32581,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32593,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32635,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32661,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32672,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32677,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32706,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 32727,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33424,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33429,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33437,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33443,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33494,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33536,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33571,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33700,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33716,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33750,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 33757,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 38637,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 38648,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 38657,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 38664,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 38685,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 38766,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 38784,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 39051,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44126,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44133,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44195,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44199,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44213,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44371,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44379,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44438,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44450,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44627,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 44743,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45036,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45103,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45183,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45194,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45220,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45348,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45460,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45694,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45699,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45813,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 45957,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46082,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46586,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46591,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46604,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46621,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46655,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46664,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46916,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46960,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46987,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 46991,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 47011,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 47117,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 47121,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 47172,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 47187,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 47203,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 47766,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 47795,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 47834,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48080,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48164,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48324,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48359,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48361,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48386,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48394,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48483,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48652,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48667,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 48717,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 49044,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 49294,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 49744,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 49765,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 49782,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 49815,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 50055,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 51590,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 51595,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 51617,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 51661,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 51715,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 51760,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 51770,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 51884,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 52034,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 52146,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 52162,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 52177,
+        "unified_diff_context_marker": true
+      },
+      {
+        "file": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-wrong-base-failed.patch",
+        "line": 52272,
+        "unified_diff_context_marker": true
+      }
+    ]
+  }
+}

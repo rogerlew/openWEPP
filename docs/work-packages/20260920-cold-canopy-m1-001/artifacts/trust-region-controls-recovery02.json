@@ -1,0 +1,15 @@
+{
+  "observed_utc": "2026-09-23T20:17:38.058267+00:00",
+  "base": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "base_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "source_receipt": "trust-region-controls-red02-source.json",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-controls-red02-from-observer-cut02.patch",
+  "patch_sha256": "e6660990e3d246d7989d98885043222753a3630673910f973a9437490a2fd339",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-trust-controls02-reconstruction-20260923",
+  "entries": 760,
+  "tree_sha256": "0e12168099c494855acce22dd3d0ac370b6b6ed70d2b6faf2c081f22a0e0dffb",
+  "exact_match": true,
+  "live_source_unchanged": true,
+  "first_attempt": "Parent initially took snapshot helper third return diff against its older internal BASE rather than recorder observer BASE. git apply failed atomically. Failed patch/source retained; corrected patch generated using existing recorder explicit observer-relative loop; verified failed apply left exact observer bytes before corrected application.",
+  "scope": "Expected-red controls draft only, two independent HOLD reviews; no numerical body or target execution"
+}

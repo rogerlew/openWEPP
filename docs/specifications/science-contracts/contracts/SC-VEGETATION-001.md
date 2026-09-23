@@ -3580,6 +3580,16 @@ with that assembly. A capacity-selected coordinate remains in the ordered `F`
 block whenever another occupancy is eligible; only an assembly with `E` empty
 uses the existing complete solve.
 
+Notwithstanding this production representation, the separately bounded
+diagnostic `COLD-CANOPY-M1-TR-SVD-BVLS-01` supersedes it solely while its
+expiring diagnostic arm is active: it retains the complete selected
+21-coordinate matrix, including every drainage coordinate and coupling, rather
+than applying affine elimination.  Its exact bounded trust-region policy,
+fixed work caps, expiration, and prohibition on production admission are
+canonical in [the LSE numerical-method section](SC-LANDSURFACEENERGY-001/numerical-methods.md#cold-canopy-m1-trust-region-experiment).
+It does not amend this primal capacity law, selected tangent, M1 Newton
+production representation, or any accepted-state predicate.
+
 For each complete predictor or final assembly separately, let `E` be the set
 of occupancy drainage coordinates whose **already selected** `R_cap` branch is
 the drainage argument `dt*D`; `E` contains at most the two M1 occupancies. The

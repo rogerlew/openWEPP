@@ -2,6 +2,204 @@
 
 
 
+## Resumed trust-region disposition — INCOMPLETE, capacity stop
+
+**Baseline: NOT RUN. Treatment: NOT RUN. Residual, governed step, domain and
+materialization: NOT MEASURED.** No measured prefix or physical control executed.
+This is incomplete premeasurement work, not a valid negative numerical result,
+physical infeasibility claim, completed M1 or production qualification.
+
+Authority draft04 received the missing independent affected QA and its exact
+experiment-only wording was prospectively restored. Two contract-control drafts
+then received independent correctness/QA review; both remain **HOLD** with concrete
+mathematical, observation and coverage defects. No numerical body was released or
+implemented. The approved fixed method has not been measured. Canonical wording
+expires for new implementation/execution at this bounded disposition under its own
+expiry clause; retaining reviewed historical wording grants no production authority.
+
+The first pending boundary is concrete, non-tautological subproblem/frozen-merit
+controls and same-reviewer approval before that body, then the still-required
+controller/phase/acceptance/counter controls/body, private harness, qualification,
+original-start measurement pair and disposition. Supported staged correction is
+within scope; it could not start because the required writer route became unavailable.
+Three writer `followup_task` calls returned exactly `agent thread limit reached`,
+including after both reviewers completed and after interrupting completed QA.
+Only root and the two completed reviewer paths remained listed; no exposed close/
+remove operation exists. The owner-adopted indispensable-capacity stop applies.
+No nested workaround, runtime-limit modification, reviewer-to-author reassignment
+or silent parent-model implementation fallback was used. Existing reviewers can
+still assess preservation/disposition. [Custody](artifacts/trust-region-review-custody.json)
+retains the failure/recovery details and distinct review scopes.
+
+Ran: cut02 controls compile-red, no behavior executed. Parent's first Nix compile
+of cut01 took16.216668 s and returned expected missing-API E0432; cut02 Nix formatting
+and missing-private-API compile-red are retained below. There is no release build,
+new target binary/input identity, timed solve, evaluation/hydraulic/subproblem cost,
+accepted materialization, closure or native support1 receiver result. Target work
+is NOT MEASURED, not zero-cost physics. Original one-prefix/one-pair allowance remains
+unspent. All full09/A1/strict-lint, material/BGC, parent, positive-late-rejection,
+cycle/restart, scaling/cost and broader M1 HOLDs persist.
+
+Exact retained source is `/home/roger/openwepp-experiments/cold-canopy-m1-20260920`,
+760 entries, SHA256 `0e12168099c494855acce22dd3d0ac370b6b6ed70d2b6faf2c081f22a0e0dffb`;
+only `crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs` differs from
+initial tree `54aeb03be0f2373e2c3a85b86ec26f02d624bad32b7c9901cf1c4d1a1cfce7a2`.
+[Recovery02](artifacts/trust-region-controls-recovery02.json) reconstructs every
+entry from unchanged observer plus patch SHA256
+`e6660990e3d246d7989d98885043222753a3630673910f973a9437490a2fd339` at
+`/home/roger/openwepp-experiments/cold-canopy-m1-trust-controls02-reconstruction-20260923`.
+First reconstruction failed because parent used the snapshot helper's older internal
+patch base; failed artifact/receipt retained, no live source changed. Corrected
+observer-relative recorder loop and actual reapplication prove exact recovery.
+No superseded patch is claimed usable against the observer. Main runtime unchanged.
+
+At 2026-09-23T20:18:49.637331+00:00, resumed charge **1369.637331 s**, cumulative
+**285571.718619 s** of **296625.431374 s**, remaining
+**11053.712755 s**. Fixed deadline23:23:03.350086Z and1800-second reserve
+remain unchanged; all further preservation/review/publication time is charged in
+final local publication receipt. No refund, supplement stacking or re-anchor.
+
+Static: same QA independently approves scoped **INCOMPLETE / capacity-stop
+publication** with no blocking finding; verifies patch/test bytes and ledger, and
+leaves full-tree independent audit to correctness. No body/measurement/M1 approval.
+Ran: [publication checks](artifacts/trust-region-resumption-publication-checks.json)
+pass whitespace, both BEI checks, SC unit compliance and A0 structural admission;
+these are documentation/authority checks, not physical invariant execution.
+
+Static/Ran: same correctness reviewer independently verifies all760 live and
+reconstructed file digests, exact one-file delta from build04, corrected patch and
+separate failed evidence, absence of body, and draft04 expiry; **PASS for stopped
+publication only**. Reviewer-owned typo and historical-tense fixes verified. Both
+final scopes are retained verbatim in review custody; neither approves controls.
+Terminal diff is confined to reviewed experiment-only authority, package/recorder/
+review custody and new evidence/recovery files; no main runtime Rust or dependency
+change. JSON syntax and all11 new-section local links pass. All346 staged raw-patch
+whitespace warnings are exact single-space unified-diff context markers, preserved
+for byte-exact recovery; non-patch source whitespace passes.
+Final publication consumption is recorded locally after remote verification in
+`artifacts/trust-region-resumption-final-publication-01.json`; that post-publication
+receipt is not claimed part of its own commit.
+
+## Trust-region resumption — adopted 2026-09-23
+
+Historical resumption checkpoint: **dual authority scopes PASS for control authoring only**. Owner execution
+of `/tmp/openwepp_cold_canopy_m1_trust_region_resumption_authorization.md` resumes
+`COLD-CANOPY-M1-TR-SVD-BVLS-01`; zero added time or runs. Historical INCOMPLETE
+disposition and terminal expiry below are preserved. Prospective reactivation of this same unexecuted study was authorized after both
+authority scopes passed; historical expiration is not erased.
+
+Local final publication receipt confirms carry **284202.081288 s**, unchanged ceiling
+**296625.431374 s**. Conservative first-reading anchor **2026-09-23T19:56:00Z**;
+fixed deadline **2026-09-23T23:23:03.350086+00:00**, implementation cutoff **2026-09-23T22:53:03.350086+00:00**,
+retaining1800 s final review/preservation/publication reserve. All reading, waits and
+concurrency count once, no refunds/re-anchor. [Ledger](artifacts/trust-region-resumption-ledger.json).
+
+Ran: [custody](artifacts/trust-region-resumption-custody.json) verifies all760 runtime
+entries, observer tree, recovery patch, three retained binaries and both reconstructed
+draft04 files. No overlay needed. Main HEAD `40a806c380afdaab32d3d9ee43d6fed5fc59b833`.
+Initial snapshot caller unpacking error was corrected before writes or physical execution.
+Original QA follow-up returned `live agent path /root/trust_qa not found`. Independent
+replacement `/root/trust_qa_resumed` (rust_qa_reviewer route) owns affected draft03→04 QA,
+including governed root/no-update step thresholds, nonterminal predicted-reduction
+rejection and degenerate-face/error controls. Reuse unchanged correctness findings;
+replacement inherits no approval. Serialize writer/reviewer phases, at most two children.
+
+Intent: after both authority scopes pass, restore exact reviewed experimental wording,
+author/review contract-derived controls before corresponding detached Rust bodies,
+then fixed-method implementation, source/input/build freeze, original-start baseline/
+treatment and independent disposition. Main writes only reviewed authority/status,
+evidence, necessary recorder edits and recovery patches. No main runtime adoption.
+Selected checks retain build/format/introduced-lint, mathematical/domain/phase/guard/
+exhaustion/original60, applicable A0/A1/A3 and Critical checks. Reuse recorder and valid
+nonlaunching controls with affected deadline/custody verification. All21 residuals,
+dynamic normalization/tolerances, role/domain/phase/hydraulic predicates, governed
+step/materialization/closure/atomicity and every draft04 method/work ceiling bind.
+The original one prefix and baseline/treatment pair remain unspent; at most one
+independently verified implementation/recording correction repeat, no negative-result
+retry or tuning. No physical-law/domain/seed/forcing/timestep/dependency/schema/
+production-dispatch/parent changes. All broader material/BGC/parent/positive-late-
+rejection/cycle/restart/cost/scaling/full09/A1/strict-lint/M1 HOLDs remain.
+Stop for owner direction, time/run bound, uncontained integrity loss, indispensable
+source/independence unavailable after bounded recovery, completed disposition or
+necessary out-of-envelope change. Two failed corrections or60 charged minutes trigger
+internal reassessment without renewed allowance. Baseline/treatment **NOT RUN**;
+physical acceptance and cost **NOT MEASURED**.
+
+Static: replacement `/root/trust_qa_resumed` found no blocking findings and passed
+exact draft04 for contract-derived controls only. Full response and identities are
+in [review custody](artifacts/trust-region-review-custody.json), retaining original
+reviewers unchanged. No-free-face refusal before SVD must receive an explicit control.
+`/root/trust_writer_resumed` owns the two authority restorations and detached control
+authoring; body implementation awaits independent control review. Recorder deadline
+alone updated to this resumption's fixed deadline; Python AST parsing passes.
+
+Static: same replacement QA verified the deadline-only recorder diff, carry/deadline/
+reserve arithmetic, retained nonlaunching results and preserved historical HOLDs.
+It found the resumption ledger phase stale (still QA-pending after authority PASS);
+parent reconciled that phase to control-authoring-only release and requested same-
+reviewer fix verification. No experimental execution resulted from the stale label.
+Same reviewer verifies the fix and returns scoped lifecycle/custody/recorder **PASS**,
+with unchanged deadline and exact elapsed arithmetic; no controls/body/target approval.
+
+### Resumed controls cut01 — HOLD before body
+
+Writer restored exact reviewed draft04 bytes and added detached integration target
+`crates/openwepp-land-surface-energy/tests/cold_canopy_m1_trust_region_expected_red.rs`,
+SHA256 `f7f281208400d2fb77b685e274dbde054c64520a9b2100a23df1fe5484ae92b0`.
+No body exists. Direct host Cargo/rustfmt attempt could not launch; Nix is the proper
+repository toolchain, not a dependency fallback.
+
+Ran: [recorded Nix compilation](artifacts/trust-region-controls-red01.json) using
+`cargo nextest run -p openwepp-land-surface-energy --test cold_canopy_m1_trust_region_expected_red --no-run`
+returns101 in16.216668 s with expected E0432 missing proposed interfaces; source and
+observer unchanged. Five inherited library warnings remain visible in
+[stderr](artifacts/trust-region-controls-red01.stderr). This is compile-red evidence,
+not executed tests or a valid control suite. No physical run allowance spent.
+
+Static: `/root/trust_qa_resumed` gives **HOLD**: per-governed-norm/root-path poison
+controls and actual materialization rejection are missing; ordinary trial-domain
+radius rejection absent; integration imports cannot expose a Rust-private seam;
+boolean attestations do not independently prove snapshots/counters/order; radius
+exhaustion missing. Correctness replacement `/root/trust_correctness_resumed` owns
+mathematical/control review because original correctness path is unavailable.
+Parent additionally identified the claimed Newton direction is inconsistent with
+the draft's stated identity linear model. No body release follows compile-red. Correctness independently confirms **HOLD**:
+Newton oracle inconsistent, stationarity at normalized1 is not a failing root predicate
+and the one-dimensional active corner must refuse DegenerateFace; canned outputs
+are tautological, actual scaling/matrices/phase/count/cap/rollback controls missing,
+and crate-root test exports violate confinement. Parent accepts all findings and
+assigns cut02 correction to the same writer, then same-reviewer verification. This
+is the first unsuccessful controls correction cycle; allowance is unchanged.
+
+### Controls cut02 and supported internal reassessment
+
+Ran: cut02 is retained in [source](artifacts/trust-region-controls-red02-source.json)
+and [recovery patch](artifacts/trust-region-controls-red02-from-observer-cut02.patch).
+Only detached `m1_coupled_tests.rs` differs from the original760-entry runtime;
+its SHA256 is `6bbdc300f19029211e338d2b04599601d539de68d7a9f8be91b142d930e5d77e`.
+Old integration target removed; module-local control confinement corrected.
+Writer reports Nix formatting PASS and expected missing-private-API compilation101,
+with [raw stderr](artifacts/trust-region-controls-red02.stderr) preserved durably.
+No behavioral or physical run. One QA followup hit `agent thread limit reached`
+while writer/correctness were active; retry after writer final succeeded. No
+capacity workaround or lost independence.
+
+Static: same QA retains **HOLD**: aggregate poison/snapshot boolean attestations,
+one-proposal versus multi-base-root contradiction, missing nonterminal no-predicted-
+reduction control, and named absent numerical fixture factories. Concrete domain
+rejection, frozen merit and numeric cap assertions improved, but are not complete.
+Root accepts these findings. The nonlinear toy root needs multiple proposals;
+neither one nor exactly two proposals is an independently established root path.
+
+Two unsuccessful control cuts trigger supported internal reassessment: **CONTINUE
+with smaller corresponding-body stages**, same fixed draft04 method and acceptance.
+First author independently numeric subproblem/merit controls, review, then that body;
+next author concrete controller/phase/acceptance/counter controls before its body;
+finally freeze private harness/measurement and complete all remaining checks/reviews.
+This changes task granularity, not authority, required controls, run allowance or
+acceptance. Named missing fixtures and self-reported boolean outcomes are rejected.
+All final physical/control obligations remain prerequisites to target execution.
+
 ## Bound-constrained trust-region experiment — adopted 2026-09-23
 
 Current checkpoint: **INCOMPLETE — required independent QA unavailable; stopped before controls/body or target execution**.

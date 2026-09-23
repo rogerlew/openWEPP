@@ -31,5 +31,83 @@
     "conversation": "/root/trust_correctness",
     "verdict": "APPROVE scoped INCOMPLETE status/evidence publication only",
     "verified": "Restored pinned canonical authority; independently rehashed2file draft04 recovery; unchanged760 runtime; JSON/links/diff checks and recorderdeadline only. QA remainsunmet; no controls/body/target/productionrelease."
+  },
+  "resumption_qa": {
+    "conversation": "/root/trust_qa_resumed",
+    "role": "rust_qa_reviewer",
+    "independence": "Replacement independent of author/adviser; original reviewer unreachable, live agent path not found",
+    "reviewed_cut": "draft04",
+    "patch_sha256": "220a23abafaff341036587a3ebefc1677d9ddab78d1d6253cae7c608ddcd44c3",
+    "verbatim_final": "Findings: none blocking.\n\nNon-blocking follow-ups:\n\n- No runtime/gate execution was performed in this review. `cargo fmt`, `clippy -D warnings`, tests, `cargo deny`, A1/A3, controls, and target arms remain pending for later implementation/measurement scope; baseline and treatment remain **NOT RUN**.\n- The no-free-face instruction is intentionally fail-closed (`TrustRegionDegenerateFace` before SVD); implementation controls should make that early branch explicit despite its placement after the general SVD step.\n\nStatic QA PASS \u2014 draft04 is acceptable for the narrowly bounded next stage: contract-derived control authoring only. It does not authorize implementation completion, experiment measurement, production activation, or release.\n\nReviewed source identities:\n\n- Draft04 patch: `trust-region-authority-draft04.patch`, SHA-256 `220a23abafaff341036587a3ebefc1677d9ddab78d1d6253cae7c608ddcd44c3`.\n- Base: `eda2930001917f0fa6d801914fb2a17925c2eb77`.\n- Recovered files match `recovery04.json`: numerical methods `3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63`; vegetation `a54f0fc436dd63273c50f252069098d786f0e80e1b4228cb2cf2df565ae61599`.\n- `git apply --check` passed; recovered diffs are 288 and 10 added lines, respectively.\n\nVerified affected draft04 corrections: every installed-root and no-update admission path explicitly requires complete governed norms and every unchanged governed threshold; `TrustRegionNoPredictedReduction` is recorded as a nonterminal rejection that shrinks radius and preserves later history; no-free and zero-radius faces both refuse as `TrustRegionDegenerateFace`; ordinary trial-domain rejections are distinguished from terminal owning errors with retained precedence."
+  },
+  "resumption_lifecycle_qa": {
+    "conversation": "/root/trust_qa_resumed",
+    "finding": "HIGH: ledger phase stale, authority QA pending contradicted control-authoring release; corrected before experimental execution",
+    "verbatim_fix_verdict": "No blocking findings. The ledger fix is verified.\n\n`trust-region-resumption-ledger.json` now correctly limits the release to contract-derived control authoring, with controls, body, and target approval still pending. Its elapsed accounting reconciles exactly:\n\n- cumulative: `284202.081288 + 378.769431 = 284580.850719`\n- remaining: `296625.431374 \u2212 284580.850719 = 12044.580655`\n- fixed deadline remains `2026-09-23T23:23:03.350086Z`\n\nThe package records the finding and correction, preserves historical INCOMPLETE/expiry and all HOLDs, and states no experimental execution resulted. The recorder remains a one-line deadline-only change; whitespace check passes.\n\nStatic QA PASS for the scoped resumption lifecycle/custody/recorder evidence. This does not approve detached controls, implementation, target execution, production activation, or release."
+  },
+  "resumption_controls01_correctness": {
+    "conversation": "/root/trust_correctness_resumed",
+    "role": "rust_code_reviewer",
+    "source_sha256": "f7f281208400d2fb77b685e274dbde054c64520a9b2100a23df1fe5484ae92b0",
+    "verdict": "HOLD; no body release",
+    "findings": [
+      "Positive oracle Newton direction does not equal Newton for stated model; fails scalar-stall discriminator.",
+      "Stationarity normalized max1 passes threshold and no-free face requires DegenerateFace, contradicting expected no refusal.",
+      "Canned cases/opaque flags are tautological; actual numeric matrices, inputs, counts/order and snapshots required.",
+      "Missing domain radius rejection, radius/proposal/update/subproblem exhaustion, phase assembly/probe counts, each residual poison, actual cap boundaries and complete phase/drainage controls.",
+      "Integration crate-root exports violate private interface confinement."
+    ],
+    "execution_evidence": "Parent Nix compilation E0432 only; no behavior controls ran."
+  },
+  "resumption_controls01_qa": {
+    "conversation": "/root/trust_qa_resumed",
+    "source_sha256": "f7f281208400d2fb77b685e274dbde054c64520a9b2100a23df1fe5484ae92b0",
+    "verdict": "HOLD; no body release",
+    "findings": [
+      "HIGH missing per-threshold poisons for each root/no-update path and no materialization/state change.",
+      "HIGH missing ordinary trial-domain radius rejection vs terminal owning error.",
+      "HIGH integration test cannot consume private seam; confine to local test module.",
+      "MEDIUM replace self-attesting flags with observable counters, snapshots, inputs and sequence.",
+      "MEDIUM missing radius exhaustion."
+    ]
+  },
+  "resumption_capacity_stop": {
+    "observed_utc": "2026-09-23T20:18:49.637331+00:00",
+    "target": "/root/trust_writer_resumed",
+    "tool": "collaboration.followup_task",
+    "failed_followup_count": 3,
+    "error": "agent thread limit reached",
+    "bounded_recovery": [
+      "Attempt while correctness finishing; writer phase not started",
+      "Retry after both independent reviewers final",
+      "Interrupt completed QA using exposed lifecycle operation, then retry once"
+    ],
+    "actual_live_tree": "root plus completed correctness and QA reviewers; writer not listed",
+    "available_lifecycle": "spawn, followup, send, interrupt, list, wait; no close/remove",
+    "no_workaround": "No nested CLI/API, runtime modification, reassignment of independent reviewers to authorship, or silent parent-model implementation fallback. Existing reviewers remain reachable for disposition."
+  },
+  "resumption_controls02": {
+    "source_sha256": "6bbdc300f19029211e338d2b04599601d539de68d7a9f8be91b142d930e5d77e",
+    "correctness_conversation": "/root/trust_correctness_resumed",
+    "qa_conversation": "/root/trust_qa_resumed",
+    "verdicts": "Both HOLD; no body release",
+    "findings": [
+      "One-proposal trace contradicts multi-base root; non-dyadic exact equalities unjustified",
+      "Absent named numerical factories allow synthesized refusals",
+      "Witness/rollback aggregate boolean attestations; bare limit values do not identify real counter",
+      "NoPredictedReduction nonterminal retained rejection and stable LSEB-E-034 reason checks missing",
+      "Explicit phase/capacity matrices, join normals and coupling expected values missing; dD>=0 incorrectly forbids admissible negative drainage steps",
+      "Free exact-bound inward/no-nudge and ordinary-update vs root-threshold coverage missing"
+    ],
+    "resolved": "Private module confinement, actual nonlinear test-model derivation, basic domain-shrink vs terminal distinction and radius-exhaustion presence",
+    "staging_verdict": "Correctness approves smaller controls-before-corresponding-body staging in principle; no controls/body approval"
+  },
+  "resumption_stopped_publication_qa": {
+    "conversation": "/root/trust_qa_resumed",
+    "verbatim_final": "Findings: none blocking for the bounded stopped-publication disposition.\n\nNon-blocking evidence limit:\n\n- I verified the corrected recovery\u2019s retained patch SHA-256 `e6660990e3d246d7989d98885043222753a3630673910f973a9437490a2fd339`, the cut02 test-file SHA `6bbdc300f19029211e338d2b04599601d539de68d7a9f8be91b142d930e5d77e`, and matching recovered test-file bytes across the live and reconstruction paths. The reconstruction contains 760 files.\n- The complete tree reconstruction/hash claim remains separately subject to the correctness reviewer\u2019s reconstruction audit; this QA scope did not independently recompute every file digest.\n- The raw red01 receipt is correctly described as a 16.216668-second compile-red with missing APIs, not executed behavior. The red02 raw log is likewise missing-private-API compile-red. No control or target result is claimed.\n- Ledger arithmetic agrees with the stopped record: `284202.081288 + 1369.637331 = 285571.718619`; remaining is `11053.712755`. Deadline/reserve are preserved.\n\nStatic QA PASS for publishing the scoped **INCOMPLETE / capacity stop** record and its reviewed authority, recorder, custody, recovery, and evidence artifacts. The record accurately retains both controls cuts as HOLD, the unspent prefix/baseline/treatment allowance, all broader qualification HOLDs, and draft04\u2019s expiry for further implementation/execution. It authorizes no numerical body, target measurement, production activation, or M1 qualification."
+  },
+  "resumption_stopped_publication_correctness": {
+    "conversation": "/root/trust_correctness_resumed",
+    "verbatim_final": "Static/Ran evidence reviewed. No remaining blocking findings.\n\nIndependent checks confirmed:\n\n- All 760 retained live files and all 760 reconstructed files match the hashes in `trust-region-controls-red02-source.json`.\n- The initial build04 manifest differs only at `m1_coupled_tests.rs`.\n- Corrected recovery patch SHA-256 is `e6660990e3d246d7989d98885043222753a3630673910f973a9437490a2fd339`.\n- The failed wrong-base patch and receipt remain separately identified.\n- No trust-region implementation body or supporting definitions exist; cut02 contains unresolved test references only.\n- Canonical files match the dual-reviewed draft04 hashes, whose own clause expires the experiment at this bounded disposition.\n- Baseline, treatment, physical controls, materialization, closure, and cost remain truthfully `NOT RUN` or `NOT MEASURED`.\n- The evidence-label typo and historical authorization wording were corrected; `git diff --check` passes.\n\nResidual risk consists entirely of the preserved unfinished work: both control cuts remain HOLD, no body is released, and all previously listed controls, qualification, measurement, and broader M1 obligations remain pending.\n\n**Correctness PASS for publishing the scoped `INCOMPLETE / capacity stop` disposition, expired experimental authority, and recovery evidence only. This verdict does not approve controls, implementation, target execution, production activation, or M1 qualification.**"
   }
 }

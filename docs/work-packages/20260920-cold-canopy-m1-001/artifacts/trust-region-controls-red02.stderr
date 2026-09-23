@@ -1,0 +1,222 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find `M1TrustRegionTestLimits` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:314:28
+    |
+314 |             limits: super::M1TrustRegionTestLimits::canonical(),
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestLimits` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:353:16
+    |
+353 |         super::M1TrustRegionTestAssembly::two_row(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:375:16
+    |
+375 |         super::M1TrustRegionTestAssembly::all_active_nonroot(2.0),
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:380:16
+    |
+380 |         super::M1TrustRegionRefusalKind::TrustRegionDegenerateFace
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionWitnessPath` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:418:16
+    |
+418 |         super::M1TrustRegionWitnessPath::InstalledRoot,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWitnessPath` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionWitnessPath` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:419:16
+    |
+419 |         super::M1TrustRegionWitnessPath::FullNoUpdate,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWitnessPath` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionWitnessPath` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:420:16
+    |
+420 |         super::M1TrustRegionWitnessPath::FirstValidReplacement,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWitnessPath` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:485:20
+    |
+485 |             super::M1TrustRegionRefusalKind::TrustRegionWorkCap
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:494:16
+    |
+494 |         super::M1TrustRegionRefusalKind::TrustRegionRadiusExhausted
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:518:20
+    |
+518 |             super::M1TrustRegionTestAssembly::nonfinite_entry(),
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:519:20
+    |
+519 |             super::M1TrustRegionRefusalKind::TrustRegionSvdNonFinite,
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:522:20
+    |
+522 |             super::M1TrustRegionTestAssembly::requires_65_jacobi_sweeps(),
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:523:20
+    |
+523 |             super::M1TrustRegionRefusalKind::TrustRegionSvdNoConvergence,
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:526:20
+    |
+526 |             super::M1TrustRegionTestAssembly::singular_values([1.0, 0.0]),
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:527:20
+    |
+527 |             super::M1TrustRegionRefusalKind::TrustRegionRankDeficient,
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:530:20
+    |
+530 |             super::M1TrustRegionTestAssembly::unbracketed_lambda(),
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:531:20
+    |
+531 |             super::M1TrustRegionRefusalKind::TrustRegionLambdaBracket,
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:534:20
+    |
+534 |             super::M1TrustRegionTestAssembly::inaccurate_ball_endpoint(),
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:535:20
+    |
+535 |             super::M1TrustRegionRefusalKind::TrustRegionBallAccuracy,
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:538:20
+    |
+538 |             super::M1TrustRegionTestAssembly::forty_three_crossing_face(),
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:539:20
+    |
+539 |             super::M1TrustRegionRefusalKind::TrustRegionFacePivotLimit,
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+
+error[E0425]: cannot find function `m1_trust_region_with_controlled_assembly_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:294:22
+    |
+294 |     let run = super::m1_trust_region_with_controlled_assembly_for_test(
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionTestAssembly` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:297:16
+    |
+297 |         super::M1TrustRegionTestAssembly {
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_test_nonlinear_bounded_root_raw_jacobian` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:302:34
+    |
+302 |             raw_jacobian: super::m1_test_nonlinear_bounded_root_raw_jacobian(),
+    |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionTestPolynomial` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:310:41
+    |
+310 |             nonlinear_first_two: super::M1TrustRegionTestPolynomial {
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_with_controlled_assembly_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:350:24
+    |
+350 |     let merit = super::m1_trust_region_with_controlled_assembly_for_test(
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_with_controlled_assembly_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:372:23
+    |
+372 |     let face = super::m1_trust_region_with_controlled_assembly_for_test(
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_with_trial_domain_poison_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:401:25
+    |
+401 |     let domain = super::m1_trust_region_with_trial_domain_poison_for_test(&input, &trial());
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_with_selected_side_error_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:412:27
+    |
+412 |     let terminal = super::m1_trust_region_with_selected_side_error_for_test(&input, &trial());
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_witness_thresholds_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:422:30
+    |
+422 |         let witness = super::m1_trust_region_witness_thresholds_for_test(&input, &trial(), path);
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find value `M1_GOVERNED_STEP_NORMS` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:425:57
+    |
+425 |         assert_eq!(witness.governed_norms.len(), super::M1_GOVERNED_STEP_NORMS);
+    |                                                         ^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_phase_capacity_tie_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:447:24
+    |
+447 |     let phase = super::m1_trust_region_phase_capacity_tie_for_test(&input, &trial());
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_natural_tangent_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:466:26
+    |
+466 |     let natural = super::m1_trust_region_natural_tangent_for_test(&input, &trial());
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_cap_boundary_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:482:30
+    |
+482 |         let refusal = super::m1_trust_region_cap_boundary_for_test(&input, &trial(), limit);
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_radius_exhaustion_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:491:28
+    |
+491 |     let exhausted = super::m1_trust_region_radius_exhaustion_for_test(&input, &trial());
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_with_controlled_assembly_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:543:20
+    |
+543 |             super::m1_trust_region_with_controlled_assembly_for_test(&input, &trial(), assembly)
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+Some errors have detailed explanations: E0422, E0425, E0433.
+For more information about an error, try `rustc --explain E0422`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 36 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101

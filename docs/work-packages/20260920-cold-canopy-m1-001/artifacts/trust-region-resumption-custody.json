@@ -1,0 +1,18 @@
+{
+  "observed_utc": "2026-09-23T19:59:15.799250+00:00",
+  "entries": 760,
+  "tree_sha256": "54aeb03be0f2373e2c3a85b86ec26f02d624bad32b7c9901cf1c4d1a1cfce7a2",
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "checks": {
+    "support1-attribution-build-04-from-observer-cut02.patch": "c21a69b54189209de89032eec1ba49a4711ad11e178b2e3f5408cfe241ddef90",
+    "trust-region-authority-draft04.patch": "220a23abafaff341036587a3ebefc1677d9ddab78d1d6253cae7c608ddcd44c3",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63",
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": "a54f0fc436dd63273c50f252069098d786f0e80e1b4228cb2cf2df565ae61599",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-support1-build04-openwepp-hillslope-orchestrator": "946669aac315fa0b4de0c04405cfad040e6fe8aad38a895ea31edb275eecc2e6",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-support1-build04-openwepp-land-surface-energy": "27851d94aa2421eaa109c70b932b803a389302aac3dcca294edf54da2907864f",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-support1-build04-openwepp-vegetation": "4eca435daa54f1bf667d8fc62a42fd8d5ef32666de11def0fedbcfb307e21c4e"
+  },
+  "matches": true,
+  "physical_runs": 0,
+  "initial_check_error": "Snapshot helper returns three values; corrected caller unpacking before any mutation or physical execution."
+}

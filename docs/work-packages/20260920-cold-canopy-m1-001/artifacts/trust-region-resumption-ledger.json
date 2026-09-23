@@ -1,0 +1,15 @@
+{
+  "anchor_utc": "2026-09-23T19:56:00+00:00",
+  "prior_charged_seconds": "284202.081288",
+  "fixed_ceiling_seconds": "296625.431374",
+  "hard_deadline_utc": "2026-09-23T23:23:03.350086+00:00",
+  "implementation_cutoff_utc": "2026-09-23T22:53:03.350086+00:00",
+  "reserve_seconds": 1800,
+  "added_seconds": 0,
+  "clock_policy": "All elapsed including reading, waits and concurrency charged once; conservative first-reading anchor; no refunds",
+  "phase": "INCOMPLETE: required writer route unavailable after bounded recovery; cut02 controls HOLD; no body/prefix/target execution; preservation/publication only",
+  "observed_utc": "2026-09-23T20:23:57.251776+00:00",
+  "session_elapsed_seconds": "1677.251776",
+  "charged_cumulative_seconds": "285879.333064",
+  "remaining_seconds": "10746.098310"
+}
