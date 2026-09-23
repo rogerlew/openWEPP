@@ -55,6 +55,12 @@ At 2026-09-23T18:07:08.440956+00:00, charged session time is **1748.440956 s**, 
 Publication time is additionally charged in the final local receipt; no reserve,
 wait or concurrency refund. The hard deadline remains21:38Z.
 
+Publication check: checking the raw recovery patches as newly added text reports12
+trailing-space lines, all independently classified as required unified-diff blank
+context markers (`" "`), not source whitespace. Exact patch bytes/hashes are retained;
+all non-patch source/package/JSON diffs pass whitespace checks. The full warning
+and classification are preserved in [publication checks](artifacts/trust-region-publication-checks.json).
+
 Owner execution of `/tmp/openwepp_cold_canopy_m1_bound_trust_region_experiment_authorization.md`
 adopts its bounded experiment and charged-time supplement. The completed support-1
 attribution below remains closed. Test one prospectively specified scaled bounded

@@ -1,0 +1,70 @@
+{
+  "observed_utc": "2026-09-23T18:07:46.449115+00:00",
+  "commit": "2f74922baaf3b83d08b14a0202128572c03ad5d8",
+  "all_artifact_diff_check_exit": 2,
+  "raw_output": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft01.patch:8: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft01.patch:213: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft01.patch:222: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft02.patch:8: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft02.patch:262: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft02.patch:271: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft03.patch:8: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft03.patch:292: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft03.patch:301: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft04.patch:8: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft04.patch:298: trailing whitespace.\n+ \ndocs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft04.patch:307: trailing whitespace.\n+ \n",
+  "reviewed_patch_context_only": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft01.patch",
+      "line": 8,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft01.patch",
+      "line": 213,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft01.patch",
+      "line": 222,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft02.patch",
+      "line": 8,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft02.patch",
+      "line": 262,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft02.patch",
+      "line": 271,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft03.patch",
+      "line": 8,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft03.patch",
+      "line": 292,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft03.patch",
+      "line": 301,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft04.patch",
+      "line": 8,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft04.patch",
+      "line": 298,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft04.patch",
+      "line": 307,
+      "classification": "Required unified-diff blank context marker; exact evidence bytes preserved"
+    }
+  ],
+  "non_patch_diff_check_exit": 0,
+  "scope": "No patch bytes altered; source/package/JSON whitespace passes. Raw .patch context syntax is retained exact evidence."
+}
