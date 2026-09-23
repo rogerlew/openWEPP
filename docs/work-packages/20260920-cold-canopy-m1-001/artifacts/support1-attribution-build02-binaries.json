@@ -1,0 +1,20 @@
+[
+  {
+    "package": "openwepp-hillslope-orchestrator",
+    "binary": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_orchestrator-0ad665558c5e4d7c",
+    "retained": "/home/roger/openwepp-experiments/cold-canopy-m1-support1-build02-openwepp-hillslope-orchestrator",
+    "sha256": "2d58354f9cbe6015fb34704e2e5d506880d3819aff05c3aca1d3d005271504c8"
+  },
+  {
+    "package": "openwepp-land-surface-energy",
+    "binary": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-4b83c89d629ca132",
+    "retained": "/home/roger/openwepp-experiments/cold-canopy-m1-support1-build02-openwepp-land-surface-energy",
+    "sha256": "27851d94aa2421eaa109c70b932b803a389302aac3dcca294edf54da2907864f"
+  },
+  {
+    "package": "openwepp-vegetation",
+    "binary": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_vegetation-88bd8b2ea7db2d5d",
+    "retained": "/home/roger/openwepp-experiments/cold-canopy-m1-support1-build02-openwepp-vegetation",
+    "sha256": "4eca435daa54f1bf667d8fc62a42fd8d5ef32666de11def0fedbcfb307e21c4e"
+  }
+]

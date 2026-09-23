@@ -1,0 +1,14 @@
+{
+  "anchor_utc": "2026-09-23T09:19:00+00:00",
+  "observed_utc": "2026-09-23T10:44:27.720699+00:00",
+  "prior_charged_seconds": "276841.377753",
+  "session_elapsed_seconds": "5127.720699",
+  "charged_cumulative_seconds": "281969.098452",
+  "fixed_ceiling_seconds": "284041.377753",
+  "remaining_seconds": "2072.279301",
+  "hard_deadline_utc": "2026-09-23T11:19:00Z",
+  "implementation_cutoff_utc": "2026-09-23T10:49:00Z",
+  "refunds_seconds": 0,
+  "clock_policy": "All elapsed charged once including concurrency, waits, review, preservation and publication. No prior reserve reclaimed.",
+  "phase": "Independent disposition complete; scoped publication and final local charge receipt remain"
+}

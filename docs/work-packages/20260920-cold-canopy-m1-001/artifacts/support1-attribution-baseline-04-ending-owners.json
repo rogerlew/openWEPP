@@ -1,0 +1,477 @@
+{
+  "bgc": {
+    "layers": {
+      "soil-1": {
+        "ammonium_n": 0.9999919986072004,
+        "nitrate_n": 0.9999879979108006
+      },
+      "soil-2": {
+        "ammonium_n": 0.9999950959205421,
+        "nitrate_n": 0.9999926438808132
+      },
+      "soil-dry": {
+        "ammonium_n": 1.0,
+        "nitrate_n": 1.0
+      },
+      "soil-frozen": {
+        "ammonium_n": 1.0,
+        "nitrate_n": 1.0
+      }
+    },
+    "receivers": {
+      "metabolic": {
+        "carbon": 1.2338909057640607e-08,
+        "nitrogen": 3.1485907938389755e-10,
+        "dry_matter": 2.5706060536751267e-08
+      },
+      "cellulose": {
+        "carbon": 1.7770921021856632e-08,
+        "nitrogen": 4.5569616137225013e-10,
+        "dry_matter": 3.7022752128867983e-08
+      },
+      "lignin": {
+        "carbon": 2.4210289562663042e-08,
+        "nitrogen": 6.378155791273782e-10,
+        "dry_matter": 5.0438103255548e-08
+      },
+      "coarse_woody_debris": {
+        "carbon": 4.554794479550524e-09,
+        "nitrogen": 3.8751902238715576e-11,
+        "dry_matter": 9.489155165730258e-09
+      }
+    },
+    "last_transaction_id": 40
+  },
+  "hydrology": {
+    "schema": "OPENWEPP_DIRECT_HYDROLOGY_OWNER_PROJECTION_V1",
+    "run_id": 83,
+    "hillslope_id": 11,
+    "lane_count": 1,
+    "day_count": 1,
+    "lanes": [
+      {
+        "lane_id": 1,
+        "area_m2": "4059000000000000",
+        "soil_water_m": "3fbeb851eb582992",
+        "infiltration_m": "0000000000000000",
+        "runoff_m": "0000000000000000",
+        "evapotranspiration_m": "0000000000000000",
+        "drainage_m": "0000000000000000",
+        "lateral_flow_m": "0000000000000000",
+        "snow_swe_m": "0000000000000000",
+        "snow_liquid_m": "0000000000000000",
+        "subsurface_layers": [
+          {
+            "layer_index": 0,
+            "theta_m": "3f947ae147ae147b",
+            "frozen_depth_m": "0000000000000000",
+            "frozen_water_m": "0000000000000000"
+          },
+          {
+            "layer_index": 1,
+            "theta_m": "3f947ae147ae147b",
+            "frozen_depth_m": "0000000000000000",
+            "frozen_water_m": "0000000000000000"
+          },
+          {
+            "layer_index": 2,
+            "theta_m": "3f947ae1473e6c89",
+            "frozen_depth_m": "0000000000000000",
+            "frozen_water_m": "0000000000000000"
+          },
+          {
+            "layer_index": 3,
+            "theta_m": "3f947ae14769e7cf",
+            "frozen_depth_m": "0000000000000000",
+            "frozen_water_m": "0000000000000000"
+          },
+          {
+            "layer_index": 4,
+            "theta_m": "3f947ae147ae147b",
+            "frozen_depth_m": "0000000000000000",
+            "frozen_water_m": "0000000000000000"
+          },
+          {
+            "layer_index": 5,
+            "theta_m": "3f947ae147ae147b",
+            "frozen_depth_m": "0000000000000000",
+            "frozen_water_m": "0000000000000000"
+          }
+        ]
+      }
+    ]
+  },
+  "land_surface_energy": {
+    "model_definition_sha256": "e1736b8c77d13d6fb12fb97a6f747e54eea877edf237817b6c6e8954cff8332f",
+    "configuration_sha256": "1c1ab6d5c4a342e652ae7d6c4b24dbe35bd49659b8065f0d24eb85b7bd23b13d",
+    "state_sha256": "5b3ce4446ff28d4dcb184d60ac0edf33c8ff8e2b51b4996f29cf3c0c262682cd",
+    "owner_id": "land-surface-energy-v1",
+    "last_accepted_transaction_id": 170141183460469231731687303715884105728,
+    "tiles": [
+      {
+        "ofe_id": "ofe-1",
+        "tile_id": "forest",
+        "surface_enthalpy_j_m2_tile_ground": 439352.808,
+        "surface_temperature_warm_start_k": 295.0
+      },
+      {
+        "ofe_id": "ofe-1",
+        "tile_id": "open",
+        "surface_enthalpy_j_m2_tile_ground": 917700.0,
+        "surface_temperature_warm_start_k": 295.0
+      }
+    ]
+  },
+  "snow": {
+    "schema": "OPENWEPP_STAGE3_CANONICAL_SNOW_OWNER_V1",
+    "lanes": [
+      [
+        1,
+        {
+          "schema_version": 2,
+          "terminal_event_model": "EnthalpyEventV1",
+          "fingerprint": 10156815313407504615,
+          "lane_id": 1,
+          "next_interval_index": 0,
+          "layers": [],
+          "detached_retained_liquid_kg_m2": 0.0,
+          "initial_ice_kg_m2": -0.0,
+          "initial_retained_liquid_kg_m2": 0.0,
+          "cumulative_snowfall_kg_m2": 0.0,
+          "cumulative_external_liquid_kg_m2": 0.0,
+          "cumulative_deposition_kg_m2": 0.0,
+          "cumulative_sublimation_kg_m2": 0.0,
+          "cumulative_melt_kg_m2": 0.0,
+          "cumulative_unresolved_liquid_kg_m2": 0.0,
+          "cumulative_complete_energy_j_m2": 0.0,
+          "cumulative_cold_energy_change_j_m2": 0.0,
+          "cumulative_terminal_unallocated_energy_j_m2": 0.0
+        }
+      ]
+    ]
+  },
+  "soil_thermal": {
+    "owner_id": "soil-thermal",
+    "configuration_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+    "state_sha256": "9cf1b5bb26eb4def29e1f0f9aa8be4d77dc093e730e93f16efa02d4dd91d4d2b",
+    "snapshot_sha256": "81dd03bacfe9383c5c6a7b6d7255da53a2cefa231ea09e1fbdce68ac5effb649",
+    "last_accepted_transaction_id": 170141183460469231731687303715884105728,
+    "ofes": [
+      {
+        "ofe_id": "ofe-1",
+        "ordered_layers": [
+          {
+            "layer_id": "thermal-1",
+            "temperature_k": 291.5,
+            "enthalpy_j_m2_ofe_ground": 1000000.0
+          },
+          {
+            "layer_id": "thermal-2",
+            "temperature_k": 289.8,
+            "enthalpy_j_m2_ofe_ground": 2000000.0
+          },
+          {
+            "layer_id": "soil-1",
+            "temperature_k": 293.0,
+            "enthalpy_j_m2_ofe_ground": 2000000.0
+          },
+          {
+            "layer_id": "soil-2",
+            "temperature_k": 293.0,
+            "enthalpy_j_m2_ofe_ground": 2000000.0
+          },
+          {
+            "layer_id": "soil-dry",
+            "temperature_k": 293.0,
+            "enthalpy_j_m2_ofe_ground": 2000000.0
+          },
+          {
+            "layer_id": "soil-frozen",
+            "temperature_k": 270.0,
+            "enthalpy_j_m2_ofe_ground": 2000000.0
+          }
+        ]
+      }
+    ]
+  },
+  "surface_liquid": {
+    "schema": "OPENWEPP_SURFACE_LIQUID_COMPLETE_OWNER_PROJECTION_V2",
+    "persistent_owner": {
+      "configuration_sha256": "a25b600e898017500147cd87919e81b1e663f24bd6b6c60748cd78c22cef1c86",
+      "continuations": [
+        {
+          "cumulative_infiltration_m": "0000000000000000",
+          "cumulative_supply_m": "0000000000000000",
+          "day_index": 0,
+          "last_accepted_transaction_id": 1.7014118346046923e+38,
+          "next_interval_index": 1,
+          "ofe_id": "ofe-1"
+        }
+      ],
+      "owner_id": "production-hydrology",
+      "records": [
+        {
+          "key": {
+            "ofe_id": "ofe-1",
+            "run_id": 83,
+            "source_id": "liquid:ofe-1:forest",
+            "source_type": "litter_liquid",
+            "surface_class": "forest_litter",
+            "surface_id": "surface:ofe-1:forest",
+            "tile_id": "forest"
+          },
+          "last_accepted_transaction_id": 1.7014118346046923e+38,
+          "liquid_kg_m2_tile": "4010000000000000"
+        },
+        {
+          "key": {
+            "ofe_id": "ofe-1",
+            "run_id": 83,
+            "source_id": "liquid:ofe-1:open",
+            "source_type": "surface_liquid",
+            "surface_class": "bare_mineral_soil",
+            "surface_id": "surface:ofe-1:open",
+            "tile_id": "open"
+          },
+          "last_accepted_transaction_id": 1.7014118346046923e+38,
+          "liquid_kg_m2_tile": "0000000000000000"
+        }
+      ],
+      "state_sha256": "f128935e8e39d4a95c6a5fce2baba92f64d860b037cb7404619feb7a41901cc6"
+    },
+    "wb14_parent_working_state": null
+  },
+  "vegetation": {
+    "model_definition_id": "OPENWEPP_C3_WOODY_COLD_M1_V1",
+    "model_definition_sha256": "60792c5fd1e5e3a09a9e4cfaa08673bd0c61ff3c86fa098155785606ff043328",
+    "configuration_sha256": "a871b864b9c6deae4b5d13db468a2d8d2139a4d800b022ae03cd630ab98714c1",
+    "revision": 40,
+    "state_sha256": "9808e763f652680e00634a05504c90116c7d5f6f540f18b16906b39bbe5ffe82",
+    "reservoirs": {
+      "stratum-a-lower::forest": {
+        "occupancy_id": "stratum-a-lower::forest",
+        "mass_kg_m2": 0.017081575448084092,
+        "enthalpy_j_m2": -5025.792712595023
+      },
+      "stratum-z-upper::forest": {
+        "occupancy_id": "stratum-z-upper::forest",
+        "mass_kg_m2": 0.017071735073803156,
+        "enthalpy_j_m2": -5104.003596321261
+      }
+    },
+    "strata": {
+      "stratum-a-lower": {
+        "tissues": {
+          "leaf": {
+            "display": {
+              "carbon": 0.02061053668537409,
+              "nitrogen": 0.0006236845975498312
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          },
+          "fine_root": {
+            "display": {
+              "carbon": 0.0164884245284148,
+              "nitrogen": 0.0003706316520900925
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          },
+          "live_stem": {
+            "display": {
+              "carbon": 0.03811272325411542,
+              "nitrogen": 0.0006860495164716704
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          },
+          "dead_stem": {
+            "display": {
+              "carbon": 0.05745096712223037,
+              "nitrogen": 0.00012830237728979785
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          },
+          "live_coarse_root": {
+            "display": {
+              "carbon": 0.009528180813528854,
+              "nitrogen": 0.00017341237835878534
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          },
+          "dead_coarse_root": {
+            "display": {
+              "carbon": 0.015312741762483012,
+              "nitrogen": 3.4450595000246126e-05
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          }
+        },
+        "retranslocation_n": 0.0,
+        "nsc_c": 0.0,
+        "xs_c": -0.030000018575587536,
+        "standing_dead": {
+          "carbon": 0.0,
+          "nitrogen": 0.0
+        },
+        "standing_dead_dm": 0.0,
+        "phase": "active",
+        "onset_remaining_s": 0.0,
+        "offset_remaining_s": 0.0,
+        "previous_gsi": 1.0,
+        "pending_transfers": [],
+        "t10_k": 295.99797610947877,
+        "leaf_area": 0.4122107337074818,
+        "root_area": 0.5564844905051004,
+        "stem_area": 0.1442737567976186,
+        "last_transaction_id": 40
+      },
+      "stratum-z-upper": {
+        "tissues": {
+          "leaf": {
+            "display": {
+              "carbon": 0.02061053668537409,
+              "nitrogen": 0.0006236845975498312
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          },
+          "fine_root": {
+            "display": {
+              "carbon": 0.0164884245284148,
+              "nitrogen": 0.0003706316520900925
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          },
+          "live_stem": {
+            "display": {
+              "carbon": 0.03811272325411542,
+              "nitrogen": 0.0006860495164716704
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          },
+          "dead_stem": {
+            "display": {
+              "carbon": 0.05745096712223037,
+              "nitrogen": 0.00012830237728979785
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          },
+          "live_coarse_root": {
+            "display": {
+              "carbon": 0.009528180813528854,
+              "nitrogen": 0.00017341237835878534
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          },
+          "dead_coarse_root": {
+            "display": {
+              "carbon": 0.015312741762483012,
+              "nitrogen": 3.4450595000246126e-05
+            },
+            "storage": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            },
+            "transfer": {
+              "carbon": 0.0,
+              "nitrogen": 0.0
+            }
+          }
+        },
+        "retranslocation_n": 0.0,
+        "nsc_c": 0.0,
+        "xs_c": -0.030000018471570983,
+        "standing_dead": {
+          "carbon": 0.0,
+          "nitrogen": 0.0
+        },
+        "standing_dead_dm": 0.0,
+        "phase": "active",
+        "onset_remaining_s": 0.0,
+        "offset_remaining_s": 0.0,
+        "previous_gsi": 1.0,
+        "pending_transfers": [],
+        "t10_k": 295.99797610947877,
+        "leaf_area": 0.4122107337074818,
+        "root_area": 0.5564844905051004,
+        "stem_area": 0.1442737567976186,
+        "last_transaction_id": 40
+      }
+    }
+  }
+}

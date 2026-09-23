@@ -1,0 +1,150 @@
+{
+  "checks_passed": 346,
+  "terminal": {
+    "bases": 16,
+    "trials": 152,
+    "reason_counts": {
+      "pre_evaluator_domain": 137,
+      "accepted_strict_decrease": 15
+    },
+    "reported_backtracks_before_terminal_search": 116,
+    "terminal_rejected_trials": 21,
+    "terminal_iteration": 15,
+    "current_upper_shade_temperature_k": 263.15000055609727,
+    "upper_shade_direction_k": -0.8087018309390509,
+    "smallest_factor": 9.5367431640625e-07,
+    "smallest_factor_upper_shade_temperature_k": 263.1499997848591,
+    "lower_bound_k": 263.15,
+    "terminal_max_normalized_residual": 540061446.2186459,
+    "terminal_selection": "[M1PhaseJoinSelection { phase: Ice, capacity: Drainage, corrected: false, mass: 0.01701907033085786, enthalpy: -5996.786555483736, capacity_value: 0.2970000000000001, drainage: 0.0, duration_s: 60.0 }, M1PhaseJoinSelection { phase: Ice, capacity: Drainage, corrected: false, mass: 0.016814396218250448, enthalpy: -5971.354197903422, capacity_value: 0.2970000000000001, drainage: 0.0, duration_s: 60.0 }]",
+    "terminal_trials": [
+      {
+        "exponent": 0,
+        "factor": 1.0,
+        "upper_shade_temperature_k": 262.3412987251582,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.62341298725158197e2\")"
+      },
+      {
+        "exponent": 1,
+        "factor": 0.5,
+        "upper_shade_temperature_k": 262.74564964062773,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.62745649640627732e2\")"
+      },
+      {
+        "exponent": 2,
+        "factor": 0.25,
+        "upper_shade_temperature_k": 262.9478250983625,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.62947825098362500e2\")"
+      },
+      {
+        "exponent": 3,
+        "factor": 0.125,
+        "upper_shade_temperature_k": 263.0489128272299,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63048912827229913e2\")"
+      },
+      {
+        "exponent": 4,
+        "factor": 0.0625,
+        "upper_shade_temperature_k": 263.0994566916636,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63099456691663590e2\")"
+      },
+      {
+        "exponent": 5,
+        "factor": 0.03125,
+        "upper_shade_temperature_k": 263.1247286238804,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63124728623880401e2\")"
+      },
+      {
+        "exponent": 6,
+        "factor": 0.015625,
+        "upper_shade_temperature_k": 263.13736458998886,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63137364589988863e2\")"
+      },
+      {
+        "exponent": 7,
+        "factor": 0.0078125,
+        "upper_shade_temperature_k": 263.14368257304307,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63143682573043066e2\")"
+      },
+      {
+        "exponent": 8,
+        "factor": 0.00390625,
+        "upper_shade_temperature_k": 263.14684156457014,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63146841564570138e2\")"
+      },
+      {
+        "exponent": 9,
+        "factor": 0.001953125,
+        "upper_shade_temperature_k": 263.1484210603337,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63148421060333703e2\")"
+      },
+      {
+        "exponent": 10,
+        "factor": 0.0009765625,
+        "upper_shade_temperature_k": 263.1492108082155,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149210808215514e2\")"
+      },
+      {
+        "exponent": 11,
+        "factor": 0.00048828125,
+        "upper_shade_temperature_k": 263.1496056821564,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149605682156391e2\")"
+      },
+      {
+        "exponent": 12,
+        "factor": 0.000244140625,
+        "upper_shade_temperature_k": 263.14980311912683,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149803119126830e2\")"
+      },
+      {
+        "exponent": 13,
+        "factor": 0.0001220703125,
+        "upper_shade_temperature_k": 263.14990183761205,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149901837612049e2\")"
+      },
+      {
+        "exponent": 14,
+        "factor": 6.103515625e-05,
+        "upper_shade_temperature_k": 263.14995119685466,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149951196854659e2\")"
+      },
+      {
+        "exponent": 15,
+        "factor": 3.0517578125e-05,
+        "upper_shade_temperature_k": 263.14997587647593,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149975876475935e2\")"
+      },
+      {
+        "exponent": 16,
+        "factor": 1.52587890625e-05,
+        "upper_shade_temperature_k": 263.1499882162866,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149988216286602e2\")"
+      },
+      {
+        "exponent": 17,
+        "factor": 7.62939453125e-06,
+        "upper_shade_temperature_k": 263.14999438619196,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149994386191963e2\")"
+      },
+      {
+        "exponent": 18,
+        "factor": 3.814697265625e-06,
+        "upper_shade_temperature_k": 263.1499974711446,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149997471144616e2\")"
+      },
+      {
+        "exponent": 19,
+        "factor": 1.9073486328125e-06,
+        "upper_shade_temperature_k": 263.1499990136209,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149999013620914e2\")"
+      },
+      {
+        "exponent": 20,
+        "factor": 9.5367431640625e-07,
+        "upper_shade_temperature_k": 263.1499997848591,
+        "reason": "pre_evaluator_domain:Some(\"temperature[1]=2.63149999784859119e2\")"
+      }
+    ]
+  },
+  "max_relative_linear_residual": 1.3375227775986467e-16
+}

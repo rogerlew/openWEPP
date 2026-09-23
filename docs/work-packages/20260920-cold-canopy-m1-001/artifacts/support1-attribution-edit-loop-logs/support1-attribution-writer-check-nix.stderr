@@ -1,0 +1,19 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find function `fd_trial_rejection_reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3712:244
+     |
+3712 | ...domain","domain_reason":format!("{:?}",fd_trial_rejection_reason(&candidate))}),
+     |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1014:4
+     |
+1013 | #[cfg(test)]
+     |       ---- the item is gated here
+1014 | fn fd_trial_rejection_reason(trial: &M1CoupledColumnTrial) -> Option<String> {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib) due to 1 previous error

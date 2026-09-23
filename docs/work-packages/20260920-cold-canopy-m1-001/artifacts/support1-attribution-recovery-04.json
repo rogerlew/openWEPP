@@ -1,0 +1,14 @@
+{
+  "observed_utc": "2026-09-23T10:28:54.587999+00:00",
+  "base": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "base_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "source_receipt": "support1-attribution-build-04-source.json",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/support1-attribution-build-04-from-observer-cut02.patch",
+  "patch_sha256": "c21a69b54189209de89032eec1ba49a4711ad11e178b2e3f5408cfe241ddef90",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-support1-final-reconstruction-20260923",
+  "entries": 760,
+  "tree_sha256": "54aeb03be0f2373e2c3a85b86ec26f02d624bad32b7c9901cf1c4d1a1cfce7a2",
+  "exact_match": true,
+  "live_source_unchanged": true,
+  "scope": "Exact source byte recovery only; no physical execution or M1 acceptance"
+}

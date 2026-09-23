@@ -1,6 +1,456 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
 
+
+## Support-1 attribution supplement — adopted 2026-09-23 09:19 UTC
+
+### Current result — limited negative attribution COMPLETE; M1 remains HOLD
+
+Ran: the [actual instrumented adjacent attempt](artifacts/support1-attribution-adjacent-04.json)
+accepts ordinal0 `[0,60)` and refuses ordinal1 `[60,120)` with the unchanged
+`BacktrackingLimit`,15 accepted Newton updates and116 prior backtracks.
+The [complete failed-attempt record](artifacts/support1-attribution-adjacent-04-record.json)
+contains16 current bases,16 full21×21/reduced19×19 LU systems and152 actual trials.
+At current base15, upper shade is263.15000055609727 K and its Newton direction is
+−0.8087018309390509 K. **All21 permitted factors,1 through2^-20, produce upper
+shade below263.15 K and are rejected before evaluator entry.** The smallest gives
+263.1499997848591 K. None of these terminal trials reaches core/hydraulic evaluation,
+no-update eligibility or non-decrease testing. The116 count belongs to previous
+accepted searches; terminal21 adds to137 domain refusals overall, with15 accepted
+strict-decrease trials. Empty `active_bounds` did not report those rejected trials.
+Terminal max normalized residual is540061446.2186459, so this is not convergence.
+Natural/predictor/final terminal selections are Ice/Drainage for both occupancies;
+no corrected assembly was selected. Eliminated coordinates are drainage5 and11.
+
+Ran: [independent offline reconstruction](artifacts/support1-attribution-independent-check-04.json)
+checks actual owner/provider primitives, never re-enters a nonlinear evaluator.
+The two occupancy-keyed failed-input reservoirs exactly match accepted support0:
+upper M=0.017071735073803156 kg/m²,H=−5104.003596321261 J/m²;
+lower M=0.017081575448084092,H=−5025.792712595023.
+Six keyed staged soil temperatures match all six attempted inputs:
+thermal-1=291.5 K,thermal-2=289.8 K,soil-1/soil-2/soil-dry=293 K,
+soil-frozen=270 K. Immutable geometry is separately checked. All five override
+bits,60 s duration,raw top rate×duration=0.00047999999999999996 kg/m²,
+liquid specific enthalpy,21 canonical seed bits,GSI and framed provider/parent
+identities match. This is raw top supply, not already intercepted I; existing
+core interception uses upper geometry capture and lower recapture of upper
+throughfall plus upper drainage. No warm-start interface or new seed is introduced.
+Full/reduced matrices,RHS,directions and all152 applied coordinates correspond;
+maximum reconstructed scaled linear residual is1.338e-16 (the exact scaling is
+retained with each system). Dynamic core scales
+are retained but not independently re-evaluated. The first offline check wrongly
+expected future GSI receipt bytes to be stored individually in caller state;
+[failed check](artifacts/support1-attribution-independent-check-failed01.stderr)
+is retained. Correct reconstruction authenticates all30 members through the actual
+parent receipt; support1's individual GSI identity is derived/prepared, not consumed.
+
+The [disabled baseline](artifacts/support1-attribution-baseline-04.json) and
+instrumented run have identical typed physical error,provider payload,accepted
+support0 envelope and caller-before snapshot. Before/after full snapshot equality
+includes native capability and parent receipt state; all seven staged owner byte
+arrays,committed owner bytes,clock,cursor and accepted prefix are preserved. The
+cursor remains1. `Ok(...)` formatting is unwrapped before comparing retained
+snapshot strings and owner bytes. Support0 reached actual native root-withdrawal
+execution and its10 consumed forcing bits match source operands; it had zero
+positive surface-liquid ingress and no such receipt. Support1 reached solver
+preparation only and never executed its native receiver. CO2=42 Pa and reference
+height=24 m retain independent source joins; nested ground weather is inert context
+on this path, not a demonstrated projection defect.
+
+New support0 primitive reconstruction gives mass discrepancies≤1.16e-18 kg/m²,
+enthalpy discrepancies≤1.394e-12 J/m²,and mineral-N loss/use residuals≤7.753e-17
+kg N/m². Native six-layer inventory loss minus finalized root uses is−2.227e-16
+kg/m², reported without inventing a new tolerance. These are limited component
+checks, not whole-system/parent/material closure. The stale water oracle now
+replays raw depth with canonical ordered debit/ingress operations; its actual
+first-support check and five native custody guards,including one-ULP rejection,
+PASS. The historical all30 FAIL is retained and all30 is not rerun. Positive
+ingress replay is source-reviewed; this attempt's native ingress is zero.
+
+**Supported next decision:** retain the canonical refusal. A separate numerical-
+authority decision is needed on domain-compatible globalization when the upper
+shade Newton direction points below the admitted leaf-temperature floor. No floor,
+step range,damping,seed,tolerance or physics change is released. This measured
+source-conforming refusal is not a root-nonexistence proof and does not reuse the
+old liquid-only no-root argument.
+
+Build04,format04,focused20,disabled baseline and instrumented refusal controls PASS
+for their exact scopes. Clippy04 FAIL101 remains at the known137-line vegetation
+custody function; strict quality is not qualified. Full09 remains FAIL/TIMEOUT
+with302 failure entries including1SIGTERM; A1 remains failed. No new full/A1 census
+was selected and no mandatory qualification is waived. Material/BGC receipt-to-
+proposal bijection,accepted-order/cumulative endings,fresh post-lineage validation,
+whole-parent/late-positive rejection,both cycles,restart,cost/scaling and all four
+M1 acceptance axes remain **HOLD**. No main Rust adoption occurs.
+
+### Final independent disposition and source custody
+
+`/root/provider_correctness` (Sol; independent of implementers/root), final verdict:
+
+> Ran: offline inspection and independent arithmetic from retained records only;
+> no nonlinear evaluator calls. No blocking findings. Baseline and instrumented
+> runs preserve the same physical error, accepted support0, provider payload,
+> snapshots, owner bytes, clock, and accepted cursor. Keyed reservoir M/H, six soil
+> states, forcing overrides, and the complete21-coordinate seed match exactly.
+> All16 full and reduced linear systems, selections,RHS values,mappings,and
+> directions agree. Maximum relative linear residual is1.34×10^-16. All152 trial
+> candidates reconstruct exactly. Iterations0–14 accept strict decreases. At
+> iteration15, all21 authorized factors cross the existing263.15 K shade-temperature
+> floor and are rejected before evaluation. Observer status is complete, and
+> LSEB-E-034 agrees with the preserved Solver(BacktrackingLimit) result. The frozen
+> independent checker reports346/346 passing checks with matching script and
+> raw-stderr hashes. Dynamic core-scale construction was not independently
+> recomputed, though every captured raw/normalizer ratio and RHS was checked
+> exactly. This does not establish root nonexistence or satisfy whole-parent,
+> material/BGC,whole-water,cycle,restart,performance,full09,A1,strict-lint,or full-M1
+> acceptance. The bounded attribution is released as a source-conforming refusal
+> of this recorded adjacent support. Any boundary-aware globalization or domain-
+> policy change requires separate numerical/science authority; no floor,damping,
+> seed,tolerance,step-limit,or method change is approved here.
+
+`/root/provider_qa` (Terra; independent of implementers/root/correctness), final
+bounded custody verdict PASS: all20 controls and both adjacent commands have exact
+source/binary/pin/link custody; recovery04 reconstructs760/760 entries; baseline03
+remains FAIL and its observation correction is attributable. QA withdraws its
+initial unsupported private-observer-difference claim after correctly unwrapping
+`Ok(...)`: both full snapshots and all seven staged byte arrays are exactly equal.
+QA requires terminal clock charging and retains strict-lint/full/A1/M1 HOLDs.
+Root owns the final ledger and authorized scoped publication below; publication
+is not acceptance of the detached implementation.
+
+[Terminal diff](artifacts/support1-attribution-terminal-diff-04.json) reconciles
+exactly five detached Rust paths (provider,capture controls,parent water oracle,
+LSE observer,LSE controls). Main edits are this package,one recorder deadline line,
+and `support1-attribution-*` evidence. No Cargo/lock/toolchain or authority-suite
+posture changes trigger new deny/anti-evasion work. Existing failed qualification
+is explicitly retained. Root verifies the entire formatted04 typed physical error
+occurs verbatim in historical adjacent09 stderr, bound by its retained hash.
+Python evidence syntax,60 then-current JSON artifacts,package artifact links and
+`git diff --check` pass. All unrelated dirty/untracked work is preserved.
+
+Final recoverable source is tree
+`54aeb03be0f2373e2c3a85b86ec26f02d624bad32b7c9901cf1c4d1a1cfce7a2`,
+[observer-relative patch/source](artifacts/support1-attribution-build-04-source.json),
+[verified durable reconstruction](artifacts/support1-attribution-recovery-04.json),
+and [retained build identities](artifacts/support1-attribution-build04-binaries.json).
+Provider digest is5b3cf540…; payloadb3a6d25e…; run875e1d84…;
+full identities and independent receipt derivation are in the offline check.
+No further implementation or physical progression is selected: the bounded study
+is complete and the next method decision is outside this authorization.
+
+Owner execution of `/tmp/openwepp_cold_canopy_m1_support1_attribution_authorization.md`
+adopts its complete bounded scope. Active checkpoint remains COLD-CANOPY-M1:
+measure the original-start accepted ordinal0 then refused ordinal1, retain actual
+failed inputs, state and decisive numerical search; correct the separate stale
+water oracle; fix only demonstrated existing-authority projection/custody defects.
+No physical/numerical method, seed, forcing, tolerance, domain, initialization,
+public/persisted schema or production activation change is authorized. All four
+M1 axes and parent/material/balance/cycle/restart/performance acceptance stay open.
+
+First-reading anchor is conservatively **2026-09-23T09:19:00Z**. The local final
+publication receipt confirms carried **276841.377753 s**; adopted supplement7200 s
+sets fixed cumulative ceiling **284041.377753 s**, hard **11:19:00Z**, implementation
+cutoff **10:49:00Z**, with1800 s reserved for independent disposition/publication.
+All elapsed concurrency is charged once without refunds or wait deductions.
+Check full declared command bounds plus reserve before mutation/dispatch.
+Two unsuccessful corrections or60 charged minutes require internal reassessment.
+
+Ran: all760 retained build09 entries match the live detached tree
+`423dbab1587358a573550dc16e66bb565db7782859c06fa9310eb5801c568b06`;
+retained `/tmp/openwepp-cold-canopy-m1-body09-retained` matches
+`dd9fc079424c6ea6174af6f4e454e1c90de7a731259ade932b9376f286b417fc`.
+Existing verified reconstruction and observer-relative patch remain immutable;
+no patch reapplication is needed. Main runtime remains untouched.
+
+Intent is bounded private observation/test correction within the existing Critical
+experiment, retaining full09/A1/lint HOLDs. Selected checks: source/manifest review,
+test-inclusive build/format, disabled-observer and forced-failure recording controls,
+source-bound first-support oracle control and one instrumented original-start
+adjacent diagnostic, followed by independent input/rollback/search and primitive
+balance reconstruction. Existing evaluator calls only; no off-trajectory probes.
+Any necessary corrected-source rerun needs a named missing discriminator or proven
+in-scope defect, with every failed cut retained. No unchanged all30/late/full census.
+Any still-applicable mandatory checks remain required; no readiness waiver.
+Before a broad workflow, isolate the demonstrated nested-target/helper-lock outputs.
+
+Live agent inventory contains only root; prior provider reviewers are genuinely
+unavailable. Attributable replacements will use the same correctness/QA task names
+and preserve unaffected review scopes. One detached source writer, at most two
+children, serialized reviews, no nested spawning. Root owns package/recorder and
+publication; experimental Rust stays detached. Scoped commit/push and remote-byte
+verification remain authorized. Stop at owner direction, hard boundary, uncontained
+integrity loss, indispensable unavailable source/independence, complete bounded
+disposition or necessary out-of-envelope change. Limited negative attribution may
+complete this increment without M1 acceptance.
+
+
+
+### Initial custody and observation scope
+
+Ran: retained baseline reconstruction760/760, observer patch and selected binary
+match the adopted identities ([custody](artifacts/support1-attribution-baseline-custody-01.json)).
+Root changes only recorder DEADLINE06:56→11:19Z. Python AST and existing
+[nonlaunching full-bound controls](artifacts/support1-attribution-full-bound-controls-01.json)
+PASS15/15; both reserve checks run and process creation is intercepted.
+Independent replacement `/root/provider_qa` (Terra) verifies that exact delta and
+clock arithmetic. Historical manifests pin the old recorder and remain historical.
+Fresh source/binary/recorder binding is required for each new launch.
+
+QA's initial verdict is custody PASS for the deadline change, attribution launch
+HOLD pending frozen observation controls and fresh manifests. Its specific open
+controls are disabled-observer behavior preservation, retained input/result/state
+on forced failure, observer failure preserving the physical error, and the
+source-bound corrected water predicate. Future broad dispatch also remains blocked
+until nested outputs and the helper lock have a reviewed isolated placement.
+No broad workflow is currently selected merely to repeat full09's failures.
+
+Sole `/root/attribution_writer` (Terra) owns detached observation/oracle changes.
+Replacement `/root/provider_correctness` (Sol) independently inspects immutable
+build09 source and authority while root handles custody and execution selection.
+Existing LSE test-support is already enabled by the orchestrator dev-dependency;
+observations must reach that dependency seam, not only LSE's own cfg(test) binary.
+No physical diagnostic has been dispatched.
+
+
+
+### Initial implementation reassessment
+
+Initial writer cut is incomplete and retained as
+[source/patch cut01](artifacts/support1-attribution-incomplete-cut01-source.json),
+760 entries `e29afab03c146279703fe3bc339835dab1ab6835ccce1fcbb1dd181b1f8c98ac`.
+Two immediate shell failures (`cargo` absent from PATH) trigger internal
+**CONTINUE**: use the already established Nix development environment; no source
+or scientific blocker is inferred. A subsequent missing cfg-gated diagnostic
+helper is corrected; writer's test-inclusive check and format now pass as edit-loop
+feedback, with logs retained in detached `support1-attribution-logs/`.
+This is not source-bound runtime qualification and no physical process ran.
+
+Root finds cut01 insufficient: always-on test-support logging needs bounded opt-in
+observation; dropped evaluator errors need their actual typed causes retained;
+prepared solver inputs cannot be called consumed native inputs. Independent
+correctness from immutable423dbab requires actual seed derivation, keyed input
+continuity, complete accepted-prefix rollback, terminal trial classifications and
+complete/drop status. Root assigns concrete oracle completion first, then remaining
+observer completion, with the same sole writer and fixed clock.
+
+The source-bound observer-disabled original-start path, compared with the enabled
+attempt, is prospectively selected solely as the required neutrality discriminator;
+it does not authorize alternative physical inputs or evaluator probes. Forced
+failure and observer failure-precedence controls are also preparative requirements.
+The one result-bearing instrumented original-start adjacent path remains unrun.
+Correctness agrees a pure private observation/test-oracle delta needs focused
+compilation/format/lint, observer and oracle controls, input/state/primitive
+reconstruction and the selected adjacent attempt; unchanged full/all30/late census
+is not selected merely to repeat known failures. Exact final diff still governs
+applicable validation. Full M1/full09/A1/quality HOLDs remain visible and unwaived.
+
+
+
+### Oracle cut02 rejected; observation writer replacement
+
+Same correctness reviewer inspects stable provider/control hashes in
+[oracle cut02](artifacts/support1-attribution-oracle-cut02-source.json),
+760-entry tree `22da5a525c80dd58a3ea91db5d5a20efea3ffa1682d376278f0dafa0a44aaf89`.
+**HOLD:** (1) water lookup aliases non-water resources by only OFE/layer and
+removes the N assertion; (2) test expected post-root depth comes from the custody
+validator being tested; (3) positive ingress silently bypasses the ending check;
+(4) unconditionally accumulated thread-local witnesses can be stale/unbounded;
+(5) first-support assertions do not run independent raw reconstruction.
+Fix direction: retain N identity assertions, require a bijective full-key water
+witness, and independently reconstruct from raw pre-validator starting layer/lane,
+ordered finalized uses, native receiver inputs/ingress receipts/tillage depth and
+actual ending owner facts. Use canonical native debit and ingress primitives in
+test-owned expected state, never the custody validator's computed expected value.
+Both empty and positive ingress remain checked. Same reviewer will verify fixes.
+
+Repeated partial returns leave the observer unfinished. Internal reassessment
+**REASSIGN** to sole Terra `/root/observation_completion`; former writer is done.
+Retained [incomplete cut03](artifacts/support1-attribution-observer-incomplete-cut03-source.json)
+is760 entries `d8c908effaa551e6a16c356cfb6adbf4a917e604c63a68032286502f7e6696ac`.
+The replacement first owns only LSE observer completion while oracle review files
+remain frozen. Edit-loop logs, including unsuccessful environment/compiler/format
+attempts, are preserved in `artifacts/support1-attribution-edit-loop-logs/`; they
+lack per-command exact-source binding and are feedback only. No physical run,
+new physical failure or acceptance has been claimed. Fixed time is not renewed.
+
+
+
+Ran: same independent QA rehashes all619 build09 selected support pins: exactly
+the authorized recorder change differs (`69e94ac7…`→`d521cddc…`), with no missing
+or duplicate file paths. All seven literal/resolved support links and all ten
+adapter dependency digests match. The latter's eight crate dependencies are bound
+by the frozen runtime tree; its two fixture inputs are individual support pins.
+This is support/input custody only while the source writer is active, not a
+runtime freeze or physical release. Historical manifests remain unchanged.
+
+
+
+### Frozen observer and corrected-oracle review
+
+Replacement writer's LSE cut04 compiles and formats as edit-loop feedback, frozen
+in [cut04 source](artifacts/support1-attribution-lse-cut04-source.json), tree
+`2871a55c9f60a8f63dfccc507af356dc40e8d5b707ad3c1aa88600c398685ed4`.
+Same correctness reviewer returns **HOLD**: copied seed omits both zero drainage
+coordinates and falsely claims a preflight seed; recording lacks fallible bounded
+incomplete/drop handling and a generation-scoped guard; it omits the actual reduced
+linear system and index mapping; natural/predictor/final selections are mislabeled;
+unconditional phase-string allocation changes the disabled production path; and
+controls do not prove exact result/error neutrality or cancellation/fault behavior.
+No intentional physical-method or evaluator arithmetic change was identified.
+Root assigns these exact corrections, including capturing the real canonical seed
+and actually solved operands, without changing numerical policy.
+
+The same writer completes the oracle fix in stable provider/control files,
+[frozen cut05](artifacts/support1-attribution-oracle-fix05-source.json), tree
+`0ad5aa84f6ced6b9cf6f769197e9e95eed4456c17b04badca654e87a4bd65416`.
+It now retains raw native lanes/keyed uses/ordered receipts and replays canonical
+native primitives in test-owned expected state, with full-key water bijection and
+restored N assertions. Format/compile pass as feedback; correctness verification
+is pending. One variable-name compiler failure was corrected and retained. The
+writer edits only LSE during that oracle review; reviewer hashes remain scoped to
+stable files. No physical controls or instrumented result run have occurred.
+
+
+
+### Same-reviewer oracle source release
+
+Oracle fix05's remaining exact bindings are corrected: transition beginning supply,
+receiver infiltration input versus ordered receipts, source/receiver layer identity,
+debit≤supply guard and reuse of the fallible source layer index. The reviewer finds
+and the writer corrects one intermediate tautology where both identity lists came
+from receiver closure. Beginning IDs now come from the actual beginning hydrology
+adapter map, and all rows in a lane agree on receiver beginning/ending/infiltration.
+
+Static: same `/root/provider_correctness` releases provider `742d66e4…` and
+parent controls `dca78cd9…` for focused oracle execution. Its last claimed
+production-path blocker is **withdrawn** after root identifies the whole module's
+`#[cfg(test)]` inclusion at `land_surface_energy_shadow/mod.rs:98–99`. The reviewer
+also verifies the added map lookup cannot fail for a valid adapter: facts and
+indices originate from that same validated exact lane mapping. A redundant inner
+cfg, if retained, is harmless and is not the reason for source correctness.
+This is source release only; no executed oracle result or parent acceptance exists.
+
+LSE partial correction06 is recoverable in
+[its source/patch](artifacts/support1-attribution-observer-partial06-source.json),
+760-entry tree `a794818e1289ce231354f496864953dfdb1da9fe68d9779aa228eb6edb7a1278`.
+The writer subsequently captures exact full/reduced linear solve operands and
+mapping at the actual LU seam with typed natural/predictor/final branch provenance;
+bounded fault/cancellation controls are being completed. These are observational
+corrections, not numerical method changes. Physical source release is still pending.
+
+
+### Sixty-minute bounded reassessment and cut08
+
+Ahead of the sixty-minute checkpoint, CONTINUE within the unchanged deadline: the
+water oracle now has independent source release, and the bounded LSE observer
+has actual seed/base/trial/full-and-reduced-LU records. Cut07 reviewer fixes guard
+both LU capture sites before any disabled-path allocation and compare complete
+physical results/errors in neutrality/fault controls. No physical test has run.
+
+Cut08 is preserved as [source and patch](artifacts/support1-attribution-provider-cut08-source.json),
+760 entries `a8326afedc12a172aa4d977b1dc7fb8984a3f5aa5a490bc1e9682f8ff9af1f05`.
+Root found the expanded provider capture still omitted the accepted support0
+operand and raw provider identity envelope. Sole writer receives one explicit
+bounded correction to serialize existing accepted fields in both disabled and
+instrumented controls, and preserve the original physical result on capture
+failure. This is an observation completion, not a solver or input correction.
+The next source freeze must pass affected independent review before physical
+execution. All prior partial cuts and edit-loop failures remain retained.
+
+### Independent release of LSE observation and build custody
+
+Static: `/root/provider_correctness` (Sol, independent) verifies final LSE
+`e0b408e86f65879679e25c4f6a379b991979c81ea9516399955d54844671e81f`
+and tests `3211d0f50d0f1fc129c02ba7e253003ee4ca6ecb21fa6da67b4a523ead603848`:
+“LSE source is RELEASED for its focused tests and, once the separately reviewed
+provider capture is frozen, disabled and instrumented adjacent 0→1 controls.”
+Its accepted fixes are both runtime Active guards before LU capture/allocation,
+complete success/error equality, and nonempty linear operand/map dimension checks.
+Actual optional seed, typed selections, full/reduced LU operands, bounded status
+and generation/drop/mismatch/rearm remain correct. This is source review only.
+
+Static: `/root/provider_qa` (Terra, independent) conditionally releases the
+undispatched cut08 build manifest:619/619 pins rehash, seven links and targets
+match,44 environment values match, recorder deadline-only hash and adapter
+manifest match. Final freeze requires a new source/tree/patch binding and fresh
+build binary before physical commands. No source-dependent run uses cut08 yet.
+
+### Build02 and final diagnostic assertions
+
+Ran: [build02](artifacts/support1-attribution-build-02.json) PASS in81.472 s,
+source `9d8de22afdf0f19b2222adfa72b89546277d4bb7564a05ff2b0a7892d77d2c69`,
+all source/observer/pins/links unchanged;2043 tests listed, no tests executed.
+[All three binaries](artifacts/support1-attribution-build02-binaries.json) are
+retained outside `/tmp` before further mutation. Compiler warnings are not lint
+clearance; strict-lint HOLD remains.
+
+Static: same correctness reviewer finds four adjacent-control evidence blockers:
+assert actual complete capture/seed/base/trial/LU and terminal-error agreement;
+include caller wrapper native-capability and parent-receipt state in rollback;
+make disabled baseline cursor/current-owner comparisons symmetric; include
+accepted BGC predecessor/soil bits/native receipt identity. The reviewer otherwise
+releases failed-input, canonical payload/source-join, owner/BGC/custody primitives,
+output-before-assert and non-masking capture. Focused controls remain released;
+adjacent controls HOLD until same-reviewer verification. Root authorizes these
+four observation assertions only, retains cut09/build02, and keeps all physical
+inputs/methods and original positive adjacent assertions unchanged.
+
+Internal continuation at the sixty-minute checkpoint is supported by successful
+source-bound build and concrete bounded review fixes. Remaining implementation
+window is approximately30 minutes; full declared180-second commands must still
+fit before10:49 and reserve is not borrowed. No unchanged failing trajectory,
+all30, late or full census has run. The exact19 focused selection is retained in
+[selection](artifacts/support1-attribution-focused-selection.json).
+
+### First actual controls and observation serialization failure
+
+Ran: [focused03](artifacts/support1-attribution-focused-03.json) PASS19/19 in66.235 s,
+including all four observer controls, provider8, original60, first-support corrected
+water predicate, and five native-water custody/one-ULP controls. All source, base,
+binary, pins and links stayed unchanged. [format03](artifacts/support1-attribution-format-03.json)
+PASS; [clippy03](artifacts/support1-attribution-clippy-03.json) FAIL101 in8.195 s at
+existing vegetation `validate_resource_custody_core`137-line lint. No quality waiver.
+[Recovery03](artifacts/support1-attribution-recovery-03.json) exactly reconstructs
+760 entries, tree `7ba57728c42d5b385db8319610fe5b1909e8abe07ca891d5028beee74492cca1`.
+
+Ran: [disabled baseline03](artifacts/support1-attribution-baseline-03.json) FAIL100
+in1.119 s with all custody unchanged. At controls:1602 accepted-support JSON
+serialization panics with `number out of range`, before baseline evidence/asserts.
+Instrumented adjacent03 was NOT DISPATCHED. Same QA reviewer verifies this failure
+and gives HOLD. Root authorizes one named observation correction: encode the
+three u128 identity fields as exact decimal strings, preserving raw identity
+values and physical results. No changed physical trajectory is inferred from this
+observation failure. Fresh source/build/manifest and same-reviewer verification
+precede corrected controls/baseline; only then may the initial instrumented
+attempt execute. The failed cut/command/output and recovered source remain retained.
+
+### Corrected exact-ID capture source and release
+
+Only test control source changes from build03 to build04: three u128 identifiers
+are encoded as exact decimal strings, a u128::MAX serialization control is added,
+and both adjacent controls print the retained original typed physical error
+immediately after return, before JSON construction. Provider implementation remains
+`5b3cf54014c90a15300a425a248e42ef469c63b2cb81586b26acd1d441f99e0b`;
+control source is `485d7910e818c4d89e5afe24b54c5482e5af3e552edc061956b31c7425ffddb0`.
+Same correctness reviewer verifies the correction and re-releases the conditional
+sequence. It also verifies that nested ground T/q/LW are inert DTO context for this
+V11 M1 path; top-level column forcing feeds solver and native receiver. No physical
+projection, seed or method correction is inferred or applied.
+
+Ran: [build04](artifacts/support1-attribution-build-04.json) PASS20.037 s,
+[format04](artifacts/support1-attribution-format-04.json) PASS3.377 s,
+[clippy04](artifacts/support1-attribution-clippy-04.json) FAIL101/6.998 s at the same
+137-line vegetation lint. All custody flags remain unchanged.
+[Recovery04](artifacts/support1-attribution-recovery-04.json) verifies all760 bytes
+from immutable observer plus retained patch, final tree
+`54aeb03be0f2373e2c3a85b86ec26f02d624bad32b7c9901cf1c4d1a1cfce7a2`.
+[Durable binaries](artifacts/support1-attribution-build04-binaries.json) include
+orchestrator `946669aac315fa0b4de0c04405cfad040e6fe8aad38a895ea31edb275eecc2e6`.
+Same QA reviewer rehashes621/621 pins and releases exact focused20→baseline→initial
+instrumented manifests, each180 s, subject to prior PASS and reserve checks.
+Edit-loop log filenames are worker labels, not trusted UTC execution timestamps;
+recorded root receipts supply command chronology and exact source binding.
+
 ## Real parent body execution — adopted 2026-09-23 02:56 UTC
 
 Owner execution of `/tmp/openwepp_cold_canopy_m1_parent_execution_authorization.md`

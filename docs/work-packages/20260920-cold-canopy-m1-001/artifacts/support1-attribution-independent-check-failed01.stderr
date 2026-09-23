@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/support1-attribution-independent-check.py", line 117, in <module>
+    check('support1_gsi_receipt_in_actual_parent_state', str(list(gsi_receipts[1])) in j['snapshot_before'])
+  File "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/support1-attribution-independent-check.py", line 52, in check
+    assert predicate, name
+           ^^^^^^^^^
+AssertionError: support1_gsi_receipt_in_actual_parent_state

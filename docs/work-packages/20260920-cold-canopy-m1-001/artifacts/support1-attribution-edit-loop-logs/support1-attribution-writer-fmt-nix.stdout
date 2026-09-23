@@ -1,0 +1,38 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:1619:
+         )
+         .expect("parent admission");
+     let accepted = super::m1_fixed_sequence_provider::advance_fixed_sequence_support(
+-        &mut caller, &admitted, 0, None,
++        &mut caller,
++        &admitted,
++        0,
++        None,
+     )
+     .expect("accepted ordinal zero");
+     let before = super::m1_fixed_sequence_provider::RealM1CallerSnapshot::capture(&caller)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:1627:
+     let before_owners = caller.staged_owner_bytes().expect("pre-refusal owners");
+     let before_cursor = caller.accepted_cursor();
+     let result = super::m1_fixed_sequence_provider::advance_fixed_sequence_support(
+-        &mut caller, &admitted, 1, None,
++        &mut caller,
++        &admitted,
++        1,
++        None,
+     );
+     let after = super::m1_fixed_sequence_provider::RealM1CallerSnapshot::capture(&caller)
+         .expect("post-refusal caller snapshot");
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:1634:
+     let after_owners = caller.staged_owner_bytes().expect("post-refusal owners");
+-    assert!(matches!(result, Err(super::m1_fixed_sequence_provider::M1ParentExecutionError::Solver(_))));
++    assert!(matches!(
++        result,
++        Err(super::m1_fixed_sequence_provider::M1ParentExecutionError::Solver(_))
++    ));
+     assert_eq!(after, before);
+     assert_eq!(after_owners, before_owners);
+     assert_eq!(caller.accepted_cursor(), before_cursor);

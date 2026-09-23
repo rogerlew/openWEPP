@@ -1,0 +1,144 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error: expected `{`, found `eprintln`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3748:17
+     |
+3748 |                 eprintln!(
+     |                 ^^^^^^^^ expected `{`
+     |
+note: the `if` expression is missing a block after this condition
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3747:20
+     |
+3747 |                 if diagnostic_active
+     |                    ^^^^^^^^^^^^^^^^^
+help: you might have meant to write this as part of a block
+     |
+3748 ~                 { eprintln!(
+3749 |                     "m1-trial {}",
+3750 |                     serde_json::json!({"iteration":iteration,"exponent":exponent,"factor_bits":factor.to_bits(),"candidate_coordinate_bits":candidate.coordinates.map(f64::to_bits),"reason":"pre_evaluator_domain","domain_reason":format!("{:?}",fd_trial_rejection_reason(&candidate))}),
+3751 ~                 ); }
+     |
+
+error: expected `{`, found `eprintln`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3772:17
+     |
+3772 | ...   eprintln!("m1-trial {}", serde_json::json!({"iteration":iteration,"exponent":exponent,"factor_bits":factor.to_bits(),"candid...
+     |       ^^^^^^^^ expected `{`
+     |
+note: the `if` expression is missing a block after this condition
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3771:20
+     |
+3771 |                 if diagnostic_active
+     |                    ^^^^^^^^^^^^^^^^^
+help: you might have meant to write this as part of a block
+     |
+3772 |                 { eprintln!("m1-trial {}", serde_json::json!({"iteration":iteration,"exponent":exponent,"factor_bits":factor.to_bits(),"candidate_coordinate_bits":candidate.coordinates.map(f64::to_bits),"reason":"core_incomplete"})); }
+     |                 +                                                                                                                                                                                                                         +
+
+error: expected `{`, found `eprintln`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3779:17
+     |
+3779 | ...   eprintln!("m1-trial {}", serde_json::json!({"iteration":iteration,"exponent":exponent,"factor_bits":factor.to_bits(),"candid...
+     |       ^^^^^^^^ expected `{`
+     |
+note: the `if` expression is missing a block after this condition
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3778:20
+     |
+3778 |                 if diagnostic_active
+     |                    ^^^^^^^^^^^^^^^^^
+help: you might have meant to write this as part of a block
+     |
+3779 |                 { eprintln!("m1-trial {}", serde_json::json!({"iteration":iteration,"exponent":exponent,"factor_bits":factor.to_bits(),"candidate_coordinate_bits":candidate.coordinates.map(f64::to_bits),"reason":"nonfinite_residual"})); }
+     |                 +                                                                                                                                                                                                                            +
+
+error: expected `{`, found `eprintln`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3800:17
+     |
+3800 | ...   eprintln!("m1-trial {}", serde_json::json!({"iteration":iteration,"exponent":exponent,"factor_bits":factor.to_bits(),"candid...
+     |       ^^^^^^^^ expected `{`
+     |
+note: the `if` expression is missing a block after this condition
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3799:20
+     |
+3799 |                 if diagnostic_active
+     |                    ^^^^^^^^^^^^^^^^^
+help: you might have meant to write this as part of a block
+     |
+3800 |                 { eprintln!("m1-trial {}", serde_json::json!({"iteration":iteration,"exponent":exponent,"factor_bits":factor.to_bits(),"candidate_coordinate_bits":candidate.coordinates.map(f64::to_bits),"reason":"hydraulic_incomplete"})); }
+     |                 +                                                                                                                                                                                                                              +
+
+error: expected `{`, found `eprintln`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3822:17
+     |
+3822 | ...   eprintln!("m1-trial {}", serde_json::json!({"iteration":iteration,"exponent":exponent,"factor_bits":factor.to_bits(),"candid...
+     |       ^^^^^^^^ expected `{`
+     |
+note: the `if` expression is missing a block after this condition
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3821:20
+     |
+3821 |                 if diagnostic_active
+     |                    ^^^^^^^^^^^^^^^^^
+help: you might have meant to write this as part of a block
+     |
+3822 |                 { eprintln!("m1-trial {}", serde_json::json!({"iteration":iteration,"exponent":exponent,"factor_bits":factor.to_bits(),"candidate_coordinate_bits":candidate.coordinates.map(f64::to_bits),"reason":"step_ineligible"})); }
+     |                 +                                                                                                                                                                                                                         +
+
+error: expected `{`, found `eprintln`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3976:13
+     |
+3976 |             eprintln!(
+     |             ^^^^^^^^ expected `{`
+     |
+note: the `if` expression is missing a block after this condition
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3975:16
+     |
+3975 |             if diagnostic_active
+     |                ^^^^^^^^^^^^^^^^^
+help: you might have meant to write this as part of a block
+     |
+3976 ~             { eprintln!(
+3977 |                 "m1-trial {}",
+ ...
+3986 |                 })
+3987 ~             ); }
+     |
+
+error[E0425]: cannot find type `Cell` in this scope
+  --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:21:44
+   |
+21 |     static M1_DIAGNOSTIC_SOLVES_REMAINING: Cell<u8> = const { Cell::new(0) };
+   |                                            ^^^^ not found in this scope
+   |
+note: found an item that was configured out
+  --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:9:16
+   |
+ 8 | #[cfg(test)]
+   |       ---- the item is gated here
+ 9 | use std::cell::Cell;
+   |                ^^^^
+help: consider importing this struct
+   |
+ 3 + use std::cell::Cell;
+   |
+
+error[E0433]: cannot find type `Cell` in this scope
+  --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:21:63
+   |
+21 |     static M1_DIAGNOSTIC_SOLVES_REMAINING: Cell<u8> = const { Cell::new(0) };
+   |                                                               ^^^^ use of undeclared type `Cell`
+   |
+note: found an item that was configured out
+  --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:9:16
+   |
+ 8 | #[cfg(test)]
+   |       ---- the item is gated here
+ 9 | use std::cell::Cell;
+   |                ^^^^
+help: consider importing this struct
+   |
+ 3 + use std::cell::Cell;
+   |
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib) due to 8 previous errors

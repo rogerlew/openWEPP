@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-09-23T09:24:26.159946+00:00",
+  "immutable_reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-parent-execution09-reconstruction-20260923",
+  "source_tree_sha256": "423dbab1587358a573550dc16e66bb565db7782859c06fa9310eb5801c568b06",
+  "entries": 760,
+  "mismatches": [],
+  "patch_sha256": "6b49d4d5741b5bf40a90ca5a859728306cd3522f2c693ef33c2a0ff699a5fa81",
+  "binary_path": "/tmp/openwepp-cold-canopy-m1-body09-retained",
+  "binary_sha256": "dd9fc079424c6ea6174af6f4e454e1c90de7a731259ade932b9376f286b417fc",
+  "scope": "Pre-edit source comparison was exact; this verifies retained baseline reconstruction/binary while detached writer edits live source. No physical execution."
+}

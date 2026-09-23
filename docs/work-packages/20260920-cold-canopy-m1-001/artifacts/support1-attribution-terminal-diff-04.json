@@ -1,0 +1,31 @@
+{
+  "scope": "Terminal diff reconciliation; no main runtime adoption",
+  "main_tracked_edits": [
+    "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py"
+  ],
+  "main_new_artifact_prefix": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/support1-attribution-",
+  "detached_changed_paths": [
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs",
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs",
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+  ],
+  "detached_source_tree_sha256": "54aeb03be0f2373e2c3a85b86ec26f02d624bad32b7c9901cf1c4d1a1cfce7a2",
+  "cargo_manifest_lock_toolchain_changes": [],
+  "dependency_deny_triggered": false,
+  "authority_suite_posture_changes": false,
+  "validation_limits": [
+    "Historical full09/A1 failures remain; no unchanged broad census",
+    "Clippy04 failed; no warnings-denied clearance",
+    "No whole-parent/cycle/restart/cost or material/BGC acceptance"
+  ],
+  "parsed_json_artifacts_before_this_receipt": 60,
+  "new_artifact_python_syntax": "PASS",
+  "current_package_artifact_links": "PASS",
+  "historical09_physical_error_comparison": {
+    "historical_stderr_sha256": "42d641f008d4e4cdd283f3b31589211a00654575e2c39d7ca2d2fe629d00e438",
+    "complete_formatted_current_physical_error_occurs_verbatim_in_historical09": true
+  }
+}
