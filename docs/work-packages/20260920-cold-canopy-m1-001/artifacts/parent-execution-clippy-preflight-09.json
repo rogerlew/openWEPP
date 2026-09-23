@@ -1,0 +1,8 @@
+{
+  "observed_utc": "2026-09-23T06:18:23.749566+00:00",
+  "command_manifest": "parent-execution-clippy-support-09.json",
+  "subprocess_launched": false,
+  "result": "PREFLIGHT_REFUSED",
+  "exception": "AssertionError: selected source tree mismatch",
+  "evidence": "parent-execution-source-drift-during-full-09.json"
+}

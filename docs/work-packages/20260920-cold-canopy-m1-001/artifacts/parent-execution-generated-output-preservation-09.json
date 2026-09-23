@@ -1,0 +1,30 @@
+{
+  "observed_utc": "2026-09-23T06:20:41.401412+00:00",
+  "full_receipt": "parent-execution-required-full-09.json",
+  "full_source_unchanged": false,
+  "relocated_generated_files": [
+    {
+      "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/file2.csv",
+      "preserved": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/parent-execution-generated-output-09/crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/file2.csv",
+      "sha256": "394113e9ce33bfdb3b27170b485828d0bb5e74d071ae115d0ec09b445fc0da2a"
+    },
+    {
+      "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/file3.csv",
+      "preserved": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/parent-execution-generated-output-09/crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/file3.csv",
+      "sha256": "424c3b09cf3978a96bf20b4b1910da2ea72551d78eeb6104f3666271dac5d713"
+    },
+    {
+      "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.json",
+      "preserved": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/parent-execution-generated-output-09/crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.json",
+      "sha256": "cd20a3a4b1b573b5c74bfdf76245f0d067c9a08fa325f894ee1b7fada5285885"
+    },
+    {
+      "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.md",
+      "preserved": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/parent-execution-generated-output-09/crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/out/jennings-validation-report.md",
+      "sha256": "642e6ce73be75bc27b7dfa923efe3a655861353631a22c283a9cad14916a4e13"
+    }
+  ],
+  "restored_entries": 760,
+  "restored_tree_sha256": "423dbab1587358a573550dc16e66bb565db7782859c06fa9310eb5801c568b06",
+  "no_rust_or_protected_input_changes": true
+}

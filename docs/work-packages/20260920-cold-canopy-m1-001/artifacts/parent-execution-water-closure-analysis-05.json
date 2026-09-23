@@ -1,0 +1,28 @@
+{
+  "evidence_class": "Ran: independent Python binary64 reconstruction from actual failed run05 error operands",
+  "run": "parent-execution-first-support-run-05.json",
+  "source_tree_sha256": "7c085f0ee9181ec855ce165241f8f7b829d6677ef0ae51fc29b1c533761b79b1",
+  "raw_stderr_sha256": "5ffc6fd0998e2faa243549f09d760b4edae841ff6b4f2df91a0bf628125f28b2",
+  "ofe_id": "ofe-1",
+  "layer_id": "soil-1",
+  "beginning_amount_bits": 4626322717216342016,
+  "ending_amount_bits": 4626322717209196030,
+  "ordered_debit_amount_bits": [
+    4488721396023810867,
+    4488787752102678548
+  ],
+  "ordered_ingress_amount_bits": [],
+  "beginning_kg_m2": 20.0,
+  "ending_kg_m2": 19.999999974612358,
+  "debits_kg_m2": [
+    1.2638933946505808e-08,
+    1.2748710870434579e-08
+  ],
+  "ordered_sum_kg_m2": 2.538764481694039e-08,
+  "local_kg_fold_ending": 19.999999974612354,
+  "local_kg_fold_bits": 4626322717209196029,
+  "actual_minus_local_kg_m2": 3.552713678800501e-15,
+  "ulp_difference": 1,
+  "illustrative_inverted_depth_fold": 19.999999974612358,
+  "limitation": "Inverted depth is illustrative only, not an actual raw-depth observation or authorized fix. Native actual raw beginning depth and canonical update order must be retained and verified; no tolerance change or accepted support claimed."
+}

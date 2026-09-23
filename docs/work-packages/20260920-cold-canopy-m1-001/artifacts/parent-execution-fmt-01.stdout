@@ -1,0 +1,15 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:627:
+         forcing.air_specific_humidity_kg_kg = prepared.input.column.air_specific_humidity_kg_kg;
+         forcing.atmospheric_downward_longwave_w_m2 =
+             prepared.input.column.atmospheric_downward_longwave_w_m2;
+-        forcing.forcing_sha256 = forcing.canonical_sha256().map_err(|_| m1_owner_identity_error())?;
++        forcing.forcing_sha256 = forcing
++            .canonical_sha256()
++            .map_err(|_| m1_owner_identity_error())?;
+         let adapter = LandSurfaceEnergyRealHydrologyAdapter::new(&owners.hydrology);
+         let receipt = super::V8CanopyForcingReceipt::try_new(
+             bootstrap

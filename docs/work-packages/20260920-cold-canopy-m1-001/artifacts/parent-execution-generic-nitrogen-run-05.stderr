@@ -1,0 +1,23 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID b3eae127-6657-4c7b-a73c-be0f9dfc2cb7 with nextest profile: default
+    Starting 2 tests across 1 binary (289 tests skipped)
+  stdout ───
+
+    running 1 test
+    test v11::tests::generic_no_nitrogen_scope_rejects_bgc_owned_water_debit ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test v11::tests::generic_no_nitrogen_scope_allows_no_bgc_debits ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 290 filtered out; finished in 0.02s
+
+
+────────────
+     Summary [   0.021s] 2 tests run: 2 passed, 289 skipped

@@ -1,0 +1,168 @@
+{
+  "artifact_kind": "independent_raw_balance_reconstruction",
+  "scope": "run-07 ordinal-0 diagnostic; calculations use printed primitive operands and printed V11 final-use rows, never producer residual fields",
+  "evidence_binding": {
+    "run_manifest": "parent-execution-first-support-run-07.json",
+    "run_source_receipt": "parent-execution-first-support-run-07-source.json",
+    "source_tree_sha256": "7200eb0a282237599d466971a63cc1ddd865976d9ca8abbd9a3dc7f378f9321c",
+    "binary_sha256": "ed0ac6199368f752e559e8fab19a089de567e161e358640c7acb1ce1bc3b3a13",
+    "retained_binary": "/tmp/openwepp-cold-canopy-m1-first-support07-retained",
+    "stderr": "parent-execution-first-support-run-07.stderr",
+    "raw_printed_line_sha256": "0c023d389544f8296f6aeb2e8a0117cd8059be125b360a0f7edf423da5c639e2",
+    "support_ns": [
+      0,
+      60000000000
+    ]
+  },
+  "source_authority_pins": {
+    "m1_control_source_sha256": "ff5a9546e8a713daff04782823a24b3b17f211e98b612bb0b0093c85f32fb988",
+    "m1_solver_source_sha256": "b15a2d2610c6fd5a471472019c2db946d0fa9e8f7739c7a4fe6f3fe6f6a0a075",
+    "physics_source_sha256": "24663224a9620421c60ac1337f355fdbf9d3df6ffd51c4934c29373689959435",
+    "constant_authority": "m1_provider_parent_controls.rs assert_reservoir_closure; openwepp-land-surface-energy solver_covered_evaluation/m1_coupled.rs constants TF=273.15, CW=4218, LV=2501000, CPV=1849"
+  },
+  "reservoir_balance": [
+    {
+      "occupancy_index": 0,
+      "primitive_inputs": {
+        "occupancy_index": 0,
+        "beginning_mass_kg_m2": "0.018",
+        "beginning_enthalpy_j_m2": "0.0",
+        "ending_mass_kg_m2": "0.017071735073803156",
+        "ending_enthalpy_j_m2": "-5104.003596321261",
+        "dt_s": "60.0",
+        "incident_liquid_kg_m2_s": "0.0",
+        "incident_enthalpy_j_kg": "0.0",
+        "vapor_kg_m2_s": "1.5471082103280725e-5",
+        "drainage_kg_m2_s": "0.0",
+        "non_vapor_heat_w_m2": "-46.37355026504928",
+        "wet_temperature_k": "273.15"
+      },
+      "canonical_enthalpy_constants": {
+        "reference_temperature_k": 273.15,
+        "vaporization_enthalpy_at_reference_j_kg": 2501000.0,
+        "vapor_temperature_coefficient_j_kg_k": 1849.0,
+        "liquid_specific_heat_j_kg_k": 4218.0
+      },
+      "reconstruction": {
+        "mass_formula": "M_end = M_begin + dt * (I - vapor - drainage)",
+        "enthalpy_formula": "H_end = H_begin + dt * (Q_nonvapor + I*h_incident - vapor*(2501000 + 1849*(T_wet-273.15)) - drainage*(4218*(T_wet-273.15)))",
+        "calculated_ending_mass_kg_m2": "0.0170717350738031565000",
+        "recorded_ending_mass_kg_m2": "0.017071735073803156",
+        "mass_difference_kg_m2": "-5.000E-19",
+        "calculated_ending_enthalpy_j_m2": "-5104.003596321262393500000000",
+        "recorded_ending_enthalpy_j_m2": "-5104.003596321261",
+        "enthalpy_difference_j_m2": "1.393500000000E-12",
+        "result": "closed_from_primitives"
+      }
+    },
+    {
+      "occupancy_index": 1,
+      "primitive_inputs": {
+        "occupancy_index": 1,
+        "beginning_mass_kg_m2": "0.018",
+        "beginning_enthalpy_j_m2": "0.0",
+        "ending_mass_kg_m2": "0.017081575448084092",
+        "ending_enthalpy_j_m2": "-5025.792712595023",
+        "dt_s": "60.0",
+        "incident_liquid_kg_m2_s": "0.0",
+        "incident_enthalpy_j_kg": "0.0",
+        "vapor_kg_m2_s": "1.5307075865265114e-5",
+        "drainage_kg_m2_s": "0.0",
+        "non_vapor_heat_w_m2": "-45.480215137555675",
+        "wet_temperature_k": "273.15"
+      },
+      "canonical_enthalpy_constants": {
+        "reference_temperature_k": 273.15,
+        "vaporization_enthalpy_at_reference_j_kg": 2501000.0,
+        "vapor_temperature_coefficient_j_kg_k": 1849.0,
+        "liquid_specific_heat_j_kg_k": 4218.0
+      },
+      "reconstruction": {
+        "mass_formula": "M_end = M_begin + dt * (I - vapor - drainage)",
+        "enthalpy_formula": "H_end = H_begin + dt * (Q_nonvapor + I*h_incident - vapor*(2501000 + 1849*(T_wet-273.15)) - drainage*(4218*(T_wet-273.15)))",
+        "calculated_ending_mass_kg_m2": "0.0170815754480840931600",
+        "recorded_ending_mass_kg_m2": "0.017081575448084092",
+        "mass_difference_kg_m2": "-1.1600E-18",
+        "calculated_ending_enthalpy_j_m2": "-5025.792712595023506840000000",
+        "recorded_ending_enthalpy_j_m2": "-5025.792712595023",
+        "enthalpy_difference_j_m2": "5.06840000000E-13",
+        "result": "closed_from_primitives"
+      }
+    }
+  ],
+  "nitrogen_mineral_balance": {
+    "basis": "BGC native mineral endpoints vs printed V11 BGC final uses; two occupancy copies are grouped by layer/species",
+    "by_layer": {
+      "soil-1": {
+        "ammonium": {
+          "beginning_kg_n_m2": "1",
+          "ending_kg_n_m2": "0.9999919986072004",
+          "actual_finalized_use_kg_n_m2": "0.000008001392799605092",
+          "endpoint_loss_minus_finalized_use_kg_n_m2": "-5.092E-18"
+        },
+        "nitrate": {
+          "beginning_kg_n_m2": "1",
+          "ending_kg_n_m2": "0.9999879979108006",
+          "actual_finalized_use_kg_n_m2": "0.000012002089199407638",
+          "endpoint_loss_minus_finalized_use_kg_n_m2": "-7.638E-18"
+        }
+      },
+      "soil-2": {
+        "ammonium": {
+          "beginning_kg_n_m2": "1",
+          "ending_kg_n_m2": "0.9999950959205421",
+          "actual_finalized_use_kg_n_m2": "0.0000049040794578224754",
+          "endpoint_loss_minus_finalized_use_kg_n_m2": "7.75246E-17"
+        },
+        "nitrate": {
+          "beginning_kg_n_m2": "1",
+          "ending_kg_n_m2": "0.9999926438808132",
+          "actual_finalized_use_kg_n_m2": "0.0000073561191867337132",
+          "endpoint_loss_minus_finalized_use_kg_n_m2": "6.62868E-17"
+        }
+      },
+      "soil-dry": {
+        "ammonium": {
+          "beginning_kg_n_m2": "1",
+          "ending_kg_n_m2": "1",
+          "actual_finalized_use_kg_n_m2": "0",
+          "endpoint_loss_minus_finalized_use_kg_n_m2": "0"
+        },
+        "nitrate": {
+          "beginning_kg_n_m2": "1",
+          "ending_kg_n_m2": "1",
+          "actual_finalized_use_kg_n_m2": "0",
+          "endpoint_loss_minus_finalized_use_kg_n_m2": "0"
+        }
+      },
+      "soil-frozen": {
+        "ammonium": {
+          "beginning_kg_n_m2": "1",
+          "ending_kg_n_m2": "1",
+          "actual_finalized_use_kg_n_m2": "0",
+          "endpoint_loss_minus_finalized_use_kg_n_m2": "0"
+        },
+        "nitrate": {
+          "beginning_kg_n_m2": "1",
+          "ending_kg_n_m2": "1",
+          "actual_finalized_use_kg_n_m2": "0",
+          "endpoint_loss_minus_finalized_use_kg_n_m2": "0"
+        }
+      }
+    },
+    "total_endpoint_loss_kg_n_m2": "0.0000322636806437",
+    "total_finalized_use_kg_n_m2": "0.0000322636806435689186",
+    "difference_kg_n_m2": "1.310814E-16",
+    "result": "closed_to_printed_precision"
+  },
+  "water_finalized_use": {
+    "printed_nonzero_native_water_final_use_kg_m2": "4.0888730124597752E-8",
+    "rows": "soil-2 and soil-1, both printed occupancies",
+    "result": "not_closable_to_native_water_endpoints: raw line has no beginning/ending native water state; this quantity must not be equated to M1 reservoir vapor loss"
+  },
+  "material_endpoints": {
+    "printed_bgc_receiver_ending_nitrogen_kg_n_m2": "1.447122722122241456E-9",
+    "result": "not_closable: raw line contains receiver endpoints but no material-transfer proposal/finalization rows"
+  },
+  "verdict": "M1 mass and enthalpy reservoirs independently close from raw primitive operands. Printed BGC mineral-nitrogen endpoints reconcile to printed finalized uses. No whole-system water or material closure claim is made because required native/material endpoints are absent from this raw diagnostic."
+}

@@ -1,0 +1,121 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator)
+warning: unused import: `DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:109:13
+    |
+109 | use crate::{DirectRunConstructorInputs, vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:132:16
+    |
+132 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0592]: duplicate definitions with name `resource_debits`
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:1096:5
+     |
+1030 |     pub(super) fn resource_debits(&self) -> &[openwepp_vegetation::v11::V11ResourceDebit] {
+     |     ------------------------------------------------------------------------------------- other definition for `resource_debits`
+...
+1096 |     pub(super) fn resource_debits(&self) -> &[openwepp_vegetation::v11::V11ResourceDebit] {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ duplicate definitions for `resource_debits`
+
+error[E0592]: duplicate definitions with name `admitted_resource_fluxes`
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:1104:5
+     |
+1033 | /     pub(super) fn admitted_resource_fluxes(
+1034 | |         &self,
+1035 | |     ) -> &[openwepp_vegetation::v11::V11AdmittedResourceFlux] {
+     | |_____________________________________________________________- other definition for `admitted_resource_fluxes`
+...
+1104 | /     pub(super) fn admitted_resource_fluxes(
+1105 | |         &self,
+1106 | |     ) -> &[openwepp_vegetation::v11::V11AdmittedResourceFlux] {
+     | |_____________________________________________________________^ duplicate definitions for `admitted_resource_fluxes`
+
+error[E0592]: duplicate definitions with name `shared_resource_owner_transitions`
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:1114:5
+     |
+1038 | /     pub(super) fn shared_resource_owner_transitions(
+1039 | |         &self,
+1040 | |     ) -> &[openwepp_vegetation::v11::V11SharedResourceOwnerTransition] {
+     | |______________________________________________________________________- other definition for `shared_resource_owner_transitions`
+...
+1114 | /     pub(super) fn shared_resource_owner_transitions(
+1115 | |         &self,
+1116 | |     ) -> &[openwepp_vegetation::v11::V11SharedResourceOwnerTransition] {
+     | |______________________________________________________________________^ duplicate definitions for `shared_resource_owner_transitions`
+
+error[E0592]: duplicate definitions with name `complete_owner_candidates`
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:1119:5
+     |
+1043 | /     pub(super) fn complete_owner_candidates(
+1044 | |         &self,
+1045 | |     ) -> &[openwepp_vegetation::v11::V11CompleteOwnerCandidate] {
+     | |_______________________________________________________________- other definition for `complete_owner_candidates`
+...
+1119 | /     pub(super) fn complete_owner_candidates(
+1120 | |         &self,
+1121 | |     ) -> &[openwepp_vegetation::v11::V11CompleteOwnerCandidate] {
+     | |_______________________________________________________________^ duplicate definitions for `complete_owner_candidates`
+
+error[E0277]: the trait bound `openwepp_biogeochemistry::MaterialReceipt: serde::Serialize` is not satisfied
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs:1583:9
+     |
+1583 | /         serde_json::json!({
+1584 | |             "first_ordinal": first.record_ordinal(),
+1585 | |             "second_ordinal": second.record_ordinal(),
+1586 | |             "first_soil_input_bits": first.prepared_soil_temperature_bits(),
+...    |
+1594 | |             "first_bgc_receipts": first.biogeochemistry_candidate().receipts(),
+1595 | |         })
+     | |          ^
+     | |          |
+     | |__________the trait `coupled_time_reference::_::_serde::Serialize` is not implemented for `openwepp_biogeochemistry::MaterialReceipt`
+     |            required by a bound introduced by this call
+     |
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `openwepp_biogeochemistry::MaterialReceipt` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `coupled_time_reference::_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 744 others
+     = note: required for `[openwepp_biogeochemistry::MaterialReceipt]` to implement `coupled_time_reference::_::_serde::Serialize`
+     = note: 2 redundant requirements hidden
+     = note: required for `&&[openwepp_biogeochemistry::MaterialReceipt]` to implement `coupled_time_reference::_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/mod.rs:997:8
+     |
+ 995 | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+ 996 | where
+ 997 |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: the full name for the type has been written to '/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_orchestrator-0ad665558c5e4d7c.long-type-3290226949418022100.txt'
+     = note: consider using `--verbose` to print the full type name to the console
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `serde_json::json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: variable does not need to be mutable
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:2702:9
+     |
+2702 |     let mut received = M1ReceiverDiagnosticResult {
+     |         ----^^^^^^^^
+     |         |
+     |         help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0277, E0592.
+For more information about an error, try `rustc --explain E0277`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 3 warnings
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 5 previous errors; 3 warnings emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-hillslope-orchestrator --package openwepp-land-surface-energy --package openwepp-vegetation --lib` exited with code 101

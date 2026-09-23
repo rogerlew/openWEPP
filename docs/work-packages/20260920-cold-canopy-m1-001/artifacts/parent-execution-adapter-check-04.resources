@@ -1,0 +1,23 @@
+	Command being timed: "nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-target CARGO_BUILD_JOBS=2 cargo check -p openwepp-hillslope-orchestrator --tests"
+	User time (seconds): 27.77
+	System time (seconds): 4.93
+	Percent of CPU this job got: 91%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:35.67
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2500404
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 45
+	Minor (reclaiming a frame) page faults: 838441
+	Voluntary context switches: 88272
+	Involuntary context switches: 503
+	Swaps: 0
+	File system inputs: 25355776
+	File system outputs: 581520
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

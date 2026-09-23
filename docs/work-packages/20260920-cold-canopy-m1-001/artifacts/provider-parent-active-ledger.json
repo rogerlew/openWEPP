@@ -1,14 +1,14 @@
 {
-  "observed_utc": "2026-09-22T23:32:34.271132+00:00",
-  "anchor_utc": "2026-09-22T19:53:00+00:00",
-  "prior_charged_seconds": "250793.051684",
-  "session_elapsed_seconds": "13174.271132",
-  "charged_cumulative_seconds": "263967.322816",
-  "fixed_ceiling_seconds": "265193.051684",
-  "remaining_seconds": "1225.728868",
-  "hard_deadline_utc": "2026-09-22T23:53:00Z",
-  "implementation_cutoff_utc": "2026-09-22T23:23:00Z",
+  "observed_utc": "2026-09-23T06:26:39.845878+00:00",
+  "anchor_utc": "2026-09-23T02:56:00+00:00",
+  "prior_charged_seconds": "264019.079607",
+  "session_elapsed_seconds": "12639.845878",
+  "charged_cumulative_seconds": "276658.925485",
+  "fixed_ceiling_seconds": "278419.079607",
+  "remaining_seconds": "1760.154122",
+  "hard_deadline_utc": "2026-09-23T06:56:00Z",
+  "implementation_cutoff_utc": "2026-09-23T06:26:00Z",
   "reserve_seconds": 1800,
-  "clock_policy": "Concurrent elapsed charged once, including reading, waits, review and preservation. No refunds.",
-  "state": "HOLD. Final source/recovery and independent reviews published/remote verified at66493c8; final accounting/publication receipt only."
+  "clock_policy": "Concurrent elapsed charged once including reading, waits, review and publication; no refunds or old protected balance.",
+  "state": "HOLD. Implementation stopped at fixed boundary; final review/preservation/publication only. Support0 reached; no ordinal1,parent,positive late. Full900 timeout124(4113PASS302failureinclSIGTERM), A1FAIL, clippyFAIL; build/format/provider8/original60/firstsupportPASS. BothindependentreviewsHOLD; QA permits truthfulfailed-evidencepublication. Source423dbab restored; generated/helperlockdrift preserved."
 }

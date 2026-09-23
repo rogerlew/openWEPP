@@ -1,0 +1,46 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+error[E0425]: cannot find type `MineralNitrogenSpecies` in this scope
+   --> crates/openwepp-vegetation/src/v11.rs:117:52
+    |
+117 |     expected_identities: BTreeSet<(String, String, MineralNitrogenSpecies)>,
+    |                                                    ^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-kernel-contract/src/lib_mod/resource_transaction.rs:118:1
+    |
+118 | pub struct MineralNitrogenKey {
+    | ----------------------------- similarly named struct `MineralNitrogenKey` defined here
+    |
+help: a struct with a similar name exists
+    |
+117 -     expected_identities: BTreeSet<(String, String, MineralNitrogenSpecies)>,
+117 +     expected_identities: BTreeSet<(String, String, MineralNitrogenKey)>,
+    |
+help: you might be missing a type parameter
+    |
+115 | pub struct V11ResourceCustodyNitrogenScope<MineralNitrogenSpecies> {
+    |                                           ++++++++++++++++++++++++
+
+error[E0425]: cannot find type `MineralNitrogenSpecies` in this scope
+   --> crates/openwepp-vegetation/src/v11.rs:123:56
+    |
+123 |         expected_identities: BTreeSet<(String, String, MineralNitrogenSpecies)>,
+    |                                                        ^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-kernel-contract/src/lib_mod/resource_transaction.rs:118:1
+    |
+118 | pub struct MineralNitrogenKey {
+    | ----------------------------- similarly named struct `MineralNitrogenKey` defined here
+    |
+help: a struct with a similar name exists
+    |
+123 -         expected_identities: BTreeSet<(String, String, MineralNitrogenSpecies)>,
+123 +         expected_identities: BTreeSet<(String, String, MineralNitrogenKey)>,
+    |
+help: you might be missing a type parameter
+    |
+120 | impl<MineralNitrogenSpecies> V11ResourceCustodyNitrogenScope {
+    |     ++++++++++++++++++++++++
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-vegetation` (lib) due to 3 previous errors

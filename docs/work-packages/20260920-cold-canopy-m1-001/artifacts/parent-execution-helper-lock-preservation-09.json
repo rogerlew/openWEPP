@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-09-23T06:24:40.212790+00:00",
+  "path": "docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/Cargo.lock",
+  "base_commit": "584b6df4f4bb17ab6cfaa8d6cba3ed6214bbfe84",
+  "before_sha256": "1a672660501cd806fdb4e21572624d18ccd367aea84342ffb5d9aefc5d541e83",
+  "after_sha256": "1c0a6f9a5c88409d83225604aa3dce4d13571a777c17190c4c98bcc5740b47fb",
+  "restored_sha256": "1a672660501cd806fdb4e21572624d18ccd367aea84342ffb5d9aefc5d541e83",
+  "restored": true,
+  "provenance": "Clean before full; mtime06:11:17UTC duringfull; direct_v10_real_consumer_checkpoint_v1_contract.rs219 invokes cargo run offline without --locked at helper manifest through symlinked docs; delta adds openwepp-vegetation to LSE dependencies.",
+  "scope": "Generated helper lock drift outside declared full pins; retained before/after/patch then restored only task-produced one-line delta. No main Rust change."
+}

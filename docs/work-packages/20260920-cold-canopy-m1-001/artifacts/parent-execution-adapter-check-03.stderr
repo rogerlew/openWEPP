@@ -1,0 +1,58 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+warning: method `expected_ofe` is never used
+   --> crates/openwepp-vegetation/src/v11.rs:153:8
+    |
+142 | impl V11BgcDebitScope {
+    | --------------------- method in this implementation
+...
+153 |     fn expected_ofe(&self, stratum_id: &str) -> Option<&str> {
+    |        ^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-vegetation` (lib) generated 1 warning
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator)
+warning: unused import: `DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:109:13
+    |
+109 | use crate::{DirectRunConstructorInputs, vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:132:16
+    |
+132 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0277]: can't compare `AcceptedSlabId` with `ReceiptId`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:448:5
+    |
+448 | /     assert_eq!(
+449 | |         caller
+450 | |             .last_parent_receipt()
+451 | |             .expect("actual successful parent receipt")
+452 | |             .accepted_slab_ids(),
+453 | |         slab_ids
+454 | |     );
+    | |_____^ no implementation for `AcceptedSlabId == ReceiptId`
+    |
+help: the trait `PartialEq<ReceiptId>` is not implemented for `AcceptedSlabId`
+      but trait `PartialEq<AcceptedSlabId>` is implemented for it
+   --> crates/openwepp-coupled-time/src/identity.rs:56:33
+    |
+ 56 |             Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+    |                                 ^^^^^^^^^
+...
+ 74 | identity!(AcceptedSlabId);
+    | ------------------------- in this macro invocation
+    = help: for that trait implementation, expected `AcceptedSlabId`, found `ReceiptId`
+    = note: required for `Vec<AcceptedSlabId>` to implement `PartialEq<Vec<ReceiptId>>`
+    = note: this error originates in the macro `assert_eq` which comes from the expansion of the macro `identity` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+For more information about this error, try `rustc --explain E0277`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 2 warnings
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error; 2 warnings emitted

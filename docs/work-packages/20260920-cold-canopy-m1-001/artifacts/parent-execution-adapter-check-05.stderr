@@ -1,0 +1,57 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator)
+warning: unused import: `DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:109:13
+    |
+109 | use crate::{DirectRunConstructorInputs, vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:132:16
+    |
+132 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0369]: binary operation `==` cannot be applied to type `Result<(), M1ParentExecutionError>`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:503:5
+    |
+503 | /     assert_eq!(
+504 | |         caller.complete_parent(),
+505 | |         Err(M1ParentExecutionError::NoLiveParent(
+506 | |             CoupledTimeError::ParentNotFinalizable
+507 | |         ))
+508 | |     );
+    | |     ^
+    | |     |
+    | |_____Result<(), M1ParentExecutionError>
+    |       Result<(), M1ParentExecutionError>
+    |
+note: an implementation of `PartialEq` might be missing for `M1ParentExecutionError`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:52:1
+    |
+ 52 | pub(super) enum M1ParentExecutionError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ must implement `PartialEq`
+help: consider annotating `M1ParentExecutionError` with `#[derive(PartialEq)]`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:52:1
+    |
+ 52 + #[derive(PartialEq)]
+ 53 | pub(super) enum M1ParentExecutionError {
+    |
+
+warning: variable does not need to be mutable
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:2518:9
+     |
+2518 |     let mut received = M1ReceiverDiagnosticResult {
+     |         ----^^^^^^^^
+     |         |
+     |         help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0369`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 3 warnings
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error; 3 warnings emitted

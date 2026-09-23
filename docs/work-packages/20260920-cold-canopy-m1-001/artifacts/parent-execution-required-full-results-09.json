@@ -1,0 +1,154 @@
+{
+  "scope": "Parsed retained current full09 JUnit; command timed out and source flag false from four retained generated outputs, so no passing overall gate.",
+  "full_receipt": "parent-execution-required-full-09.json",
+  "junit": "parent-execution-required-full-09.junit.xml",
+  "junit_sha256": "12bffc676c4aee492e01032940bba4a6949412449691d94336f759d8f4efb034",
+  "root_attributes": {
+    "name": "openwepp-nextest-full",
+    "tests": "4415",
+    "failures": "302",
+    "errors": "0",
+    "uuid": "ac6a5b6c-43ba-4a86-aba5-d243c9eac6c5",
+    "timestamp": "2026-09-22T23:11:09.846-07:00",
+    "time": "548.756"
+  },
+  "status_counts": {
+    "PASS": 4113,
+    "FAIL": 302
+  },
+  "selected_results": [
+    {
+      "name": "land_surface_energy_shadow::m1_coupled_expected_red::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "PASS",
+      "time": "0.015"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_canonical_ascii_escape_vectors_are_independent",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "PASS",
+      "time": "0.008"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_actual_seven_owner_bytes_match_independent_canonical_projections",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "PASS",
+      "time": "0.349"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_refusal_preserves_real_caller_owners_clock_staging_and_publication",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "PASS",
+      "time": "1.303"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_adjacent_supports_retain_actual_soil_and_custody_operands",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "FAIL",
+      "time": "1.311"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_provider_parent_controls::m1_parent_first_support_prints_actual_custody_operands_and_retains_parent_bgc_lineage",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "PASS",
+      "time": "1.303"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_provider_parent_controls::m1_parent_late_owning_rejection_follows_an_actual_prefix_and_positive_capability",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "FAIL",
+      "time": "1.279"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_real_source_encoding_and_parent_slice_oracle",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "PASS",
+      "time": "1.410"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_rejects_missing_foreign_reordered_and_stale_gsi_receipts",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "PASS",
+      "time": "1.556"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_provider_parent_controls::m1_parent_owns_admission_thirty_actual_supports_and_one_consuming_commit",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "FAIL",
+      "time": "1.300"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_actual_caller_refuses_wrong_cycle_and_out_of_sequence_parent",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "PASS",
+      "time": "2.472"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_both_cycles_expand_every_frozen_record_parent_day_and_phase",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "PASS",
+      "time": "30.148"
+    },
+    {
+      "name": "land_surface_energy_shadow::m1_fixed_sequence_provider_controls::m1_provider_rejects_each_contract_mutation_before_owner_staging",
+      "classname": "openwepp-hillslope-orchestrator",
+      "status": "PASS",
+      "time": "138.344"
+    }
+  ],
+  "provider_original_all_pass": true,
+  "selected_authority_suites": [
+    {
+      "name": "openwepp::c3_woody_v11_authority_contract",
+      "tests": "8",
+      "disabled": "0",
+      "errors": "0",
+      "failures": "1"
+    },
+    {
+      "name": "openwepp::direct_hydrology_restart_authority_contract",
+      "tests": "7",
+      "disabled": "0",
+      "errors": "0",
+      "failures": "0"
+    },
+    {
+      "name": "openwepp::land_surface_energy_balance_authority_contract",
+      "tests": "26",
+      "disabled": "0",
+      "errors": "0",
+      "failures": "19"
+    },
+    {
+      "name": "openwepp::surface_liquid_hydrology_custody_authority_contract",
+      "tests": "22",
+      "disabled": "0",
+      "errors": "0",
+      "failures": "7"
+    },
+    {
+      "name": "openwepp::v10_nighttime_authority_contract",
+      "tests": "3",
+      "disabled": "0",
+      "errors": "0",
+      "failures": "0"
+    },
+    {
+      "name": "openwepp::vegetation_boundary_authority_contract",
+      "tests": "29",
+      "disabled": "0",
+      "errors": "0",
+      "failures": "7"
+    }
+  ],
+  "signal_failures": [
+    {
+      "name": "hillslope::tests::accepted_stage3_real_runner_routes_lane_d_and_publishes_summary",
+      "classname": "openwepp-runner",
+      "failure_attributes": {
+        "message": "process aborted with signal 15 (SIGTERM)",
+        "type": "test abort"
+      }
+    }
+  ]
+}

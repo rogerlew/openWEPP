@@ -1,5 +1,694 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+
+## Real parent body execution — adopted 2026-09-23 02:56 UTC
+
+Owner execution of `/tmp/openwepp_cold_canopy_m1_parent_execution_authorization.md`
+adopts its complete bounded continuation. Current status: **HOLD; implementation stopped, final evidence preservation**.
+This section supersedes the prior cutoff for prospective work only. Implement
+actual support/result/resource/material/transition/replay boundaries and consuming
+seven-owner parent integration; correct staged BGC parent lineage, current-owner
+solve inputs and native support forcing together. Preserve released controls07,
+adding the three identified discriminators and only necessary mechanical adapters.
+No new physics, solver, provider/calendar policy, thresholds, fixed forcing or
+initialization, public/persisted schema, or main Rust changes. All four original
+acceptance axes, balances, positive late rejection, fixed cycles, restart and cost
+remain binding; one legal parent is an internal milestone only.
+
+Ran: all 760 entries in the retained source03 manifest match the live detached
+source `/home/roger/openwepp-experiments/cold-canopy-m1-20260920`, aggregate
+`e53295e289aa3b83cc4f3e069e81ca7ccda0dfcbef0d43fa3181194d2a77495f`.
+No reconstruction or patch reapplication is necessary. Existing source03 recovery
+and observer-relative patch remain retained. The actual local final-publication02
+receipt was read once and confirms carry **264019.079607 charged seconds**.
+The adopted addition is14400 seconds; fixed ceiling **278419.079607 seconds**.
+Conservative first-reading anchor **2026-09-23T02:56:00Z** sets hard deadline
+**2026-09-23T06:56:00Z** and implementation cutoff **2026-09-23T06:26:00Z**.
+All elapsed work, concurrent work once, waits, review and publication are charged;
+no historical reserve/gap/overrun is refunded. Preserve1800 seconds for closure.
+
+Implementation intent remains Critical cross-owner state/chronology/conservation.
+Checks: test-inclusive compilation, affected format/strict lint, source-bound
+released controls, original60, affected provider cases, actual first/adjacent/all
+30 supports, positive late rejection and independent raw-operand reconstruction;
+then unchanged two72-hour cases, fresh-process splits and cost/scaling/warm pairs
+when prerequisites permit. Applicable full correctness/A0/A1/A3 and exact-source
+qualification remain mandatory. Ordinary physical commands retain180-second caps;
+only the existing exact allowlisted900-second Critical command has its reviewed
+exception. Full declared bounds plus reserve must fit; no unexplained reruns.
+
+The previous live reviewers are absent from this session inventory. Attributable
+replacements `/root/provider_correctness` (Sol) and `/root/provider_qa` (Terra)
+are establishing functioning independent review, preserving unaffected approvals.
+One detached source writer; serialized review phases; at most two children and
+no nested delegation. Root owns package, recorder and evidence integration.
+Stop for owner direction, hard limit, uncontained integrity failure, indispensable
+source/independence unavailable after bounded recovery, completed disposition or
+necessary out-of-envelope change. Two failed corrections or60 charged minutes
+trigger a supported internal reassessment, never renewed time.
+
+
+Static: replacement correctness confirms functioning independence and retains the
+four body defects and complete acceptance obligations. Replacement QA confirms
+functioning independence and **PASS for the one-line recorder deadline delta**:
+carry264019.079607 +14400 =278419.079607, hard06:56Z, launch06:26Z.
+The exact180/900-second controls and both reserve checks remain unchanged.
+Root applies only that deadline string and Python AST parsing passes. This is
+not a physical launch clearance. Sole Terra `/root/parent_writer` is released
+for detached body/discriminator implementation and recorded nonphysical
+compilation/formatting; root retains source freeze and physical launch custody.
+
+
+Ran: existing non-launching full-bound controls pass15/15 on the deadline-updated
+recorder ([raw result](artifacts/parent-execution-full-bound-controls-01.json)).
+They traverse both reserve checks and intercept process launch; zero physical
+processes or workspace tests ran. Existing source recovery and full exception
+semantics are retained, with no new timeout framework.
+
+
+Static/Ran byte inspection: same QA checks all619 build02 and623 provider04
+selected pins. Every immutable fixture/authority/configuration/support target
+matches; each historical manifest differs only on the authorized recorder
+DEADLINE. Historical tree/binary bindings remain historical and cannot qualify
+new execution. New manifests will bind the frozen new source, current recorder,
+exact selected command and binary while preserving unchanged input pins. Deny03
+reuse remains restricted to unchanged Cargo/lock/policy/environment inputs.
+
+
+Internal reassessment **CONTINUE**, after two initial bounded corrections:
+sole writer projects staged V1 soil temperatures and rebinds native T/q/LW/rain
+from prepared admitted input; both remain unreviewed implementation. Formatter
+passes. Test-inclusive compile02 exits101 with the same56 missing parent/outcome
+methods after fixing two introduced mechanical type errors. Logs are retained
+as `artifacts/parent-execution-{fmt,fmt-apply,compile}-*.{stdout,stderr}`.
+No physical/test execution, new numerical failure or accepted milestone is
+claimed. The next concrete task is actual producer-owned immutable outcome,
+resource/material transitions, canonical staged BGC lineage, and consuming parent
+completion/replay; existing tests stay binding. More than three hours remain,
+so this in-scope implementation gap stays with the same writer and fixed budget.
+
+
+Internal reassessment **REASSIGN**,03:13UTC: the first writer repeatedly returns
+small partial edits while the central authorized resource/transition/parent
+adapter stays absent. No scientific obstruction is demonstrated. Root stops
+that writer, freezes760 entries `a9bc780f85ee68cbbe99d1995df6d1ad1a615dba2ffc89582d23d007b4f6d1b6`
+in [cut01 source/patch](artifacts/parent-execution-body-cut01-source.json), and
+assigns sole Terra `/root/parent_adapter` the concrete remaining body and
+compilation deliverable. Only provider, receiver and vegetation v11.rs differ
+from the initial cut. This source is uncompiled and unaccepted. It retains
+partial producer-owned outcome/staged-BGC work and two exposed unchanged V11
+validation helpers; no resource receipts or parent result are claimed.
+Native binding still needs all admitted input joins. Zero-ingress support root
+use must also reach actual shared-owner transitions. Both reviewers and fixed
+budget remain unchanged; no parallel writer or nested workaround is used.
+
+
+Implementation checkpoint: new writer's test-inclusive check reports22 remaining
+errors, down from56, in remaining parent/native/replay wiring and mechanical
+private-module paths. This edit-loop log has no exact-source recorder binding;
+it is retained as feedback, not qualification. Root's subsequent inspection finds
+one-transition-per-occupancy duplication and requests shared-key grouping; writer
+corrects it. Root preserves the then-current760-entry adapter cut
+`a040e4822994735887abbdc889a613e1314faa382a16c5cee08be805c304c049`
+([cut01 source](artifacts/parent-execution-adapter-cut01-source.json)); later N
+and parent wiring changes are not claimed covered by that cut. No physical
+support has run. Root requests a complete compile-bound freeze before the next
+capture; no archive is made for every method or mechanical error.
+
+
+Ran: [adapter test-inclusive check01](artifacts/parent-execution-adapter-check-01.json)
+binds760-entry source `77a077ee8413029ec9d7d7da4943198f8a3711d176e59ff9cfac6b983b754078`
+and retained observer-relative patch. Exit101 after14.966797s;8 errors remain:
+parent-ID integer conversion, reservoir-map tuple access, two borrowed-owner-map
+API mismatches, missing contribution mass getter, missing last-parent receipt,
+error comparison and moved record. Source/base/pins unchanged. No test runs.
+Independent correctness now inspects this frozen body for substantive custody,
+forcing, finalization and replay defects; writer remains paused/read-only while
+that source assessment runs. This is implementation progress, not parent success.
+
+
+Independent QA `/root/provider_qa`, frozen77a077 cut: **custody PASS; runtime
+and evidence HOLD**. Reviewer rehashes all760 source entries with zero mismatches;
+619 selected pins, roots, support links and recorder match (patch533d7573…,
+recorder69e94ac7…). Check01 is nonphysical failed compilation, not tests.
+Reviewer confirms unconditional duplicate-capability refusal invalidates the
+replay witness, sealed-owner/error/custody shortcuts remain, three required
+state/forcing discriminators lack execution, and keyed raw operand/endpoint
+evidence for independent balance reconstruction is absent. The two raw-resource
+getters alias produced vectors and supply no independent raw-producer hook.
+Correctness owns substantive fix assessment; QA will verify the corrected cut
+and affected execution records in this same conversation. No physical release.
+
+
+Independent correctness `/root/provider_correctness`, Static on77a077:
+**HOLD**. Concrete blockers: partial bootstrap/native forcing and incomplete
+current-input projection; report-only resource assembly without canonical
+custody/predecessor validation and accepted-order material binding; synthesized
+native capability/replay and sealed-owner reports; incomplete parent joins,
+discarded durable commit, collapsed errors and post-install counter overflow;
+late receiver errors never constructing the declared typed variant and attempted
+ID reporting the prior accepted support; all three direct discriminators absent.
+Staged BGC wrapper's lineage-only direction is accepted conditionally, not runtime
+release. Writer is released for these and the8 compiler fixes under the same
+budget. Root requests same-reviewer clarification only of the claim that all
+LSE/thermal passthrough must be replaced: canonical M1 diagnostic interface
+explicitly preserves represented-snow ground/six-soil identity rows, and native
+ingress/stage may legitimately advance thermal state afterward. No new ground
+physics or indiscriminate mutability is authorized. All other findings stand.
+
+
+Same correctness reviewer **withdraws the ground/soil-passthrough replacement
+requirement** after contract/source trace: M1 coordinates14–20 are represented-
+snow ground and six-soil identity rows; pre-ingress current staged passthrough
+is correct, and actual ingress is aggregated/installed afterward. No distinct
+accepted M1 ground/soil ending is discarded. Ground surface-liquid/enthalpy/
+warm-start fields are not consumed by this residual envelope, so those are not
+proven mutable-input defects. Six-temperature current-state projection is the
+correct direction. Remaining finding1 is native support identity/forcing joins
+and direct discrimination: bootstrap pressure101325 vs87633.52548751776Pa,
+wind3.7 vs2.5m/s and SW410/83/355/101 vs admittedzero are not authenticated at the
+actual native seam. Retain or prove unused fields by actual owner/source role;
+no new ground physics. All other findings remainHOLD; writer receives this
+same-reviewer clarification before corrective implementation.
+
+
+Root static resource trace confirms `receiver_closure_operands.production_soil`
+beginnings are post-root/pre-ingress (`real_hydrology_execution.rs` clones the
+soil candidate ending before applying ingress). They cannot supply whole-support
+water debit starts. Writer now retains actual beginning/ending hydrology adapters,
+uses canonical liquid-supply layer facts and exact OFE/layer bindings, and wires
+ingress/predecessor data into the shared custody validator; this evolving source
+remains uncompiled. No synthetic balancing remainder or threshold relaxation is
+allowed. Canonical receipt joins must avoid circular hashing: resource IDs already
+contain slab IDs, so reuse authoritative raw-ledger/parent joins rather than
+hashing self-dependent IDs into a slab. Source review remains required.
+
+
+Ran: recorded adapter checks02 and03 retain failed sources/patches and unchanged
+pins. Check02 (`3a7f12b5…`) stops at missing MineralNitrogenSpecies import;
+check03 (`b619d87a…`) advances through test-inclusive compilation to one control
+comparison mismatch, AcceptedSlabId versus ReceiptId (23.966190s, exit101).
+Neither executes tests. Real resource custody now calls the canonical validator
+with exact shared inventories, predecessor transitions and strict configured N
+scope; correctness review is still pending. Replay/material/parent completion and
+three discriminators remain implementation obligations.
+
+Internal 60-minute reassessment **CONTINUE**, 03:56UTC: compilation narrowed from
+missing interfaces to one mechanical mismatch; resource validation and staged
+owner inputs now have concrete source for review. No scientific obstruction or
+physical milestone has been reached. About three hours remain on the fixed clock;
+no time is renewed. Sole adapter writer continues remaining replay/material/native
+and discriminator work. A reviewer-resumption slot error is under bounded recovery;
+physical launch remains withheld until functioning independent review.
+
+
+Ran: [test-inclusive adapter check04](artifacts/parent-execution-adapter-check-04.json)
+**PASS**, exit0 in35.727703s, source `5fa611ea1f4b8085fab9aadf490e37684eb67d01114840549c2af7a757fbd3c6`.
+All source/base/pins remain unchanged. This compiles the parent cfg(test) controls;
+it does not execute them. Compiler warnings remain, including unfinished late
+receiver routing. Source-level parent blockers and all physical acceptance remain
+HOLD. The transient reviewer slot problem recovered by activating the existing
+idle QA conversation; same correctness reviewer now resumes its bounded resource
+review while the sole writer finishes the other body obligations.
+
+
+Static: same correctness reviewer, frozen check04 resource scope, **HOLD**.
+Provider/receiver changed during reading, so findings bind the retained immutable
+check04 patch; v11.rs hash matches. Six substantive findings: incorrect legacy
+owner aliases; lawful zero GroundSurface protocol rows rejected as root debits;
+actual TerminalReceiver ingress falsely labeled surface_runon; generic V11
+no-BGC-scope/no-mineral-debit behavior regressed; missing water inventory equation
+validation; optional predecessor lookups allowing missing/extra/empty custody.
+Writer is released to correct all six and add discriminating poisons.
+The same reviewer adds a seventh finding: resource/debit/flux/predecessor
+failures are collapsed to ProviderError/VEG-E-144. Preserve their canonical typed
+resource/transaction causes and add error-code assertions; provider admission
+errors must remain distinct. A reported
+five-argument domain-call compiler concern was withdrawn by the same reviewer
+after exact-hash line inspection; check04 compilation PASS stands.
+
+Authority disposition for ingress: SC-VEGETATION-0013242–3265 already requires
+TerminalReceiver parcels through the actual surface-liquid ingress consumer with
+branch/contributor lineage; SC-VEGETATIONTRANSACTION requires closed mappings and
+exact joins. An M1-specific typed adapter may bind that authorized actual path to
+shared custody while preserving generic V11 surface_runon semantics and persisted
+wire. Relabeling terminal water as runon is prohibited. Reviewer agrees this
+bounded authority reading; concrete adapter source still needs review. No new
+physics, policy, schema or tolerance is authorized.
+
+Root also rejects an intermediate replay shortcut that only compared identities.
+Writer now connects a private one-shot capability to actual native candidate
+handoff and late refusal; its consumption order and direct controls still need
+verification. Bounded raw-input getters alone do not satisfy the three required
+BGC/current-temperature/native-forcing discriminators; actual assertions are
+explicitly assigned. No physical support or parent execution is claimed.
+
+
+Static/Ran hash verification: same QA confirms **PASS for frozen check04 custody
+and unchanged protected input pins**, and **HOLD for runtime/quality**. The live
+writer has changed five entries since that cut (provider, receiver, parent
+controls, endpoint fixture Clone/Debug/PartialEq support, and vegetation v11.rs).
+The retained patch remains valid only for check04. Next execution requires a new
+source/support binding plus the actual nextest test-binary inventory. Original60,
+provider8, parent2 and added discriminators retain separate selected run records
+and their existing180-second bounds. Compilation warnings and all unrun physical
+requirements remain visible.
+
+
+Internal reassessment **REASSIGN**,04:09UTC: adapter writer reports its context
+window exhausted before completing the truthful terminal-ingress adapter and
+actual consumed-input discriminators. Root freezes760 entries
+`cb30cc1640748b66165b9bd2eeecdac17fa4e36aa9661d8c6b624a9115a86125`
+([cut02 recovery](artifacts/parent-execution-adapter-cut02-source.json)); no
+compilation/runtime qualification is claimed for this intermediate cut.
+Sole replacement Terra `/root/parent_completion` receives the concrete unfinished
+adapter, typed custody/poison checks and direct discriminators, preserving all
+review findings. Prior writer is finished; no simultaneous source writer.
+The fixed deadline/reserve remain unchanged. This is an implementation capacity
+recovery, not a scientific obstruction or renewed allowance.
+
+
+Static root input-custody check: the intermediate EndpointFixture derive edit
+changes `strict_v8_endpoint_tests.rs` from protected adapter dependency
+`31763cfc…` to `0dc7a429…`. The replacement writer must move that mechanical
+bootstrap support into M1-owned code and restore the pinned dependency bytes;
+the frozen adapter manifest and original initialization will not be rebound.
+This pre-run correction preserves provider admission identity, not a new fixture.
+
+
+Ran: [adapter check05](artifacts/parent-execution-adapter-check-05.json) binds
+`6ef9fad7f31ddf8b4900db9b31455e073be16ac7673078acb0fca2d2ffa334e2`;
+exit101 in31.734872s, source/base/pins unchanged. Sole compile error is the exact
+NoLiveParent control requiring PartialEq after the typed Resource variant was
+introduced. An exact variant/payload pattern assertion is the queued mechanical
+adaptation; no assertion weakening is permitted. No tests ran.
+
+Same correctness fix review is active on that frozen cut. Early finding: truthful
+`terminal_receiver` flux still uses generic V11AdmittedResourceFlux::new, whose
+runon-only validation rejects before the new M1-specific validator. A narrow
+M1-authorized construction path is required while preserving the generic one.
+Positive-ingress source coverage remains required. Protected endpoint source now
+matches its original pinned hash; native forcing evidence reads the concrete
+receiver fixture. Neither improvement supplies executed parent evidence yet.
+
+
+Static same-reviewer check05 resource verdict **HOLD; no physical diagnostic
+release**, exact hashes unchanged during review. Accepted statically: seven-owner
+names, strict N scope, complete predecessor keysets/presence and bit-exact joins,
+and actual water endpoint reconstruction (native fold order still unexecuted).
+Five targeted defects remain: generic constructor rejects the new terminal class;
+terminal binding omits layer/parcel/source/basis/store/disposition identity;
+generic no-N early return now misses the old BGC-owned water rejection; zero
+GroundSurface recognition lacks exact key shape and request/auth/use bijection;
+and intermediate Provider mappings erase typed ResourceDebit/Flux/OwnerCandidate
+causes. The sole writer is released for these concrete fixes, required negative
+controls and pending direct temperature/parent-finalization joins. No scientific
+or runtime milestone is inferred from compilation or static progress.
+
+
+Ran: [adapter check06](artifacts/parent-execution-adapter-check-06.json)
+**PASS**,18.131749s, source
+`c7547265680ba38e392530695e47acccc383ec5e5f656d7bf0183fab24707427`,
+with unchanged source/base/pins. It compiles the M1-specific constructor and
+stronger native receipt checks;53 compiler warnings remain. No tests ran.
+
+The next implementation cut binds actual native receipt proof into M1 flux
+identity and the consuming parent event, joins all30 support/resource records,
+and folds accepted material once. Root catches and returns two concrete
+pre-run material errors: source proposal uniqueness is scoped by support
+transaction, and parent material lineage must use the next logical M1 revision,
+not a truncated coupled-clock digest. Existing canonical V11 fold semantics
+remain the reference. Direct six-soil and generic V11 regression controls are
+still pending; parent/runtime acceptance remains HOLD.
+
+
+Ran: [test executable build01](artifacts/parent-execution-body-build-01.json)
+**PASS**,81.203151s, source
+`aebe9f1f5b810ceb86d48746be0281dd9510cc3f93acaf17ebf8bf3404b5466e`,
+760 entries,1501 inventoried tests. Built binary SHA-256
+`84f0458730bce4213b391e240d98d1bc4dad3a2a1401af8ab5c502f91969cb61`;
+source/base/pins unchanged. Prior provider04 executable086205… was copied before
+replacement to `/tmp/openwepp-cold-canopy-m1-provider04-retained` with verified
+identical bytes. Build is not test execution.
+
+Same correctness check07 review permits **one bounded first-support diagnostic**
+after the proof computation moves into actual stage and clean binary custody.
+All30 remains HOLD: ordered debit/flux/transition/complete-candidate identities
+are not bound into the durable parent; native proof needs independent recompute;
+material fold needs BGC-chain reconciliation; late-owning routing, ground-owner/
+reason checks, typed errors and generic no-BGC regression remain. The new exact
+ordinal0 test supplies a direct BGC-lineage witness and raw observations; it does
+not complete a parent. QA verifies all760 source entries, frozen inputs and this
+one-ordinal source scope, then checks the completed binary/run manifests.
+
+Preflight selection guard catches that historical `test(m1_provider_)` now
+matches the new physical parent module as well as the eight provider controls.
+No command launches from that rejected selection. The prospective nonphysical
+provider run now names exactly the same eight retained controls; original60 and
+first-support diagnostics each use their exact single test name. All30/full
+obligations are preserved. This prevents accidental unreviewed physical execution
+and incorrect nonphysical classification; it does not narrow required coverage.
+
+
+Ran on aebe9f / binary84f045: [provider controls01](artifacts/parent-execution-provider-run-01.json)
+**8/8 PASS**,78.596497s, both frozen4320-record projections included;
+[original6001](artifacts/parent-execution-original60-run-01.json) **1/1 PASS**,
+1.570868s. All source/binary/base/input pins remain unchanged during both runs.
+[First integrated support01](artifacts/parent-execution-first-support-run-01.json)
+**FAIL**,1.069651s, ordinal0 attempted with **zero accepted supports/parents**.
+Actual native refusal is SurfaceLiquid E002 at Authorization, production-hydrology,
+`unified transaction or beginning snapshot identity`; no native rejected candidate
+is returned. High support transaction170141183460469231731687303715884105728
+joins beginning hash24ceb675… versus attempted6a4d9eb4…. This is an owner-context
+identity failure, not a demonstrated numerical obstruction. Raw failure remains.
+
+Writer traces bootstrap hydrology transaction41 versus high support transaction.
+Corrected local projection uses the actual current frame and the exact support
+transaction before constructing its unified snapshot, receipt and native request.
+[Build02](artifacts/parent-execution-body-build-02.json) **PASS**,13.812144s,
+source `cf286ad5640784c4efd182d7574cba819315768fff74f2e9f61c0dff4e62b42f`,
+binary `b2f4c44c5dac5dc0c829a9febb198a0204e2654c05cfcd8d1eaa53883e4026b3`.
+Same correctness reviewer accepts this exact ordinal0 correction: no physical
+state/counter reset and all native guards retained. It releases **one ordinal0
+rerun only** after QA custody. The binary is retained at
+`/tmp/openwepp-cold-canopy-m1-first02-retained`.
+
+A distinct continuation blocker remains: staging support0 already gives the
+adapter support1's transaction, so unconditional child reframing would reject
+the identical transaction. Before multiple supports, authenticate and reuse an
+already-current adapter only when its transaction/frame exactly match; retain
+the distinct-child guard for actual predecessor reframing. All prior parent,
+material/resource proof, direct-control and broader qualification HOLDs remain.
+
+
+Internal reassessment **CONTINUE**, 04:55 UTC: the two integrated ordinal-zero
+attempts have reached successive concrete implementation guards, not a scientific
+refusal. Run01 rejected stale native hydrology transaction identity. The corrected
+build02 source `cf286ad5640784c4efd182d7574cba819315768fff74f2e9f61c0dff4e62b42f`
+built successfully in 13.812144 seconds; its binary
+`b2f4c44c5dac5dc0c829a9febb198a0204e2654c05cfcd8d1eaa53883e4026b3`
+is retained at `/tmp/openwepp-cold-canopy-m1-first02-retained`.
+Same correctness reviewer cleared only ordinal zero after verifying the native
+transaction correction. Same QA verified all 760 source entries, 623 selected pins,
+inventory, binary, and run selection. Adjacent-support transaction reuse still
+needed correction; this was not an all-parent release.
+
+Ran: [first-support run02](artifacts/parent-execution-first-support-run-02.json)
+exited100 after15.516675 seconds with
+`Routing(MalformedSerialization("number out of range"))`; all source, binary,
+base and selected pins stayed unchanged. Zero accepted supports or parents.
+Root traced the typed failure to LSE state canonical hashing through
+`serde_json::to_value`, which cannot represent the high-bit support transaction.
+A proposed diagnostic-print-only fix would not address this failure and was
+rejected before any rerun. The sole writer now corrects the private canonical
+serialization without changing schema, namespace or canonical low-ID bytes,
+with explicit byte-equivalence and high-ID roundtrip regressions required.
+No numerical retuning, fixture change, or physical rerun is authorized by this
+reassessment. Remaining time stays within the original fixed allowance.
+
+
+Ran: [build03](artifacts/parent-execution-body-build-03.json) passes the LSE
+and orchestrator unit-test-inclusive inventories in43.835974 seconds, frozen
+760-entry source `0a5f0c627cd6a9b08825d54f9ccff89ddb9ae3ea44ec2c1eaa68f7df1c36e719`.
+[Serialization run03](artifacts/parent-execution-serialization-run-03.json)
+passes2/2 exact unit tests in12.462518 seconds: old low-ID canonical JSON bytes
+and digest equal the typed projection, and a high-bit transaction roundtrips
+through typed JSON and hashes. Source/base/pins/links and tested binary stay
+unchanged. This is nonphysical regression evidence, not accepted support work.
+The corrected orchestrator binary is
+`2a9c5c163fc2892097bf8fc596d5ddf7f6b7d91ad0bd9d421bba867070d7d0ab`,
+retained at `/tmp/openwepp-cold-canopy-m1-first-support03-retained`;
+LSE regression binary is
+`2b55f1634cc2d0e70f49fc6946830e4c91fe1af650f1841955f7150a14dcfafa`.
+The source adds a private sorted canonical LSE state projection with unchanged
+public state fields, plus exact native same-transaction/current-frame reuse.
+Independent affected correctness and subsequent QA remain required before the
+next ordinal-zero launch. Prior source-specific provider/original60 evidence
+has not transferred to this source.
+
+
+Independent correctness `/root/provider_correctness`, same conversation,
+**no blocker for ordinal-zero diagnostic only** on0a5f0c62. Reviewer independently
+confirms actual high-u128 Value failure path, exact sorted private hashing fields,
+unchanged persisted schema and passing byte/roundtrip tests. The native reuse
+branch admits only equal transaction plus identical current beginning frame;
+different frames fail, and distinct transactions keep the canonical projection
+guard. Ordinal zero does not exercise same-transaction reuse: actual adjacent
+support and negative mismatched-frame coverage remain required. Reviewer releases
+serialized QA and then only the prepared first-support run03. All earlier
+parent/custody/balance findings and full acceptance remain HOLD.
+
+
+Independent QA `/root/provider_qa` verifies build03's760 entries and patch,
+serialization2/2 evidence, and all623 selected first-support pins; **custody PASS
+for ordinal zero only**. Ran: [first-support run03](artifacts/parent-execution-first-support-run-03.json)
+exits100 after15.618907 seconds with `Resource(ResourceCustody)`. All source,
+base, binary, pins and links remain unchanged. This is downstream of the corrected
+serialization site; zero supports/parents are accepted. The exact resource cause
+is erased by existing intermediate Provider-to-ResourceCustody mappings, already
+an independent correctness finding. Sole writer is released to retain exact typed
+V11 errors and discriminating local guards, then correct concrete custody joins
+under existing authority; no tolerance, solver, fixture or safety relaxation.
+Same correctness reviewer traces this frozen failed cut while writer works.
+
+
+Same correctness reviewer, frozen03 trace: **HOLD**. No executed operand line
+localizes run03. Likely guards include local bit-exact water reconstruction,
+positive ingress on a layer without a debit key, terminal lineage/amount joins,
+zero-ground/strict-N identity and canonical transition/core checks. Root rejects
+a proposed category-only diagnostic cut before building because local water and
+predecessor failures would still alias canonical ResourceCustody. The corrected
+private diagnostic retains local stage plus original V11 cause, and a distinct
+water closure variant retains keyed beginning/ending/debit/ingress binary64 bits.
+No threshold is relaxed. Generic no-N lawful success and BGC-owned-water refusal
+are directly tested; remaining resource poison controls remain required.
+
+Ran: [build04](artifacts/parent-execution-body-build-04.json) **PASS**47.703542s,
+760-entry source `2b6e1d4348bc53d307315c484751f0576c871a3c70d9b975a4de65880db3dfac`.
+[Generic nitrogen regressions04](artifacts/parent-execution-generic-nitrogen-run-04.json)
+**2/2 PASS**,0.668521s, source/base/pins/links/binary unchanged. This cut also
+recomputes actual native receipt proof, authenticates actual LSE requesting owner
+for zero GroundSurface rows, and preserves native request/auth/use row identity.
+The prepared first-support binary is
+`6ef1eb6e3351e31d83b84696f2c81d2dafd2397f7878f713cb6ab62075948c88`,
+retained at `/tmp/openwepp-cold-canopy-m1-first-support04-retained`.
+Affected correctness and serialized QA are pending before a further physical run.
+No source-specific prior provider/original60 result is transferred.
+
+
+Same correctness reviewer on2b6e1d: **HOLD ordinal-zero launch**. Accepted:
+actual native proof recomputation; exact ground-row bijection/LSE owner/ZeroSupply;
+water operand capture; restored generic no-N guard and passing regressions.
+However ResourceConstruction covered only two predecessor guards. Missing water
+or BGC inventory, unmatched flux keys, missing local receipt IDs and nitrogen
+scope still aliased canonical ResourceCustody. No physical run04 launched.
+Internal reassessment **CONTINUE with narrowed deliverable**,05:13 UTC: root
+requires a complete local-error mapping audit before another build, preserving
+all predicates and canonical causes. Every pre-canonical refusal must identify
+its local stage; the outer Provider blanket-collapse must become unnecessary.
+Strengthen lawful-no-N regression to a hydrology-owned water debit. These are
+concrete in-scope diagnostic fixes with no scientific obstruction or new budget.
+
+
+Internal reassessment **REASSIGN**,05:18 UTC: after repeated incomplete local
+mapping, the writer introduced a compatibility constructor that still assigned
+all local errors the same `m1-local-custody-guard` stage. Root stopped that writer
+before build/run and retained the uncompiled partial760-entry source
+`237e4fca138cb5761f38c274289bd66ee4495101ac1089f37cbae3b2c41d7354`
+in [reassignment recovery](artifacts/parent-execution-diagnostic-reassignment-source.json)
+and its observer-relative patch. Sole ownership moves from `/root/parent_completion`
+to functioning Terra `/root/parent_writer`, for only the complete per-guard
+mechanical conversion and strengthened lawful-no-N test. No predicate changes.
+A runtime thread-limit response initially prevented replacement; completing the
+interrupted old role freed the slot, and the existing writer conversation resumed.
+Required independent reviewers remain separate and reusable. No physical rerun
+or new allowance occurred during recovery.
+
+
+Ran: [build05](artifacts/parent-execution-body-build-05.json) **PASS**29.323478s,
+frozen760-entry source `7c085f0ee9181ec855ce165241f8f7b829d6677ef0ae51fc29b1c533761b79b1`.
+[Strengthened generic nitrogen run05](artifacts/parent-execution-generic-nitrogen-run-05.json)
+**2/2 PASS**,0.618022s, all source/base/pins/links/binary unchanged. The lawful
+case now supplies a syntactically valid hydrology-owned water debit; negative
+case changes owner to BGC and requires ResourceDebit. Root prebuild audit and
+same independent correctness review confirm no Provider/anonymous local Resource
+refusals remain inside the custody adapter; local semantic stages and WaterClosure
+are separate from seven canonical V11 error mappings. The earlier compatibility
+shortcut is deleted. Same correctness reviewer **releases one ordinal-zero
+diagnostic after QA custody only**. Substantive water/terminal/parent findings
+and all30 remain HOLD. Prepared binary
+`b61714867eac54754867e8663206423e2452fbd167560bc7c800825bb97e24e3`
+is retained at `/tmp/openwepp-cold-canopy-m1-first-support05-retained`.
+
+
+Same QA verifies760 source entries, patch, exact binary/retained copy and623
+selected pins for run05; **custody PASS for one diagnostic**. Ran:
+[first-support run05](artifacts/parent-execution-first-support-run-05.json)
+exits100 in15.713621s with local `WaterClosure` on `ofe-1/soil-1`; all integrity
+checks remain unchanged. Zero supports or parents accepted.
+[Independent binary64 reconstruction](artifacts/parent-execution-water-closure-analysis-05.json)
+decodes actual beginning20kg/m2, actual ending19.999999974612358kg/m2, two
+real debits1.2638933946505808e-8 and1.2748710870434579e-8kg/m2, and no ingress.
+The local kg-space subtraction ends one ULP lower (difference3.552713678800501e-15).
+Canonical native code instead converts aggregate debit to metres, updates actual
+layer depth, then extracts mass inventory. An inverted-depth arithmetic example
+matches the actual ending but is explicitly not an actual raw-beginning oracle.
+Sole writer now traces/retains actual beginning depth and native operation order,
+with wrong-ending and incident regressions, to correct only the adapter validator.
+No tolerance/physics change or balancing remainder is authorized. Same correctness
+reviewer assesses authority against this frozen failed result. This is not yet a
+source-conforming scientific refusal or accepted physical balance.
+
+
+Same independent correctness reviewer confirms the native-order correction is
+in scope: authenticated raw layer depth, native source/key grouping and canonical
+sum, existing whole-layer branch and native layer-debit primitive, exact post-root
+and staged-ending joins. No tolerance or second physical candidate is allowed.
+Root rejects an intermediate copied subtraction and an assert-ne-only poison
+before build. The next cut uses the actual staged layer clone, native primitive,
+explicit transition/fact joins, and incident/ending/whole-layer/duplicate-use/
+over-supply controls, preserving the native aggregate kg bound before conversion.
+
+Ran: [build06](artifacts/parent-execution-body-build-06.json) **FAIL**,5.384165s,
+source `26a85404a61a2a37e5b63141fc4a80056fa1d87f5d1e8767abb582435ecc654c`,
+with source/base/pins unchanged. Sole error is a Rust lifetime mismatch in a
+closure returning a borrowed layer fact; no tests executed. Internal reassessment
+**CONTINUE**,05:41 UTC: the physical failure has been localized to noncanonical
+validator arithmetic and the next obstacle is mechanical borrowing. Sole writer
+is released only for the lifetime fix, keeping all physical predicates unchanged;
+affected review/tests and fixed full-regression bound remain binding.
+
+
+Ran: [build07](artifacts/parent-execution-body-build-07.json) **PASS**,46.984729s,
+source `7200eb0a282237599d466971a63cc1ddd865976d9ca8abbd9a3dc7f378f9321c`.
+Same correctness reviewer verifies only immutable selected-fact cloning differs
+from the substantive reviewed water cut; native predicates/primitives remain
+unchanged. [Native-water controls07](artifacts/parent-execution-native-water-run-07.json)
+**5/5 PASS**,1.670569s, conservatively physical with180-second bound. Controls
+cover the run05 incident, exact whole-layer depletion, duplicate keyed use,
+aggregate over-supply and actual custody predicate with a one-ULP poisoned ending.
+Source/base/binary/pins/links remain unchanged. There is no tolerance or second
+physical candidate. Prepared first-support binary
+`ed0ac6199368f752e559e8fab19a089de567e161e358640c7acb1ce1bc3b3a13`
+is retained at `/tmp/openwepp-cold-canopy-m1-first-support07-retained`.
+Correctness conditionally releases precisely this next ordinal-zero diagnostic
+once QA custody passes. Run06 never launched; its build failure remains retained.
+No all30, positive-ingress arithmetic, resource or parent acceptance is claimed.
+
+
+Same QA verifies all760 source entries,623 selected pins, frozen patch and
+active/retained binary; custody passes for first-support07. Ran:
+[first-support07](artifacts/parent-execution-first-support-run-07.json) **PASS1/1**,
+10.399298s (test0.53s), source/base/binary/pins/links unchanged. **One real support
+`[0,60)` is accepted; zero complete parents.** Actual staged BGC predecessor40
+is preserved; printed raw physical BGC candidate carries its distinct high support
+transaction, correctly separate from staged lineage. Same correctness reviewer
+limits this success to the diagnosed ordinal-zero, zero-ingress path.
+
+Independent QA `/root/provider_qa` reconstructs actual printed primitive operands
+in [balance07](artifacts/parent-execution-first-support-independent-balance-07.json),
+bound to retained raw stderr, source and binary. Both indexed M/H reservoirs close
+from raw M/H/I/hI/E/Q/D/T, without using producer residuals; enthalpy differences
+are at most1.3935e-12J/m2. Grouped mineral-N endpoint loss3.22636806437e-5kgN/m2
+reconciles to actual species/layer finalized uses within1.310814e-16kgN/m2.
+This is narrow closure evidence, not whole-system acceptance. Native water
+begin/end endpoints and material proposal/finalization rows are absent from this
+printed line, so whole-system water/material closure remains unestablished.
+Native water use is not equated to reservoir vapor loss.
+
+Sole writer proceeds to actual adjacent/direct-six-soil discrimination and remaining
+bounded parent joins: retain complete ordered resource custody, bind it into the
+durable parent event, reconcile already-applied material/BGC chronology through
+the established staged-parent lineage representation, and route genuine late-owning
+errors by their returned source. Original controls remain binding; no second
+physical map, fixture/tolerance/schema change or main Rust adoption is authorized.
+The exact900-second full-command window still must start by06:11UTC.
+
+
+### 06:01 UTC — adjacent control build and retained qualification window
+
+Ran: `parent-execution-body-build-08` failed with exit101 after19.839975777082145seconds on frozen source`2bc264725d0b920e29252bd837ebe89c6e0228deb14db7b9a2c97111dad369ba`: four duplicate actual-custody accessors and test diagnostic JSON requesting unsupported `MaterialReceipt: Serialize`. Source/base remained unchanged. The sole writer is correcting only these mechanical errors, preserving predicates and public/persisted schemas. One actual support remains accepted on the separately recorded build07; zero complete parents are accepted. The existing required exact900-second Critical full run remains mandatory with acceptance HOLD findings disclosed; latest launch06:11UTC preserves the1800-second reserve. Correctness explicitly distinguishes acceptance/release HOLD from permission to gather the required full-regression evidence. No full run has yet occurred.
+
+### Correctness assessment of the retained body and evidence-run release
+
+Static: `/root/provider_correctness` (Sol, independent of authorship), reviewed frozen `2bc264725d0b920e29252bd837ebe89c6e0228deb14db7b9a2c97111dad369ba` and build08 errors. Findings returned for attributable incorporation:
+
+> HIGH acceptance HOLD remains: receiver.rs 1244–91 joins/hash-binds ordered resource bundles and material-transfer bytes, but it never reconciles each retained evidence.bgc_candidate.receipts()/ending with its m1_candidate.material_proposals nor the canonical parent transfer fold. canonical_parent_material_transfers relabels accepted proposals (775–801); complete_parent then merely hashes them and overwrites final BGC last_transaction_id (1284–1305). The all30 control proves per-support receiver delta from proposals but never receipt bijection nor final parent receipt/material fold. Needed: exact support receipt↔proposal identity/amount/bijection and accepted-order parent canonical transfers ↔ accumulated BGC physical ending, with poison controls.
+>
+> Otherwise the reviewed delta is evidence/custody handling, not new physics: support custody is computed on cloned next, captured before caller install (provider 1337–1512), ordered bundles are slab-indexed and event-context-bound, and LateOwningReceiver routing is restricted by is_genuine_late... to actual LateReceiverFailure + retained candidate (receiver 1743–47). Adjacent 0/1 test validly checks keyed six-soil current-stage reuse, but its BGC/material output is diagnostic only. After mechanical build pass + exact source/binary/manifest custody QA: RELEASE one adjacent test; RELEASE existing all30 and late tests as evidence-gathering; RELEASE mandated exact allowlisted 900s full-workspace run before 06:11. None of those releases waive material/BGC acceptance HOLD or other stated positive-ingress/parent holds; pass is evidence, failure/timeout is recorded as such.
+
+Reviewer cites SC-VEGETATION-001 V11 accepted-order transfers and independent segment/cumulative receiving-owner C/N/dry-matter reconstruction, with material ledger validation before atomic parent installation (approximately2757–2772). Hash binding does not replace reconciliation. Build09 contains only removal of duplicate accessors and local Debug rendering of non-Serialize material receipts; no schema or predicate expansion. Full/current quality and actual parent outcomes remain pending.
+
+### Build09 and exact-launch custody
+
+Ran: build09 passed test-inclusive `nextest list` after64.35476046567783seconds on frozen source`423dbab1587358a573550dc16e66bb565db7782859c06fa9310eb5801c568b06`. Inventory/build is not test execution. Orchestrator binary`dd9fc079424c6ea6174af6f4e454e1c90de7a731259ade932b9376f286b417fc` is retained at`/tmp/openwepp-cold-canopy-m1-body09-retained`. The two corrected files remove duplicate accessors and use local receipt Debug output; no receiver/predicate or schema change.
+
+Static: `/root/provider_qa` (Terra, independent) revalidated all760 source entries and all619 immutable build pins, then all623 pins for each exact adjacent1, parent2 and required-full900 manifest. Active/retained binary copies match. QA returned: “QA approves custody for these three declared launches. Their scopes explicitly retain material/BGC acceptance HOLD; no source mutation or test run was performed by this reviewer.” Build08's errors are resolved by the successful build; same-correctness-reviewer verification remains separately recorded when returned. Source is frozen through the selected runs. The full manifest is exact allowlisted physical900; ordinary tests remain physical180.
+
+### Actual adjacent failure and required full launch
+
+Ran: `parent-execution-adjacent-run-09` exited100 after10.44649100676179seconds, with source/base/pins/links unchanged. First actual support accepted; second actual support (ordinal1, the fixed rain transition at60seconds) returned typed `Solver(Numerical(...BacktrackingLimit...))`:15iterations,116backtracks. Full ordered raw/scaled residuals are retained in stderr; no tolerance, forcing, seed, solver or fixture was changed. Because the failure precedes the diagnostic print and soil comparison, it establishes neither successful adjacent current-state reuse nor adjacent raw balance closure. Correctness is auditing source conformance; this result alone is not a proven scientific impossibility.
+
+Static: same `/root/provider_correctness` closed both build08 mechanical findings on423dbab; prior acceptance holds remain. `/root/provider_qa` validated the adjacent receipt, unchanged source/binary/custody and typed failure, and agreed that no changed-soil/balance claim follows. The separately prepared parent2 manifest is NOT RUN, avoiding an unexplained repeat of the same scientific failure. This does not waive the required full-workspace run, which was launched on the frozen cut through its exact900-second allowlist before06:11UTC. It is still running; its final result will govern the current regression status.
+
+Ran: `parent-execution-format-09` workspace `cargo fmt --all -- --check` passed in4.791830311063677seconds on423dbab with no source/base change.
+
+### Independent classification of ordinal1 refusal and source recovery
+
+Static: `/root/provider_correctness` reviewed the failed support and frozen423dbab projection. Its attributable verdict is **“source-conforming numerical refusal; projection attribution remains unresolved.”** The canonical seed uses forcing air temperature/humidity, current staged M/H, zero initial drainage, represented snow temperature and six current soil temperatures. M1 has no carried numerical warm-start interface; ground liquid/enthalpy/LSE warm fields do not enter this residual envelope. This gives no authority for changing seed, tolerances, backtracking or solver logic.
+
+The failed-attempt evidence does not independently retain ordinal0 ending M/H→ordinal1 M/H by occupancy, six keyed staged thermal→attempted soil values, all five forcing bits including rain-rate×60 and source liquid enthalpy, or byte-identical caller rollback at refusal. These observations sit after successful return in the adjacent control. Thus the typed refusal is real and retained, but not a confirmed scientific impossibility and not proof of a warm-start defect. Same reviewer advises against repeating parent2 solely to reproduce the refusal. A future useful focused attempt must first retain those named failed-attempt discriminators with unchanged solver/seed/tolerances. The mandatory full run is still valid negative-regression evidence.
+
+Ran: [recovery09](artifacts/parent-execution-recovery-09.json) reconstructed the frozen tree from the previously published/recovered observer base and patch`6b49d4d5741b5bf40a90ca5a859728306cd3522f2c693ef33c2a0ff699a5fa81`; all760 entries match`423dbab1587358a573550dc16e66bb565db7782859c06fa9310eb5801c568b06`, and live source stayed unchanged. Recovery path is`/home/roger/openwepp-experiments/cold-canopy-m1-parent-execution09-reconstruction-20260923`. This verifies source-byte recovery, not runtime acceptance. The adopted-start→frozen09 diff has exactly seven Rust files: provider, provider controls, parent controls, receiver, LSE state hashing, vegetation V11 and V11 tests; main Rust remains unchanged.
+
+### Full-workspace execution reached actual parent controls
+
+Ran, preliminary while the full command remains active: full09 completed compilation and selected4415 tests across247 binaries; the frozen full profile skipped111 tests and5 binaries (including28 tests and5 binaries by its existing default filter). The mandatory full workflow has executed the adjacent, all-thirty and late-rejection controls on423dbab. Adjacent and late controls fail at ordinal1 with the same typed BacktrackingLimit; late work never reaches the positive owning seam. All-thirty fails after accepted support0 at parent_controls.rs327: actual native ending bits4626322717209196030 versus duplicated kilogram arithmetic4626322717209196029. No complete parent or positive late rejection passes.
+
+Static: same `/root/provider_correctness` classifies the all-thirty failure as a **stale test-oracle defect**, not a new physical or authority defect. That assertion demands exact`beginning_kg - debit_kg + flux_kg`, while the native producer follows canonical keyed kg sum→metres→`apply_direct_finalized_layer_liquid_debit`→kg owner-fact extraction. Production custody replays and checks exact raw native depth/fact bits and does not tolerate the naive kilogram result. The test duplicates an unauthorized arithmetic map. Required correction is an independent reconstruction from actual raw producer operands and the canonical native primitive, retaining all receipt/link/candidate checks. No production, seed, solver or tolerance change is indicated. The source remains frozen and this test failure is not waived or reclassified as PASS.
+
+Other full regression failures are being retained without an unsupported inherited/new classification; final counts and command disposition remain pending. QA independently revalidated final recovery760/760, the protected endpoint hash31763cfc4e7ba4f47e555df7838f7db71ab7f64d5979969f3ced706a6db9829e, exactly seven changed detached Rust files from adopted start, and format09 PASS. Main tracked changes remain only package narrative, active ledger and recorder deadline; no main Rust edit.
+
+### Nested generated-output custody finding during full09
+
+Ran: strict Clippy09 was attempted after full09 finished compilation, but the recorder refused **before subprocess launch** with`AssertionError: selected source tree mismatch`. This is NOT a Clippy result. [Drift receipt](artifacts/parent-execution-source-drift-during-full-09.json) records exactly four added files under`crates/openwepp-runner/target/openwepp_snowbench_cli_tests/jennings_minimal/`: two generated CSV fixtures and JSON/Markdown reports. No existing source entry differs. The unchanged runner test`jennings_phase_run_accepts_minimal_valid_fixture` explicitly creates those paths at openwepp-snowbench.rs608–639. The existing snapshot excludes top-level generated output but includes these nested target files.
+
+Static: `/root/provider_qa` independently matched all four live hashes to the receipt, found no Rust/protected fixture drift, and accepted containment. Full09 continues unaltered and must retain its actual`source_unchanged=false` result. After its final receipt, root will preserve the four raw outputs and hash mapping, relocate only those newly generated files, and verify all760 original entries before strict Clippy. No snapshot-filter or recorder semantic change is authorized or made. This is a contained generated-output boundary finding, not uncontained source corruption or a reason to erase regression evidence.
+
+### Final-source regression and quality results
+
+Ran: [required full09](artifacts/parent-execution-required-full-09.json) executed the exact authorized900-second physical command and timed out with exit124 after900.0042026578449seconds (06:05:18.374323→06:20:18.594570UTC). [Current retained JUnit](artifacts/parent-execution-required-full-09.junit.xml) reports4415 selected tests:4113 PASS and302 failure entries, including one SIGTERM abort of`openwepp-runner::hillslope::tests::accepted_stage3_real_runner_routes_lane_d_and_publishes_summary`. This is **FAIL/TIMEOUT**, not a passing full gate. Existing full-profile exclusions are unchanged. The recorder confirms base, binary, pinned inputs and support links unchanged; source flag is false for the four independently attributed generated outputs, preserved without hiding that result.
+
+Ran: [output preservation09](artifacts/parent-execution-generated-output-preservation-09.json) copied and hash-verified each of the four new nested-target files into package artifacts, then relocated only those originals. All760 source entries again match423dbab exactly. No Rust, protected fixture or recorder filter changed. Strict [Clippy09](artifacts/parent-execution-clippy-09.json) then ran on restored423dbab, failing exit101 after21.67905117291957seconds: vegetation`validate_resource_custody_core` atv11.rs2149 has137lines against100 (`-D warnings`). This is an unwaived touched-function quality failure; the command stops before establishing clean downstream lint. Build09 and format09 pass only their declared scopes.
+
+[Parsed current full results](artifacts/parent-execution-required-full-results-09.json) confirm provider8/8, original60 and the first-support/BGC-lineage control PASS on the final Rust source. The prepared conditional provider/original60 focused rerun is NOT RUN because its prerequisite (missing selected results from full) is false. Parent2 was not separately run, but mandatory full executed both controls: all-thirty FAIL after support0 on its stale arithmetic oracle, late FAIL at ordinal1 solver refusal. Adjacent FAIL likewise. No accepted ordinal1, complete parent or positive late event is established.
+
+Selected required authority-suite results from that same JUnit are: vegetation boundary22PASS/7FAIL (29); V10 nighttime3PASS (3); woody V11 7PASS/1FAIL (8); LSE balance7PASS/19FAIL (26); surface-liquid custody15PASS/7FAIL (22); direct hydrology restart7PASS (7). Required A1 is therefore **UNMET**; the full result does not waive failing invariants. Unchanged canonical A0/BEI/unit authority document checks retain only their previously recorded admission scope; no new external A3 suite is triggered, while required M1 constitutive/source-bound qualification remains unclosed. Explicit feature-specific qualification and other unexecuted requirements are not inferred from these counts. No unrelated regression is labelled inherited without evidence.
+
+Implementation source is retained at423dbab. Further source changes cannot receive the required new full900 bound before the fixed06:26 implementation cutoff; final review/preservation proceeds with every failure visible, no new allowance and no silent gate deferral.
+
+### Additional validation side effect and terminal correctness
+
+Ran: final main-worktree audit found a one-line change in the previously clean tracked helper`docs/work-packages/20260817-direct-hydrology-persisted-restart-authority-001/tools/restart-authority-reference/Cargo.lock`: LSE dependencies gained`openwepp-vegetation`. Its mtime is06:11:17UTC during full09. The unchanged`complete_generated_v1_schema_matches_frozen_authority_schema` test invokes`cargo run --offline` without`--locked` at that helper manifest through the linked docs directory. This helper lock lies outside the declared run pins. [Preservation09](artifacts/parent-execution-helper-lock-preservation-09.json) retains before/after bytes and exact diff, then restores only that task-produced delta to HEAD bytes`1a672660501cd806fdb4e21572624d18ccd367aea84342ffb5d9aefc5d541e83`. Main Rust remains unchanged. The earlier broad “no protected-input change” claim is qualified: all **declared** pins stayed unchanged, but this unpinned tracked helper lock did change and was separately preserved/restored. No test or recorder was changed to hide it.
+
+Static + review of Ran evidence: `/root/provider_correctness` gives terminal **HOLD** on423dbab, with no correctness approval. High blockers are missing exact segment/cumulative material/BGC reconciliation and fresh semantic validation after final lineage change; failed Critical full/A1; ordinal1 numerical refusal with incomplete failed-attempt projection/rollback attribution. The all-thirty stale kg-fold oracle and directly introduced137-line custody-validator lint failure remain unwaived. The reviewer confirms canonical native water custody remains correct, no solver/seed/tolerance change is indicated, and build/format/first-support/provider8/original60 passes are only partial evidence. Corrected final full accounting is900.0042026578449seconds, exit124, and302failure entries **including** one SIGTERM. Required physical cycles, restart splits, complete balances, cost/scaling/warm comparisons and parent acceptance are not supplied by this regression run.
+
+### Terminal disposition at the fixed implementation boundary
+
+**HOLD.** Actual chronological progression reaches ordinal0, `[0,60)`; ordinal1 is not accepted, no complete seven-owner parent is finalized/installed, and no positive late-owning rejection is demonstrated. The required full run did execute the all-thirty and late controls, so their status is FAIL rather than NOT RUN. All original acceptance axes remain binding. No main Rust or production selection is adopted.
+
+The three targeted corrections are partial: staged BGC support evidence preserves the parent predecessor40 and the first-support lineage control passes, but final material/BGC reconciliation and fresh validation are still missing; all six current staged soil temperatures are projected in source, but the adjacent changed-state discriminator never reaches its assertions; native support forcing and actual receiver/resource custody are wired and support0 executes, while complete consumed CO2/height/exposure/source-enthalpy/destination correspondence and positive receiving evidence remain unclosed. Real private producer-owned outcome/resource/transition/replay interfaces now compile and support0 yields an accepted slab; this is not parent acceptance. The native water one-ULP issue was corrected by exact canonical raw-depth arithmetic, with5/5 discriminating controls, without new physics or tolerance. The all-thirty test still duplicates the superseded kg-fold oracle and must be corrected.
+
+Independent [balance07](artifacts/parent-execution-first-support-independent-balance-07.json) reconstructs support0 reservoir M/H and mineral-N from raw operands on its separately bound7200eb0a source. It is not whole-system/native-water/material closure or final-source adjacent/parent proof. Both72-hour **physical** cycles, fresh-process ice/mixed/release splits, release support/parent cost, scaling, memory/retention and six warm pairs remain NOT RUN/UNMET. Passing4320-record provider projections do not supply those physical campaigns, and there is no legitimate completed OFE-day cost denominator. This is functional HOLD, not a cost-only PERFORMANCE_HOLD.
+
+Build09/format09 PASS; first-support/provider8/original60 PASS in the current full JUnit. Full09 FAIL/TIMEOUT900; required A1 FAIL; strict changed-code lint FAIL. Prior unchanged canonical A0 document admission and narrow deny03 reuse do not qualify this runtime. Remaining required feature-specific and constitutive/restart/closure evidence remains unmet. No successful numerical root, conditional launch manifest, hash binding, or restored source is substituted for failed workflow/authority requirements.
+
+Both independent reviewers retain **HOLD**. Correctness requires material/BGC receipt and cumulative reconciliation, failed-attempt input/rollback attribution, stale water-oracle correction and introduced-lint correction; no solver/seed/tolerance retuning is authorized by the observed refusal. QA independently validates exact source/recovery and recorded partial results, but confirms full/A1/runtime/quality failure and limited balance scope. QA explicitly finds **no evidence-integrity or truthfulness blocker to scoped publication as HOLD/failed-validation evidence**, provided publication makes no runtime adoption, waiver, or passing full/A1/parent-completion claim.
+
+The final recoverable Rust tree is760entries,`423dbab1587358a573550dc16e66bb565db7782859c06fa9310eb5801c568b06`, observer-relative patch`6b49d4d5741b5bf40a90ca5a859728306cd3522f2c693ef33c2a0ff699a5fa81`; build09 selected binary`dd9fc079424c6ea6174af6f4e454e1c90de7a731259ade932b9376f286b417fc`. [Build support](artifacts/parent-execution-body-build-support-09.json), [full support](artifacts/parent-execution-required-full-support-09.json), source snapshots and recovery retain exact input/base/environment identities. Full's four generated nested-target files and unpinned helper-lock delta are preserved, honestly classified, and separately restored; unrelated initial dirty/untracked work remains untouched.
+
+No further implementation or physical launch is made after the fixed boundary. Review, evidence preservation and authorized scoped publication use the protected1800-second reserve; concurrent elapsed remains charged once with no refunds. [Active ledger](artifacts/provider-parent-active-ledger.json) records the current charge, and the local post-publication receipt will record the final greater charge and remote verification. This bounded stop does not mark M1 complete or establish scientific impossibility: the typed numerical refusal is real, but its failed-attempt projection attribution remains incomplete.
+
 ## Provider implementation and complete-parent execution — adopted 2026-09-22 19:53 UTC
 
 Current disposition: **HOLD at the23:23UTC implementation cutoff**. Provider

@@ -1,0 +1,140 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-hillslope-orchestrator)
+warning: unused import: `DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:109:13
+    |
+109 | use crate::{DirectRunConstructorInputs, vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:132:16
+    |
+132 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0277]: the trait bound `u128: From<openwepp_coupled_time::ParentTransactionId>` is not satisfied
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:987:32
+    |
+987 |             .map_or(0, |clock| u128::from(clock.parent_transaction_id()))
+    |                                ^^^^ the trait `From<openwepp_coupled_time::ParentTransactionId>` is not implemented for `u128`
+    |
+    = help: the following other types implement trait `From<T>`:
+              `u128` implements `From<Ipv6Addr>`
+              `u128` implements `From<bool>`
+              `u128` implements `From<char>`
+              `u128` implements `From<std::ascii::Char>`
+              `u128` implements `From<u16>`
+              `u128` implements `From<u32>`
+              `u128` implements `From<u64>`
+              `u128` implements `From<u8>`
+
+error[E0599]: no method named `occupancy_id` found for tuple `(&std::string::String, &M1OwnerReservoir)` in the current scope
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:1252:28
+     |
+1252 |         .map(|value| value.occupancy_id().to_owned())
+     |                            ^^^^^^^^^^^^ method not found in `(&std::string::String, &M1OwnerReservoir)`
+     |
+help: one of the expressions' fields has a method of the same name
+     |
+1252 |         .map(|value| value.1.occupancy_id().to_owned())
+     |                            ++
+
+error[E0277]: can't compare `&std::collections::BTreeMap<std::string::String, Vec<u8>>` with `std::collections::BTreeMap<std::string::String, Vec<u8>>`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:142:9
+    |
+142 |         assert_eq!(outcome.beginning_owner_bytes(), prior);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no implementation for `&std::collections::BTreeMap<std::string::String, Vec<u8>> == std::collections::BTreeMap<std::string::String, Vec<u8>>`
+    |
+    = help: the trait `PartialEq<std::collections::BTreeMap<std::string::String, Vec<u8>>>` is not implemented for `&std::collections::BTreeMap<std::string::String, Vec<u8>>`
+
+error[E0308]: mismatched types
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:149:13
+    |
+149 |             outcome.ending_owner_bytes()
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `BTreeMap<String, Vec<u8>>`, found `&BTreeMap<String, Vec<u8>>`
+    |
+    = note: expected struct `std::collections::BTreeMap<_, _>`
+            found reference `&std::collections::BTreeMap<_, _>`
+help: consider using clone here
+    |
+149 |             outcome.ending_owner_bytes().clone()
+    |                                         ++++++++
+
+error[E0599]: no method named `mass_kg_m2_tile` found for reference `&M1ReceiverContribution` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:367:44
+    |
+367 |                     .map(|operand| operand.mass_kg_m2_tile())
+    |                                            ^^^^^^^^^^^^^^^ method not found in `&M1ReceiverContribution`
+
+error[E0599]: no method named `last_parent_receipt` found for struct `RealM1ProviderCaller` in the current scope
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:448:23
+    |
+448 |     assert_eq!(caller.last_parent_receipt().accepted_slab_ids(), slab_ids);
+    |                       ^^^^^^^^^^^^^^^^^^^ method not found in `RealM1ProviderCaller`
+    |
+   ::: crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:721:1
+    |
+721 | pub(super) struct RealM1ProviderCaller(super::M1CallerState, Option<M1NativeCapabilityReceipt>);
+    | -------------------------------------- method `last_parent_receipt` not found for this struct
+
+error[E0369]: binary operation `==` cannot be applied to type `Result<(), M1ParentExecutionError>`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_provider_parent_controls.rs:449:5
+    |
+449 | /     assert_eq!(
+450 | |         caller.complete_parent(),
+451 | |         Err(M1ParentExecutionError::NoLiveParent(
+452 | |             CoupledTimeError::ParentNotFinalizable
+453 | |         ))
+454 | |     );
+    | |     ^
+    | |     |
+    | |_____Result<(), M1ParentExecutionError>
+    |       Result<(), M1ParentExecutionError>
+    |
+note: an implementation of `PartialEq` might be missing for `M1ParentExecutionError`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:52:1
+    |
+ 52 | pub(super) enum M1ParentExecutionError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ must implement `PartialEq`
+help: consider annotating `M1ParentExecutionError` with `#[derive(PartialEq)]`
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:52:1
+    |
+ 52 + #[derive(PartialEq)]
+ 53 | pub(super) enum M1ParentExecutionError {
+    |
+
+error[E0382]: borrow of moved value: `record`
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:1198:32
+     |
+1042 |     let record = admitted
+     |         ------ move occurs because `record` has type `ProviderRecord<'_>`, which does not implement the `Copy` trait
+...
+1064 |         caller.prepare_fixed_sequence_support(record, admitted.gsi_bits())?;
+     |                                               ------ value moved here
+...
+1198 |         applied_override_bits: record.override_binary64_bits(),
+     |                                ^^^^^^ value borrowed here after move
+     |
+note: consider changing this parameter type in method `prepare_fixed_sequence_support` to borrow instead if owning the value isn't necessary
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:904:17
+     |
+ 902 |     fn prepare_fixed_sequence_support(
+     |        ------------------------------ in this method
+ 903 |         &self,
+ 904 |         record: ProviderRecord<'_>,
+     |                 ^^^^^^^^^^^^^^^^^^ this parameter takes ownership of the value
+note: if `ProviderRecord<'_>` implemented `Clone`, you could clone the value
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:324:1
+     |
+ 324 | pub(super) struct ProviderRecord<'a>(&'a Record);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ consider implementing `Clone` for this type
+...
+1064 |         caller.prepare_fixed_sequence_support(record, admitted.gsi_bits())?;
+     |                                               ------ you could clone this value
+
+Some errors have detailed explanations: E0277, E0308, E0369, E0382, E0599.
+For more information about an error, try `rustc --explain E0277`.
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 2 warnings
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 8 previous errors; 2 warnings emitted

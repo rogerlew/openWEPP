@@ -1,0 +1,489 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning: unused import: `DirectRunConstructorInputs`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:109:13
+    |
+109 | use crate::{DirectRunConstructorInputs, vegetation_real_hydrology_shadow::RealHydrologyOfeLaneId};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1`
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:132:16
+    |
+132 | pub(crate) use v11_covered::physical_outcome_ledger::TerminalSnowSoilHeatReceiptV1;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:2658:9
+     |
+2658 |     let mut received = M1ReceiverDiagnosticResult {
+     |         ----^^^^^^^^
+     |         |
+     |         help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: trait `M1NativeReplayCapability` is more private than the item `RealM1ProviderCaller::replay_native_capability`
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:1254:5
+     |
+1254 | /     pub(super) fn replay_native_capability<T: M1NativeReplayCapability>(
+1255 | |         &self,
+1256 | |         capability: T,
+1257 | |     ) -> Result<(), M1ReceiverDiagnosticError> {
+     | |______________________________________________^ method `RealM1ProviderCaller::replay_native_capability` is reachable at visibility `pub(in crate::land_surface_energy_shadow)`
+     |
+note: but trait `M1NativeReplayCapability` is only usable at visibility `pub(self)`
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:923:1
+     |
+ 923 | trait M1NativeReplayCapability {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = note: `#[warn(private_bounds)]` on by default
+
+warning: field `0` is never read
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:136:14
+    |
+136 |     Resource(openwepp_vegetation::v11::V11Error),
+    |     -------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `M1ParentExecutionError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+136 -     Resource(openwepp_vegetation::v11::V11Error),
+136 +     Resource(()),
+    |
+
+warning: fields `stage` and `source` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:141:9
+    |
+140 |     ResourceConstruction {
+    |     -------------------- fields in this variant
+141 |         stage: &'static str,
+    |         ^^^^^
+142 |         source: openwepp_vegetation::v11::V11Error,
+    |         ^^^^^^
+    |
+    = note: `M1ParentExecutionError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: multiple fields are never read
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:148:9
+    |
+147 |     WaterClosure {
+    |     ------------ fields in this variant
+148 |         source: openwepp_vegetation::v11::V11Error,
+    |         ^^^^^^
+149 |         ofe_id: String,
+    |         ^^^^^^
+150 |         layer_id: String,
+    |         ^^^^^^^^
+151 |         beginning_amount_bits: u64,
+    |         ^^^^^^^^^^^^^^^^^^^^^
+152 |         ending_amount_bits: u64,
+    |         ^^^^^^^^^^^^^^^^^^
+153 |         beginning_liquid_depth_bits: u64,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+154 |         post_root_liquid_depth_bits: u64,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+155 |         ending_liquid_depth_bits: u64,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+156 |         canonical_root_debit_kg_m2_bits: u64,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+157 |         ordered_debit_amount_bits: Vec<u64>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+158 |         ordered_ingress_amount_bits: Vec<u64>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1ParentExecutionError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: field `0` is never read
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:160:12
+    |
+160 |     Solver(openwepp_land_surface_energy::M1CoupledError),
+    |     ------ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `M1ParentExecutionError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+160 -     Solver(openwepp_land_surface_energy::M1CoupledError),
+160 +     Solver(()),
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:161:14
+    |
+161 |     Receiver(M1ReceiverDiagnosticError),
+    |     -------- ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `M1ParentExecutionError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+161 -     Receiver(M1ReceiverDiagnosticError),
+161 +     Receiver(()),
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:162:13
+    |
+162 |     Coupled(openwepp_coupled_time::CoupledTimeError),
+    |     ------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `M1ParentExecutionError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+162 -     Coupled(openwepp_coupled_time::CoupledTimeError),
+162 +     Coupled(()),
+    |
+
+warning: variant `LateOwningReceiver` is never constructed
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:164:5
+    |
+133 | pub(super) enum M1ParentExecutionError {
+    |                 ---------------------- variant in this enum
+...
+164 |     LateOwningReceiver(M1ReceiverDiagnosticError),
+    |     ^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1ParentExecutionError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: method `material_transfers` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs:909:19
+    |
+905 | impl M1ParentReceipt {
+    | -------------------- method in this implementation
+...
+909 |     pub(super) fn material_transfers(
+    |                   ^^^^^^^^^^^^^^^^^^
+
+warning: method `provider_active_material_transfers` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:748:19
+    |
+503 | impl M1CallerState {
+    | ------------------ method in this implementation
+...
+748 |     pub(crate) fn provider_active_material_transfers(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `transaction_id` and `is_consumed` are never used
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:1489:19
+     |
+1476 | impl M1NativeCapability {
+     | ----------------------- methods in this implementation
+...
+1489 |     pub(crate) fn transaction_id(&self) -> TransactionId {
+     |                   ^^^^^^^^^^^^^^
+...
+1492 |     pub(crate) fn is_consumed(&self) -> bool {
+     |                   ^^^^^^^^^^^
+
+warning: method `capability_consumed` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs:1737:19
+     |
+1724 | impl M1ReceiverDiagnosticResult {
+     | ------------------------------- method in this implementation
+...
+1737 |     pub(crate) fn capability_consumed(&self) -> bool {
+     |                   ^^^^^^^^^^^^^^^^^^^
+
+warning: method `diagnostic_source_climate_sha256_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/09_snow_free_half_hour_forcing.rs:1229:19
+     |
+1227 | impl HillslopeClimateRuntimeRequest {
+     | ----------------------------------- method in this implementation
+1228 |     #[cfg(test)]
+1229 |     pub(crate) fn diagnostic_source_climate_sha256_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `diagnostic_native_field` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:644:4
+    |
+644 | fn diagnostic_native_field<T: serde::de::DeserializeOwned>(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `position` and `lse_configuration_sha256` are never read
+  --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:13:5
+   |
+ 9 | pub struct NativeSoilRestartAdmissionV1 {
+   |            ---------------------------- fields in this struct
+...
+13 |     position: NativeSoilRestartPositionV1,
+   |     ^^^^^^^^
+...
+17 |     lse_configuration_sha256: openwepp_land_surface_energy::Sha256Digest,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated items `diagnostic_validate_inactive_scheduler_v1` and `validate_constructor_context` are never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:189:19
+    |
+ 20 | impl NativeSoilRestartAdmissionV1 {
+    | --------------------------------- associated items in this implementation
+...
+189 |     pub(crate) fn diagnostic_validate_inactive_scheduler_v1(count: u64,
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+257 |     fn validate_constructor_context(&self, resident: &DirectSoilThermalResident,
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `count`, `surface_bytes`, and `configuration_sha256` are never read
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow/native_soil_restart_admission.rs:303:5
+    |
+302 | struct NativeInactiveSchedulerCustodyV1 {
+    |        -------------------------------- fields in this struct
+303 |     count: u64,
+    |     ^^^^^
+304 |     surface_bytes: Vec<u8>,
+    |     ^^^^^^^^^^^^^
+305 |     configuration_sha256: String,
+    |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `diagnostic_restore_native_lane_maps_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:1692:19
+     |
+ 797 | impl DirectV10RealConsumerShadow {
+     | -------------------------------- associated function in this implementation
+...
+1692 |     pub(crate) fn diagnostic_restore_native_lane_maps_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `diagnostic_install_hydrology_constructor_inputs_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow.rs:4329:19
+     |
+3339 | impl DirectV10RealConsumerShadow {
+     | -------------------------------- method in this implementation
+...
+4329 |     pub(crate) fn diagnostic_install_hydrology_constructor_inputs_v1(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `publication_input_from_constructor` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:487:8
+    |
+487 |     fn publication_input_from_constructor(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `native_archive_day_input` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:528:8
+    |
+528 |     fn native_archive_day_input(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validated_native_archive_publication_input` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:576:8
+    |
+576 |     fn validated_native_archive_publication_input(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `native_complete_attachment_supports` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:770:8
+    |
+770 |     fn native_complete_attachment_supports(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `assert_bound_native_destinations_materialized` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:957:8
+    |
+957 |     fn assert_bound_native_destinations_materialized(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `assert_no_snow_free_physics_calls` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/v9_real_consumer_shadow_tests.rs:1695:8
+     |
+1695 |     fn assert_no_snow_free_physics_calls(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `with_effective_beginning_frame` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/vegetation_real_hydrology_shadow.rs:265:19
+    |
+259 | impl RealHydrologyShadowAdapter {
+    | ------------------------------- method in this implementation
+...
+265 |     pub(crate) fn with_effective_beginning_frame(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_covered_interval` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:671:4
+    |
+671 | fn restore_covered_interval(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_destination_capability` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:687:4
+    |
+687 | fn restore_destination_capability(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `provider_interval_for_destination` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:735:4
+    |
+735 | fn provider_interval_for_destination<'a>(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_prepared_support` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:773:4
+    |
+773 | fn restore_prepared_support(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_support_forcing` is never used
+   --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:891:4
+    |
+891 | fn restore_support_forcing(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `active_snow_restore` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1004:4
+     |
+1004 | fn active_snow_restore(
+     |    ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `ProviderCaptureV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1165:8
+     |
+1165 | struct ProviderCaptureV1 {
+     |        ^^^^^^^^^^^^^^^^^
+
+warning: method `validate_against` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1212:19
+     |
+1190 | impl ProviderStaticConfigurationCaptureV1 {
+     | ----------------------------------------- method in this implementation
+...
+1212 |     pub(crate) fn validate_against(
+     |                   ^^^^^^^^^^^^^^^^
+
+warning: struct `PreparedDayCaptureV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1246:8
+     |
+1246 | struct PreparedDayCaptureV1 {
+     |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_row_for_test` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:1864:15
+     |
+1864 | pub(crate) fn capture_row_for_test(
+     |               ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_coupled_clock` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2691:15
+     |
+2691 | pub(crate) fn restore_coupled_clock(
+     |               ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_parent_with_configured_bgc_scope` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2704:15
+     |
+2704 | pub(crate) fn restore_parent_with_configured_bgc_scope(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `reconstruct_provisional_on_clone` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2721:15
+     |
+2721 | pub(crate) fn reconstruct_provisional_on_clone(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `reconstruct_provisional_on_clone_for_constraint_owner` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2748:4
+     |
+2748 | fn reconstruct_provisional_on_clone_for_constraint_owner(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `reconstruct_provisional_on_clone_with_authorities` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2776:4
+     |
+2776 | fn reconstruct_provisional_on_clone_with_authorities(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `import_and_reconstruct_pre_child_context` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2845:15
+     |
+2845 | pub(crate) fn import_and_reconstruct_pre_child_context(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `PreChildProvisionalInputsV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2883:8
+     |
+2883 | struct PreChildProvisionalInputsV1 {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_pre_child_provisional_inputs` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:2894:4
+     |
+2894 | fn restore_pre_child_provisional_inputs(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_pre_child_provisional_evidence` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3000:4
+     |
+3000 | fn validate_pre_child_provisional_evidence(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_pre_child_binding_and_owners` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3032:4
+     |
+3032 | fn validate_pre_child_binding_and_owners(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RestoredCapturedPreChildContextV1` is never constructed
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3324:19
+     |
+3324 | pub(crate) struct RestoredCapturedPreChildContextV1 {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_captured_clock_parent` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3339:4
+     |
+3339 | fn restore_captured_clock_parent(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `restore_captured_pre_child_context` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:3391:4
+     |
+3391 | fn restore_captured_pre_child_context(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `attach_member_backed_value_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4185:4
+     |
+4185 | fn attach_member_backed_value_v1(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_member_backed_external_end_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4214:4
+     |
+4214 | fn validate_member_backed_external_end_v1(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `decode_member_backed_scalar_event_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4243:4
+     |
+4243 | fn decode_member_backed_scalar_event_v1(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `decode_member_backed_row_v1` is never used
+    --> crates/openwepp-hillslope-orchestrator/src/snow_stage3_v11_current_context_capture.rs:4265:4
+     |
+4265 | fn decode_member_backed_row_v1(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-hillslope-orchestrator` (lib test) generated 56 warnings (run `cargo fix --lib -p openwepp-hillslope-orchestrator --tests` to apply 3 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID c5bc5b34-d83b-46b5-aed8-ceece869af5f with nextest profile: default
+    Starting 1 test across 1 binary (1505 tests skipped)
+  stdout ───
+
+    running 1 test
+    m1-first-support ordinal=0 support=TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) } reservoirs=[M1ReservoirOperands { beginning_mass_kg_m2: 0.018, beginning_enthalpy_j_m2: 0.0, ending_mass_kg_m2: 0.017071735073803156, ending_enthalpy_j_m2: -5104.003596321261, dt_s: 60.0, incident_liquid_kg_m2_s: 0.0, incident_enthalpy_j_kg: 0.0, vapor_kg_m2_s: 1.5471082103280725e-5, drainage_kg_m2_s: 0.0, non_vapor_heat_w_m2: -46.37355026504928, wet_temperature_k: Some(273.15), diagnosed_liquid_mass_kg_m2: 0.0017765489895320702, liquid_capacity_kg_m2: 0.2970000000000001, wet_fraction: 0.14894095773849755, emission_w_m2: 282.2880716959884, wet_longwave_w_m2: -7.574562884524738, wet_sensible_w_m2: 38.798987380524544, mass_residual_kg_m2: 5.421010862427522e-19, enthalpy_residual_j_m2: 9.094947017729282e-13 }, M1ReservoirOperands { beginning_mass_kg_m2: 0.018, beginning_enthalpy_j_m2: 0.0, ending_mass_kg_m2: 0.017081575448084092, ending_enthalpy_j_m2: -5025.792712595023, dt_s: 60.0, incident_liquid_kg_m2_s: 0.0, incident_enthalpy_j_kg: 0.0, vapor_kg_m2_s: 1.5307075865265114e-5, drainage_kg_m2_s: 0.0, non_vapor_heat_w_m2: -45.480215137555675, wet_temperature_k: Some(273.15), diagnosed_liquid_mass_kg_m2: 0.00202076420266898, liquid_capacity_kg_m2: 0.2970000000000001, wet_fraction: 0.14899818660237688, emission_w_m2: 282.59279891820796, wet_longwave_w_m2: -7.09252904265648, wet_sensible_w_m2: 38.387686094899195, mass_residual_kg_m2: 4.336808689942018e-19, enthalpy_residual_j_m2: 9.094947017729282e-13 }] root_n_debits=[V11ResourceDebit { receipt_id: Digest32([26, 218, 22, 130, 177, 233, 127, 252, 181, 190, 250, 238, 57, 37, 216, 44, 229, 56, 165, 205, 139, 36, 188, 7, 254, 225, 153, 97, 213, 230, 229, 142]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "hydrology", resource_key: Water(WaterResourceKey { occupancy_id: OccupancyId { stratum_id: StratumId("stratum-a-lower"), tile_id: TileId("forest") }, layer_id: SoilLayerId("soil-dry") }), ofe_id: "ofe-1", tile_id: "forest", occupancy_id: "stratum-a-lower::forest", layer_id: "soil-dry", source_id: "soil_water", amount_basis: "kg_m2_stand_ground", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([46, 101, 62, 167, 120, 252, 208, 29, 225, 75, 212, 42, 149, 185, 151, 130, 195, 109, 47, 102, 234, 107, 13, 181, 237, 140, 40, 164, 0, 96, 137, 27]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "hydrology", resource_key: Water(WaterResourceKey { occupancy_id: OccupancyId { stratum_id: StratumId("stratum-a-lower"), tile_id: TileId("forest") }, layer_id: SoilLayerId("soil-frozen") }), ofe_id: "ofe-1", tile_id: "forest", occupancy_id: "stratum-a-lower::forest", layer_id: "soil-frozen", source_id: "soil_water", amount_basis: "kg_m2_stand_ground", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([79, 86, 82, 244, 209, 117, 251, 229, 203, 55, 92, 129, 169, 82, 73, 92, 115, 160, 175, 218, 35, 151, 240, 2, 60, 85, 109, 147, 132, 74, 61, 22]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "hydrology", resource_key: Water(WaterResourceKey { occupancy_id: OccupancyId { stratum_id: StratumId("stratum-z-upper"), tile_id: TileId("forest") }, layer_id: SoilLayerId("soil-dry") }), ofe_id: "ofe-1", tile_id: "forest", occupancy_id: "stratum-z-upper::forest", layer_id: "soil-dry", source_id: "soil_water", amount_basis: "kg_m2_stand_ground", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([98, 170, 137, 134, 96, 58, 118, 206, 35, 81, 181, 114, 94, 24, 42, 210, 76, 190, 172, 207, 88, 194, 105, 196, 58, 104, 163, 144, 232, 142, 237, 111]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "hydrology", resource_key: Water(WaterResourceKey { occupancy_id: OccupancyId { stratum_id: StratumId("stratum-z-upper"), tile_id: TileId("forest") }, layer_id: SoilLayerId("soil-2") }), ofe_id: "ofe-1", tile_id: "forest", occupancy_id: "stratum-z-upper::forest", layer_id: "soil-2", source_id: "soil_water", amount_basis: "kg_m2_stand_ground", request: 7.7170290791174e-9, authorization: 7.7170290791174e-9, final_use: 7.7170290791174e-9 }, V11ResourceDebit { receipt_id: Digest32([186, 58, 162, 5, 195, 212, 1, 227, 155, 99, 19, 115, 235, 144, 138, 67, 84, 65, 121, 160, 86, 124, 43, 230, 140, 95, 49, 65, 109, 216, 144, 64]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "hydrology", resource_key: Water(WaterResourceKey { occupancy_id: OccupancyId { stratum_id: StratumId("stratum-a-lower"), tile_id: TileId("forest") }, layer_id: SoilLayerId("soil-1") }), ofe_id: "ofe-1", tile_id: "forest", occupancy_id: "stratum-a-lower::forest", layer_id: "soil-1", source_id: "soil_water", amount_basis: "kg_m2_stand_ground", request: 1.2748710870434579e-8, authorization: 1.2748710870434579e-8, final_use: 1.2748710870434579e-8 }, V11ResourceDebit { receipt_id: Digest32([192, 9, 2, 92, 163, 100, 192, 244, 143, 195, 185, 171, 8, 121, 83, 171, 129, 49, 146, 49, 6, 195, 53, 19, 184, 58, 208, 211, 215, 255, 136, 207]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "hydrology", resource_key: Water(WaterResourceKey { occupancy_id: OccupancyId { stratum_id: StratumId("stratum-z-upper"), tile_id: TileId("forest") }, layer_id: SoilLayerId("soil-frozen") }), ofe_id: "ofe-1", tile_id: "forest", occupancy_id: "stratum-z-upper::forest", layer_id: "soil-frozen", source_id: "soil_water", amount_basis: "kg_m2_stand_ground", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([235, 74, 128, 56, 12, 7, 159, 57, 159, 113, 66, 141, 230, 210, 133, 58, 6, 207, 148, 118, 69, 123, 184, 144, 150, 96, 30, 134, 26, 196, 82, 19]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "hydrology", resource_key: Water(WaterResourceKey { occupancy_id: OccupancyId { stratum_id: StratumId("stratum-a-lower"), tile_id: TileId("forest") }, layer_id: SoilLayerId("soil-2") }), ofe_id: "ofe-1", tile_id: "forest", occupancy_id: "stratum-a-lower::forest", layer_id: "soil-2", source_id: "soil_water", amount_basis: "kg_m2_stand_ground", request: 7.784056228539965e-9, authorization: 7.784056228539965e-9, final_use: 7.784056228539965e-9 }, V11ResourceDebit { receipt_id: Digest32([241, 124, 180, 9, 18, 232, 42, 190, 150, 162, 127, 216, 159, 247, 218, 188, 35, 21, 36, 49, 169, 160, 103, 42, 119, 222, 21, 70, 60, 239, 50, 192]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "hydrology", resource_key: Water(WaterResourceKey { occupancy_id: OccupancyId { stratum_id: StratumId("stratum-z-upper"), tile_id: TileId("forest") }, layer_id: SoilLayerId("soil-1") }), ofe_id: "ofe-1", tile_id: "forest", occupancy_id: "stratum-z-upper::forest", layer_id: "soil-1", source_id: "soil_water", amount_basis: "kg_m2_stand_ground", request: 1.2638933946505808e-8, authorization: 1.2638933946505808e-8, final_use: 1.2638933946505808e-8 }, V11ResourceDebit { receipt_id: Digest32([31, 193, 198, 242, 12, 91, 68, 105, 32, 81, 26, 6, 249, 5, 9, 172, 57, 186, 237, 225, 151, 223, 112, 167, 131, 198, 48, 220, 0, 215, 103, 213]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-1"), species: Ammonium }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-a-lower", layer_id: "soil-1", source_id: "nh4", amount_basis: "kg_n_m2", request: 4.000696399802546e-6, authorization: 4.000696399802546e-6, final_use: 4.000696399802546e-6 }, V11ResourceDebit { receipt_id: Digest32([24, 232, 49, 64, 55, 56, 231, 144, 132, 140, 187, 116, 232, 211, 105, 235, 228, 248, 1, 87, 29, 99, 85, 241, 241, 218, 231, 169, 167, 167, 73, 200]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-1"), species: Nitrate }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-a-lower", layer_id: "soil-1", source_id: "no3", amount_basis: "kg_n_m2", request: 6.001044599703819e-6, authorization: 6.001044599703819e-6, final_use: 6.001044599703819e-6 }, V11ResourceDebit { receipt_id: Digest32([12, 186, 171, 181, 42, 103, 179, 94, 173, 74, 28, 223, 58, 141, 145, 34, 127, 34, 238, 84, 186, 77, 20, 137, 13, 180, 199, 61, 240, 209, 173, 167]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-2"), species: Ammonium }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-a-lower", layer_id: "soil-2", source_id: "nh4", amount_basis: "kg_n_m2", request: 2.4520397289112377e-6, authorization: 2.4520397289112377e-6, final_use: 2.4520397289112377e-6 }, V11ResourceDebit { receipt_id: Digest32([90, 31, 236, 141, 161, 201, 99, 3, 29, 43, 192, 91, 96, 136, 186, 196, 97, 211, 197, 183, 194, 144, 36, 24, 72, 236, 15, 208, 192, 26, 220, 225]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-2"), species: Nitrate }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-a-lower", layer_id: "soil-2", source_id: "no3", amount_basis: "kg_n_m2", request: 3.6780595933668566e-6, authorization: 3.6780595933668566e-6, final_use: 3.6780595933668566e-6 }, V11ResourceDebit { receipt_id: Digest32([128, 4, 35, 59, 173, 96, 220, 91, 100, 245, 87, 245, 251, 246, 141, 13, 2, 88, 32, 59, 104, 202, 38, 17, 6, 131, 212, 78, 71, 40, 47, 190]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-dry"), species: Ammonium }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-a-lower", layer_id: "soil-dry", source_id: "nh4", amount_basis: "kg_n_m2", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([41, 158, 65, 100, 4, 129, 201, 47, 1, 252, 146, 47, 11, 100, 37, 6, 106, 242, 23, 38, 232, 193, 162, 59, 203, 62, 85, 23, 157, 198, 111, 209]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-dry"), species: Nitrate }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-a-lower", layer_id: "soil-dry", source_id: "no3", amount_basis: "kg_n_m2", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([128, 222, 13, 129, 231, 190, 43, 232, 241, 183, 19, 253, 95, 227, 193, 153, 123, 164, 58, 181, 133, 34, 166, 25, 18, 75, 230, 81, 91, 88, 47, 5]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-frozen"), species: Ammonium }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-a-lower", layer_id: "soil-frozen", source_id: "nh4", amount_basis: "kg_n_m2", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([245, 75, 39, 253, 76, 144, 190, 236, 189, 102, 43, 118, 255, 202, 141, 151, 42, 73, 97, 132, 156, 168, 204, 161, 31, 215, 133, 31, 117, 131, 186, 123]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-frozen"), species: Nitrate }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-a-lower", layer_id: "soil-frozen", source_id: "no3", amount_basis: "kg_n_m2", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([6, 222, 254, 0, 246, 29, 49, 203, 158, 69, 59, 111, 61, 178, 229, 99, 156, 168, 189, 115, 221, 8, 56, 154, 107, 58, 228, 177, 161, 100, 178, 166]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-1"), species: Ammonium }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-z-upper", layer_id: "soil-1", source_id: "nh4", amount_basis: "kg_n_m2", request: 4.000696399802546e-6, authorization: 4.000696399802546e-6, final_use: 4.000696399802546e-6 }, V11ResourceDebit { receipt_id: Digest32([6, 167, 165, 252, 221, 224, 247, 186, 81, 70, 161, 106, 21, 169, 29, 125, 191, 236, 120, 114, 226, 12, 84, 91, 235, 11, 112, 197, 80, 26, 136, 75]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-1"), species: Nitrate }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-z-upper", layer_id: "soil-1", source_id: "no3", amount_basis: "kg_n_m2", request: 6.001044599703819e-6, authorization: 6.001044599703819e-6, final_use: 6.001044599703819e-6 }, V11ResourceDebit { receipt_id: Digest32([64, 165, 171, 254, 96, 137, 201, 168, 139, 92, 22, 78, 246, 10, 122, 154, 39, 112, 6, 133, 183, 110, 69, 63, 210, 100, 171, 125, 87, 6, 189, 7]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-2"), species: Ammonium }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-z-upper", layer_id: "soil-2", source_id: "nh4", amount_basis: "kg_n_m2", request: 2.4520397289112377e-6, authorization: 2.4520397289112377e-6, final_use: 2.4520397289112377e-6 }, V11ResourceDebit { receipt_id: Digest32([52, 88, 122, 187, 89, 48, 68, 207, 213, 54, 125, 217, 209, 245, 180, 63, 82, 163, 41, 160, 244, 102, 90, 209, 63, 45, 21, 181, 78, 246, 153, 94]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-2"), species: Nitrate }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-z-upper", layer_id: "soil-2", source_id: "no3", amount_basis: "kg_n_m2", request: 3.6780595933668566e-6, authorization: 3.6780595933668566e-6, final_use: 3.6780595933668566e-6 }, V11ResourceDebit { receipt_id: Digest32([7, 21, 143, 9, 183, 88, 239, 105, 154, 235, 51, 202, 201, 68, 188, 110, 113, 173, 58, 168, 80, 162, 144, 4, 72, 40, 206, 170, 141, 11, 56, 100]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-dry"), species: Ammonium }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-z-upper", layer_id: "soil-dry", source_id: "nh4", amount_basis: "kg_n_m2", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([8, 120, 233, 67, 82, 239, 41, 232, 225, 137, 95, 155, 172, 146, 152, 105, 245, 153, 18, 74, 179, 195, 49, 15, 113, 102, 209, 191, 180, 239, 230, 218]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-dry"), species: Nitrate }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-z-upper", layer_id: "soil-dry", source_id: "no3", amount_basis: "kg_n_m2", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([156, 239, 151, 74, 36, 95, 153, 51, 151, 25, 38, 51, 102, 160, 33, 176, 140, 13, 84, 50, 67, 155, 91, 164, 35, 235, 214, 167, 46, 67, 9, 96]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-frozen"), species: Ammonium }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-z-upper", layer_id: "soil-frozen", source_id: "nh4", amount_basis: "kg_n_m2", request: 0.0, authorization: 0.0, final_use: 0.0 }, V11ResourceDebit { receipt_id: Digest32([167, 27, 71, 122, 134, 189, 95, 122, 243, 40, 75, 76, 151, 163, 81, 32, 136, 7, 179, 53, 252, 130, 21, 160, 124, 123, 71, 92, 145, 55, 33, 98]), parent_transaction_id: ParentTransactionId(Digest32([128, 15, 94, 184, 55, 213, 241, 28, 47, 138, 185, 21, 102, 121, 178, 121, 2, 5, 195, 58, 133, 246, 215, 99, 213, 89, 123, 177, 105, 5, 116, 164])), segment_id: SegmentId(Digest32([32, 152, 57, 39, 73, 34, 223, 126, 11, 193, 200, 235, 178, 166, 51, 206, 209, 79, 130, 27, 238, 188, 251, 28, 184, 253, 101, 13, 74, 208, 228, 98])), accepted_slab_id: AcceptedSlabId(Digest32([48, 243, 38, 167, 8, 210, 179, 126, 176, 207, 13, 108, 220, 109, 74, 48, 245, 150, 195, 130, 95, 62, 177, 219, 73, 254, 69, 76, 150, 22, 81, 212])), support: TimeSupport { start_ns: ModelTimeNs(0), end_ns: ModelTimeNs(60000000000) }, owner_id: "bgc", resource_key: MineralNitrogen(MineralNitrogenKey { layer_id: SoilLayerId("soil-frozen"), species: Nitrate }), ofe_id: "ofe-1", tile_id: "stratum_scoped", occupancy_id: "stratum-z-upper", layer_id: "soil-frozen", source_id: "no3", amount_basis: "kg_n_m2", request: 0.0, authorization: 0.0, final_use: 0.0 }] bgc_begin=BiogeochemistryState { layers: {"soil-1": MineralLayer { ammonium_n: 1.0, nitrate_n: 1.0 }, "soil-2": MineralLayer { ammonium_n: 1.0, nitrate_n: 1.0 }, "soil-dry": MineralLayer { ammonium_n: 1.0, nitrate_n: 1.0 }, "soil-frozen": MineralLayer { ammonium_n: 1.0, nitrate_n: 1.0 }}, receivers: {Metabolic: MaterialPool { carbon: 0.0, nitrogen: 0.0, dry_matter: 0.0 }, Cellulose: MaterialPool { carbon: 0.0, nitrogen: 0.0, dry_matter: 0.0 }, Lignin: MaterialPool { carbon: 0.0, nitrogen: 0.0, dry_matter: 0.0 }, CoarseWoodyDebris: MaterialPool { carbon: 0.0, nitrogen: 0.0, dry_matter: 0.0 }}, last_transaction_id: 40 } bgc_end=BiogeochemistryState { layers: {"soil-1": MineralLayer { ammonium_n: 0.9999919986072004, nitrate_n: 0.9999879979108006 }, "soil-2": MineralLayer { ammonium_n: 0.9999950959205421, nitrate_n: 0.9999926438808132 }, "soil-dry": MineralLayer { ammonium_n: 1.0, nitrate_n: 1.0 }, "soil-frozen": MineralLayer { ammonium_n: 1.0, nitrate_n: 1.0 }}, receivers: {Metabolic: MaterialPool { carbon: 1.2338909057640607e-8, nitrogen: 3.1485907938389755e-10, dry_matter: 2.5706060536751267e-8 }, Cellulose: MaterialPool { carbon: 1.7770921021856632e-8, nitrogen: 4.5569616137225013e-10, dry_matter: 3.7022752128867983e-8 }, Lignin: MaterialPool { carbon: 2.4210289562663042e-8, nitrogen: 6.378155791273782e-10, dry_matter: 5.0438103255548e-8 }, CoarseWoodyDebris: MaterialPool { carbon: 4.554794479550524e-9, nitrogen: 3.8751902238715576e-11, dry_matter: 9.489155165730258e-9 }}, last_transaction_id: 170141183460469231731687303715884105728 }
+    test land_surface_energy_shadow::m1_provider_parent_controls::m1_parent_first_support_prints_actual_custody_operands_and_retains_parent_bgc_lineage ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1505 filtered out; finished in 0.52s
+
+
+────────────
+     Summary [   0.530s] 1 test run: 1 passed, 1505 skipped

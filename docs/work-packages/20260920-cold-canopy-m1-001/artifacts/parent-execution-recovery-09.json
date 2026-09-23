@@ -1,0 +1,14 @@
+{
+  "observed_utc": "2026-09-23T06:07:42.604621+00:00",
+  "base": "/home/roger/openwepp-experiments/cold-canopy-m1-observer-base-from-main-20260922-02",
+  "base_recovery_receipt": "provider-parent-observer-base-recovery-02.json",
+  "source_receipt": "parent-execution-body-build-09-source.json",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/parent-execution-body-build-09-from-observer-cut02.patch",
+  "patch_sha256": "6b49d4d5741b5bf40a90ca5a859728306cd3522f2c693ef33c2a0ff699a5fa81",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-parent-execution09-reconstruction-20260923",
+  "entries": 760,
+  "tree_sha256": "423dbab1587358a573550dc16e66bb565db7782859c06fa9310eb5801c568b06",
+  "exact_match": true,
+  "live_source_unchanged": true,
+  "scope": "Exact source-byte recovery only; no physical execution or acceptance claim."
+}
