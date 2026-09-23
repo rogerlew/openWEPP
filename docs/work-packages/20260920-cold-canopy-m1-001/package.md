@@ -2,6 +2,191 @@
 
 
 
+## Bound-constrained trust-region experiment — adopted 2026-09-23
+
+Current checkpoint: **INCOMPLETE — required independent QA unavailable; stopped before controls/body or target execution**.
+
+**Baseline: NOT RUN. Treatment: NOT RUN. Residual/step/domain/materialization verdict:
+NOT MEASURED.** This is outcome (c), incomplete premeasurement work due to unavailable
+required independent review, not a valid negative numerical result. No physical
+root, cost, performance or infeasibility conclusion follows. No measured prefix,
+mathematical/physical control execution, Rust implementation or target arm was spent in this experiment.
+
+Same `/root/trust_correctness` independently approved draft04 for control authoring
+only after all findings were resolved. `/root/trust_qa` approved draft03's QA scope
+conditionally; its required affected draft04 verification could not be obtained.
+Three serialized `collaboration.followup_task` attempts returned exactly
+`agent thread limit reached`, including after both children completed and after
+interrupting the completed writer. Available tools expose no close/remove operation;
+no nested workaround, reviewer substitution or independence waiver was used.
+The owner's explicit indispensable-independence stop therefore applies.
+[Review custody](artifacts/trust-region-review-custody.json) retains identities/scopes
+and the bounded recovery attempts. Correctness approval is not both reviews.
+
+[Draft04](artifacts/trust-region-authority-draft04.patch),
+[checks](artifacts/trust-region-authority-draft04-checks.json), and
+[exact reconstruction](artifacts/trust-region-authority-recovery04.json) preserve the
+prospective specification. Its LSE SHA256 is
+`3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63`; two-file patch
+SHA256 is `220a23abafaff341036587a3ebefc1677d9ddab78d1d6253cae7c608ddcd44c3`.
+Both files reconstruct exactly from pinned main `eda2930001917f0fa6d801914fb2a17925c2eb77`
+at `/home/roger/openwepp-experiments/cold-canopy-m1-trust-region-authority-draft04-20260923`.
+Only our unactivated canonical amendments were then restored to the pinned main
+bytes. The pending numerical policy exists as retained evidence, not live authority.
+Main Rust and all760 detached runtime entries remain unchanged.
+
+No new release build/input/method measurement identity exists. Retained source/binary
+identities below are custody for the original start, not newly executed baseline
+results. Wall/CPU, evaluation/hydraulic/subproblem counts, native support1 receiver,
+materialization and closure for both target arms are **NOT RUN/NOT REACHED**, not
+zero-cost solve claims. All original integration, full09/A1/strict-lint, parent,
+material/BGC, cycle/restart and performance obligations remain HOLD. Remaining work
+is final affected QA, contract-derived expected-red controls and their reviews,
+confined implementation/verification, frozen measurement pair, and result disposition;
+none is reported complete. Resumption must retain the original charged ledger and
+owner limits; this stop creates no new allowance.
+
+Static: same correctness reviewer independently verifies the stopped status,
+restored main authority, exact draft reconstruction, recorder-only deadline delta,
+JSON/links/whitespace, and approves scoped **INCOMPLETE status/evidence publication**.
+It expressly does not satisfy missing QA or activate the pending policy.
+At 2026-09-23T18:07:08.440956+00:00, charged session time is **1748.440956 s**, cumulative
+**283973.872330 s** of **296625.431374 s**; remaining **12651.559044 s**.
+Publication time is additionally charged in the final local receipt; no reserve,
+wait or concurrency refund. The hard deadline remains21:38Z.
+
+Owner execution of `/tmp/openwepp_cold_canopy_m1_bound_trust_region_experiment_authorization.md`
+adopts its bounded experiment and charged-time supplement. The completed support-1
+attribution below remains closed. Test one prospectively specified scaled bounded
+trust-region method on the complete unchanged support-1 problem from its canonical
+seed; no production adoption or M1 acceptance is authorized.
+
+Conservative first-reading anchor **2026-09-23T17:38:00Z**; verified prior charge
+**282225.431374 s**, added **14400 s**, fixed ceiling **296625.431374 s**.
+Hard deadline **21:38:00Z**, implementation cutoff **21:08:00Z**; retain1800 s for
+independent disposition, preservation and publication. Charge all elapsed time and
+concurrency once, no wait deductions/refunds or reuse of old1815.946379 s reserve.
+The prior local publication receipt was read; its ledger tail was re-extracted
+because the initial combined tool output was truncated; no charge was reset.
+
+Ran: [initial custody](artifacts/trust-region-initial-custody.json) matches all760
+retained source entries and all three retained binaries. Exact starting tree is
+`54aeb03be0f2373e2c3a85b86ec26f02d624bad32b7c9901cf1c4d1a1cfce7a2` at
+`/home/roger/openwepp-experiments/cold-canopy-m1-20260920`; retained orchestrator
+binary SHA256 is `946669aac315fa0b4de0c04405cfad040e6fe8aad38a895ea31edb275eecc2e6`.
+Existing observer-relative patch/recovery04 remain retained; no reconstruction
+or overlay is needed. Pinned main evidence commit is
+`eda2930001917f0fa6d801914fb2a17925c2eb77`.
+
+Intent: canonical experiment-only numerical wording, independent correctness and
+QA review before contract-derived controls/body release, one detached Rust writer,
+then source-bound comparison and cost measurement. Main edits are reviewed
+experimental authority, this record, necessary recorder correction, and evidence/
+recovery patches. No main Rust, new dependency, branch switch or production release.
+Preserve all21 residual equations, nested hydraulics, role domains including the
+263.15 K leaf floor, physical equations, phase/capacity definitions, canonical seed,
+inputs/support, tolerances, step/materialization/finite/closure checks and rollback.
+At most50 accepted updates,21 proposals/base and two phase assemblies/base; freeze
+all remaining method parameters and finite work ceilings before implementation.
+
+Selected checks: affected format/build/warnings-denied lint, mathematical/domain/
+phase/drainage/acceptance/exhaustion/rollback controls and original60 compatibility;
+applicable A0/A1/A3 and Critical regression requirements selected against actual
+affected diff. Preserve full09/A1/strict-lint failures; no unchanged failure census
+or readiness waiver. Exact allowlisted900 s full validation remains its existing
+exception; all other physical commands remain at most180 s. Before dispatch check
+full declared bound plus reserve. No target solve until source/binary/input/method
+and independent source/manifest approvals are frozen.
+
+Run allowance: one measured canonical support0 prefix, one baseline and one treatment
+on identical authenticated support1 input/seed, selected before solve, never fallback.
+Separate processes must prove identical reconstructed prefix inputs; reuse requires
+verified immutable handoff. At most one corrected repeat of an affected arm solely
+for demonstrated implementation/recording deviation, independently reviewed with
+failed execution retained. A valid negative treatment ends this experiment.
+
+Root owns record/ledger/recorder/publication; `/root/trust_writer` (implementer route)
+owns detached investigation, authority authoring and later released controls/body.
+Two distinct independent correctness/QA conversations will review authority, controls,
+implementation and evidence, with same-reviewer fix verification; no nested agents,
+at most two concurrent children. Stop for owner direction, time/run limit, uncontained
+integrity loss, indispensable unavailable source/independence after bounded recovery,
+completed disposition or necessary out-of-envelope change. Two failed corrections
+or60 charged minutes trigger internal reassessment without extending allowance.
+All parent/material/BGC/cycle/restart/performance and production obligations remain
+HOLD. Scoped reviewed publication on existing main remains authorized.
+
+### Initial independent numerical review
+
+Static: `/root/trust_correctness` (Sol correctness route, independent of author)
+finds retained custody/independent-check04 reviewable, no preliminary custody blocker.
+Prospective method approval is **PENDING**, not granted. Its concrete draft obligations
+are frozen-weight raw Jacobian and trial merit (current normalized Jacobian includes
+moving weights); treatment-direction phase predictor/final consistency within two
+assemblies and original selected-side error precedence; explicit confined departure
+from the mandatory Newton affine-drainage representation while retaining every row
+and coupling; unchanged complete root/step/materialization admission including an
+explicit no-update rule; fully deterministic bounded SVD/active-face subproblem;
+complete before-entry work counting; and nonlinear-domain guard/error treatment.
+Writer is resolving these before the stable canonical draft and dual review.
+
+Ran: exact760-entry snapshot, immutable observer base and recovery patch hashes
+match authorization. Recorder change is only DEADLINE11:19→21:38Z; AST and existing
+[15 nonlaunching controls](artifacts/trust-region-full-bound-controls-01.json) PASS.
+No physical target run has occurred. [Active ledger](artifacts/trust-region-active-ledger.json)
+retains the fixed anchor/carry/ceiling; only elapsed observations will change.
+
+### Prospective authority draft01 — HOLD before controls/body
+
+The writer authored the confined diagnostic section in canonical
+[SC-LSE numerical methods draft](artifacts/trust-region-authority-draft04.patch)
+and an explicit vegetation drainage-representation cross-reference. Frozen
+[draft01 patch](artifacts/trust-region-authority-draft01.patch) and
+[structural checks](artifacts/trust-region-authority-draft01-checks.json) are retained.
+BEI, unit, A0 and whitespace checks PASS only their document/structure scopes.
+
+Static: independent `/root/trust_qa` (Terra QA route) gives **HOLD**: two
+subproblems/base contradict21 radius proposals; caps omit predictor/selected-tangent
+and potentially repeated selected-side work; observer correspondence must be a
+named non-target control within the unchanged run allowance; active-face release
+ordering ambiguously says both lowest index and largest violation. Reviewer verifies
+recorded custody, clock and15 nonlaunching recorder controls, and does not infer a
+hydraulic-count error merely from component-core entries. Writer is correcting the
+state machine and callgraph-derived ceilings. Same reviewer owns fix verification.
+Root additionally requested correctness adjudication of ball-constrained active-face
+stationarity and preservation of actual no-update versus convergence-step checks.
+No experimental Rust/control body or target arm is released.
+
+Static: `/root/trust_correctness` formally reviews the retained draft01 and returns
+**HOLD** on four high-severity defects: active-ball KKT must use the Lagrangian
+gradient rather than raw gradient, with correct ball accuracy and zero-face handling;
+ordinary progress must not require convergence-size steps and the genuine prospective
+no-update witness must remain distinct; phase/radius retries and selected probes
+invalidate the stated work ceilings (source-derived conservative core upper bound6500);
+and all21 box entries plus nonlinear guards and typed refusal taxonomy must be frozen.
+It additionally requires deterministic reduction/FMA policy. Raw-J/frozen-weight merit,
+confined full-coordinate drainage and the conceptual two-assembly phase structure
+are retained as sound. Writer owns corrections; same reviewer will verify them.
+
+### Draft02 fix verification and internal reassessment
+
+Static: same QA reviewer approves its four corrected scopes on
+[draft02](artifacts/trust-region-authority-draft02.patch), contingent on correctness.
+Same correctness reviewer verifies the corrected raw-J weighting, boxes, positive-
+radius KKT, progress-update thresholds,22 subproblems,6500 evaluator/47300 SVD caps,
+selected probes, typed fields and non-target observer confinement, but retains HOLD:
+prospective full/first-valid no-update witness is still incorrectly sequenced;
+zero-radius lambda/face behavior is undefined; deterministic arithmetic does not
+cover every subproblem reduction; and nonpositive predicted reduction ambiguously
+means either proposal rejection or terminal failure.
+
+Internal reassessment after two unsuccessful authority review/correction cycles:
+**CONTINUE focused authoring correction**, owned by root. Verified fixes show progress;
+the remaining four exact specification gaps have bounded corrections within the
+same adopted method family and unchanged physical acceptance. No method search,
+target repetition or allowance renewal follows. Same reviewers retain fix ownership.
+Controls/body remain held. All elapsed time remains charged from17:38Z.
+
 ## Support-1 attribution supplement — adopted 2026-09-23 09:19 UTC
 
 ### Current result — limited negative attribution COMPLETE; M1 remains HOLD

@@ -1,0 +1,12 @@
+{
+  "observed_utc": "2026-09-23T18:04:00.391333+00:00",
+  "source_base_commit": "eda2930001917f0fa6d801914fb2a17925c2eb77",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-authority-draft04.patch",
+  "patch_sha256": "220a23abafaff341036587a3ebefc1677d9ddab78d1d6253cae7c608ddcd44c3",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-trust-region-authority-draft04-20260923",
+  "verified_files": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63",
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": "a54f0fc436dd63273c50f252069098d786f0e80e1b4228cb2cf2df565ae61599"
+  },
+  "status": "Draft04 authority exactly recovered; correctness authoring release only, final QA unavailable; no runtime modifications"
+}

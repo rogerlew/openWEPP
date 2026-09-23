@@ -1,0 +1,9 @@
+{
+  "observed_utc": "2026-09-23T17:55:39.293970+00:00",
+  "files": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "b1f4323dd21a4552d2e1cb72562d3ac4d0bf83c4658032c9529ce393f911ed2a",
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": "a54f0fc436dd63273c50f252069098d786f0e80e1b4228cb2cf2df565ae61599"
+  },
+  "patch_sha256": "a1eb5088ec0deeccfb4f4daa0e677c0acaedeaed4f4541ed6c736955dcded384",
+  "review_status": "PENDING: same-reviewer fixes"
+}

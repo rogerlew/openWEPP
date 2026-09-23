@@ -1,0 +1,27 @@
+{
+  "observed_utc": "2026-09-23T17:40:16.044781+00:00",
+  "entries": 760,
+  "mismatches": [],
+  "expected_tree": "54aeb03be0f2373e2c3a85b86ec26f02d624bad32b7c9901cf1c4d1a1cfce7a2",
+  "binaries": [
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-support1-build04-openwepp-hillslope-orchestrator",
+      "matches": true,
+      "sha256": "946669aac315fa0b4de0c04405cfad040e6fe8aad38a895ea31edb275eecc2e6"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-support1-build04-openwepp-land-surface-energy",
+      "matches": true,
+      "sha256": "27851d94aa2421eaa109c70b932b803a389302aac3dcca294edf54da2907864f"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-support1-build04-openwepp-vegetation",
+      "matches": true,
+      "sha256": "4eca435daa54f1bf667d8fc62a42fd8d5ef32666de11def0fedbcfb307e21c4e"
+    }
+  ],
+  "actual_tree_sha256": "54aeb03be0f2373e2c3a85b86ec26f02d624bad32b7c9901cf1c4d1a1cfce7a2",
+  "actual_snapshot_entries": 760,
+  "observer_base_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "recovery_patch_sha256": "c21a69b54189209de89032eec1ba49a4711ad11e178b2e3f5408cfe241ddef90"
+}

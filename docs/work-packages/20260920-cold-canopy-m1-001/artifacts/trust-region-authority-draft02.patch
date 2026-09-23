@@ -1,0 +1,284 @@
+diff --git a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md
+index d0159cb19..2a0fb9051 100644
+--- a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md
++++ b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md
+@@ -324,6 +324,258 @@ solver may remain production reachable. `CALIBRATION_NOT_APPLICABLE`: no
+ physical parameter, equation, constant, unit, output or observation mapping is
+ introduced.
+ 
++<a id="cold-canopy-m1-trust-region-experiment"></a>
++## COLD-CANOPY-M1 bounded trust-region experiment
++
++This section authorizes only the isolated diagnostic experiment named
++`COLD-CANOPY-M1-TR-SVD-BVLS-01`, at the source and input identities frozen by
++the adopted COLD-CANOPY-M1 experiment authorization.  It expires when that
++experiment receives a bounded disposition.  It is neither a production solver
++amendment nor a physical-regime selector, and it cannot publish, advance, or
++retain an owner state.  Its result can only be the stated local positive,
++negative, or invalid measurement; it cannot establish M1 acceptance or global
++physical infeasibility.
++
++At each admitted base `x_k`, retain the complete ordered 21-coordinate M1
++residual.  Let `R_k` be the **raw** vector, `t_k` the positive finite 21-entry
++normalizer vector returned by the existing `m1_tolerances` evaluation at that
++same base, and `Jraw_k` the raw Jacobian returned by the already authorized
++phase-selected assembly.  Define
++
++```text
++W_k = diag(1/t_k),       f_k = W_k R_k,
++A_k = W_k Jraw_k S,      Phi_k(x) = 0.5 ||W_k R_raw(x)||_2^2.
++```
++
++`S` is diagonal in the existing coordinate order.  Its entries are `1 K` for
++the fourteen temperature coordinates `0,1,2,6,7,8,12,14..20`,
++`1e-2 kg m^-2` for M coordinates `3,9`, `1e3 J m^-2` for H coordinates `4,10`,
++`1e-5 kg m^-2 s^-1` for D coordinates `5,11`, and `1e-3 kg kg^-1` for
++`qcan` coordinate `13`.  The trust subproblem is exactly
++
++```text
++minimize 0.5 ||f_k + A_k p||_2^2
++subject to x_lower <= x_k + S p <= x_upper,  ||p||_2 <= Delta.
++```
++
++The exact 21-coordinate box is
++`[263.15,373.15] K` at `0,1,2,6,7,8`; unboxed at M/H coordinates `3,4,9,10`;
++`[0,+infinity) kg m^-2 s^-1` at `5,11`; `[258.15,373.15] K` at `12`;
++`[0,0.1] kg kg^-1` at `13`; and unboxed at ground/soil `14..20`.  Unboxed is
++not unconstrained physical admission: M/H, ground and soil retain the original
++phase inversion, capacity, saturation, hydraulic and owning domain predicates
++on every base, probe and candidate.
++
++The raw Jacobian is required here.  `normalized_jacobian` differentiates the
++state-dependent normalizer and therefore cannot be divided, multiplied, or
++otherwise transformed to recover `Jraw_k`.  The existing assembly already
++returns both matrices from the same probes; this experiment uses that returned
++raw matrix and `t_k`, with no third assembly or derivative reconstruction.
++`W_k` remains frozen for predicted and actual reduction.  The existing
++recomputed normalized residuals remain the sole physical root-acceptance
++surface and are not this merit function.
++
++First assemble the natural current-state tangent and solve this experiment's
++trust subproblem to obtain its **predictor** `p_p`; the old Newton linear
++direction is not computed or retained as a predictor.  Select the phase and
++capacity tangent from `S*p_p` by the existing exact join rules.  If that set
++differs from the natural set, reassemble exactly once with the selected tangent
++and solve this same trust subproblem once more for the final `p`; otherwise
++`p=p_p`.  The final phase/capacity normals from `S*p` must select that same
++set, and the existing selected-side representable probe must pass before a
++candidate is considered.  A nonfinite normal, a selection disagreement, or
++the owning selected-side domain error retains its existing typed failure with
++no third assembly, phase loop, candidate retry, radius shrink, or alternate
++solver.  Thus a base has at most two assemblies and 22 subproblem solutions:
++one natural predictor, one selected-tangent replacement when needed, and at
++most 20 later radius proposals using that same selected tangent.  At most 21
++of these are candidate proposals.
++
++Notwithstanding the production selected-drainage affine-elimination
++representation below, that representation is superseded solely within this
++expiring diagnostic arm: both D coordinates and every one of their raw coupling
++columns remain in the full problem, the selected capacity row remains its
++selected raw affine row, and `D>=0` is its ordinary coordinate bound.  No
++solve-then-overwrite, derived drainage coordinate, or post-solve clipping is
++permitted.  The experiment must prove radius-limited D steps are not forced to
++`dD=-D`, retain both D coupling columns, and cover drainage/capacity ties.  This
++does not amend the primal identity or production authorization.
++
++### Deterministic bounded subproblem
++
++Use the following one bounded-variable active-set algorithm for every proposed
++step.  It is not dogleg, scalar damping, a line search, or a fallback.
++
++1. Set `Delta=1` at the first base, with `Delta_min=2^-20` and
++   `Delta_max=8`; set `p=0` and make every non-fixed coordinate free.  A
++   coordinate exactly on a physical bound is still free and may only move
++   inward.  Every radius proposal restarts from this exact `p=0` face.  No
++   library feasibility nudge is allowed.
++2. On a face, hold its active coordinates at their present exact `p` values.
++   Form the free residual after those fixed contributions in ascending
++   coordinate order.  Compute a one-sided Jacobi SVD of the resulting dense
++   `A_free`: begin with `V=I`; visit column pairs `(i,j)` lexicographically in
++   each sweep; rotate a pair only when
++   `abs(dot(a_i,a_j)) > 2^-48*sqrt(dot(a_i,a_i)*dot(a_j,a_j))`; use the
++   following exact binary64 rotation.  With `alpha=dot(a_i,a_i)`,
++   `beta=dot(a_j,a_j)`, and `gamma=dot(a_i,a_j)`, set
++   `tau=(beta-alpha)/(2*gamma)`,
++   `t=sign(tau)/(abs(tau)+hypot(1,tau))`, taking `t=1` when `tau=0`, then
++   `c=1/hypot(1,t)` and `s=c*t`; apply
++   `(a_i,a_j)=(c*a_i-s*a_j,s*a_i+c*a_j)` and the identical rotation to columns
++   of `V`.  A nonfinite intermediate is a refusal.  Run at most 64 sweeps and
++   require one complete no-rotation sweep.  Sort singular values descending,
++   breaking equal binary64 values by their original free-coordinate index.
++   Any nonfinite operand, missing convergence, or
++   `sigma_min <= 2^-40*sigma_max` is a typed subproblem refusal.
++3. With those SVD factors, solve the free trust-region least-squares step by
++   `p_free(lambda)=-V diag(sigma_j/(sigma_j^2+lambda)) U^T y`, where
++   `y=f_k+A_active*p_active` and `U_j=A_free*V_j/sigma_j`.  It is evaluated
++   directly from singular values, never by forming `A^T A`.  Use `lambda=0`
++   when its norm fits the remaining radius.  Otherwise begin at `1`, multiply
++   by four at most 48 times until the norm fits, then bisect that bracket 48
++   times; return the feasible upper-lambda endpoint.  For positive remaining
++   radius `r`, require `||p_free||<=r` and
++   `r-||p_free|| <= max(2^-40*r,64*epsilon*max(1,r))`.  For exact zero
++   remaining radius, set `p_free=0` without SVD; any nonzero free step is a
++   refusal.  A nonfinite value, absent bracket, or failed ball-accuracy check
++   is a typed refusal.  The active coordinates contribute to the radius
++   exactly; no free-coordinate radius is substituted.
++4. If the face solution crosses a box bound, move from the present `p` to the
++   first crossing by the smallest finite `theta` in `[0,1]`; exact equal
++   `theta` values activate the smallest coordinate index first.  Keep that
++   coordinate at the reached bound and resolve the new face.  If it is box
++   feasible, compute `g=A_k^T(f_k+A_kp)` and `h=g+lambda*p`.  Release the
++   active lower bound with `h_i<0`, or active upper bound with `h_i>0`, having
++   largest absolute violation; exact ties use the lowest coordinate index.
++   Otherwise return this `p`.  At most 42 face pivots occur in one proposal;
++   reaching the cap is a typed refusal.
++
++The initial radius, every radius change, face start, pair order, SVD tolerance,
++rank threshold, bracket, bisection count and tie rule are frozen above.
++No random ordering, robust loss, rank repair, regularization retry, or hidden
++inner iteration is allowed.
++
++All merit arithmetic is ordered binary64: form each `W_k*R_i` and
++`(W_k*Jraw_ij)*S_j` in ascending row/column order; form every squared norm by
++ascending row accumulation from `0`; and form `pred`, `ared`, and `rho` in the
++written order.  No fused multiply-add, reassociation, compensated/reduction
++tree, or overflow-to-finite replacement is allowed.  A nonfinite operand or
++intermediate is a typed numerical refusal before candidate acceptance.
++
++For a finite candidate, set
++`pred=0.5*(||f_k||_2^2-||f_k+A_kp||_2^2)` and
++`ared=Phi_k(x_k)-Phi_k(x_k+Sp)`.  It is accepted as an update only if all
++unchanged domain, phase, capacity, hydraulic, finite and full-trial predicates
++pass, `pred>0`, `ared` is finite, `rho=ared/pred>=0.1`, and
++the existing recomputed maximum normalized residual strictly decreases.  On a
++rejection retain the same base, raw Jacobian, `t_k`, and phase selection;
++shrink `Delta` by `0.25`.  After an accepted update, shrink by `0.25` when
++`rho<0.25`, enlarge to `min(2*Delta,8)` when `rho>0.75` and
++`||p||_2>=0.99*Delta`, otherwise retain it.  A proposed radius below
++`Delta_min`, or 21 proposals at one base, is a typed radius-exhaustion result.
++There are at most 50 accepted nonlinear updates.  Small step, constrained
++stationarity, small gradient, lower merit, or radius exhaustion cannot accept
++a root.  Only all 21 existing normalized residual predicates, raw residual
++checks, hydraulic blocks, materialization, independent closure, and failure
++atomicity can do so.
++
++At the top of every post-update iteration, before a new assembly, retain the
++existing prospective no-update witness: when all 21 dynamically normalized base
++residuals pass, a full proposed trial that is domain-invalid or exceeds a
++governed step threshold is refused; the first domain-valid replacement trial
++with complete governed step norms is the witness that materializes the current
++base without installing a trial.  A post-update base may also materialize only
++when its immediately preceding installed candidate has complete unchanged
++governed step norms.  Governed step thresholds are not required for an ordinary
++non-root update, only for these existing no-update/root admission paths.
++Initial root-looking state, constrained stationarity, a trial step norm, or a
++proposed but uninstalled step cannot substitute for that witness.  Existing
++base/input, phase, saturation, M/H, capacity, hydraulic, nonfinite, and
++selected-side errors remain terminal in their original precedence and never
++shrink a radius.  A candidate refused solely by its original trial-domain
++predicates is a recorded domain-refused proposal and shrinks its radius; a
++candidate error that is not an ordinary trial-domain refusal is terminal.  No
++rejection changes inputs, normalizers, bounds, seed, selected set, or an owner
++state.
++
++Every experimental numerical refusal is `LSEB-E-034` with one stable kind and
++reason: `TrustRegionSvdNonFinite`, `TrustRegionSvdNoConvergence`,
++`TrustRegionRankDeficient`, `TrustRegionLambdaBracket`,
++`TrustRegionBallAccuracy`, `TrustRegionFacePivotLimit`,
++`TrustRegionNoPredictedReduction`, `TrustRegionRadiusExhausted`, or
++`TrustRegionWorkCap`.  Existing `PhaseActiveSetInconsistent`,
++`PhaseActiveSetUnrepresentable`, `VEG-E-141`, `VEG-E-142`, hydraulic, and
++materialization errors retain their owning kinds and precede these new kinds.
++Every refusal records the nonlinear iteration, proposal ordinal, natural and
++selected phase/capacity sets, radius, active lower/upper/free coordinate masks,
++raw and dynamically normalized residual maxima when available, predicted and
++actual reductions when available, and all monotonic work counters.  Missing
++values are null only when their owning evaluation did not occur.
++
++### Fixed work and custody caps
++
++The experimental call graph bounds one base at 43 `core` entries for its
++natural assembly, plus 44 for an optionally selected assembly because
++`evaluate_core_with_jacobian(selected_probe=Some)` includes its selected-side
++probe for the predictor, not for the final selected treatment step.  Each of
++the 21 proposed treatment steps therefore requires its own selected-side probe;
++the maximal base count is `43+44+21=108` selected-assembly/probe entries, plus
++at most 21 candidate `core` entries.  There are at most 50 bases; every
++accepted update except the first has one top-of-loop current entry; and terminal
++testing has one.  The complete-evaluator ceiling is therefore exactly
++`50*(108+21) + 49 + 1 = 6500` entries.  It includes all finite-difference
++probes, selected probes, rejected and domain-refused trials, but no unexecuted
++materialization.  The Jacobian-assembly cap is 100.  The
++hydraulic-block cap is exactly `2*(50 + 50*21 + 1)=2202`: two base blocks per
++base, two per candidate, and two final materialization blocks.  The SVD cap is
++`50*22*43=47300` face factorizations; each has at most 64 sweeps, 48 bracket
++expansions and 48 bisections.  One final materialization is allowed.  Every
++counter is monotonic, records its refused work, and returns typed exhaustion
++before any extra evaluator, hydraulic block, factorization, or materialization.
++Increment each attempted-work counter before entering its evaluator, hydraulic
++block, SVD face factorization, or materialization, so guard and error paths are
++counted as well as successful returns.
++
++### Frozen target measurement
++
++Before either support-1 target arm, freeze the release build command/toolchain,
++source tree and binary hash for a canonical baseline diagnostic and for this
++treatment diagnostic, their authenticated support-1 clone or immutable prefix
++handoff, method ID and all counters.  The canonical support-0 prefix remains
++the unchanged native path in both arms; it is neither a treatment nor a timing
++denominator.  The baseline must reproduce its canonical support-1 refusal and
++the treatment must begin from the same complete 21-coordinate seed and physical
++input, never from a terminal Newton base.  The detached harness receives an
++immutable clone of the actual prepared `M1CoupledColumnInput` at the real
++prefix-to-solver boundary, after the native prefix and before either policy is
++chosen or invoked; it may not reconstruct input from JSON traces, an
++iteration-15 state, or a guessed replay.  The retained debug baseline is
++custody evidence only: the compared target results use release-mode binaries.
++Different implementation hashes/provider IDs are recorded and their physical
++support-1 projection is compared explicitly.
++
++Time each release target solve with monotonic wall and process CPU clocks.  The
++timed kernel interval begins immediately before the support-1 solver entry and
++ends at its return; separately report support-0 reconstruction, provider
++initialization, manifest/authentication and instrumentation overhead.  The
++observer-off/observer-on correspondence is a named **NON-TARGET** control: it
++uses only the frozen original60 or injected local control path and may not
++invoke authenticated support-1, consume either target arm, or produce a target
++outcome.  It must show identical physical input, result class, raw/normalized
++residual verdict and owner nonpublication before observed target counts are
++used.  Observer output is bounded to the frozen counters and final diagnostic:
++no duration-proportional numerical history is permitted.  Baseline failure time
++is reported as time-to-refusal, not a speedup denominator.
++
++The numerical rationale is the bound-constrained trust-region treatment and
++dense SVD subproblem discussion in SciPy `v1.15.2` `least_squares` documentation
++and source `scipy/optimize/_lsq/trf.py` at tag `v1.15.2`
++(`316d5e12c24cb349a291d0d5ba0c2a86489b6499`, source SHA-256
++`1255479c1d949f779a4388c9f0a1c7a7e8705df607332a674ad85f44edf73fdd`); that
++source is rationale only, is not a dependency, and supplies no acceptance
++criterion.
++
+ ## V10 coordinate scaling
+ 
+ #### V10 unit scaling
+diff --git a/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md b/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+index f0deed7ca..49ef2f954 100644
+--- a/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
++++ b/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+@@ -3580,6 +3580,16 @@ with that assembly. A capacity-selected coordinate remains in the ordered `F`
+ block whenever another occupancy is eligible; only an assembly with `E` empty
+ uses the existing complete solve.
+ 
++Notwithstanding this production representation, the separately bounded
++diagnostic `COLD-CANOPY-M1-TR-SVD-BVLS-01` supersedes it solely while its
++expiring diagnostic arm is active: it retains the complete selected
++21-coordinate matrix, including every drainage coordinate and coupling, rather
++than applying affine elimination.  Its exact bounded trust-region policy,
++fixed work caps, expiration, and prohibition on production admission are
++canonical in [the LSE numerical-method section](SC-LANDSURFACEENERGY-001/numerical-methods.md#cold-canopy-m1-trust-region-experiment).
++It does not amend this primal capacity law, selected tangent, M1 Newton
++production representation, or any accepted-state predicate.
++
+ For each complete predictor or final assembly separately, let `E` be the set
+ of occupancy drainage coordinates whose **already selected** `R_cap` branch is
+ the drainage argument `dt*D`; `E` contains at most the two M1 occupancies. The

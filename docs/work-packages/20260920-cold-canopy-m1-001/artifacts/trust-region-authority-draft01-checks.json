@@ -1,0 +1,68 @@
+{
+  "observed_utc": "2026-09-23T17:49:10.248021+00:00",
+  "files": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "aed0c91276743520d086699ee8a802c2fd66398ef5831f341b6e88141d07a97d",
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": "a54f0fc436dd63273c50f252069098d786f0e80e1b4228cb2cf2df565ae61599"
+  },
+  "patch_sha256": "05b8312af447e27a2de89ca7973323cf1c441225eb600011c00835fecbe7c978",
+  "checks": [
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "--strict",
+        "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md"
+      ],
+      "exit": 0,
+      "stdout": "PASS docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md: 20 binding exposure row(s) fully consolidated\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/check_sc_binding_exposure.py",
+        "--strict",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "exit": 0,
+      "stdout": "PASS docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md: directory-v1, 24 binding exposure row(s), 106 actual definition(s); structural evidence only\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "tools/release/check_sc_unit_compliance.py",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md"
+      ],
+      "exit": 0,
+      "stdout": "PASS: SC unit compliance lint found no findings\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "tools/release/check_science_contract_admission.sh",
+        "--base-ref",
+        "eda2930001917f0fa6d801914fb2a17925c2eb77",
+        "--worktree"
+      ],
+      "exit": 0,
+      "stdout": "A0_ADMITTED contracts=49 science_surfaces=0 base=eda2930001917f0fa6d801914fb2a17925c2eb77 head=WORKTREE authority_sha256=ea22d7a405b0e9cf70e4ab7ab0a6918b55150ff30bc3d9fe65289d1f213ba2b5\n",
+      "stderr": ""
+    }
+  ],
+  "review_status": "PENDING: structural checks do not release numerical authority"
+}

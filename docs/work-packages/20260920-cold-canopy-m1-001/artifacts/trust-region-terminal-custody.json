@@ -1,0 +1,16 @@
+{
+  "observed_utc": "2026-09-23T18:05:17.815994+00:00",
+  "actual_runtime_tree_sha256": "54aeb03be0f2373e2c3a85b86ec26f02d624bad32b7c9901cf1c4d1a1cfce7a2",
+  "runtime_entries": 760,
+  "runtime_unchanged": true,
+  "baseline_target": "NOT_RUN",
+  "treatment_target": "NOT_RUN",
+  "mathematical_physical_controls": "NOT_RUN",
+  "recorder_nonlaunching_controls": "PASS15",
+  "authority_document_checks": "PASS5 (structural only)",
+  "new_artifact_json_parse": "PASS",
+  "new_package_links": "PASS",
+  "recorder_ast": "PASS",
+  "full09_A1_strict_lint": "HOLD unchanged",
+  "independence": "Draft04 final QA unavailable; no control/body release"
+}

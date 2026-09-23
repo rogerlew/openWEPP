@@ -1,0 +1,35 @@
+{
+  "evidence_class": "Static: attributable independent review messages; no physical execution",
+  "correctness": {
+    "conversation": "/root/trust_correctness",
+    "reviewed_cut": "draft04",
+    "lse_sha256": "3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63",
+    "verbatim_final": "Static rev04 review: approved for contract-derived control authoring only. All prior findings are resolved. Exact identities: LSE authority SHA: 3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63; Two-file diff SHA: 220a23abafaff341036587a3ebefc1677d9ddab78d1d6253cae7c608ddcd44c3; git diff --check: PASS. No Rust implementation, target execution, production adoption, or broader M1 acceptance is approved by this verdict.",
+    "format_note": "Final message text retained with Markdown/list formatting flattened."
+  },
+  "qa": {
+    "conversation": "/root/trust_qa",
+    "last_reviewed_cut": "draft03",
+    "lse_sha256": "cc02e494b9ca9835246c0830edd7103d4b4b74682d125fb361b073aa91e38a82",
+    "verbatim_verdict": "Static rev03 QA review \u2014 authority \u2192 contract-derived controls release approved, subject to the separate correctness reviewer\u2019s approval.",
+    "scope": "All requested control discriminators, before-entry accounting, non-target observer and prepared-input custody. Existing full09/A1/strict-lint remain HOLD. Draft04 affected verification not obtained."
+  },
+  "independence_stop": {
+    "observed_utc": "2026-09-23T18:04:51.368174+00:00",
+    "failed_followup_count": 3,
+    "tool": "collaboration.followup_task",
+    "target": "trust_qa",
+    "error": "agent thread limit reached",
+    "bounded_recovery": [
+      "Retry serialized after correctness final and writer final",
+      "Interrupt completed writer and retry with no active children",
+      "Inspect available tool metadata: no close/remove agent operation exposed"
+    ],
+    "no_substitution": "Correctness is not QA and author cannot satisfy QA; no nested CLI/API workaround."
+  },
+  "stopped_disposition_correctness": {
+    "conversation": "/root/trust_correctness",
+    "verdict": "APPROVE scoped INCOMPLETE status/evidence publication only",
+    "verified": "Restored pinned canonical authority; independently rehashed2file draft04 recovery; unchanged760 runtime; JSON/links/diff checks and recorderdeadline only. QA remainsunmet; no controls/body/target/productionrelease."
+  }
+}
