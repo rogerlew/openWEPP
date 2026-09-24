@@ -1,0 +1,22 @@
+{
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "base_controls22_source": "/home/roger/openwepp-experiments/cold-canopy-m1-witness-controls22-recovery-20260924",
+  "changed_source": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+  "changed_source_sha256": "c86d33256de1d1ea75145b296803a134b9b20f5c51ba1a586cfcba274a650be6",
+  "unchanged_stage1_sha256": "89d97586831d696a7919958224e46cf227de5ecfe3ddbf3acdcb81128d8ad9e2",
+  "unchanged_controls25_sha256": "7ccddcd4b2f7b1f6096c4fc51ae9e60aa887222374513152d2b52d5c32f80830",
+  "diff": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/writer-witness-body01.diff",
+  "diff_sha256": "60b9a240e86807e6b7d2073688bf958bf8e6b59eab207a03e123855d014197c6",
+  "behavior": {
+    "per_base_state": ["full", "replacement_available", "replacement_consumed"],
+    "domain_invalid": "shrinks without evaluator entry; only a full proposal opens replacement availability",
+    "valid_replacement": "consumes before evaluator entry",
+    "accepted_update": "resets witness state, retains radius/budget/counters, then reassembles only when the separate post-update admission declines",
+    "nonfinite_governed_operand": "M1TrustRegionControllerError::Numerical(\"nonfinite governed step operand\")"
+  },
+  "checks": {
+    "rustfmt": "writer-witness-body01-rustfmt.exit: 0",
+    "focused_analytic": "writer-witness-body01-analytic.exit: 0; 16 passed, 0 failed",
+    "first_failure": "writer-witness-body01-first-failure.md"
+  }
+}

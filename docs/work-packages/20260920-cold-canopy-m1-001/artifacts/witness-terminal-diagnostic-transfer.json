@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Ran: exact terminal focused diagnostic/source comparison",
+  "baseline": "witness-governed17",
+  "current": "witness-terminal28",
+  "diagnostic_identities": 238,
+  "added": [],
+  "removed": [],
+  "changed_source_paths": [
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs"
+  ],
+  "strict": "Completed inherited101;notPASS",
+  "source_tree_sha256": "9ecfa70f1c174d4bb5b99536db545167fa1eced9394c03368b832c841a176405"
+}

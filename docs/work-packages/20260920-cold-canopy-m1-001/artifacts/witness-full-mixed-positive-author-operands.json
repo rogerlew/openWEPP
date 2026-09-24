@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Parent author operand derivation from existing positive fixture, not independent review and not a solver execution",
+  "observed_utc": "2026-09-24T18:19:16.623798+00:00",
+  "candidate0_hex": "0x1.2c00000010000p+8",
+  "candidate3_hex": "0x1.999999999999ap-7",
+  "z0_hex": "0x1.0000000000000p-28",
+  "z3_hex": "0x1.0000000000001p-2",
+  "temperature_step_hex": "0x1.0000000000000p-28",
+  "candidate_max": 0.453125,
+  "pred_hex": "0x1.e000000000000p-6",
+  "ared_hex": "0x1.6e00000000000p-6",
+  "rho_hex": "0x1.8666666666666p-1",
+  "rho": 0.7625,
+  "governed_temperature_threshold": 1e-08,
+  "ordinary_update": true,
+  "post_update_residual_and_temperature_pass": true
+}

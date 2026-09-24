@@ -1,0 +1,17 @@
+{
+  "observed_utc": "2026-09-24T16:55:16.013587+00:00",
+  "anchor_utc": "2026-09-24T16:10:00+00:00",
+  "carried_charged_seconds": 308113.959294,
+  "charged_cumulative_seconds": 310829.972881,
+  "fixed_ceiling_seconds": 322513.959294,
+  "implementation_cutoff_utc": "2026-09-24T19:40:00+00:00",
+  "hard_deadline_utc": "2026-09-24T20:10:00+00:00",
+  "reserve_seconds": 1800,
+  "wait_deductions_seconds": 0,
+  "target_prefix_used": 0,
+  "baseline_used": 0,
+  "treatment_used": 0,
+  "corrected_repeat_used": 0,
+  "accounting": "Conservative first-work anchor; all elapsed/concurrent work and waits charged once; no historical reserve credit",
+  "remaining_seconds": 11683.986413
+}

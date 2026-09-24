@@ -1,0 +1,14 @@
+{
+  "observed_utc": "2026-09-24T19:10:39.942147+00:00",
+  "first_work_anchor_utc": "2026-09-24T16:10:00+00:00",
+  "carried_seconds": 308113.959294,
+  "resumed_charged_seconds": 10839.942147,
+  "cumulative_charged_seconds": 318953.901441,
+  "cumulative_ceiling_seconds": 322513.959294,
+  "remaining_hard_seconds": 3560.057853,
+  "remaining_implementation_seconds": 1760.057853,
+  "protected_disposition_seconds": 1800,
+  "decision": "CONTINUE finite governed threshold controls on unchanged accepted controller; then remaining controls/body as full bounds allow. No time extension.",
+  "progress": "Witness/phase/governed body accepted; matrix22 independently approved36/36 with inherited lint only. Finite threshold slice active. Physical caps/adapter/harness/measurement incomplete.",
+  "target_slots": "prefix/baseline/treatment/corrected repeat unused"
+}

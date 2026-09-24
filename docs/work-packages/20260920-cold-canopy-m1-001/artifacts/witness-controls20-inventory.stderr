@@ -1,0 +1,68 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find `M1TrustRegionControllerError` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1428:20
+     |
+1428 |         Err(super::M1TrustRegionControllerError::Own("full replacement fixture evaluation error"))
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionControllerError` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1428 -         Err(super::M1TrustRegionControllerError::Own("full replacement fixture evaluation error"))
+1428 +         Err(super::M1TrustRegionControllerOperation::Own("full replacement fixture evaluation error"))
+     |
+help: consider importing this enum
+     |
+   2 + use crate::m1_trust_region_controller::M1TrustRegionControllerError;
+     |
+help: if you import `M1TrustRegionControllerError`, refer to it directly
+     |
+1428 -         Err(super::M1TrustRegionControllerError::Own("full replacement fixture evaluation error"))
+1428 +         Err(M1TrustRegionControllerError::Own("full replacement fixture evaluation error"))
+     |
+
+error[E0433]: cannot find `M1TrustRegionControllerError` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1447:41
+     |
+1447 |     assert!(matches!(result, Err(super::M1TrustRegionControllerError::IncompleteScope)));
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionControllerError` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1447 -     assert!(matches!(result, Err(super::M1TrustRegionControllerError::IncompleteScope)));
+1447 +     assert!(matches!(result, Err(super::M1TrustRegionControllerOperation::IncompleteScope)));
+     |
+help: consider importing this enum
+     |
+   2 + use crate::m1_trust_region_controller::M1TrustRegionControllerError;
+     |
+help: if you import `M1TrustRegionControllerError`, refer to it directly
+     |
+1447 -     assert!(matches!(result, Err(super::M1TrustRegionControllerError::IncompleteScope)));
+1447 +     assert!(matches!(result, Err(M1TrustRegionControllerError::IncompleteScope)));
+     |
+
+error[E0433]: cannot find `M1TrustRegionControllerError` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1467:20
+     |
+1467 |         Err(super::M1TrustRegionControllerError::Own("replacement fixture evaluation error"))
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionControllerError` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1467 -         Err(super::M1TrustRegionControllerError::Own("replacement fixture evaluation error"))
+1467 +         Err(super::M1TrustRegionControllerOperation::Own("replacement fixture evaluation error"))
+     |
+help: consider importing this enum
+     |
+   2 + use crate::m1_trust_region_controller::M1TrustRegionControllerError;
+     |
+help: if you import `M1TrustRegionControllerError`, refer to it directly
+     |
+1467 -         Err(super::M1TrustRegionControllerError::Own("replacement fixture evaluation error"))
+1467 +         Err(M1TrustRegionControllerError::Own("replacement fixture evaluation error"))
+     |
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 3 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage` exited with code 101

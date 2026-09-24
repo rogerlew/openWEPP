@@ -1,0 +1,368 @@
+waiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.18s
+────────────
+ Nextest run ID 55b53956-9ee3-4343-a939-1398f8a0ba90 with nextest profile: default
+    Starting 43 tests across 1 binary (256 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_finite_ci_operands_do_not_create_a_governed_threshold ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_hydraulic_nan_precedes_incomplete_scope ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_incomplete_evaluation_is_terminal_and_opens_no_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_domain_invalid_opens_one_domain_valid_replacement_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1 ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_materializes_current_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_constrained_stationarity_is_nonterminal_rejection ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_valid_radius_replacement_materializes_original_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_domain_valid_replacement_terminal_error_cannot_open_third_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_initial_raw_and_normalizer_faults_fail_at_weighted_system_guard ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.05s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_incomplete_full_governed_evaluation_is_terminal_and_opens_no_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_hydraulic_threshold_equality_admits_full_no_update ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.07s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_candidate_governed_operands_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_negative_humidity_excess_never_admits_or_materializes ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_finite_governed_threshold_operands_gate_full_no_update_admission ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.09s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_intervening_domain_invalid_does_not_consume_replacement_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.05s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_post_update_root_materializes_installed_base_before_reassembly ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_seeded_work_guard_records_actual_pre_entry_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_candidate_raw_and_normalizer_faults_fail_before_materialization ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.08s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_none_none_wet_operands_preserve_complete_governed_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_raw_jacobian_and_frozen_merit_are_actual ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.05s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_unchanged_predictor_phase_uses_one_assembly_and_final_probe ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_ordinary_four_radius_cases_use_actual_state ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.08s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_post_update_candidate_faults_precede_installation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.09s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_retry_phase_drift_is_terminal_without_third_assembly ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.17s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_two_governed_temperature_excesses_block_third_small_proposal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.23s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.21s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_stationarity_exhausts_after_eleven_proposals_and_twenty_two_faces ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.16s
+
+
+        FAIL [   0.420s] (39/43) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.41s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base' (2896190) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:2757:5:
+    assertion `left == right` failed
+      left: 29
+     right: 30
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_work_cap_is_fifty_accepted_proposals ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.69s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_fiftieth_root_materializer_error_precedes_cap ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.74s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_root_on_fiftieth_update_precedes_next_jacobian ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.82s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_and_replacement_candidate_faults_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 1.95s
+
+
+────────────
+     Summary [   1.955s] 43 tests run: 42 passed, 1 failed, 256 skipped
+        FAIL [   0.420s] (39/43) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base
+error: test run failed

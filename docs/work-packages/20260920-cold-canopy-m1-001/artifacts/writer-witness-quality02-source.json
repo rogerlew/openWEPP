@@ -1,0 +1,21 @@
+{
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "controller_sha256": "2f6771927644adab03911ab5cfb5295ddb2d9d39354228cb9b88875fd524a5a3",
+  "controls_sha256": "c752aa2fe005b7c228e66b5e4eb2f513cf9cc484bbd9a1f0224d6f17229602fe",
+  "stage1_sha256": "89d97586831d696a7919958224e46cf227de5ecfe3ddbf3acdcb81128d8ad9e2",
+  "controller_diff": "writer-witness-quality02-controller.diff",
+  "controller_diff_sha256": "8ed903b0521ce1ed3a07b89fbd1e183ec40440efa66575556dc1f6722249da39",
+  "controls_diff": "writer-witness-quality02-controls.diff",
+  "controls_diff_sha256": "317f9f9f3848a6f32b21ef67f637a6583ef77d21b5f067f0ec610c49a9653cc4",
+  "quality_fixes": [
+    "if-not-else reversal in the full-rank oracle",
+    "borrowed eleven-step log input",
+    "exhausted-witness assertions split into trace, merit, and reset helpers",
+    "controller transition split into trial-domain and root-admission helpers"
+  ],
+  "checks": {
+    "rustfmt": "PASS",
+    "focused_controls": "PASS: 16 passed, 0 failed",
+    "focused_lint": "inherited failure (exit 101); full stderr has no m1_trust_region_controller.rs or m1_trust_region_stage2_controls.rs diagnostics"
+  }
+}

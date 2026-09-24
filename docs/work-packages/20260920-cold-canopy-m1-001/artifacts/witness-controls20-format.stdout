@@ -1,0 +1,204 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:156:
+             (FixtureKind::FullNoUpdate, 0) => z - 2f64.powi(-28),
+             (FixtureKind::PostUpdateAdmission, 0) => 2f64.powi(29) * z - 2.0,
+             (FixtureKind::PostUpdateAdmission, _) => 2f64.powi(29) * z,
+[31m-            (FixtureKind::ReplacementWitness
+[m[31m-            | FixtureKind::ReplacementWitnessThreeExcess
+[m[31m-            | FixtureKind::ReplacementWitnessFullDomainInvalid
+[m[31m-            | FixtureKind::ReplacementWitnessInterveningDomainInvalid
+[m[31m-            | FixtureKind::ReplacementWitnessFullEvaluationError
+[m[31m-            | FixtureKind::ReplacementWitnessReplacementEvaluationError
+[m[31m-            | FixtureKind::ReplacementWitnessFullIncompleteGoverned
+[m[31m-            | FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate, 0) => {
+[m[32m+            (
+[m[32m+                FixtureKind::ReplacementWitness
+[m[32m+                | FixtureKind::ReplacementWitnessThreeExcess
+[m[32m+                | FixtureKind::ReplacementWitnessFullDomainInvalid
+[m[32m+                | FixtureKind::ReplacementWitnessInterveningDomainInvalid
+[m[32m+                | FixtureKind::ReplacementWitnessFullEvaluationError
+[m[32m+                | FixtureKind::ReplacementWitnessReplacementEvaluationError
+[m[32m+                | FixtureKind::ReplacementWitnessFullIncompleteGoverned
+[m[32m+                | FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate,
+[m[32m+                0,
+[m[32m+            ) => {
+[m                 let magnitude = if matches!(
+                     self.kind,
+[31m-                    FixtureKind::ReplacementWitness | FixtureKind::ReplacementWitnessFullDomainInvalid
+[m[32m+                    FixtureKind::ReplacementWitness
+[m[32m+                        | FixtureKind::ReplacementWitnessFullDomainInvalid
+[m                 ) {
+                     -27
+                 } else {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:174:
+                 };
+                 -2f64.powi(magnitude) + z / 4.0
+             }
+[31m-            (FixtureKind::ReplacementWitness
+[m[31m-            | FixtureKind::ReplacementWitnessThreeExcess
+[m[31m-            | FixtureKind::ReplacementWitnessFullDomainInvalid
+[m[31m-            | FixtureKind::ReplacementWitnessInterveningDomainInvalid
+[m[31m-            | FixtureKind::ReplacementWitnessFullEvaluationError
+[m[31m-            | FixtureKind::ReplacementWitnessReplacementEvaluationError
+[m[31m-            | FixtureKind::ReplacementWitnessFullIncompleteGoverned
+[m[31m-            | FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate, 3) => {
+[m[31m-                -0.5 + z / 4.0 - z * z / 4.0
+[m[31m-            }
+[m[31m-            (FixtureKind::ReplacementWitness
+[m[31m-            | FixtureKind::ReplacementWitnessThreeExcess
+[m[31m-            | FixtureKind::ReplacementWitnessFullDomainInvalid
+[m[31m-            | FixtureKind::ReplacementWitnessInterveningDomainInvalid
+[m[31m-            | FixtureKind::ReplacementWitnessFullEvaluationError
+[m[31m-            | FixtureKind::ReplacementWitnessReplacementEvaluationError
+[m[31m-            | FixtureKind::ReplacementWitnessFullIncompleteGoverned
+[m[31m-            | FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate, _) => {
+[m[31m-                z / 4.0
+[m[31m-            }
+[m[32m+            (
+[m[32m+                FixtureKind::ReplacementWitness
+[m[32m+                | FixtureKind::ReplacementWitnessThreeExcess
+[m[32m+                | FixtureKind::ReplacementWitnessFullDomainInvalid
+[m[32m+                | FixtureKind::ReplacementWitnessInterveningDomainInvalid
+[m[32m+                | FixtureKind::ReplacementWitnessFullEvaluationError
+[m[32m+                | FixtureKind::ReplacementWitnessReplacementEvaluationError
+[m[32m+                | FixtureKind::ReplacementWitnessFullIncompleteGoverned
+[m[32m+                | FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate,
+[m[32m+                3,
+[m[32m+            ) => -0.5 + z / 4.0 - z * z / 4.0,
+[m[32m+            (
+[m[32m+                FixtureKind::ReplacementWitness
+[m[32m+                | FixtureKind::ReplacementWitnessThreeExcess
+[m[32m+                | FixtureKind::ReplacementWitnessFullDomainInvalid
+[m[32m+                | FixtureKind::ReplacementWitnessInterveningDomainInvalid
+[m[32m+                | FixtureKind::ReplacementWitnessFullEvaluationError
+[m[32m+                | FixtureKind::ReplacementWitnessReplacementEvaluationError
+[m[32m+                | FixtureKind::ReplacementWitnessFullIncompleteGoverned
+[m[32m+                | FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate,
+[m[32m+                _,
+[m[32m+            ) => z / 4.0,
+[m             (FixtureKind::NegativeHumidityExcess, 13) => z + 2e-9,
+             _ => z,
+         }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:218:
+     fn evaluate(&mut self, x: [f64; N]) -> Result<Evaluation<Payload>, Self::Error> {
+         self.evaluator_entries += 1;
+         self.record(FixtureOperation::Evaluate(x));
+[31m-        if matches!(self.kind, FixtureKind::ReplacementWitnessFullEvaluationError)
+[m[31m-            && self.evaluator_entries == 2
+[m[32m+        if matches!(
+[m[32m+            self.kind,
+[m[32m+            FixtureKind::ReplacementWitnessFullEvaluationError
+[m[32m+        ) && self.evaluator_entries == 2
+[m         {
+             return Err("full replacement fixture evaluation error");
+         }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:226:
+[31m-        if matches!(self.kind, FixtureKind::ReplacementWitnessReplacementEvaluationError)
+[m[31m-            && self.evaluator_entries == 3
+[m[32m+        if matches!(
+[m[32m+            self.kind,
+[m[32m+            FixtureKind::ReplacementWitnessReplacementEvaluationError
+[m[32m+        ) && self.evaluator_entries == 3
+[m         {
+             return Err("replacement fixture evaluation error");
+         }
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:318:
+                             | FixtureKind::ReplacementWitnessFullEvaluationError
+                             | FixtureKind::ReplacementWitnessReplacementEvaluationError
+                             | FixtureKind::ReplacementWitnessFullIncompleteGoverned
+[31m-                            | FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate => 0.25 / self.scale[i],
+[m[32m+                            | FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate => {
+[m[32m+                                0.25 / self.scale[i]
+[m[32m+                            }
+[m                             _ => 1.0 / self.scale[i],
+                         }
+                 } else {
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1425:
+     let result = super::m1_trust_region_controller_run_for_test(&mut fixture);
+     assert!(matches!(
+         result,
+[31m-        Err(super::M1TrustRegionControllerError::Own("full replacement fixture evaluation error"))
+[m[32m+        Err(super::M1TrustRegionControllerError::Own(
+[m[32m+            "full replacement fixture evaluation error"
+[m[32m+        ))
+[m     ));
+     assert_eq!(fixture.evaluator_entries, 2);
+     assert!(fixture.materializer_inputs.is_empty());
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1444:
+     let sentinel = fixture.owner_sentinel;
+     let steps = governed_excess_steps();
+     let result = super::m1_trust_region_controller_run_for_test(&mut fixture);
+[31m-    assert!(matches!(result, Err(super::M1TrustRegionControllerError::IncompleteScope)));
+[m[32m+    assert!(matches!(
+[m[32m+        result,
+[m[32m+        Err(super::M1TrustRegionControllerError::IncompleteScope)
+[m[32m+    ));
+[m     assert_eq!(fixture.evaluator_entries, 2);
+     assert!(fixture.materializer_inputs.is_empty());
+     assert_eq!(fixture.payload_marker, 0);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1464:
+     let result = super::m1_trust_region_controller_run_for_test(&mut fixture);
+     assert!(matches!(
+         result,
+[31m-        Err(super::M1TrustRegionControllerError::Own("replacement fixture evaluation error"))
+[m[32m+        Err(super::M1TrustRegionControllerError::Own(
+[m[32m+            "replacement fixture evaluation error"
+[m[32m+        ))
+[m     ));
+     assert_eq!(fixture.evaluator_entries, 3);
+     assert!(fixture.materializer_inputs.is_empty());
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1484:
+     let run = super::m1_trust_region_controller_run_for_test(&mut fixture).unwrap();
+     assert!(run.proposal_trace.len() >= 3);
+     assert_eq!(run.accepted_updates, 1);
+[31m-    assert_eq!(run.proposal_trace[0].radius_before.to_bits(), 1.0f64.to_bits());
+[m[31m-    assert_eq!(run.proposal_trace[1].radius_before.to_bits(), 0.25f64.to_bits());
+[m     assert_eq!(
+[32m+        run.proposal_trace[0].radius_before.to_bits(),
+[m[32m+        1.0f64.to_bits()
+[m[32m+    );
+[m[32m+    assert_eq!(
+[m[32m+        run.proposal_trace[1].radius_before.to_bits(),
+[m[32m+        0.25f64.to_bits()
+[m[32m+    );
+[m[32m+    assert_eq!(
+[m         run.proposal_trace[0].disposition,
+         super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition::MeritRejectedAndShrunk
+     );
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1495:
+         super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition::AcceptedUpdate
+     );
+     assert!(run.proposal_trace[1].installed);
+[31m-    assert!(same_coordinate_bits(run.proposal_trace[0].base_before, base));
+[m[31m-    assert!(same_coordinate_bits(run.proposal_trace[1].base_before, base));
+[m[31m-    assert!(!same_coordinate_bits(run.proposal_trace[1].base_after, base));
+[m[32m+    assert!(same_coordinate_bits(
+[m[32m+        run.proposal_trace[0].base_before,
+[m[32m+        base
+[m[32m+    ));
+[m[32m+    assert!(same_coordinate_bits(
+[m[32m+        run.proposal_trace[1].base_before,
+[m[32m+        base
+[m[32m+    ));
+[m[32m+    assert!(!same_coordinate_bits(
+[m[32m+        run.proposal_trace[1].base_after,
+[m[32m+        base
+[m[32m+    ));
+[m     let new_base = run.proposal_trace[1].base_after;
+     let reset_witness = run.proposal_trace.iter().skip(2).find(|proposal| {
+         same_coordinate_bits(proposal.base_before, new_base)
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1506:
+     });
+     assert!(reset_witness.is_some());
+     assert_eq!(run.entered_materializations, 1);
+[31m-    assert_eq!(run.materialized_coordinates.unwrap().map(f64::to_bits), new_base.map(f64::to_bits));
+[m[32m+    assert_eq!(
+[m[32m+        run.materialized_coordinates.unwrap().map(f64::to_bits),
+[m[32m+        new_base.map(f64::to_bits)
+[m[32m+    );
+[m     assert_eq!(fixture.materializer_inputs, vec![new_base]);
+     assert_eq!(fixture.payload_marker, 1);
+     assert_eq!(fixture.owner_sentinel, sentinel);

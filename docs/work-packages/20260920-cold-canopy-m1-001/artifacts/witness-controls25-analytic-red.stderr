@@ -1,0 +1,202 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.26s
+────────────
+ Nextest run ID 1cf464bd-ab96-489a-a5ba-bceb9befa6dd with nextest profile: default
+    Starting 16 tests across 1 binary (256 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_seeded_work_guard_records_actual_pre_entry_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_negative_humidity_excess_never_admits_or_materializes ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_post_update_root_materializes_installed_base_before_reassembly ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_materializes_current_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.00s
+
+
+        FAIL [   0.024s] ( 5/16) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_full_domain_invalid_opens_one_domain_valid_replacement_witness
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_domain_invalid_opens_one_domain_valid_replacement_witness ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_full_domain_invalid_opens_one_domain_valid_replacement_witness
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_full_domain_invalid_opens_one_domain_valid_replacement_witness' (2637909) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1553:76:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_raw_jacobian_and_frozen_merit_are_actual ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_incomplete_evaluation_is_terminal_and_opens_no_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_constrained_stationarity_is_nonterminal_rejection ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_valid_radius_replacement_materializes_original_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.03s
+
+
+        FAIL [   0.040s] (10/16) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_intervening_domain_invalid_does_not_consume_replacement_witness
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_intervening_domain_invalid_does_not_consume_replacement_witness ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_intervening_domain_invalid_does_not_consume_replacement_witness
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_intervening_domain_invalid_does_not_consume_replacement_witness' (2637905) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1583:76:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.040s] (11/16) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_first_two_governed_temperature_excesses_block_third_small_proposal
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_two_governed_temperature_excesses_block_third_small_proposal ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_first_two_governed_temperature_excesses_block_third_small_proposal
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_first_two_governed_temperature_excesses_block_third_small_proposal' (2637902) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1456:5:
+    assertion `left == right` failed
+      left: None
+     right: Some(RadiusExhausted)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_domain_valid_replacement_terminal_error_cannot_open_third_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_ordinary_four_radius_cases_use_actual_state ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.04s
+
+
+        FAIL [   0.058s] (14/16) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_incomplete_full_governed_evaluation_is_terminal_and_opens_no_witness
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_incomplete_full_governed_evaluation_is_terminal_and_opens_no_witness ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_incomplete_full_governed_evaluation_is_terminal_and_opens_no_witness
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_incomplete_full_governed_evaluation_is_terminal_and_opens_no_witness' (2637908) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1637:5:
+    assertion failed: matches!(result,
+        Err(M1TrustRegionControllerError::Numerical("nonfinite governed step operand")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.060s] (15/16) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base' (2637907) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1683:5:
+    assertion `left == right` failed
+      left: 5
+     right: 3
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_stationarity_exhausts_after_eleven_proposals_and_twenty_two_faces ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.11s
+
+
+────────────
+     Summary [   0.121s] 16 tests run: 11 passed, 5 failed, 256 skipped
+        FAIL [   0.024s] ( 5/16) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_full_domain_invalid_opens_one_domain_valid_replacement_witness
+        FAIL [   0.040s] (10/16) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_intervening_domain_invalid_does_not_consume_replacement_witness
+        FAIL [   0.040s] (11/16) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_first_two_governed_temperature_excesses_block_third_small_proposal
+        FAIL [   0.058s] (14/16) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_incomplete_full_governed_evaluation_is_terminal_and_opens_no_witness
+        FAIL [   0.060s] (15/16) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base
+error: test run failed

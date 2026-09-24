@@ -1,0 +1,46 @@
+{
+  "evidence_class": "Ran: exact source reconciliation; Static: scope/disposition",
+  "disposition": "INCOMPLETE / HOLD; implementation stopped by fixed cutoff",
+  "starting_tree_sha256": "79f9094928b80caae0e3bdc13654fb9e1345161d8ce41c2f93a823fc61d4ec08",
+  "terminal_tree_sha256": "9ecfa70f1c174d4bb5b99536db545167fa1eced9394c03368b832c841a176405",
+  "entry_count": 764,
+  "changed_entries": [
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "before": "fe9186af2f87aa4569437e40eb31fe208a424f3d8ae293ae9ee48422b2113ca5",
+      "after": "9c3499671dd65ca322128f535fe2393c819acaf9882c84031d2a9cad746260d2"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs",
+      "before": "cb7233139c2408e5dec78ca90bd39f87f815ebedca275a4f5323d4d61f827189",
+      "after": "b90227cc158fb4a3ddd0348e4fe55cd0bd0203cecd411f060b70ebcf7f77f003"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+      "before": "3b6e36c494234021b33122300f78546e09149565ef9b84dac9e0f64c1a7236db",
+      "after": "a143bc85c0299f877ac965d76ccb6f2087c1e1bd856205b796140bac35eeb81c"
+    }
+  ],
+  "stage1_unchanged": true,
+  "numerical_method_sha256": "3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63",
+  "vegetation_cross_reference_sha256": "a54f0fc436dd63273c50f252069098d786f0e80e1b4228cb2cf2df565ae61599",
+  "method_id": "COLD-CANOPY-M1-TR-SVD-BVLS-01",
+  "release_build_binary_identity": "NOT FROZEN / NOT QUALIFIED",
+  "authenticated_support1_input_identity": "NOT ACQUIRED",
+  "target_slots": {
+    "prefix": "UNUSED",
+    "baseline": "UNUSED",
+    "treatment": "UNUSED",
+    "conditional_corrected_repeat": "UNUSED"
+  },
+  "first_unfinished_boundary": "Complete actual physical role/domain/phase/capacity/hydraulic/materialization/closure and installed/post-update acceptance controls, actual nested before-entry cap accounting/outcome preservation; then physical adapter/private harness and release qualification/comparison.",
+  "checks": {
+    "analytic": "43/43 PASS",
+    "format": "PASS",
+    "focused_lint": "FAIL101 inherited238 identities;zero introduced",
+    "strict_lint": "FAIL101 inherited vegetation;notwaived",
+    "physical_or_target": "NOT RUN"
+  },
+  "last_source_edit": "Single independently verified RawJacobian oracle30->29; no source writes after terminal28 freeze before cutoff",
+  "publication": "pending scoped main commit/push; experimentalRust remainsdetached"
+}

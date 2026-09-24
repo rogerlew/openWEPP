@@ -1,0 +1,94 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs
+@@ -28,6 +28,7 @@
+     PhaseFinalSelectionError,
+     PhaseSelectedSideError,
+     PhaseSelectedRetry,
++    PhaseSelectedRetryDrift,
+     PhaseAcceptedUpdateReset,
+ }
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+@@ -185,6 +186,7 @@
+                 | FixtureKind::PhaseFinalSelectionError
+                 | FixtureKind::PhaseSelectedSideError
+                 | FixtureKind::PhaseSelectedRetry
++                | FixtureKind::PhaseSelectedRetryDrift
+                 | FixtureKind::PhaseAcceptedUpdateReset,
+                 0,
+             ) => -1.2 + z,
+@@ -197,6 +199,7 @@
+                 | FixtureKind::PhaseFinalSelectionError
+                 | FixtureKind::PhaseSelectedSideError
+                 | FixtureKind::PhaseSelectedRetry
++                | FixtureKind::PhaseSelectedRetryDrift
+                 | FixtureKind::PhaseAcceptedUpdateReset,
+                 1,
+             ) => -1.0 + z,
+@@ -359,7 +362,9 @@
+             FixtureKind::ReplacementWitnessInterveningDomainInvalid => {
+                 self.trial_domain_entries == 2
+             }
+-            FixtureKind::PhaseSelectedRetry => coordinates[0] > self.base[0] + 0.3,
++            FixtureKind::PhaseSelectedRetry | FixtureKind::PhaseSelectedRetryDrift => {
++                coordinates[0] > self.base[0] + 0.3
++            }
+             _ => false,
+         };
+         Ok(coordinate_domain && !prescribed_invalid)
+@@ -439,11 +444,13 @@
+                 Err("PhaseActiveSetUnrepresentable")
+             }
+             FixtureKind::PhaseFinalDisagreement if selections == 3 => Ok(FixturePhase::Natural),
++            FixtureKind::PhaseSelectedRetryDrift if selections == 4 => Ok(FixturePhase::Natural),
+             FixtureKind::PhaseChanged
+             | FixtureKind::PhaseFinalDisagreement
+             | FixtureKind::PhaseFinalSelectionError
+             | FixtureKind::PhaseSelectedSideError
+             | FixtureKind::PhaseSelectedRetry
++            | FixtureKind::PhaseSelectedRetryDrift
+             | FixtureKind::PhaseAcceptedUpdateReset
+                 if physical_direction[0] > 0.0 =>
+             {
+@@ -1403,6 +1410,42 @@
+ }
+ 
+ #[test]
++fn m1_stage2_selected_retry_phase_drift_is_terminal_without_third_assembly() {
++    let mut fixture = Fixture::new(FixtureKind::PhaseSelectedRetryDrift);
++    let base = fixture.base;
++    let sentinel = fixture.owner_sentinel;
++    let result = super::m1_trust_region_controller_run_for_test(&mut fixture);
++    assert!(matches!(
++        result,
++        Err(M1TrustRegionControllerError::Own(
++            "PhaseActiveSetInconsistent"
++        ))
++    ));
++    let predictor = phase_predictor();
++    let selected = phase_selected_step();
++    let quarter = phase_quarter_selected_step();
++    let mut expected = phase_fixture_log(base, predictor, Some(selected), selected, true, false);
++    expected.extend([
++        FixtureOperation::PreEvaluatorTrialDomain(std::array::from_fn(|index| {
++            base[index] + selected[index]
++        })),
++        FixtureOperation::SelectPhase {
++            base,
++            step: quarter,
++        },
++        FixtureOperation::PhaseActiveSetInconsistent {
++            selected_phase: 1,
++            final_phase: 0,
++        },
++    ]);
++    assert_eq!(fixture.operation_log, expected);
++    assert_eq!(fixture.evaluator_entries, 1);
++    assert_eq!(fixture.owner_sentinel, sentinel);
++    assert_eq!(fixture.payload_marker, 0);
++    assert!(fixture.materializer_inputs.is_empty());
++}
++
++#[test]
+ fn m1_stage2_accepted_update_reassembles_natural_phase_at_new_base() {
+     let mut fixture = Fixture::new(FixtureKind::PhaseAcceptedUpdateReset);
+     let base = fixture.base;

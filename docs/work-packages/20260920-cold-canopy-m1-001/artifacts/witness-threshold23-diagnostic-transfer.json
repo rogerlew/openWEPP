@@ -1,0 +1,9 @@
+{
+  "evidence_class": "Ran: parent exact diagnostic comparison",
+  "baseline": "witness-governed17",
+  "current": "witness-threshold23",
+  "diagnostic_identities": 238,
+  "added": [],
+  "removed": [],
+  "strict": "Inherited failure retained"
+}

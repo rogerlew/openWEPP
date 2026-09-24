@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Ran: fresh observer reconstruction plus exactly one terminal observer-relative patch",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source_tree_sha256": "9ecfa70f1c174d4bb5b99536db545167fa1eced9394c03368b832c841a176405",
+  "entry_count": 764,
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "observer_recovery": "witness-observer-recovery-verification.json",
+  "terminal_patch": "witness-terminal28-analytic-from-observer-cut02.patch",
+  "terminal_patch_sha256": "736cbe5bf2b98c9b66774ee9671b566fe7f2e5b995d22b388e0d4be0a98edff6",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-witness-terminal-reconstruction-20260924",
+  "patch_exit_code": 0,
+  "all_entry_hashes_equal": true,
+  "runtime_source_unchanged": true,
+  "publication": "local only until scoped commit and remote verification"
+}

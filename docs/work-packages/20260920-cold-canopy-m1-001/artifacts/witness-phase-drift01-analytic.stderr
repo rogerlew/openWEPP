@@ -1,0 +1,214 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID 384aa42d-d20f-494d-8998-4c6422eb8341 with nextest profile: default
+    Starting 24 tests across 1 binary (256 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_negative_humidity_excess_never_admits_or_materializes ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_materializes_current_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_post_update_root_materializes_installed_base_before_reassembly ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_seeded_work_guard_records_actual_pre_entry_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1 ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_incomplete_evaluation_is_terminal_and_opens_no_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_constrained_stationarity_is_nonterminal_rejection ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_incomplete_full_governed_evaluation_is_terminal_and_opens_no_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_raw_jacobian_and_frozen_merit_are_actual ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_domain_valid_replacement_terminal_error_cannot_open_third_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_domain_invalid_opens_one_domain_valid_replacement_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_valid_radius_replacement_materializes_original_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_unchanged_predictor_phase_uses_one_assembly_and_final_probe ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_ordinary_four_radius_cases_use_actual_state ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_intervening_domain_invalid_does_not_consume_replacement_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.06s
+
+
+        FAIL [   0.055s] (22/24) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_selected_retry_phase_drift_is_terminal_without_third_assembly
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_retry_phase_drift_is_terminal_without_third_assembly ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_selected_retry_phase_drift_is_terminal_without_third_assembly
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_selected_retry_phase_drift_is_terminal_without_third_assembly' (2719051) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1441:5:
+    assertion `left == right` failed
+      left: [Evaluate([300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: None, predictor_direction: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.7682212795973755, 0.6401843996644796, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: Some(1), predictor_direction: [0.7682212795973755, 0.6401843996644796, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.6, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectedSideProbe { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], phase: 1, direction: [0.6, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, PreEvaluatorTrialDomain([300.6, 300.5, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.19205531989934368, 0.16004609991611973, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: Some(0), predictor_direction: [0.19205531989934368, 0.16004609991611973, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.19205531989934388, 0.1600460999161199, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, PhaseActiveSetInconsistent { selected_phase: 0, final_phase: 1 }]
+     right: [Evaluate([300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: None, predictor_direction: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.7682212795973755, 0.6401843996644796, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: Some(1), predictor_direction: [0.7682212795973755, 0.6401843996644796, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.6, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectedSideProbe { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], phase: 1, direction: [0.6, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, PreEvaluatorTrialDomain([300.6, 300.5, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.19205531989934368, 0.16004609991611973, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, PhaseActiveSetInconsistent { selected_phase: 1, final_phase: 0 }]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_two_governed_temperature_excesses_block_third_small_proposal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.13s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_stationarity_exhausts_after_eleven_proposals_and_twenty_two_faces ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 279 filtered out; finished in 0.12s
+
+
+────────────
+     Summary [   0.163s] 24 tests run: 23 passed, 1 failed, 256 skipped
+        FAIL [   0.055s] (22/24) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_selected_retry_phase_drift_is_terminal_without_third_assembly
+error: test run failed

@@ -1,0 +1,9 @@
+{
+  "evidence_class": "Ran: parent exact diagnostic comparison",
+  "baseline": "witness-governed17",
+  "current": "witness-cap26",
+  "diagnostic_identities": 238,
+  "added": [],
+  "removed": [],
+  "strict": "Completed inherited101;source/pins unchanged"
+}

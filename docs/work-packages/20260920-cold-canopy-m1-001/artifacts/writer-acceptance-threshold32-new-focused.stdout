@@ -1,0 +1,64 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:117:45
+    |
+117 |             let value = f64::from_bits(base.to_bits() + if above { 175_922 } else { 175_921 });
+    |                                             ^^^^^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+116 |             let base: f32 = 300.0;
+    |                     +++++
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:131:45
+    |
+131 |             let value = f64::from_bits(base.to_bits() + if above { 576_461 } else { 576_460 });
+    |                                             ^^^^^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+130 |             let base: f32 = 0.01;
+    |                     +++++
+
+error[E0689]: can't call method `next_up` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:137:27
+    |
+137 |                 threshold.next_up()
+    |                           ^^^^^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+135 |             let threshold: f32 = 1.0e-7;
+    |                          +++++
+
+error[E0689]: can't call method `next_down` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:139:27
+    |
+139 |                 threshold.next_down()
+    |                           ^^^^^^^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+135 |             let threshold: f32 = 1.0e-7;
+    |                          +++++
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:149:45
+    |
+149 |             let value = f64::from_bits(base.to_bits() + if above { 900_720 } else { 900_719 });
+    |                                             ^^^^^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+148 |             let base: f32 = 0.5;
+    |                     +++++
+
+For more information about this error, try `rustc --explain E0689`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 5 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage` exited with code 101

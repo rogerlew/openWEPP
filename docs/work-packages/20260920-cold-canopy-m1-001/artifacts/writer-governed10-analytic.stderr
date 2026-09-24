@@ -1,0 +1,16 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1543:26
+     |
+1543 |                 expected.to_bits()
+     |                          ^^^^^^^
+     |
+help: you must specify a type for this binding, like `f32`
+     |
+1540 |             let expected: f32 = if row == column { 1.0 } else { 0.0 };
+     |                         +++++
+
+For more information about this error, try `rustc --explain E0689`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage` exited with code 101

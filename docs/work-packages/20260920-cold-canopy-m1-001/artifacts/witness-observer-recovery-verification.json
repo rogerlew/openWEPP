@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-09-24T18:06:13.032569+00:00",
+  "evidence": "Ran: reconstructed exact observer from committed base plus committed patch; every listed byte verified. No physical execution.",
+  "base_commit": "c6dc28f55fc551d6f414d270c697ae1e60cc57f1",
+  "base_recovery_receipt": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/provider-parent-observer-base-recovery-02.json",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/provider-parent-observer-base-from-c6dc28f.patch",
+  "patch_sha256": "468321b6959ffc3b205da88636ffb6f543549cf720cc3695167286bdfdb5a53b",
+  "reconstruction": "/tmp/openwepp-witness-observer-reconstruction-20260924",
+  "entry_count": 747,
+  "source_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963"
+}

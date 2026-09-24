@@ -1,0 +1,21 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+error: this file contains an unclosed delimiter
+    --> /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:3295:3
+     |
+2368 | fn m1_stage2_finite_governed_threshold_operands_gate_full_no_update_admission() {
+     |                                                                                 - unclosed delimiter
+...
+2443 |         if let GovernedFiniteProjection::Hydraulic(index, _) = role {
+     |                                                                     - this delimiter might not be properly closed...
+...
+2468 |     }
+     |     - ...as it matches this but it has different indentation
+...
+3295 | }
+     |  ^
+
+Error writing files: failed to resolve mod `m1_trust_region_stage2_controls`: cannot parse /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs

@@ -1,0 +1,443 @@
+--- /home/roger/openwepp-experiments/cold-canopy-m1-witness-controls22-recovery-20260924/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs	2026-09-24 09:33:50.806966381 -0700
++++ /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs	2026-09-24 10:11:20.037569652 -0700
+@@ -158,7 +158,10 @@
+             (FixtureKind::PostUpdateAdmission, 0) => 2f64.powi(29) * z - 2.0,
+             (FixtureKind::PostUpdateAdmission, _) => 2f64.powi(29) * z,
+             (FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate, 0) => {
+-                -2f64.powi(-25) + z / 4.0
++                // This full-rank linear row is zero along the prescribed
++                // trajectory without manufacturing a zero residual/Jacobian
++                // inconsistency for other analytic coordinates.
++                z / 4.0
+             }
+             (
+                 FixtureKind::ReplacementWitness
+@@ -212,6 +215,16 @@
+     fn record(&mut self, operation: FixtureOperation) {
+         self.operation_log.push(operation);
+     }
++
++    fn exhausted_witness_wet_temperature_k(&self, x: &[f64; N]) -> [f64; 2] {
++        let z = self.z(x, 3);
++        // The governed operand is a declared coordinate function.  It is
++        // nonzero at the full and first-replacement candidates, but equal at
++        // z=1/4 and z=3/4 so the accepted new base has a fresh admissible
++        // no-update witness.
++        let delta = 2f64.powi(-20) * (z - 0.25) * (z - 0.75) * (1.0 + z);
++        [300.0 + delta, 300.0]
++    }
+ }
+ impl Evaluator for Fixture {
+     type Error = &'static str;
+@@ -266,6 +279,11 @@
+             ) && self.evaluator_entries == 2
+             {
+                 [f64::NAN; 2]
++            } else if matches!(
++                self.kind,
++                FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate
++            ) {
++                self.exhausted_witness_wet_temperature_k(&x)
+             } else {
+                 [300.0; 2]
+             },
+@@ -639,6 +657,88 @@
+     })
+ }
+ 
++fn exhausted_witness_steps() -> [[f64; N]; 2] {
++    [
++        std::array::from_fn(|index| if index == 3 { 1.0 } else { 0.0 }),
++        std::array::from_fn(|index| if index == 3 { 0.25 } else { 0.0 }),
++    ]
++}
++
++fn exhausted_witness_reset_step() -> [f64; N] {
++    std::array::from_fn(|index| {
++        if index == 3 {
++            // The shared 48-bisection feasible endpoint is two ulps below
++            // the 0.5 radius; this is an independently frozen oracle.
++            f64::from_bits(0x3fdf_ffff_ffff_fffe)
++        } else {
++            0.0
++        }
++    })
++}
++
++fn exhausted_witness_wet_temperature(
++    coordinates: [f64; N],
++    base: [f64; N],
++    scale: [f64; N],
++) -> f64 {
++    let z = (coordinates[3] - base[3]) / scale[3];
++    300.0 + 2f64.powi(-20) * (z - 0.25) * (z - 0.75) * (1.0 + z)
++}
++
++fn exhausted_witness_residual(coordinates: [f64; N], base: [f64; N], scale: [f64; N]) -> f64 {
++    let z = (coordinates[3] - base[3]) / scale[3];
++    -0.5 + z / 4.0 - z * z / 4.0
++}
++
++fn exhausted_witness_merit(
++    base_coordinates: [f64; N],
++    candidate_coordinates: [f64; N],
++    scaled_step: [f64; N],
++    initial_base: [f64; N],
++    scale: [f64; N],
++) -> (f64, f64, f64, f64) {
++    let base_residual = exhausted_witness_residual(base_coordinates, initial_base, scale);
++    let candidate_residual = exhausted_witness_residual(candidate_coordinates, initial_base, scale);
++    let base_z = (base_coordinates[3] - initial_base[3]) / scale[3];
++    let linear = base_residual + (0.25 - base_z / 2.0) * scaled_step[3];
++    let predicted = 0.5 * (base_residual * base_residual - linear * linear);
++    let actual = 0.5 * (base_residual * base_residual - candidate_residual * candidate_residual);
++    let rho = actual / predicted;
++    (predicted, actual, rho, candidate_residual.abs())
++}
++
++fn assert_exhausted_witness_full_rank(
++    proposal: &super::m1_trust_region_controller_interface::M1TrustRegionControllerTransition,
++    base_coordinates: [f64; N],
++    initial_base: [f64; N],
++    scale: [f64; N],
++) {
++    let base_z = (base_coordinates[3] - initial_base[3]) / scale[3];
++    let normalizer = 2f64.powi(-60);
++    let raw_multiplier = 2f64.powi(-60);
++    for row in 0..N {
++        for column in 0..N {
++            let expected = if row == column {
++                let derivative = if row == 3 { 0.25 - base_z / 2.0 } else { 0.25 };
++                // Mirror the source arithmetic order: weight * raw_jacobian,
++                // followed by the coordinate scale.
++                let raw_jacobian = raw_multiplier * (derivative / scale[row]);
++                let weighted_jacobian = (1.0 / normalizer) * raw_jacobian;
++                weighted_jacobian * scale[column]
++            } else {
++                0.0
++            };
++            if row == column {
++                assert_ne!(expected.to_bits(), 0.0f64.to_bits());
++            }
++            assert_eq!(
++                proposal.weighted_jacobian[row][column].to_bits(),
++                expected.to_bits()
++            );
++        }
++    }
++}
++
+ fn positive_replacement_steps() -> [[f64; N]; 2] {
+     [
+         std::array::from_fn(|index| match index {
+@@ -657,7 +757,7 @@
+ fn governed_excess_log(
+     base: [f64; N],
+     scale: [f64; N],
+-    steps: [[f64; N]; 11],
++    steps: &[[f64; N]; 11],
+ ) -> Vec<FixtureOperation> {
+     let zero = [0.0; N];
+     let mut log = vec![
+@@ -669,7 +769,7 @@
+             predictor_direction: zero,
+         },
+     ];
+-    for step in steps {
++    for &step in steps {
+         let direction = std::array::from_fn(|index| scale[index] * step[index]);
+         let candidate = std::array::from_fn(|index| base[index] + direction[index]);
+         log.extend([
+@@ -1364,7 +1464,55 @@
+     assert!(same_coordinate_bits(run.final_coordinates, base));
+     assert_eq!(run.proposal_trace.len(), 11);
+     for (index, proposal) in run.proposal_trace.iter().enumerate() {
++        let candidate = std::array::from_fn(|coordinate| {
++            base[coordinate] + fixture.scale[coordinate] * steps[index][coordinate]
++        });
++        let base_temperature = -2f64.powi(-25);
++        let base_moisture = -0.5;
++        let linear_temperature = base_temperature + steps[index][0] / 4.0;
++        let linear_moisture = base_moisture + steps[index][3] / 4.0;
++        // Candidate residuals use the independently fixed candidate
++        // coordinates, including the evaluator's subtract-then-divide order;
++        // a scaled-step component is not necessarily that binary64 z value.
++        let candidate_temperature_z = (candidate[0] - base[0]) / fixture.scale[0];
++        let candidate_moisture_z = (candidate[3] - base[3]) / fixture.scale[3];
++        let candidate_temperature = -2f64.powi(-25) + candidate_temperature_z / 4.0;
++        let candidate_moisture = -0.5 + candidate_moisture_z / 4.0
++            - 2f64.powi(20) * candidate_moisture_z * candidate_moisture_z;
++        let base_residual = std::array::from_fn(|coordinate| match coordinate {
++            0 => base_temperature,
++            3 => base_moisture,
++            _ => 0.0,
++        });
++        let linear_residual = std::array::from_fn(|coordinate| match coordinate {
++            0 => linear_temperature,
++            3 => linear_moisture,
++            _ => 0.0,
++        });
++        let candidate_residual = std::array::from_fn(|coordinate| match coordinate {
++            0 => candidate_temperature,
++            3 => candidate_moisture,
++            _ => 0.0,
++        });
++        let sum_squares = |residual: [f64; N]| {
++            let mut sum = 0.0;
++            for value in residual {
++                sum += value * value;
++            }
++            sum
++        };
++        let f2 = sum_squares(base_residual);
++        let linear2 = sum_squares(linear_residual);
++        let candidate2 = sum_squares(candidate_residual);
++        let expected_predicted = 0.5 * (f2 - linear2);
++        let expected_actual = (0.5 * f2) - (0.5 * candidate2);
++        let expected_rho = expected_actual / expected_predicted;
++        let expected_dynamic_max = candidate_temperature.abs().max(candidate_moisture.abs());
+         assert!(same_coordinate_bits(proposal.scaled_step, steps[index]));
++        assert!(same_coordinate_bits(
++            proposal.stage1_observation.candidate_coordinates,
++            candidate
++        ));
+         assert!(same_coordinate_bits(proposal.base_before, base));
+         assert!(same_coordinate_bits(proposal.base_after, base));
+         assert!(!proposal.installed);
+@@ -1377,6 +1525,14 @@
+             proposal.next_radius.to_bits(),
+             stationarity_radius(index + 1).to_bits()
+         );
++        close(proposal.predicted_reduction, expected_predicted);
++        close(proposal.actual_reduction.unwrap(), expected_actual);
++        close(proposal.rho.unwrap(), expected_rho);
++        close(
++            proposal.dynamic_max_normalized_residual.unwrap(),
++            expected_dynamic_max,
++        );
++        assert!(expected_dynamic_max > 0.5);
+     }
+     assert!(steps[0][0] > 2f64.powi(-27));
+     assert!(steps[1][0] > 2f64.powi(-27));
+@@ -1384,7 +1540,7 @@
+     assert_eq!(fixture.evaluator_entries, 12);
+     assert_eq!(
+         fixture.operation_log,
+-        governed_excess_log(base, fixture.scale, steps)
++        governed_excess_log(base, fixture.scale, &steps)
+     );
+ }
+ 
+@@ -1517,31 +1673,32 @@
+     );
+ }
+ 
+-#[test]
+-fn m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base() {
+-    let mut fixture = Fixture::new(FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate);
+-    let base = fixture.base;
+-    let sentinel = fixture.owner_sentinel;
+-    let steps = governed_excess_steps();
+-    let run = super::m1_trust_region_controller_run_for_test(&mut fixture).unwrap();
++fn assert_exhausted_witness_initial_trace(
++    run: &super::m1_trust_region_controller_interface::M1TrustRegionControllerRun,
++    base: [f64; N],
++    steps: &[[f64; N]; 2],
++    new_base: [f64; N],
++) {
+     assert_eq!(run.proposal_trace.len(), 3);
++    assert_eq!(run.proposals, 3);
++    assert_eq!(run.initial_radius.to_bits(), 1.0f64.to_bits());
++    assert_eq!(run.entered_svd_factorizations, 3);
+     assert_eq!(run.accepted_updates, 1);
+-    assert_eq!(
+-        run.proposal_trace[0].radius_before.to_bits(),
+-        1.0f64.to_bits()
+-    );
+-    assert_eq!(
+-        run.proposal_trace[1].radius_before.to_bits(),
+-        0.25f64.to_bits()
+-    );
+-    assert!(same_coordinate_bits(
+-        run.proposal_trace[0].scaled_step,
+-        steps[0]
+-    ));
+-    assert!(same_coordinate_bits(
+-        run.proposal_trace[1].scaled_step,
+-        steps[1]
+-    ));
++    assert_eq!(run.terminal_refusal, None);
++    for (index, radius) in [1.0_f64, 0.25].into_iter().enumerate() {
++        assert_eq!(
++            run.proposal_trace[index].radius_before.to_bits(),
++            radius.to_bits()
++        );
++        assert!(same_coordinate_bits(
++            run.proposal_trace[index].scaled_step,
++            steps[index]
++        ));
++        assert!(same_coordinate_bits(
++            run.proposal_trace[index].base_before,
++            base
++        ));
++    }
+     assert_eq!(
+         run.proposal_trace[0].disposition,
+         super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition::MeritRejectedAndShrunk
+@@ -1552,38 +1709,93 @@
+     );
+     assert!(run.proposal_trace[1].installed);
+     assert_eq!(
+-        run.proposal_trace[1].rho.unwrap().to_bits(),
+-        0.7625000000000025f64.to_bits()
+-    );
+-    assert_eq!(
+         run.proposal_trace[1].next_radius.to_bits(),
+         0.5f64.to_bits()
+     );
+-    assert!(same_coordinate_bits(
+-        run.proposal_trace[0].base_before,
+-        base
+-    ));
+-    assert!(same_coordinate_bits(
+-        run.proposal_trace[1].base_before,
+-        base
+-    ));
+     assert!(!same_coordinate_bits(
+         run.proposal_trace[1].base_after,
+         base
+     ));
+-    let new_base =
+-        std::array::from_fn(|index| base[index] + fixture.scale[index] * steps[1][index]);
+     assert!(same_coordinate_bits(
+         run.proposal_trace[1].base_after,
+         new_base
+     ));
++}
++
++fn assert_exhausted_witness_first_merits(
++    run: &super::m1_trust_region_controller_interface::M1TrustRegionControllerRun,
++    base: [f64; N],
++    scale: [f64; N],
++    steps: &[[f64; N]; 2],
++    new_base: [f64; N],
++) {
++    let full_candidate = std::array::from_fn(|index| base[index] + scale[index] * steps[0][index]);
++    let (full_predicted, full_actual, full_rho, full_dynamic_max) =
++        exhausted_witness_merit(base, full_candidate, steps[0], base, scale);
++    let (first_predicted, first_actual, first_rho, first_dynamic_max) =
++        exhausted_witness_merit(base, new_base, steps[1], base, scale);
++    let full = &run.proposal_trace[0];
++    assert_exhausted_witness_full_rank(full, base, base, scale);
++    assert_exhausted_witness_full_rank(&run.proposal_trace[1], base, base, scale);
++    assert_eq!(full.predicted_reduction.to_bits(), full_predicted.to_bits());
++    assert_eq!(
++        full.actual_reduction.unwrap().to_bits(),
++        full_actual.to_bits()
++    );
++    assert_eq!(full.rho.unwrap().to_bits(), full_rho.to_bits());
++    assert_eq!(
++        full.dynamic_max_normalized_residual.unwrap().to_bits(),
++        full_dynamic_max.to_bits()
++    );
++    let first = &run.proposal_trace[1];
++    assert_eq!(
++        first.predicted_reduction.to_bits(),
++        first_predicted.to_bits()
++    );
++    assert_eq!(
++        first.actual_reduction.unwrap().to_bits(),
++        first_actual.to_bits()
++    );
++    assert_eq!(first.rho.unwrap().to_bits(), first_rho.to_bits());
++    assert_eq!(
++        first.dynamic_max_normalized_residual.unwrap().to_bits(),
++        first_dynamic_max.to_bits()
++    );
++    assert!(first_rho > 0.1);
++    assert!(first_dynamic_max < 0.5);
++    let base_wet_temperature = exhausted_witness_wet_temperature(base, base, scale);
++    assert!(
++        (exhausted_witness_wet_temperature(full_candidate, base, scale) - base_wet_temperature)
++            .abs()
++            > 1.0e-8
++    );
++    assert!(
++        (exhausted_witness_wet_temperature(new_base, base, scale) - base_wet_temperature).abs()
++            > 1.0e-8
++    );
++}
++
++fn assert_exhausted_witness_reset(
++    run: &super::m1_trust_region_controller_interface::M1TrustRegionControllerRun,
++    base: [f64; N],
++    scale: [f64; N],
++    new_base: [f64; N],
++) -> ([f64; N], [f64; N]) {
+     let reset = &run.proposal_trace[2];
+-    let reset_step = std::array::from_fn(|index| if index == 3 { 0.5 } else { 0.0 });
++    let reset_step = exhausted_witness_reset_step();
+     let reset_candidate =
+-        std::array::from_fn(|index| new_base[index] + fixture.scale[index] * reset_step[index]);
++        std::array::from_fn(|index| new_base[index] + scale[index] * reset_step[index]);
+     assert!(same_coordinate_bits(reset.base_before, new_base));
+     assert!(same_coordinate_bits(reset.base_after, new_base));
+     assert!(same_coordinate_bits(reset.scaled_step, reset_step));
++    assert!(same_coordinate_bits(
++        reset.stage1_observation.scaled_step,
++        reset_step
++    ));
++    assert!(same_coordinate_bits(
++        reset.stage1_observation.candidate_coordinates,
++        reset_candidate
++    ));
+     assert_eq!(reset.radius_before.to_bits(), 0.5f64.to_bits());
+     assert_eq!(reset.next_radius.to_bits(), 0.5f64.to_bits());
+     assert!(!reset.installed);
+@@ -1591,6 +1803,38 @@
+         reset.disposition,
+         super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition::RootAdmitted
+     );
++    let (predicted, actual, rho, dynamic_max) =
++        exhausted_witness_merit(new_base, reset_candidate, reset_step, base, scale);
++    assert_exhausted_witness_full_rank(reset, new_base, base, scale);
++    assert_eq!(reset.predicted_reduction.to_bits(), predicted.to_bits());
++    assert_eq!(reset.actual_reduction.unwrap().to_bits(), actual.to_bits());
++    assert_eq!(reset.rho.unwrap().to_bits(), rho.to_bits());
++    assert_eq!(
++        reset.dynamic_max_normalized_residual.unwrap().to_bits(),
++        dynamic_max.to_bits()
++    );
++    assert!(
++        (exhausted_witness_wet_temperature(reset_candidate, base, scale)
++            - exhausted_witness_wet_temperature(new_base, base, scale))
++        .abs()
++            <= 1.0e-8
++    );
++    (reset_step, reset_candidate)
++}
++
++#[test]
++fn m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base() {
++    let mut fixture = Fixture::new(FixtureKind::ReplacementWitnessExhaustedOrdinaryUpdate);
++    let base = fixture.base;
++    let sentinel = fixture.owner_sentinel;
++    let steps = exhausted_witness_steps();
++    let run = super::m1_trust_region_controller_run_for_test(&mut fixture).unwrap();
++    let new_base =
++        std::array::from_fn(|index| base[index] + fixture.scale[index] * steps[1][index]);
++    assert_exhausted_witness_initial_trace(&run, base, &steps, new_base);
++    assert_exhausted_witness_first_merits(&run, base, fixture.scale, &steps, new_base);
++    let (reset_step, reset_candidate) =
++        assert_exhausted_witness_reset(&run, base, fixture.scale, new_base);
+     assert_eq!(run.entered_materializations, 1);
+     assert_eq!(
+         run.materialized_coordinates.unwrap().map(f64::to_bits),
+@@ -1599,6 +1843,7 @@
+     assert_eq!(fixture.materializer_inputs, vec![new_base]);
+     assert_eq!(fixture.payload_marker, 1);
+     assert_eq!(fixture.owner_sentinel, sentinel);
++    assert_eq!(fixture.evaluator_entries, 4);
+     let first_direction = std::array::from_fn(|index| fixture.scale[index] * steps[0][index]);
+     let first_candidate = std::array::from_fn(|index| base[index] + first_direction[index]);
+     let second_direction = std::array::from_fn(|index| fixture.scale[index] * steps[1][index]);

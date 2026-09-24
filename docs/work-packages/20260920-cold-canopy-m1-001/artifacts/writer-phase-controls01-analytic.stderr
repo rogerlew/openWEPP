@@ -1,0 +1,183 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: method `phase_active_set_inconsistent` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:60:8
+   |
+29 | pub(crate) trait M1TrustRegionControllerEvaluator {
+   |                  -------------------------------- method in this trait
+...
+60 |     fn phase_active_set_inconsistent(
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.29s
+────────────
+ Nextest run ID fa4631e8-56f3-49fe-ac32-01b1ba33467e with nextest profile: default
+    Starting 21 tests across 1 binary (256 tests skipped)
+        FAIL [   0.023s] ( 5/21) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology' (2676339) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1246:9:
+    assertion `left == right` failed
+      left: [Evaluate([300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: None, predictor_direction: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.7682212795973755, 0.6401843996644796, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }]
+     right: [Evaluate([300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: None, predictor_direction: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.6, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 15 tests still running
+        FAIL [   0.026s] ( 6/21) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1 ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1' (2676336) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1187:90:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.029s] ( 8/21) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial' (2676337) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1274:5:
+    assertion failed: matches!(super::m1_trust_region_controller_transition_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::Own("PhaseActiveSetInconsistent")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (12/21) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification' (2676356) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1301:5:
+    assertion failed: matches!(super::m1_trust_region_controller_transition_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::Own("selected-side owning error")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.146s] 20/21 tests run: 16 passed, 4 failed, 256 skipped
+        FAIL [   0.023s] ( 5/21) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology' (2676339) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1246:9:
+    assertion `left == right` failed
+      left: [Evaluate([300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: None, predictor_direction: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.7682212795973755, 0.6401843996644796, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }]
+     right: [Evaluate([300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: None, predictor_direction: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.6, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.026s] ( 6/21) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1 ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1' (2676336) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1187:90:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.029s] ( 8/21) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial' (2676337) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1274:5:
+    assertion failed: matches!(super::m1_trust_region_controller_transition_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::Own("PhaseActiveSetInconsistent")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (12/21) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification' (2676356) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1301:5:
+    assertion failed: matches!(super::m1_trust_region_controller_transition_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::Own("selected-side owning error")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+warning: 1/21 tests were not run due to test failure (run with --no-fail-fast to run all tests, or run with --max-fail)
+error: test run failed

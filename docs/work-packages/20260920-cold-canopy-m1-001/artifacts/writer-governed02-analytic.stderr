@@ -1,0 +1,89 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.57s
+────────────
+ Nextest run ID eaa91975-3c3b-4ac3-8a3e-375fd1e4b9c5 with nextest profile: default
+    Starting 26 tests across 1 binary (256 tests skipped)
+        FAIL [   0.006s] ( 2/26) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 281 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness' (2735650) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1463:76:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.029s] ( 7/26) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 281 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission' (2735652) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1497:9:
+    assertion `left == right` failed
+      left: [Evaluate([300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: None, predictor_direction: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.9999999999999976, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectedSideProbe { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], phase: 0, direction: [0.9999999999999976, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, PreEvaluatorTrialDomain([301.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), Evaluate([301.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0])]
+     right: [Evaluate([300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: None, predictor_direction: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectedSideProbe { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], phase: 0, direction: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, PreEvaluatorTrialDomain([301.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), Evaluate([301.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0])]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.155s] 26 tests run: 24 passed, 2 failed, 256 skipped
+        FAIL [   0.006s] ( 2/26) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 281 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness' (2735650) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1463:76:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.029s] ( 7/26) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 281 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission' (2735652) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1497:9:
+    assertion `left == right` failed
+      left: [Evaluate([300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: None, predictor_direction: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.9999999999999976, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectedSideProbe { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], phase: 0, direction: [0.9999999999999976, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, PreEvaluatorTrialDomain([301.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), Evaluate([301.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0])]
+     right: [Evaluate([300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, RawJacobian { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], selected_phase: None, predictor_direction: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectPhase { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], step: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, SelectedSideProbe { base: [300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0], phase: 0, direction: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }, PreEvaluatorTrialDomain([301.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0]), Evaluate([301.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 300.0, 300.0, 0.01, 1000.0, 0.0, 300.0, 0.01, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0, 300.0])]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

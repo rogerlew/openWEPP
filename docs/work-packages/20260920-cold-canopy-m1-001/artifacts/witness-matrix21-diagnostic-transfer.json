@@ -1,0 +1,12 @@
+{
+  "evidence_class": "Ran: parent exact diagnostic and full source-diff comparison",
+  "baseline": "witness-governed17",
+  "current": "witness-matrix21",
+  "diagnostic_identities": 238,
+  "added": [],
+  "removed": [],
+  "changed_source_paths": [
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs"
+  ],
+  "strict": "Inherited failure retained"
+}

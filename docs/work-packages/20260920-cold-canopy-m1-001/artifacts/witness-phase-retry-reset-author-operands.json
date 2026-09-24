@@ -1,0 +1,84 @@
+{
+  "evidence_class": "Author-side closed-form operand proposal; no controller execution and not an independent acceptance review",
+  "retry": {
+    "lambda_hi": "0x1.0fe2812a529f8p+3",
+    "step_hex": [
+      "0x1.89544cafec8adp-3",
+      "0x1.47c63fe7efc90p-3",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0",
+      "0x0.0p+0"
+    ],
+    "step": [
+      0.19205531989934368,
+      0.16004609991611973,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "norm": 0.24999999999999964,
+    "expansion_history": [
+      [
+        0.0,
+        1.0,
+        0.6248199740725324
+      ],
+      [
+        1.0,
+        4.0,
+        0.3905124837953327
+      ]
+    ]
+  },
+  "newbase": {
+    "coordinates_hex": [
+      "0x1.2c9999999999ap+8",
+      "0x1.2c80000000000p+8"
+    ],
+    "residual_hex": [
+      "-0x1.3333333333266p-1",
+      "-0x1.0000000000000p-1"
+    ],
+    "natural_step_hex": [
+      "0x1.3333333333266p-1",
+      "0x1.0000000000000p-1"
+    ],
+    "selected_step_hex": [
+      "0x1.3333333333266p-2",
+      "0x1.0000000000000p-2"
+    ]
+  },
+  "guarded_scope": "Two analytic phase fixtures only; same-base trial-domain refusal and new-base accepted-update reassembly stop at explicit owning probe errors. No physical target."
+}

@@ -1,0 +1,12 @@
+{
+  "observed_utc": "2026-09-24T19:41:17.386421+00:00",
+  "anchor_utc": "2026-09-24T16:10:00+00:00",
+  "implementation_cutoff_utc": "2026-09-24T19:40:00+00:00",
+  "hard_deadline_utc": "2026-09-24T20:10:00+00:00",
+  "carried_seconds": 308113.959294,
+  "resumed_charged_seconds": 12677.386421,
+  "cumulative_charged_seconds": 320791.345715,
+  "cumulative_ceiling_seconds": 322513.959294,
+  "remaining_hard_seconds": 1722.6135790000008,
+  "accounting": "All wall elapsed including concurrent work/waits charged once; no refund/reanchor; final publication receipt will carry later charge."
+}

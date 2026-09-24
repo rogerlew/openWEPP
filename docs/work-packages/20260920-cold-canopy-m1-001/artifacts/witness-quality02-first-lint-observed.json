@@ -1,0 +1,22 @@
+{
+  "evidence_class": "Static: parent tool output from first writer-quality02-lint.stderr before its later replacement",
+  "observed_errors": [
+    {
+      "file": "m1_trust_region_controller.rs",
+      "line": 403,
+      "error": "too_many_lines (102/100)"
+    },
+    {
+      "file": "m1_trust_region_stage2_controls.rs",
+      "line": 1679,
+      "error": "large_types_passed_by_value: steps [[f64; N]; 2],336bytes"
+    },
+    {
+      "file": "m1_trust_region_stage2_controls.rs",
+      "line": 1729,
+      "error": "large_types_passed_by_value: steps [[f64; N]; 2],336bytes"
+    }
+  ],
+  "limitation": "Writer reused log labels. Full earlier compiler/lint logs are not retained at those names; writer first-failure.md summarizes the compiler ambiguity. This reconstructed record is parent-observed excerpts, not an original raw log or exact failed source archive.",
+  "correction": "Writer instructed unique attempt labels; all parent source-bound recordings immutable and preserved; final quality02 source independently reviewed and recorded."
+}

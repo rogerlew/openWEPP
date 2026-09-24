@@ -1,0 +1,50 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0599]: no method named `clone` found for type parameter `Phase` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:110:43
+    |
+ 89 | impl<P: Clone, Phase: PartialEq> FoundationState<P, Phase> {
+    |                ----- method `clone` not found for this type parameter
+...
+110 |             selected_phase: natural_phase.clone(),
+    |                                           ^^^^^ method not found in `Phase`
+    |
+    = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following trait defines an item `clone`, perhaps you need to restrict type parameter `Phase` with it:
+    |
+ 89 | impl<P: Clone, Phase: PartialEq + Clone> FoundationState<P, Phase> {
+    |                                 +++++++
+
+error[E0599]: no method named `clone` found for type parameter `Phase` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:568:41
+    |
+ 89 | impl<P: Clone, Phase: PartialEq> FoundationState<P, Phase> {
+    |                ----- method `clone` not found for this type parameter
+...
+568 |             self.selected_phase = phase.clone();
+    |                                         ^^^^^ method not found in `Phase`
+    |
+    = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following trait defines an item `clone`, perhaps you need to restrict type parameter `Phase` with it:
+    |
+ 89 | impl<P: Clone, Phase: PartialEq + Clone> FoundationState<P, Phase> {
+    |                                 +++++++
+
+error[E0599]: no method named `clone` found for type parameter `Phase` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:626:50
+    |
+ 89 | impl<P: Clone, Phase: PartialEq> FoundationState<P, Phase> {
+    |                ----- method `clone` not found for this type parameter
+...
+626 |         self.selected_phase = self.natural_phase.clone();
+    |                                                  ^^^^^ method not found in `Phase`
+    |
+    = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following trait defines an item `clone`, perhaps you need to restrict type parameter `Phase` with it:
+    |
+ 89 | impl<P: Clone, Phase: PartialEq + Clone> FoundationState<P, Phase> {
+    |                                 +++++++
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 3 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage` exited with code 101

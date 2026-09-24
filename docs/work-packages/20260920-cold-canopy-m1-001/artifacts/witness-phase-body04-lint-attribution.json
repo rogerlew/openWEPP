@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/witness_qa",
+  "scope": "BODY04 phase_finalized guard/reset delta and lint attribution; no command run or Rust edited by reviewer.",
+  "status": "HOLD only for inherited strict vegetation lint and remaining physical/cap/harness scope; no BODY04-introduced lint diagnostic.",
+  "source": {
+    "tree_sha256": "f1856fe6003a98612795e7bf8113b2a49f426b59cbe31d23c87a30c317e980fd",
+    "review_root": "/home/roger/openwepp-experiments/cold-canopy-m1-witness-phase-body04-review-20260924",
+    "entries_rehashed": 764,
+    "mismatches": 0
+  },
+  "receipts": {
+    "analytic": {
+      "artifact": "artifacts/witness-phase-body04-analytic.json",
+      "exit_code": 0,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "summary": "24/24 controls passed"
+    },
+    "format": {
+      "artifact": "artifacts/witness-phase-body04-format.json",
+      "exit_code": 0,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true
+    },
+    "focused": {
+      "artifact": "artifacts/witness-phase-body04-lint-focused.json",
+      "exit_code": 101,
+      "stderr_sha256": "abf969eb50fc240ae465c64313b03f43eef891a0a7bf206ec99c06692c681a3f",
+      "classification": "No BODY04 controller/controls diagnostic; identities transfer from BODY03/QUALITY02 chain."
+    },
+    "strict": {
+      "artifact": "artifacts/witness-phase-body04-lint-strict.json",
+      "exit_code": 101,
+      "stderr_sha256": "00b88210072bed4b2dbe3c71c4a6f8ce471b012be2d49b1e6bba390eb299cce5",
+      "classification": "exact inherited strict vegetation HOLD at crates/openwepp-vegetation/src/v11.rs:2149."
+    }
+  },
+  "confinement": {
+    "changed_body": "m1_trust_region_controller.rs",
+    "unchanged_stage1": "89d97586831d696a7919958224e46cf227de5ecfe3ddbf3acdcb81128d8ad9e2",
+    "unchanged_interface": "f5ddbcc0f9cd6257a67daa42f6f30a5e4c516554cf2cf21ae3b2581789eeb82c",
+    "approved_drift_controls": "fe7bffe0d170e2f618e68135b3b7df3ab3bcf60a0ff819d6c7b881dfd8fdb2e6"
+  },
+  "qa": "phase_finalized is set only after final-phase agreement, rejects later same-base drift before assembly/probe, and resets only in reassemble_current after accepted new base. No maintainability or gate blocker in affected code."
+}

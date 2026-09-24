@@ -1,0 +1,67 @@
+{
+  "reviewer": "/root/witness_qa",
+  "scope": "BODY03 frozen phase-controller body: affected lint attribution, source custody, and QA confinement. No command run or Rust edited by reviewer.",
+  "status": "HOLD: inherited strict vegetation lint and correctness HOLD remain; no BODY03-introduced lint diagnostic found.",
+  "frozen_source": {
+    "tree_sha256": "7ed229b8575b7bc30ced1815474a0ccab0a99ac518fd5bee795494159ed3d7d8",
+    "review_root": "/home/roger/openwepp-experiments/cold-canopy-m1-witness-phase-body03-review-20260924",
+    "entry_count": 764,
+    "recorded_receipts_source_unchanged": true,
+    "recorded_receipts_pinned_files_unchanged": true
+  },
+  "post_freeze_mutable_source_observation": {
+    "classification": "separate controls-only drift after BODY03 freeze; not a BODY03 source mismatch",
+    "changed_path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+    "frozen_sha256": "653bd37bb0b0373f7c7a5e271fc0d2e3ad8a32d9c043ed1c69457e02f3d4086d",
+    "current_sha256": "fe7bffe0d170e2f618e68135b3b7df3ab3bcf60a0ff819d6c7b881dfd8fdb2e6",
+    "effect": "Adds the later PhaseSelectedRetryDrift control; BODY03 controller is unchanged. Do not reuse BODY03 receipts for that later control."
+  },
+  "receipts": {
+    "analytic": {
+      "artifact": "artifacts/witness-phase-body03-analytic.json",
+      "exit_code": 0,
+      "summary": "23/23 analytic controls passed"
+    },
+    "format": {
+      "artifact": "artifacts/witness-phase-body03-format.json",
+      "exit_code": 0
+    },
+    "focused_lint": {
+      "artifact": "artifacts/witness-phase-body03-lint-focused.json",
+      "exit_code": 101,
+      "stderr_sha256": "3b500701edb418da6457c2ff3a30cdfa915571c8a05bc1687d5526389b04ea18",
+      "unique_diagnostics": 235,
+      "classification": "234 exact QUALITY02/BODY07 transfers plus the retained strict vegetation identity; no diagnostic references the BODY03 controller or phase controls."
+    },
+    "strict_lint": {
+      "artifact": "artifacts/witness-phase-body03-lint-strict.json",
+      "exit_code": 101,
+      "stderr_sha256": "a27fe12d48ea980d19d6cc8e363376414518e4c5329a55d43c2fb632cf1a23a5",
+      "unique_diagnostics": 1,
+      "classification": "exact transferred strict vegetation HOLD"
+    }
+  },
+  "quality02_chain": {
+    "basis": "Exact diagnostic message, source path, primary source line, and frozen source-file SHA-256 against artifacts/witness-quality02-lint-attribution.json.",
+    "focused": {
+      "inherited_exact_unchanged_body07_baseline": 92,
+      "transferred_exact_unchanged_body07_reviewed_candidate": 142,
+      "retained_strict_vegetation_hold": 1
+    },
+    "strict": {
+      "retained_strict_vegetation_hold": 1,
+      "identity": {
+        "source_path": "crates/openwepp-vegetation/src/v11.rs",
+        "line": 2149,
+        "message": "error: this function has too many lines (137/100)"
+      }
+    }
+  },
+  "qa_confinement": {
+    "body_files": [
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs"
+    ],
+    "finding": "No new lint diagnostic in either affected body file. Analytic and format receipts pass. The trial-domain predicate negates trial_domain before refusal, consistent with the fixture prescribed_invalid meaning; correctness independently owns numeric and authority reconstruction."
+  }
+}

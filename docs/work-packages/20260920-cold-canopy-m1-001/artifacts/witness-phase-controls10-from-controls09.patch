@@ -1,0 +1,34 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs
+@@ -1369,6 +1369,7 @@
+ fn m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal() {
+     let mut fixture = Fixture::new(FixtureKind::PhaseSelectedRetry);
+     let base = fixture.base;
++    let sentinel = fixture.owner_sentinel;
+     let result = super::m1_trust_region_controller_run_for_test(&mut fixture);
+     assert!(matches!(
+         result,
+@@ -1396,6 +1397,7 @@
+     ]);
+     assert_eq!(fixture.operation_log, expected);
+     assert_eq!(fixture.evaluator_entries, 1);
++    assert_eq!(fixture.owner_sentinel, sentinel);
+     assert_eq!(fixture.payload_marker, 0);
+     assert!(fixture.materializer_inputs.is_empty());
+ }
+@@ -1404,6 +1406,7 @@
+ fn m1_stage2_accepted_update_reassembles_natural_phase_at_new_base() {
+     let mut fixture = Fixture::new(FixtureKind::PhaseAcceptedUpdateReset);
+     let base = fixture.base;
++    let sentinel = fixture.owner_sentinel;
+     let result = super::m1_trust_region_controller_run_for_test(&mut fixture);
+     assert!(matches!(
+         result,
+@@ -1451,6 +1454,7 @@
+         },
+     ]);
+     assert_eq!(fixture.operation_log, expected);
++    assert_eq!(fixture.owner_sentinel, sentinel);
+     assert_eq!(fixture.payload_marker, 0);
+     assert!(fixture.materializer_inputs.is_empty());
+ }

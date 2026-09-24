@@ -1,0 +1,68 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find `M1TrustRegionControllerError` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1465:20
+     |
+1465 |         Err(super::M1TrustRegionControllerError::Own(
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionControllerError` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1465 -         Err(super::M1TrustRegionControllerError::Own(
+1465 +         Err(super::M1TrustRegionControllerOperation::Own(
+     |
+help: consider importing this enum
+     |
+   2 + use crate::m1_trust_region_controller::M1TrustRegionControllerError;
+     |
+help: if you import `M1TrustRegionControllerError`, refer to it directly
+     |
+1465 -         Err(super::M1TrustRegionControllerError::Own(
+1465 +         Err(M1TrustRegionControllerError::Own(
+     |
+
+error[E0433]: cannot find `M1TrustRegionControllerError` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1488:20
+     |
+1488 |         Err(super::M1TrustRegionControllerError::Numerical(
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionControllerError` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1488 -         Err(super::M1TrustRegionControllerError::Numerical(
+1488 +         Err(super::M1TrustRegionControllerOperation::Numerical(
+     |
+help: consider importing this enum
+     |
+   2 + use crate::m1_trust_region_controller::M1TrustRegionControllerError;
+     |
+help: if you import `M1TrustRegionControllerError`, refer to it directly
+     |
+1488 -         Err(super::M1TrustRegionControllerError::Numerical(
+1488 +         Err(M1TrustRegionControllerError::Numerical(
+     |
+
+error[E0433]: cannot find `M1TrustRegionControllerError` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1511:20
+     |
+1511 |         Err(super::M1TrustRegionControllerError::Own(
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionControllerError` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1511 -         Err(super::M1TrustRegionControllerError::Own(
+1511 +         Err(super::M1TrustRegionControllerOperation::Own(
+     |
+help: consider importing this enum
+     |
+   2 + use crate::m1_trust_region_controller::M1TrustRegionControllerError;
+     |
+help: if you import `M1TrustRegionControllerError`, refer to it directly
+     |
+1511 -         Err(super::M1TrustRegionControllerError::Own(
+1511 +         Err(M1TrustRegionControllerError::Own(
+     |
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 3 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage` exited with code 101

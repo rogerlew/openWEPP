@@ -1,0 +1,24 @@
+{
+  "evidence_class": "Parent exact diagnostic identity/source comparison; independent QA scope verdict is separate",
+  "baseline_label": "witness-phase-body04-lint-focused",
+  "current_label": "witness-governed17-lint-focused",
+  "baseline_tree": "f1856fe6003a98612795e7bf8113b2a49f426b59cbe31d23c87a30c317e980fd",
+  "current_tree": "8d447621a6801e7d2c55131214c5607857e518c25a38cf3eb8d04ead0ab439db",
+  "canonical_identity_fields": [
+    "error headline",
+    "primary source path",
+    "primary line",
+    "primary column"
+  ],
+  "baseline_diagnostic_records": 238,
+  "current_diagnostic_records": 238,
+  "added": [],
+  "removed": [],
+  "diagnostic_source_paths_sha256_unchanged": 16,
+  "paths_outside_manifest": [],
+  "strict_status": "retained inherited vegetation failure; not a strict pass",
+  "stderr_sha256": {
+    "witness-phase-body04": "abf969eb50fc240ae465c64313b03f43eef891a0a7bf206ec99c06692c681a3f",
+    "witness-governed17": "0c4acb171c45cd250e47d46c9a57b759ac26ab932639e173e62773eabacb841a"
+  }
+}

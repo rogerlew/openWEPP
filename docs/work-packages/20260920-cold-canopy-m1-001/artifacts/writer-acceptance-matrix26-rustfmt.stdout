@@ -1,0 +1,33 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:2232:
+         fixture.evaluation_fault = Some((2, fault));
+         let base = fixture.base;
+         let sentinel = fixture.owner_sentinel;
+-        let step: [f64; N] = std::array::from_fn(|index| {
+-            if index == 0 {
+-                2f64.powi(-28)
+-            } else {
+-                0.0
+-            }
+-        });
++        let step: [f64; N] =
++            std::array::from_fn(|index| if index == 0 { 2f64.powi(-28) } else { 0.0 });
+         let direction = std::array::from_fn(|index| fixture.scale[index] * step[index]);
+         let mut candidate = base;
+         candidate[0] += 2f64.powi(-28);
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:2247:
+             Err(M1TrustRegionControllerError::Numerical(actual)) if actual == message
+         ));
+         assert_eq!(fixture.evaluator_entries, 2);
+-        assert_eq!(fixture.operation_log, ordinary_log(base, direction, candidate));
++        assert_eq!(
++            fixture.operation_log,
++            ordinary_log(base, direction, candidate)
++        );
+         assert_eq!(fixture.base.map(f64::to_bits), base.map(f64::to_bits));
+         assert!(fixture.materializer_inputs.is_empty());
+         assert_eq!(fixture.owner_sentinel, sentinel);

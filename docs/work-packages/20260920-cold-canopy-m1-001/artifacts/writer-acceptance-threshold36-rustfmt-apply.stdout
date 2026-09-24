@@ -1,0 +1,18 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+error: unexpected closing delimiter: `}`
+    --> /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1567:2
+     |
+1541 |     ] {
+     |       - this delimiter might not be properly closed...
+...
+1565 |             }
+     |             - ...as it matches this but it has different indentation
+1566 |         }
+1567 |     }
+     |     ^ unexpected closing delimiter
+
+Error writing files: failed to resolve mod `m1_trust_region_stage2_controls`: cannot parse /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs

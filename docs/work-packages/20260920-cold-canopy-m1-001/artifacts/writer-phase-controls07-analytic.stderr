@@ -1,0 +1,41 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:179:13
+    |
+177 |           match (self.kind, i) {
+    |                 -------------- this expression has type `(FixtureKind, usize)`
+178 |               (FixtureKind::Ordinary(c), 0) => -2.0 + z + c * z * z,
+179 | /             (
+180 | |                 FixtureKind::FrozenRawJacobian
+181 | |                 | FixtureKind::PhaseUnchanged
+182 | |                 | FixtureKind::PhaseChanged
+...   |
+188 | |                 0,
+189 | |             ) => -1.2 + z,
+    | |_____________^ expected a tuple with 2 elements, found one with 3 elements
+    |
+    = note: expected tuple `(FixtureKind, usize)`
+               found tuple `(_, _, _)`
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:190:13
+    |
+177 |           match (self.kind, i) {
+    |                 -------------- this expression has type `(FixtureKind, usize)`
+...
+190 | /             (
+191 | |                 FixtureKind::FrozenRawJacobian
+192 | |                 | FixtureKind::PhaseUnchanged
+193 | |                 | FixtureKind::PhaseChanged
+...   |
+199 | |                 1,
+200 | |             ) => -1.0 + z,
+    | |_____________^ expected a tuple with 2 elements, found one with 3 elements
+    |
+    = note: expected tuple `(FixtureKind, usize)`
+               found tuple `(_, _, _)`
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage` exited with code 101

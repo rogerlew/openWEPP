@@ -1,0 +1,20 @@
+{
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "recovery_controls22_source": "/home/roger/openwepp-experiments/cold-canopy-m1-witness-controls22-recovery-20260924",
+  "changed_source": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+  "changed_source_sha256": "d3874d52e6de9e3480a70a7a1ec9e8bb2afdd91dbf00412b4651f71719e95e8b",
+  "controller_sha256": "fe9186af2f87aa4569437e40eb31fe208a424f3d8ae293ae9ee48422b2113ca5",
+  "controller_matches_controls22": true,
+  "diff": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/writer-controls24.diff",
+  "diff_sha256": "513c6a1b3735d95b3ce898c2d472f4b3b1ff0f2be61ab74a6e4d289d9e4ccf79",
+  "oracle_corrections": {
+    "reset_scaled_step": "p[3]=f64::from_bits(0x3fdffffffffffffe); all other p[i]=+0.0",
+    "row0_residual": "z/4",
+    "negative_candidate_operands": "candidate coordinates then (candidate-base)/scale in evaluator order",
+    "weighted_diagonal": "(1/2^-60) * (2^-60 * (derivative/scale[row])) * scale[column]"
+  },
+  "checks": {
+    "rustfmt": "writer-controls24-rustfmt.exit: 0",
+    "inventory_compile": "writer-controls24-inventory.exit: 0; 16 m1_stage2 tests listed; no tests executed"
+  }
+}

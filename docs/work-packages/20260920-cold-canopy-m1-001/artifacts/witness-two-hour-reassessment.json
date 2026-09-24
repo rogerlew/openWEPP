@@ -1,0 +1,13 @@
+{
+  "observed_utc": "2026-09-24T18:10:44.116758+00:00",
+  "first_work_anchor_utc": "2026-09-24T16:10:00+00:00",
+  "carried_seconds": 308113.959294,
+  "resumed_charged_seconds": 7244.116758,
+  "cumulative_charged_seconds": 315358.076052,
+  "cumulative_ceiling_seconds": 322513.959294,
+  "remaining_hard_seconds": 7155.883242,
+  "remaining_implementation_seconds": 5355.883242,
+  "protected_disposition_seconds": 1800,
+  "decision": "CONTINUE explicit governed-controls corrections; fixed cutoff19:40Z/hard20:10Z unchanged",
+  "target_slots": "prefix/baseline/treatment/corrected repeat unused"
+}

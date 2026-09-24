@@ -1,0 +1,17 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:2464:
+                 transition.disposition,
+                 super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition::RootAdmitted
+             );
+-            assert_eq!(fixture.operation_log, full_no_update_log(base, direction, candidate));
++            assert_eq!(
++                fixture.operation_log,
++                full_no_update_log(base, direction, candidate)
++            );
+             assert_eq!(fixture.evaluator_entries, 2);
+             assert_eq!(fixture.materializer_inputs, vec![base]);
+             assert_eq!(fixture.owner_sentinel, sentinel);

@@ -1,0 +1,11 @@
+{
+  "scope": "authority-faithful Stage 2 selected-phase expected-red controls and private owning disagreement constructor",
+  "controller_sha256": "2f6771927644adab03911ab5cfb5295ddb2d9d39354228cb9b88875fd524a5a3",
+  "interface_sha256": "f5ddbcc0f9cd6257a67daa42f6f30a5e4c516554cf2cf21ae3b2581789eeb82c",
+  "controls_sha256": "4b8a2ef85e2b522ec29154d44c9ebf25abb3c89da07ee4209c79c48d4031a5c9",
+  "format": "writer-phase-controls04-rustfmt.stdout",
+  "inventory": "writer-phase-controls04-inventory.stdout",
+  "expected_red": "writer-phase-controls05-analytic.stdout",
+  "lint": "writer-phase-controls05-lint.stderr",
+  "result": "21 focused controls compiled; 17 pass and 4 authority-required changed-phase controls fail on the unchanged controller; source-bound lint has no touched-file diagnostics."
+}

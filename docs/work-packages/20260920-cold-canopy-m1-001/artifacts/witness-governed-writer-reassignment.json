@@ -1,0 +1,13 @@
+{
+  "observed_utc": "2026-09-24T18:17:17.636305+00:00",
+  "previous_writer": "/root/witness_controls_repair",
+  "next_writer": "/root/governed_controls_finisher",
+  "reason": "Repeated partial returns left concrete assigned control corrections and exact trace/calibration incomplete. Fresh implementer owns only existing bounded controls file; no change to method/budget/scope.",
+  "preserved_controls_path": "/tmp/openwepp-governed-writer-reassignment-20260924.rs",
+  "controls_sha256": "e953aec9dbce2b408fdce998bad2e06d63a10204f8fb90fcdc036c3875e2adea",
+  "remaining_task": "Correct full mixed positive fixture; bind all3 mixed traces/calibration; preserve exactroot assertions; format and inspect exact4 intended failures.",
+  "exclusive_writer": true,
+  "base_source_manifest": "witness-governed08-interim-source.json",
+  "controls_patch": "witness-governed-reassignment-from-interim08.patch",
+  "controls_patch_sha256": "eabda74a9a83abbe325567c09266e75778b9eeb0040f128329aa6bb6bff00ccb"
+}

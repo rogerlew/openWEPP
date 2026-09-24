@@ -1,0 +1,64 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.43s
+────────────
+ Nextest run ID 3f0db117-c092-47de-b557-0ef170f9d91e with nextest profile: default
+    Starting 3 tests across 1 binary (295 tests skipped)
+        FAIL [   0.238s] (1/3) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 297 filtered out; finished in 0.23s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base' (2872773) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:2604:5:
+    assertion `left == right` failed
+      left: 25
+     right: 30
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_root_on_fiftieth_update_precedes_next_jacobian ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 297 filtered out; finished in 0.46s
+
+
+        FAIL [   1.153s] (3/3) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_long_progress_work_cap_is_fifty_accepted_proposals
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_work_cap_is_fifty_accepted_proposals ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_long_progress_work_cap_is_fifty_accepted_proposals
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 297 filtered out; finished in 1.15s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_long_progress_work_cap_is_fifty_accepted_proposals' (2872771) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:2541:5:
+    assertion failed: matches!(super::m1_trust_region_controller_run_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::CoreWorkCap))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   1.154s] 3 tests run: 1 passed, 2 failed, 295 skipped
+        FAIL [   0.238s] (1/3) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base
+        FAIL [   1.153s] (3/3) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_long_progress_work_cap_is_fifty_accepted_proposals
+error: test run failed

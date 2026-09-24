@@ -1,0 +1,161 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.93s
+────────────
+ Nextest run ID 7d31274e-9ed8-4f1c-9703-a899321ec7d5 with nextest profile: default
+    Starting 30 tests across 1 binary (256 tests skipped)
+        FAIL [   0.008s] ( 2/30) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 285 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness' (2760071) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1499:76:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.029s] ( 6/30) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 285 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates' (2760076) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1624:76:
+    called `Result::unwrap()` on an `Err` value: Numerical("incomplete governed step operand")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (11/30) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 285 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks' (2760086) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1606:90:
+    called `Result::unwrap()` on an `Err` value: Numerical("incomplete governed step operand")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.058s] (20/30) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 285 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts' (2760085) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1654:76:
+    called `Result::unwrap()` on an `Err` value: Numerical("incomplete governed step operand")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.175s] 30 tests run: 26 passed, 4 failed, 256 skipped
+        FAIL [   0.008s] ( 2/30) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 285 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness' (2760071) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1499:76:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.029s] ( 6/30) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 285 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates' (2760076) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1624:76:
+    called `Result::unwrap()` on an `Err` value: Numerical("incomplete governed step operand")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (11/30) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 285 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks' (2760086) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1606:90:
+    called `Result::unwrap()` on an `Err` value: Numerical("incomplete governed step operand")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.058s] (20/30) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 285 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts' (2760085) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1654:76:
+    called `Result::unwrap()` on an `Err` value: Numerical("incomplete governed step operand")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

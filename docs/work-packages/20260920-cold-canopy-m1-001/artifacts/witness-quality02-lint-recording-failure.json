@@ -1,0 +1,10 @@
+{
+  "failure": "ENOSPC at recorder patch write before subprocess launch",
+  "attempts": [
+    "witness-quality02-lint-focused",
+    "witness-quality02-lint-strict"
+  ],
+  "partial_artifacts_preserved": true,
+  "recovery": "Removed only untracked generated /workdir/openWEPP/target/debug/incremental (24GiB). No active cargo processes; source/evidence untouched.",
+  "classification": "recording failure; neither lint command ran; no target consumed"
+}

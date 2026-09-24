@@ -1,0 +1,3357 @@
+{
+  "reviewer": "/root/witness_qa",
+  "scope": "QUALITY02 source-bound retry lint attribution and affected helper/assertion confinement; no command run by this reviewer",
+  "status": "HOLD only for inherited strict vegetation diagnostic; all four BODY01 introduced diagnostics are absent from the retry receipts",
+  "source": {
+    "tree_sha256": "6133b4497da5b1b207e4c748117510b56472aeb32298b805b087c1dfd65050f1",
+    "review_root": "/home/roger/openwepp-experiments/cold-canopy-m1-witness-quality02-review-20260924",
+    "entries_rehashed": 764,
+    "mismatches": 0
+  },
+  "recording_failure": {
+    "artifact": "artifacts/witness-quality02-lint-recording-failure.json",
+    "classification": "ENOSPC before subprocess launch; partial artifacts retained; neither original lint command is execution evidence",
+    "recovery": "Only untracked target/debug/incremental cache was removed after confirming no active Cargo process."
+  },
+  "retries": {
+    "focused": {
+      "receipt": "artifacts/witness-quality02-lint-focused-retry.json",
+      "exit_code": 101,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "observer_base_unchanged": true,
+      "stderr_sha256": "3b500701edb418da6457c2ff3a30cdfa915571c8a05bc1687d5526389b04ea18"
+    },
+    "strict": {
+      "receipt": "artifacts/witness-quality02-lint-strict-retry.json",
+      "exit_code": 101,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "observer_base_unchanged": true,
+      "stderr_sha256": "00b88210072bed4b2dbe3c71c4a6f8ce471b012be2d49b1e6bba390eb299cce5"
+    }
+  },
+  "diff_confinement": {
+    "changed_files_against_frozen_body01": [
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs"
+    ],
+    "controller": "Extracts trial-domain refusal and root admission helpers; transition calls them without changing their state/counter/trace arguments.",
+    "controls": "Reverses equivalent diagonal condition, borrows the 11-step array, and extracts reset-control assertions while retaining the test and its assertions."
+  },
+  "body01_chain_join": {
+    "method": "Exact message + source path + primary source line + frozen-source SHA-256 against artifacts/witness-body01-lint-attribution.json.",
+    "receipt_occurrences": 239,
+    "unique_diagnostics": 235,
+    "summary": {
+      "inherited_exact_unchanged_body07_baseline": 92,
+      "transferred_exact_unchanged_body07_reviewed_candidate": 142,
+      "changed_or_unmatched_against_reviewed_body07": 1
+    },
+    "remaining_unmatched": {
+      "path": "crates/openwepp-vegetation/src/v11.rs",
+      "line": 2149,
+      "message": "error: this function has too many lines (137/100)",
+      "classification": "outside QUALITY02 LSE diff; strict-gate HOLD"
+    },
+    "cleared_introduced_body01_diagnostics": [
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:379 clippy::too_many_lines",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:721 clippy::needless_bool",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:760 clippy::large_types_passed_by_value",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1677 clippy::too_many_lines"
+    ],
+    "entries": [
+      {
+        "identity": {
+          "message": "error: binding's name is too similar to existing binding",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs",
+          "primary_line": "let captured =",
+          "source_file_sha256": "7385c6ad20be7826817dfedc6764d755c5b9961f89ccb4c9df712b416ef82a14"
+        },
+        "line": 267,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/litter_phase_tests.rs",
+          "primary_line": "post_vapor_ice.min(2.0 * (920.0 * 2106.0 * 0.04 * 5.0 / 333700.0_f64).min(post_vapor_ice));",
+          "source_file_sha256": "a87c6484748e34c281d50f2c49321a7bff30b1914807da20db0704eb11c86930"
+        },
+        "line": 229,
+        "column": 65,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/litter_phase_tests.rs",
+          "primary_line": "assert!((candidate.receipt.transfer.fusion_energy_j_m2 + 333700.0 * melted).abs() < 1e-8);",
+          "source_file_sha256": "a87c6484748e34c281d50f2c49321a7bff30b1914807da20db0704eb11c86930"
+        },
+        "line": 232,
+        "column": 62,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "* crate::physics::saturation_specific_humidity(temperature, 101325.0).unwrap()",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 311,
+        "column": 77,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "air_pressure_pa: 101325.0,",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 334,
+        "column": 30,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "atmospheric_downward_longwave_w_m2: 5.670374419e-8 * temperature.powi(4),",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 336,
+        "column": 49,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "heat_capacity_j_m2_k: 120000.0,",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 345,
+        "column": 39,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "let radiation = problem.atmospheric_downward_longwave_w_m2 - 5.670374419e-8 * t.powi(4);",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 522,
+        "column": 70,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "let ql = ml * (4218.0 * (t - 273.15) + 2501000.0 - 2369.0 * (t - 273.15));",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 531,
+        "column": 48,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "let qi = mi * (2106.0 * (t - 273.15) + 2501000.0 - 2369.0 * (t - 273.15) + 333700.0);",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 532,
+        "column": 48,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "let qi = mi * (2106.0 * (t - 273.15) + 2501000.0 - 2369.0 * (t - 273.15) + 333700.0);",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 532,
+        "column": 84,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "let soil_energy = 120000.0 * (soil_t - problem.soil_nodes[0].beginning_temperature_k);",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 548,
+        "column": 27,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: 5 bindings with single-character names in scope",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "let mut c = column();",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 641,
+        "column": 13,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: 5 bindings with single-character names in scope",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "let mut c = column();",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 726,
+        "column": 13,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: 6 bindings with single-character names in scope",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "let mut c = column();",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 726,
+        "column": 13,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "c.top_rain_kg_m2_tile = 9.400473273461845e-8;",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 937,
+        "column": 29,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "let f = transparent_test_forcing(&c, vec![(c.top_rain_kg_m2_tile, 265.28179297231515)]);",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 946,
+        "column": 71,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "assert_eq!(ledger.wet_surface_temperature_k, 265.28179297231515);",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 967,
+        "column": 54,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "crate::covered_liquid::finalize_covered_liquid(prep, 0.0, 265.28179297231515, pass)",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 977,
+        "column": 71,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "let f = transparent_test_forcing(&c, vec![(2.0, 265.28179297231515)]);",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 997,
+        "column": 53,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "for canopy_temperature in [266.85496453757526, 273.15, 280.0] {",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2287,
+        "column": 32,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "primary_line": "0.3 * crate::physics::saturation_specific_humidity(285.0, 101325.0).unwrap();",
+          "source_file_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83"
+        },
+        "line": 254,
+        "column": 75,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "primary_line": "enthalpy_j_m2_ofe_ground: 120000.0 * (285.0 - 273.15),",
+          "source_file_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83"
+        },
+        "line": 289,
+        "column": 51,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: long literal lacking separators",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "primary_line": "problem.interval_s = 59.999999999;",
+          "source_file_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83"
+        },
+        "line": 343,
+        "column": 30,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: unused variable: `iteration`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "iteration: u32,",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2523,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: unused variable: `corrected_assembly`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "corrected_assembly: bool,",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2524,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: unused variable: `error`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "Err(error) => {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4241,
+        "column": 21,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: unused variable: `error`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "Err(error) => {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4273,
+        "column": 21,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: field `linear_dimension` is never read",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "linear_dimension: usize,",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2342,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: redundant closure",
+          "source_path": "crates/openwepp-land-surface-energy/src/covered_liquid.rs",
+          "primary_line": "let temperature = proof.map_or(numerical_wet_temperature_k, |p| p.release_temperature_k());",
+          "source_file_sha256": "5101c08b413031019631e9957c975e3349b946761f579fceab83d0e06bfe38b0"
+        },
+        "line": 217,
+        "column": 65,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function returning `Result` missing `# Errors` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs",
+          "primary_line": "pub fn new(",
+          "source_file_sha256": "7385c6ad20be7826817dfedc6764d755c5b9961f89ccb4c9df712b416ef82a14"
+        },
+        "line": 31,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function returning `Result` missing `# Errors` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs",
+          "primary_line": "pub fn m1_liquid_interception_fraction(",
+          "source_file_sha256": "7385c6ad20be7826817dfedc6764d755c5b9961f89ccb4c9df712b416ef82a14"
+        },
+        "line": 132,
+        "column": 1,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function returning `Result` missing `# Errors` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs",
+          "primary_line": "pub fn route_m1_column_liquid(",
+          "source_file_sha256": "7385c6ad20be7826817dfedc6764d755c5b9961f89ccb4c9df712b416ef82a14"
+        },
+        "line": 318,
+        "column": 1,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (114/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs",
+          "primary_line": "pub fn route_m1_column_liquid(",
+          "source_file_sha256": "7385c6ad20be7826817dfedc6764d755c5b9961f89ccb4c9df712b416ef82a14"
+        },
+        "line": 318,
+        "column": 1,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs",
+          "primary_line": ") -> Result<M1FullSupplyHydraulics, M1CoupledError> {",
+          "source_file_sha256": "10a1d3d502bc36a52aceffd7604d66469d065f5e3a2d3a9afa83405cd810bf1b"
+        },
+        "line": 21,
+        "column": 6,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: usage of wildcard import",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "use super::*;",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<Self, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 568,
+        "column": 10,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has a `#[must_use]` attribute with no message, but returns a type already marked as `#[must_use]`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn jacobian(&self) -> Result<&[Vec<f64>], M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 657,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn jacobian(&self) -> Result<&[Vec<f64>], M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 657,
+        "column": 31,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has a `#[must_use]` attribute with no message, but returns a type already marked as `#[must_use]`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn jacobian_column(&self, index: usize) -> Result<Vec<f64>, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 663,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn jacobian_column(&self, index: usize) -> Result<Vec<f64>, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 663,
+        "column": 52,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn occupancy(&self, id: &str) -> Result<&M1OccupancyEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 687,
+        "column": 42,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<(), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 710,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "if !(trial.coordinates[base + 3] > 0.0)",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 789,
+        "column": 12,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<(), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 868,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: unnecessary closure used to substitute value for `Option::None`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "let boundary = input",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 904,
+        "column": 20,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: unnecessary closure used to substitute value for `Option::None`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "let optical = input",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 910,
+        "column": 19,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: casting `f64` to `u128` may truncate the value",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 954,
+        "column": 27,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: casting `f64` to `u128` may lose the sign of the value",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 954,
+        "column": 27,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<(Option<f64>, f64, f64), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 1070,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<Core, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 1093,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: unnecessary closure used to substitute value for `Option::None`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "let boundary = column",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 1102,
+        "column": 20,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<(), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 1894,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<(Core, Vec<Vec<f64>>, Vec<Vec<f64>>), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 1954,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: very complex type used. Consider factoring parts into `type` definitions",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<(Core, Vec<Vec<f64>>, Vec<Vec<f64>>), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 1954,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: these match arms have identical bodies",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "3 | 9 => 1.0e-8,",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 1977,
+        "column": 13,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this closure is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ".then(|| core(input, &high_trial))",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2037,
+        "column": 23,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this closure is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ".then(|| core(input, &low_trial))",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2046,
+        "column": 23,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<M1CoupledEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2161,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<M1CoupledEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2308,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<Vec<f64>, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2316,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: very complex type used. Consider factoring parts into `type` definitions",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<(Vec<f64>, f64, f64, [bool; 2], usize), M1DrainageLinearFailure> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2526,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<([f64; 21], f64, f64, [bool; 2], usize), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2751,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: very complex type used. Consider factoring parts into `type` definitions",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<([f64; 21], f64, f64, [bool; 2], usize), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2751,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many arguments (11/7)",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "fn solve_selected_drainage_system(",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2739,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<M1PhaseJoinControllerReport, M1PhaseJoinControllerError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2894,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many arguments (9/7)",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "fn m1_failure(",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3869,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<Vec<f64>, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3938,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<M1CoupledEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3967,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<M1CoupledEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4000,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: unnecessary closure used to substitute value for `Option::None`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "let boundary = input",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4033,
+        "column": 20,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: casting `u32` to `i32` may wrap around the value",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "let factor = 0.5_f64.powi(exponent as i32);",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4154,
+        "column": 39,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+          "primary_line": ") -> Result<M1ZeroParLeafState, M1CoupledError> {",
+          "source_file_sha256": "a7ea79962e7bf710b512e38954c7e2b7da7e70a923862ad4ad8c9d638e135670"
+        },
+        "line": 741,
+        "column": 6,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: casting `u128` to `f64` may cause a loss of precision (`u128` is 128 bits wide, but `f64`'s mantissa is only 52 bits wide)",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+          "primary_line": "|| ((exchange.end_ns - exchange.start_ns) as f64 / 1e9).to_bits()",
+          "source_file_sha256": "a7ea79962e7bf710b512e38954c7e2b7da7e70a923862ad4ad8c9d638e135670"
+        },
+        "line": 2255,
+        "column": 29,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this argument (360 byte) is passed by value, but might be more efficient if passed by reference (limit: 256 byte)",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "vapor: V3OpenVapor,",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 164,
+        "column": 16,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: adding items after statements is confusing, since items exist from the start of the scope",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "struct Detail {",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 217,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "primary_line": "&& ground_vapor != boundary.vapor_to_canopy_air_kg_m2_s",
+          "source_file_sha256": "e07c7d43eb256db1baa3556cd80a5963f85c94da342decc7eb41fdb39bd5dcc2"
+        },
+        "line": 2211,
+        "column": 12,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "primary_line": "&& ground_sensible != boundary.sensible_to_canopy_air_w_m2",
+          "source_file_sha256": "e07c7d43eb256db1baa3556cd80a5963f85c94da342decc7eb41fdb39bd5dcc2"
+        },
+        "line": 2219,
+        "column": 12,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this method could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "primary_line": "pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {",
+          "source_file_sha256": "e07c7d43eb256db1baa3556cd80a5963f85c94da342decc7eb41fdb39bd5dcc2"
+        },
+        "line": 2999,
+        "column": 12,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this method could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction.rs",
+          "primary_line": "pub fn accuracy_observation_beginning(&self) -> &CoveredColumnInputs {",
+          "source_file_sha256": "e07c7d43eb256db1baa3556cd80a5963f85c94da342decc7eb41fdb39bd5dcc2"
+        },
+        "line": 3006,
+        "column": 12,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: usage of wildcard import",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "primary_line": "use crate::*;",
+          "source_file_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83"
+        },
+        "line": 4,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this method could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "primary_line": "pub fn identity(&self) -> &RuntimeTileIdentity {",
+          "source_file_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83"
+        },
+        "line": 15,
+        "column": 12,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this method could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "primary_line": "pub fn accepted(&self) -> &V3PhaseFreeOpenEvaluation {",
+          "source_file_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83"
+        },
+        "line": 18,
+        "column": 12,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this method could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "primary_line": "pub fn request_batch(&self) -> &PotentialWaterRequestBatch {",
+          "source_file_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83"
+        },
+        "line": 21,
+        "column": 12,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this method could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "primary_line": "pub fn accuracy_observation_beginning(&self) -> &OpenSurfaceProblem {",
+          "source_file_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83"
+        },
+        "line": 359,
+        "column": 12,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function returning `Result` missing `# Errors` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "primary_line": "pub fn try_new(",
+          "source_file_sha256": "14a36737aad06528dab0549a3ba674957d263df61a8ea5dcf11c85cab4857748"
+        },
+        "line": 45,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function returning `Result` missing `# Errors` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "primary_line": "pub fn validate_against_actual_forcing(",
+          "source_file_sha256": "14a36737aad06528dab0549a3ba674957d263df61a8ea5dcf11c85cab4857748"
+        },
+        "line": 109,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: assigning the result of `Clone::clone()` may be inefficient",
+          "source_path": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "primary_line": "expected.configuration_sha256 = self.configuration_sha256.clone();",
+          "source_file_sha256": "14a36737aad06528dab0549a3ba674957d263df61a8ea5dcf11c85cab4857748"
+        },
+        "line": 117,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this method could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "primary_line": "pub fn is_wholly_transparent_canopy(&self) -> bool {",
+          "source_file_sha256": "14a36737aad06528dab0549a3ba674957d263df61a8ea5dcf11c85cab4857748"
+        },
+        "line": 136,
+        "column": 12,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function returning `Result` missing `# Errors` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "primary_line": "pub fn bind_transparent_liquid(",
+          "source_file_sha256": "14a36737aad06528dab0549a3ba674957d263df61a8ea5dcf11c85cab4857748"
+        },
+        "line": 151,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function returning `Result` missing `# Errors` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "primary_line": "pub fn validate_transparent_liquid(",
+          "source_file_sha256": "14a36737aad06528dab0549a3ba674957d263df61a8ea5dcf11c85cab4857748"
+        },
+        "line": 171,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: unused `self` argument",
+          "source_path": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "primary_line": "pub(crate) fn inactive_component_anchor_k(&self, component: usize, canopy: f64) -> f64 {",
+          "source_file_sha256": "14a36737aad06528dab0549a3ba674957d263df61a8ea5dcf11c85cab4857748"
+        },
+        "line": 212,
+        "column": 47,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this `if` statement can be collapsed",
+          "source_path": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "primary_line": "if l.transparent_passage.is_some() {",
+          "source_file_sha256": "14a36737aad06528dab0549a3ba674957d263df61a8ea5dcf11c85cab4857748"
+        },
+        "line": 333,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function returning `Result` missing `# Errors` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/transparent_canopy.rs",
+          "primary_line": "pub fn rebind_transparent_liquid_native_configuration(",
+          "source_file_sha256": "14a36737aad06528dab0549a3ba674957d263df61a8ea5dcf11c85cab4857748"
+        },
+        "line": 355,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs",
+          "primary_line": "assert_eq!(routed.terminal_parcels()[3].enthalpy_j_kg(), 0.0);",
+          "source_file_sha256": "7385c6ad20be7826817dfedc6764d755c5b9961f89ccb4c9df712b416ef82a14"
+        },
+        "line": 522,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (110/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_liquid_routing.rs",
+          "primary_line": "fn routing_has_exhaustive_reference_capture_and_terminal_lineage() {",
+          "source_file_sha256": "7385c6ad20be7826817dfedc6764d755c5b9961f89ccb4c9df712b416ef82a14"
+        },
+        "line": 602,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: redundant closure",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1_DIAGNOSTIC_FORCE_FAULT.with(|value| value.get())",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 119,
+        "column": 36,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: redundant closure",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1_DIAGNOSTIC_FORCE_OVERFLOW.with(|value| value.get())",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 127,
+        "column": 39,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many arguments (10/7)",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "fn m1_diagnostic_linear_solve(",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 325,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_phase_join_set_matches_direction(",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 1777,
+        "column": 8,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "evaluation.occupancies[0]",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2284,
+        "column": 13,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "evaluation.occupancies[0]",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2289,
+        "column": 13,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_controller_failure_activity_for_test(",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2869,
+        "column": 8,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_last_controller_failure_activity_for_test() -> Option<M1PhaseJoinActivity> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 2882,
+        "column": 8,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function which may panic missing `# Panics` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_current_unreduced_candidate_for_test(",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3217,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_current_unreduced_candidate_for_test(",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3217,
+        "column": 8,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_trial_coordinates_for_test(trial: &M1CoupledColumnTrial) -> [f64; 21] {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3236,
+        "column": 8,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<(), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3244,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<M1CoupledEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3284,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<M1CoupledEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3299,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(4))",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3306,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(1))",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3309,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(2))",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3312,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(3))",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3315,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(5))",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3318,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(6))",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3321,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1_MATERIALIZATION_OUTPUT_POISON.with(|flag| flag.set(7))",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3324,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "core.occupancies[0].non_vapor = f64::NAN",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3327,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "input.column.interval_s = f64::NAN",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3330,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "trial.coordinates[5] = -f64::MIN_POSITIVE",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3337,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "core.occupancies[0].mass_residual = 1.0",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3348,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "core.occupancies[0].enthalpy_residual = 1.0",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3351,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "core.occupancies[0].capacity = f64::NAN",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3359,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function which may panic missing `# Panics` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_materialize_captured_accepted_poison_for_test(",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3374,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<M1CoupledEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3376,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function which may panic missing `# Panics` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_materialize_captured_accepted_for_test() -> Result<M1CoupledEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3384,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_materialize_captured_accepted_for_test() -> Result<M1CoupledEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3384,
+        "column": 55,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function which may panic missing `# Panics` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_captured_finite_overcapacity_core_for_test() -> Result<(f64, f64, f64), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3392,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_captured_finite_overcapacity_core_for_test() -> Result<(f64, f64, f64), M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3392,
+        "column": 59,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: docs for function which may panic missing `# Panics` section",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_captured_accepted_guard_binding_for_test() -> (f64, f64, f64, f64, f64, f64) {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3405,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_captured_accepted_guard_binding_for_test() -> (f64, f64, f64, f64, f64, f64) {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3405,
+        "column": 8,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: very complex type used. Consider factoring parts into `type` definitions",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> (Result<(Vec<f64>, f64, f64), &'static str>, u32) {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3451,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this argument is passed by value, but not consumed in the function body",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "metadata: M1DrainageMetadataTestView,",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3450,
+        "column": 15,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: redundant closure",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1PhaseReservoir::from_mass_enthalpy(trial.coordinates[3], trial.coordinates[4]).ok().map(|value| value.liquid_mass_kg_m2()),",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3860,
+        "column": 107,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: redundant closure",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1PhaseReservoir::from_mass_enthalpy(trial.coordinates[9], trial.coordinates[10]).ok().map(|value| value.liquid_mass_kg_m2()),",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3861,
+        "column": 108,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: redundant closure",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1PhaseReservoir::from_mass_enthalpy(trial.coordinates[3], trial.coordinates[4]).ok().map(|value| value.liquid_mass_kg_m2()),",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3894,
+        "column": 107,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: redundant closure",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "M1PhaseReservoir::from_mass_enthalpy(trial.coordinates[9], trial.coordinates[10]).ok().map(|value| value.liquid_mass_kg_m2()),",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 3895,
+        "column": 108,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: very complex type used. Consider factoring parts into `type` definitions",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> (",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4491,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_solve_with_halved_hydraulic_incomplete_for_test(",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4512,
+        "column": 8,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: very complex type used. Consider factoring parts into `type` definitions",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> (Vec<(u32, bool)>, Vec<(u32, bool)>) {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4515,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_solve_with_full_witness_for_test(input: &M1CoupledColumnInput) -> Vec<(u32, bool)> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4583,
+        "column": 8,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this function is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": ") -> Result<M1CoupledEvaluation, M1CoupledError> {",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4638,
+        "column": 6,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function could have a `#[must_use]` attribute",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "primary_line": "pub fn m1_solve_with_first_halved_step_poison_for_test(",
+          "source_file_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+        },
+        "line": 4649,
+        "column": 8,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "assert_eq!(detail.vapor.liquid_signed_mass_kg_m2, 0.0);",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 395,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 396,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "assert_eq!(detail.post_vapor.liquid_kg_m2_tile, wl);",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 518,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "assert_eq!(detail.post_vapor.ice_kg_m2_tile, wi);",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 519,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs",
+          "primary_line": "assert_eq!(detail.post_vapor.sensible_energy_j_m2_tile, u);",
+          "source_file_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac"
+        },
+        "line": 521,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_mechanism_audit.rs",
+          "primary_line": "cell.borrow_mut().as_mut().unwrap().last =",
+          "source_file_sha256": "6fd284265200d8bc5d55428fedb63b27abc79545f58fba2928c0d8d150772191"
+        },
+        "line": 1100,
+        "column": 17,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: item in documentation is missing backticks",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+          "primary_line": "/// Positive/zero executed component area, or not_applicable for other coordinates.",
+          "source_file_sha256": "0e799cdd6a8ab266cb6a70c34d997de91aabbd4813bcb9bbe3af124d899336b6"
+        },
+        "line": 73,
+        "column": 51,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: item in documentation is missing backticks",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+          "primary_line": "/// lifecycle, finite_difference, or identity_anchor.",
+          "source_file_sha256": "0e799cdd6a8ab266cb6a70c34d997de91aabbd4813bcb9bbe3af124d899336b6"
+        },
+        "line": 75,
+        "column": 20,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: item in documentation is missing backticks",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+          "primary_line": "/// lifecycle, finite_difference, or identity_anchor.",
+          "source_file_sha256": "0e799cdd6a8ab266cb6a70c34d997de91aabbd4813bcb9bbe3af124d899336b6"
+        },
+        "line": 75,
+        "column": 42,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: item in documentation is missing backticks",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+          "primary_line": "/// Bounded test-support evidence; the full-supply Covered FixedFinal vector is",
+          "source_file_sha256": "0e799cdd6a8ab266cb6a70c34d997de91aabbd4813bcb9bbe3af124d899336b6"
+        },
+        "line": 428,
+        "column": 60,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: large size difference between variants",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+          "primary_line": "enum ObserverSolveResult {",
+          "source_file_sha256": "0e799cdd6a8ab266cb6a70c34d997de91aabbd4813bcb9bbe3af124d899336b6"
+        },
+        "line": 440,
+        "column": 1,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+          "primary_line": "active.borrow_mut().as_mut().expect(\"active\").current =",
+          "source_file_sha256": "0e799cdd6a8ab266cb6a70c34d997de91aabbd4813bcb9bbe3af124d899336b6"
+        },
+        "line": 1084,
+        "column": 13,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/solver_residual_corpus_capture.rs",
+          "primary_line": "active.borrow_mut().as_mut().expect(\"active\").current = Some((",
+          "source_file_sha256": "0e799cdd6a8ab266cb6a70c34d997de91aabbd4813bcb9bbe3af124d899336b6"
+        },
+        "line": 1150,
+        "column": 13,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (124/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "fn native_snow_shared_node_evaluates_constitutive_fluxes_independent_of_guess() {",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 509,
+        "column": 1,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "assert_eq!(actual.ground_sensible_to_canopy_air_w_m2, expected_h);",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 587,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 588,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 668,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (203/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "fn transparent_liquid_source_poisons_two_ranks_and_solver_parity() {",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 724,
+        "column": 1,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "assert_eq!(c.inactive_component_anchor_k(2, 310.0), 310.0);",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 769,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "foreign.precipitation_parcels[0].temperature_provider =",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 796,
+        "column": 17,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "foreign.precipitation_parcels[0].amount_kg_m2_destination_tile_ground =",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 802,
+        "column": 17,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "assert_eq!(dry.inactive_component_anchor_k(2, 300.0), 300.0);",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 845,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "assert_eq!(c.inactive_component_anchor_k(2, 265.0), 273.15);",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 949,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "assert_eq!(c.inactive_component_anchor_k(2, 300.0), 300.0);",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 950,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_tests.rs",
+          "primary_line": "assert_eq!(ledger.wet_surface_temperature_k, 265.28179297231515);",
+          "source_file_sha256": "b097354646a6a2955762168d3b6154055b2d25aefd500715ee33254c16fa1293"
+        },
+        "line": 967,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64` arrays",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_ne!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 172,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(seed[5], 0.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 1951,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(seed[11], 0.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 1952,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2297,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(result.support_duration_s(), 60.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2327,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(solved.support_duration_s(), 60.);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2362,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(operand.beginning_mass_kg_m2, 0.018);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2372,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(operand.beginning_enthalpy_j_m2, 0.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2373,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "operand.ending_mass_kg_m2 != operand.beginning_mass_kg_m2",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2377,
+        "column": 13,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "|| operand.ending_enthalpy_j_m2 != operand.beginning_enthalpy_j_m2",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2378,
+        "column": 20,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (153/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "fn m1_guard_expected_red_actual_materializer_rejects_published_and_accepted_state_poisons() {",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2429,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(beginning_mass, 0.018, \"captured accepted M0\");",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2461,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "unexpected.push(format!(\"{poison:?}: {}, expected {code}\", error.code()))",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2574,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (136/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "fn m1_guard_expected_red_empty_positive_components_reject_external_supersaturation() {",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2586,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_ne!(matrix[0][5], 0.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2998,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_ne!(matrix[1][11], 0.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 2999,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(direction[0], 0.5);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3008,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(direction[1], -1.5);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3009,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(direction[5], -2.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3010,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(direction[11], -3.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3011,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(*value, 0.0, \"closed-form row {index}\");",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3014,
+        "column": 17,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(reconstructed, rhs[row], \"reconstructed full row {row}\");",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3023,
+        "column": 13,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(direction[5], expected_d5, \"E/F upper\");",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3061,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(direction[11], expected_d11, \"E/F lower\");",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3062,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3064,
+        "column": 13,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_ne!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3098,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_ne!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3109,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (151/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "fn m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls() {",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3116,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3147,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3151,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3156,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(60.0 * exact_drainage, capacity_value - 0.018);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3233,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(norm, 1.0, \"actual reduced F norm\");",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3414,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the loop variable `row` is used to index `norm_control`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "for row in 0..21 {",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3415,
+        "column": 16,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3416,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(direction[5], 0.0, \"upper affine dD=-D\");",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3426,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(direction[11], 0.0, \"lower affine dD=-D\");",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3427,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the loop variable `index` is used to index `matrix`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "for index in 0..21 {",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3435,
+        "column": 18,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3445,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3449,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(-333_700.0 / 8192.0 + 333_700.0 * (1.0 / 8192.0), 0.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3606,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(1.0 / 8192.0 + (-333_700.0 / 8192.0) / 333_700.0, 0.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3607,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (166/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "fn m1_phase_join_expected_red_binds_all_primal_rows_and_bounded_work() {",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 3728,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this argument is passed by value, but not consumed in the function body",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "fn assert_m1_diagnostic_envelope(error: M1CoupledError) {",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 4124,
+        "column": 41,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (109/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "fn m1_diagnostic_envelope_binds_actual_topology_and_rejects_structural_poison_first() {",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 4161,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 4313,
+        "column": 5,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: these match arms have identical bodies",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "3 | 9 => 1e-8,",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 4526,
+        "column": 13,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (200/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "fn m1_frozen_radiation_columns_and_all_four_gas_rows_bind_physical_outputs() {",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 4573,
+        "column": 1,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(actual.sun.beta, decimal(&sun[\"beta\"]));",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 4678,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(actual.shade.beta, decimal(&shade[\"beta\"]));",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 4679,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(actual.sun.vapor_kg_m2_tile_s, 0.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 4717,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "primary_line": "assert_eq!(actual.sun.net_assimilation, 0.0);",
+          "source_file_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+        },
+        "line": 4718,
+        "column": 9,
+        "body01_chain_classification": "transferred_exact_unchanged_body07_reviewed_candidate",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (173/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs",
+          "primary_line": "fn m1_internal_liquid_zero_par_rows_match_frozen_gas_controls() {",
+          "source_file_sha256": "a394bddfcce6f521527da7386feaf6cfa096c9c7acf02d764dff936c03153b73"
+        },
+        "line": 34,
+        "column": 1,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs",
+          "primary_line": "assert_eq!(sun.beta, decimal(&leaves[0][\"beta\"]));",
+          "source_file_sha256": "a394bddfcce6f521527da7386feaf6cfa096c9c7acf02d764dff936c03153b73"
+        },
+        "line": 85,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs",
+          "primary_line": "assert_eq!(shade.beta, decimal(&leaves[1][\"beta\"]));",
+          "source_file_sha256": "a394bddfcce6f521527da7386feaf6cfa096c9c7acf02d764dff936c03153b73"
+        },
+        "line": 86,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs",
+          "primary_line": "assert_eq!(sun.gross_assimilation_umol_co2_m2_leaf_s, 0.0);",
+          "source_file_sha256": "a394bddfcce6f521527da7386feaf6cfa096c9c7acf02d764dff936c03153b73"
+        },
+        "line": 98,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs",
+          "primary_line": "assert_eq!(sun.net_assimilation_umol_co2_m2_leaf_s, 0.0);",
+          "source_file_sha256": "a394bddfcce6f521527da7386feaf6cfa096c9c7acf02d764dff936c03153b73"
+        },
+        "line": 99,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs",
+          "primary_line": "assert_eq!(sun.dark_respiration_umol_co2_m2_leaf_s, 0.0);",
+          "source_file_sha256": "a394bddfcce6f521527da7386feaf6cfa096c9c7acf02d764dff936c03153b73"
+        },
+        "line": 100,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs",
+          "primary_line": "assert_eq!(sun.vapor_kg_m2_tile_s, 0.0);",
+          "source_file_sha256": "a394bddfcce6f521527da7386feaf6cfa096c9c7acf02d764dff936c03153b73"
+        },
+        "line": 136,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this closure is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs",
+          "primary_line": "let invoke = |leaf, q, pressure| {",
+          "source_file_sha256": "a394bddfcce6f521527da7386feaf6cfa096c9c7acf02d764dff936c03153b73"
+        },
+        "line": 218,
+        "column": 18,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (176/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs",
+          "primary_line": "fn m1_zero_par_leaf_rejects_every_nonfinite_gas_operand_with_saturation_code() {",
+          "source_file_sha256": "a394bddfcce6f521527da7386feaf6cfa096c9c7acf02d764dff936c03153b73"
+        },
+        "line": 265,
+        "column": 1,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: the `Err`-variant returned from this closure is very large",
+          "source_path": "crates/openwepp-land-surface-energy/src/m1_zero_par_tests.rs",
+          "primary_line": "let invoke = |leaf, leaf_t, canopy_t, q, p, ca, gb, g0, fw| {",
+          "source_file_sha256": "a394bddfcce6f521527da7386feaf6cfa096c9c7acf02d764dff936c03153b73"
+        },
+        "line": 271,
+        "column": 18,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/snow_accuracy_policy_tests.rs",
+          "primary_line": "assert_eq!(support_seconds(), 60.0);",
+          "source_file_sha256": "7b8e775831480254043c385ac32661833df1bba16e9165278e1d72578361ef7b"
+        },
+        "line": 47,
+        "column": 9,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: strict comparison of `f32` or `f64`",
+          "source_path": "crates/openwepp-land-surface-energy/src/snow_accuracy_policy_tests.rs",
+          "primary_line": "assert_eq!(support_seconds(), 600.0);",
+          "source_file_sha256": "7b8e775831480254043c385ac32661833df1bba16e9165278e1d72578361ef7b"
+        },
+        "line": 49,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: items after a test module",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "primary_line": "mod tests {",
+          "source_file_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83"
+        },
+        "line": 204,
+        "column": 1,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (110/100)",
+          "source_path": "crates/openwepp-land-surface-energy/src/transaction_v3_open.rs",
+          "primary_line": "fn v3_open_transaction_phase_custody_and_rejection() {",
+          "source_file_sha256": "3338b2428ef178464086d5e8340bfab35909990de497cbbfe81687e180b6bc83"
+        },
+        "line": 242,
+        "column": 5,
+        "body01_chain_classification": "inherited_exact_unchanged_body07_baseline",
+        "commands": [
+          "focused"
+        ]
+      },
+      {
+        "identity": {
+          "message": "error: this function has too many lines (137/100)",
+          "source_path": "crates/openwepp-vegetation/src/v11.rs",
+          "primary_line": "fn validate_resource_custody_core(",
+          "source_file_sha256": "9340963ec6e1dc1a3a12f3bb8cd5f0c35a6910e8a779247fb415aaa096d08756"
+        },
+        "line": 2149,
+        "column": 1,
+        "body01_chain_classification": "changed_or_unmatched_against_reviewed_body07",
+        "commands": [
+          "strict"
+        ]
+      }
+    ]
+  },
+  "policy_verdict": "QUALITY02 clears the four introduced source diagnostics under the recorded focused retry. It does not clear strict Clippy: the remaining vegetation diagnostic is inherited/outside the diff and still blocks the strict gate. The previous private cfg(test) capture classification remains conditional on direct immutable actual-input capture and full bit correspondence; no public/cross-crate surface is approved."
+}

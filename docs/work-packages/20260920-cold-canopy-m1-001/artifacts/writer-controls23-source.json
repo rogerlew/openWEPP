@@ -1,0 +1,19 @@
+{
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "recovery_controls22_source": "/home/roger/openwepp-experiments/cold-canopy-m1-witness-controls22-recovery-20260924",
+  "changed_source": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+  "changed_source_sha256": "5dbfce5942ffd85c4f79dc4aaf920ffb294ad96a019b12b23a9c80acb8f100c9",
+  "controller_sha256": "fe9186af2f87aa4569437e40eb31fe208a424f3d8ae293ae9ee48422b2113ca5",
+  "controller_matches_controls22": true,
+  "diff": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/writer-controls23.diff",
+  "diff_sha256": "5c7d0a414071ac10957ab11c0ea51a3537d0af183600bdee7254665bf44b203a",
+  "reset_endpoint": {
+    "independent_frozen_expected_scaled_step": "p[3]=0.5; all other p[i]=0",
+    "basis": "full-rank diagonal weighted Jacobian with only row 3 nonzero residual at the new base; the ball endpoint is exactly radius 0.5",
+    "controller_assertion": "reset.scaled_step and stage1_observation.scaled_step are both compared bitwise against the independent endpoint; neither value supplies the expected endpoint"
+  },
+  "checks": {
+    "rustfmt": "writer-controls23-rustfmt.exit: 0",
+    "inventory_compile": "writer-controls23-inventory.exit: 0; 16 m1_stage2 tests listed; no tests executed"
+  }
+}

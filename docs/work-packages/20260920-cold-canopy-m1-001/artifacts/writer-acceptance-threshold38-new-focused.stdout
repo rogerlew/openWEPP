@@ -1,0 +1,28 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.19s
+────────────
+ Nextest run ID d03f945c-4d78-4d19-acf3-c31c41f4c536 with nextest profile: default
+    Starting 2 tests across 1 binary (292 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_finite_ci_operands_do_not_create_a_governed_threshold ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 293 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_finite_governed_threshold_operands_gate_full_no_update_admission ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 293 filtered out; finished in 0.05s
+
+
+────────────
+     Summary [   0.055s] 2 tests run: 2 passed, 292 skipped

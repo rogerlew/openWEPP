@@ -1,0 +1,69 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs
+@@ -233,7 +233,8 @@
+                 | FixtureKind::ReplacementWitnessFullEvaluationError
+                 | FixtureKind::ReplacementWitnessReplacementEvaluationError
+                 | FixtureKind::ReplacementWitnessFullIncompleteGoverned
+-                | FixtureKind::ReplacementWitnessMixedThenComplete,
++                | FixtureKind::ReplacementWitnessMixedThenComplete
++                | FixtureKind::ReplacementWitnessThreeExcessMixedReplacement,
+                 0,
+             ) => {
+                 let magnitude = if matches!(
+@@ -368,8 +369,8 @@
+             } else if matches!(
+                 self.kind,
+                 FixtureKind::ReplacementWitnessThreeExcessMixedReplacement
+-            ) && x[0] > 2f64.powi(-27)
+-                && x[0] < 2f64.powi(-26)
++            ) && x[0] - self.base[0] > 2f64.powi(-27)
++                && x[0] - self.base[0] < 2f64.powi(-25)
+             {
+                 [Some(300.0), None]
+             } else {
+@@ -1524,14 +1525,31 @@
+     assert_eq!(proposal.actual_reduction, None);
+     assert_eq!(proposal.rho, None);
+     assert_eq!(proposal.moving_merit, None);
+-    assert_eq!(proposal.dynamic_max_normalized_residual.unwrap().to_bits(), 0.0f64.to_bits());
++    assert_eq!(
++        proposal.dynamic_max_normalized_residual.unwrap().to_bits(),
++        0.0f64.to_bits()
++    );
+     assert!(!proposal.installed);
+     assert_eq!(proposal.next_radius.to_bits(), 1.0f64.to_bits());
+-    assert_eq!(proposal.disposition, super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition::RootAdmitted);
++    assert_eq!(
++        proposal.disposition,
++        super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition::RootAdmitted
++    );
+     for row in 0..N {
+         for column in 0..N {
+-            let expected = if row == column { 1.0 } else { 0.0 };
+-            assert_eq!(proposal.weighted_jacobian[row][column].to_bits(), expected.to_bits());
++            let expected: f64 = if row == column {
++                if matches!(row, 5 | 11) {
++                    f64::from_bits(0x3fef_ffff_ffff_ffff)
++                } else {
++                    1.0
++                }
++            } else {
++                0.0
++            };
++            assert_eq!(
++                proposal.weighted_jacobian[row][column].to_bits(),
++                expected.to_bits()
++            );
+         }
+     }
+     assert_eq!(fixture.materializer_inputs, vec![base]);
+@@ -1626,6 +1644,9 @@
+         run.proposal_trace[1].base_after.map(f64::to_bits),
+         complete.map(f64::to_bits)
+     );
++    let mut expected = witness_attempt_log(base, fixture.scale, &steps[..2], &[true, true], false);
++    expected.push(FixtureOperation::Materialize(complete));
++    assert_eq!(fixture.operation_log, expected);
+ }
+ 
+ #[test]

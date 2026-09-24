@@ -1,0 +1,50 @@
+{
+  "reviewer": "/root/witness_qa",
+  "scope": "Governed whole-tranche affected controller/controls lint attribution against accepted BODY04/QUALITY02/BODY07 chain; no command run or Rust edited.",
+  "status": "PASS for the governed affected files; inherited strict vegetation HOLD remains.",
+  "source": {
+    "tree_sha256": "8d447621a6801e7d2c55131214c5607857e518c25a38cf3eb8d04ead0ab439db",
+    "review_root": "/home/roger/openwepp-experiments/cold-canopy-m1-witness-governed17-review-20260924",
+    "entries_rehashed": 764,
+    "mismatches": 0
+  },
+  "receipts": {
+    "analytic": {
+      "exit_code": 0,
+      "summary": "30/30",
+      "source_unchanged": true,
+      "pinned_files_unchanged": true
+    },
+    "format": {
+      "exit_code": 0,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true
+    },
+    "focused": {
+      "exit_code": 101,
+      "stderr_sha256": "0c4acb171c45cd250e47d46c9a57b759ac26ab932639e173e62773eabacb841a",
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "full_context_error_blocks": 240,
+      "affected_error_blocks": 0
+    },
+    "strict": {
+      "exit_code": 101,
+      "stderr_sha256": "00b88210072bed4b2dbe3c71c4a6f8ce471b012be2d49b1e6bba390eb299cce5",
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "classification": "inherited strict vegetation HOLD at crates/openwepp-vegetation/src/v11.rs:2149"
+    }
+  },
+  "fixed_introduced_diagnostics_from_governed16": [
+    "controller items_after_statements",
+    "controller match_same_arms",
+    "controller too_many_lines",
+    "controls match_same_arms x2",
+    "controls if_same_then_else x2",
+    "controls bool_assert_comparison",
+    "controls cast_possible_truncation",
+    "controls cast_possible_wrap"
+  ],
+  "conclusion": "No controller, controller-interface, or stage2-controls diagnostic remains in either full-context receipt. QUALITY02/BODY07 inherited diagnostics remain attributed by the accepted chain; no strict-pass waiver."
+}

@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Ran: parent exact focused diagnostic identity comparison",
+  "baseline": "witness-governed17",
+  "current": "witness-matrix20",
+  "baseline_records": 238,
+  "current_records": 238,
+  "added": [],
+  "removed": [],
+  "strict": "Inherited failure retained; not a strict pass"
+}

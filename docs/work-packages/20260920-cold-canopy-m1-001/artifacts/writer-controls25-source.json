@@ -1,0 +1,13 @@
+{
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "changed_source": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+  "changed_source_sha256": "7ccddcd4b2f7b1f6096c4fc51ae9e60aa887222374513152d2b52d5c32f80830",
+  "base_controls22_source": "/home/roger/openwepp-experiments/cold-canopy-m1-witness-controls22-recovery-20260924",
+  "diff": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/writer-controls25.diff",
+  "diff_sha256": "9bad304584884397fb81752d3544a5ddf45643ee8c7d17ff6ebdb08eebfffc3d",
+  "oracle_grouping": "For each frozen proposal, f2, linear2, and candidate2 independently loop over all 21 residual rows in ascending order from +0.0; predicted is 0.5*(f2-linear2), actual is 0.5*f2-0.5*candidate2.",
+  "checks": {
+    "rustfmt": "writer-controls25-rustfmt.exit: 0",
+    "inventory_compile": "not rerun: authorized isolated expression correction; parent will record execution"
+  }
+}

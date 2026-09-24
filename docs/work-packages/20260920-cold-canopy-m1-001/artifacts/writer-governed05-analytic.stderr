@@ -1,0 +1,85 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.66s
+────────────
+ Nextest run ID bcbf3229-ee3d-4780-9489-3af4d505279a with nextest profile: default
+    Starting 29 tests across 1 binary (256 tests skipped)
+        FAIL [   0.007s] ( 2/29) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 284 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates' (2745482) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1550:76:
+    called `Result::unwrap()` on an `Err` value: Numerical("incomplete governed step operand")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] ( 3/29) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 284 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness' (2745475) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1481:76:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.169s] 29 tests run: 27 passed, 2 failed, 256 skipped
+        FAIL [   0.007s] ( 2/29) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 284 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates' (2745482) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1550:76:
+    called `Result::unwrap()` on an `Err` value: Numerical("incomplete governed step operand")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] ( 3/29) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 284 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness' (2745475) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1481:76:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

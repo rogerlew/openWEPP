@@ -1,0 +1,19 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:396:
+     }
+     fn residual(&self, x: &[f64; N], i: usize) -> f64 {
+         match self.kind {
+-            FixtureKind::LongProgress { target, perturb_at_183 } => {
+-                self.long_progress_residual(x, i, target, perturb_at_183)
+-            }
++            FixtureKind::LongProgress {
++                target,
++                perturb_at_183,
++            } => self.long_progress_residual(x, i, target, perturb_at_183),
+             _ => self.residual_regular(x, i),
+         }
+     }

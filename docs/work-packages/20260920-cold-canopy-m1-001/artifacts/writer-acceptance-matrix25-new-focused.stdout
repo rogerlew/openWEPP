@@ -1,0 +1,14 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.73s
+────────────
+ Nextest run ID 8d4b6d28-2179-4ccc-8991-181715c67a57 with nextest profile: default
+    Starting 0 tests across 1 binary (292 tests skipped)
+────────────
+     Summary [   0.001s] 0 tests run: 0 passed, 292 skipped
+error: no tests to run
+(hint: use `--no-tests` to customize)

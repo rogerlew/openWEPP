@@ -1,0 +1,467 @@
+{
+  "reviewer_replacement_reason": "Prior correctness/QA conversations unavailable in this session; bounded replacements use exposed pinned roles and reuse unaffected historical acceptance.",
+  "controls19_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "e62801d26b3c3d979eece6777041d1c572ca88cb997150ea845f286e37b493a8",
+    "verdict": "READY expected-red regression only",
+    "response_verbatim": "Static/Ran: reviewed the exact signed-zero correction and independently checked all 11 oracle records.\n\nNo findings.\n\n- Corrected control SHA-256: `fdae81b8296d314a2f45ba516d85b324ff9f12894c040e400cf2a6412201bdf4`.\n- The sole affected change initializes inactive coordinates with canonical `+0.0`.\n- All 11 active-coordinate pairs match the final independent oracle; all 209 inactive coordinates are `+0.0`.\n- Stage1 and controller remain unchanged at `89d97586\u2026d8ad9e2` and `fe9186af\u202613ca5`.\n- Oracle and authority hashes match the adopted authorization.\n\nResidual risk: the intended expected-red regression has not run. It must fail on the unchanged controller by exposing third-proposal admission/materialization before any body correction.\n\nVerdict: **READY for the bounded expected-red regression; no correctness blocker.**"
+  },
+  "controls19_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "e62801d26b3c3d979eece6777041d1c572ca88cb997150ea845f286e37b493a8",
+    "verdict": "READY controls19 execution",
+    "response_verbatim": "Static QA review: **READY** for controls19 execution.\n\nFindings: none blocking.\n\nNon-blocking follow-up: this review ran no `cargo fmt`, Clippy, tests, deny, or target command. Those results remain required from the parent\u2019s selected control run.\n\nVerified:\n\n- Both controls19 roots match all 764 manifest entries; tree `e62801d\u2026b493a8`.\n- Only Stage 2 line 535 changed: inactive initializer `-0.0` \u2192 `+0.0`; current hash `fdae81b\u20261bdf4`.\n- Controller remains unchanged: `fe9186af\u20262113ca5`.\n- Final oracle hashes match authorization. Reconstructed all 11 records and matched complete `p`, `S*p`, and candidate bit arrays; inactive `p` components are all `+0.0`.\n- Ledger: `308113.959294 + 14400 = 322513.959294`; anchor/cutoff/deadline resolve to 16:10Z/19:40Z/20:10Z.\n- Recorder diff is deadline-only: `09:43Z` \u2192 `20:10Z`."
+  },
+  "controls19_expected_red_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "e62801d26b3c3d979eece6777041d1c572ca88cb997150ea845f286e37b493a8",
+    "response_verbatim": "Ran: Controls19 expected-red is valid.\n\n- Source bound to corrected control `fdae81b8\u20261bdf4`, unchanged controller `fe9186af\u202613ca5`, and unchanged Stage1 `89d97586\u2026d8ad9e2`.\n- Result: 10 tests, 9 passed, exactly 1 intended failure.\n- Failure: `terminal_refusal` was `None` instead of `Some(RadiusExhausted)` at line 1198, confirming improper third-proposal root admission.\n- No signed-zero or unrelated fixture failure confounds the result.\n\nResidual: one existing `unused_parens` warning remains for later quality handling.\n\nVerdict: **expected-red PASS; ready for further control-first work. Controller body remains unreviewed and unchanged.**"
+  },
+  "prospective_qualification_qa": {
+    "reviewer": "/root/witness_qa",
+    "response_verbatim": "Findings:\n\n- **Blocking for controller-stage release:** m1_coupled_tests.rs:1519 still calls nine absent real-state test seams. Only transition/run/seeded-entry helpers exist, so the full controller feature cannot yet compile or qualify.\n- Controls19\u2019s 9-pass/1-intended-fail analytic result supplies no controller-stage or release credit.\n\nNon-blocking follow-up:\n\n- Conditional noncritical classification remains valid only while the diff stays in the default-off cfg(test) private feature path. Public/runtime reachability, shared primitive/API/schema, Cargo lock/toolchain/workspace changes, or weakened obligations escalates to Critical qualification.\n- Remaining acceptance includes real domain/error/threshold and atomicity paths; phase/probe/drainage behavior; every work cap and exhaustion; six input-derived subproblem refusals; physical adapter/harness; and final source/build/input custody.\n- Likely bounded checks after a confined body: format, selected controller-stage nextest inventory, retained Stage1 regression, focused/strict Clippy attribution, source/reachability review, and cargo deny check if manifest inputs change.\n\nNo commands were run. Full09/A1/strict-lint and broader M1 HOLDs remain.",
+    "response_fidelity": "Original final response with Markdown link/code formatting reduced; substantive words unchanged.",
+    "parent_command_classification": "Full physical controller feature tests require physical=true and180-second bound; future inventory must include analytic m1_stage2 and physical m1_trust_region names. No launch release from prospective review."
+  },
+  "controls20_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "response_verbatim": "Static Controls20 review: **BLOCKED**.\n\nHigh findings:\n\n- Full-domain-invalid uses the wrong `-25` governed-excess oracle. Its fixture uses the positive-witness `-27` residual and must use those exact established endpoints.\n- The nonfinite governed-operand test incorrectly expects generic `IncompleteScope`; draft04 requires an exact terminal typed numerical refusal.\n- The ordinary-update/reset test is too weak to prove eligibility exhaustion and immediate reset at the new base.\n\nCompilation also fails at three incorrect `super::M1TrustRegionControllerError` references.\n\nThe intervening-domain-invalid and owning-error controls otherwise preserve correct chronology and owner/materialization atomicity."
+  },
+  "controls20_qa": {
+    "reviewer": "/root/witness_qa",
+    "response_verbatim": "Findings:\n\n- **Blocking \u2014 compile:** three new `super::M1TrustRegionControllerError` references cannot resolve. The error type is private to the controller module and is not re-exported.\n- **Blocking \u2014 reset control weak:** m1_trust_region_stage2_controls.rs:1480 accepts `>= 3` proposals and finds any later reset witness. It lacks exact final proposal/radius/step/candidate, evaluator count, and ordered operation-log assertions, so it cannot rule out extra or incorrect chronology.\n\nNon-blocking: the other five added controls use input-side stimuli, runner observations, exact refusal checks, counters, atomicity checks, and ordered logs.\n\nStatic custody passes: controls20 source/review manifests rehash 764/764; only Stage 2 controls changed. Controller and Stage 1 are unchanged.",
+    "response_fidelity": "Source hyperlink reduced to basename/location; otherwise final response."
+  },
+  "negative_fixture_independent_reconstruction": {
+    "reviewer": "/root/witness_correctness",
+    "response_verbatim": "Static independent reconstruction confirms a defective analytic control.\n\nAt radius `0.25`, the first valid replacement:\n\n- Exceeds the governed temperature threshold.\n- Has `rho = 0.7625000000000025`.\n- Strictly reduces dynamic maximum residual from `0.5` to about `0.453125`.\n\nOnce replacement eligibility is consumed, draft04 permits this lawful ordinary update. Therefore the retained expectation of 11 unchanged-base shrinks conflicts with the fixture\u2019s operands. Correcting that control is within the adopted scope and does not require new numerical authority.",
+    "independent_operands": {
+      "pred_hex": "0x1.dffffffffffe4p-6",
+      "ared_hex": "0x1.6e00000000000p-6",
+      "rho_hex": "0x1.866666666667dp-1",
+      "dynamic_candidate_max_hex": "0x1.d000000000004p-2",
+      "oracle_index": 1
+    }
+  },
+  "controls21_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "response_verbatim": "Static Controls21 review: **BLOCKED**.\n\n- The reset test cannot reach its asserted third proposal. At the new base it sets a free diagonal Jacobian entry to zero while that residual remains nonzero, causing Stage1 rank deficiency.\n- The three `M1TrustRegionControllerError` references still fail compilation.\n- The `2^20` negative-curvature repair is mathematically sound across all 11 frozen endpoints, but the control should bind independent merit/dynamic-residual evidence to prove ordinary-update ineligibility.\n\nThe full-domain-invalid endpoints and typed nonfinite expectation are corrected in intent. No tests ran."
+  },
+  "controls21_qa": {
+    "reviewer": "/root/witness_qa",
+    "response_verbatim": "Findings:\n\n- **Blocking \u2014 compile:** Controls21 retains the same three unresolved `super::M1TrustRegionControllerError` references. The error remains private to the controller module.\n- **Blocking \u2014 reset fixture is rank deficient:** after `new_base`, the fixture returns `raw_jacobian[0][0] = 0` while all coordinates remain free. Stage 1\u2019s singular-value guard must return `RankDeficient`; the asserted third `RootAdmitted` transition cannot occur.\n\nNon-blocking: the exact-three reset chronology and full operation-log assertions are materially stronger. Full-domain and typed-nonfinite fixture changes remain input-side.\n\nBoth controls21 source/review manifests rehash 764/764 to `e5faa295\u202655ea79`; controller and Stage 1 are unchanged. No tests were run."
+  },
+  "controls23_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "response_verbatim": "Static/Ran Controls23 review: **BLOCKED**.\n\nThe expected-red run produced the intended 11-pass/5-fail split, but four hidden oracle defects remain:\n\n- Reset step is two ULP below `0.5`, not exactly `0.5`.\n- Row-0 residual is constant zero while its asserted Jacobian is nonzero.\n- The 11-radius merit oracle uses ideal step values instead of reconstructed candidate coordinates.\n- Rows 5 and 11 have one-ULP weighted-diagonal differences that the exact-bit helper ignores.\n\nThe full-domain-invalid, typed nonfinite, negative-curvature, and wet-temperature predicate fixes are otherwise sound.",
+    "exact_independent_values": {
+      "reset_p3_bits": "0x3fdffffffffffffe",
+      "new_base_m_hex": "0x1.999999999999ap-7",
+      "new_base_z_hex": "0x1.0000000000001p-2",
+      "weighted_a33_hex": "0x1.ffffffffffffep-4",
+      "weighted_drainage_diagonal_hex": "0x1.fffffffffffffp-3"
+    }
+  },
+  "controls23_qa_initial": {
+    "reviewer": "/root/witness_qa",
+    "verdict": "Initial READY superseded by affected arithmetic HOLD",
+    "response_verbatim": "No blocking controls23 readiness finding.\n\nStatic review confirms:\n\n- Controls23 source/review manifests match 764/764 entries, tree `2932041e\u20263a48d`.\n- Only Stage 2 controls changed; controller and Stage 1 remain unchanged.\n- The private controller-error import fixes the previous compile issue without expanding reachability.\n- The reset fixture restores full rank: row 0 has zero residual but Jacobian `0.25`. It now asserts the full weighted 21\u00d721 matrix, exact three-proposal chronology, independent merit/rho operands, counts, and operation log.\n- The 11-radius negative-curvature control now independently checks candidate, merit, rho, and dynamic maximum at every radius.\n\nRecorded expected-red compiled and ran 16 controls: 11 pass, 5 intended failures. Those failures expose current controller gaps and do not qualify the body or target."
+  },
+  "controls23_qa_correction": {
+    "reviewer": "/root/witness_qa",
+    "response_verbatim": "My controls23 QA readiness is conditional and must not be combined with correctness approval.\n\nThe reset control hard-codes `0.5`, while the stated ordered binary64 calculation yields `0.4999999999999999`. Its exact-bit endpoint assertions require correction.\n\nThe reset fixture also uses literal row-0 residual `0.0` with Jacobian `0.25`, which is not derivative-consistent. A narrow corrected controls cut needs affected QA review of those changes, custody, and the expected-red result."
+  },
+  "controls24_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "response_verbatim": "Static/Ran Controls24 review: **HOLD** for one remaining hidden oracle defect.\n\nThe negative-control merit calculation expands four squared terms in a different binary64 grouping than production. At radius index 1 this changes `rho` by `2^-15`, exceeding the test tolerance and causing a false failure after the controller fix.\n\nThe four assigned corrections otherwise verify, including the exact reset endpoint `0x3fdffffffffffffe`. Expected-red remains 11 pass/5 intended fail; format passes."
+  },
+  "controls24_qa": {
+    "reviewer": "/root/witness_qa",
+    "response_verbatim": "Controls24 is QA-ready for the next body correction.\n\n- The reset endpoint is exactly `0x3fdffffffffffffe` (`0.4999999999999999`).\n- Row 0 now uses `z/4`, restoring residual/Jacobian consistency.\n- Candidate reconstruction uses evaluator coordinate arithmetic.\n- Weighted-matrix checks match Stage 1\u2019s operation grouping.\n\nCustody matches 764/764 entries at `ecadcde2\u2026ee4987`; controller and Stage 1 are unchanged. Format passed. The source-bound expected-red remains 11 pass / 5 intended body failures, including reset trace 5 versus required 3, so this is not a controller or release pass.",
+    "parent_disposition": "Combined readiness remains HOLD for correctness grouping finding; no body release."
+  },
+  "controls25_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "59536a6ef506c99586315005bd57f1217811c902b0ae47e3ca9472473c1e48a4",
+    "response_verbatim": "No blocking findings.\n\nNon-blocking: full/release qualification remains pending body completion.\n\n**QA PASS:** controls25\u2019s sole grouping change is source-custodied, narrowly scoped, and preserves the expected-red discriminator set."
+  },
+  "controls25_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "59536a6ef506c99586315005bd57f1217811c902b0ae47e3ca9472473c1e48a4",
+    "response_verbatim": "Static + recorded run evidence.\n\nNo correctness findings in Controls25. The corrected grouping exactly matches production arithmetic and iteration order.\n\nIndependent binary64 reconstruction confirms all 11 proposals remain merit-rejected; the final dynamic maximum is `0x1.0000180000000p-1` (> 0.5), with negative rho.\n\nRecorded evidence: 16 tests ran, 11 passed, and the five failures are the intended stale-body discriminators. Formatting passed; source and pins remained unchanged.\n\n**Approved for body implementation.** Post-body green and final hash binding remain required."
+  },
+  "body01_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "4e7fed8570049da0b377bce23cc805d555f322014d79e87b544e8f812344e199",
+    "response": "Static + recorded run evidence.\n\nNo correctness findings in BODY01. The per-base eligibility state, domain-valid consumption, typed nonfinite refusal, lawful post-consumption ordinary update, and post-update reset/reassembly ordering match the adopted authority.\n\nThe negative-humidity correction is legitimate: a governed-excess full root witness opens replacement eligibility and cannot simultaneously install as an ordinary update. Once the replacement is consumed, ordinary strict-decrease updates remain available.\n\nRecorded source-bound checks passed 16/16 plus formatting, with unchanged pins.\n\nApproved for the affected BODY01 scope. Physical, phase, cap, and broader failure-atomicity scopes remain deferred."
+  },
+  "body01_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "4e7fed8570049da0b377bce23cc805d555f322014d79e87b544e8f812344e199",
+    "response": "No blocking findings. Non-blocking: full/A1/release qualification remains outside BODY01. QA PASS: BODY01 is test-only, private, source-custodied, and passes its 16 focused controls plus formatting.",
+    "note": "QA body-scope verdict precedes subsequent exact-source lint attribution; no strict lint pass inferred."
+  },
+  "body01_quality_qa": {
+    "reviewer": "/root/witness_qa",
+    "verdict": "HOLD pending four introduced diagnostic fixes and exact content attribution",
+    "artifact": "witness-body01-lint-attribution.json"
+  },
+  "quality02_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "6133b4497da5b1b207e4c748117510b56472aeb32298b805b087c1dfd65050f1",
+    "response": "Static + recorded run evidence.\n\nNo correctness findings in QUALITY02. The extracted controller helpers preserve arithmetic, state mutation, error propagation, materialization order, and trace fields exactly. The four control refactors retain all prior assertions and binary64 operation ordering.\n\nSource-bound analytic tests passed 16/16 and formatting passed. The ENOSPC lint attempts launched no commands, so replacement lint receipts remain required for quality disposition.\n\nApproved for affected correctness."
+  },
+  "quality02_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "6133b4497da5b1b207e4c748117510b56472aeb32298b805b087c1dfd65050f1",
+    "response": "No new blocker in QUALITY02.\n\n- Four introduced BODY01 lint diagnostics cleared.\n- Strict vegetation lint at v11.rs:2149 remains HOLD.\n- Wrote QUALITY02 lint attribution (witness-quality02-lint-attribution.json).",
+    "affected_detail": "239 occurrences/235 unique: 92 exact accepted-baseline,142 exact reviewed-candidate transfers; strict vegetation outside LSE remains unmatched. No test weakening; retry source/pins/observer unchanged."
+  },
+  "prospective_private_caps_qa": {
+    "reviewer": "/root/witness_qa",
+    "evidence_class": "Static prospective classification; no source edits or tests",
+    "response": "Conditional noncritical only if every cap hook and typed variant is cfg(test)-only and private to same-crate tests.\n\nUse typed WorkCap semantics; do not map it to an owning or generic numerical error. Nested core/J/hydraulic/materializer calls require pre-entry guards and guard-off preservation tests.",
+    "detail": "Existing public production enums must not gain unconditional variants. A cfg(test)-only M1CoupledError cap variant can remain confined only with explicit build/visibility exclusion audit. Prefer private internal carrier when feasible. All match handling must be cfg(test); no cross-crate API/dependency/lock/production path/schema/selector changes. Stage1 hook preserves non-trigger arithmetic and requires affected revalidation. This is not implementation approval."
+  },
+  "phase_controls05_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "b5d8082be8b8210a11d9e4411aaa20c1ee6c0b06b0bf3c96f51f02116a1e942e",
+    "response": "Static + recorded expected-red evidence.\n\n- High: No control covers selected-phase reuse after same-base radius rejection or natural-phase reset after an accepted new base. Single-transition tests cannot detect unnecessary reassembly, selected-set drift, missing later final-phase verification, or carrying a selected set across bases.\n- Medium: The disagreement fixture ignores the expected and observed phase arguments. A body could reverse or misstate them while tests still pass.\n- Medium: New terminal phase-error tests lack explicit unchanged owner sentinel, payload, and materialization assertions.\n\nThe independent endpoint oracle is correct:\n- Predictor: 0x1.89544cafec8b4p-1, 0x1.47c63fe7efc96p-1\n- Selected solve: exact [0.6, 0.5]\n\nThe 17-pass/4-fail expected-red result is valid, but controls are not ready for matching body implementation until these gaps are corrected.",
+    "independent_operands": "Natural A=I, f=(-1.2,-1), radius1. hi=1 and48bisections produce lambda_hi0x1.1fc50254a53e0p-1. SelectedA=2I unconstrained solution(.6,.5)."
+  },
+  "phase_controls05_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "b5d8082be8b8210a11d9e4411aaa20c1ee6c0b06b0bf3c96f51f02116a1e942e",
+    "verdict": "HOLD for matching body release",
+    "findings": [
+      "No multi-proposal selected retry/new-base reset discriminator.",
+      "Disagreement constructor arguments ignored; test directly calls constructor instead of binding controller operands.",
+      "Terminal phase errors lack explicit owner/materializer/payload atomicity assertions."
+    ],
+    "evidence": "Rehashed764/764; controller+Stage1unchanged;17pass/4expectedfail;fmtPASS; rawcontrols01\u201305 failures retained."
+  },
+  "phase_controls09_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "5575d00f41ac2e0e33fd7dea1ea713e5c3f5bc1a07ff38b01e27567751475b5d",
+    "verdict": "HOLD for two missing new-path owner-sentinel assertions",
+    "finding": "New retry/reset terminal owning-error paths assert payload/materializer preservation but omit owner_sentinel immutability. Prior three control gaps fixed; all764 source entries match;17pass/6expectedfail;fmtPASS."
+  },
+  "phase_controls09_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "verdict": "HOLD only for two missing owner-sentinel assertions; independent arithmetic and chronology verified",
+    "source_tree_sha256": "5575d00f41ac2e0e33fd7dea1ea713e5c3f5bc1a07ff38b01e27567751475b5d",
+    "independent_operand_evidence": "Retry selected2I radius.25 gain-then-Uty, bracket[4,16],48bisections -> bits3fc89544cafec8ad/3fc47c63fe7efc90. Candidate300.6 exceedsbase+.3, lawfultrialrefusal. Resetpred1.22 actual0.9150000000000136 rho0x1.8000000000064p-1; norm<.99 retainsradius1; wetstep10K blockspostroot. Newbase raw rounding gives natural3fe3333333333266/.5; selected3fd3333333333266/.25."
+  },
+  "phase_controls10_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "a8b5ce404dc38f109a05d4f6a544519579203f3b7ddae5c888c9c6f00e68b0d5",
+    "response": "Static + recorded expected-red evidence.\n\nThe four-line Controls10 patch exactly adds owner_sentinel capture and unchanged assertions to both terminal retry/reset tests. No operands, chronology, fixture behavior, or prior controls changed.\n\nThe source-bound run retained the intended result: 23 tests, 17 passed, and the same six old-body failures.\n\nControls are ready for matching phase-body implementation."
+  },
+  "phase_controls10_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "a8b5ce404dc38f109a05d4f6a544519579203f3b7ddae5c888c9c6f00e68b0d5",
+    "response": "QA pass.\n\nThe controls10 patch closes the final atomicity gap: both new terminal owning-error tests preserve owner_sentinel, payload, and materialization state. The four-line delta matches the immutable controls09 patch.\n\nStatic custody: 764/764 inventory entries rehash. Ran receipt: 17 pass/6 intended old-body failures with unchanged source/pins; rustfmt passed.\n\nReadiness: controls-before-body READY. Body and remaining qualification work stay unreleased."
+  },
+  "phase_body03_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "7ed229b8575b7bc30ced1815474a0ccab0a99ac518fd5bee795494159ed3d7d8",
+    "response": "Static + recorded run evidence.\n\nHigh: phase_model reassembles whenever a later retry selects a phase different from the frozen selected phase. Authority permits selected reassembly only after the first natural predictor at a base. Later disagreement must return PhaseActiveSetInconsistent without another Jacobian assembly.\n\nA minimal discriminator must make the full selected proposal domain-refuse, then make the radius-0.25 retry select Natural. It should require the owning inconsistency error with expected Selected and observed Natural, and prove no retry assembly, probe, evaluation, or materialization occurs.\n\nThe trial-domain polarity correction to x0 > base + 0.3 is correct; the earlier <= condition was inverted.\n\nBODY03 is not approved until the drift control is added and the body enforces one selected reassembly per base."
+  },
+  "phase_body03_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "7ed229b8575b7bc30ced1815474a0ccab0a99ac518fd5bee795494159ed3d7d8",
+    "verdict": "No new quality blocker; overall HOLD for phase drift and retained strict/remaining scope",
+    "artifact": "witness-phase-body03-lint-attribution.json",
+    "evidence": "23/23 plus fmtPASS. No new lint diagnostics;234 exact historical transfers; strictvegetation retained. Later drift source has distinct identity."
+  },
+  "phase_drift01_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "802915898558e0a6fad91a226efe7e85385ffe0a909dfd6550bfa22f68415cb7",
+    "response": "Static + recorded expected-red evidence.\n\nThe Drift01 discriminator is sound. It precisely catches the unauthorized retry reassembly and verifies the correct radius-0.25 endpoint; expected Selected, observed Natural; no third Jacobian assembly, re-solve, probe, trial evaluation, or materialization; and preserved evaluator count, owner sentinel, and payload state.\n\nThe source-bound result is valid: 24 tests, 23 passed, with only the intended drift failure.\n\nApproved for matching per-base-finalization correction."
+  },
+  "phase_drift01_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "802915898558e0a6fad91a226efe7e85385ffe0a909dfd6550bfa22f68415cb7",
+    "response": "QA pass.\n\nDrift01 is ready as controls-only evidence. Its exact trace requires the fourth-selection Selected to Natural inconsistency before any third assembly, probe, domain check, evaluation, or materialization; it also preserves evaluator count, owner sentinel, payload, and materialization state.\n\nThe old body produces the intended failure by performing a third assembly first. Source custody rehashes 764/764; only Stage2 controls changed."
+  },
+  "phase_body04_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "f1856fe6003a98612795e7bf8113b2a49f426b59cbe31d23c87a30c317e980fd",
+    "response": "Static + recorded run evidence.\n\nNo correctness findings in BODY04. The new phase_finalized guard allows at most one selected reassembly at each base; rejects later phase drift before any assembly or probe; retains the frozen selected tangent for same-set retries; and resets only when an accepted update reaches new-base natural reassembly after post-update admission declines.\n\nSource-bound analytic tests passed 24/24 and formatting passed.\n\nApproved for the scoped phase-body change. Physical adapter and cap coverage remain pending."
+  },
+  "phase_body04_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "f1856fe6003a98612795e7bf8113b2a49f426b59cbe31d23c87a30c317e980fd",
+    "response": "QA pass.\n\nBODY04's phase_finalized guard is cohesive: it rejects same-base drift before reassembly/probe and resets only after accepted new-base reassembly. No affected lint diagnostic appears.\n\nSource rehashes 764/764; analytic24/24 and format pass. Focused lint transfers the BODY03/QUALITY02 chain; strict lint retains v11.rs:2149.",
+    "artifact": "witness-phase-body04-lint-attribution.json"
+  },
+  "wet_presence_science_advice": {
+    "adviser": "/root/wet_presence_authority",
+    "role": "science_advisor; not independent acceptance reviewer",
+    "evidence_class": "Static authority/source interpretation, no tests or edits",
+    "conclusion": "Finite mixed wet-temperature presence is incomplete full-trial step predicate, not an owning/nonfinite error. Ordinary install and all root admission paths require completeness. Full incompleteness neither opens replacement nor permits a later full witness. First domain-valid replacement consumes eligibility before evaluation, including incomplete norms. Same-base step_ineligible rejection shrinks under numerical-methods473-480; errors terminal under508-512. Eventual typed RadiusExhausted only at actual bound. Never relabel finite mismatch as domain refusal, governed excess, VEG-E-142 or SvdNonFinite.",
+    "primary_locations": [
+      "numerical-methods.md:473-480",
+      "numerical-methods.md:491-512",
+      "m1_coupled.rs:3637-3680",
+      "m1_coupled.rs:4291"
+    ],
+    "conditional_question": "An additional literal owner restriction forbidding all non-domain predicate rejection would need clarification; parent verified no such additional restriction exists in adopted authorization. Original assignment shorthand was overly narrow, not authority."
+  },
+  "governed05_partial_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "b02c57c8bd5e20ac6ab787c5b4266afe1c7ceccfb8c9978fd195479961374f69",
+    "verdict": "READY within assigned partial subset only",
+    "evidence_class": "Static independent reconstruction plus writer logs; parent source-bound replay pending",
+    "response": "Interface shape is correct: two occupancy wet temperatures retain physical absence as [Option<f64>;2], and the complete two-occupancy full-supply hydraulics surface is [f64;8]. Existing 24 controls are mechanically preserved: prior Some/Some wet subtraction order is unchanged, and four added finite-zero hydraulic operands cannot change the ascending max result; Stage1 hash unchanged. Exact-root fixture is genuinely full rank (default diagonal raw J = 1/scale, finite/nonzero for all 21) with exact +0 residuals, so canonical Stage1 produces an exact zero proposal; the control requires full phase/probe/domain/evaluation chronology and materialization of unchanged base rather than early predicted-reduction failure. Hydraulic poison loops independently over all indices 0..8 and injects NaN only in candidate entry; each must return Numerical('nonfinite governed step operand') after evaluation and before admission/materialization, with owner/payload preserved. Independent scalar Stage1 reconstruction for f0=-1.2,A00=1,radius1, bracket[0,1],48 bisections gives lambda_hi between 0x1.9999999999980p-3 and 0x1.9999999999a00p-3 and p0=0x1.fffffffffffeap-1 = 0.9999999999999976 exactly. None/None maps both absent wet operands to zero contribution, matching canonical m1_candidate_step_norms and preserving lawful ordinary acceptance. Writer 29-run evidence is consistent: these stable cases plus original24 pass; exact-root is the intended body red. As directed, I do not approve/review mixed-presence bridge behavior, its call-count fixture, replacement chronology, or matching body; those remain pending replacement controls and parent source-bound evidence.",
+    "scope_limit": "Hydraulic poison currently exercises ordinary non-root path; root paths and all-role matrix remain pending."
+  },
+  "governed05_partial_correctness_qualification": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "b02c57c8bd5e20ac6ab787c5b4266afe1c7ceccfb8c9978fd195479961374f69",
+    "response": "Static partial review. Ready: optional wet shape [Option<f64>;2], complete hydraulic shape [f64;8], mechanical preservation of original24, all8 hydraulic poison for ordinary non-root path, None/None ordinary transition, independently reconstructed poison step 0x1.fffffffffffeap-1. Pending: exact-root bit-level step/candidate/lambda/full-rank matrix assertions; exact zero-prediction root-admission trace semantics; hydraulic poisons at residual-eligible no-update root; mixed-presence chronology/body and broader all-role matrix. Partial subset approved; governed acceptance is not ready.",
+    "correction": "Earlier partial readiness statement did not close exact-root numerical/trace evidence; required fix verification remains with same reviewer."
+  },
+  "governed05_partial_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "b02c57c8bd5e20ac6ab787c5b4266afe1c7ceccfb8c9978fd195479961374f69",
+    "response": "Partial governed05 QA: the Option wet-temperature and 8-hydraulic-role staging is private and feature-gated, with no Cargo, public, default-build, or lib.rs surface change. BODY04 phase guard/reset and Stage1 remain preserved. The mixed-presence check fails closed before subtraction. The None/None ->0.0 bridge must remain limited to its approved subset and receive final mixed/all-eight controls before any physical acceptance claim. No other narrow shape-change blocker found.",
+    "scope": "No mixed/root/cap/physical readiness approval; those controls/body remain pending."
+  },
+  "governed13_qa_initial": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "4c868e5752647206ed61aed7e8f3ac10f6d13f1401a8c348cc762f029d81a8f9",
+    "response": "QA pass. Governed13 controls are ready before matching body. Only Stage2 controls changed; source rehashes764/764. Recorded analytic evidence26pass/4intendedred; formatpassed. Controls cover exactroot bits, all8 hydraulic poisons with atomicity, fullmixed/completequarter, consumed11step trace. Broader role/cap/physical held.",
+    "status": "SUPERSEDED by calibration finding"
+  },
+  "governed13_qa_calibration_correction": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "4c868e5752647206ed61aed7e8f3ac10f6d13f1401a8c348cc762f029d81a8f9",
+    "response": "BLOCKER supersedes prior READY. The consumed mixed test verifies only displacement interval. It never observes fixture wet Option projection, so removing or miswiring that projection could retain the same exhaustion trace. Add separate calibration fixture and evaluate all11 reconstructed candidates. Assert both wet values Some except index1 [Some(300),None]. Keep separate from run fixture to preserve counters and chronology. Readiness HOLD pending bounded control."
+  },
+  "governed14_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "678cac08799d84eb53a0ddedc6af03dbefd26d5af91e5565ee0d2188bf933030",
+    "response": "QA pass. Governed14 closes calibration gap. A separate fixture evaluates all11 candidates and asserts mixed wet presence only at index1; run fixture retains exact counters and trace. Only controls changed. Source rehashes764/764; analytic26pass/4intendedred and formatpasses. Broader holds remain."
+  },
+  "governed14_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "678cac08799d84eb53a0ddedc6af03dbefd26d5af91e5565ee0d2188bf933030",
+    "response": "Static review: no blocking findings. Governed14 controls are ready for matching first-slice body. Independent binary64 reconstruction confirms exact-root matrix, zero diagnostics, positive mixed quarter update (rho0.7625, dynamic maximum0.453125), governed thresholds, and consumed mixed-replacement chronology. Source-bound replay30tests:26passed/fourintendedoldbodyfailures; formatpasses. All21/allrole/rootpath poison coverage, caps and physical adapter remain pending.",
+    "independent_operands": {
+      "positive_quarter_f2_hex": "0x1.0000000000001p-2",
+      "positive_quarter_linear2_hex": "0x1.8800000000002p-3",
+      "positive_quarter_candidate2_hex": "0x1.a480000000002p-3",
+      "pred_hex": "0x1.ep-6",
+      "ared_hex": "0x1.6ep-6",
+      "rho_hex": "0x1.8666666666666p-1",
+      "candidate_max": 0.453125,
+      "temperature_step": "2^-28 <1e-8",
+      "root_weighted_diagonal_exception": "rows5,11 bits0x3fefffffffffffff; remaining1; offdiagonal+0",
+      "consumed_displacement": "2^(-24-2i); strict(2^-27,2^-25) selects onlyi1; actual separate-fixture Option projection verified"
+    }
+  },
+  "governed15_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "71be44ba84af6b83499ddafee940bfa252cc35e799541dc680c63cc599594542",
+    "response": "Static review blocked by one correctness issue. Medium: positive-prediction failure precedence changed from frozen_trial_merit -> dynamic_max -> governed operands to dynamic_max -> governed operands -> frozen_trial_merit. Restore approved order while skipping merit only for nonpositive prediction. Low: remove logically unreachable new IncompleteScope fallback in install branch; structure installation under existing Some(merit). Complete/incomplete classification, witness consumption, zero-prediction diagnostics and post-update admission otherwise sound."
+  },
+  "governed15_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "71be44ba84af6b83499ddafee940bfa252cc35e799541dc680c63cc599594542",
+    "response": "BLOCKER introduced lint. Stage2controls218 introduces unnested_or_patterns: (WetNoneNone,0)|(WetMixed,0). Absent accepted BODY04/QUALITY02 chain, must fix and re-lint. Governed15 quality HOLD. This supersedes initial preliminary suggestion that control warning might transfer outside body-only diff; the whole governed tranche is the relevant diff."
+  },
+  "governed16_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "b3ec012256b62faa78cc46010dab5cd5c11af3346f458c2a6d24c34a2e37d2ff",
+    "response": "Static fix verification approved for scopedbody. Positive-prediction error precedence restored; unreachable IncompleteScope removed. Control rewrite semantics-preserving. Source-bound30/30 andfmtPASS. Broader poison/cap/physicalpending."
+  },
+  "governed16_qa_preliminary": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "b3ec012256b62faa78cc46010dab5cd5c11af3346f458c2a6d24c34a2e37d2ff",
+    "response": "Preliminary report said focused had no controller/control diagnostic; strict pending. This was incorrect and is SUPERSEDED by full-context whole-tranche inspection below.",
+    "status": "SUPERSEDED"
+  },
+  "governed16_qa_quality_correction": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "b3ec012256b62faa78cc46010dab5cd5c11af3346f458c2a6d24c34a2e37d2ff",
+    "response": "BLOCKER governed whole-tranche lint.10 introduced LSE diagnostics absent BODY04/QUALITY02/BODY07 chain: controller items_after_statements219,match_same_arms235,too_many_lines464; controls match_same_arms190,252,if_same_then_else364,368,bool_assert_comparison1608,cast_possible_truncation andcast_possible_wrap1701. Fix and re-lint. Strict vegetation remains inheritedhold. Earlier location-only rg inspection missed diagnostic contexts; prior clean statement incorrect."
+  },
+  "governed17_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "8d447621a6801e7d2c55131214c5607857e518c25a38cf3eb8d04ead0ab439db",
+    "response": "Static verification: approved. The quality refactor preserves arithmetic, error order, mutation timing, counters, phase and witness state, and all assertions. Source-bound tests passed 30/30; formatting passed; affected files add no focused-lint diagnostics. Broader scopes remain pending."
+  },
+  "governed17_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "8d447621a6801e7d2c55131214c5607857e518c25a38cf3eb8d04ead0ab439db",
+    "response": "QA pass. All ten introduced controller/control lint diagnostics fixed. Full-context receipt scans show zero affected diagnostics; source rehashes 764/764, analytic 30/30 and format pass. Focused and strict Clippy remain inherited-chain failures; strict v11.rs:2149 stays held.",
+    "artifact": "witness-governed17-lint-attribution.json",
+    "parent_supplement": "witness-governed17-parent-diagnostic-transfer.json"
+  },
+  "matrix19_partial_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "983e94a3b8a9e84bd97eceaa4f25bbe24a516052a44c4517ad2c73e4128276ce",
+    "evidence_class": "Static partial review",
+    "response": "Partial matrix19 QA found complete stated slot coverage: 63 raw/normalizer faults and 33 governed-role faults. Injection occurs after fixture validation, and the controls preserve exact error, trace, counter, payload, owner, and no-materialization assertions. The frozen matrix19 tree is valid; the mutable source has since changed only in Stage2 controls during the writer\u2019s next extension. Stable-superset qualification remains pending."
+  },
+  "matrix19_partial_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "983e94a3b8a9e84bd97eceaa4f25bbe24a516052a44c4517ad2c73e4128276ce",
+    "evidence_class": "Static; no commands run",
+    "response": "No findings within assigned controls-only scope. All63 raw/normalizer poisons reach ordinal2 after ordinary evaluation construction. Governed17 frozen_trial_merit returns nonfinite weighting for rawNaN and invalid normalizer for normalizerNaN/zero before dynamic/governed checks. The33 governed cases cover14temperature coordinates,humidity13,wet2,hydraulic8,beta4,CI4; actual projection fails governed_step_pass with nonfinite governed step operand. Mixedwet/hydraulicNaN correctly fails finite scan before Incomplete, no shrink/materialize. Exact logs,2evaluator entries,empty materializer inputs,owner/payload atomicity all verified. Manifest matches and controller/interface/Stage1 unchanged. Partial READY only; exactroot/replacement extensions,installedroot,finite thresholds,domains,caps,physical/harness unreviewed."
+  },
+  "matrix20_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "e537243f302cd52b5f7cdf26b33c1e6b969e099ea0988a675d71ad031a3e6109",
+    "response": "Static review: one medium finding. The new centralized fault generators are duplicated by the retained full-no-update tests. Reuse raw_normalizer_faults() and governed_faults() there so the63-case and33-slot matrices cannot diverge. The added exact-root and replacement paths otherwise have correct projections,error precedence,logs,and atomicity."
+  },
+  "matrix20_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "e537243f302cd52b5f7cdf26b33c1e6b969e099ea0988a675d71ad031a3e6109",
+    "response": "QA pass within scopedcontrols. Source rehashes764/764. Controller/interface/Stage1unchanged. Projection timing,exactcandidatechronology,counters,sentinel,payload,no materialization verified. Full-contextlintzeroaffectedreferences. Broaderholdsremain.",
+    "reporting_correction": "Prior33/33 stale count superseded by reviewer: matrix20 is34/34 PASS. No blanket diagnostic-count transfer claim pending parent exact238comparison."
+  },
+  "matrix21_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "b2f6798656ca9eb37f80912d794678a73cd76202691dd4224cabe29e89ab0018",
+    "response": "Matrix21 fix verification: approved. The duplicated generators are fully replaced by shared helpers with identical ordering and unchanged assertions. Source-bound tests passed34/34 and formatting passed."
+  },
+  "matrix21_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "b2f6798656ca9eb37f80912d794678a73cd76202691dd4224cabe29e89ab0018",
+    "response": "Matrix21 scoped QA passes. The change only reuses existing63/33 fault helpers; assertions and order remain intact. Source rehashes764/764; analytic34/34 and format pass. Focused/strict remain inherited101receipts, with exact238-identity transfer preserving strict hold.",
+    "parent_supplement": "witness-matrix21-diagnostic-transfer.json confirms transfer separately from prior matrix20comparison"
+  },
+  "matrix22_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "7200efd5d98be5be5e812e1cb7d61ce74c54e4e35383ee333c90d7fcfc375026",
+    "response": "Matrix22 scoped review: approved. Both added controls have correct fault projection,error precedence,exact logs,and preinstallation atomicity. Source-bound tests passed36/36 and formatting passed. Installed physical-state poisoning and broader scopes remain pending.",
+    "independent_operand_reconstruction": "PostUpdateAdmission base f0=-2,A00=2^29,exactp0=2^-28; initialweightedguard checks follow initialEvaluate,naturalSelectPhasezero,RawJzero only. Positivepredcandidate fault precedence retained."
+  },
+  "matrix22_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "7200efd5d98be5be5e812e1cb7d61ce74c54e4e35383ee333c90d7fcfc375026",
+    "response": "Matrix22 scoped QA passes. The two new controls cover initial weighted-system faults and post-update candidate faults with exact trace,counter,base,owner,payload,and no-materialization assertions. Source rehashes764/764;analytic36/36 and formatpass. This remains preinstallationanalytic coverage;broaderphysical andinstalled-stateholds remain.",
+    "parent_supplement": "witness-matrix22-diagnostic-transfer.json"
+  },
+  "finite_threshold_old_function_recovery_extraction": {
+    "agent": "/root/physical_path_map",
+    "evidence_class": "Static read-only snapshot diff; not independent acceptance review",
+    "response": "Mutable-versus-matrix22 diff currently shows no changed old phase-function bodies or brace deletions. Only additive finite projection enum/helpers,Fixturefield/initializer/projectioncall andnew finite tests. Original phase function contents equivalent; reportedbracefailures belong earlierretainedsnapshots. Roleinventory29;CIseparate.",
+    "scope": "Transientmutable snapshot; final exactsource review remainsrequired"
+  },
+  "threshold23_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "b4e7e5899eb1cf6a6c43d008777ef4a12d43c5de4d39488a2004450d917ef15b",
+    "response": "Threshold23 scoped QA passes. It covers all29 governed threshold roles with signed bit-neighbor calibration,hydraulic equality across8roles,and finite largeCI operands. Source rehashes764/764;analytic39/39 and formatpass. Controller,interface,andStage1unchanged. Broaderphysical andbodyholds remain.",
+    "parent_supplement": "witness-threshold23-diagnostic-transfer.json"
+  },
+  "threshold23_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "b4e7e5899eb1cf6a6c43d008777ef4a12d43c5de4d39488a2004450d917ef15b",
+    "response": "Static review: one medium coverage finding. The CI finite-only test does not observe the projected candidate CI value,so it would pass if that projection were omitted or targeted the wrong slot. Add an ordinal-one calibration asserting exact ci_pa[index] bits before each controller case. All temperature,humidity,hydraulic,and asymmetric beta boundaries are numerically correct,with proper admission/rejection chronology.",
+    "independent_operands": {
+      "temperature": [
+        "0x1.5798800000000p-27",
+        "0x1.5798ee2308c3ap-27",
+        "0x1.5799000000000p-27"
+      ],
+      "humidity": [
+        "0x1.1979800000000p-40",
+        "0x1.19799812dea11p-40",
+        "0x1.1979a00000000p-40"
+      ],
+      "beta_negative_offsets": [
+        1801439,
+        1801440
+      ],
+      "beta_positive_offsets": [
+        900719,
+        900720
+      ],
+      "beta_negative_below": "0x1.b7cdfp-34",
+      "beta_positive_below": "0x1.b7cdep-34",
+      "beta_above": "0x1.b7cep-34",
+      "hydraulic": "nextdown/equality/nextup inclusive at both signs of1e-7"
+    }
+  },
+  "cap24_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "d33c0e038802d25b8adf89e58f7c253737d19fa2c3a22b94f0cadd6af1a40709",
+    "response": "Cap24 controls remain on hold for one chronology gap. Target199 only counts29installs andone rejection. It must bind proposal25 as rejection,its8->2radius shrink andunchangedbase,allotherproposaldispositions,and exactretry/materialization sequence. Othercapcontrols andCIcalibration sound.",
+    "independent_fixture_math": "A33=(1/.01)*.01=1; radii1,2,4,8 then8; z after n>=4 is8n-17 within~1e-12. At50,z~383:target1000 still617fromroot,target383 iswithinrootthreshold1. Target199 at24,z~175; nextz~183 in(182,184),perturbedcandidate residual~-24 versuspredicted~-16 givesrho~0; retriesz177,181,189,197,199 yield29updates/30proposals. Root/materializerownerrorat50 mustprecedecap."
+  },
+  "cap24_qa_initial": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "d33c0e038802d25b8adf89e58f7c253737d19fa2c3a22b94f0cadd6af1a40709",
+    "response": "Cap24 controls are scoped-ready. They bind analytic50-updatecap,fiftieth-rootmaterializerprecedence,andper-baseretrybehavior with operation sequences andatomicity. Source rehashes764/764;expected-redanalytic/formatreceiptsvalid. Nestedphysicalcapenforcement/outcomecarryingpending.",
+    "status": "Affected readiness held pending correctness chronology and parent introduced-quality findings"
+  },
+  "cap24_parent_quality_findings": {
+    "evidence_class": "Ran: full-context parent focused stderr inspection",
+    "source_tree_sha256": "d33c0e038802d25b8adf89e58f7c253737d19fa2c3a22b94f0cadd6af1a40709",
+    "findings": [
+      "Introduced too_many_lines: Fixture.residual110/100 at378",
+      "Introduced match_same_arms: LongProgress non-row3 arm395duplicateswildcard"
+    ],
+    "status": "HOLD; samewriter correction beforebody"
+  },
+  "cap24_qa_correction": {
+    "reviewer": "/root/witness_qa",
+    "response": "Cap24 quality is HOLD. Two introduced controls diagnostics require repair: residual exceedsClippyline limit and LongProgressduplicate matcharm. Prior readiness superseded pendingfixes andtarget199chronology."
+  },
+  "cap25_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "3d03107a014d6b9d1720a67790f1eb8ee7f74d0401feb943acb196edbc551b45",
+    "response": "Cap25 chronology fix correctness-approved for matchingbody. Proposal25,8->2shrink,same-baseretry,allotheracceptedupdates andexactoperationorder nowbound. Quality stillblocked by residual102/100 at397;fixmechanicallywithout suppression."
+  },
+  "cap25_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "3d03107a014d6b9d1720a67790f1eb8ee7f74d0401feb943acb196edbc551b45",
+    "response": "Cap25 remainsHOLD pendingquality-onlycorrection;frozencutstillintroducedresidual102/100Clippy."
+  },
+  "cap26_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "58ba6c1d22121b071cd332a6b3daf7deb40bc7b0b5b1e5584ee33027da9c94cf",
+    "response": "Cap26 fix verification approved. Dispatcher preservesallfixturearithmetic andremovesonly redundantLongProgresszcomputation. Introducedlint findingclosed;cap25correctnessreadiness carriesforward."
+  },
+  "cap26_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "58ba6c1d22121b071cd332a6b3daf7deb40bc7b0b5b1e5584ee33027da9c94cf",
+    "response": "Cap26 fixes residualquality through mechanicaldispatcher extraction. Focusedlintzeroaffecteddiagnostics; expected-redanalytic andformatreceipts pass. Strictoutputnoaffecteddiagnostics butreceipt incomplete attimeofreview. Scopedbodyreadiness subjecttoreceiptcompletion.",
+    "parent_completion": "Strictrecorder subsequently completedexit101 in7.79s,source/observer/pins unchanged; inheritedfailure retained. Exact238diagnostictransfer confirmed witness-cap26-diagnostic-transfer.json"
+  },
+  "cap_body27_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "d17273358b234ef038de7d13167899a94c16b03929608b61342e880b261fd537",
+    "response": "Blocker: stale controloracle target199 expects30RawJacobian calls but exactchronologyhas29(initial1+28nonfinalaccepted,rejected25/final30none). Correct onlyoracle;bodylogic otherwise matches scopedcapauthority. First newdownstreamfailure retained."
+  },
+  "cap_body27_qa_initial": {
+    "reviewer": "/root/witness_qa",
+    "response": "Initial scopedQA pass basedonprivateexposure/counterinspection was superseded afteractualanalytic42PASS/1FAIL confirmed.",
+    "status": "SUPERSEDED"
+  },
+  "cap_body27_qa_correction": {
+    "reviewer": "/root/witness_qa",
+    "response": "Cap-body27 readiness superseded:actual42PASS/1FAIL dueRawJacobianoracle30vs29. Finalfixedsource replayrequired."
+  },
+  "terminal28_correctness": {
+    "reviewer": "/root/witness_correctness",
+    "source_tree_sha256": "9ecfa70f1c174d4bb5b99536db545167fa1eced9394c03368b832c841a176405",
+    "response": "Terminal28 scoped disposition: approved. CorrectedRawJacobianexpectation29;source-boundanalytic43/43,formatPASS,noaffected-filelintintroduced. Acceptedwitnesseligibility,phasehandling,governedfinite/thresholdbehavior,analyticfaultmatrices,per-baseproposalaccounting and50-updatecapwithroot/materializerprecedence. Firstunfinishedboundaryrealphysicalevaluator/adapter:completephysicaldomain/acceptancepoisoning,actualnestedcapinstrumentation,installed/post-updatephysicalevidence,harnessqualification,fullregression,authenticatedbaseline/treatmentpairundone.",
+    "original_final_response": "Terminal28 scoped disposition: **approved**.\n\n- The corrected RawJacobian expectation is 29.\n- Source-bound analytic tests passed 43/43.\n- Formatting passed.\n- No affected-file lint diagnostics were introduced.\n\nAccepted scope includes witness eligibility, phase handling, governed finite/threshold behavior, analytic fault matrices, per-base proposal exhaustion, and the 50-update cap with root/materializer precedence.\n\nThe first unfinished boundary is the real physical evaluator/adapter: complete physical domain and acceptance poisoning, actual nested cap instrumentation, installed/post-update physical-state evidence, harness qualification, full regression, and the authenticated baseline/treatment pair remain undone."
+  },
+  "terminal28_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "9ecfa70f1c174d4bb5b99536db545167fa1eced9394c03368b832c841a176405",
+    "response": "ScopedQApass;overallINCOMPLETE. Terminal28onlychanges target199RawJacobianoracle30to29. Source rehashes764/764. Analytic43/43 andformatPASS;focused/strictinheritedfailures withzeroaffecteddiagnostics. No physical/targetqualification. Nextworkrealphysicaldomains,acceptance/installedstate,nestedcaps,adapter/harness,fullqualification,targetpair.",
+    "timing_observation": "90s boundselectedpredispatch basedonpriorcachedmax20.94s; actualanalytic5.795s,focused11.007s,strict6.951s,allsource/pinsunchanged.",
+    "original_final_response": "**Scoped QA pass; overall disposition remains INCOMPLETE.**\n\nTerminal28 changes only the target199 RawJacobian oracle from 30 to 29. Source rehashes 764/764. Analytic 43/43 and format pass; focused/strict lint remain inherited failures with zero affected diagnostics.\n\nNo physical or target-run qualification exists. Next work must cover real physical domains, acceptance/installed state, nested caps, adapter/harness, full qualification, and the target pair."
+  },
+  "terminal_preservation_qa": {
+    "reviewer": "/root/witness_qa",
+    "source_tree_sha256": "9ecfa70f1c174d4bb5b99536db545167fa1eced9394c03368b832c841a176405",
+    "original_final_response": "No findings. Terminal reconstruction rehashes all 764 entries with zero mismatches, and key terminal source hashes match.\n\nThe top package disposition truthfully records **INCOMPLETE/HOLD**, analytic-only 43/43 evidence, inherited strict lint, unused target slots, and the first unfinished physical/nested-cap boundary. The ledger and one-patch recovery custody are consistent."
+  }
+}

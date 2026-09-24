@@ -1,0 +1,287 @@
+--- /home/roger/openwepp-experiments/cold-canopy-m1-witness-controls22-recovery-20260924/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs	2026-09-24 01:58:35.756027167 -0700
++++ /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs	2026-09-24 10:11:39.907608305 -0700
+@@ -48,9 +48,16 @@
+     accepted_updates: u8,
+     materialization_count: u8,
+     preceding: Option<M1TrustRegionControllerEvaluation<P>>,
++    witness_eligibility: ReplacementWitnessEligibility,
+     proposal_trace:
+         Vec<super::m1_trust_region_controller_interface::M1TrustRegionControllerTransition>,
+ }
++#[derive(Clone, Copy, Eq, PartialEq)]
++enum ReplacementWitnessEligibility {
++    FullProposal,
++    ReplacementAvailable,
++    ReplacementConsumed,
++}
+ pub(crate) struct ProposalModel {
+     pub(crate) observation: super::M1TrustRegionSubproblemObservation,
+     pub(crate) weighted_jacobian: Vec<Vec<f64>>,
+@@ -105,6 +112,7 @@
+             accepted_updates: 0,
+             materialization_count: 0,
+             preceding: None,
++            witness_eligibility: ReplacementWitnessEligibility::FullProposal,
+             proposal_trace: Vec::new(),
+         })
+     }
+@@ -189,7 +197,7 @@
+     fn governed_step_pass(
+         current: &M1TrustRegionControllerEvaluation<P>,
+         candidate: &M1TrustRegionControllerEvaluation<P>,
+-    ) -> bool {
++    ) -> Result<bool, &'static str> {
+         fn finite_max(values: impl IntoIterator<Item = f64>) -> Option<f64> {
+             values.into_iter().try_fold(0.0_f64, |maximum, value| {
+                 value.is_finite().then_some(maximum.max(value.abs()))
+@@ -207,7 +215,7 @@
+                         .map(|(a, b)| a - b),
+                 ),
+         ) else {
+-            return false;
++            return Err("nonfinite governed step operand");
+         };
+         let humidity = (candidate.coordinates[13] - current.coordinates[13]).abs();
+         let Some(hydraulic) = finite_max(
+@@ -217,7 +225,7 @@
+                 .zip(current.hydraulic_potential.iter())
+                 .map(|(a, b)| a - b),
+         ) else {
+-            return false;
++            return Err("nonfinite governed step operand");
+         };
+         let Some(beta) = finite_max(
+             candidate
+@@ -226,7 +234,7 @@
+                 .zip(current.beta.iter())
+                 .map(|(a, b)| a - b),
+         ) else {
+-            return false;
++            return Err("nonfinite governed step operand");
+         };
+         let ci = candidate
+             .ci_pa
+@@ -234,14 +242,18 @@
+             .zip(current.ci_pa.iter())
+             .map(|(a, b)| a - b)
+             .collect::<Vec<_>>();
+-        humidity.is_finite()
+-            && super::solver::m1_governed_step_components_pass_for_trust_region(
++        if !humidity.is_finite() || ci.iter().any(|value| !value.is_finite()) {
++            return Err("nonfinite governed step operand");
++        }
++        Ok(
++            super::solver::m1_governed_step_components_pass_for_trust_region(
+                 temperature,
+                 humidity,
+                 hydraulic,
+                 beta,
+                 &ci,
+-            )
++            ),
++        )
+     }
+ 
+     fn transition_trace(
+@@ -325,6 +337,7 @@
+         self.preceding = Some(self.current.clone());
+         self.current = candidate;
+         self.accepted_updates += 1;
++        self.witness_eligibility = ReplacementWitnessEligibility::FullProposal;
+         if merit.rho < 0.25 {
+             self.radius *= 0.25;
+         } else if merit.rho > 0.75
+@@ -363,21 +376,58 @@
+         Self::transition_trace(basis, &outcome)
+     }
+ 
+-    fn evaluate_candidate<E, V>(
++    fn trial_domain_refusal(
++        &mut self,
++        basis: &TransitionBasis<'_>,
++    ) -> super::m1_trust_region_controller_interface::M1TrustRegionControllerTransition {
++        use super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition as Disposition;
++        if self.witness_eligibility == ReplacementWitnessEligibility::FullProposal {
++            self.witness_eligibility = ReplacementWitnessEligibility::ReplacementAvailable;
++        }
++        self.shrink_transition(
++            basis,
++            TransitionOutcome {
++                disposition: Disposition::MeritRejectedAndShrunk,
++                actual_reduction: None,
++                rho: None,
++                moving_merit: None,
++                dynamic_max: None,
++                installed: false,
++                next_radius: 0.0,
++                base_after: basis.base_before,
++                entered_materializations: 0,
++            },
++        )
++    }
++
++    fn root_admit<E, V>(
+         &mut self,
+         evaluator: &mut V,
+-        coordinates: [f64; 21],
+-    ) -> Result<M1TrustRegionControllerEvaluation<P>, M1TrustRegionControllerError<E>>
++        basis: &TransitionBasis<'_>,
++        merit: &TrialMerit,
++    ) -> Result<
++        super::m1_trust_region_controller_interface::M1TrustRegionControllerTransition,
++        M1TrustRegionControllerError<E>,
++    >
+     where
+         V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,
+     {
+-        if !evaluator
+-            .pre_evaluator_trial_domain(coordinates)
+-            .map_err(M1TrustRegionControllerError::Own)?
+-        {
+-            return Err(M1TrustRegionControllerError::IncompleteScope);
+-        }
+-        self.budget.enter(evaluator, coordinates)
++        use super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition as Disposition;
++        self.materialize_current(evaluator)?;
++        Ok(Self::transition_trace(
++            basis,
++            &TransitionOutcome {
++                disposition: Disposition::RootAdmitted,
++                actual_reduction: Some(merit.actual_reduction),
++                rho: Some(merit.rho),
++                moving_merit: Some(merit.moving_merit),
++                dynamic_max: Some(merit.candidate_max),
++                installed: false,
++                next_radius: self.radius,
++                base_after: basis.base_before,
++                entered_materializations: 1,
++            },
++        ))
+     }
+ 
+     fn transition<E, V>(
+@@ -423,7 +473,21 @@
+                 },
+             ));
+         }
+-        let candidate = match self.evaluate_candidate(evaluator, candidate_coordinates) {
++        let trial_domain = evaluator
++            .pre_evaluator_trial_domain(candidate_coordinates)
++            .map_err(M1TrustRegionControllerError::Own)?;
++        if !trial_domain {
++            return Ok(self.trial_domain_refusal(&basis));
++        }
++        let root_witness = match self.witness_eligibility {
++            ReplacementWitnessEligibility::FullProposal => true,
++            ReplacementWitnessEligibility::ReplacementAvailable => {
++                self.witness_eligibility = ReplacementWitnessEligibility::ReplacementConsumed;
++                true
++            }
++            ReplacementWitnessEligibility::ReplacementConsumed => false,
++        };
++        let candidate = match self.budget.enter(evaluator, candidate_coordinates) {
+             Ok(value) => value,
+             Err(M1TrustRegionControllerError::Own(error)) => {
+                 return Err(M1TrustRegionControllerError::Own(error));
+@@ -433,40 +497,20 @@
+         let mut merit = self.frozen_trial_merit(&model, &candidate)?;
+         merit.candidate_max =
+             Self::dynamic_max(&candidate).map_err(M1TrustRegionControllerError::Numerical)?;
+-        if current_max <= 1.0 && Self::governed_step_pass(&self.current, &candidate) {
+-            self.materialize_current(evaluator)?;
+-            return Ok(Self::transition_trace(
+-                &basis,
+-                &TransitionOutcome {
+-                    disposition: Disposition::RootAdmitted,
+-                    actual_reduction: Some(merit.actual_reduction),
+-                    rho: Some(merit.rho),
+-                    moving_merit: Some(merit.moving_merit),
+-                    dynamic_max: Some(merit.candidate_max),
+-                    installed: false,
+-                    next_radius: self.radius,
+-                    base_after: base_before,
+-                    entered_materializations: 1,
+-                },
+-            ));
+-        }
+-        if current_max <= 1.0 {
+-            return Ok(self.shrink_transition(
+-                &basis,
+-                TransitionOutcome {
+-                    disposition: Disposition::MeritRejectedAndShrunk,
+-                    actual_reduction: Some(merit.actual_reduction),
+-                    rho: Some(merit.rho),
+-                    moving_merit: Some(merit.moving_merit),
+-                    dynamic_max: Some(merit.candidate_max),
+-                    installed: false,
+-                    next_radius: 0.0,
+-                    base_after: base_before,
+-                    entered_materializations: 0,
+-                },
+-            ));
++        let governed = Self::governed_step_pass(&self.current, &candidate)
++            .map_err(M1TrustRegionControllerError::Numerical)?;
++        if current_max <= 1.0 && root_witness {
++            if governed {
++                return self.root_admit(evaluator, &basis, &merit);
++            }
++            if self.witness_eligibility == ReplacementWitnessEligibility::FullProposal {
++                self.witness_eligibility = ReplacementWitnessEligibility::ReplacementAvailable;
++            }
+         }
+-        let installed = merit.rho >= 0.1 && merit.candidate_max < current_max;
++        let ordinary_update_eligible = current_max > 1.0
++            || self.witness_eligibility == ReplacementWitnessEligibility::ReplacementConsumed;
++        let installed =
++            ordinary_update_eligible && merit.rho >= 0.1 && merit.candidate_max < current_max;
+         if installed {
+             return self.install_candidate(&basis, candidate, &merit);
+         }
+@@ -534,14 +578,35 @@
+         let Some(previous) = self.preceding.as_ref() else {
+             return Ok(false);
+         };
+-        if Self::dynamic_max(&self.current).map_err(M1TrustRegionControllerError::Numerical)? <= 1.0
++        let admitted = Self::dynamic_max(&self.current)
++            .map_err(M1TrustRegionControllerError::Numerical)?
++            <= 1.0
+             && Self::governed_step_pass(previous, &self.current)
+-        {
++                .map_err(M1TrustRegionControllerError::Numerical)?;
++        self.preceding = None;
++        if admitted {
+             self.materialize_current(evaluator)?;
+             return Ok(true);
+         }
+         Ok(false)
+     }
++
++    fn reassemble_current<E, V>(
++        &mut self,
++        evaluator: &mut V,
++    ) -> Result<(), M1TrustRegionControllerError<E>>
++    where
++        V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,
++    {
++        let zero = [0.0; 21];
++        self.natural_phase = evaluator
++            .select_phase(&self.current, zero)
++            .map_err(M1TrustRegionControllerError::Own)?;
++        self.raw_jacobian = evaluator
++            .raw_jacobian(&self.current, None, zero)
++            .map_err(M1TrustRegionControllerError::Own)?;
++        Ok(())
++    }
+ }
+ 
+ pub(crate) fn m1_trust_region_controller_transition_for_test<E, P, Phase, V>(
+@@ -585,7 +650,8 @@
+             if state.post_update_admit(evaluator)? {
+                 break;
+             }
+-            return Err(M1TrustRegionControllerError::IncompleteScope);
++            state.reassemble_current(evaluator)?;
++            continue;
+         }
+         if state.radius < 2f64.powi(-20) || state.proposal_trace.len() >= 21 {
+             terminal_refusal = Some(super::M1TrustRegionRefusalKind::RadiusExhausted);

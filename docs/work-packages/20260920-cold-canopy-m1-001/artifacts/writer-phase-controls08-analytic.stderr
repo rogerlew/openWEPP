@@ -1,0 +1,259 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: method `phase_active_set_inconsistent` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:60:8
+   |
+29 | pub(crate) trait M1TrustRegionControllerEvaluator {
+   |                  -------------------------------- method in this trait
+...
+60 |     fn phase_active_set_inconsistent(
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.16s
+────────────
+ Nextest run ID a0250405-36f3-4825-87f5-76f58f462190 with nextest profile: default
+    Starting 23 tests across 1 binary (256 tests skipped)
+        FAIL [   0.020s] ( 4/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial' (2695594) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1306:5:
+    assertion failed: matches!(super::m1_trust_region_controller_transition_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::Own("PhaseActiveSetInconsistent")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.028s] ( 7/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base' (2695586) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1371:5:
+    assertion failed: matches!(result,
+        Err(M1TrustRegionControllerError::Own("selected-side owning error")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.029s] ( 9/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1 ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1' (2695584) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1239:90:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.022s] (14/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification' (2695607) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1328:5:
+    assertion failed: matches!(super::m1_trust_region_controller_transition_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::Own("selected-side owning error")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.025s] (15/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal' (2695606) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1349:5:
+    assertion failed: matches!(result,
+        Err(M1TrustRegionControllerError::Own("selected-side owning error")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.050s] (17/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology' (2695587) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1276:9:
+    assertion failed: matches!(super::m1_trust_region_controller_transition_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::Own("PhaseActiveSetUnrepresentable")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.155s] 23 tests run: 17 passed, 6 failed, 256 skipped
+        FAIL [   0.020s] ( 4/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial' (2695594) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1306:5:
+    assertion failed: matches!(super::m1_trust_region_controller_transition_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::Own("PhaseActiveSetInconsistent")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.028s] ( 7/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base' (2695586) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1371:5:
+    assertion failed: matches!(result,
+        Err(M1TrustRegionControllerError::Own("selected-side owning error")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.029s] ( 9/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1 ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1' (2695584) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1239:90:
+    called `Result::unwrap()` on an `Err` value: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.022s] (14/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification' (2695607) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1328:5:
+    assertion failed: matches!(super::m1_trust_region_controller_transition_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::Own("selected-side owning error")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.025s] (15/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal' (2695606) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1349:5:
+    assertion failed: matches!(result,
+        Err(M1TrustRegionControllerError::Own("selected-side owning error")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.050s] (17/23) openwepp-land-surface-energy m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology' (2695587) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1276:9:
+    assertion failed: matches!(super::m1_trust_region_controller_transition_for_test(&mut fixture),
+        Err(M1TrustRegionControllerError::Own("PhaseActiveSetUnrepresentable")))
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

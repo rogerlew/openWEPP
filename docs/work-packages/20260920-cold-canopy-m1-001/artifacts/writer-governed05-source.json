@@ -1,0 +1,1 @@
+{"controls_sha256":"b41eca5415082d70762e464d6d67f42a2c97d84987c4f17892ddac2843dec732","format":"writer-governed05-rustfmt.stdout","expected_red":"writer-governed05-analytic.stderr","result":"29 controls compiled: 27 pass; exact-root and full-mixed-presence controls intentionally fail against the bridge body."}
