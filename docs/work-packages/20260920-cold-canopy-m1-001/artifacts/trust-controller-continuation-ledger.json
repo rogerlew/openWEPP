@@ -1,11 +1,11 @@
 {
-  "observed_utc": "2026-09-24T09:16:59.902468+00:00",
+  "observed_utc": "2026-09-24T09:18:26.452320+00:00",
   "anchor_utc": "2026-09-24T05:43:00+00:00",
   "prior_charged_seconds": 295158.795224,
   "supplement_seconds": 14400,
   "fixed_ceiling_seconds": 309558.795224,
-  "charged_cumulative_seconds": 307998.697692,
-  "remaining_seconds": 1560.0975319999852,
+  "charged_cumulative_seconds": 308085.247544,
+  "remaining_seconds": 1473.5476800000179,
   "implementation_cutoff_utc": "2026-09-24T09:13:00+00:00",
   "hard_deadline_utc": "2026-09-24T09:43:00+00:00",
   "reserve_seconds": 1800,
@@ -19,5 +19,7 @@
     "baseline": 0,
     "treatment": 0,
     "corrected_repeat": 0
-  }
+  },
+  "published_evidence_commit": "56c989b1be0d3fc51f8490b1516bdeaf766e918a",
+  "final_post_publication_ledger": "trust-controller-final-publication.json (local)"
 }

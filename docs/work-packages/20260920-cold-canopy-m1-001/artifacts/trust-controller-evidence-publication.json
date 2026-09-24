@@ -1,0 +1,16 @@
+{
+  "observed_utc": "2026-09-24T09:18:26.452320+00:00",
+  "published_commit": "56c989b1be0d3fc51f8490b1516bdeaf766e918a",
+  "remote_main_verified": "56c989b1be0d3fc51f8490b1516bdeaf766e918a",
+  "disposition": "INCOMPLETE / HOLD",
+  "terminal_tree_sha256": "79f9094928b80caae0e3bdc13654fb9e1345161d8ce41c2f93a823fc61d4ec08",
+  "terminal_source_unchanged": true,
+  "unrelated_dirty_bytes_unchanged": true,
+  "charged_cumulative_seconds_as_of_receipt": 308085.247544,
+  "fixed_ceiling_seconds": 309558.795224,
+  "remaining_seconds_as_of_receipt": 1473.5476800000179,
+  "post_publication_final_receipt": "trust-controller-final-publication.json (local receipt after final metadata publication)",
+  "target_prefix_baseline_treatment": "NOT RUN; all target allowances unused",
+  "implementation_stopped_before_cutoff": true,
+  "runtime_adoption": false
+}

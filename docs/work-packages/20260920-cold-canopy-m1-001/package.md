@@ -94,6 +94,16 @@ The [fixed ledger](artifacts/trust-controller-continuation-ledger.json) retains
 295158.795224 seconds carry, 05:43Z anchor, 309558.795224 seconds ceiling and
 09:43Z hard deadline without wait deductions, overlap multipliers or re-anchoring.
 
+Published scoped evidence/recovery on existing `main` at `56c989b1be0d3fc51f8490b1516bdeaf766e918a`;
+remote equality was verified. [Publication receipt](artifacts/trust-controller-evidence-publication.json)
+records source and unrelated-dirty-byte preservation. The published ledger at
+2026-09-24T09:18:26.452320+00:00 is **308085.247544 charged seconds**, with
+**1473.547680 seconds** below the fixed ceiling. Final metadata
+publication and return continue to accrue against the same clock; the local
+post-publication `artifacts/trust-controller-final-publication.json` supplies
+the later final charge and remote hash. No reserve is credited back or reused
+for implementation. This is evidence publication, not package acceptance.
+
 The progress notes below describe earlier cuts and are superseded where this
 terminal disposition reports an unresolved obligation.
 
