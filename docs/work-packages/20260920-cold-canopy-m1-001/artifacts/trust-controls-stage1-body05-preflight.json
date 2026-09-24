@@ -1,0 +1,12 @@
+{
+  "command_launched": false,
+  "failure": "material environment mismatch at recorderline116",
+  "changed_environment_names": [
+    "PATH",
+    "LANG",
+    "TERM"
+  ],
+  "reason": "support manifest prepared in primarycwd but command in detachedcwd; prepare new attempt manifest at actualcwd",
+  "source_change": "Writer finalguard notification arrived before finalreturn; both05/06 support manifests bind identical treeaabff1d4...; no source drift inferred",
+  "target_allowance_spent": false
+}

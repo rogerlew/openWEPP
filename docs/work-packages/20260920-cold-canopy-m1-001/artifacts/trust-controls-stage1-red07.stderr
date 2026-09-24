@@ -1,0 +1,105 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:300:25
+    |
+300 |     let result = super::m1_trust_region_solve_subproblem_for_test(
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_frozen_merit_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:371:24
+    |
+371 |     let merit = super::m1_trust_region_frozen_merit_for_test(
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:395:23
+    |
+395 |     let face = super::m1_trust_region_solve_subproblem_for_test(
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:464:25
+    |
+464 |     let result = super::m1_trust_region_solve_subproblem_for_test(
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:524:25
+    |
+524 |     let result = super::m1_trust_region_solve_subproblem_for_test(
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:671:30
+    |
+671 |         let refusal = super::m1_trust_region_solve_subproblem_for_test(&input, &trial(), case)
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:717:16
+    |
+717 |         super::m1_trust_region_solve_subproblem_for_test(&input, &trial(), lower_start)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:736:16
+    |
+736 |         super::m1_trust_region_solve_subproblem_for_test(&input, &trial(), upper_start)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_validate_ball_endpoint_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:774:29
+    |
+774 |         let result = super::m1_trust_region_validate_ball_endpoint_for_test(
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_jacobi_observation_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:824:16
+     |
+ 824 |         super::m1_trust_region_jacobi_observation_for_test(super::M1TrustRegionJacobiInput {
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1616:1
+     |
+1616 | pub(crate) fn m1_reset_loop_activity_observation_for_test() {
+     | ----------------------------------------------------------- similarly named function `m1_reset_loop_activity_observation_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+ 824 -         super::m1_trust_region_jacobi_observation_for_test(super::M1TrustRegionJacobiInput {
+ 824 +         super::m1_reset_loop_activity_observation_for_test(super::M1TrustRegionJacobiInput {
+     |
+
+error[E0425]: cannot find function `m1_trust_region_jacobi_observation_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:908:16
+     |
+ 908 |         super::m1_trust_region_jacobi_observation_for_test(super::M1TrustRegionJacobiInput {
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1616:1
+     |
+1616 | pub(crate) fn m1_reset_loop_activity_observation_for_test() {
+     | ----------------------------------------------------------- similarly named function `m1_reset_loop_activity_observation_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+ 908 -         super::m1_trust_region_jacobi_observation_for_test(super::M1TrustRegionJacobiInput {
+ 908 +         super::m1_reset_loop_activity_observation_for_test(super::M1TrustRegionJacobiInput {
+     |
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:955:25
+    |
+955 |     let result = super::m1_trust_region_solve_subproblem_for_test(
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1082:29
+     |
+1082 |         let result = super::m1_trust_region_solve_subproblem_for_test(
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 13 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101

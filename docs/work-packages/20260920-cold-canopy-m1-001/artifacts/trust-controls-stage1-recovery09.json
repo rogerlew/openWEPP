@@ -1,0 +1,12 @@
+{
+  "observed_utc": "2026-09-24T03:54:20.798231+00:00",
+  "base": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "source_receipt": "trust-controls-stage1-red09-source.json",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controls-stage1-red09-from-observer-cut02.patch",
+  "patch_sha256": "793f3fc80e79e5802d99fe4b2bdf56b99d2b3741521f9354044f9a4dba4c7a38",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-trust-controls09-reconstruction-20260924",
+  "entries": 760,
+  "tree_sha256": "4fa02f3c2d28ccaabd4cd1b0f252e4bcc8e7ee2662e1289b843e1c91526edb02",
+  "exact_match": true,
+  "scope": "Dual-reviewed controls only, body nonexistent; fresh observer reconstruction"
+}

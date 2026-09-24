@@ -1,0 +1,159 @@
+{
+  "jacobi": {
+    "matrix": [
+      [
+        1.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.7934198559969308,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "tau": [
+      "0x1.424fcc89daeccp-2",
+      "0x3fd424fcc89daecc"
+    ],
+    "t": [
+      "0x1.779b97f4a7c15p-1",
+      "0x3fe779b97f4a7c15"
+    ],
+    "c_hypot": [
+      "0x1.9cd3390e928b2p-1",
+      "0x3fe9cd3390e928b2"
+    ],
+    "c_sqrt": [
+      "0x1.9cd3390e928b3p-1",
+      "0x3fe9cd3390e928b3"
+    ],
+    "expected_v00_bits": "0x3fe9cd3390e928b2",
+    "expected_pair_visits": 6
+  },
+  "merit": {
+    "raw_residual": [
+      "0x1.331044ec3864cp-513",
+      "0x0.0p+0"
+    ],
+    "raw_jacobian": [
+      [
+        "0x1.e26d2a14108c2p-510",
+        "0x0.0p+0"
+      ],
+      [
+        "0x0.0p+0",
+        "0x0.0p+0"
+      ]
+    ],
+    "normalizers": [
+      "0x1.0p+0",
+      "0x1.0p+0"
+    ],
+    "scales": [
+      "0x1.0p+0",
+      "0x1.0p+0"
+    ],
+    "step": [
+      "0x1.0p+0",
+      "0x0.0p+0"
+    ],
+    "candidate_raw_residual": [
+      "0x1.04679958cbcc6p-509",
+      "0x0.0p+0"
+    ],
+    "moving_normalizers": [
+      "0x1.0p+0",
+      "0x1.0p+0"
+    ],
+    "f2": [
+      "0x0.1705006573f57p-1022",
+      "0x0001705006573f57"
+    ],
+    "linear2": [
+      "0x1.08e299691f466p-1018",
+      "0x00508e299691f466"
+    ],
+    "pred_grouped": [
+      "-0x1.07724962c8071p-1019",
+      "0x80407724962c8071"
+    ],
+    "pred_split": [
+      "-0x1.07724962c8070p-1019",
+      "0x80407724962c8070"
+    ],
+    "actual_split": [
+      "-0x1.07724962c8070p-1019",
+      "0x80407724962c8070"
+    ],
+    "rho": [
+      "0x1.ffffffffffffep-1",
+      "0x3feffffffffffffe"
+    ]
+  },
+  "weighting": {
+    "raw_residual": [
+      "0x1.528cb464bb40cp+0",
+      "0x0.0p+0"
+    ],
+    "raw_jacobian": [
+      [
+        "-0x1.528cb464bb40cp+0",
+        "0x0.0p+0"
+      ],
+      [
+        "0x0.0p+0",
+        "0x0.0p+0"
+      ]
+    ],
+    "normalizers": [
+      "0x1.de6e5fd29f054p+0",
+      "0x1.0p+0"
+    ],
+    "scales": [
+      "0x1.0p+0",
+      "0x1.0p+0"
+    ],
+    "step": [
+      "0x1.0p+0",
+      "0x0.0p+0"
+    ],
+    "candidate_raw_residual": [
+      "0x0.0p+0",
+      "0x0.0p+0"
+    ],
+    "moving_normalizers": [
+      "0x1.0p+0",
+      "0x1.0p+0"
+    ],
+    "weighted_recip_mul": [
+      "0x1.6a4dc3e344b85p-1",
+      "0x3fe6a4dc3e344b85"
+    ],
+    "weighted_div": [
+      "0x1.6a4dc3e344b86p-1",
+      "0x3fe6a4dc3e344b86"
+    ],
+    "pred_recip_mul": [
+      "0x1.006002cf157a5p-2",
+      "0x3fd006002cf157a5"
+    ],
+    "pred_div": [
+      "0x1.006002cf157a6p-2",
+      "0x3fd006002cf157a6"
+    ],
+    "actual_recip_mul": [
+      "0x1.006002cf157a5p-2",
+      "0x3fd006002cf157a5"
+    ],
+    "rho": [
+      "0x1.0p+0",
+      "0x3ff0000000000000"
+    ]
+  }
+}

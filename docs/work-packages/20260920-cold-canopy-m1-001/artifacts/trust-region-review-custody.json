@@ -109,5 +109,323 @@
   "resumption_stopped_publication_correctness": {
     "conversation": "/root/trust_correctness_resumed",
     "verbatim_final": "Static/Ran evidence reviewed. No remaining blocking findings.\n\nIndependent checks confirmed:\n\n- All 760 retained live files and all 760 reconstructed files match the hashes in `trust-region-controls-red02-source.json`.\n- The initial build04 manifest differs only at `m1_coupled_tests.rs`.\n- Corrected recovery patch SHA-256 is `e6660990e3d246d7989d98885043222753a3630673910f973a9437490a2fd339`.\n- The failed wrong-base patch and receipt remain separately identified.\n- No trust-region implementation body or supporting definitions exist; cut02 contains unresolved test references only.\n- Canonical files match the dual-reviewed draft04 hashes, whose own clause expires the experiment at this bounded disposition.\n- Baseline, treatment, physical controls, materialization, closure, and cost remain truthfully `NOT RUN` or `NOT MEASURED`.\n- The evidence-label typo and historical authorization wording were corrected; `git diff --check` passes.\n\nResidual risk consists entirely of the preserved unfinished work: both control cuts remain HOLD, no body is released, and all previously listed controls, qualification, measurement, and broader M1 obligations remain pending.\n\n**Correctness PASS for publishing the scoped `INCOMPLETE / capacity stop` disposition, expired experimental authority, and recovery evidence only. This verdict does not approve controls, implementation, target execution, production activation, or M1 qualification.**"
+  },
+  "trust_controls_continuation_initial_correctness": {
+    "conversation": "/root/trust_correctness_controls",
+    "role": "rust_code_reviewer",
+    "independence": "Replacement; previous reviewer path unreachable. No author/adviser role.",
+    "evidence_class": "Static/Ran: lifecycle and retained custody only",
+    "verdict": "NO BLOCKING FINDINGS for adopted continuation and initial retained identity only; no controls/body/target approval",
+    "verified": [
+      "Initial760/760 entries equal red02, observer and draft04 hashes match",
+      "Recorder exact deadline-only diff; AST and whitespace pass",
+      "Carry/deadline/cutoff/reserve/new ledger arithmetic exact",
+      "Inspected15/15 nonlaunching recorder boundary controls, both guards reached and zero processes launched"
+    ],
+    "limits": "Writer WIP after initial verification requires newly frozen source and affected independent review. Baseline/treatment NOT RUN."
+  },
+  "trust_controls_continuation_initial_qa": {
+    "conversation": "/root/trust_qa_controls",
+    "role": "rust_qa_reviewer",
+    "independence": "Replacement; previous QA path unreachable; distinct from author and correctness.",
+    "finding": "HIGH: first nonlaunch result lacked retained command/source/exit evidence",
+    "fix": "Retain original, rerun unchanged script with explicit source/argv/output receipt02",
+    "verbatim_verdict": "QA PASS for the scoped continuation lifecycle, recorder, ledger, and nonlaunch-control evidence.",
+    "verified": "Primary script intercepts Popen before launch, both guards reached;15/15 outcomes, exit0, empty stderr, hashes match.",
+    "limits": "No controls, implementation body, target execution, production activation or M1 qualification approved."
+  },
+  "trust_controls_stage1_cut03": {
+    "source_tree_sha256": "ed5e65599f15db4c3514469f8cf1afa82337839576d199dd38cd618d86feec69",
+    "correctness_conversation": "/root/trust_correctness_controls",
+    "qa_conversation": "/root/trust_qa_controls",
+    "verdict": "Both HOLD; no body release",
+    "correctness_findings": [
+      "D KKT tolerance2e-5 admits normalized-gradient substitution; tighten around independent true KKT solution",
+      "All subproblem normalizers unity: missing weighted solve discriminator",
+      "Missing prescribed Jacobi rotation/pair/sweep/singular ordering discriminator",
+      "Missing exact lower/upper bound inward/no-nudge and active KKT release discriminator",
+      "Missing compiled ball-accuracy boundary control",
+      "Add raw-J/scaling and intermediate-overflow finite guards with actual work precedence"
+    ],
+    "qa_findings": [
+      "Missing compiled BallAccuracy control blocks Stage1 body",
+      "Seeded counters must encounter actual SVD/face boundary; no synthesized refusal from bare count"
+    ],
+    "ball_control_boundary": "Both reviewers permit test-owned explicit endpoint/state only at exact shared post48-bisection validation guard used by real path, independently derived norm/radius/tolerance, boundary pass/fail, chronology/source binding; no cloned predicate, preselected refusal or shortened cap",
+    "independent_kkt_oracle": {
+      "lambda": 0.00012206425078825946,
+      "p": [
+        -0.8192316209801462,
+        -0.5734627722757967
+      ],
+      "normalized_gradient": [
+        -0.8192319205190405,
+        -0.5734623443633283
+      ]
+    },
+    "resolved": "Correct scalar-stall subproblem derivation, frozen merit27/32 and5/8, input-derived rank/lambda/degenerate/face cap, declared private staged feature with no Stage2 credit; valid source-bound compile-red only",
+    "disposition": "Parent accepts all findings; same writer corrects controls, same reviewers verify; no body/target release or new budget"
+  },
+  "trust_controls_stage1_cut05": {
+    "source_tree_sha256": "6c80705b8fc6167989c2c422de74c7ef945a5b8949336d5264c10d6fe6a4eecf",
+    "correctness_conversation": "/root/trust_correctness_controls",
+    "qa_conversation": "/root/trust_qa_controls",
+    "verdict": "Both HOLD; no Stage1 body release",
+    "findings": [
+      "Weighted negative-step fixture still has lower0: infeasible despite writer repair claim",
+      "Ball seam only radius/endpoint plus acceptance/count; missing explicit scalar A/f, bracket,48evaluations,naturalendpoint,computednorm/gap/tolerance and actual guard chronology",
+      "Jacobi only3visits despite2sweeps, sparse3B/Velements; missing complete6visits/factors/permutation",
+      "KKT lacks activation order/masks/pivot g/lambda*p/h; unjustified exact continuous equality",
+      "Exact-bound start lacks actual initialp0/freemask; inputecho not proof against internal nudge"
+    ],
+    "accepted_fixes": "TightenedD KKT correctly rejects omitted A^TA; correct ball dyadic classifications and KKT mathematicalfixtures; finiteoverflow/nonfiniteprecedence; correct singularsort expectations.",
+    "evidence": "Exact760entry snapshot,13E0425 compile-red only, no behavior or physical run.",
+    "disposition": "Parent accepts all. After two failed reviewed cuts, supported reassessment continues explicit observation-field/fixture corrections with same writer then same reviewers; no method/time/run change."
+  },
+  "trust_controls_stage1_cut07": {
+    "source_tree_sha256": "510136f4f28afa467b9dc11290bdb3315132c182f11081502218551e36ea5df9",
+    "actual_tests_sha256": "66f8e578c8d2829ac06a5cad283ce602ec65cc75666ac5f0763f74ed4a2241fa",
+    "excluded_message_sha256": "e28ee3fa4c949e348ed325e3d47a058a6cb883713ab6d285fcd959e1ab55d5eb",
+    "identity_resolution": "Parent confirms actual recorder manifest/tree as selected source; messagehash excluded. Source unchanged across compile.",
+    "correctness_conversation": "/root/trust_correctness_controls",
+    "correctness_verdict": "PASS for private Stage1 controls; dual release still pending QA fix",
+    "correctness_verified": "Allfive prior areas mathematically and observationally fixed in actualmanifestcut; future bodymustprove sharedoperation observationbinding and executecontrols",
+    "qa_conversation": "/root/trust_qa_controls",
+    "qa_verdict": "HOLD for complete KKTpereventmasks/p0 and explicit unevaluated activation operands",
+    "qa_clarification": "For activation beforeboxfeasibleface g/lambdap/h mustbeNone; release/return Someactualoperands. No extraKKT evaluation or synthesizedzeros. Everyeventaction/coordinate/masks required.",
+    "disposition": "Limiteddataonly/testsfix assigned replacementwriter; no body,target,physical acceptance orStage2 release."
+  },
+  "trust_controls_stage1_cut08": {
+    "source_tree_sha256": "9ac188ecb4716a01649d40ef30d21483dddfa2762cf5afb853a5f1a3b302522d",
+    "tests_sha256": "2216bef0e7d5f29fbab85e7cb4a51ea4fb78ed7350204395e2b0b220fd59782a",
+    "lib_sha256": "72e7b86420131828fa89139909baa02f5a0125e7493e420c4e1b23925d093c0f",
+    "qa_conversation": "/root/trust_qa_controls",
+    "qa_verdict": "PASS private corresponding-body authoring only; actualoperationbinding/executedcontrols required afterbody",
+    "correctness_conversation": "/root/trust_correctness_controls",
+    "correctness_verdict": "HOLD one medium affectedmaskassertiongap; cut07pass retainedotherwise",
+    "finding": "Upper/largest variants missing release0 firstfivefreemask and release1 firstfivelower/upper/free masks; add exactpreactionmaskscorresponding firstreleasedcoordinate",
+    "verified": "OptionNone activationoperands, Someactualrelease/return independentvalues, initialp0, activationall21masks; source760exact; compile13E0425red only",
+    "disposition": "Writer assigned narrowassertion-only fix; no bodyuntildualrelease"
+  },
+  "trust_controls_stage1_cut09": {
+    "source_tree_sha256": "4fa02f3c2d28ccaabd4cd1b0f252e4bcc8e7ee2662e1289b843e1c91526edb02",
+    "tests_sha256": "c45b303baa28aaec58a9e2c3c855fc9afaeefa1307dc81e0246c1f9609eda46f",
+    "correctness_conversation": "/root/trust_correctness_controls",
+    "qa_conversation": "/root/trust_qa_controls",
+    "correctness_verdict": "PASS for scoped privateStage1bodyauthoring",
+    "qa_verdict": "PASS for privateStage1correspondingbodyauthoring only",
+    "verified": "Bothreleaseorders exacttest-owned first5masks/full21 equality; solecut08findingclosed; exact760entrysource; compile13E0425only",
+    "body_obligations": "SameactualorderedSVD/face/lambda/ball/merit operations populate observations; postreal48bisection coordinatehook only atsharedguard; execute10focusedcontrols; reviewbody. No Stage2,target,production orM1release."
+  },
+  "trust_controls_body_abandonment_containment01_correctness": {
+    "reviewer": "/root/trust_correctness_controls",
+    "verdict": "PASS to continue bounded Stage1 body authoring only",
+    "verified": "cut09 patch hash and fresh760-entry reconstruction exact; unavailable deleted draft uncompiled/unexecuted/unreviewed and no result depended on it; known current controls and canonical method recoverable",
+    "classification": "contained authoring/preservation failure, not uncontained integrity stop",
+    "evidence_limit": "transient one-blank-line drift is parent direct observation; original bytes not independently recoverable",
+    "no_claim": "No body acceptance or physical execution approval"
+  },
+  "trust_controls_body_piece02_qa": {
+    "reviewer": "/root/trust_qa_controls",
+    "source_tree_sha256": "f9020f8982e5e953ee42284d6ca479c1ca31a3743d713d44a3731cd5e8418ef3",
+    "evidence_class": "Static",
+    "verdict": "HOLD partial body",
+    "findings": [
+      "reciprocal-multiply weighting and written pred order",
+      "c uses sqrt instead of prescribed hypot",
+      "missing intermediate finite guards",
+      "u8 rotation count insufficient for21columns",
+      "shared seeded64beforeentry accounting notimplemented"
+    ],
+    "reviewer_correction": [
+      "ared is difference of Phi halves, not difference thenhalve",
+      "c t\u00b2overflow and Vupdateoverflow are not reachable normal states; retain guards but no artificial overflowinjection requirement"
+    ],
+    "reachable_regression_evidence": {
+      "weight": {
+        "raw": "0x1.528cb464bb40cp+0",
+        "normalizer": "0x1.de6e5fd29f054p+0",
+        "division": "0x1.6a4dc3e344b86p-1",
+        "reciprocal_multiply": "0x1.6a4dc3e344b85p-1"
+      },
+      "pred": {
+        "sum_before": "0x0.1705006573f57p-1022",
+        "sum_linear": "0x1.08e299691f466p-1018",
+        "written": "-0x1.07724962c8071p-1019",
+        "difference_of_halves": "-0x1.07724962c8070p-1019"
+      },
+      "threshold": "orthogonal1e154columns produce finite dots but alpha*beta overflows"
+    },
+    "execution": "none"
+  },
+  "trust_controls_body_piece04_correctness": {
+    "reviewer": "/root/trust_correctness_controls",
+    "evidence_class": "Static",
+    "source_tree_sha256": "2c5f22729757f0318c7ca62890c8cd37b209bdb20755baad104202948ebf5cd7",
+    "verdict": "PASS for continued authoring from generic body only; no fullbody/Stage1release",
+    "verified": [
+      "761entrymanifest/module/libhashes",
+      "frozen weighting/pred/ared order",
+      "ordered originalA_free*V",
+      "Jacobi rotation/sweeps/sort/rank",
+      "lambda bracket/bisection/feasibleupper/hook/sharedballguard"
+    ],
+    "remaining": [
+      "activeface/radius/crossing/KKT/pivot",
+      "typedactualcounterwiring",
+      "optionaltraces",
+      "allbehaviorchecks"
+    ],
+    "execution": "none",
+    "findings": "No additional high/medium numerical defect"
+  },
+  "trust_controls_body08_correctness": {
+    "reviewer": "/root/trust_correctness_controls",
+    "evidence_class": "Static plus inspected recorded behavior",
+    "source_tree_sha256": "028396ef4fdc5d19940ba26c03763d79e2accfbe6cf481c53e325179f98565a5",
+    "verdict": "HOLD pending fixes/rerun/same-reviewerverification",
+    "failure_classification": "Both observed failures are fixture defects, not solver defects",
+    "independent_derivation": {
+      "drainage": "cols0/1 accidentally free(-inf,0] with zeroJacobian, canonicalrankrefusal correct; removeonlylower[0/1] overrides tokeepfixed[0,0]",
+      "upper_second_release": "p0=-1,residual[0,1,-2,-2,0],g=h[0,1,-2,-3,0]",
+      "lower_largest_second_release": "p1=2,residual[-1,0,2,4,0],g=h[-1,0,3,4,0]"
+    },
+    "additional_medium": "centralize weighting formation shared by merit/subproblem; duplicatedpath lacksoperationbinding",
+    "other_static": "remaining inspected activeface arithmetic conforms",
+    "pending": "actualfailedJacobicounts,optionaltrace,10/10rerun and bothindependentreviews"
+  },
+  "trust_controls_body09_ball_correctness": {
+    "reviewer": "/root/trust_correctness_controls",
+    "evidence_class": "Independent non-target binary64 reconstruction; no targetcodeimport",
+    "artifact": "trust-correctness-body09-ball-reconstruction.json",
+    "artifact_sha256": "8b1a595b13018c89e23564e59a086f59e2a27a559ee9f31605e00e393ba7a0cb",
+    "original_gap": 4.976685730184727e-12,
+    "tolerance": 9.094947017729282e-13,
+    "weighted_gap": 1.9984014443252818e-15,
+    "classification": "originalfrozenmethodvalidBallAccuracyrefusal; no speccontradiction; retaincase plusweightedclone same minimizer",
+    "fix_scope": "only syntheticnormalizersrows0/1=1e-4; scaledlambdaoracle; no physicaltargetinput/method/tolerancechange",
+    "additional_verified": "sharedweighted_system binding and one-factor actualcompletedJacobi counter fixed"
+  },
+  "trust_controls_body10_qa": {
+    "reviewer": "/root/trust_qa_controls",
+    "evidence_class": "Static plus inspectedsource-bound10/10run",
+    "verdict": "HOLD privateStage1bodyacceptance",
+    "source_tree_sha256": "f298c4e996210d57fce66a21cb501a3f0c9a1cf3819bf2f95dc823741ba2ea9c",
+    "findings": [
+      "perintermediate singularsquare/accumulation finiteguards absent",
+      "independent fullinput bitexacthypot/reciprocalweight/predorder regressions and finitealpha*beta overflow control missing",
+      "sourceboundfmt/strictclippy notrun and2newdeclarationwarnings"
+    ],
+    "positive": "genuine sharedweight/merit/Jacobi/lambda/ball binding and dataonlyactualobservations",
+    "next": "sameQA derives independentfullinputoracles; writerfixthenrecordchecks; sameQAverification",
+    "target_release": false
+  },
+  "trust_controls_body11_correctness": {
+    "reviewer": "/root/trust_correctness_controls",
+    "verdict": "PASS privateStage1behavior/13controls only",
+    "source_tree_sha256": "eb45ee1857f97b9d95fa1c1bb4031aebb3e3ce3b5bd81306c4e0d44159e854b4",
+    "verified": [
+      "13/13 sourceboundPASS/sourcebaseunchanged",
+      "761entryreconstruction/liveexact",
+      "drainage naturalrefusal plusnormalizer-only success clone",
+      "sharedweightedsystem",
+      "actualsingularproduct/sumguards and overflowworkcounts",
+      "exactbitmerit/hypotcontrols",
+      "activeuppermask"
+    ],
+    "pending": [
+      "strictintroducedlint",
+      "Stage2",
+      "targetandphysicalvalidation"
+    ],
+    "reconstruction_script": "trust-correctness-body09-ball-reconstruction.py",
+    "reconstruction_provenance": "trust-correctness-body09-ball-reconstruction.provenance.json"
+  },
+  "trust_controls_body13_qa": {
+    "reviewer": "/root/trust_qa_controls",
+    "evidence_class": "Static inspection of source-bound executed evidence",
+    "source_tree_sha256": "5177ad31c6b9df4c99936e18d754176d89d005d7bb79fdb7cd2647fc018047a8",
+    "verdict": "No new Stage1 control defect; quality/terminal acceptance HOLD",
+    "verified": [
+      "13/13 recorded PASS and source/base unchanged",
+      "sigma square and accumulation finite guards",
+      "finite overflow fixtures assert refusal/counts/input preservation",
+      "unchanged independent full-input bit oracles",
+      "hypot V00=0x3fe9cd3390e928b2 and six visits",
+      "active_upper actual test and controller-only variants gated"
+    ],
+    "remaining": [
+      "strict affected Clippy FAIL inherited vegetation v11.rs:2149",
+      "focused no-deps diagnostic FAIL does not replace strict gate",
+      "terminal source review pending",
+      "Stage2 and target unreleased"
+    ]
+  },
+  "trust_controls_body13_correctness": {
+    "reviewer": "/root/trust_correctness_controls",
+    "evidence_class": "Static frozen body11-to-body13 comparison plus inspected source-bound13/13run",
+    "source_tree_sha256": "5177ad31c6b9df4c99936e18d754176d89d005d7bb79fdb7cd2647fc018047a8",
+    "verdict": "PASS affected private Stage1 refactor only; no findings",
+    "verified": [
+      "Jacobi multiply/check/accumulate/check row order",
+      "B then V rotation order and exact arithmetic",
+      "singular square/sum/sqrt/rank/sort order",
+      "lambda and raw-column iterator order",
+      "preparation input validation/refusal precedence and entered=0",
+      "KKT residual/gradient/lambda*p/h order and actual counts",
+      "partial_cmp exact equality preserves signed zero, nonfinite operands already rejected"
+    ],
+    "pending": [
+      "terminal source review",
+      "quality",
+      "Stage2",
+      "physical and targets"
+    ]
+  },
+  "trust_controls_terminal_qa": {
+    "reviewer": "/root/trust_terminal_qa_recovery",
+    "replacement_reason": "Prior QA unreachable via exposed lifecycle; thread-limit errors then not_found. Replacement received and returned after writer completed.",
+    "evidence_class": "Static review plus inspected recorded source-bound executions and recovery",
+    "source_tree_sha256": "6eb1194220d540eba6b6ba18f7ae3aa0f58d2a266a82f1b89d7a5ec043a43b4c",
+    "verdict": "PASS bounded Stage1 source/test correction and preservation; HOLD quality/terminal acceptance",
+    "finding": "HIGH strict Clippy fails inherited vegetation v11.rs:2149; focused diagnostic also FAIL 238 errors",
+    "verified": [
+      "body13-to14 faceprep/crossing/release helpers coherent and preserve deterministic ties and guards",
+      "body14-to16 private borrowed-input signature/reference only in stage module",
+      "production solver_covered_evaluation/m1_coupled.rs unchanged from body14",
+      "all retained bit predicates restored",
+      "761 exact recovery and source-bound13/13 PASS/format PASS"
+    ],
+    "correction": "Initial test-only/solver-identical wording was challenged by parent and corrected by same reviewer; private stage module does differ by borrowed seam.",
+    "limits": [
+      "No release executable byte hash",
+      "Stage2 NOT RUN",
+      "Targets NOT RUN",
+      "Physical qualification NOT RUN",
+      "M1 HOLD"
+    ]
+  },
+  "trust_controls_terminal_correctness": {
+    "reviewer": "/root/trust_terminal_correctness_final",
+    "replacement_reason": "Prior correctness followup unavailable; serialized fresh replacement after QA completion",
+    "evidence_class": "Static review; inspected source-bound Ran evidence",
+    "source_tree_sha256": "6eb1194220d540eba6b6ba18f7ae3aa0f58d2a266a82f1b89d7a5ec043a43b4c",
+    "verdict": "PASS bounded private Stage1 numerical/refusal/event equivalence and incomplete-state preservation only",
+    "findings": [],
+    "verified": [
+      "body13-to14 helper extraction preserves ordered arithmetic/finiteguards/refusalprecedence/exactties/pivotcounts/masks/events",
+      "body14-to16 borrowed input and12callers preservevalues",
+      "numeric partial_cmp comparisons preserve former f64 equality and original to_bits predicates restored",
+      "761 exact recovery; source-bound13/13 and formatPASS",
+      "scoped INCOMPLETE publication truthful, raw evidence retained and whitespace census accurately reported"
+    ],
+    "remaining": [
+      "strictClippyFAIL inherited v11.rs2149",
+      "focusedFAIL238 including256-line solver and introducedtestfindings",
+      "Stage2 and harness missing",
+      "original60 and broad/A1 qualification notrun",
+      "releasebuild/authenticatedinput/prefix/pair/physicalqualification absent"
+    ],
+    "release_approval": false
   }
 }

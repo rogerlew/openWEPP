@@ -1,0 +1,84 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: variable does not need to be mutable
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:459:9
+    |
+459 |     let mut lower = [0.0; 21];
+    |         ----^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variants `TrustRegionRadiusExhausted` and `TrustRegionWorkCap` are never constructed
+   --> crates/openwepp-land-surface-energy/src/lib.rs:159:5
+    |
+152 | pub(crate) enum M1TrustRegionRefusalKind {
+    |                 ------------------------ variants in this enum
+...
+159 |     TrustRegionRadiusExhausted,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+160 |     TrustRegionWorkCap,
+    |     ^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionRefusalKind` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `active_upper` is never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:290:16
+    |
+272 | pub(crate) struct M1TrustRegionSubproblemObservation {
+    |                   ---------------------------------- field in this struct
+...
+290 |     pub(crate) active_upper: [bool; 21],
+    |                ^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionSubproblemObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `openwepp-land-surface-energy` (lib test) generated 3 warnings (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.42s
+────────────
+ Nextest run ID bf6b98ec-b306-46da-be52-a7d4b060aa31 with nextest profile: default
+    Starting 10 tests across 1 binary (243 tests skipped)
+        FAIL [   0.006s] ( 7/10) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns' (1742759) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:480:6:
+    radius-limited feasible drainage step: M1TrustRegionSubproblemRefusal { kind: TrustRegionBallAccuracy, attempted_subproblems: 1, completed_jacobi_sweeps: 2, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 2.6 }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 3 tests still running
+────────────
+     Summary [   0.008s] 10 tests run: 9 passed, 1 failed, 243 skipped
+        FAIL [   0.006s] ( 7/10) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns' (1742759) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:480:6:
+    radius-limited feasible drainage step: M1TrustRegionSubproblemRefusal { kind: TrustRegionBallAccuracy, attempted_subproblems: 1, completed_jacobi_sweeps: 2, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 2.6 }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

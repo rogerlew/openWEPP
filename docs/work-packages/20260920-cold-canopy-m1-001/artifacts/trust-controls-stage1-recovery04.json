@@ -1,0 +1,14 @@
+{
+  "observed_utc": "2026-09-24T03:18:19.955154+00:00",
+  "base": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "base_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "source_receipt": "trust-controls-stage1-format04-source.json",
+  "patch": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controls-stage1-format04-from-observer-cut02.patch",
+  "patch_sha256": "61855e46f13eba4d19877630f6bec7ad43fae9ba7a5747490781bdd46bc81fe7",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-trust-controls04-reconstruction-20260924",
+  "entries": 760,
+  "tree_sha256": "77a6ca08d1e2cde22c7cbb7022265bbf8fae451767a2055b130f84568b6b2cab",
+  "exact_match": true,
+  "live_source_unchanged": true,
+  "scope": "Incomplete Stage1 controls, no numerical body or target execution; fresh empty destination populated from exact observer only"
+}

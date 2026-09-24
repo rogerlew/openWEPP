@@ -1,0 +1,28 @@
+{
+  "schema": "OPENWEPP_TRUST_CORRECTNESS_BODY09_BALL_RECONSTRUCTION_PROVENANCE_V1",
+  "evidence_class": "reviewer-retained exact source and invocation provenance",
+  "original_working_directory": "/workdir/openWEPP",
+  "original_argv": [
+    ".venv/bin/python",
+    "-"
+  ],
+  "original_source_delivery": "single-quoted shell heredoc on stdin",
+  "original_follow_up_argv": [
+    "sha256sum",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-correctness-body09-ball-reconstruction.json"
+  ],
+  "retained_script": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-correctness-body09-ball-reconstruction.py",
+  "retained_script_sha256": "71ed01b10624fffe01fe4191afa006cee3b81a537afa6e3fb1a9827216c84316",
+  "generated_artifact": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-correctness-body09-ball-reconstruction.json",
+  "generated_artifact_sha256_before_retention": "8b1a595b13018c89e23564e59a086f59e2a27a559ee9f31605e00e393ba7a0cb",
+  "generated_artifact_sha256_after_retention": "8b1a595b13018c89e23564e59a086f59e2a27a559ee9f31605e00e393ba7a0cb",
+  "original_stdout_lines": [
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-correctness-body09-ball-reconstruction.json",
+    "1.0 0.00012206425078886696 0.9999999999950233 4.976685730184727e-12 9.094947017729282e-13 False -0.8192316209760692 -0.5734627722729426",
+    "0.0001 12206.425078825967 0.999999999999998 1.9984014443252818e-15 9.094947017729282e-13 True -0.8192316209801446 -0.5734627722757955"
+  ],
+  "target_code_imported": false,
+  "physical_target_run": false,
+  "retention_rerun_performed": false,
+  "retention_note": "The script was recovered verbatim from the reviewer tool input after the original calculation. Retention did not execute it or rewrite the generated JSON."
+}

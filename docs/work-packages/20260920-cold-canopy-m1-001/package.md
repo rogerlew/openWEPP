@@ -2,6 +2,747 @@
 
 
 
+## Trust-controls disposition — INCOMPLETE, fixed implementation cutoff
+
+Implementation stopped at the fixed **2026-09-24T05:22:37.482828Z** cutoff;
+only the existing final review/preservation/publication reserve remains. No new
+implementation, physical run or target solve is authorized by this disposition.
+The canonical experiment wording expires for new implementation/execution at this
+bounded disposition; retained source/authority is not production permission.
+
+**Ran:** terminal private Stage1 body16 passes **13/13 numerical controls** and
+formatting. **FAIL:** strict Clippy and focused diagnostic; introduced long-function/
+test findings and inherited failures remain. **NOT RUN:** Stage2 concrete controller/
+phase/acceptance/accounting controls and body, comparison harness, original60
+compatibility, required broad qualification, support-0 prefix, baseline and treatment.
+Target residual/step/domain/materialization and cost are **NOT MEASURED**. This is
+incomplete implementation, not negative solver evidence or complete M1.
+
+[Exact source and recovery](artifacts/trust-controls-stage1-body16-recovery.json)
+retain761 entries at `6eb1194220d540eba6b6ba18f7ae3aa0f58d2a266a82f1b89d7a5ec043a43b4c`.
+[Reconciliation](artifacts/trust-controls-terminal-source-reconciliation.json) binds
+four detached continuation paths, immutable observer base and unchanged method/
+vegetation authority. Main Rust is unchanged. [Body16 execution](artifacts/trust-controls-stage1-body16.json)
+is source/toolchain-bound component evidence; release binary/input identities do
+not exist. The one-prefix/one-pair allowance is entirely unspent.
+
+Distinct terminal correctness and QA reviews support scoped Stage1 correctness/
+preservation, with no new affected defects; both retain quality and broader HOLDs.
+Review custody and publication status are recorded below. All historical material/BGC, parent,
+positive-late-rejection, cycle/restart, cost/scaling, full09/A1/strict-lint and broader
+M1 HOLDs remain. [Charged ledger](artifacts/trust-controls-continuation-ledger.json)
+uses the original fixed anchor/ceiling with no new time or refunds, including
+publication. No branch switch, parent/cycle progression or production adoption.
+
+## Trust-controls continuation — adopted 2026-09-24
+
+Owner execution of `/tmp/openwepp_cold_canopy_m1_trust_controls_implementation_authorization.md`
+prospectively reactivates the same unexecuted `COLD-CANOPY-M1-TR-SVD-BVLS-01`.
+Historical expiry/dispositions and both controls HOLDs below remain unchanged.
+One active checkpoint remains COLD-CANOPY-M1; staged completion is internal.
+
+Intent before edits: correct private subproblem/frozen-merit controls, obtain
+independent correctness and QA release, implement that body, then likewise release
+concrete controller/phase/acceptance/accounting controls before its body and private
+harness. Complete source/manifest review and required qualification precede the
+single release-mode support-0 prefix and identical-input baseline/treatment pair.
+No extra time or runs, method/dependency/physical-input/seed/timestep/temperature
+change, public export, production fallback, parent/cycle progression or main Rust
+adoption. All 21 physical residuals, dynamic normalizers, governed step thresholds,
+phase/hydraulic/materialization/closure and atomicity predicates remain binding.
+All material/BGC, parent, positive-late-rejection, cycle/restart, cost/scaling,
+full09/A1/strict-lint and broader M1 HOLDs persist. Incomplete controls are not
+negative solver evidence.
+
+Ran: current primary HEAD is pinned `8df0a250cee6e80b8180dcbe03a2582e919c9fcc`.
+All 760 live snapshot entries match retained red02 manifest; tree SHA256
+`0e12168099c494855acce22dd3d0ac370b6b6ed70d2b6faf2c081f22a0e0dffb`.
+Observer hash remains `85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963`.
+Both canonical draft04 hashes match the adopted authorization; no reconstruction
+or authority rewrite needed. Runtime writes remain detached at
+`/home/roger/openwepp-experiments/cold-canopy-m1-20260920`; primary writes are limited
+to this record, necessary recorder/lifecycle evidence and exact recovery artifacts.
+Preserve unrelated untracked work and both failed drafts/wrong-base evidence.
+
+The final local publication receipt was read once and confirms carry
+**285967.948546 s** under **296625.431374 s** ceiling. Conservative first-reading
+anchor **2026-09-24T02:55:00Z** fixes deadline **2026-09-24T05:52:37.482828Z**,
+implementation cutoff **2026-09-24T05:22:37.482828Z**, and **1800 s** reserve.
+All concurrent elapsed, reading, waits and publication charge once; no re-anchor.
+Before dispatch/mutation, full declared command bound plus reserve must fit.
+Ordinary physical commands remain capped at180 s; only the exact existing Critical
+command retains900 s. Original one-prefix/one-pair allowance remains unspent;
+at most one independently verified implementation/recording correction repeat,
+never a valid-negative retry. Stops remain owner direction, hard time/run bound,
+uncontained integrity loss, indispensable capacity/source unavailable after bounded
+recovery, completed disposition or necessary out-of-envelope change. Two failed
+corrections or60 charged minutes trigger supported internal reassessment only.
+
+Selected validation: concrete independent numeric and call/state controls before
+corresponding bodies; Nix formatting/compilation/focused behavior, affected strict
+lint and applicable A0/A1/A3/Critical obligations, original60 observer compatibility,
+source/build/input/method freeze, measurement and independent final disposition.
+Retain generated-output/helper-lock containment before required broad execution;
+no frozen-tooling dispatch, fingerprint replacement or warning suppression.
+
+Capacity receive/return succeeded with `/root/trust_writer_controls` using the
+implementer route. The old correctness and QA paths both return `live agent path
+not found`; attributable distinct replacements will inherit their retained findings.
+One writer and at most two concurrent children; no nested workaround or parent
+implementation fallback. Baseline/treatment **NOT RUN**, physical/cost results
+**NOT MEASURED**. Existing authority reviews are reused unchanged.
+
+Static/Ran: replacement `/root/trust_correctness_controls` independently returned
+**NO BLOCKING FINDINGS for adopted continuation and initial retained identity only**.
+It verified760/760 initial entries, observer and draft04 hashes, exact deadline-only
+recorder diff, ledger arithmetic, Python AST and whitespace. The retained recorder
+[boundary controls](artifacts/trust-controls-continuation-bound-controls.json) pass15/15,
+both guards reached, zero processes launched. [Ledger](artifacts/trust-controls-continuation-ledger.json)
+records charged286231.820173 s at02:59:23.871627Z. Writer changes after that initial
+custody verification require a fresh frozen manifest and control review; no controls,
+body or target approval follows this lifecycle verdict.
+
+Static/Ran: replacement `/root/trust_qa_controls` identified a primary-evidence
+gap in the first nonlaunch-check summary: no retained argv/source/exit receipt.
+Parent retained the original and reran the unchanged script under a30-second cap.
+[Receipt02](artifacts/trust-controls-continuation-bound-controls-02.json) binds argv,
+source/recorder hashes, timestamps, exit0 and raw output. Same QA verifies the
+actual Popen interception and both prelaunch guards,15/15 checks and empty stderr:
+**QA PASS for scoped continuation lifecycle, recorder, ledger and nonlaunch evidence**.
+No controls/body/target/production/M1 release follows this verdict.
+
+### Stage1 controls cut03 — frozen, incomplete review pending
+
+Writer `/root/trust_writer_controls` delivered detached controls plus test-only
+private types in `lib.rs` and a declared controller-stage feature in the crate
+manifest. These three source changes remain detached; no numerical body exists.
+[Source/patch](artifacts/trust-controls-stage1-red03-source.json) binds760 entries,
+tree `ed5e65599f15db4c3514469f8cf1afa82337839576d199dd38cd618d86feec69`.
+The test file is `391822345fcab8e5add908853efdd402dc541180848115a9151f6dfee3908871`.
+Staged controller placeholders remain explicitly uncredited HOLD; all Stage2
+obligations still precede targets. Frozen controls cover raw-J direction versus
+scalar stall, frozen merit, no-free/zero-radius, drainage bounds/couplings,
+nonfinite/rank/lambda and injected sweep/pivot chronology. BallAccuracy control
+is expressly missing; reviewers assess the concrete rare-guard boundary coverage.
+
+Parent spot-check corrected the draft's one-versus-two factorization count,
+incoherent scaled drainage oracle and non-dyadic equality, plus rollback flag.
+These corrections claim no acceptance before independent verification. Earlier
+writer compiles were unbound tool feedback with no retained raw paths and are not
+source-bound validation. Writer reports formatting PASS; parent has not yet
+recorded that command independently. Ran: [recorded Nix nextest no-run](artifacts/trust-controls-stage1-red03.json)
+returns101 in4.886854 s, five E0425 missing implementation seams, no tests executed.
+Source and observer were unchanged across the command. The complete cut is with
+both replacement reviewers; no body or target release follows compile-red.
+
+Static/Ran: both independent reviewers **HOLD cut03; no body release**. Correctness
+finds the drainage2e-5 tolerance accepts normalized-gradient substitution, missing
+nonunit-W subproblem discrimination, missing prescribed Jacobi order/rotation
+observations, inward lower/upper starts and KKT release, BallAccuracy, and expanded
+nonfinite/intermediate-overflow precedence. QA independently blocks BallAccuracy
+and requires actual boundary work behind seeded counters. Both permit an explicit
+numeric endpoint/state control only through the real shared post48-bisection guard,
+with boundary pass/fail and chronology/source binding, no duplicate predicate or
+canned verdict. [Custody](artifacts/trust-region-review-custody.json) preserves the
+independent KKT values and scopes. Parent accepts all findings and assigns focused
+correction to the same writer, followed by both same-reviewer checks. The current
+approach has concrete fix evidence and remains within the staged plan; no method,
+physical threshold, run allowance or time reset follows. All Stage2 HOLDs remain.
+
+### Stage1 controls cut04 — incomplete; supported internal reassessment
+
+Writer tightened the KKT fixture and added row-weight, inward-bound and overflow
+controls but expressly leaves BallAccuracy, actual KKT release/tie and Jacobi
+ordering observations incomplete. No body exists. Parent found a further concrete
+fixture error: the new weighted test expects negative steps while its lower bounds
+are zero. This must be corrected before control release. No new independent PASS
+is claimed. Ran: [recorded format04](artifacts/trust-controls-stage1-format04.json)
+passes in3.079638 s with source/observer unchanged; [manifest/patch](artifacts/trust-controls-stage1-format04-source.json)
+retains760 entries, tree`77a6ca08d1e2cde22c7cbb7022265bbf8fae451767a2055b130f84568b6b2cab`.
+Test SHA is`396b1d315d17c1038790087ea223d1e95e6fcd0474bd9de0f9377ed988580e5e`.
+No compile rerun was selected for this known-incomplete cut; prior compile-red remains
+bound to cut03 only.
+
+Supported internal reassessment after continued incomplete controls: obtain narrow
+science-adviser fixture/seam advice for exactly the three named numerical gaps,
+then have the same writer implement controls and the same two independent reviewers
+verify. `/root/trust_control_oracle_advice` is a design adviser only and cannot count
+as either acceptance reviewer. No changed method, parameters, physical criteria,
+time/run allowance or body release. This is an internal checkpoint, not disposition.
+While adviser runs, a message to the completed writer returned `agent thread limit
+reached`; parent will attempt bounded exposed-lifecycle recovery after adviser return,
+not repeatedly retry the saturated state or use a nested workaround.
+
+Capacity recovered through one serialized writer follow-up after adviser final;
+writer actually acknowledged the packet. No workaround, reviewer reassignment or
+new method was used. [Adviser derivations](artifacts/trust-controls-oracle-advice.json)
+provide operand-only post-bisection guard controls, reachable5-coordinate KKT
+release/tie/sign cases, and explicit Jacobi B/V chronology plus separate exact
+singular tie ordering. This is attributed design advice, not either independent
+acceptance review. Writer is completing the full control assignment before another
+review cut; partial drafts do not release body work. [Recovery04](artifacts/trust-controls-stage1-recovery04.json)
+reconstructs all760 cut04 entries exactly from the immutable observer and retained
+patch into a fresh durable directory; live source was unchanged during recovery.
+
+### Stage1 controls cut05 — both reviews HOLD
+
+[Recorded compile05](artifacts/trust-controls-stage1-red05.json) returns101 in4.986734 s,
+13 missing private API errors, no behavior execution; source/observer unchanged.
+[Source05](artifacts/trust-controls-stage1-red05-source.json) binds760 entries,
+tree`6c80705b8fc6167989c2c422de74c7ef945a5b8949336d5264c10d6fe6a4eecf`.
+Both same reviewers verify that custody but retain **HOLD**: weighted negative oracle
+still has zero lower bounds despite the writer's repair claim; ball controls expose
+summary fields rather than actual bracket/evaluation/guard chronology; Jacobi has
+three visits despite two claimed sweeps and sparse B/V; KKT lacks full event/mask/
+gradient observations and uses unjustified continuous bit equality; initial bound
+controls do not rule out internal nudging. Tightened D/KKT and explicit numerical
+ball/KKT fixtures are accepted mathematically, not as passing executed controls.
+[Review custody](artifacts/trust-region-review-custody.json) retains scopes/findings.
+
+Supported internal reassessment after two failed reviewed cuts: continue within the
+same method and allowance using explicit per-operation observation assertions and
+a direct correction of the still-infeasible weighted fixture. Same writer owns all
+control edits; both same reviewers verify. The fixed next assignment enumerates
+actual48 bisection events, all6 Jacobi visits/full B/V and permutation, complete KKT
+activation/release/mask/gradient traces, and initial exactp0/free-face assertions.
+No body, Stage2 or target release, no acceptance narrowing, no renewed budget.
+
+### Supported writer reassignment — controls only
+
+Repeated partial returns after cut05 left named ball/KKT/Jacobi observation gaps,
+including an incorrect test tolerance `2^-40*max(1,r)` instead of the unchanged
+`2^-40*r` first term. No such draft is approved. Parent stopped the old writer at
+an acknowledged safe edit and preserved [reassignment06 source/patch](artifacts/trust-controls-stage1-reassignment06-source.json),
+760 entries, tree`f2ed2ab60d7d8c03c23cf41fc7ebc481a42e9a20a7596d25639240741c393c01`.
+No body or physical execution occurred. New `/root/trust_controls_repair_writer`
+uses the implementer route as sole source writer with the exact five retained
+control requirements and adviser derivations; old writer has stopped edits.
+This is a supported in-scope reassignment after unsuccessful correction cycles,
+not a method change, review waiver, added allowance or parent implementation
+fallback. Existing correctness/QA reviewers retain independent fix ownership.
+
+### Stage1 controls cut07 — same-reviewer verification pending
+
+Replacement writer delivered explicit operation observations and corrected the
+weighted bounds/small-radius tolerance. Only the two authorized detached Rust
+files changed from reassignment06; Cargo feature is unchanged. [Source07](artifacts/trust-controls-stage1-red07-source.json)
+records760 entries, tree`510136f4f28afa467b9dc11290bdb3315132c182f11081502218551e36ea5df9`;
+tests`66f8e578c8d2829ac06a5cad283ce602ec65cc75666ac5f0763f74ed4a2241fa`,
+lib`811d7193eb0708e23253da955c986b7572e885ee470e361209c6c3317b74233c`.
+Ran: [canonical recorded Nix compile07](artifacts/trust-controls-stage1-red07.json)
+returns101 in13.362229 s with13 missing private API errors; source/base/pins unchanged,
+zero behavior/physical/target execution. Writer's separate unrecorded cargo-test
+compiler feedback carries no acceptance claim; subsequent commands use the canonical
+recorder/nextest route. Both same independent reviewers now inspect actual corrected
+controls; no numerical body is released while their verdicts are pending.
+
+Static/Ran cut07: same correctness returns **PASS for private Stage1 controls**
+on actual manifest-bound tests`66f8e578c8d2829ac06a5cad283ce602ec65cc75666ac5f0763f74ed4a2241fa`.
+The writer's message hash`e28ee3fa...` did not match that frozen cut and is excluded;
+parent confirms the recorded tree510136f4 is the intended review source. No source
+changed during recorded compilation. Same QA retains **HOLD** on complete KKT
+per-event masks/initialp0 and distinguishes unevaluated activation gradients from
+actual release/return KKT operands. The canonical algorithm computes g/h only after
+a box-feasible face; activation observations must therefore carry explicit None,
+not fabricated zeros or extra early evaluations. Parent accepts this narrow fix;
+replacement writer owns data-only Option fields and test assertions, then both same
+reviewers verify. No body is released by correctness alone.
+
+### Stage1 controls cut08 — QA PASS, one correctness assertion gap
+
+[Source08](artifacts/trust-controls-stage1-red08-source.json) binds760 entries,
+tree`9ac188ecb4716a01649d40ef30d21483dddfa2762cf5afb853a5f1a3b302522d`,
+tests`2216bef0e7d5f29fbab85e7cb4a51ea4fb78ed7350204395e2b0b220fd59782a`.
+[Recorded compile08](artifacts/trust-controls-stage1-red08.json) returns101 in13.508265 s,
+13 missing private APIs; source/base/pins unchanged, no tests/physics executed.
+Same QA **PASS for corresponding private body authoring only**. Same correctness
+retains one MEDIUM HOLD: first/second release pre-action masks are incomplete in
+the upper/largest KKT variants. All Option/None activation and numeric release/return
+changes are sound; parent assigned only missing first-five mask assertions before
+another affected verification. No body is released by QA alone. Writer attributes
+the earlier stale hash to reporting interim bytes before final formatting; current
+cut08 hash was explicitly checked by parent before the recorded command.
+
+### Stage1 controls cut09 — dual release for corresponding body
+
+Both same reviewers **PASS private Stage1 corresponding-body authoring only**.
+[Source09](artifacts/trust-controls-stage1-red09-source.json) binds760 entries,
+tree`4fa02f3c2d28ccaabd4cd1b0f252e4bcc8e7ee2662e1289b843e1c91526edb02`,
+tests`c45b303baa28aaec58a9e2c3c855fc9afaeefa1307dc81e0246c1f9609eda46f`.
+[Compile09](artifacts/trust-controls-stage1-red09.json) is101 in13.514903 s,13 expected
+missing APIs, no behavior execution, source/base unchanged. The release-mask
+assertions close the final affected control finding; [custody](artifacts/trust-region-review-custody.json)
+binds both scopes. Ten current Stage1 mathematical controls await actual execution.
+
+Implementation intent before body edits: replacement implementer owns the detached
+private numerical subproblem/merit module and minimum private wiring/types, retaining
+reviewed tests/oracles. Implement exactly draft04 ordered binary64 full-matrix
+SVD/face/radius/lambda/merit method; no physical evaluator, controller, public export,
+production selection, dependency or alternate solver. Observation records must come
+from shared actual operations; detailed local-control traces cannot become target
+measurement histories. Run instruction discovery for any new module path. Selected
+internal checks are canonical Nix compilation, formatting and the ten focused
+nonphysical controls; both reviewers inspect operation/hook binding and result
+custody. Integrated affected strict lint/authority/qualification obligations remain
+required and unwaived before experimental disposition; historical failures remain.
+Stage2 controls/body, harness, frozen source/input/binary and all target prerequisites
+are still pending; subproblem completion will not end this checkpoint.
+
+### Body authoring sequencing correction
+
+Replacement implementer prematurely reported a capacity stop and removed its own
+new incomplete module/wiring. On direct clarification it confirms **no exposed
+runtime/tool error, hard budget/deadline signal or compiler failure occurred**;
+that stop was an unsupported discretionary judgment, not an owner stop condition.
+The reviewed controls remain intact; no body compile, test or physical process ran.
+The agent reports the removed partial source recoverable verbatim from its two
+apply_patch calls; parent requires a durable raw artifact before further handoff.
+No lost source is silently relabeled as accepted or unrecoverable.
+
+Continue within the existing dual Stage1 release with two internal body pieces:
+shared generic weighting/merit/Jacobi/ball helpers first, then the bounded active-face
+caller and result/refusal wiring using those same operations. No hardcoded scalar/
+3x3 alternative or stub may replace the canonical generic implementation. Incomplete
+working source must remain recoverable, not be discarded because the full body is
+unfinished. These are implementation sequencing steps within the same checkpoint;
+no method, limits, criteria, budget or run allowance changes. Parent continues to
+the full body and reviews, then Stage2, subject to the original fixed stops.
+
+### Sixty-minute reassessment — contained source failure, continue bounded body
+
+The writer withdrew exact recoverability of the deleted, unexecuted partial body;
+its conversation retained only a summary, not accessible full patch bytes. The
+[abandonment note](artifacts/trust-controls-body-abandoned01.txt) now explicitly marks
+its original exact-content/recovery claims false and is **not source evidence**.
+That historical preservation gap is not erased. Parent independently reconstructed
+all760 approved cut09 entries in [recovery09](artifacts/trust-controls-stage1-recovery09.json),
+then found only one blank-line live difference in lib.rs and restored it to the
+reviewed bytes. [Containment](artifacts/trust-controls-body-abandonment-containment01.json)
+records exact hashes and limits: no compilation, behavior or physical execution
+used the deleted body; no unknown current scientific source or result was retained.
+
+At the60-minute supported internal reassessment, parent continues the same approved
+method in smaller concrete body deliverables, first shared weighting/frozen merit,
+then Jacobi/ball/active-face, preserving each unfinished source. The same correctness
+reviewer is checking containment/stop classification independently. This is not a
+new allowance or claimed implementation progress. [Ledger](artifacts/trust-controls-continuation-ledger.json)
+continues from the fixed02:55Z anchor;05:22:37.482828Z implementation cutoff and
+1800-second reserve remain unchanged. Baseline/treatment still NOT RUN.
+
+### Stage1 body — retained pieces and containment review
+
+Static/Ran: `/root/trust_correctness_controls` independently **PASSes continued
+bounded body authoring** after the preservation failure. It reproduced the approved
+cut09 reconstruction, all760 entries and tree hash. The deleted draft remains
+unavailable; it was never compiled, executed, reviewed or used for evidence.
+Canonical authority and released controls are intact, so the loss is contained.
+The transient one-blank-line drift is only the parent's direct observation, not
+independently reconstructable evidence. This verdict approves no body behavior.
+
+Replacement writer retained generic frozen-merit and Jacobi helpers in
+[body piece02 source](artifacts/trust-controls-stage1-body-piece02-source.json) and
+[observer-relative patch](artifacts/trust-controls-stage1-body-piece02-from-observer-cut02.patch),
+761 entries, tree`f9020f8982e5e953ee42284d6ca479c1ca31a3743d713d44a3731cd5e8418ef3`.
+Writer reports formatting PASS only; no compile, numerical or physical execution.
+Parent found frozen-arithmetic differences in weighting, predicted reduction and
+rotation coefficient, incomplete intermediate guards and a generic rotation count
+width issue. Same writer is correcting these before ball/active-face work; QA
+reviews the immutable partial cut. Future integration retains nonpositive predicted
+reduction as nonterminal rejection. No target allowance has been spent; all prior
+HOLDs and the fixed clock remain unchanged.
+
+Static: partial-body QA confirms the arithmetic/counter HOLDs. Its initial
+suggested `ared` change and impossible rotation-overflow fixtures were withdrawn:
+`ared` remains the difference of the two `Phi` values, and prescribed `t` is bounded.
+Reachable weighting, subnormal-pred and finite-dot/product-overflow discriminators
+are retained in custody. No body acceptance follows. The writer again reports
+reverting an unfinished typed-work interface despite instructions to preserve it;
+no compile or run used that transient source. Existing generic body remains live,
+and the next assignment is narrowed to the sweep counter/guard without interface
+redesign. This repeated authoring failure is visible; no time or scope is renewed.
+
+### Stage1 body piece03 — writer route reassessed
+
+[Source](artifacts/trust-controls-stage1-body-piece03-source.json) and
+[patch](artifacts/trust-controls-stage1-body-piece03-from-observer-cut02.patch)
+retain all761 entries, tree`3ce51a905a9729c24ced4860c286f631373d16459d0e04a218c03fbebcf876d4`.
+Generic merit/Jacobi/lambda arithmetic exists; ball trace/wrapper and active-face
+solver remain unfinished. There has been no body compile or behavioral run.
+After repeated bounded follow-ups returned without the trace change, the repair
+writer was stopped. Fresh assigned implementer `/root/trust_body_writer_fresh`
+confirmed actual receipt and owns only ball trace/wrapper next, with frozen tests
+and no source deletion. Parent remains orchestrator, not substitute implementer.
+A correctness partial-body dispatch hit `agent thread limit reached`; it will be
+serialized after the writer returns rather than repeatedly retried. No method,
+clock, run allowance or reviewer independence changes follow this reassessment.
+
+### Stage1 body piece04 — shared ball trace retained
+
+Fresh implementer completed ball trace retention and private wrapper/re-export,
+using the same generic Jacobi/lambda path and post-bisection guard. It also retained
+original A and forms `A_free*V/sigma` in ascending index order rather than reusing
+iteratively rotated B. [Source](artifacts/trust-controls-stage1-body-piece04-source.json)
+and [patch](artifacts/trust-controls-stage1-body-piece04-from-observer-cut02.patch)
+retain761 entries, tree`2c5f22729757f0318c7ca62890c8cd37b209bdb20755baad104202948ebf5cd7`.
+Frozen tests remain cut09 SHA`c45b303baa28aaec58a9e2c3c855fc9afaeefa1307dc81e0246c1f9609eda46f`.
+Writer reports canonical Nix format/check exit0; direct detached Nix had first
+failed pure evaluation of its absolute tools link. This is tooling feedback,
+not behavioral validation. No compile/test/physical run. Same correctness reviewer
+has received the immutable partial body for numerical review; active-face solver,
+full Stage1 behavior, Stage2 and target obligations remain pending.
+
+Static: same correctness reviewer verifies piece04 manifest and reports **no
+additional high/medium numerical defect** in generic weighting/merit, original-A
+SVD evaluation, Jacobi order/rotation/sort, lambda bracket/bisection and shared ball
+hook/guard. **PASS for continued authoring only**, no behavior or Stage1 release.
+The remaining active-face/radius/crossing/KKT/pivot and typed-counter integration
+is assigned to the fresh writer against unchanged approved tests. This full caller
+and all behavioral results still require both independent review scopes.
+
+### Stage1 body06 — first compiled body, still red
+
+Writer completed the active-face caller and private data wiring. The initial
+[body05 preflight](artifacts/trust-controls-stage1-body05-preflight.json) refused
+before command launch because PATH/LANG/TERM differed between manifest-preparation
+and command working directories. A new manifest was prepared in the actual detached
+environment; both manifests bind the same tree. No target allowance was spent.
+
+Ran: [body06 focused nextest](artifacts/trust-controls-stage1-body06.json) attempts
+the ten Stage1 controls, but compilation exits101 in5.289704 s with43 Rust import/
+type errors. **Zero tests executed**. Source and observer remain unchanged;
+[source/patch](artifacts/trust-controls-stage1-body06-source.json) retain tree
+`aabff1d4a5a6f8de0e55dad49f9b42f1d34f692253991fc69227041c0f5a7e86`.
+The same writer is correcting concrete imports/tuple typing only. No numerical
+behavior, controller or target acceptance is claimed from compilation.
+
+Build correction: same writer added missing refusal-kind import, fixed release
+tuple typing, and mechanically removed two invalid dereferences of owned `f64`
+expected values in Jacobi assertions. Oracle values, tolerances and assertions
+are unchanged; test SHA becomes`0f3642844bc0397a91b78a6ceec8f466af87a1d73854dfa4594202e98cc69dd5`.
+Before rerunning, parent static inspection identified active-face sum-order defects,
+false decrement of entered SVD count on internal failure, missing finite guards,
+invalid crossing handling and finite-bound overflow masking. These remain concrete
+in-envelope corrections assigned to the same writer; no behavioral PASS claimed.
+
+### Stage1 body08 — first numerical behavior: 8 PASS, 2 FAIL
+
+Ran: [body07](artifacts/trust-controls-stage1-body07.json) remained compile-red:
+two ambiguous-float errors, zero tests. Writer added explicit binary64 annotations
+and removed an unused assignment, preserving method and oracle values.
+Ran: [body08](artifacts/trust-controls-stage1-body08.json) compiles and executes all
+ten controls: **8 PASS, 2 FAIL**,243 other tests skipped; exit100 in9.851336 s.
+Source/observer unchanged, tree`028396ef4fdc5d19940ba26c03763d79e2accfbe6cf481c53e325179f98565a5`
+is retained with exact patch. Drainage returns RankDeficient; KKT upper/largest
+variant fails an expected-value assertion. No target, prefix or physical solve ran.
+
+Parent static diagnosis identifies free zero-J columns0/1 accidentally present in
+the drainage fixture and inconsistent second-release KKT expected values. These
+are hypotheses pending same-reviewer independent arithmetic and source assessment;
+no tolerance/oracle edits or acceptance occur merely to make the tests pass.
+Correctness review reopens only affected control claims and full new caller.
+All Stage2 and experiment gates remain HOLD.
+
+Same correctness reviewer independently confirms both body08 failures are fixture
+defects: canonical initialization must free the accidentally unbounded zero
+columns, causing correct rank refusal. Keep columns0/1 fixed. Independently derived
+second-release `h` is `[0,1,-2,-3,0]` for upper and `[-1,0,3,4,0]` for lower-largest.
+Only those bounds/expected values may change; no tolerance or method changes.
+The review also blocks duplicated weighted-system formation between merit and
+subproblem. Writer now centralizes that operation and preserves actual failed-SVD
+sweep accounting, followed by rerun and affected independent verification. The
+prior control approvals missed these fixture defects; affected claims are reopened.
+No valid target-negative outcome occurred.
+
+### Stage1 body09 — 9 PASS, one real ball-accuracy refusal
+
+Ran: [body09](artifacts/trust-controls-stage1-body09.json), source
+`74f44e6972332e250f9233e4b2225a99b9b1930dc1559453485de206de55c0f4`,
+executes10 controls: **9 PASS,1 FAIL**; source/observer unchanged, exit100 in4.983300 s.
+KKT correction passes. Drainage now reaches the actual lambda path and returns
+`TrustRegionBallAccuracy` with2 completed sweeps and1 factor entry. Its mathematical
+KKT oracle does not itself prove the prescribed finite-bisection endpoint satisfies
+the ball guard. No tolerance, bisection or method changes are authorized.
+Same correctness reviewer is independently reconstructing the endpoint and assessing
+whether the synthetic control needs separate expected-refusal and uniformly weighted
+feasible cases while preserving the same physical step oracle. This is not a target
+run or permission to retune target inputs; measurement allowance remains untouched.
+
+### Stage1 body10 — recorded 10/10 PASS, QA verification pending
+
+Independent [binary64 reconstruction](artifacts/trust-correctness-body09-ball-reconstruction.json)
+proves the original unit-normalizer drainage endpoint gap4.976685730184727e-12
+exceeds the unchanged2^-40 guard. That valid refusal is now explicitly retained.
+A clone changes only synthetic row0/1 normalizers to1e-4: same minimizer, lambda
+scaled1e8, independently reconstructed gap1.9984014443252818e-15. No method, guard,
+physical target input or tolerance change. Shared weighting and failed-Jacobi
+sweep accounting have same-correctness static verification.
+
+Ran: [body10](artifacts/trust-controls-stage1-body10.json) executes **10/10 PASS**,
+243 unrelated tests skipped, exit0 in3.633139 s. Source/observer unchanged;
+[manifest/patch](artifacts/trust-controls-stage1-body10-source.json) retain tree
+`f298c4e996210d57fce66a21cb501a3f0c9a1cf3819bf2f95dc823741ba2ea9c`.
+Two declaration warnings remain visible; no suppression. Complete body and affected
+controls are with same QA reviewer, followed by affected correctness verification.
+This is an internal Stage1 milestone only. Stage2 controls/body, private harness,
+qualification and all target runs remain unmet; baseline/treatment NOT RUN.
+
+Same QA reviewer verifies body10 hashes and recorded10/10 evidence but **HOLDs
+private Stage1 body acceptance**. Required corrections: immediate singular-square/
+accumulation finite guards; independent full-input exact-operation controls for
+hypot/reciprocal weighting/pred order and finite alpha*beta overflow; declaration
+warning reconciliation and source-bound format/strict-lint evidence. Shared operation
+binding and actual data-only observations are positively verified. Parent accepts
+findings; same QA is deriving concrete independent operands/bits before writer
+changes. Stage2 author dispatch hit capacity while QA was active and remains
+unstarted; no placeholder approval or target release follows the focused PASS.
+
+### Quality evidence and bounded writer-route recovery
+
+Ran: [source-bound format](artifacts/trust-controls-stage1-body10-format.json)
+PASS12.012145 s. [Strict affected-crate Clippy](artifacts/trust-controls-stage1-body10-clippy.json)
+FAIL14.674758 s in inherited vegetation `v11.rs:2149` (too-many-lines), before LSE.
+[Diagnostic no-deps Clippy](artifacts/trust-controls-stage1-body10-clippy-focused.json)
+FAIL14.172316 s with300 LSE test diagnostics, including25 blocks in the newly
+introduced numerical module. This diagnostic does not replace or waive strict
+failure. Source/observer unchanged in all commands; no lint suppression authorized.
+
+QA retained reproducible independent [operation-oracle source](artifacts/trust-qa-body10-operation-oracles.py),
+[values](artifacts/trust-qa-body10-operation-oracles.json) and
+[receipt](artifacts/trust-qa-body10-operation-oracles-receipt.json). These supply full
+inputs for exact hypot/weight/pred discriminators and two finite-input overflow cases.
+
+Fresh-writer resumption failed `agent thread limit reached` after QA completed.
+One serialized retry after interrupting the old completed writer also failed.
+A final bounded recovery uses the still-exposed existing implementer route for only
+the tiny immediate singular-square/sum guard correction. This is no reviewer-to-author
+conversion or parent fallback. It must return actual source evidence; otherwise
+indispensable writer capacity is unavailable and the adopted stop applies. All
+remaining QA, lint, Stage2 and experiment obligations stay unmet.
+
+The final bounded implementation route returned actual source: singular-square/
+sum immediate guards are now present, module SHA`56b56c8f38266e79f86d592bbc53b52d3cc94462794ee9fae895bf0d0c4bb912`.
+Writer reports canonical format/check PASS. Capacity is therefore functioning for
+small bounded edits through the existing implementer; next are independently
+specified regression fixtures. The fresh writer remains unreachable. No elapsed
+budget is refunded and no unmet acceptance is waived by this recovery.
+
+Writer subsequently reported process-creation ENOENT before merit-test edits.
+One explicit `/bin/bash`, `login:false`, `/workdir/openWEPP` recovery was assigned;
+parent independently confirmed that route works. Writer then delivered both exact
+merit-bit controls and formatting PASS, test SHA`dd9b214d88d3717173c9f4bd268b1d672ac67375e973d059566d4b4fa2a14d28`.
+The exact Jacobi hypot control had already been added. The two actual finite-overflow
+controls and unused-declaration reconciliation are the next bounded edits. These
+new controls have not yet executed; successful source delivery restores the required
+route without changing the clock or invoking a parent implementation fallback.
+
+### Stage1 body11 — expanded exact-operation/guard controls 13/13 PASS
+
+Ran: [body11](artifacts/trust-controls-stage1-body11.json) executes **13/13 PASS**,
+243 unrelated tests skipped, exit0 in4.679591 s, with source/observer unchanged and
+no Rust compiler warnings. Tree`eb45ee1857f97b9d95fa1c1bb4031aebb3e3ce3b5bd81306c4e0d44159e854b4`
+is retained by [manifest/patch](artifacts/trust-controls-stage1-body11-source.json).
+The additional tests bind exact hypot, reciprocal weighting and subnormal predicted/
+actual reduction bits to independently retained full-input oracles, plus actual
+alpha*beta and singular-square overflow refusals/counters. Immediate singular
+intermediate guards are implemented. Stage2-only enum variants are feature-gated
+until use; the actual upper mask is asserted, with no warning suppression.
+
+Same correctness reviewer is verifying affected behavior and arithmetic. Introduced
+Clippy findings remain open despite compiler-warning cleanup. Stage2 controls/body,
+private harness, target qualification and prefix/pair remain unimplemented or NOT RUN.
+Passing these tests is neither full Stage1 quality acceptance nor M1 completion.
+
+Same correctness reviewer **PASSes private Stage1 behavior and13 controls** on
+body11. It confirms exact reconstruction, recorded PASS, both drainage cases,
+shared arithmetic, immediate finite guards and actual sweep/entry counts, exact-bit
+operations and upper masks. No affected numerical blocker remains in this scope.
+[Recovery](artifacts/trust-controls-stage1-body11-recovery.json) reproduces all761 entries.
+Exact independent drainage [script](artifacts/trust-correctness-body09-ball-reconstruction.py)
+and [provenance](artifacts/trust-correctness-body09-ball-reconstruction.provenance.json)
+are retained without rerun or changing the original result artifact.
+
+Introduced lint remains unmet. Writer is now extracting the Jacobi pair operation
+and cleaning local names/loops while preserving exact arithmetic, ascending order,
+finite checks, counts and traces. The approved body11 snapshot remains recoverable.
+No suppression, method change or target release is permitted by this refactor.
+
+Further bounded writer reassessment: dot-product and B/V rotation blocks were
+extracted without intended arithmetic change, then the older route stopped on a
+mechanical patch-context mismatch without applying changes. A serialized resumption
+of `/root/trust_body_writer_fresh` now succeeds and owns the remaining local lint
+cleanup. Current refactor is not yet behavior-validated; body11 remains the last
+recorded13/13 PASS and exact recovered snapshot. No authority, budget or acceptance
+change follows restored capacity.
+
+Supported reassessment at120 charged session minutes: **continue bounded
+introduced-lint fixes under the unchanged cutoff/reserve**. Last verified scientific
+body is recovered body11,13/13 PASS and correctness approval for private Stage1
+only. Writer routes function for small edits but repeatedly return partial work;
+assignments are now limited to concrete mechanical blocks. Refactors require fresh
+behavior/source review before acceptance. Stage2 controls/body and target measurement
+are still unstarted, and required quality/qualification gates remain HOLD. This
+reassessment adds no time and does not convert any internal milestone to completion.
+
+Ran: [body12](artifacts/trust-controls-stage1-body12.json) preserves **13/13 PASS**
+after Jacobi dot/rotation extraction and ordered iterator cleanup, exit0 in12.866585 s;
+source/observer unchanged, tree`13545ef87b245620e4013d6d175af24e5f0accde31bbee937a4c398d700cdb8b`.
+[Focused diagnostic Clippy12](artifacts/trust-controls-stage1-body12-clippy-focused.json)
+remains FAIL (287 aggregate diagnostics, including13 new-module blocks), source/
+observer unchanged. Counts alone do not classify inheritance or satisfy lint.
+Further local iterator/Option/exact-comparison cleanup is authored but not yet run;
+remaining large-function/test-style findings stay open. The complete strict gate
+is still FAIL, and no declaration-warning cleanup is represented as a waiver.
+
+### Stage1 body13 — affected refactors preserve 13/13 behavior
+
+Ran: [body13](artifacts/trust-controls-stage1-body13.json) passes **13/13 controls**
+in4.887184 s, source/observer unchanged, tree
+`5177ad31c6b9df4c99936e18d754176d89d005d7bb79fdb7cd2647fc018047a8`.
+Ordered singular-value, preparation and KKT helpers preserve the frozen operation
+order and refusal counters. [Focused Clippy13](artifacts/trust-controls-stage1-body13-clippy-focused.json)
+remains FAIL; the new module now reports long solver and needless by-value input.
+Other test/inherited findings remain visible; this diagnostic does not waive strict
+lint. Same QA is checking affected guard and full-input bit controls against this
+source. A bounded face-preparation extraction continues before the unchanged cutoff;
+subsequent source requires its own run/review. Stage2 and all targets remain unstarted.
+
+Static: same `/root/trust_qa_controls` verifies body13 guard/bit/declaration fixes:
+**no new Stage1 control defect**. The real singular-square/accumulation guards,
+finite overflow counts/input preservation, unchanged full-input independent merit/
+weighting/hypot oracles and six visits are present. Actual upper-face assertion and
+feature-gating resolve both declaration warnings. **QA quality HOLD remains**:
+strict affected Clippy fails at inherited vegetation `v11.rs:2149`; focused diagnostic
+also fails and is not a substitute. No controller, physical or target release follows.
+
+Static: same `/root/trust_correctness_controls` reports **PASS, no findings** for
+the frozen body11-to-body13 refactor only. It verifies all Jacobi/product/rotation/
+singular/rank/sort, weighting/preparation and KKT arithmetic orders and guards;
+refusal precedence and actual counters are preserved. Exact `partial_cmp` ties
+preserve signed-zero equality and finite-operand behavior. Recorded13/13 evidence
+is source-bound. Subsequent helpers still require affected terminal review; quality,
+Stage2, physical qualification and targets remain HOLD.
+
+Ran: [body14](artifacts/trust-controls-stage1-body14.json) passes13/13 after ordered
+face-preparation, crossing and release-selection extraction, exit0 in4.488262 s;
+source/base unchanged, tree`d737034de69767a032e05a2db815e37d7075db5e8ac665742600f8940bd0a7d9`.
+[Focused diagnostic](artifacts/trust-controls-stage1-body14-clippy-focused.json)
+remains FAIL; new module findings are256-line solver and by-value input. Fresh
+writer made no changes on the requested state-consolidation pass; ownership returns
+serially to `/root/trust_controls_repair_writer` for a bounded counter/refusal helper.
+There is one source writer. No capacity stop, added time or parent implementation
+fallback follows this reassignment. Tests retain their independent expected values.
+
+Implementation-route reassessment: both prior writers returned no source change
+for the state/consolidation task; the old writer also failed to match the current
+borrow-signature context. No claimed edit or lost source follows those returns.
+A bounded fresh implementer `/root/trust_terminal_borrow_writer` was successfully
+created for the narrow private borrowed-input/call-site correction only. Prior
+writers are stopped; no concurrent source authoring, nested workaround or parent
+Rust fallback is used. [Body14 recovery](artifacts/trust-controls-stage1-body14-recovery.json)
+independently reconstructs all761 retained entries from the immutable observer base.
+
+Ran: [body15](artifacts/trust-controls-stage1-body15.json) passes13/13 after the
+private borrowed-input signature and12 call-site borrows, exit0 in12.052524 s,
+source/base unchanged, tree`a0582a14d4b79ced96e3437e4246c402097836b82387e4bd3133956ce293cd36`. The writer's
+initial attribution to the old continuation tree was corrected: its starting cut
+was body14, not red02. Its unrecorded formatter first failed pure evaluation on an
+absolute shell-hook path, then passed with `--impure`; a fresh canonical recorded
+format check remains required. Final bounded work is mechanical introduced test
+lint preserving exact equality (including signed zero), oracle values and tolerances.
+
+Terminal review capacity is being recovered through exposed lifecycle only:
+old QA followup twice returned thread limit across writer completion; interrupt
+reports not_found. Correctness followup and fresh QA spawn also hit thread limit.
+Existing body13 independent scopes remain retained; no terminal approval is inferred.
+One bounded retry after the active writer finishes will determine availability.
+
+Parent static integration finding before execution: the terminal lint writer also
+converted pre-existing `to_bits` assertions into numeric exact comparisons. This
+was unnecessary and weakens signed-zero predicates (notably the initial all-positive-
+zero face). [Unexecuted16 source/patch](artifacts/trust-controls-stage1-lint-unexecuted16-source.json)
+is preserved exactly; no command or claim depends on that draft. Same writer must
+restore every original integer-bit assertion from recovered body14, retaining only
+equivalent conversions of former numeric comparisons. Oracle values and established
+bit-exact operation requirements are not relaxed. This is an implementation correction,
+not a target retry or method change.
+
+### Terminal private Stage1 source — body16 frozen
+
+Ran: [body16 controls](artifacts/trust-controls-stage1-body16.json) **13/13 PASS**
+in5.338206 s; [format](artifacts/trust-controls-stage1-body16-format.json) **PASS**
+in3.076627 s. [Strict affected Clippy](artifacts/trust-controls-stage1-body16-clippy.json)
+**FAIL**, inherited vegetation `v11.rs:2149` long function,6.739276 s.
+[Focused diagnostic](artifacts/trust-controls-stage1-body16-clippy-focused.json)
+**FAIL**,238 aggregate errors including the256-line new subproblem function and
+remaining introduced test findings;10.459495 s. No suppression, warning waiver,
+expected-fingerprint replacement or quality acceptance is claimed. All four commands
+retain unchanged source/base/support. Their prospective60-second bounds reflect
+repeated warm focused timings under15 s and fit the fixed cutoff/reserve.
+
+[Terminal source](artifacts/trust-controls-stage1-body16-source.json) is761 entries,
+SHA256 `6eb1194220d540eba6b6ba18f7ae3aa0f58d2a266a82f1b89d7a5ec043a43b4c`.
+[Recovery](artifacts/trust-controls-stage1-body16-recovery.json) applies its exact
+observer-relative patch onto the immutable base and verifies every entry and live
+source. [Terminal reconciliation](artifacts/trust-controls-terminal-source-reconciliation.json)
+confirms only four detached continuation paths changed: LSE Cargo.toml, lib.rs,
+m1_coupled_tests.rs and the new m1_trust_region_stage1.rs. Primary Rust is unchanged;
+method/vegetation authority hashes remain exactly frozen. Stage1 is cfg(test) private;
+controller placeholders remain feature-gated, unimplemented and uncredited.
+The existing bit predicates, including all positive-zero starts, are restored.
+
+Test build identity is the executed source/toolchain/argv/environment binding in
+body16 receipts; no separately frozen test executable identity is claimed. Release
+binary **NOT BUILT**, authenticated target input **NOT ACQUIRED**, prefix/baseline/
+treatment/original60 compatibility/physical controls **NOT RUN** this continuation.
+The required broad full/A1 qualification remains unmet, not deferred or waived;
+its900-second command no longer fits and its generated-output/helper-lock isolation
+was not performed. No new scientific outcome, speedup or M1 acceptance follows.
+
+QA replacement `/root/trust_terminal_qa_recovery` successfully received the terminal
+review after writer completion; old QA/correctness routes were unreachable. Its
+scope inherits retained findings and covers affected source/evidence, not authorship.
+A second distinct correctness replacement is pending serialized capacity. Previous
+body13 approvals retain only their exact scoped meaning. No final approval inferred.
+
+Static: replacement `/root/trust_terminal_qa_recovery` returns **PASS for bounded
+Stage1 source/test correction and preservation; quality/terminal acceptance HOLD**.
+It confirms face-preparation/crossing/release helpers retain finite guards and exact
+coordinate tie rules; the borrowed seam changes no prepared values or flow; all
+retained bit predicates remain. The strict failure and focused238 diagnostics stay
+HIGH/HOLD. Parent challenged its initial “test-only/solver-identical” wording; same
+QA corrected it: production m1_coupled.rs is unchanged, while the private stage module
+differs by the borrowed signature/reference. No release executable/input, Stage2 or
+physical qualification exists. Distinct correctness replacement
+`/root/trust_terminal_correctness_final` now successfully received its bounded review.
+
+Ran: scoped publication reconciliation stages only this record, the reviewed
+recorder deadline change, custody and this continuation's owned artifacts. No
+unrelated prior publication logs, external primary-source downloads or Rust are
+staged. [Publication checks](artifacts/trust-controls-publication-checks.json)
+parse101 evidence JSON files and3 Python files; authored Markdown/Python/JSON
+whitespace passes. The all-staged whitespace check reports1449 findings solely in
+31 exact recovery patches and5 hashed raw Clippy logs (patch context spaces and
+compiler suggestions). These raw evidence bytes are preserved rather than rewritten;
+this is not a clean all-staged whitespace claim or a quality-gate waiver.
+
+Static: distinct `/root/trust_terminal_correctness_final` returns **PASS, no new
+blocking findings**, for body13-to16 numerical/refusal/event equivalence and
+incomplete preservation only. It verifies exact ordered arithmetic, finite guards,
+refusal precedence, crossing/release ties, pivot counters, pre-action release masks
+and chronology; borrowed inputs preserve values, numeric comparison helpers retain
+prior equality and all bit predicates are restored. Exact761-entry recovery and
+recorded13/13/format PASS are verified. It explicitly supports truthful **INCOMPLETE
+publication**, with strict/focused Clippy, introduced findings, Stage2/harness,
+original60, broad/A1, release/input/prefix/pair and physical qualification all HOLD.
+No terminal quality, experiment, production or M1 release approval is given.
+
+Publication is authorized on the existing `main` branch. The committed ledger is
+the pre-publication charged floor; the local post-publication
+`artifacts/trust-controls-final-publication.json` will record the published commit,
+remote verification and higher final charge including publication elapsed. It must
+be carried forward without resetting the fixed ceiling. That final receipt cannot
+include its own post-write publication recursively and is retained locally.
+
 ## Resumed trust-region disposition — INCOMPLETE, capacity stop
 
 **Baseline: NOT RUN. Treatment: NOT RUN. Residual, governed step, domain and

@@ -1,0 +1,17 @@
+{
+  "observed_utc": "2026-09-24T05:20:10.007444+00:00",
+  "source_tree_sha256": "6eb1194220d540eba6b6ba18f7ae3aa0f58d2a266a82f1b89d7a5ec043a43b4c",
+  "continuation_initial_tree": "0e12168099c494855acce22dd3d0ac370b6b6ed70d2b6faf2c081f22a0e0dffb",
+  "changed_paths": [
+    "crates/openwepp-land-surface-energy/Cargo.toml",
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+  ],
+  "method_sha256": "3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63",
+  "vegetation_authority_sha256": "a54f0fc436dd63273c50f252069098d786f0e80e1b4228cb2cf2df565ae61599",
+  "release_binary": "NOT BUILT",
+  "target_input": "NOT ACQUIRED; support0 prefix and baseline/treatment NOT RUN",
+  "test_build_identity": "source-bound nextest argv, Nix inputs and inherited environment in body16 receipt; no separately frozen executable byte identity",
+  "primary_Rust_changes": false
+}

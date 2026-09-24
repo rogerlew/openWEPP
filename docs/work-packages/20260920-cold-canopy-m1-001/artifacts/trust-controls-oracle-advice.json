@@ -1,0 +1,182 @@
+{
+  "conversation": "/root/trust_control_oracle_advice",
+  "role": "science_advisor",
+  "scope": "Static design advice only; does not satisfy either independent review. No numerical implementation, candidate library, physical execution or tests ran. Reads and hashes only.",
+  "reviewed_tests_sha256": "396b1d315d17c1038790087ea223d1e95e6fcd0474bd9de0f9377ed988580e5e",
+  "ball": {
+    "fixture": "One free scalar A=1, f=-2, radius1, other coordinates fixed0. p(lambda)=2/(1+lambda); initial bracket[0,1]; all48 midpoint evaluations infeasible; final bracket[1-2^-48,1],lambda1,p1.",
+    "seam": "Private test-only Option<endpoint_vector> consumed after actual48bisections/final endpoint construction immediately before identical shared endpoint validation computes norm. Supply coordinates only, never norm/tolerance/counters/predicate/error. Observe computed and injected coordinates. Measurement path must exclude hook.",
+    "controls": [
+      "Unmodified1 PASS",
+      "1-2^-40 PASS equality",
+      "1-2^-40-2^-53 BallAccuracy failure",
+      "1+2^-52 BallAccuracy feasibility failure",
+      "r=2^-10,f=-2r same chronology; tolerance2^-46; p=r-2^-46 PASS; p=r-2^-46-2^-63 FAIL"
+    ],
+    "exactness": "For these dyadic operands ordered sqrt(fl(p*p)) rounds back to p. At radius1 tolerance=max(2^-40,2^-46)=2^-40; at2^-10 absolute branch2^-46. Fault injection tests guard, not naturally inaccurate endpoint.",
+    "observations": "factorization -> bracket endpoint evaluations -> actual48 bisection evaluations -> final upper endpoint -> optional numeric hook -> shared guard -> return/refusal. No preloaded completed_bisections=48."
+  },
+  "kkt": {
+    "A": [
+      [
+        1,
+        0,
+        -1,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        -1,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    ],
+    "f": [
+      -1,
+      -1,
+      2,
+      2,
+      0
+    ],
+    "bounds": "first4 lower0 unbounded upper; fifth unboxed; remaining16fixed0",
+    "scales_weights_base_radius": "unit scales/normalizers;zero base;radius8",
+    "unconstrained_p": [
+      -1,
+      -1,
+      -2,
+      -2,
+      0
+    ],
+    "events": [
+      "activate lower0",
+      "activate lower1",
+      "activate lower2",
+      "activate lower3",
+      "release lower0",
+      "release lower1",
+      "return"
+    ],
+    "h_at_zero": [
+      -1,
+      -1,
+      3,
+      3,
+      0
+    ],
+    "after_release0": {
+      "p": [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "h": [
+        0,
+        -1,
+        2,
+        3,
+        0
+      ]
+    },
+    "final": {
+      "p": [
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "residual": [
+        0,
+        0,
+        2,
+        2,
+        0
+      ],
+      "h": [
+        0,
+        0,
+        2,
+        2,
+        0
+      ],
+      "lambda": 0,
+      "pivots": 6,
+      "factorizations": 7
+    },
+    "variants": [
+      "Negate f and use upper0/lower unrestricted first4: same index chronology, tiedh(1,1,-3,-3,0), finalp(-1,-1,0,0,0)",
+      "f(-1,-2,2,4,0),lower0: h(-1,-2,3,6,0),release1 before0,finalp(1,2,0,0,0)"
+    ],
+    "observations": "actual g,lambda*p,h,masks and selected pivot; all initial counters0. Discrete chronology exact. At p0 tied gradients dyadic exact. Intermediate coordinate tolerance128epsilon for small well-conditioned matrices, never softens pivot ordering."
+  },
+  "jacobi": {
+    "A": [
+      [
+        1,
+        1,
+        0
+      ],
+      [
+        1,
+        0,
+        1
+      ],
+      [
+        0,
+        1,
+        1
+      ]
+    ],
+    "setup": "three unrestricted coordinates,zero residual,unit scales/normalizers,radius1; others fixed0",
+    "sweep1": [
+      "visit01 rotate alpha=beta2,gamma1,tau0,t1,c=s=1/sqrt2",
+      "visit02 skip transformed dot exactly0",
+      "visit12 rotate alpha~3,beta2,gamma~sqrt2,t=-1/sqrt2,c=sqrt(2/3),s=-1/sqrt3"
+    ],
+    "B_columns": [
+      "(0,1/sqrt2,-1/sqrt2)",
+      "(2/sqrt3,2/sqrt3,2/sqrt3)",
+      "(-sqrt(2/3),1/sqrt6,1/sqrt6)"
+    ],
+    "V_columns": [
+      "(1/sqrt2,-1/sqrt2,0)",
+      "(1/sqrt3,1/sqrt3,1/sqrt3)",
+      "(-1/sqrt6,-1/sqrt6,sqrt(2/3))"
+    ],
+    "sweep2": "visit01,02,12 with no rotations; complete sweep required",
+    "counts": {
+      "completed_sweeps": 2,
+      "pair_visits": 6,
+      "rotations": 2
+    },
+    "tolerance": "absolute64epsilon for bounded non-dyadic B/V values; pair indices/rotation decisions exact. Do not assert unit singular-value tie here; binary64 may distinguish.",
+    "sorting_fixture": "Free indices2,5,11; A[0,2]=1,A[1,5]=2,A[2,11]=1; zeroelse; allthree pairs no rotation;1complete sweep. Exact unsorted singulars1,2,1; sorted2,1,1 with originalids5,2,11 and permuted factors."
+  },
+  "additional_fix": "Weighted fixture must admit negative expected solution: currently lower0 conflicts with negative step. Use appropriate unboxed toy coordinate bounds.",
+  "disposition": "No method amendment; writer authors controls/observation fields then both existing independent reviewers verify. All HOLDs remain; no body/target release."
+}

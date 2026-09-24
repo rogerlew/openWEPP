@@ -1,0 +1,458 @@
+{
+  "cases": [
+    {
+      "accepted_by_frozen_guard": false,
+      "bisection_count": 48,
+      "bracket_before_bisection": [
+        {
+          "bits": "0000000000000000",
+          "decimal": "0.0",
+          "hex": "0x0.0p+0"
+        },
+        {
+          "bits": "3ff0000000000000",
+          "decimal": "1.0",
+          "hex": "0x1.0000000000000p+0"
+        }
+      ],
+      "bracket_evaluations": [
+        {
+          "lambda": {
+            "bits": "0000000000000000",
+            "decimal": "0.0",
+            "hex": "0x0.0p+0"
+          },
+          "norm": {
+            "bits": "40f869ffffffffff",
+            "decimal": "99999.99999999999",
+            "hex": "0x1.869ffffffffffp+16"
+          }
+        },
+        {
+          "lambda": {
+            "bits": "3ff0000000000000",
+            "decimal": "1.0",
+            "hex": "0x1.0000000000000p+0"
+          },
+          "norm": {
+            "bits": "3f1fffae48aed658",
+            "decimal": "0.00012206555599799643",
+            "hex": "0x1.fffae48aed658p-14"
+          }
+        }
+      ],
+      "bracket_multiplications": 0,
+      "final_lower_lambda": {
+        "bits": "3f1fff97dc4c0000",
+        "decimal": "0.00012206425078531424",
+        "hex": "0x1.fff97dc4c0000p-14"
+      },
+      "final_upper_lambda": {
+        "bits": "3f1fff97dc500000",
+        "decimal": "0.00012206425078886696",
+        "hex": "0x1.fff97dc500000p-14"
+      },
+      "lambda_zero_norm": {
+        "bits": "40f869ffffffffff",
+        "decimal": "99999.99999999999",
+        "hex": "0x1.869ffffffffffp+16"
+      },
+      "last_three_bisections": [
+        {
+          "feasible": true,
+          "lambda": {
+            "bits": "3f1fff97dc500000",
+            "decimal": "0.00012206425078886696",
+            "hex": "0x1.fff97dc500000p-14"
+          },
+          "norm": {
+            "bits": "3fefffffffff50e6",
+            "decimal": "0.9999999999950233",
+            "hex": "0x1.fffffffff50e6p-1"
+          }
+        },
+        {
+          "feasible": false,
+          "lambda": {
+            "bits": "3f1fff97dc480000",
+            "decimal": "0.00012206425078176153",
+            "hex": "0x1.fff97dc480000p-14"
+          },
+          "norm": {
+            "bits": "3ff000000003a87d",
+            "decimal": "1.0000000000532332",
+            "hex": "0x1.000000003a87dp+0"
+          }
+        },
+        {
+          "feasible": false,
+          "lambda": {
+            "bits": "3f1fff97dc4c0000",
+            "decimal": "0.00012206425078531424",
+            "hex": "0x1.fff97dc4c0000p-14"
+          },
+          "norm": {
+            "bits": "3ff000000001a878",
+            "decimal": "1.0000000000241283",
+            "hex": "0x1.000000001a878p+0"
+          }
+        }
+      ],
+      "normalizer": {
+        "bits": "3ff0000000000000",
+        "decimal": "1.0",
+        "hex": "0x1.0000000000000p+0"
+      },
+      "radius_minus_norm": {
+        "bits": "3d95e34000000000",
+        "decimal": "4.976685730184727e-12",
+        "hex": "0x1.5e34000000000p-38"
+      },
+      "refusal_kind": "TrustRegionBallAccuracy",
+      "rotations": 1,
+      "singular_values": [
+        {
+          "bits": "3f02f80b0339bd35",
+          "decimal": "3.6180339887498953e-05",
+          "hex": "0x1.2f80b0339bd35p-15"
+        },
+        {
+          "bits": "3eecfb5f9f8a17e1",
+          "decimal": "1.381966011250105e-05",
+          "hex": "0x1.cfb5f9f8a17e1p-17"
+        }
+      ],
+      "sorted_from_unsorted": [
+        0,
+        1
+      ],
+      "sweeps": 2,
+      "tolerance": {
+        "bits": "3d70000000000000",
+        "decimal": "9.094947017729282e-13",
+        "hex": "0x1.0000000000000p-40"
+      },
+      "upper_norm": {
+        "bits": "3fefffffffff50e6",
+        "decimal": "0.9999999999950233",
+        "hex": "0x1.fffffffff50e6p-1"
+      },
+      "upper_step": [
+        {
+          "bits": "bfea37253b7e1f01",
+          "decimal": "-0.8192316209760692",
+          "hex": "-0x1.a37253b7e1f01p-1"
+        },
+        {
+          "bits": "bfe259ce998c5858",
+          "decimal": "-0.5734627722729426",
+          "hex": "-0x1.259ce998c5858p-1"
+        }
+      ],
+      "visits": [
+        {
+          "left": 0,
+          "right": 1,
+          "rotated": true,
+          "sweep": 1
+        },
+        {
+          "left": 0,
+          "right": 1,
+          "rotated": false,
+          "sweep": 2
+        }
+      ],
+      "weight": {
+        "bits": "3ff0000000000000",
+        "decimal": "1.0",
+        "hex": "0x1.0000000000000p+0"
+      }
+    },
+    {
+      "accepted_by_frozen_guard": true,
+      "bisection_count": 48,
+      "bracket_before_bisection": [
+        {
+          "bits": "40b0000000000000",
+          "decimal": "4096.0",
+          "hex": "0x1.0000000000000p+12"
+        },
+        {
+          "bits": "40d0000000000000",
+          "decimal": "16384.0",
+          "hex": "0x1.0000000000000p+14"
+        }
+      ],
+      "bracket_evaluations": [
+        {
+          "lambda": {
+            "bits": "0000000000000000",
+            "decimal": "0.0",
+            "hex": "0x0.0p+0"
+          },
+          "norm": {
+            "bits": "40f86a0000000000",
+            "decimal": "100000.0",
+            "hex": "0x1.86a0000000000p+16"
+          }
+        },
+        {
+          "lambda": {
+            "bits": "3ff0000000000000",
+            "decimal": "1.0",
+            "hex": "0x1.0000000000000p+0"
+          },
+          "norm": {
+            "bits": "40c516dc98fabc17",
+            "decimal": "10797.723418561784",
+            "hex": "0x1.516dc98fabc17p+13"
+          }
+        },
+        {
+          "lambda": {
+            "bits": "4010000000000000",
+            "decimal": "4.0",
+            "hex": "0x1.0000000000000p+2"
+          },
+          "norm": {
+            "bits": "40a7166b21d02118",
+            "decimal": "2955.209242347755",
+            "hex": "0x1.7166b21d02118p+11"
+          }
+        },
+        {
+          "lambda": {
+            "bits": "4030000000000000",
+            "decimal": "16.0",
+            "hex": "0x1.0000000000000p+4"
+          },
+          "norm": {
+            "bits": "4087a5e364ec4871",
+            "decimal": "756.7360323390586",
+            "hex": "0x1.7a5e364ec4871p+9"
+          }
+        },
+        {
+          "lambda": {
+            "bits": "4050000000000000",
+            "decimal": "64.0",
+            "hex": "0x1.0000000000000p+6"
+          },
+          "norm": {
+            "bits": "4067cadad10834fd",
+            "decimal": "190.33921100237777",
+            "hex": "0x1.7cadad10834fdp+7"
+          }
+        },
+        {
+          "lambda": {
+            "bits": "4070000000000000",
+            "decimal": "256.0",
+            "hex": "0x1.0000000000000p+8"
+          },
+          "norm": {
+            "bits": "4047d42ad2c16114",
+            "decimal": "47.65755686228127",
+            "hex": "0x1.7d42ad2c16114p+5"
+          }
+        },
+        {
+          "lambda": {
+            "bits": "4090000000000000",
+            "decimal": "1024.0",
+            "hex": "0x1.0000000000000p+10"
+          },
+          "norm": {
+            "bits": "4027d67ff7f1aa1b",
+            "decimal": "11.918945072412546",
+            "hex": "0x1.7d67ff7f1aa1bp+3"
+          }
+        },
+        {
+          "lambda": {
+            "bits": "40b0000000000000",
+            "decimal": "4096.0",
+            "hex": "0x1.0000000000000p+12"
+          },
+          "norm": {
+            "bits": "4007d71553934b30",
+            "decimal": "2.9800211457562895",
+            "hex": "0x1.7d71553934b30p+1"
+          }
+        },
+        {
+          "lambda": {
+            "bits": "40d0000000000000",
+            "decimal": "16384.0",
+            "hex": "0x1.0000000000000p+14"
+          },
+          "norm": {
+            "bits": "3fe7d73aaba13231",
+            "decimal": "0.745023093427852",
+            "hex": "0x1.7d73aaba13231p-1"
+          }
+        }
+      ],
+      "bracket_multiplications": 7,
+      "final_lower_lambda": {
+        "bits": "40c7d73668fba3c8",
+        "decimal": "12206.425078825923",
+        "hex": "0x1.7d73668fba3c8p+13"
+      },
+      "final_upper_lambda": {
+        "bits": "40c7d73668fba3e0",
+        "decimal": "12206.425078825967",
+        "hex": "0x1.7d73668fba3e0p+13"
+      },
+      "lambda_zero_norm": {
+        "bits": "40f86a0000000000",
+        "decimal": "100000.0",
+        "hex": "0x1.86a0000000000p+16"
+      },
+      "last_three_bisections": [
+        {
+          "feasible": true,
+          "lambda": {
+            "bits": "40c7d73668fba3e0",
+            "decimal": "12206.425078825967",
+            "hex": "0x1.7d73668fba3e0p+13"
+          },
+          "norm": {
+            "bits": "3fefffffffffffee",
+            "decimal": "0.999999999999998",
+            "hex": "0x1.fffffffffffeep-1"
+          }
+        },
+        {
+          "feasible": false,
+          "lambda": {
+            "bits": "40c7d73668fba3b0",
+            "decimal": "12206.42507882588",
+            "hex": "0x1.7d73668fba3b0p+13"
+          },
+          "norm": {
+            "bits": "3ff0000000000017",
+            "decimal": "1.000000000000005",
+            "hex": "0x1.0000000000017p+0"
+          }
+        },
+        {
+          "feasible": false,
+          "lambda": {
+            "bits": "40c7d73668fba3c8",
+            "decimal": "12206.425078825923",
+            "hex": "0x1.7d73668fba3c8p+13"
+          },
+          "norm": {
+            "bits": "3ff0000000000007",
+            "decimal": "1.0000000000000016",
+            "hex": "0x1.0000000000007p+0"
+          }
+        }
+      ],
+      "normalizer": {
+        "bits": "3f1a36e2eb1c432d",
+        "decimal": "0.0001",
+        "hex": "0x1.a36e2eb1c432dp-14"
+      },
+      "radius_minus_norm": {
+        "bits": "3ce2000000000000",
+        "decimal": "1.9984014443252818e-15",
+        "hex": "0x1.2000000000000p-49"
+      },
+      "refusal_kind": null,
+      "rotations": 1,
+      "singular_values": [
+        {
+          "bits": "3fd727c9716ffb76",
+          "decimal": "0.36180339887498947",
+          "hex": "0x1.727c9716ffb76p-2"
+        },
+        {
+          "bits": "3fc1b06d1d200913",
+          "decimal": "0.1381966011250105",
+          "hex": "0x1.1b06d1d200913p-3"
+        }
+      ],
+      "sorted_from_unsorted": [
+        0,
+        1
+      ],
+      "sweeps": 2,
+      "tolerance": {
+        "bits": "3d70000000000000",
+        "decimal": "9.094947017729282e-13",
+        "hex": "0x1.0000000000000p-40"
+      },
+      "upper_norm": {
+        "bits": "3fefffffffffffee",
+        "decimal": "0.999999999999998",
+        "hex": "0x1.fffffffffffeep-1"
+      },
+      "upper_step": [
+        {
+          "bits": "bfea37253b7eae65",
+          "decimal": "-0.8192316209801446",
+          "hex": "-0x1.a37253b7eae65p-1"
+        },
+        {
+          "bits": "bfe259ce998cbcb8",
+          "decimal": "-0.5734627722757955",
+          "hex": "-0x1.259ce998cbcb8p-1"
+        }
+      ],
+      "visits": [
+        {
+          "left": 0,
+          "right": 1,
+          "rotated": true,
+          "sweep": 1
+        },
+        {
+          "left": 0,
+          "right": 1,
+          "rotated": false,
+          "sweep": 2
+        }
+      ],
+      "weight": {
+        "bits": "40c3880000000000",
+        "decimal": "10000.0",
+        "hex": "0x1.3880000000000p+13"
+      }
+    }
+  ],
+  "evidence_class": "independent non-target binary64 arithmetic reconstruction",
+  "frozen_inputs": {
+    "ball_gap_factor": "2^-40",
+    "base_drainage": [
+      2e-05,
+      3e-05
+    ],
+    "bisections": 48,
+    "coordinate_scales": [
+      1e-05,
+      1e-05
+    ],
+    "radius": 1.0,
+    "raw_jacobian_first_two_by_drainage_columns": [
+      [
+        1.0,
+        2.0
+      ],
+      [
+        3.0,
+        1.0
+      ]
+    ],
+    "raw_residual_first_two": [
+      2.2,
+      2.6
+    ]
+  },
+  "physical_target_run": false,
+  "schema": "OPENWEPP_TRUST_CORRECTNESS_BODY09_BALL_RECONSTRUCTION_V1",
+  "source_tree_sha256": "74f44e6972332e250f9233e4b2225a99b9b1930dc1559453485de206de55c0f4",
+  "target_code_imported": false
+}

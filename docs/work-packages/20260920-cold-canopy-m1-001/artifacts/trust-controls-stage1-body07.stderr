@@ -1,0 +1,37 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0689]: can't call method `is_finite` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:754:24
+    |
+754 |                 if !sq.is_finite() {
+    |                        ^^^^^^^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+753 |                 let sq: f32 = p[col] * p[col];
+    |                       +++++
+
+error[E0689]: can't call method `is_finite` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:765:39
+    |
+765 |                 if !active_square_sum.is_finite() {
+    |                                       ^^^^^^^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+750 |         let mut active_square_sum: f32 = 0.0;
+    |                                  +++++
+
+warning: value assigned to `nh` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:334:13
+    |
+334 |             nh = norm;
+    |             ^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0689`.
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors; 1 warning emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101

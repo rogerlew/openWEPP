@@ -1,0 +1,11 @@
+{
+  "observed_utc": "2026-09-24T03:54:55.119846+00:00",
+  "failure": "Writer deleted its unexecuted partialbody before durable preservation; withdrew exactrecoverability claim after bounded request. Scope note is not source.",
+  "containment": "Parent reconstructed all760 reviewedcut09 entries; live drift only one blankline inlib.rs, now restored to exactreviewedbytes. No runtimebehavior, test or physical measurement used deletedbody.",
+  "source_gap": "Exactdeletedpartialbody bytes unavailable; not claimedrecovered.",
+  "lib_before_sha256": "f9a705a48d66b8e2c5b7cc153348994ba7f9d3101a3f1d47b21e3046d6cce7bc",
+  "lib_after_sha256": "72e7b86420131828fa89139909baa02f5a0125e7493e420c4e1b23925d093c0f",
+  "scope_note": "trust-controls-body-abandoned01.txt",
+  "reviewed_source_recovery": "trust-controls-stage1-recovery09.json",
+  "classification": "Contained authoring/preservation failure; no unknown live scientificsource or result-bearing integrity loss. Reviewed controls remain available; continue fixedmethodauthoring with smaller bounded deliverables."
+}

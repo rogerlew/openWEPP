@@ -1,0 +1,14 @@
+{
+  "label": "trust-qa-body10-operation-oracles",
+  "argv": [
+    ".venv/bin/python",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-qa-body10-operation-oracles.py"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "purpose": "Independent binary64 fixture derivation; no target or implementation source import/execution.",
+  "utc": "2026-09-23T04:39:00Z",
+  "files": {
+    "trust-qa-body10-operation-oracles.py": "e0705c2d969fb47f3db6223ace20dd4f3948f98aa396c0d988d18395753e8fee",
+    "trust-qa-body10-operation-oracles.json": "eac991ecc0370b5ec4ce5a09e77b849a6cd1dd21b05b0830dc9bb3d22b23463a"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "observed_utc": "2026-09-24T05:23:47.811763+00:00",
+  "staged_scoped_paths": 223,
+  "parse_checks": {
+    "json": 101,
+    "python": 3
+  },
+  "authored_markdown_python_json_whitespace": "PASS",
+  "all_staged_whitespace": "FAIL1449 reports across31rawpatches and5rawstderr logs",
+  "raw_evidence_policy": "Exact recovery patches and hashed raw Clippy output retained byte-for-byte; no edit to remove patch context spaces or diagnostic suggestion trailing spaces",
+  "primary_runtime_Rust_changes": false
+}

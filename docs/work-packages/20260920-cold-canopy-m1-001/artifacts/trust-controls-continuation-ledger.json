@@ -1,0 +1,15 @@
+{
+  "anchor_utc": "2026-09-24T02:55:00+00:00",
+  "prior_charged_seconds": "285967.948546",
+  "fixed_ceiling_seconds": "296625.431374",
+  "hard_deadline_utc": "2026-09-24T05:52:37.482828+00:00",
+  "implementation_cutoff_utc": "2026-09-24T05:22:37.482828+00:00",
+  "reserve_seconds": 1800,
+  "added_seconds": 0,
+  "clock_policy": "All elapsed including reading, waits and concurrency charged once; conservative first-reading anchor; no refunds",
+  "phase": "Implementation stopped; both terminal scoped reviews complete; authorized publication pending. Final local publication receipt supersedes this pre-publication charged floor.",
+  "observed_utc": "2026-09-24T05:27:01.970097+00:00",
+  "session_elapsed_seconds": "9121.970097",
+  "charged_cumulative_seconds": "295089.918643",
+  "remaining_seconds": "1535.512731"
+}

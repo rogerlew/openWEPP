@@ -1,0 +1,457 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:279:17
+    |
+279 | ) -> Result<(), M1TrustRegionRefusalKind> {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:281:20
+    |
+281 |         return Err(M1TrustRegionRefusalKind::TrustRegionDegenerateFace);
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:284:22
+    |
+284 |         .map_err(|_| M1TrustRegionRefusalKind::TrustRegionSvdNonFinite)?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:285:45
+    |
+285 |     let n0 = lambda_norm(&zero).map_err(|_| M1TrustRegionRefusalKind::TrustRegionSvdNonFinite)?;
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:303:22
+    |
+303 |         .map_err(|_| M1TrustRegionRefusalKind::TrustRegionSvdNonFinite)?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:305:40
+    |
+305 |         lambda_norm(&high).map_err(|_| M1TrustRegionRefusalKind::TrustRegionSvdNonFinite)?;
+    |                                        ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:316:26
+    |
+316 |             .map_err(|_| M1TrustRegionRefusalKind::TrustRegionSvdNonFinite)?;
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:317:45
+    |
+317 |         nh = lambda_norm(&high).map_err(|_| M1TrustRegionRefusalKind::TrustRegionSvdNonFinite)?;
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:321:20
+    |
+321 |         return Err(M1TrustRegionRefusalKind::TrustRegionLambdaBracket);
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:326:26
+    |
+326 |             .map_err(|_| M1TrustRegionRefusalKind::TrustRegionSvdNonFinite)?;
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:328:44
+    |
+328 |             lambda_norm(&step).map_err(|_| M1TrustRegionRefusalKind::TrustRegionSvdNonFinite)?;
+    |                                            ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:347:46
+    |
+347 |         lambda_norm(&trace.step).map_err(|_| M1TrustRegionRefusalKind::TrustRegionSvdNonFinite)?;
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:354:20
+    |
+354 |         return Err(M1TrustRegionRefusalKind::TrustRegionBallAccuracy);
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:381:18
+    |
+381 |             Some(M1TrustRegionRefusalKind::TrustRegionRankDeficient),
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:385:18
+    |
+385 |             Some(M1TrustRegionRefusalKind::TrustRegionSvdNoConvergence),
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:389:18
+    |
+389 |             Some(M1TrustRegionRefusalKind::TrustRegionSvdNonFinite),
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0425]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:622:11
+    |
+622 |     kind: M1TrustRegionRefusalKind,
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:661:17
+    |
+661 |                 M1TrustRegionRefusalKind::TrustRegionSvdNonFinite,
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:672:13
+    |
+672 |             M1TrustRegionRefusalKind::TrustRegionDegenerateFace,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:689:17
+    |
+689 |                 M1TrustRegionRefusalKind::TrustRegionSvdNonFinite,
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:705:21
+    |
+705 |                     M1TrustRegionRefusalKind::TrustRegionSvdNonFinite,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:723:17
+    |
+723 |                 M1TrustRegionRefusalKind::TrustRegionSvdNonFinite,
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:756:17
+    |
+756 |                 M1TrustRegionRefusalKind::TrustRegionDegenerateFace,
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:776:21
+    |
+776 |                     M1TrustRegionRefusalKind::TrustRegionSvdNonFinite,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:794:21
+    |
+794 |                     M1TrustRegionRefusalKind::TrustRegionRankDeficient,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:804:21
+    |
+804 |                     M1TrustRegionRefusalKind::TrustRegionSvdNoConvergence,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:814:21
+    |
+814 |                     M1TrustRegionRefusalKind::TrustRegionSvdNonFinite,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:864:21
+    |
+864 |                     M1TrustRegionRefusalKind::TrustRegionFacePivotLimit,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:937:21
+    |
+937 |                     M1TrustRegionRefusalKind::TrustRegionFacePivotLimit,
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+    |
+help: consider importing this enum
+    |
+  3 + use crate::M1TrustRegionRefusalKind;
+    |
+
+error[E0614]: type `f64` cannot be dereferenced
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:899:32
+    |
+899 |             assert!((*actual - *expected).abs() <= 64.0 * f64::EPSILON);
+    |                                ^^^^^^^^^ can't be dereferenced
+
+error[E0614]: type `f64` cannot be dereferenced
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:904:32
+    |
+904 |             assert!((*actual - *expected).abs() <= 64.0 * f64::EPSILON);
+    |                                ^^^^^^^^^ can't be dereferenced
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:928:28
+    |
+928 |                     size > best || (size == best && col < index)
+    |                     ----   ^^^^ expected `f64`, found `usize`
+    |                     |
+    |                     expected because this is `f64`
+    |
+help: you can cast a `usize` to an `f64`, producing the floating point representation of the integer, rounded if necessary
+    |
+928 |                     size > best as f64 || (size == best && col < index)
+    |                                 ++++++
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:928:45
+    |
+928 |                     size > best || (size == best && col < index)
+    |                                             ^^^^ expected `f64`, found `usize`
+
+error[E0277]: can't compare `f64` with `usize`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:928:42
+    |
+928 |                     size > best || (size == best && col < index)
+    |                                          ^^ no implementation for `f64 == usize`
+    |
+    = help: the trait `PartialEq<usize>` is not implemented for `f64`
+help: the following other types implement trait `PartialEq<Rhs>`
+   --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/cmp.rs:1876:12
+    |
+    = note: `f64` implements `PartialEq`
+   ::: /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/cmp.rs:1900:5
+    |
+    = note: in this macro invocation
+    |
+   ::: /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/partial_eq.rs:76:13
+    |
+ 76 |               impl PartialEq<Value> for $ty {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `f64` implements `PartialEq<Value>`
+...
+ 97 | / partialeq_numeric! {
+ 98 | |     eq_i64[i8 i16 i32 i64 isize]
+ 99 | |     eq_u64[u8 u16 u32 u64 usize]
+100 | |     eq_f32[f32]
+101 | |     eq_f64[f64]
+102 | |     eq_bool[bool]
+103 | | }
+    | |_- in this macro invocation
+    = note: this error originates in the macro `partial_eq_impl` which comes from the expansion of the macro `partialeq_numeric` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:928:59
+    |
+928 |                     size > best || (size == best && col < index)
+    |                                                     ---   ^^^^^ expected `usize`, found `bool`
+    |                                                     |
+    |                                                     expected because this is `usize`
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:930:37
+    |
+930 |                     release = Some((size, col, is_lower));
+    |                                     ^^^^ expected `usize`, found `f64`
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:930:43
+    |
+930 |                     release = Some((size, col, is_lower));
+    |                                           ^^^ expected `bool`, found `usize`
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:930:48
+    |
+930 |                     release = Some((size, col, is_lower));
+    |                                                ^^^^^^^^ expected `f64`, found `bool`
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:946:28
+    |
+946 |                 action: if is_lower {
+    |                            ^^^^^^^^ expected `bool`, found `f64`
+
+error[E0308]: mismatched types
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:951:38
+    |
+951 |                 selected_coordinate: col,
+    |                                      ^^^ expected `usize`, found `bool`
+
+error[E0277]: the type `[bool]` cannot be indexed by `bool`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:959:26
+    |
+959 |             lower_active[col] = false;
+    |                          ^^^ slice indices are of type `usize` or ranges of `usize`
+    |
+    = help: the trait `SliceIndex<[bool]>` is not implemented for `bool`
+    = note: required for `[bool]` to implement `std::ops::Index<bool>`
+    = note: 1 redundant requirement hidden
+    = note: required for `[bool; 21]` to implement `std::ops::Index<bool>`
+
+error[E0277]: the type `[bool]` cannot be indexed by `bool`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:960:26
+    |
+960 |             upper_active[col] = false;
+    |                          ^^^ slice indices are of type `usize` or ranges of `usize`
+    |
+    = help: the trait `SliceIndex<[bool]>` is not implemented for `bool`
+    = note: required for `[bool]` to implement `std::ops::Index<bool>`
+    = note: 1 redundant requirement hidden
+    = note: required for `[bool; 21]` to implement `std::ops::Index<bool>`
+
+error[E0277]: the type `[bool]` cannot be indexed by `bool`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:961:18
+    |
+961 |             free[col] = true;
+    |                  ^^^ slice indices are of type `usize` or ranges of `usize`
+    |
+    = help: the trait `SliceIndex<[bool]>` is not implemented for `bool`
+    = note: required for `[bool]` to implement `std::ops::Index<bool>`
+    = note: 1 redundant requirement hidden
+    = note: required for `[bool; 21]` to implement `std::ops::Index<bool>`
+
+Some errors have detailed explanations: E0277, E0308, E0425, E0433, E0614.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 43 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101

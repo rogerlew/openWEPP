@@ -1,0 +1,131 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: type `JacobiFactor` is more private than the item `svd_lambda_ball`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:274:1
+    |
+274 | / pub(crate) fn svd_lambda_ball(
+275 | |     factor: &JacobiFactor,
+276 | |     y: &[f64],
+277 | |     radius: f64,
+278 | |     override_endpoint: Option<&[f64]>,
+279 | |     trace: &mut LambdaTrace,
+280 | | ) -> Result<(), M1TrustRegionRefusalKind> {
+    | |_________________________________________^ function `svd_lambda_ball` is reachable at visibility `pub(crate)`
+    |
+note: but type `JacobiFactor` is only usable at visibility `pub(self)`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:143:1
+    |
+143 | struct JacobiFactor {
+    | ^^^^^^^^^^^^^^^^^^^
+    = note: `#[warn(private_interfaces)]` on by default
+
+warning: variants `TrustRegionRadiusExhausted` and `TrustRegionWorkCap` are never constructed
+   --> crates/openwepp-land-surface-energy/src/lib.rs:159:5
+    |
+152 | pub(crate) enum M1TrustRegionRefusalKind {
+    |                 ------------------------ variants in this enum
+...
+159 |     TrustRegionRadiusExhausted,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+160 |     TrustRegionWorkCap,
+    |     ^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionRefusalKind` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `active_upper` is never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:290:16
+    |
+272 | pub(crate) struct M1TrustRegionSubproblemObservation {
+    |                   ---------------------------------- field in this struct
+...
+290 |     pub(crate) active_upper: [bool; 21],
+    |                ^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionSubproblemObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `openwepp-land-surface-energy` (lib test) generated 3 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.29s
+────────────
+ Nextest run ID 0ca9314a-c4e3-4927-8b5f-5af0895091d1 with nextest profile: default
+    Starting 10 tests across 1 binary (243 tests skipped)
+        FAIL [   0.005s] ( 2/10) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns' (1735585) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:482:6:
+    radius-limited feasible drainage step: M1TrustRegionSubproblemRefusal { kind: TrustRegionRankDeficient, attempted_subproblems: 1, completed_jacobi_sweeps: 0, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 2.6 }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 8 tests still running
+        FAIL [   0.005s] ( 5/10) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_kkt_upper_sign_and_largest_violation_variants_are_observed
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_kkt_upper_sign_and_largest_violation_variants_are_observed ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_trust_region_kkt_upper_sign_and_largest_violation_variants_are_observed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_trust_region_kkt_upper_sign_and_largest_violation_variants_are_observed' (1735587) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1191:17:
+    assertion failed: (actual - expected).abs() <= 128.0 * f64::EPSILON
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.009s] 10 tests run: 8 passed, 2 failed, 243 skipped
+        FAIL [   0.005s] ( 2/10) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns' (1735585) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:482:6:
+    radius-limited feasible drainage step: M1TrustRegionSubproblemRefusal { kind: TrustRegionRankDeficient, attempted_subproblems: 1, completed_jacobi_sweeps: 0, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 2.6 }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.005s] ( 5/10) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_kkt_upper_sign_and_largest_violation_variants_are_observed
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_kkt_upper_sign_and_largest_violation_variants_are_observed ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_trust_region_kkt_upper_sign_and_largest_violation_variants_are_observed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_trust_region_kkt_upper_sign_and_largest_violation_variants_are_observed' (1735587) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1191:17:
+    assertion failed: (actual - expected).abs() <= 128.0 * f64::EPSILON
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

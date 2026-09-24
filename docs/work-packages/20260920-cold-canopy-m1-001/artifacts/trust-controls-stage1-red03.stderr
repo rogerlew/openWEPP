@@ -1,0 +1,35 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:300:25
+    |
+300 |     let result = super::m1_trust_region_solve_subproblem_for_test(
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_frozen_merit_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:371:24
+    |
+371 |     let merit = super::m1_trust_region_frozen_merit_for_test(
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:395:23
+    |
+395 |     let face = super::m1_trust_region_solve_subproblem_for_test(
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:459:25
+    |
+459 |     let result = super::m1_trust_region_solve_subproblem_for_test(
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_solve_subproblem_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:596:30
+    |
+596 |         let refusal = super::m1_trust_region_solve_subproblem_for_test(&input, &trial(), case)
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 5 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101
