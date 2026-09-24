@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: unbound local formatting feedback; not source-qualified",
+  "argv": ["nix", "develop", "/workdir/openWEPP", "--command", "cargo", "fmt", "--all", "--", "--check"],
+  "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "executed_utc": "unknown",
+  "exit": 0,
+  "result": "PASS",
+  "recording": "Not executed through run_recorded.py. The first check reported formatting differences; the writer then ran the same Nix command without --check and reran this check successfully. No source manifest was captured.",
+  "source_paths": [
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs"
+  ]
+}

@@ -1,0 +1,46 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused variable: `iteration`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2511:5
+     |
+2511 |     iteration: u32,
+     |     ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_iteration`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `corrected_assembly`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2512:5
+     |
+2512 |     corrected_assembly: bool,
+     |     ^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_corrected_assembly`
+
+warning: unused variable: `error`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4229:21
+     |
+4229 |                 Err(error) => {
+     |                     ^^^^^ help: if this is intentional, prefix it with an underscore: `_error`
+
+warning: unused variable: `error`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4261:21
+     |
+4261 |                 Err(error) => {
+     |                     ^^^^^ help: if this is intentional, prefix it with an underscore: `_error`
+
+warning: field `linear_dimension` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2330:5
+     |
+2310 | pub struct M1PhaseJoinControllerReport {
+     |            --------------------------- field in this struct
+...
+2330 |     linear_dimension: usize,
+     |     ^^^^^^^^^^^^^^^^
+     |
+     = note: `M1PhaseJoinControllerReport` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib) generated 5 warnings (run `cargo fix --lib -p openwepp-land-surface-energy` to apply 4 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.99s

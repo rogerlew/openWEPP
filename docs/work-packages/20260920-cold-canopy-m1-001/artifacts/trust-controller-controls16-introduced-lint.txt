@@ -1,0 +1,57 @@
+error: these match arms have identical bodies
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:140:13
+    |
+140 |             (FixtureKind::ReplacementWitness, 3) => -0.5 + z / 4.0 - z * z / 4.0,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+143 |             (FixtureKind::ReplacementWitnessThreeExcess, 3) => -0.5 + z / 4.0 - z * z / 4.0,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is unintentional make the arms return different values
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#match_same_arms
+help: otherwise merge the patterns into a single arm
+    |
+140 ~             (FixtureKind::ReplacementWitness, 3) | (FixtureKind::ReplacementWitnessThreeExcess, 3) => -0.5 + z / 4.0 - z * z / 4.0,
+141 |             (FixtureKind::ReplacementWitness, _) => z / 4.0,
+142 |             (FixtureKind::ReplacementWitnessThreeExcess, 0) => -2f64.powi(-25) + z / 4.0,
+143 ~             (FixtureKind::ReplacementWitnessThreeExcess, _) => z / 4.0,
+    |
+
+error: these match arms have identical bodies
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:141:13
+    |
+141 |             (FixtureKind::ReplacementWitness, _) => z / 4.0,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+144 |             (FixtureKind::ReplacementWitnessThreeExcess, _) => z / 4.0,
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is unintentional make the arms return different values
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#match_same_arms
+help: otherwise merge the patterns into a single arm
+    |
+141 ~             (FixtureKind::ReplacementWitnessThreeExcess, 0) => -2f64.powi(-25) + z / 4.0,
+142 |             (FixtureKind::ReplacementWitnessThreeExcess, 3) => -0.5 + z / 4.0 - z * z / 4.0,
+143 ~             (FixtureKind::ReplacementWitness, _) | (FixtureKind::ReplacementWitnessThreeExcess, _) => z / 4.0,
+    |
+
+error: these match arms have identical bodies
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:227:29
+    |
+227 | ...                   FixtureKind::ReplacementWitness => 0.25 / self.scale[i],
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+234 | ...                   FixtureKind::ReplacementWitnessThreeExcess => 0.25 / self.scale[i],
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is unintentional make the arms return different values
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#match_same_arms
+help: otherwise merge the patterns into a single arm
+    |
+227 ~                             FixtureKind::ReplacementWitnessThreeExcess if i == 0 => {
+228 |                                 0.25 / self.scale[i]
+...
+232 |                             }
+233 ~                             FixtureKind::ReplacementWitness | FixtureKind::ReplacementWitnessThreeExcess => 0.25 / self.scale[i],
+    |
+

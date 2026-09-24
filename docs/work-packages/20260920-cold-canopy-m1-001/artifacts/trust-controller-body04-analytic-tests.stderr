@@ -1,0 +1,30 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0599]: the method `clone` exists for struct `M1TrustRegionControllerEvaluation<P>`, but its trait bounds were not satisfied
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:374:48
+    |
+374 |             self.preceding = Some(self.current.clone());
+    |                                                ^^^^^ method cannot be called on `M1TrustRegionControllerEvaluation<P>` due to unsatisfied trait bounds
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:23:1
+    |
+ 23 | pub(crate) struct M1TrustRegionControllerEvaluation<P> {
+    | ------------------------------------------------------ method `clone` not found for this struct because it doesn't satisfy `M1TrustRegionControllerEvaluation<P>: Clone`
+    |
+note: trait bound `P: Clone` was not satisfied
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:23:53
+    |
+ 22 | #[derive(Clone, Debug)]
+    |          ----- in this derive macro expansion
+ 23 | pub(crate) struct M1TrustRegionControllerEvaluation<P> {
+    |                                                     ^ type parameter would need to implement `Clone`
+    = help: consider manually implementing the trait to avoid undesired bounds
+help: consider restricting the type parameter to satisfy the trait bound
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:23:55
+    |
+ 23 | pub(crate) struct M1TrustRegionControllerEvaluation<P> where P: Clone {
+    |                                                        ++++++++++++++
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage` exited with code 101

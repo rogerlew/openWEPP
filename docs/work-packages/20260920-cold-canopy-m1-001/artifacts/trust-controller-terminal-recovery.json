@@ -1,0 +1,14 @@
+{
+  "observed_utc": "2026-09-24T09:13:01.552895+00:00",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "review_root": "/home/roger/openwepp-experiments/cold-canopy-m1-controls18-terminal-review-20260924",
+  "reconstruction_root": "/home/roger/openwepp-experiments/cold-canopy-m1-controls18-terminal-reconstruction-20260924",
+  "entry_count": 764,
+  "tree_sha256": "79f9094928b80caae0e3bdc13654fb9e1345161d8ce41c2f93a823fc61d4ec08",
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "patch_path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controller-terminal-from-observer-cut02.patch",
+  "patch_sha256": "c39da318ae04687650bea736396f04f4ea56d412928d36f6f1507e0988420897",
+  "reconstruction_exact": true,
+  "disposition": "INCOMPLETE; implementation stopped; controls18 signed-zero oracle incorrect and unexecuted; eligibility body unfixed",
+  "stage2_sha256": "3b6e36c494234021b33122300f78546e09149565ef9b84dac9e0f64c1a7236db"
+}

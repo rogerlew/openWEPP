@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-body03-review-20260924-7a59f9a6354b
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-body03-review-20260924-7a59f9a6354b
+  cache:   /workdir/.cache/openwepp

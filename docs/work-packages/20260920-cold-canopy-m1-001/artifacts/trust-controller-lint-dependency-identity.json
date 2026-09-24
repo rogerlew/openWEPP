@@ -1,0 +1,25 @@
+{
+  "classification": "Exact declared diagnostic baseline/candidate dependency/toolchain identity; no lint acceptance",
+  "roots": {
+    "/home/roger/openwepp-experiments/cold-canopy-m1-body16-analytic-lint-baseline-20260924": {
+      "Cargo.lock": "8251b64a248cd65f2be01962cdc64c44c4b486ac253a00875dfae55c105d5534",
+      "Cargo.toml": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+      "rust-toolchain.toml": "3e18e70208ee460635e239a91c142cf67371feafb718b05617ff06f388bf96df",
+      "flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+      "flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+      "crates/openwepp-land-surface-energy/Cargo.toml": "dc0339358d3c4b79835a0e4de585c632878c9f93afcd1e7bc7a609af728b3061",
+      "crates/openwepp-vegetation/src/v11.rs": "9340963ec6e1dc1a3a12f3bb8cd5f0c35a6910e8a779247fb415aaa096d08756"
+    },
+    "/home/roger/openwepp-experiments/cold-canopy-m1-body05-review-20260924": {
+      "Cargo.lock": "8251b64a248cd65f2be01962cdc64c44c4b486ac253a00875dfae55c105d5534",
+      "Cargo.toml": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+      "rust-toolchain.toml": "3e18e70208ee460635e239a91c142cf67371feafb718b05617ff06f388bf96df",
+      "flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9",
+      "flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+      "crates/openwepp-land-surface-energy/Cargo.toml": "617a6c98ef4439c039c10358b149146df60b0945d69a1819055ed4e09fd3c4b1",
+      "crates/openwepp-vegetation/src/v11.rs": "9340963ec6e1dc1a3a12f3bb8cd5f0c35a6910e8a779247fb415aaa096d08756"
+    }
+  },
+  "lse_manifest_toml_semantically_equal": true,
+  "manifest_text_delta": "same empty feature declaration in different order"
+}

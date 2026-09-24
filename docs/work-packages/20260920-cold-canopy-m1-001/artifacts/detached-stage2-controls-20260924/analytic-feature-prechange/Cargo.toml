@@ -1,0 +1,25 @@
+[package]
+name = "openwepp-land-surface-energy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = false
+
+[features]
+## Private staging switch: Stage 2 controls must not mask or certify Stage 1.
+m1-trust-region-controller-stage = []
+default = []
+test-support = []
+
+[lints]
+workspace = true
+
+[dependencies]
+openwepp-vegetation = { path = "../openwepp-vegetation", version = "0.1.0" }
+openwepp-kernel-contract = { path = "../openwepp-kernel-contract", version = "0.1.0" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }
+sha2 = "0.10"
+thiserror = "2"

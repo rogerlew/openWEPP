@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Ran exact reconstruction and all-entry hash comparison",
+  "source_tree_sha256": "27fc5fc5d6156b43b4589a6546027574a9f7c989846abeb1187f6fd9093fa66a",
+  "entries": 764,
+  "base_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "patch_sha256": "70f35a5c609a74d7f4e7195165597847b5f31e89beac2ad93f47fc52f17fff71",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-body-inprogress01-recovery-20260924",
+  "argv": [
+    "patch",
+    "-p1",
+    "--batch",
+    "--forward",
+    "-i",
+    "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controller-body-inprogress01-from-observer-cut02.patch"
+  ],
+  "all_entries_identical": true,
+  "compile_or_test_run": false
+}

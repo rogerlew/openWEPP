@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-body16-analytic-lint-baseline-20260924-10921fa7b92b
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-body16-analytic-lint-baseline-20260924-10921fa7b92b
+  cache:   /workdir/.cache/openwepp

@@ -2,6 +2,812 @@
 
 
 
+## Controller measurement resumption — adopted 2026-09-24
+
+### Terminal disposition — implementation stopped 2026-09-24 09:13Z
+
+**INCOMPLETE / HOLD. Stage 2 is partial. Canonical measured support-0 prefix,
+release baseline and release treatment were NOT RUN.** No target residual,
+governed-step, domain, materialization, closure or release cost result exists;
+no speedup, valid negative fixed-method outcome, M1 acceptance or parent advance
+is claimed. All target run allowances, including the single conditional corrected
+repeat, remain unused. The fixed implementation cutoff was honored; remaining
+reserve is for independent disposition, preservation and authorized publication.
+The same experiment's prospective implementation/measurement permission is
+stopped at this disposition; unspent reserve does not extend implementation.
+
+Ran: earlier exact cuts retain 13/13 Stage1 numerical controls, 9/9 analytic
+controller controls, one original60 physical compatibility control and five
+original60 observer/error/work-hook controls. These are non-target evidence,
+not target reachability or a completed Stage2/controller qualification. Body07
+is the last 9/9 analytic and 13/13 Stage1 passing cut. Controls17 format passed;
+its 10-test analytic run produced 9 PASS / 1 FAIL. The latter regression's
+qualitative chained-witness defect is real, but its first numerical oracle was
+also wrong and the execution does not validate that oracle.
+
+Static: current-root admission still permits a third small proposal to
+materialize after the full and first valid replacement both exceed the governed
+step threshold. A per-base consumed-replacement eligibility fix was **not**
+authorized through controls readiness and **not** implemented. Selected-phase
+reassembly/probe/error precedence, complete owning-domain behavior, all cap and
+21-role acceptance/poison obligations, actual physical adapter/private harness,
+authenticated support-1 boundary input and release qualification remain unmet.
+The original full-feature physical/phase/cap skeleton obligations are retained.
+
+Controls17's naive expected step had norm strictly greater than its radius.
+Correctness HOLD superseded QA's initial readiness PASS; both converged on HOLD.
+The correctness reviewer independently reconstructed all 11 binary64 Stage1
+endpoints in [the oracle script](artifacts/trust-controller-consumed-witness-oracle.py)
+and [output](artifacts/trust-controller-consumed-witness-oracle.json), final hashes
+`384d0cf4628dba1f73ad6ab37811daf47573f7aa142edd858466b11270efe043`
+and `46fcdba517cdca13e0fd45bf9350fcfc7b3f7729ee6b8b78c92ce00710d28a16`.
+An initial oracle incorrectly used inactive `-0.0`; the final oracle uses the
+canonical accumulation's `+0.0`. The writer incorporated the first table before
+the correction arrived and stopped without applying the final correction.
+Controls18 is therefore still wrong and **unexecuted**. Its exact wrong bytes
+are preserved; no source or oracle defect is concealed by a passing earlier cut.
+The writer's first stable-cut response was clarified by its explicit stop reply.
+The earlier oracle script/output were recovered byte-for-byte under the
+`trust-controller-consumed-witness-oracle-earlier-version` filenames, verified
+against original hashes `1276bf68…c4bb` and `f6bd79db…fe58`.
+Its format-pass claim has no parent-recorded terminal receipt and is not credited
+as terminal source-bound validation.
+
+Terminal detached tree: **764 entries**, SHA-256
+`79f9094928b80caae0e3bdc13654fb9e1345161d8ce41c2f93a823fc61d4ec08`.
+Mutable source remains `/home/roger/openwepp-experiments/cold-canopy-m1-20260920`;
+immutable terminal review copy is
+`/home/roger/openwepp-experiments/cold-canopy-m1-controls18-terminal-review-20260924`.
+Ran: exact reconstruction at
+`/home/roger/openwepp-experiments/cold-canopy-m1-controls18-terminal-reconstruction-20260924`
+from observer `85b8314e…9963` plus the retained
+[patch](artifacts/trust-controller-terminal-from-observer-cut02.patch), SHA-256
+`c39da318ae04687650bea736396f04f4ea56d412928d36f6f1507e0988420897`.
+[Recovery](artifacts/trust-controller-terminal-recovery.json),
+[source inventory](artifacts/trust-controller-terminal-source.json) and
+[exact terminal reconciliation](artifacts/trust-controller-terminal-reconciliation.json)
+bind this cut. All eight changed/additional detached files fall inside the
+adopted private implementation/quality scope. Experimental Rust stays detached.
+No release binary or authenticated target input is qualified. The unchanged
+canonical numerical-method and vegetation hashes remain `3931d006…b63` and
+`a54f0fc4…599`; build/argv/environment identities remain per-command receipts,
+not an invented terminal executable identity.
+
+Quality remains **HOLD**. Stage1's identified introduced structural/helper lints
+were corrected and source-bound numerical/refusal equivalence reviewed. Body07
+same-command focused Clippy had 238 independently attributed inherited matches
+and three introduced borrow findings. Controls16 corrected those borrow findings
+but introduced three duplicate-match-arm findings; Controls17 merged those arms.
+The exact terminal same-command lint comparison was not run, so neither a green
+Clippy result nor terminal no-new-relevant-diagnostics acceptance is claimed.
+Strict Clippy still fails in inherited vegetation `v11.rs:2149`. Historical
+full09/A1, material/BGC, parent, positive-late-rejection, cycles, restart and
+whole-engine cost/scaling requirements retain their prior HOLD. No broad
+900-second Critical command was dispatched during this continuation.
+
+Static: distinct existing correctness and QA reviewers both return terminal
+**INCOMPLETE / HOLD** on the exact frozen source; their original responses are retained in
+[review custody](artifacts/trust-region-review-custody.json). Unchanged accepted
+Stage1 and bounded analytic/refactor portions carry forward only within their
+stated scope. No incomplete implementation is accepted by preservation or review.
+The [fixed ledger](artifacts/trust-controller-continuation-ledger.json) retains
+295158.795224 seconds carry, 05:43Z anchor, 309558.795224 seconds ceiling and
+09:43Z hard deadline without wait deductions, overlap multipliers or re-anchoring.
+
+The progress notes below describe earlier cuts and are superseded where this
+terminal disposition reports an unresolved obligation.
+
+
+Body07: format/9 analytic/13 Stage1 PASS on tree
+`ed55e0efd5505f0236e60071393a64ebf8397ef96a07499300288e368fe73fa4`.
+Focused and strict Clippy FAIL; the focused comparison identifies 238 inherited
+matches plus three introduced pass-by-value findings. QA independently verifies
+unchanged contexts/equivalent relocation in changed files and identical relevant
+dependency identities. QA corrected its original overstatement that all matched
+whole-file hashes were equal. No whole-quality PASS is claimed. Unused private
+scaffold removal preserves all three original full-feature skeleton obligations.
+
+Controls16 preserves the quality borrow fixes and new chained-witness regression,
+tree `42c582b5ad4cc333541ce6296fe152218be012d374ea64d4b2b4b52c569d6c39`.
+Ran: format PASS, ten analytic controls 9 PASS/1 FAIL. Actual failure is returned
+terminal_refusal=None instead of RadiusExhausted, not the writer's speculative
+IncompleteScope claim. The initial root fixture does not install an ordinary
+update. The three old borrow findings clear; three new duplicate-match-arm
+findings in the new fixture remain. Writer is completing independent full-step,
+call-sequence and sentinel assertions and merging equivalent fixture patterns
+before dual readiness review. The eligibility body has not yet changed.
+
+Body06 frozen tree `bf446df6912e07304028ca7d938ac865eaf881cab460868bfab3aac99f096654`,
+764 canonical entries. Ran: format, 9 analytic and 13 Stage1 controls PASS;
+focused/strict Clippy FAIL. Refactor-equivalence correctness PASS, but new helper
+argument-count/unused-self, unit-pattern/semicolon, and analytic dead-scaffold
+lint findings remain. Author's separate whole-filesystem hash/count is not the
+canonical source inventory and is not used for evidence binding.
+
+Parent raised and correctness confirmed a HIGH pre-existing root-admission flaw:
+there is no per-base witness eligibility state. After full and first valid
+replacement proposals both have governed excess, a third smaller proposal can
+falsely materialize the base. The positive two-proposal control missed it. This
+supersedes any broader reading of body05's bounded approval; overall controller
+correctness remains HOLD. Sole writer is fixing introduced quality and authoring
+a concrete negative regression before implementing the eligibility correction.
+No physical trust-controller run is authorized by the positive analytic suite.
+
+Ran: five inventoried existing observer/error/work-hook controls PASS on immutable
+body05 ([receipt](artifacts/trust-controller-body05-observer-controls.json)).
+They compare unobserved/observed/disabled complete outputs, mismatch/rearm/drop
+behavior, capture-fault/overflow and original preflight-error preservation, and
+actual evaluator/hydraulic/trial/materializer work hooks. Binary SHA-256
+`0711d4ad6e9a7c6dec300d655d49d6d26011bd92f078115e6399acf925c56cb8`;
+source/observer/binary/pins/support unchanged, physical=true, 180-second bound.
+These original60 fixtures do not consume or authenticate the target prefix/input.
+Receipt-field audit of all 62 recorded continuation commands finds no unfinished
+command or false source/pin/support/binary integrity flag; that index is not
+substitute scientific qualification. Quality refactor remains in progress.
+
+180-minute reassessment (08:43Z): CONTINUE within unchanged cutoff. Concrete
+progress is nine passing analytic controls, thirteen unchanged Stage1 controls,
+bounded correctness approval, and the original60 compatibility PASS. The fresh
+pinned writer is completing introduced quality; phase/domain/caps, physical
+adapter/private harness, release qualification and target measurement remain
+incomplete. These are not silently narrowed or credited. At 09:13 implementation
+ends regardless of progress, retaining the full 1800-second disposition reserve.
+
+Ran: exact one-test original60 inventory, hash-bound binary
+`38180532d7f1b99e86b22503c38dc29c8664b2940d585d27945701375d2fb4a9`,
+[physical original60 command](artifacts/trust-controller-body05-original60.json)
+PASS on body05; source/observer/binary/pins/support unchanged. Its existing
+independent reservoir reconstruction assertions ran. This is non-target/debug
+compatibility evidence, not a release performance result or trust-controller
+physical execution. Existing observer on/off, preflight capture-fault and actual
+work-hook controls are selected next from the same source-defined original60
+fixture under the same physical bound; no authenticated target input is used.
+
+Supported quality REASSIGN at 08:41Z: the implementer repeatedly returned
+partial helper changes, then an unchanged incomplete transition. Parent preserved
+all 764 current entries and observer-relative patch at
+[body06-inprogress](artifacts/trust-controller-body06-inprogress-source.json), tree
+`824f602ccb83b78e4aeff3c45ec7255a7b8ead0bfcce5d76d1b68b45b611012e`.
+This cut has not executed validation and is not quality-approved. Prior writer
+explicitly STOPPED with no jobs/writes and was interrupted; fresh pinned
+`/root/controller_quality_implementer` is the only source writer, assigned full
+introduced-quality completion. No parent source implementation, nested agent,
+reviewer-to-author substitution, new method or renewed budget.
+
+Body05 current tested analytic increment: tree
+`d5ce8ca60bb1ca78420b12918b566697337bd21b80b7d5afbbc5da242f462d8e`, 764 entries.
+Ran: format and all 9 analytic controls PASS. Same correctness reviewer PASS
+bounded body after the narrow `P: Clone` correction. Body04 compile failure is
+preserved (E0599, no analytic test executed); its unaffected Stage1 13/13 PASS
+is reused with unchanged Stage1/helper identity. Absolute humidity magnitude,
+current-root excess retain/shrink, and post-update installed-base materialization
+before reassembly are now tested. QA introduced-quality hold remains. Writer
+continues the full introduced-lint remediation, not a separate completion.
+
+Selected non-target compatibility check: inspect the exact one-test original60
+inventory on immutable body05, then run the existing original-geometry/cold-shade/
+independent-reservoir-closure control with physical=true and 180-second bound.
+This source-defined 60-second fixture is not authenticated support 1 or the
+measured canonical support-0 prefix. It consumes no baseline/treatment allowance
+and does not establish observer-on/off or private-harness qualification. The
+experimental controller is still private test-gated and absent from this path.
+
+Controls15: both independent reviewers PASS controls-before-matching-body.
+Actual assertions now bind complete independently known 21-entry steps, known
+`S*p`, exact operations, transition state, materializer marker and captured owner
+sentinels. Ran: format PASS, selected nine controls 7 PASS/2 intended body FAIL.
+Frozen tree `aecd642e0770dd1adb054c86594cca6277b51dc7dfb3b07388e22cd5941aa22b`.
+Same writer now implements absolute humidity norm, noninstalling current-root
+governed-excess rejection, and installed-root materialization before reassembly
+through the existing shared run. Body/lint and broader qualifications remain HOLD.
+
+Controls14: corrected replacement oracle now executes PASS; full selected run
+is 7/9 PASS, with negative-humidity and missing post-update admission still FAIL.
+Format PASS, source/pins/support unchanged. Exact cut tree
+`8ade7896b8ce4bf9bd78fc6a21e1f1e7c03a7cf6a1350bbeba36ccc1f6efdca6`.
+Both reviewers retain controls HOLD: expected whole-step arrays, negative-case
+full fixture chronology and several transition/sentinel assertions are still
+missing despite the writer summary. Supported internal CONTINUE after these
+two incomplete correction cycles: concrete execution progress, identified
+assertion-only remainder, same functioning writer with explicit complete
+acceptance list. Parent will check actual source before further body dispatch;
+no renewed allowance or target launch. The body defect remains preserved.
+
+Ran controls13: format/check/list9 PASS, nine analytic tests execute: six PASS,
+three FAIL. The negative-humidity case reproduces false materialization; the
+post-update path returns explicit IncompleteScope. Replacement failure is an
+oracle defect: rounded `candidate-base` is not canonical `S*p`; it is not a
+controller defect or numerical experiment result. Exact failed source/log retained
+under [controls13](artifacts/trust-controller-controls13-analytic-red.json), tree
+`f5c8266ee04cde583a07561b5074d43aedc4e6f4dca3e7849b495b996448c5f2`.
+Correctness HOLD requires corrected direction oracle, complete single-transition
+negative-humidity chronology and stronger transition/sentinel assertions. QA
+also holds negative-humidity control. Same writer continues controls14 only;
+corresponding body remains unapproved. No target arm ran.
+
+Tool friction: sole-writer reactivation hit agent-thread-limit after terminal
+reviews. Bounded exposed recovery explicitly woke obsolete QA to STOP/confirm
+no jobs or writes, then interrupted it; one retry restored the same writer.
+No nested agent, substitute reviewer-author, parent source implementation or
+unavailable close/remove operation was used.
+
+Controls12 review: both independent reviewers HOLD readiness. Required fixes:
+use the shared controller run entry; assert exact fixture-held chronology and
+candidate/materializer operands, complete transitions, marker and owner sentinel.
+Correctness independently approves the fixture equations/scaling and exact
+binary64 replacement rho `0.7625`; the parent concern about that assertion is
+withdrawn. Ran: format PASS; expected-red compile has only two missing wrappers
+plus retained introduced unused-mut warning. Source/pins/support unchanged.
+Writer is correcting controls and adding the negative-humidity discriminator;
+new acceptance bodies remain blocked until controls approval.
+
+Current findings (08:21Z): independent correctness HOLD on body03: governed
+humidity was signed; a negative excess could falsely pass the unchanged threshold.
+The six positive/bounded controls do not expose it. A negative-direction control
+and absolute-norm correction are required before approval. Same-source focused
+and strict Clippy both FAIL; new controller/control/interface diagnostics remain
+open, including unused scaffold, long functions, casts and float-array comparison.
+Stage1 introduced long-function diagnostic is absent from candidate output.
+No inherited-lint acceptance is claimed yet. Controls12 preserves two concrete
+post-update/replacement controls in expected-red form, tree
+`838198fc8366523ccd605ed50a6c1d13a17ac658437aaf4025e39ea7027ac665`;
+both independent reviewers are assessing controls readiness before new bodies.
+
+Current increment (08:17Z): frozen body03, 764 entries, tree
+`91b50e44cd91de93aa150703402b6ca89da8b137ab962f9da58499d1f10c04e8`.
+Ran: format and analytic compile PASS; actual selected inventory six; all six
+analytic controls PASS; post-extraction Stage1 controls 13/13 PASS. Receipts
+[body03 analytic](artifacts/trust-controller-body03-analytic-tests.json) and
+[Stage1 regression](artifacts/trust-controller-body03-stage1-tests.json) bind
+unchanged source and observer. This is bounded analytic evidence only.
+Correctness body review pending; selected phase, post-update/replacement
+acceptance, remaining work caps, physical adapter/harness, current original60
+and measurement qualification remain incomplete. No target arm ran.
+
+Diagnostic lint comparison now uses preserved body16 plus only the empty
+analytic feature declaration, and immutable body03. Same focused/strict argv
+and toolchain, relative target path `target/analytic-lint` in separate roots.
+This diagnostic-only baseline is not the physical baseline or unchanged body16.
+The writer is authoring concrete post-update and replacement-witness controls
+under retained fixture advice; new bodies await complementary controls review.
+
+
+Owner execution of `/tmp/openwepp_cold_canopy_m1_trust_controller_measurement_authorization.md`
+prospectively reactivates COLD-CANOPY-M1-TR-SVD-BVLS-01. The prior expiry and
+incomplete dispositions below remain historical facts. The sole active checkpoint
+is COLD-CANOPY-M1. No parameter, method, acceptance or physical-input change.
+
+Intent before edits: retain reviewed Stage1 mathematics and bit predicates; fix
+introduced quality issues; author concrete Stage2 controller/phase/acceptance/work
+controls and obtain complementary reviews before corresponding bodies. Deliver
+controller using the real Stage1 operations and existing evaluator/materializer,
+private harness, original60 correspondence, source/manifest qualification, then
+one measured support-0 prefix and one release baseline/treatment pair from the
+same authenticated original support-1 input/seed. Preserve all 21 residuals,
+dynamic acceptance normalizers, domain/phase/hydraulic/step/closure/atomicity
+predicates. No target retries except the original independently verified single
+implementation/recording correction allowance; a valid negative ends the study.
+
+Ran: all 761 entries in the existing mutable detached tree match body16 source
+receipt (`6eb1194220d540eba6b6ba18f7ae3aa0f58d2a266a82f1b89d7a5ec043a43b4c`).
+No reconstruction or runtime mutation yet. Existing observer-relative patch and
+exact reconstruction remain retained. Main Rust remains outside write scope.
+Selected checks are affected Stage1 controls, concrete Stage2 controls, format,
+introduced/inherited lint treatment under testing strategy, original60 observer
+correspondence, applicable A0/A1/A3 and exact allowlisted Critical qualification,
+then independently reviewed frozen release commands/input/build and measurement.
+Historical full09/A1/strict-lint, material/BGC, parent/cycle/restart and cost/scaling
+HOLDs remain; scoped progress cannot waive target launch requirements.
+
+The actual local final publication receipt was read once: carry **295158.795224 s**.
+Owner grants **14400 s**, fixed ceiling **309558.795224 s**; the old unused reserve
+is not added. Conservative first-reading anchor **2026-09-24T05:43:00Z** fixes
+implementation cutoff **09:13:00Z** and hard deadline **09:43:00Z**, including
+**1800 s** independent disposition/preservation/publication reserve. All elapsed
+including reading, interruption and concurrent work charges once, no deductions
+or re-anchor. Check bounds before mutation/dispatch; ordinary physical commands
+remain 180 s, exact Critical command only 900 s. Two unsuccessful corrections or
+60 charged minutes require supported internal reassessment. Owner direction,
+hard bounds, uncontained integrity loss, indispensable capacity unavailable after
+bounded recovery, necessary out-of-envelope change or completed experimental
+disposition stops execution with honest preserved status.
+
+Existing terminal correctness and QA follow-up paths each returned `live agent
+path not found`; replacement reviewers must retain prior accepted scopes and
+address affected controls/source/evidence only. One mutable source writer, at most
+two concurrent children, no nested spawning or parent implementation fallback.
+Baseline/treatment NOT RUN; physical acceptance and cost NOT MEASURED.
+
+Ran: initial full snapshot equals body16 exactly (761 entries); immutable observer
+and both canonical hashes match. Recorder changed only the adopted deadline.
+[Bound controls01](artifacts/trust-controller-resumption-bound-controls-01.json)
+executes the existing 15 nonlaunch cases, all PASS, both reserve guards reached,
+zero subprocesses launched by the controls. No Rust control run follows from it.
+
+Static: sole writer `/root/trust_controller_writer` acknowledged availability.
+Its first return contained only uncalled Stage2 observation assertion helpers,
+zero concrete `#[test]` cases, plus a narrow `#[must_use]` annotation. Parent
+rejects controls-ready status: no actual boundary/model arguments, acceptance or
+root/nonroot witnesses, and aggregate publication observation is inadequate.
+The unexecuted failed cut is preserved as
+[controls-incomplete01](artifacts/trust-controller-controls-incomplete01-source.json),
+762 entries, `414e73e513ab3976f9611081f12456ea2365f23476fb2785121789b0a389f76d`.
+Same writer continues concrete controls; no body/target release, no failed
+execution or numerical result is inferred. This is the first incomplete-delivery
+correction, not a reason to discard unfinished source or renew allowance.
+
+Static/Ran: replacement correctness `/root/trust_controller_correctness` finds
+no blocking defect in adopted lifecycle, deadline-only recorder diff, initial
+body16 recovery/observer/authority identity and 15/15 nonlaunch controls. It
+independently verified exact ledger arithmetic, 1800-second reserve, patch and
+canonical hashes, and retained Stage1-only review scope. Its nonblocking request
+for cwd/raw-output hashes is now included in the same receipt, without rerun.
+This is resumption-only approval; mutable Rust has since advanced and no
+Stage2 control/body/target release follows. QA scope remains pending.
+
+Parent supported CONTINUE after second partial delivery: three initial concrete
+tests are progress over the vacuous helper but do not satisfy the coherent
+controller-controls deliverable. Same writer remains responsible for full phase,
+acceptance/witness/error/work accounting cases and introduced Stage1 quality.
+Independent correctness is giving bounded fixture feedback while authoring
+continues. No permission or additional budget is required for current-source
+support manifests and Nix non-target compile/format checks already assigned.
+
+Static: independent correctness confirms the initial Stage2 fixtures are invalid
+for their claims: zero J triggers rank refusal; a domain identical to the bounded
+subproblem box cannot yield the asserted domain-refused candidate; identity J
+without dynamic normalizers does not discriminate frozen raw merit. Counters,
+SVD cap and full owner rollback evidence are incomplete. Custody records exact
+reviewed file hashes and findings. No controls release.
+
+Supported REASSIGN after repeated incomplete corrections: parent interrupted the
+writer and preserved [incomplete02](artifacts/trust-controller-controls-incomplete02-source.json)
+at `0d924d1afd6a499bf363ba1fe1010ab8982578d0504450f51e175c46e42acb15`.
+First replacement spawn failed `agent thread limit reached`. Exposed interruption
+of finished feedback review plus the old writer's explicit final stopped/no-jobs
+return recovered capacity; one subsequent replacement dispatch succeeded.
+`/root/trust_controller_reassigned` acknowledged sole source ownership. There
+is no nested workaround, model fallback or reviewer-to-author substitution.
+The prior correctness path disappeared from live inventory during recovery;
+its initial lifecycle scope and exact fixture feedback are preserved in custody.
+
+Parent prepared an inactive sparse validation-support overlay containing an exact
+20-file helper copy to isolate the historical helper Cargo.lock write; dependencies
+still resolve the original main crates. [Preparation](artifacts/trust-controller-validation-support-preparation.json)
+records byte identity. No active link changed, no helper or broad command ran,
+no scientific reference/fingerprint changed. QA reviews containment requirements
+before activation; nested generated-target output containment is also pending.
+
+Static: `/root/trust_controller_qa` verifies recorder deadline/15 nonlaunch controls
+and the prepared helper copy. Activation remains HOLD pending frozen source,
+actual main-dependency/support topology and pre/post lock/source/output proofs.
+The same reviewer withdrew an initial populated-target finding after checking
+the correct detached execution path (only empty directories); unrelated main
+outputs stay untouched. QA also requires explicit current impact and target-launch
+prerequisites: the inherited-lint policy cannot waive Critical/release obligations.
+No controls/body/target approval or retrospective narrowing is inferred.
+
+Replacement writer produced ten concrete expected-red test declarations, but
+parent found incorrect frozen/moving-merit expectations at an exact square
+root, 21-proposal exhaustion despite quarter-radius minimum, unsupported real-M1
+success/phase assumptions, outcome-selected fault names and materialization
+entry mismatch. [Incomplete03](artifacts/trust-controller-controls-incomplete03-source.json)
+preserves 762 entries at `9cb211458e10629415d17d90318f5a6b2298848496fa0e490a7eea1552462f43`.
+Writer reports Nix format check PASS and feature no-run FAIL first at unresolved
+old Stage2 `M1TrustRegionWitnessPath` declarations. These were unbound tool
+feedback, not source-qualified executions: [format report](artifacts/trust-controller-writer-red03-format.json)
+and [retained compiler excerpts](artifacts/trust-controller-writer-red03-no-run.txt)
+explicitly mark unknown timing and incomplete raw logs. No tests ran or result
+is inferred; the failure is retained rather than overwritten.
+
+Supported internal CONTINUE with named expertise: `/root/trust_controller_fixture_adviser`
+derives reachable analytic fixtures and actual shared evaluator/control seams
+for this specific recurring blocker, using immutable body16 numerics. The
+adviser is a material designer and supplies neither independent review. Stage2
+files remain paused; the same sole writer proceeds only with authorized narrow
+Stage1 introduced-lint refactors and source-bound affected13-test verification.
+No authority, parameter, acceptance, run allowance or deadline changes.
+
+Ran: partial Stage1 lint01 at tree
+`cb622e36890214c420c87acaf2c02ccf71c4df53bc1a2c1a6a5b83755a3b6867`
+passes source-bound format, exact non-target13-test inventory and **13/13 tests**
+(243 skipped). [Tests receipt](artifacts/trust-controller-stage1-lint01-tests.json)
+retains unchanged source/observer; [inventory](artifacts/trust-controller-stage1-lint01-list.json)
+contains only the retained Stage1 mathematical controls. Candidate-coordinate
+formation and raw-J column-copy extraction are partial behavior-preserving work.
+Writer initially claimed the long-function finding addressed despite still >100
+lines; parent challenged it and writer explicitly withdrew the claim. Further
+focused lint correction remains assigned; no quality/Stage2/target approval.
+
+Static/Ran adviser evidence: [fixture advice](artifacts/trust-controller-fixture-advice.md)
+retains `/root/trust_controller_fixture_adviser`'s complete design packet and
+its independent arithmetic script/stdout. It gives full21-rank embeddings,
+reachable radius/stationarity/raw-weight and three distinct witness fixtures,
+and actual pre-entry work-boundary observation. This adviser materially designed
+the fixtures and cannot be either independent reviewer. No Rust or physical
+execution follows the arithmetic. Required physical adapter/phase/hydraulic/
+materializer and private-harness obligations remain unclosed.
+
+Supported second REASSIGN: the writer repeatedly finalized after single partial
+state-migration edits despite explicit sustained-work instructions. Parent
+preserved every current unfinished byte as
+[Stage1-inprogress02](artifacts/trust-controller-stage1-inprogress02-source.json),
+tree `53768f1b80e107c82528b4a849b82df482bea699169a6a201247e52707939b9a`,
+then interrupted that role. `/root/stage1_quality_writer` now solely owns the
+concrete complete Stage1 structural/lint unit before the controller continuation.
+No rollback/discard, parent-model implementation fallback, new time, or target
+run. The current unfinished cut is not compiled/accepted; lint01's13/13 remains
+source-bound only to its earlier tree.
+
+Review capacity is temporarily unavailable while the sole writer runs: original
+correctness follow-up returned `agent thread limit reached`; interrupting the
+finished adviser then retrying the original path, and one attributable replacement
+spawn, returned the same error. Parent records the attempts in custody and stops
+saturated retries. No controller body/target can be released without actual
+independent capacity. The next capacity assessment awaits the meaningful lifecycle
+change of writer delivery; no nested workaround or reviewer-author substitution.
+
+Capacity recovered through the exposed lifecycle: one explicit wake of the
+obsolete adviser produced a stopped/no-in-flight final return, followed by
+interruption; the next original correctness follow-up succeeded. The same
+`/root/trust_controller_correctness` acknowledged availability and retains its
+initial accepted lifecycle and failed-fixture scopes. It now independently checks
+the frozen adviser math, then the affected Stage1 cut once stable. No replacement,
+reviewer-author substitution or controller/body/target release follows recovery.
+
+Independent correctness `/root/trust_controller_correctness` gives **math-only
+PASS** to the frozen adviser fixtures after its own binary64 diagonal-step/
+merit reconstruction against immutable body16 and draft04. It verifies all four
+radius transitions, full-rank constrained stationarity (11 proposals/22 faces),
+raw-J/frozen-weight discrimination and the distinct full/installed/first-valid
+witness coordinates. Custody retains the attributable response and hashes.
+Actual controls, shared component reachability, complete norms/counters/state,
+physical adapter and target release remain HOLD; arithmetic is not execution.
+
+The solver refactor compiles and runs13/13 in unbound nextest feedback; final
+source-bound checks remain pending. A temporary macro shortcut was reverted by
+the writer as lint evasion; its raw edit was not durably saved before revert.
+That new unexecuted-edit preservation gap is explicitly retained, not claimed
+recovered or covered by the earlier historical gap. The legitimate surviving
+source remains durable. After repeated partial returns, source ownership is
+serialized to `/root/stage1_test_extraction` (established worker route) solely
+for mechanical extraction of the two remaining long tests; no math design or
+solver/body changes. Parent will execute recorded checks on the frozen return.
+
+
+Ran: [quality02 tests](artifacts/trust-controller-stage1-quality02-tests.json)
+and exact inventory confirm13/13 PASS plus formatting PASS on frozen762-entry
+`35f0318e5d7a3e1fe7476bbd89c7434f4ba6255859bb5fedce7c7e56995802c9`.
+Recorded focused and strict Clippy remain FAIL; the first surviving introduced
+Stage1 issues are merit-vector helper argument/type complexity and three
+needless borrows. The long solver and two extracted tests no longer appear as
+long-function diagnostics. This is numerical-regression evidence, not quality
+or controller acceptance. Ownership returns to `/root/stage1_quality_writer`
+for the narrow residual correction; correctness reviews the frozen affected
+refactor against immutable body16 concurrently.
+
+Supported CONTINUE approaching the first60-minute reassessment: actual solver refactor,
+exact13 regression and corrected analytic fixture advice provide a concrete
+route beyond prior invalid controls. Complete narrow quality correction, then
+replace Stage2 outcome factories with concrete21-coordinate evaluator controls,
+obtain complementary reviews and implement their corresponding controller.
+Earlier failed sources and both unexecuted-edit gaps remain visible. No new
+allowance, re-anchor, target use or approval waiver. Implementation cutoff09:13Z
+and hard deadline09:43Z remain fixed.
+
+
+Static: same correctness found a blocking quality02 guard-precedence regression:
+merit extraction moved the step/scales dimension check ahead of per-row moving
+normalizer validation. Dual-invalid input therefore returns a different error;
+empty-row behavior also changes. Writer is restoring body16 order and adding
+focused assertions without weakening existing controls. The13 passing controls
+did not cover this interaction; no behavior-preservation PASS is claimed.
+
+Main reconciliation also finds two formatting-only diffs outside publication
+scope (`covered_natural_limit_diagnostic_parity_tests.rs` and
+`tests/integration/advisory_linter_authority_contract.rs`, mtime06:05:26Z).
+Their origin is not yet proven; preserve them and exclude from scoped commits.
+An attempted clarification to the stopped prior writer returned thread-limit;
+no retry loop or source restoration based on assumption.
+
+
+Ran: [quality03](artifacts/trust-controller-stage1-quality03-tests.json) retains
+format PASS and exact13/13 nextest PASS, source unchanged, tree
+`0b0f6a210f1e1e09a78006ae8b8492cfca5c01a7cbd620ecf38210258a22ae8a`.
+Parent independently verified all762 entries in the writer's durable full copy
+`/home/roger/openwepp-experiments/cold-canopy-m1-20260920-stage2-quality03-failedcut`.
+Focused Clippy remains FAIL: no Stage1-module/enum diagnostics, but two new
+large-by-value Jacobian helper arguments remain at test lines1118/1257; writer
+will borrow them. Strict dependency failure remains inherited and cannot certify
+these cleared locations. Same correctness reviews the guard-order fix and private
+variant spelling changes on the exact copy.
+
+[Preservation03](artifacts/trust-controller-quality03-preservation.json) retains
+available writer raw lint feedback, classified unbound. The writer did not file
+the first duplicate-helper compile failure or demonstrably preserve its exact
+failed bytes before correction. This is a further editing-custody gap, not a
+recovered failure or a qualified result; current quality03 is fully recoverable.
+No physical target ran. Independent correctness is assessing its containment.
+
+Stage2 writer returned preservation/reading without authoring; parent rejected
+completion and reduced the first deliverable to concrete21D analytic controls
+for four radius cases, frozen raw-J merit and genuine constrained stationarity.
+Corresponding body remains absent pending two reviews; physical integration,
+root/witness and remaining accounting controls remain mandatory later stages.
+
+
+Static: same correctness **APPROVES bounded quality03 Stage1 correctness**:
+original ordered arithmetic/guards, counter/mask/event chronology and refusal
+taxonomy are preserved. The added test's “dual-invalid” label is inaccurate:
+its fixed2D seam can only inject the invalid normalizer. Static comparison,
+not that test, establishes restored dimension-check order. Reviewer classifies
+the missing transient compile bytes as a contained editing-custody gap between
+recoverable cuts, not an uncontained integrity stop; preserve the disclosure
+and unsuccessful-correction count. Stage2 and launch remain unapproved.
+Same QA resumed for the exact quality03 copy and affected evidence.
+
+Ran: [controls04](artifacts/trust-controller-controls04-stage1-tests.json) passes
+Stage1 regression after borrowing the two large Jacobian helper parameters.
+Tree`296b01772bd4999df9f84ef60089addc98bf0cc2a278a2f2e09e96b8ec2e12f6`
+is frozen by the recorder and full observer patch. Focused Clippy and Stage2
+feature compilation both FAIL; raw first downstream errors are retained.
+Parent rejects Stage2 controls-ready status: wrong prescribed coordinate
+embedding, missing actual transition/merit/state assertions, ordinary nonroot
+misused as no-update fixture, and incomplete shared evaluator interface.
+No corresponding body is authorized by these controls. This is a concrete
+first-control correction within the existing internal CONTINUE decision.
+
+
+Same QA **PASS** for controls04's two borrowed-helper corrections and exact13
+regression. It independently inspected the frozen copy and recorded raw lint:
+the two introduced helper diagnostics are absent; broader focused/strict FAIL
+remains. Same reviewer withdraws its initial missing-timing-field claim after
+reading actual `start_utc/end_utc/elapsed_seconds`, and corrects its earlier
+assertion that the fixed2D test proves dual-invalid dimension precedence.
+Custody preserves the corrected attributable verdict. Correctness receives
+only the affected borrow-only diff for its final Stage1 verification.
+
+
+Same correctness verifies the controls04 borrow-only fix: Stage1 numerical
+module and enum definitions are byte-identical to quality03; only private
+helper parameter passing changes, with identical copied fixture values and all
+assertions retained. Its Stage1 approval carries forward. This closes the
+identified Stage1 refactor/introduced-helper findings within both reviewers'
+bounded scope, without converting broader lint FAIL into PASS. Future experiment
+diagnostics still must map private variants to the canonical `TrustRegion*`
+kind strings; current private test enum has no published string mapping.
+
+
+Supported REASSIGN after repeated Stage2 control corrections: the same writer
+still conflated raw-row multiplier with initial radius and weighted matrix
+entries with KKT gradients, and asserted nonbinary derived arithmetic as exact
+bits. Parent interrupted it; it returned STOPPED/no in-flight work. Current
+unfinished763-entry cut is preserved and independently reconstructed exactly:
+[controls05 recovery](artifacts/trust-controller-controls05-recovery.json), tree
+`8094da1935537134d189f2082e9016846071097f23614c68269b71117cf24e29`.
+No accepted Stage1 work is discarded. The exposed stop/interruption lifecycle
+permitted one fresh established implementer `/root/stage2_analytic_author`, with
+only the concrete analytic control/interface group and the independently checked
+fixture packet. No nested agents, second source writer, parent implementation
+fallback, new allowance or body release. Actual physical integration and target
+remain pending; the fixed09:13/09:43 deadlines are unchanged.
+
+
+Prospective body-increment validation selection, before body edits: **conditional
+noncritical isolated numerical experiment**, retaining complementary reviews.
+This requires final-diff proof of private confined crate feature/test harness,
+no default production reachability/public runtime or schema/dispatcher/parent
+progression, no dependency/lock/toolchain/workspace-feature/runner/authority/
+physics/parameter/tolerance/seed/fixture-policy change, no removal/narrowing/
+reclassification/weakening of existing required tests or obligations, and actual
+Stage1 reuse with all physical predicates and work caps. Under testing strategy
+§6.2, prospectively select baseline/candidate no-new-relevant-diagnostics using
+the same focused and strict commands/toolchain, actual diagnostic content/source
+and dependency identity. Every new/materially changed relevant diagnostic is
+fixed; inherited FAIL remains FAIL. This is not campaign or release closure;
+release optimization for the experiment timer does not qualify production.
+
+Same QA conditionally approves this prospective classification only. Unknown
+executable impact, ambiguous/default reachability, public/runtime/schema/shared
+primitive expansion, dependency/resolver/toolchain/global-feature change or
+required-test/authority weakening escalates to Critical and the exact allowlisted
+900-second full regression plus current Critical requirements. Current affected
+A0/A1/A3, adapter/phase/closure/observer/original60/control evidence and both final
+source/manifest assessments remain required. Existing full09/A1/strict-lint and
+containment HOLDs stay visible. No body or target is released by classification.
+
+
+The replacement author's first return remains incomplete. Parent preserves
+[controls06](artifacts/trust-controller-controls06-incomplete-source.json), tree
+`bb669d0f0aa009875d4f2ee35e69175ed09bfd06a6dd4f633fc281c3beeb80a6`,
+before correction. Its shortened final rewrite dropped the11/22 stationarity
+run and seeded guard, removed domain checks, and left FullWitness dynamic
+normalizers at1 instead of the specified fixed raw multiplier2^-60. No final
+format/test compilation followed that rewrite. Parent rejects the invented
+handoff stop and directs the same author to restore six readable concrete
+controls, exact raw/normalized separation, actual operation/state assertions
+and a final bounded compile with preserved first failure. No Stage2/body PASS.
+
+
+Frozen [controls07](artifacts/trust-controller-controls07-stage2-red.json) contains
+six separately named analytic controls and a private21D evaluator interface,
+763-entry tree`c0ed4974c8ec49c7521fc89f3f5c57de4ae7000bdd2d04c0522357df2af3195b`.
+Parent copied and hash-verified all entries in
+`/home/roger/openwepp-experiments/cold-canopy-m1-controls07-review-20260924`.
+Recorded Stage1 regression13/13 PASS; workspace formatting FAIL on import order;
+feature test compilation FAIL on24 unresolved current/earlier Stage2 seams.
+No Stage2 tests execute, and no controller body exists. Both same reviewers are
+assessing the actual controls; independent callback arguments/events and seeded
+entry-guard evidence are explicit parent concerns, not inferred from returned
+observation fields. All later physical/witness/full-accounting obligations remain.
+
+Static diagnostic comparison of recorded body16 and controls04 focused Clippy
+uses identical argv and exact lint/path/message/displayed-code keys (line numbers
+ignored). [Comparison](artifacts/trust-controller-stage1-diagnostic-comparison.json)
+finds no new/changed blocks and10 removed unique blocks. This supports identified
+Stage1 correction scope; both invocations still FAIL, and this does not qualify
+the new feature/controller or replace final dependency/toolchain attribution.
+
+
+Both controls07 reviews remain **HOLD**. Correctness approves the actual analytic
+fixture mathematics, including prescribed scales/bounds, frozen raw-J merit,
+stationarity and full witness; it finds the test evidence can still be supplied
+by report factories. Required fixes are fixture-held ordered argument/operation
+logs, actual Stage1 observation/mask/counter records, per-proposal typed rejection
+and radius/face chronology, independently captured materializer operand/side
+effect, actual seeded-entry sentinel/counters, explicit ordinary-domain versus
+terminal-owning error and selected-phase assembly operands, and one canonical
+private21D trace schema. Both identify the recorded format failure.
+
+Same QA clarifies that missing body symbols are intentional expected-red at
+controls-before-body review, not a circular demand to execute before body
+permission. Successful execution is mandatory after implementation; the original
+unresolved Stage2 skeleton obligations remain required and cannot be credited
+by this initial group. No obligation deletion/reclassification or default/public
+reachability is identified in this cut; final impact remains to be reassessed.
+
+Static progress after controls07 HOLD: same author added fixture-owned ordered
+operation/argument logs, evaluator-entry counts, independent materializer operand
+capture and payload marker. The interface now carries the actual Stage1 result,
+typed proposal disposition, per-proposal radius/base records and terminal refusal;
+selected-phase Jacobian input and ordinary-domain/owning-error classification are
+explicit. Substantive test assertions and removal of remaining obsolete2D schemas
+are still being corrected in serialized small pieces. Format feedback passes,
+but this is not frozen controls approval or controller implementation. No target
+or physical run has occurred; the original run allowance remains unspent.
+
+Supported internal CONTINUE after further partial schema returns: small serialized
+assertion pieces now produce substantive source changes. Ordinary radius cases
+bind actual Stage1 observations and fixture calls; stationarity checks all11
+radii and22 face entries; full witness captures the materializer operand and
+side effect; seeded guard checks fixture-owned entry/sentinel state. Parent
+identified a further interface mismatch (direction logged as candidate, missing
+current-base probe operand and helper calls conflated with core entries) and
+assigned its explicit correction before freezing/review. No body permission or
+executed Stage2 result is inferred from author format feedback.
+
+Prospective QA conditionally accepts an additive non-default test-only analytic
+feature for this initial group, provided the original feature still includes
+all original tests and stays required/red until implemented. It cannot be used
+for integration/target/release credit. Manifest/dependency effects require
+`cargo deny check`, affected lint/format/tests and final reachability review;
+unknown/global effects still escalate. No new feature has yet been adopted in
+source by this planning decision; no existing test obligation is removed.
+
+Ran: frozen [controls08](artifacts/trust-controller-controls08-stage2-red.json),
+763-entry tree`427661db25e3376fd0f1979a561d2335d9cf3bea63f0a3bc33f7418c1a8be484`,
+passes recorded format and13/13 retained Stage1 tests. Original Stage2 feature
+compilation remains expected-red on missing controller/older skeleton symbols;
+no Stage2 test ran. Parent verified every entry in the immutable review copy
+`/home/roger/openwepp-experiments/cold-canopy-m1-controls08-review-20260924`.
+Both same reviewers now inspect affected controls07 fixes; writer is paused.
+No controller body/physical adapter/release harness or target measurement exists.
+
+Controls08 QA gives conditional static readiness after the one-line introduced
+warning fix; correctness still finds four concrete evidence blockers: exact
+stationarity/full-witness operation chronology, positive full-witness admission
+trace, canonical core-cap binding plus cap-minus-one real entered failure, and
+exact stationary masks. Parent accepts these findings and continues serialized
+corrections before any corresponding body. Both approve additive analytic-feature
+isolation in concept with original obligations unchanged; actual diff/checks
+remain required. [Controls09](artifacts/trust-controller-controls09-stage2-red.json)
+fixes only the redundant braces: format PASS, original feature still24 unresolved
+symbols, warning removed; Stage1 bytes unchanged. No Stage2/physical result.
+
+Supported internal CONTINUE at the120-minute boundary: Stage1 quality/refactor
+is bounded reviewed with13/13 regression; both reviewers confirm concrete
+controls08 progress and correctness identifies four finite remaining control
+fixes. The same author now delivers those in small completed pieces (stationary
+exact logs/masks done; full-witness trace and cap-minus-one next). After both
+controls approvals, implement the matching shared-controller increment, then
+remaining physical/phase/accounting/harness work while bounds permit. No target
+has run, no allowance or deadline changes, and no helper pass ends the assignment.
+Implementation cutoff09:13Z, hard deadline09:43Z and1800-second reserve remain.
+
+Ran: [controls10](artifacts/trust-controller-controls10-analytic-red.json),
+763-entry tree`bba712d62862961162109a78a5288e9eb03f018f58e252488ca7b415ab52768f`,
+passes format,13/13 Stage1 regression and `cargo deny check` using the pinned
+main deny configuration. New additive analytic feature is expected-red only on
+seven callsites of three missing bounded-body functions; no Rust warnings.
+The original feature remains expected-red on25 missing body/older skeleton
+symbols. All source/pins remain unchanged. Same QA **PASS controls-before-body
+only** verifies the exact fixture evidence fixes and test-only/default-off
+feature isolation; correctness fix verification is pending. No Stage2 test ran.
+
+Both same reviewers **PASS controls11 controls-before-body only** after exact
+Return masks are added to transition and every stationary proposal. Frozen
+763-entry tree`35416b01c15df6d6bacb987b287dcbac57531512f9a78bd3277e1f04271aeb7c`
+passes format; analytic compile remains expected-red on the same seven missing
+body callsites with no Rust warnings. Stage1/interface/lib/Cargo unchanged from
+controls10, so unchanged regression/deny/containment evidence carries forward.
+
+Intent before corresponding body edits: same sole author implements the matching
+private analytic controller increment using the actual Stage1 solver and shared
+weighting/merit operations, fixture-independent state transitions, natural-phase
+operand boundaries, ordinary radius logic, nonroot stationary exhaustion,
+complete full-no-update witness/materialization, and the actual seeded core
+entry guard. One shared state machine drives transition/run/guard test seams;
+no canned outcome or second solver. Necessary private/test-only Stage1 helper
+exposure and canonical governed-step predicate access may be added without
+changing ordered Stage1 arithmetic or default/runtime/public semantics.
+Selected replacement, post-update/replacement witness, remaining work caps,
+physical adapter/harness and old full-feature obligations are later controls-first
+increments, not silently implemented or claimed by these six controls. Unsupported
+increment paths must remain explicit incomplete scope, never a fabricated
+canonical numerical outcome. Immediately after stable body: recorded format,
+exact analytic inventory+execution, retained13 Stage1 regression, affected strict
+lint comparison, exact diff/reachability review, and same complementary reviewers.
+No target launch or parent advancement is authorized by this bounded readiness.
+
+Supported body REASSIGN after repeated no-progress proposal-method returns:
+the author completed shared Stage1 extraction/merit exposure, test-only canonical
+step-predicate access, actual core-entry guard and initial state/model assembly,
+but again returned after preservation without implementing the proposal method.
+Parent preserved and reconstructed all764 unfinished source entries exactly as
+[body-inprogress01](artifacts/trust-controller-body-inprogress01-recovery.json),
+tree`27fc5fc5d6156b43b4589a6546027574a9f7c989846abeb1187f6fd9093fa66a`.
+No body compile/test ran. The old author explicitly stopped/no jobs and was
+interrupted; a single fresh established implementer dispatch succeeded as
+`/root/analytic_controller_implementer`. Same mutable tree, one writer, approved
+controls11 and unchanged fixed deadlines; no rollback, fallback model, nested
+agent or budget reset. The fresh assignment is the remaining coherent bounded
+proposal/run implementation, followed by recorded execution and same reviews.
+
+Same correctness **Static PASS** for the frozen body-inprogress01 Stage1/helper
+extractions: exact solver body/guard/counter/event preservation, same ordered
+scalar prediction, visibility-only shared helpers and gated canonical governed
+predicate wrapper. Controller behavior and post-extraction13-test execution
+remain outside that static approval.
+
+First complete matching body cut is preserved as [body01](artifacts/trust-controller-body01-analytic-check.json),
+764-entry tree`3fdc5670307885f63826a0d81adb1cca69ff878718c99d9675d4188692a130c9`.
+Recorded format PASS; compile FAIL on helper namespace and two cyclic generic
+bounds. No Stage2 tests ran. Parent static review additionally blocks incorrect
+step-coordinate/unit mapping and NaN-masking maxima, candidate-zero instead of
+current-root admission, hard-coded11-loop/radius verdict, unapproved domain
+retry branches and dropped Stage1 refusal work. The implementer is correcting
+these against the unchanged authority; failed exact bytes/raw diagnostics stay
+preserved. These are implementation failures, not a valid negative experiment.
+
+Second body compile [body02](artifacts/trust-controller-body02-analytic-check.json)
+is preserved at764-entry`92fd142ef0d9343322751de6449a100209edfa4743ee075c4fc153e3519e9bdb`:
+format PASS, compile FAIL only ambiguous float maximum and missing phase
+`PartialEq` bound. Parent supports CONTINUE after two failed compile corrections:
+these are concrete in-scope compiler fixes; the substantive coordinate/root/radius
+corrections now exist and are not yet accepted. Full Stage1 refusal evidence and
+materializer entered-work accounting remain required before body review.
+
+Prospective inherited-lint attribution: same QA permits an explicit diagnostic-only
+reconstruction of owner-declared body16 plus only an empty analytic-feature
+manifest declaration. This is not unchanged body16 or either physical target arm.
+It allows identical feature-enabled focused/strict Clippy commands/toolchain while
+controls11 is intentionally unbuildable. All candidate diagnostics in touched
+Stage1/body/control surfaces remain new; only identical external diagnostics with
+unchanged relevant dependency content may be inherited. Reviewer withdrew an
+unsupported immediate-prebody-baseline requirement. Use the same relative Cargo
+target argument in each source root to keep actual build outputs distinct while
+preserving identical argv. Exact baseline delta, supports and failures are retained.
+
 ## Trust-controls disposition — INCOMPLETE, fixed implementation cutoff
 
 Implementation stopped at the fixed **2026-09-24T05:22:37.482828Z** cutoff;

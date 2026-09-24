@@ -1,0 +1,102 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: variable does not need to be mutable
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:264:13
+    |
+264 |         let mut trace = |disposition,
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: enum `M1TrustRegionAssemblyKind` is never used
+   --> crates/openwepp-land-surface-energy/src/lib.rs:158:17
+    |
+158 | pub(crate) enum M1TrustRegionAssemblyKind {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `M1TrustRegionControllerOperationEntry` is never constructed
+   --> crates/openwepp-land-surface-energy/src/lib.rs:174:19
+    |
+174 | pub(crate) struct M1TrustRegionControllerOperationEntry {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: multiple variants are never constructed
+   --> crates/openwepp-land-surface-energy/src/lib.rs:197:5
+    |
+196 | pub(crate) enum M1TrustRegionControllerOperation {
+    |                 -------------------------------- variants in this enum
+197 |     NaturalAssembly,
+    |     ^^^^^^^^^^^^^^^
+198 |     SelectedReplacementAssembly,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+199 |     ProposalCore,
+200 |     ProposalHydraulicBlock,
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+201 |     SubproblemFace,
+    |     ^^^^^^^^^^^^^^
+202 |     PostUpdateCurrentAdmission,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+203 |     TerminalCurrentAdmission,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+204 |     Materialization,
+    |     ^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionControllerOperation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: field `weighted_residual` is never read
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:55:16
+   |
+53 | pub(crate) struct ProposalModel {
+   |                   ------------- field in this struct
+54 |     pub(crate) observation: super::M1TrustRegionSubproblemObservation,
+55 |     pub(crate) weighted_residual: Vec<f64>,
+   |                ^^^^^^^^^^^^^^^^^
+
+warning: variants `DomainRefusedAndShrunk` and `TerminalOwnerError` are never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:9:5
+   |
+ 7 | pub(crate) enum M1TrustRegionProposalDisposition {
+   |                 -------------------------------- variants in this enum
+ 8 |     AcceptedUpdate,
+ 9 |     DomainRefusedAndShrunk,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+...
+12 |     TerminalOwnerError,
+   |     ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `M1TrustRegionProposalDisposition` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: enum `M1TrustRegionEvaluatorBoundary` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:17:17
+   |
+17 | pub(crate) enum M1TrustRegionEvaluatorBoundary {
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `evaluator_boundary` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:49:8
+   |
+37 | pub(crate) trait M1TrustRegionControllerEvaluator {
+   |                  -------------------------------- method in this trait
+...
+49 |     fn evaluator_boundary(&self, error: &Self::Error) -> M1TrustRegionEvaluatorBoundary;
+   |        ^^^^^^^^^^^^^^^^^^
+
+warning: fields `kkt_gradient` and `kkt_normal_gradient` are never read
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:95:16
+   |
+81 | pub(crate) struct M1TrustRegionControllerTransition {
+   |                   --------------------------------- fields in this struct
+...
+95 |     pub(super) kkt_gradient: [f64; M1_TRUST_REGION_CONTROLLER_DIMENSION],
+   |                ^^^^^^^^^^^^
+96 |     pub(super) kkt_normal_gradient: [f64; M1_TRUST_REGION_CONTROLLER_DIMENSION],
+   |                ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `M1TrustRegionControllerTransition` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `openwepp-land-surface-energy` (lib test) generated 9 warnings (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.71s

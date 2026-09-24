@@ -1,0 +1,29 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0689]: can't call method `max` on ambiguous numeric type `{float}`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:159:31
+    |
+159 |             maximum = maximum.max(normalized);
+    |                               ^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+148 |         let mut maximum: f32 = 0.0;
+    |                        +++++
+
+error[E0369]: binary operation `!=` cannot be applied to type `Phase`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:255:18
+    |
+255 |         if phase != self.natural_phase {
+    |            ----- ^^ ------------------ Phase
+    |            |
+    |            Phase
+    |
+help: consider restricting type parameter `Phase` with trait `PartialEq`
+    |
+ 60 | impl<P, Phase: std::cmp::PartialEq> FoundationState<P, Phase> {
+    |              +++++++++++++++++++++
+
+Some errors have detailed explanations: E0369, E0689.
+For more information about an error, try `rustc --explain E0369`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors

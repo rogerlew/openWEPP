@@ -1,0 +1,14 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1:
+ //! Analytic expected-red controls for the deferred Stage 2 controller body.
+ use super::m1_trust_region_controller_interface::{
+[31m-    M1TrustRegionControllerEvaluation as Evaluation, M1TrustRegionControllerEvaluator as Evaluator,
+[m[31m-    M1TrustRegionStage1FaceEvent, M1_TRUST_REGION_CONTROLLER_DIMENSION as N,
+[m[32m+    M1_TRUST_REGION_CONTROLLER_DIMENSION as N, M1TrustRegionControllerEvaluation as Evaluation,
+[m[32m+    M1TrustRegionControllerEvaluator as Evaluator, M1TrustRegionStage1FaceEvent,
+[m };
+ const DERIVED_TOLERANCE: f64 = 1e-12;
+ #[derive(Clone, Copy)]

@@ -1,0 +1,23 @@
+{
+  "observed_utc": "2026-09-24T09:16:59.902468+00:00",
+  "anchor_utc": "2026-09-24T05:43:00+00:00",
+  "prior_charged_seconds": 295158.795224,
+  "supplement_seconds": 14400,
+  "fixed_ceiling_seconds": 309558.795224,
+  "charged_cumulative_seconds": 307998.697692,
+  "remaining_seconds": 1560.0975319999852,
+  "implementation_cutoff_utc": "2026-09-24T09:13:00+00:00",
+  "hard_deadline_utc": "2026-09-24T09:43:00+00:00",
+  "reserve_seconds": 1800,
+  "wait_deductions_seconds": 0,
+  "baseline": "NOT RUN",
+  "treatment": "NOT RUN",
+  "internal_reassessment": "180-minute supportedCONTINUE: sourcebound analytic9PASS + reusedStage1 13PASS and boundedcorrectnessapproval; non-target original60PASS; fresh functioning pinnedwriter completing introducedquality afterexactinprogresspreservation. Remaining quality/phase/domain/caps/physicaladapter/harness/measurement gaps explicit. Continue within09:13 implementationcutoff, preserve1800reserve and allunusedtargetallowances; no budgetreset.",
+  "disposition": "INCOMPLETE / HOLD; implementation stopped before09:13; reserve used only for independent disposition, preservation and scoped publication",
+  "target_allowances_used": {
+    "canonical_support0_prefix": 0,
+    "baseline": 0,
+    "treatment": 0,
+    "corrected_repeat": 0
+  }
+}

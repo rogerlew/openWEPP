@@ -1,0 +1,34 @@
+{
+  "evidence_class": "Ran: writer local feedback, unbound; exact command source/time incomplete",
+  "retained_logs": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controller-writer-stage1-quality03-clippy.stdout",
+      "sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controller-writer-stage1-quality03-clippy.stderr",
+      "sha256": "9c34b9a380489e37e5e42cfeba93d0517abfc8ac1cb4ca8a712e9688cd9c1102"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controller-writer-stage1-quality03-guard-clippy.stdout",
+      "sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controller-writer-stage1-quality03-guard-clippy.stderr",
+      "sha256": "5d24a7dc8d820ee026643aa01678b46322255a2228dcc87d2fc72c5e5b1950c4"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controller-writer-stage1-quality03-final-clippy.stdout",
+      "sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controller-writer-stage1-quality03-final-clippy.stderr",
+      "sha256": "8ff4daa9a2c339501298f0224ec0087cace5cbe4271b92119d6170a183058d57"
+    }
+  ],
+  "missing": "First duplicate merit_reductions compile raw output not filed; exact failed edit bytes not verified retained. Pre-guard-order copy is later corrected state, not proof of first failure recovery.",
+  "quality03_exact_copy": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920-stage2-quality03-failedcut",
+  "quality03_verified_entries": 762,
+  "quality03_verified_tree_sha256": "0b0f6a210f1e1e09a78006ae8b8492cfca5c01a7cbd620ecf38210258a22ae8a",
+  "verified_utc": "2026-09-24T06:47:26.487180+00:00"
+}

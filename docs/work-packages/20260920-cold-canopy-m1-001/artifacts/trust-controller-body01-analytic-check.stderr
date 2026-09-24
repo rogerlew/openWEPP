@@ -1,0 +1,45 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find `solver_covered_evaluation` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:211:16
+    |
+211 |         super::solver_covered_evaluation::m1_coupled::m1_governed_step_components_pass_for_trust_region(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `solver_covered_evaluation` in the crate root
+    |
+note: module `crate::solver::m1_coupled` exists but is inaccessible
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:16:1
+    |
+ 16 | mod m1_coupled;
+    | ^^^^^^^^^^^^^^^ not accessible
+
+error[E0391]: cycle detected when computing the bounds for type parameter `V`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:412:73
+    |
+412 |     V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = V::Phase>,
+    |                                                                         ^^^^^^^^
+    |
+    = note: ...which immediately requires computing the bounds for type parameter `V` again
+note: cycle used when computing explicit predicates of `m1_trust_region_controller::m1_trust_region_controller_transition_for_test`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:412:73
+    |
+412 |     V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = V::Phase>,
+    |                                                                         ^^^^^^^^
+    = note: see https://rustc-dev-guide.rust-lang.org/overview.html#queries and https://rustc-dev-guide.rust-lang.org/query.html for more information
+
+error[E0391]: cycle detected when computing the bounds for type parameter `V`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:427:73
+    |
+427 |     V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = V::Phase>,
+    |                                                                         ^^^^^^^^
+    |
+    = note: ...which immediately requires computing the bounds for type parameter `V` again
+note: cycle used when computing explicit predicates of `m1_trust_region_controller::m1_trust_region_controller_run_for_test`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:427:73
+    |
+427 |     V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = V::Phase>,
+    |                                                                         ^^^^^^^^
+    = note: see https://rustc-dev-guide.rust-lang.org/overview.html#queries and https://rustc-dev-guide.rust-lang.org/query.html for more information
+
+Some errors have detailed explanations: E0391, E0433.
+For more information about an error, try `rustc --explain E0391`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 3 previous errors

@@ -1,0 +1,22 @@
+{
+  "started_utc": "2026-09-24T05:46:29.661648+00:00",
+  "ended_utc": "2026-09-24T05:46:30.713963+00:00",
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/provider-parent-full-bound-controls.py"
+  ],
+  "timeout_seconds": 30,
+  "exit_code": 0,
+  "recorder_sha256": "e941dff81630da3aa3cf7eefb50c0586ed4afb1fae49ce1968f8d44622952cb2",
+  "control_sha256": "a391cbd9a800fa15ccafcb0e77e6fe7b71106e921d1dc816f2b1f179e83c3069",
+  "source_tree_sha256": "6eb1194220d540eba6b6ba18f7ae3aa0f58d2a266a82f1b89d7a5ec043a43b4c",
+  "physical": false,
+  "processes_launched_by_controls": 0,
+  "cwd": "/workdir/openWEPP",
+  "stdout": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controller-resumption-bound-controls-01.stdout",
+  "stdout_sha256": "9ab854b243aa0d1d5801f85cb4027c34d52d9d16be3f209476a5c75d02a7965b",
+  "stderr": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-controller-resumption-bound-controls-01.stderr",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "metadata_completed_utc": "2026-09-24T05:50:54.618682+00:00",
+  "metadata_note": "Added actual cwd and hashes of unchanged retained raw outputs after independent review; no rerun"
+}

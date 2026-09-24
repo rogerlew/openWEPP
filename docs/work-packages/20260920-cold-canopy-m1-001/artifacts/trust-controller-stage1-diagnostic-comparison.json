@@ -1,0 +1,133 @@
+{
+  "evidence_class": "Static diagnostic comparison of recorded failures; not green Clippy or final controller quality",
+  "baseline_receipt": "trust-controls-stage1-body16-clippy-focused.json",
+  "candidate_receipt": "trust-controller-controls04-clippy-focused.json",
+  "same_argv": true,
+  "key_fields": [
+    "source_path",
+    "lint",
+    "exact_message",
+    "displayed_source_code_without_line_numbers"
+  ],
+  "new_or_changed_blocks": [],
+  "removed_blocks": [
+    {
+      "code": [
+        "      for (case, expected) in [",
+        "|         (",
+        "|             nonfinite,",
+        "|             super::M1TrustRegionRefusalKind::TrustRegionSvdNonFinite,",
+        "|         ),",
+        "|     ] {"
+      ],
+      "lint": "large_stack_arrays",
+      "message": "error: allocating a local array larger than 16384 bytes",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+    },
+    {
+      "code": [
+        "/         assert_eq!(",
+        "|             sorted.sorted_b_columns[sorted_index],",
+        "|             sorted.b_columns[*unsorted_index]",
+        "|         );"
+      ],
+      "lint": "float_cmp",
+      "message": "error: strict comparison of `f32` or `f64` arrays",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+    },
+    {
+      "code": [
+        "/         assert_eq!(",
+        "|             sorted.sorted_v_columns[sorted_index],",
+        "|             sorted.v_columns[*unsorted_index]",
+        "|         );"
+      ],
+      "lint": "float_cmp",
+      "message": "error: strict comparison of `f32` or `f64` arrays",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+    },
+    {
+      "code": [
+        "/ pub(crate) enum M1TrustRegionRefusalKind {",
+        "|     TrustRegionSvdNonFinite,",
+        "|     TrustRegionSvdNoConvergence,",
+        "|     TrustRegionRankDeficient,",
+        "|     TrustRegionDegenerateFace,",
+        "| }"
+      ],
+      "lint": "enum_variant_names",
+      "message": "error: all variants have the same prefix: `TrustRegion`",
+      "path": "crates/openwepp-land-surface-energy/src/lib.rs"
+    },
+    {
+      "code": [
+        "/ pub(crate) fn m1_trust_region_solve_subproblem_for_test(",
+        "|     _input: &super::M1CoupledColumnInput,",
+        "|     _trial: &super::M1CoupledColumnTrial,",
+        "|     input: &super::M1TrustRegionSubproblemInput,",
+        "| ) -> Result<super::M1TrustRegionSubproblemObservation, super::M1TrustRegionSubproblemRefusal> {"
+      ],
+      "lint": "too_many_lines",
+      "message": "error: this function has too many lines (256/100)",
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+    },
+    {
+      "code": [
+        "fn m1_trust_region_active_bound_release_and_tie_follow_real_kkt_faces() {"
+      ],
+      "lint": "too_many_lines",
+      "message": "error: this function has too many lines (177/100)",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+    },
+    {
+      "code": [
+        "fn m1_trust_region_jacobi_pair_order_and_singular_sort_are_observed() {"
+      ],
+      "lint": "too_many_lines",
+      "message": "error: this function has too many lines (106/100)",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+    },
+    {
+      "code": [
+        "fn m1_trust_region_kkt_upper_sign_and_largest_violation_variants_are_observed() {"
+      ],
+      "lint": "too_many_lines",
+      "message": "error: this function has too many lines (267/100)",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+    },
+    {
+      "code": [
+        "fn m1_trust_region_stage1_numeric_refusals_are_input_derived() {"
+      ],
+      "lint": "too_many_lines",
+      "message": "error: this function has too many lines (104/100)",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+    },
+    {
+      "code": [
+        "pub fn m1_fixed_sequence_controller_policy() -> (u32, u32) {",
+        "pub fn m1_fixed_sequence_controller_policy() -> (u32, u32) {"
+      ],
+      "lint": "must_use_candidate",
+      "message": "error: this function could have a `#[must_use]` attribute",
+      "path": "crates/openwepp-land-surface-energy/src/lib.rs"
+    }
+  ],
+  "remaining_unique_blocks": 214,
+  "raw_stderr_sha256": {
+    "trust-controls-stage1-body16-clippy-focused": "9b564bb408f09a78c01553727a0f9f3c39fd29bd57d7cc4a5cff2f7baabeb419",
+    "trust-controller-controls04-clippy-focused": "e7c1d8b1592d8bb9c0a032e6b80c942c61a22666f13c879e65d7d571418f3e00"
+  },
+  "tooling_pins_equal": {
+    "/workdir/openWEPP/flake.nix": true,
+    "/workdir/openWEPP/flake.lock": true,
+    "/workdir/openWEPP/tools/dev/openwepp-env": true
+  },
+  "source_delta": [
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs"
+  ],
+  "all_other_snapshot_entries_identical": true
+}

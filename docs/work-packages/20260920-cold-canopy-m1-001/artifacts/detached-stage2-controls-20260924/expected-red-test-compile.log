@@ -1,0 +1,553 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error: float literals must have an integer part
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:7:227
+  |
+7 | ...i]=263.15;u[i]=373.15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9...
+  |                                                                    ^^
+  |
+help: must have an integer part
+  |
+7 | impl Fixture { fn new(kind:Kind)->Self { let mut b=[300.;N];let mut s=[1.;N];let mut l=[f64::NEG_INFINITY;N];let mut u=[f64::INFINITY;N];for i in [0,1,2,6,7,8]{l[i]=263.15;u[i]=373.15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=0.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=.001;l[5]=0.;l[11]=0.;if matches!(kind,Kind::Stationary){u[5]=0.;}Self{kind,base:b,scale:s,lower:l,upper:u}} fn z(&self,x:&[f64;N],i:usize)->f64{(x[i]-self.base[i])/self.scale[i]} fn t(&self,x:&[f64;N],i:usize)->f64{match self.kind{Kind::Frozen if i==0=>1.+self.z(x,0)/2.,Kind::Frozen if i==1=>.5,Kind::FullWitness=>2f64.powi(-60),_=>1.}} fn f(&self,x:&[f64;N],i:usize)->f64{let z=self.z(x,i);match(self.kind,i){(Kind::Ordinary(c),0)=>-2.+z+c*z*z,(Kind::Frozen,0)=>-6./5.+z,(Kind::Frozen,1)=>-1.+z,(Kind::Stationary,5)=>2.+z,(Kind::FullWitness,0)=>z-2f64.powi(-28),_=>z}} }
+  |                                                                                                                                                                                                                                   +
+
+error: float literals must have an integer part
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:7:235
+  |
+7 | ...;u[i]=373.15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=.01;s[4...
+  |                                                                   ^^^
+  |
+help: must have an integer part
+  |
+7 | impl Fixture { fn new(kind:Kind)->Self { let mut b=[300.;N];let mut s=[1.;N];let mut l=[f64::NEG_INFINITY;N];let mut u=[f64::INFINITY;N];for i in [0,1,2,6,7,8]{l[i]=263.15;u[i]=373.15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=.1;b[3]=0.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=.001;l[5]=0.;l[11]=0.;if matches!(kind,Kind::Stationary){u[5]=0.;}Self{kind,base:b,scale:s,lower:l,upper:u}} fn z(&self,x:&[f64;N],i:usize)->f64{(x[i]-self.base[i])/self.scale[i]} fn t(&self,x:&[f64;N],i:usize)->f64{match self.kind{Kind::Frozen if i==0=>1.+self.z(x,0)/2.,Kind::Frozen if i==1=>.5,Kind::FullWitness=>2f64.powi(-60),_=>1.}} fn f(&self,x:&[f64;N],i:usize)->f64{let z=self.z(x,i);match(self.kind,i){(Kind::Ordinary(c),0)=>-2.+z+c*z*z,(Kind::Frozen,0)=>-6./5.+z,(Kind::Frozen,1)=>-1.+z,(Kind::Stationary,5)=>2.+z,(Kind::FullWitness,0)=>z-2f64.powi(-28),_=>z}} }
+  |                                                                                                                                                                                                                                           +
+
+error: float literals must have an integer part
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:7:244
+  |
+7 | ....15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=.01;s[4]=1000.;s...
+  |                                                                   ^^^
+  |
+help: must have an integer part
+  |
+7 | impl Fixture { fn new(kind:Kind)->Self { let mut b=[300.;N];let mut s=[1.;N];let mut l=[f64::NEG_INFINITY;N];let mut u=[f64::INFINITY;N];for i in [0,1,2,6,7,8]{l[i]=263.15;u[i]=373.15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=.1;b[3]=.01;b[9]=0.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=.001;l[5]=0.;l[11]=0.;if matches!(kind,Kind::Stationary){u[5]=0.;}Self{kind,base:b,scale:s,lower:l,upper:u}} fn z(&self,x:&[f64;N],i:usize)->f64{(x[i]-self.base[i])/self.scale[i]} fn t(&self,x:&[f64;N],i:usize)->f64{match self.kind{Kind::Frozen if i==0=>1.+self.z(x,0)/2.,Kind::Frozen if i==1=>.5,Kind::FullWitness=>2f64.powi(-60),_=>1.}} fn f(&self,x:&[f64;N],i:usize)->f64{let z=self.z(x,i);match(self.kind,i){(Kind::Ordinary(c),0)=>-2.+z+c*z*z,(Kind::Frozen,0)=>-6./5.+z,(Kind::Frozen,1)=>-1.+z,(Kind::Stationary,5)=>2.+z,(Kind::FullWitness,0)=>z-2f64.powi(-28),_=>z}} }
+  |                                                                                                                                                                                                                                                    +
+
+error: float literals must have an integer part
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:7:277
+  |
+7 | ...13]=0.;u[13]=.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s...
+  |                                                                   ^^^
+  |
+help: must have an integer part
+  |
+7 | impl Fixture { fn new(kind:Kind)->Self { let mut b=[300.;N];let mut s=[1.;N];let mut l=[f64::NEG_INFINITY;N];let mut u=[f64::INFINITY;N];for i in [0,1,2,6,7,8]{l[i]=263.15;u[i]=373.15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=0.01;s[3]=.01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=.001;l[5]=0.;l[11]=0.;if matches!(kind,Kind::Stationary){u[5]=0.;}Self{kind,base:b,scale:s,lower:l,upper:u}} fn z(&self,x:&[f64;N],i:usize)->f64{(x[i]-self.base[i])/self.scale[i]} fn t(&self,x:&[f64;N],i:usize)->f64{match self.kind{Kind::Frozen if i==0=>1.+self.z(x,0)/2.,Kind::Frozen if i==1=>.5,Kind::FullWitness=>2f64.powi(-60),_=>1.}} fn f(&self,x:&[f64;N],i:usize)->f64{let z=self.z(x,i);match(self.kind,i){(Kind::Ordinary(c),0)=>-2.+z+c*z*z,(Kind::Frozen,0)=>-6./5.+z,(Kind::Frozen,1)=>-1.+z,(Kind::Stationary,5)=>2.+z,(Kind::FullWitness,0)=>z-2f64.powi(-28),_=>z}} }
+  |                                                                                                                                                                                                                                                                                     +
+
+error: float literals must have an integer part
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:7:286
+  |
+7 | ...13]=.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=.001...
+  |                                                                   ^^^
+  |
+help: must have an integer part
+  |
+7 | impl Fixture { fn new(kind:Kind)->Self { let mut b=[300.;N];let mut s=[1.;N];let mut l=[f64::NEG_INFINITY;N];let mut u=[f64::INFINITY;N];for i in [0,1,2,6,7,8]{l[i]=263.15;u[i]=373.15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=0.01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=.001;l[5]=0.;l[11]=0.;if matches!(kind,Kind::Stationary){u[5]=0.;}Self{kind,base:b,scale:s,lower:l,upper:u}} fn z(&self,x:&[f64;N],i:usize)->f64{(x[i]-self.base[i])/self.scale[i]} fn t(&self,x:&[f64;N],i:usize)->f64{match self.kind{Kind::Frozen if i==0=>1.+self.z(x,0)/2.,Kind::Frozen if i==1=>.5,Kind::FullWitness=>2f64.powi(-60),_=>1.}} fn f(&self,x:&[f64;N],i:usize)->f64{let z=self.z(x,i);match(self.kind,i){(Kind::Ordinary(c),0)=>-2.+z+c*z*z,(Kind::Frozen,0)=>-6./5.+z,(Kind::Frozen,1)=>-1.+z,(Kind::Stationary,5)=>2.+z,(Kind::FullWitness,0)=>z-2f64.powi(-28),_=>z}} }
+  |                                                                                                                                                                                                                                                                                              +
+
+error: float literals must have an integer part
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:7:295
+  |
+7 | ...3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=.001;l[5]=0.;...
+  |                                                                   ^^^
+  |
+help: must have an integer part
+  |
+7 | impl Fixture { fn new(kind:Kind)->Self { let mut b=[300.;N];let mut s=[1.;N];let mut l=[f64::NEG_INFINITY;N];let mut u=[f64::INFINITY;N];for i in [0,1,2,6,7,8]{l[i]=263.15;u[i]=373.15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=0.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=.001;l[5]=0.;l[11]=0.;if matches!(kind,Kind::Stationary){u[5]=0.;}Self{kind,base:b,scale:s,lower:l,upper:u}} fn z(&self,x:&[f64;N],i:usize)->f64{(x[i]-self.base[i])/self.scale[i]} fn t(&self,x:&[f64;N],i:usize)->f64{match self.kind{Kind::Frozen if i==0=>1.+self.z(x,0)/2.,Kind::Frozen if i==1=>.5,Kind::FullWitness=>2f64.powi(-60),_=>1.}} fn f(&self,x:&[f64;N],i:usize)->f64{let z=self.z(x,i);match(self.kind,i){(Kind::Ordinary(c),0)=>-2.+z+c*z*z,(Kind::Frozen,0)=>-6./5.+z,(Kind::Frozen,1)=>-1.+z,(Kind::Stationary,5)=>2.+z,(Kind::FullWitness,0)=>z-2f64.powi(-28),_=>z}} }
+  |                                                                                                                                                                                                                                                                                                       +
+
+error: float literals must have an integer part
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:7:349
+  |
+7 | ....01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=.001;l[5]=0.;l[11]=0.;if matches!(kind,Kind::Stationary){u[5]=0.;}S...
+  |                                                                   ^^^^
+  |
+help: must have an integer part
+  |
+7 | impl Fixture { fn new(kind:Kind)->Self { let mut b=[300.;N];let mut s=[1.;N];let mut l=[f64::NEG_INFINITY;N];let mut u=[f64::INFINITY;N];for i in [0,1,2,6,7,8]{l[i]=263.15;u[i]=373.15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=0.001;l[5]=0.;l[11]=0.;if matches!(kind,Kind::Stationary){u[5]=0.;}Self{kind,base:b,scale:s,lower:l,upper:u}} fn z(&self,x:&[f64;N],i:usize)->f64{(x[i]-self.base[i])/self.scale[i]} fn t(&self,x:&[f64;N],i:usize)->f64{match self.kind{Kind::Frozen if i==0=>1.+self.z(x,0)/2.,Kind::Frozen if i==1=>.5,Kind::FullWitness=>2f64.powi(-60),_=>1.}} fn f(&self,x:&[f64;N],i:usize)->f64{let z=self.z(x,i);match(self.kind,i){(Kind::Ordinary(c),0)=>-2.+z+c*z*z,(Kind::Frozen,0)=>-6./5.+z,(Kind::Frozen,1)=>-1.+z,(Kind::Stationary,5)=>2.+z,(Kind::FullWitness,0)=>z-2f64.powi(-28),_=>z}} }
+  |                                                                                                                                                                                                                                                                                                                                                             +
+
+error: float literals must have an integer part
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:7:643
+  |
+7 | ...d{Kind::Frozen if i==0=>1.+self.z(x,0)/2.,Kind::Frozen if i==1=>.5,Kind::FullWitness=>2f64.powi(-60),_=>1.}} fn f(&self,x:&[f64;N]...
+  |                                                                    ^^
+  |
+help: must have an integer part
+  |
+7 | impl Fixture { fn new(kind:Kind)->Self { let mut b=[300.;N];let mut s=[1.;N];let mut l=[f64::NEG_INFINITY;N];let mut u=[f64::INFINITY;N];for i in [0,1,2,6,7,8]{l[i]=263.15;u[i]=373.15;}l[12]=258.15;u[12]=373.15;l[13]=0.;u[13]=.1;b[3]=.01;b[9]=.01;b[4]=1000.;b[10]=1000.;b[13]=.01;s[3]=.01;s[9]=.01;s[4]=1000.;s[10]=1000.;s[5]=1e-5;s[11]=1e-5;s[13]=.001;l[5]=0.;l[11]=0.;if matches!(kind,Kind::Stationary){u[5]=0.;}Self{kind,base:b,scale:s,lower:l,upper:u}} fn z(&self,x:&[f64;N],i:usize)->f64{(x[i]-self.base[i])/self.scale[i]} fn t(&self,x:&[f64;N],i:usize)->f64{match self.kind{Kind::Frozen if i==0=>1.+self.z(x,0)/2.,Kind::Frozen if i==1=>0.5,Kind::FullWitness=>2f64.powi(-60),_=>1.}} fn f(&self,x:&[f64;N],i:usize)->f64{let z=self.z(x,i);match(self.kind,i){(Kind::Ordinary(c),0)=>-2.+z+c*z*z,(Kind::Frozen,0)=>-6./5.+z,(Kind::Frozen,1)=>-1.+z,(Kind::Stationary,5)=>2.+z,(Kind::FullWitness,0)=>z-2f64.powi(-28),_=>z}} }
+  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   +
+
+error: float literals must have an integer part
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:8:775
+  |
+8 | ...oad{wet_temperature_k:[300.;2],hydraulic_potential:[0.;4],beta:[.5;4],ci_pa:[20.;4]}})}fn raw_jacobian(&mut self,e:&M1TrustRegionC...
+  |                                                                    ^^
+  |
+help: must have an integer part
+  |
+8 | impl M1TrustRegionControllerEvaluator for Fixture {type Error=&'static str;type Payload=Payload;type Phase=();fn initial_coordinates(&self)->[f64;N]{self.base}fn coordinate_scales(&self)->[f64;N]{self.scale}fn coordinate_bounds(&self)->[[f64;N];2]{[self.lower,self.upper]}fn initial_radius(&self)->f64{1.}fn evaluate(&mut self,x:[f64;N])->Result<M1TrustRegionControllerEvaluation<Payload>,Self::Error>{for i in 0..N{if !x[i].is_finite()||x[i]<self.lower[i]||x[i]>self.upper[i]||self.t(&x,i)<=0.{return Err("analytic domain");}}Ok(M1TrustRegionControllerEvaluation{coordinates:x,raw_residual:std::array::from_fn(|i|self.t(&x,i)*self.f(&x,i)),dynamic_normalizers:std::array::from_fn(|i|self.t(&x,i)),payload:Payload{wet_temperature_k:[300.;2],hydraulic_potential:[0.;4],beta:[0.5;4],ci_pa:[20.;4]}})}fn raw_jacobian(&mut self,e:&M1TrustRegionControllerEvaluation<Payload>)->Result<[[f64;N];N],Self::Error>{let x=&e.coordinates;Ok(std::array::from_fn(|i|std::array::from_fn(|j|if i!=j{0.}else{match(self.kind,i){(Kind::Ordinary(c),0)=>(1.+2.*c*self.z(x,0))/self.scale[0],_=>self.t(x,i)/self.scale[i]}})))}fn select_phase(&mut self,_:&M1TrustRegionControllerEvaluation<Payload>,_:[f64;N])->Result<(),Self::Error>{Ok(())}fn selected_side_probe(&mut self,_:&(),_:[f64;N])->Result<(),Self::Error>{Ok(())}fn materialize(&mut self,e:&M1TrustRegionControllerEvaluation<Payload>)->Result<Payload,Self::Error>{Ok(e.payload.clone())}}
+  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       +
+
+error: float literals must have an integer part
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:10:132
+   |
+10 | ...r(c,trial,ared,rho,install,radius)in[(0.,-1.,1.5,1.,true,2.),(-.5,-1.5,7./8.,7./12.,true,1.),(-.875,-15./8.,31./128.,31./192.,tru...
+   |                                                                   ^^
+   |
+help: must have an integer part
+   |
+10 | #[test]fn m1_stage2_ordinary_radius_controls_actual_polynomials(){for(c,trial,ared,rho,install,radius)in[(0.,-1.,1.5,1.,true,2.),(-0.5,-1.5,7./8.,7./12.,true,1.),(-.875,-15./8.,31./128.,31./192.,true,.25),(-1.,-2.,0.,0.,false,.25)]{let mut f=Fixture::new(Kind::Ordinary(c));let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();let mut q=b;q[0]+=f.scale[0];close(f.evaluate(q).unwrap().raw_residual[0],trial);let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],1.);close(t.lambda,1.);close(t.predicted_reduction,1.5);close(t.actual_reduction,ared);close(t.rho,rho);assert_eq!(t.installed,install);assert_eq!(t.next_radius.to_bits(),radius.to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());}}
+   |                                                                                                                                    +
+
+error: float literals must have an integer part
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:10:164
+   |
+10 | ...)in[(0.,-1.,1.5,1.,true,2.),(-.5,-1.5,7./8.,7./12.,true,1.),(-.875,-15./8.,31./128.,31./192.,true,.25),(-1.,-2.,0.,0.,false,.25)]...
+   |                                                                  ^^^^
+   |
+help: must have an integer part
+   |
+10 | #[test]fn m1_stage2_ordinary_radius_controls_actual_polynomials(){for(c,trial,ared,rho,install,radius)in[(0.,-1.,1.5,1.,true,2.),(-.5,-1.5,7./8.,7./12.,true,1.),(-0.875,-15./8.,31./128.,31./192.,true,.25),(-1.,-2.,0.,0.,false,.25)]{let mut f=Fixture::new(Kind::Ordinary(c));let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();let mut q=b;q[0]+=f.scale[0];close(f.evaluate(q).unwrap().raw_residual[0],trial);let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],1.);close(t.lambda,1.);close(t.predicted_reduction,1.5);close(t.actual_reduction,ared);close(t.rho,rho);assert_eq!(t.installed,install);assert_eq!(t.next_radius.to_bits(),radius.to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());}}
+   |                                                                                                                                                                    +
+
+error: float literals must have an integer part
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:10:200
+   |
+10 | ....5,7./8.,7./12.,true,1.),(-.875,-15./8.,31./128.,31./192.,true,.25),(-1.,-2.,0.,0.,false,.25)]{let mut f=Fixture::new(Kind::Ordin...
+   |                                                                   ^^^
+   |
+help: must have an integer part
+   |
+10 | #[test]fn m1_stage2_ordinary_radius_controls_actual_polynomials(){for(c,trial,ared,rho,install,radius)in[(0.,-1.,1.5,1.,true,2.),(-.5,-1.5,7./8.,7./12.,true,1.),(-.875,-15./8.,31./128.,31./192.,true,0.25),(-1.,-2.,0.,0.,false,.25)]{let mut f=Fixture::new(Kind::Ordinary(c));let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();let mut q=b;q[0]+=f.scale[0];close(f.evaluate(q).unwrap().raw_residual[0],trial);let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],1.);close(t.lambda,1.);close(t.predicted_reduction,1.5);close(t.actual_reduction,ared);close(t.rho,rho);assert_eq!(t.installed,install);assert_eq!(t.next_radius.to_bits(),radius.to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());}}
+   |                                                                                                                                                                                                        +
+
+error: float literals must have an integer part
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:10:226
+   |
+10 | ...-.875,-15./8.,31./128.,31./192.,true,.25),(-1.,-2.,0.,0.,false,.25)]{let mut f=Fixture::new(Kind::Ordinary(c));let b=f.initial_co...
+   |                                                                   ^^^
+   |
+help: must have an integer part
+   |
+10 | #[test]fn m1_stage2_ordinary_radius_controls_actual_polynomials(){for(c,trial,ared,rho,install,radius)in[(0.,-1.,1.5,1.,true,2.),(-.5,-1.5,7./8.,7./12.,true,1.),(-.875,-15./8.,31./128.,31./192.,true,.25),(-1.,-2.,0.,0.,false,0.25)]{let mut f=Fixture::new(Kind::Ordinary(c));let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();let mut q=b;q[0]+=f.scale[0];close(f.evaluate(q).unwrap().raw_residual[0],trial);let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],1.);close(t.lambda,1.);close(t.predicted_reduction,1.5);close(t.actual_reduction,ared);close(t.rho,rho);assert_eq!(t.installed,install);assert_eq!(t.next_radius.to_bits(),radius.to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());}}
+   |                                                                                                                                                                                                                                  +
+
+error: float literals must have an integer part
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:11:395
+   |
+11 | ...er_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],.6);close(t.scaled_step[1],.8);close(t.weighted_normal_matrix[0][0...
+   |                                                                   ^^
+   |
+help: must have an integer part
+   |
+11 | #[test]fn m1_stage2_frozen_raw_jacobian_and_merit_control(){let mut f=Fixture::new(Kind::Frozen);let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();assert_eq!(e.raw_residual[0].to_bits(),(-6./5.).to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],0.6);close(t.scaled_step[1],.8);close(t.weighted_normal_matrix[0][0],1.);close(t.weighted_normal_matrix[1][1],2.);close(t.predicted_reduction,123./50.);close(t.actual_reduction,123./50.);close(t.rho,1.);assert!(t.installed);assert_eq!(t.next_radius.to_bits(),2f64.to_bits());let mut x=b;x[0]+=.6;x[1]+=.8;let q=f.evaluate(x).unwrap();close((q.raw_residual[0]/q.dynamic_normalizers[0]).abs(),6./13.);close(((6./13.).powi(2)+.4f64.powi(2))/2.,788./4225.);}
+   |                                                                                                                                                                                                                                                                                                                                                                                                           +
+
+error: float literals must have an integer part
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:11:422
+   |
+11 | ... f).unwrap();close(t.scaled_step[0],.6);close(t.scaled_step[1],.8);close(t.weighted_normal_matrix[0][0],1.);close(t.weighted_norm...
+   |                                                                   ^^
+   |
+help: must have an integer part
+   |
+11 | #[test]fn m1_stage2_frozen_raw_jacobian_and_merit_control(){let mut f=Fixture::new(Kind::Frozen);let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();assert_eq!(e.raw_residual[0].to_bits(),(-6./5.).to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],.6);close(t.scaled_step[1],0.8);close(t.weighted_normal_matrix[0][0],1.);close(t.weighted_normal_matrix[1][1],2.);close(t.predicted_reduction,123./50.);close(t.actual_reduction,123./50.);close(t.rho,1.);assert!(t.installed);assert_eq!(t.next_radius.to_bits(),2f64.to_bits());let mut x=b;x[0]+=.6;x[1]+=.8;let q=f.evaluate(x).unwrap();close((q.raw_residual[0]/q.dynamic_normalizers[0]).abs(),6./13.);close(((6./13.).powi(2)+.4f64.powi(2))/2.,788./4225.);}
+   |                                                                                                                                                                                                                                                                                                                                                                                                                                      +
+
+error: float literals must have an integer part
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:11:687
+   |
+11 | ..._eq!(t.next_radius.to_bits(),2f64.to_bits());let mut x=b;x[0]+=.6;x[1]+=.8;let q=f.evaluate(x).unwrap();close((q.raw_residual[0]/...
+   |                                                                   ^^
+   |
+help: must have an integer part
+   |
+11 | #[test]fn m1_stage2_frozen_raw_jacobian_and_merit_control(){let mut f=Fixture::new(Kind::Frozen);let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();assert_eq!(e.raw_residual[0].to_bits(),(-6./5.).to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],.6);close(t.scaled_step[1],.8);close(t.weighted_normal_matrix[0][0],1.);close(t.weighted_normal_matrix[1][1],2.);close(t.predicted_reduction,123./50.);close(t.actual_reduction,123./50.);close(t.rho,1.);assert!(t.installed);assert_eq!(t.next_radius.to_bits(),2f64.to_bits());let mut x=b;x[0]+=0.6;x[1]+=.8;let q=f.evaluate(x).unwrap();close((q.raw_residual[0]/q.dynamic_normalizers[0]).abs(),6./13.);close(((6./13.).powi(2)+.4f64.powi(2))/2.,788./4225.);}
+   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               +
+
+error: float literals must have an integer part
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:11:696
+   |
+11 | ...xt_radius.to_bits(),2f64.to_bits());let mut x=b;x[0]+=.6;x[1]+=.8;let q=f.evaluate(x).unwrap();close((q.raw_residual[0]/q.dynamic...
+   |                                                                   ^^
+   |
+help: must have an integer part
+   |
+11 | #[test]fn m1_stage2_frozen_raw_jacobian_and_merit_control(){let mut f=Fixture::new(Kind::Frozen);let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();assert_eq!(e.raw_residual[0].to_bits(),(-6./5.).to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],.6);close(t.scaled_step[1],.8);close(t.weighted_normal_matrix[0][0],1.);close(t.weighted_normal_matrix[1][1],2.);close(t.predicted_reduction,123./50.);close(t.actual_reduction,123./50.);close(t.rho,1.);assert!(t.installed);assert_eq!(t.next_radius.to_bits(),2f64.to_bits());let mut x=b;x[0]+=.6;x[1]+=0.8;let q=f.evaluate(x).unwrap();close((q.raw_residual[0]/q.dynamic_normalizers[0]).abs(),6./13.);close(((6./13.).powi(2)+.4f64.powi(2))/2.,788./4225.);}
+   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        +
+
+error: float literals must have an integer part
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:11:817
+   |
+11 | ...dynamic_normalizers[0]).abs(),6./13.);close(((6./13.).powi(2)+.4f64.powi(2))/2.,788./4225.);}
+   |                                                                  ^^^^^
+   |
+help: must have an integer part
+   |
+11 | #[test]fn m1_stage2_frozen_raw_jacobian_and_merit_control(){let mut f=Fixture::new(Kind::Frozen);let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();assert_eq!(e.raw_residual[0].to_bits(),(-6./5.).to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],.6);close(t.scaled_step[1],.8);close(t.weighted_normal_matrix[0][0],1.);close(t.weighted_normal_matrix[1][1],2.);close(t.predicted_reduction,123./50.);close(t.actual_reduction,123./50.);close(t.rho,1.);assert!(t.installed);assert_eq!(t.next_radius.to_bits(),2f64.to_bits());let mut x=b;x[0]+=.6;x[1]+=.8;let q=f.evaluate(x).unwrap();close((q.raw_residual[0]/q.dynamic_normalizers[0]).abs(),6./13.);close(((6./13.).powi(2)+0.4f64.powi(2))/2.,788./4225.);}
+   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 +
+
+error[E0433]: cannot find `M1TrustRegionWitnessPath` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1548:16
+     |
+1548 |         super::M1TrustRegionWitnessPath::InstalledRoot,
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWitnessPath` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionWitnessPath` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1549:16
+     |
+1549 |         super::M1TrustRegionWitnessPath::FullNoUpdate,
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWitnessPath` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionWitnessPath` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1550:16
+     |
+1550 |         super::M1TrustRegionWitnessPath::FirstValidReplacement,
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWitnessPath` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1647:20
+     |
+1647 |             super::M1TrustRegionTestAssembly::nonfinite_entry(),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1647 -             super::M1TrustRegionTestAssembly::nonfinite_entry(),
+1647 +             super::M1TrustRegionAssemblyKind::nonfinite_entry(),
+     |
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1651:20
+     |
+1651 |             super::M1TrustRegionTestAssembly::requires_65_jacobi_sweeps(),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1651 -             super::M1TrustRegionTestAssembly::requires_65_jacobi_sweeps(),
+1651 +             super::M1TrustRegionAssemblyKind::requires_65_jacobi_sweeps(),
+     |
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1655:20
+     |
+1655 |             super::M1TrustRegionTestAssembly::singular_values([1.0, 0.0]),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1655 -             super::M1TrustRegionTestAssembly::singular_values([1.0, 0.0]),
+1655 +             super::M1TrustRegionAssemblyKind::singular_values([1.0, 0.0]),
+     |
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1659:20
+     |
+1659 |             super::M1TrustRegionTestAssembly::unbracketed_lambda(),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1659 -             super::M1TrustRegionTestAssembly::unbracketed_lambda(),
+1659 +             super::M1TrustRegionAssemblyKind::unbracketed_lambda(),
+     |
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1663:20
+     |
+1663 |             super::M1TrustRegionTestAssembly::inaccurate_ball_endpoint(),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1663 -             super::M1TrustRegionTestAssembly::inaccurate_ball_endpoint(),
+1663 +             super::M1TrustRegionAssemblyKind::inaccurate_ball_endpoint(),
+     |
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1667:20
+     |
+1667 |             super::M1TrustRegionTestAssembly::forty_three_crossing_face(),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1667 -             super::M1TrustRegionTestAssembly::forty_three_crossing_face(),
+1667 +             super::M1TrustRegionAssemblyKind::forty_three_crossing_face(),
+     |
+
+error[E0425]: cannot find function `m1_trust_region_with_trial_domain_poison_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1531:25
+     |
+1531 |     let domain = super::m1_trust_region_with_trial_domain_poison_for_test(&input, &trial());
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_with_selected_side_error_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1542:27
+     |
+1542 |     let terminal = super::m1_trust_region_with_selected_side_error_for_test(&input, &trial());
+     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_witness_thresholds_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1552:30
+     |
+1552 |           let witness = super::m1_trust_region_witness_thresholds_for_test(&input, &trial(), path);
+     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1281:1
+     |
+1281 | / pub(crate) fn m1_trust_region_solve_subproblem_for_test(
+1282 | |     _input: &super::M1CoupledColumnInput,
+1283 | |     _trial: &super::M1CoupledColumnTrial,
+1284 | |     input: &super::M1TrustRegionSubproblemInput,
+...    |
+1325 | | }
+     | |_- similarly named function `m1_trust_region_solve_subproblem_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+1552 -         let witness = super::m1_trust_region_witness_thresholds_for_test(&input, &trial(), path);
+1552 +         let witness = super::m1_trust_region_solve_subproblem_for_test(&input, &trial(), path);
+     |
+
+error[E0425]: cannot find value `M1_GOVERNED_STEP_NORMS` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1555:57
+     |
+1555 |         assert_eq!(witness.governed_norms.len(), super::M1_GOVERNED_STEP_NORMS);
+     |                                                         ^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_phase_capacity_tie_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1578:24
+     |
+1578 |     let phase = super::m1_trust_region_phase_capacity_tie_for_test(&input, &trial());
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_natural_tangent_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1597:26
+     |
+1597 |       let natural = super::m1_trust_region_natural_tangent_for_test(&input, &trial());
+     |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:210:1
+     |
+ 210 | / pub(crate) fn m1_trust_region_frozen_merit_for_test(
+ 211 | |     _input: &super::M1CoupledColumnInput,
+ 212 | |     _trial: &super::M1CoupledColumnTrial,
+ 213 | |     value: M1TrustRegionMeritInput,
+...    |
+ 231 | |     })
+ 232 | | }
+     | |_- similarly named function `m1_trust_region_frozen_merit_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+1597 -     let natural = super::m1_trust_region_natural_tangent_for_test(&input, &trial());
+1597 +     let natural = super::m1_trust_region_frozen_merit_for_test(&input, &trial());
+     |
+
+error[E0425]: cannot find function `m1_trust_region_cap_boundary_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1613:30
+     |
+1613 |           let refusal = super::m1_trust_region_cap_boundary_for_test(&input, &trial(), limit);
+     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:210:1
+     |
+ 210 | / pub(crate) fn m1_trust_region_frozen_merit_for_test(
+ 211 | |     _input: &super::M1CoupledColumnInput,
+ 212 | |     _trial: &super::M1CoupledColumnTrial,
+ 213 | |     value: M1TrustRegionMeritInput,
+...    |
+ 231 | |     })
+ 232 | | }
+     | |_- similarly named function `m1_trust_region_frozen_merit_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+1613 -         let refusal = super::m1_trust_region_cap_boundary_for_test(&input, &trial(), limit);
+1613 +         let refusal = super::m1_trust_region_frozen_merit_for_test(&input, &trial(), limit);
+     |
+
+error[E0425]: cannot find function `m1_trust_region_radius_exhaustion_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1619:28
+     |
+1619 |       let exhausted = super::m1_trust_region_radius_exhaustion_for_test(&input, &trial());
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+     |
+ 682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+ 683 | |     input: M1TrustRegionJacobiInput,
+ 684 | | ) -> M1TrustRegionJacobiObservation {
+ 685 | |     let mut observed_sweeps = 0;
+...    |
+ 728 | | }
+     | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+1619 -     let exhausted = super::m1_trust_region_radius_exhaustion_for_test(&input, &trial());
+1619 +     let exhausted = super::m1_trust_region_jacobi_observation_for_test(&input, &trial());
+     |
+
+error[E0425]: cannot find function `m1_trust_region_with_controlled_assembly_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1672:20
+     |
+1672 |             super::m1_trust_region_with_controlled_assembly_for_test(&input, &trial(), assembly)
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_controller_transition_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:10:461
+    |
+ 10 |   ...p().raw_residual[0],trial);let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0]...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+    |
+682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+683 | |     input: M1TrustRegionJacobiInput,
+684 | | ) -> M1TrustRegionJacobiObservation {
+685 | |     let mut observed_sweeps = 0;
+...   |
+728 | | }
+    | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+ 10 - #[test]fn m1_stage2_ordinary_radius_controls_actual_polynomials(){for(c,trial,ared,rho,install,radius)in[(0.,-1.,1.5,1.,true,2.),(-.5,-1.5,7./8.,7./12.,true,1.),(-.875,-15./8.,31./128.,31./192.,true,.25),(-1.,-2.,0.,0.,false,.25)]{let mut f=Fixture::new(Kind::Ordinary(c));let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();let mut q=b;q[0]+=f.scale[0];close(f.evaluate(q).unwrap().raw_residual[0],trial);let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],1.);close(t.lambda,1.);close(t.predicted_reduction,1.5);close(t.actual_reduction,ared);close(t.rho,rho);assert_eq!(t.installed,install);assert_eq!(t.next_radius.to_bits(),radius.to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());}}
+ 10 + #[test]fn m1_stage2_ordinary_radius_controls_actual_polynomials(){for(c,trial,ared,rho,install,radius)in[(0.,-1.,1.5,1.,true,2.),(-.5,-1.5,7./8.,7./12.,true,1.),(-.875,-15./8.,31./128.,31./192.,true,.25),(-1.,-2.,0.,0.,false,.25)]{let mut f=Fixture::new(Kind::Ordinary(c));let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();let mut q=b;q[0]+=f.scale[0];close(f.evaluate(q).unwrap().raw_residual[0],trial);let t=super::m1_trust_region_jacobi_observation_for_test(&mut f).unwrap();close(t.scaled_step[0],1.);close(t.lambda,1.);close(t.predicted_reduction,1.5);close(t.actual_reduction,ared);close(t.rho,rho);assert_eq!(t.installed,install);assert_eq!(t.next_radius.to_bits(),radius.to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());}}
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_transition_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:11:308
+    |
+ 11 |   ....to_bits(),1f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0]...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+    |
+682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+683 | |     input: M1TrustRegionJacobiInput,
+684 | | ) -> M1TrustRegionJacobiObservation {
+685 | |     let mut observed_sweeps = 0;
+...   |
+728 | | }
+    | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+ 11 - #[test]fn m1_stage2_frozen_raw_jacobian_and_merit_control(){let mut f=Fixture::new(Kind::Frozen);let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();assert_eq!(e.raw_residual[0].to_bits(),(-6./5.).to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],.6);close(t.scaled_step[1],.8);close(t.weighted_normal_matrix[0][0],1.);close(t.weighted_normal_matrix[1][1],2.);close(t.predicted_reduction,123./50.);close(t.actual_reduction,123./50.);close(t.rho,1.);assert!(t.installed);assert_eq!(t.next_radius.to_bits(),2f64.to_bits());let mut x=b;x[0]+=.6;x[1]+=.8;let q=f.evaluate(x).unwrap();close((q.raw_residual[0]/q.dynamic_normalizers[0]).abs(),6./13.);close(((6./13.).powi(2)+.4f64.powi(2))/2.,788./4225.);}
+ 11 + #[test]fn m1_stage2_frozen_raw_jacobian_and_merit_control(){let mut f=Fixture::new(Kind::Frozen);let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();assert_eq!(e.raw_residual[0].to_bits(),(-6./5.).to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());let t=super::m1_trust_region_jacobi_observation_for_test(&mut f).unwrap();close(t.scaled_step[0],.6);close(t.scaled_step[1],.8);close(t.weighted_normal_matrix[0][0],1.);close(t.weighted_normal_matrix[1][1],2.);close(t.predicted_reduction,123./50.);close(t.actual_reduction,123./50.);close(t.rho,1.);assert!(t.installed);assert_eq!(t.next_radius.to_bits(),2f64.to_bits());let mut x=b;x[0]+=.6;x[1]+=.8;let q=f.evaluate(x).unwrap();close((q.raw_residual[0]/q.dynamic_normalizers[0]).abs(),6./13.);close(((6./13.).powi(2)+.4f64.powi(2))/2.,788./4225.);}
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_transition_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:12:221
+    |
+ 12 |   ....to_bits(),2f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();assert_eq!(t.scaled_st...
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+    |
+682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+683 | |     input: M1TrustRegionJacobiInput,
+684 | | ) -> M1TrustRegionJacobiObservation {
+685 | |     let mut observed_sweeps = 0;
+...   |
+728 | | }
+    | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+ 12 - #[test]fn m1_stage2_stationarity_restarts_real_lower_face(){let mut f=Fixture::new(Kind::Stationary);let b=f.initial_coordinates();assert_eq!(f.evaluate(b).unwrap().raw_residual[5].to_bits(),2f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();assert_eq!(t.scaled_step[5].to_bits(),0f64.to_bits());close(t.weighted_normal_matrix[5][5],2.);close(t.predicted_reduction,0.);assert_eq!(t.stage1_face_events,vec![M1TrustRegionStage1FaceEvent::Free,M1TrustRegionStage1FaceEvent::LowerActivated(5),M1TrustRegionStage1FaceEvent::FreeColumns(20)]);let r=super::m1_trust_region_controller_run_for_test(&mut f).unwrap();assert_eq!((r.proposals,r.entered_svd_factorizations,r.accepted_updates,r.entered_materializations),(11,22,0,0));assert_eq!(r.final_coordinates.map(f64::to_bits),b.map(f64::to_bits));assert!(r.radius_exhausted);}
+ 12 + #[test]fn m1_stage2_stationarity_restarts_real_lower_face(){let mut f=Fixture::new(Kind::Stationary);let b=f.initial_coordinates();assert_eq!(f.evaluate(b).unwrap().raw_residual[5].to_bits(),2f64.to_bits());let t=super::m1_trust_region_jacobi_observation_for_test(&mut f).unwrap();assert_eq!(t.scaled_step[5].to_bits(),0f64.to_bits());close(t.weighted_normal_matrix[5][5],2.);close(t.predicted_reduction,0.);assert_eq!(t.stage1_face_events,vec![M1TrustRegionStage1FaceEvent::Free,M1TrustRegionStage1FaceEvent::LowerActivated(5),M1TrustRegionStage1FaceEvent::FreeColumns(20)]);let r=super::m1_trust_region_controller_run_for_test(&mut f).unwrap();assert_eq!((r.proposals,r.entered_svd_factorizations,r.accepted_updates,r.entered_materializations),(11,22,0,0));assert_eq!(r.final_coordinates.map(f64::to_bits),b.map(f64::to_bits));assert!(r.radius_exhausted);}
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_run_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:12:593
+    |
+ 12 |   ...1FaceEvent::FreeColumns(20)]);let r=super::m1_trust_region_controller_run_for_test(&mut f).unwrap();assert_eq!((r.proposals,r....
+    |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:210:1
+    |
+210 | / pub(crate) fn m1_trust_region_frozen_merit_for_test(
+211 | |     _input: &super::M1CoupledColumnInput,
+212 | |     _trial: &super::M1CoupledColumnTrial,
+213 | |     value: M1TrustRegionMeritInput,
+...   |
+231 | |     })
+232 | | }
+    | |_- similarly named function `m1_trust_region_frozen_merit_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+ 12 - #[test]fn m1_stage2_stationarity_restarts_real_lower_face(){let mut f=Fixture::new(Kind::Stationary);let b=f.initial_coordinates();assert_eq!(f.evaluate(b).unwrap().raw_residual[5].to_bits(),2f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();assert_eq!(t.scaled_step[5].to_bits(),0f64.to_bits());close(t.weighted_normal_matrix[5][5],2.);close(t.predicted_reduction,0.);assert_eq!(t.stage1_face_events,vec![M1TrustRegionStage1FaceEvent::Free,M1TrustRegionStage1FaceEvent::LowerActivated(5),M1TrustRegionStage1FaceEvent::FreeColumns(20)]);let r=super::m1_trust_region_controller_run_for_test(&mut f).unwrap();assert_eq!((r.proposals,r.entered_svd_factorizations,r.accepted_updates,r.entered_materializations),(11,22,0,0));assert_eq!(r.final_coordinates.map(f64::to_bits),b.map(f64::to_bits));assert!(r.radius_exhausted);}
+ 12 + #[test]fn m1_stage2_stationarity_restarts_real_lower_face(){let mut f=Fixture::new(Kind::Stationary);let b=f.initial_coordinates();assert_eq!(f.evaluate(b).unwrap().raw_residual[5].to_bits(),2f64.to_bits());let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();assert_eq!(t.scaled_step[5].to_bits(),0f64.to_bits());close(t.weighted_normal_matrix[5][5],2.);close(t.predicted_reduction,0.);assert_eq!(t.stage1_face_events,vec![M1TrustRegionStage1FaceEvent::Free,M1TrustRegionStage1FaceEvent::LowerActivated(5),M1TrustRegionStage1FaceEvent::FreeColumns(20)]);let r=super::m1_trust_region_frozen_merit_for_test(&mut f).unwrap();assert_eq!((r.proposals,r.entered_svd_factorizations,r.accepted_updates,r.entered_materializations),(11,22,0,0));assert_eq!(r.final_coordinates.map(f64::to_bits),b.map(f64::to_bits));assert!(r.radius_exhausted);}
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_run_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:13:294
+    |
+ 13 |   ...,(-2f64.powi(-88)).to_bits());let r=super::m1_trust_region_controller_run_for_test(&mut f).unwrap();assert_eq!((r.proposals,r....
+    |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:210:1
+    |
+210 | / pub(crate) fn m1_trust_region_frozen_merit_for_test(
+211 | |     _input: &super::M1CoupledColumnInput,
+212 | |     _trial: &super::M1CoupledColumnTrial,
+213 | |     value: M1TrustRegionMeritInput,
+...   |
+231 | |     })
+232 | | }
+    | |_- similarly named function `m1_trust_region_frozen_merit_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+ 13 - #[test]fn m1_stage2_full_no_update_materializes_current_base(){let mut f=Fixture::new(Kind::FullWitness);assert_eq!(f.initial_radius().to_bits(),1f64.to_bits());let b=f.initial_coordinates();assert_eq!(f.evaluate(b).unwrap().raw_residual[0].to_bits(),(-2f64.powi(-88)).to_bits());let r=super::m1_trust_region_controller_run_for_test(&mut f).unwrap();assert_eq!((r.proposals,r.accepted_updates,r.entered_materializations),(1,0,1));assert_eq!(r.final_coordinates.map(f64::to_bits),b.map(f64::to_bits));assert_eq!(r.materialized_coordinates.map(f64::to_bits),b.map(f64::to_bits));}
+ 13 + #[test]fn m1_stage2_full_no_update_materializes_current_base(){let mut f=Fixture::new(Kind::FullWitness);assert_eq!(f.initial_radius().to_bits(),1f64.to_bits());let b=f.initial_coordinates();assert_eq!(f.evaluate(b).unwrap().raw_residual[0].to_bits(),(-2f64.powi(-88)).to_bits());let r=super::m1_trust_region_frozen_merit_for_test(&mut f).unwrap();assert_eq!((r.proposals,r.accepted_updates,r.entered_materializations),(1,0,1));assert_eq!(r.final_coordinates.map(f64::to_bits),b.map(f64::to_bits));assert_eq!(r.materialized_coordinates.map(f64::to_bits),b.map(f64::to_bits));}
+    |
+
+error[E0425]: cannot find function `m1_trust_region_seeded_entry_guard_for_test` in module `super`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:14:126
+   |
+14 | ...ind::Ordinary(0.));let g=super::m1_trust_region_seeded_entry_guard_for_test(&mut f,6500).unwrap();assert_eq!((g.incoming_core_ent...
+   |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:10:726
+   |
+10 | ...ll,radius)in[(0.,-1.,1.5,1.,true,2.),(-.5,-1.5,7./8.,7./12.,true,1.),(-.875,-15./8.,31./128.,31./192.,true,.25),(-1.,-2.,0.,0.,false,.25)]{let mut f=Fixture::new(Kind::Ordinary(c));let b=f.initial_coordinates();let e=f.evaluate(b).unwrap();let j=f.raw_jacobian(&e).unwrap();let mut q=b;q[0]+=f.scale[0];close(f.evaluate(q).unwrap().raw_residual[0],trial);let t=super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();close(t.scaled_step[0],1.);close(t.lambda,1.);close(t.predicted_reduction,1.5);close(t.actual_reduction,ared);close(t.rho,rho);assert_eq!(t.installed,install);assert_eq!(t.next_radius.to_bits(),radius.to_bits())...
+   |       ------ you must specify a type for this binding, like `f32`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ^^^^^^^
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:11:239
+   |
+11 | ...&e).unwrap();assert_eq!(e.raw_residual[0].to_bits(),(-6./5.).to_bits());assert_eq!(j[0][0].to_bits(),1f64.to_bits());let t=super:...
+   |                                                                 ^^^^^^^
+
+error[E0689]: can't call method `powi` on ambiguous numeric type `{float}`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:11:809
+   |
+11 | ...al[0]/q.dynamic_normalizers[0]).abs(),6./13.);close(((6./13.).powi(2)+.4f64.powi(2))/2.,788./4225.);}
+   |                                                                  ^^^^
+
+Some errors have detailed explanations: E0425, E0433, E0689.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 45 previous errors

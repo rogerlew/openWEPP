@@ -1,0 +1,66 @@
+{
+  "evidence_class": "Static source comparison; Ran exact observer-relative patch reconstruction",
+  "starting_tree_sha256": "6eb1194220d540eba6b6ba18f7ae3aa0f58d2a266a82f1b89d7a5ec043a43b4c",
+  "terminal_tree_sha256": "79f9094928b80caae0e3bdc13654fb9e1345161d8ce41c2f93a823fc61d4ec08",
+  "changes": [
+    {
+      "path": "crates/openwepp-land-surface-energy/Cargo.toml",
+      "before_sha256": "962f2a86408ebe48b778fad1f4ba893f207331df88c2b32edc7029ce096c731c",
+      "after_sha256": "617a6c98ef4439c039c10358b149146df60b0945d69a1819055ed4e09fd3c4b1"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+      "before_sha256": "a44cf2d6b097cab007beeb5dcad43fd9dabdfb1a69f60065c33f34b3ab3b10cd",
+      "after_sha256": "80f8d3cd0e820bd1fe7029a1a44bffd9fa0d4a1a196a68285a29e4da846b6608"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "before_sha256": "fa57c0bbaaab6c172be5d296f9b528459dd87bba65b56aed0f5412bd2fa745a8",
+      "after_sha256": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "before_sha256": null,
+      "after_sha256": "fe9186af2f87aa4569437e40eb31fe208a424f3d8ae293ae9ee48422b2113ca5"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs",
+      "before_sha256": null,
+      "after_sha256": "cb7233139c2408e5dec78ca90bd39f87f815ebedca275a4f5323d4d61f827189"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "before_sha256": "04cb6c6730791824538254dba683d0131862c5586f5f3d7b5b68790fddacd7d7",
+      "after_sha256": "89d97586831d696a7919958224e46cf227de5ecfe3ddbf3acdcb81128d8ad9e2"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+      "before_sha256": null,
+      "after_sha256": "3b6e36c494234021b33122300f78546e09149565ef9b84dac9e0f64c1a7236db"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+      "before_sha256": "e0b408e86f65879679e25c4f6a379b991979c81ea9516399955d54844671e81f",
+      "after_sha256": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20"
+    }
+  ],
+  "scope": "Detached LSE private test feature, controller/interfaces/controls, existing private governed-step adapter, Stage1 structural refactor and test helper extraction. No main runtime adoption. Method/physics/parameters unchanged.",
+  "main_publication_scope": [
+    "package.md",
+    "artifacts/run_recorded.py deadline only",
+    "artifacts/trust-region-review-custody.json",
+    "artifacts/trust-controller-*",
+    "artifacts/detached-stage2-controls-20260924/**"
+  ],
+  "unrelated_main_dirty_excluded": [
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs",
+    "tests/integration/advisory_linter_authority_contract.rs"
+  ],
+  "terminal_validation": "Controls18 Rust suite, compile, and exact same-command lint comparison NOT RUN. Writer reported format PASS without parent recorded terminal receipt; not credited as source-bound validation.",
+  "allowances": {
+    "canonical_support0_prefix_used": 0,
+    "baseline_used": 0,
+    "treatment_used": 0,
+    "corrected_repeat_used": 0
+  }
+}

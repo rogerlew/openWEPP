@@ -1,0 +1,253 @@
+error: binding's name is too similar to existing binding
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:154:17
+    |
+154 |             let normalized = (raw / normalizer).abs();
+    |                 ^^^^^^^^^^
+    |
+note: existing binding defined here
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:150:17
+    |
+150 |             let normalizer = evaluation.dynamic_normalizers[i];
+    |                 ^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#similar_names
+
+error: variable does not need to be mutable
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:264:13
+    |
+264 |         let mut trace = |disposition,
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `-D unused-mut` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(unused_mut)]`
+
+error: field `weighted_residual` is never read
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:55:16
+   |
+53 | pub(crate) struct ProposalModel {
+   |                   ------------- field in this struct
+54 |     pub(crate) observation: super::M1TrustRegionSubproblemObservation,
+55 |     pub(crate) weighted_residual: Vec<f64>,
+   |                ^^^^^^^^^^^^^^^^^
+
+error: variants `DomainRefusedAndShrunk` and `TerminalOwnerError` are never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:9:5
+   |
+ 7 | pub(crate) enum M1TrustRegionProposalDisposition {
+   |                 -------------------------------- variants in this enum
+ 8 |     AcceptedUpdate,
+ 9 |     DomainRefusedAndShrunk,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+...
+12 |     TerminalOwnerError,
+   |     ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `M1TrustRegionProposalDisposition` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+error: enum `M1TrustRegionEvaluatorBoundary` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:17:17
+   |
+17 | pub(crate) enum M1TrustRegionEvaluatorBoundary {
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: method `evaluator_boundary` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:49:8
+   |
+37 | pub(crate) trait M1TrustRegionControllerEvaluator {
+   |                  -------------------------------- method in this trait
+...
+49 |     fn evaluator_boundary(&self, error: &Self::Error) -> M1TrustRegionEvaluatorBoundary;
+   |        ^^^^^^^^^^^^^^^^^^
+
+error: fields `kkt_gradient` and `kkt_normal_gradient` are never read
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:95:16
+   |
+81 | pub(crate) struct M1TrustRegionControllerTransition {
+   |                   --------------------------------- fields in this struct
+...
+95 |     pub(super) kkt_gradient: [f64; M1_TRUST_REGION_CONTROLLER_DIMENSION],
+   |                ^^^^^^^^^^^^
+96 |     pub(super) kkt_normal_gradient: [f64; M1_TRUST_REGION_CONTROLLER_DIMENSION],
+   |                ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `M1TrustRegionControllerTransition` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+error: redundant closure
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:91:62
+   |
+91 |         let rows: Vec<&[f64]> = self.raw_jacobian.iter().map(|row| row.as_slice()).collect();
+   |                                                              ^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `<[f64; 21]>::as_slice`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure_for_method_calls
+
+error: this function has too many lines (165/100)
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:221:5
+    |
+221 | /     fn transition<E, V>(
+222 | |         &mut self,
+223 | |         evaluator: &mut V,
+224 | |     ) -> Result<
+...   |
+228 | |     where
+229 | |         V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,
+    | |___________________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: redundant closure
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:324:62
+    |
+324 |         let rows: Vec<&[f64]> = self.raw_jacobian.iter().map(|row| row.as_slice()).collect();
+    |                                                              ^^^^^^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `<[f64; 21]>::as_slice`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#redundant_closure_for_method_calls
+
+error: casts from `u8` to `u16` can be expressed infallibly using `From`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:447:18
+    |
+447 |         .map(|p| p.stage1_observation.entered_svd_factorizations as u16)
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: an `as` cast can become silently lossy if the types change in the future
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_lossless
+    = note: `-D clippy::cast-lossless` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::cast_lossless)]`
+help: use `u16::from` instead
+    |
+447 -         .map(|p| p.stage1_observation.entered_svd_factorizations as u16)
+447 +         .map(|p| u16::from(p.stage1_observation.entered_svd_factorizations))
+    |
+
+error: casting `usize` to `u8` may truncate the value
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:457:24
+    |
+457 |             proposals: state.proposal_trace.len() as u8,
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_possible_truncation
+    = note: `-D clippy::cast-possible-truncation` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::cast_possible_truncation)]`
+help: ... or use `try_from` and handle the error accordingly
+    |
+457 -             proposals: state.proposal_trace.len() as u8,
+457 +             proposals: u8::try_from(state.proposal_trace.len()),
+    |
+
+error: matching over `()` is more explicit
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:196:49
+    |
+196 |             selected_phase: selected_phase.map(|_| 0),
+    |                                                 ^ help: use `()` instead of `_`: `()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ignored_unit_patterns
+    = note: `-D clippy::ignored-unit-patterns` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::ignored_unit_patterns)]`
+
+error: matching over `()` is more explicit
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:229:9
+    |
+229 |         _: &(),
+    |         ^ help: use `()` instead of `_`: `()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ignored_unit_patterns
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:250:5
+    |
+250 |     assert!((a - b).abs() <= DERIVED_TOLERANCE)
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `assert!((a - b).abs() <= DERIVED_TOLERANCE);`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+
+error: this function has too many lines (130/100)
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:546:1
+    |
+546 | fn m1_stage2_stationarity_exhausts_after_eleven_proposals_and_twenty_two_faces() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: casting `usize` to `i32` may truncate the value on targets with 64-bit wide pointers
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:573:24
+    |
+573 |             4f64.powi(-(j as i32)).to_bits()
+    |                        ^^^^^^^^^^
+    |
+    = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_possible_truncation
+help: ... or use `try_from` and handle the error accordingly
+    |
+573 -             4f64.powi(-(j as i32)).to_bits()
+573 +             4f64.powi(-i32::try_from(j)).to_bits()
+    |
+
+error: casting `usize` to `i32` may wrap around the value on targets with 32-bit wide pointers
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:573:24
+    |
+573 |             4f64.powi(-(j as i32)).to_bits()
+    |                        ^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_possible_wrap
+
+error: casting `usize` to `i32` may truncate the value on targets with 64-bit wide pointers
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:577:24
+    |
+577 |             4f64.powi(-((j + 1) as i32)).to_bits()
+    |                        ^^^^^^^^^^^^^^^^
+    |
+    = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_possible_truncation
+help: ... or use `try_from` and handle the error accordingly
+    |
+577 -             4f64.powi(-((j + 1) as i32)).to_bits()
+577 +             4f64.powi(-i32::try_from(j + 1)).to_bits()
+    |
+
+error: casting `usize` to `i32` may wrap around the value on targets with 32-bit wide pointers
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:577:24
+    |
+577 |             4f64.powi(-((j + 1) as i32)).to_bits()
+    |                        ^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_possible_wrap
+
+error: casts from `u8` to `u16` can be expressed infallibly using `From`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:650:22
+    |
+650 |             .map(|p| p.stage1_observation.entered_svd_factorizations as u16)
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: an `as` cast can become silently lossy if the types change in the future
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_lossless
+help: use `u16::from` instead
+    |
+650 -             .map(|p| p.stage1_observation.entered_svd_factorizations as u16)
+650 +             .map(|p| u16::from(p.stage1_observation.entered_svd_factorizations))
+    |
+
+error: this function has too many lines (123/100)
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:679:1
+    |
+679 | fn m1_stage2_full_no_update_materializes_current_base() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines
+
+error: strict comparison of `f32` or `f64` arrays
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:790:86
+    |
+790 |             .filter(|entry| matches!(entry, FixtureOperation::Evaluate(candidate) if candidate == &expected_candidate))
+    |                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+
+error: strict comparison of `f32` or `f64` arrays
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:798:83
+    |
+798 |                 |entry| matches!(entry, FixtureOperation::Materialize(current) if current == &base)
+    |                                                                                   ^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp
+

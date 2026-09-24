@@ -1,0 +1,10 @@
+{
+  "source_tree_sha256": "8094da1935537134d189f2082e9016846071097f23614c68269b71117cf24e29",
+  "entries_verified": 763,
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-controls05-reconstruction-20260924",
+  "observer": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "patch_sha256": "43af861d01d1cda2c414e399b7d28a05aa22150e9bc799d59e2ef3881c0b8447",
+  "all_entries_equal": true,
+  "verified_utc": "2026-09-24T06:57:13.902433+00:00"
+}

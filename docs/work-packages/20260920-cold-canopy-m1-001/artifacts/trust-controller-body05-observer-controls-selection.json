@@ -1,0 +1,51 @@
+{
+  "selected_tests": [
+    [
+      "m1_coupled_tests::m1_complete_success_observes_real_evaluator_hydraulic_trial_materialization_work",
+      "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-6930b921f1500e71"
+    ],
+    [
+      "m1_coupled_tests::m1_diagnostic_capture_fault_preserves_preflight_error",
+      "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-6930b921f1500e71"
+    ],
+    [
+      "m1_coupled_tests::m1_diagnostic_observation_cancels_mismatch_and_rearm_is_a_new_generation",
+      "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-6930b921f1500e71"
+    ],
+    [
+      "m1_coupled_tests::m1_opt_in_diagnostic_observation_records_one_real_solve_and_then_drops",
+      "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-6930b921f1500e71"
+    ],
+    [
+      "m1_coupled_tests::m1_opt_in_diagnostic_observation_retains_physical_preflight_error",
+      "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-6930b921f1500e71"
+    ]
+  ],
+  "binary_sha256": "0711d4ad6e9a7c6dec300d655d49d6d26011bd92f078115e6399acf925c56cb8",
+  "source_tree_sha256": "d5ce8ca60bb1ca78420b12918b566697337bd21b80b7d5afbbc5da242f462d8e",
+  "intended_argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "env",
+    "CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-target",
+    "CARGO_BUILD_JOBS=2",
+    "cargo",
+    "nextest",
+    "run",
+    "-p",
+    "openwepp-land-surface-energy",
+    "--lib",
+    "-E",
+    "test(=m1_coupled_tests::m1_opt_in_diagnostic_observation_records_one_real_solve_and_then_drops) | test(=m1_coupled_tests::m1_diagnostic_observation_cancels_mismatch_and_rearm_is_a_new_generation) | test(=m1_coupled_tests::m1_diagnostic_capture_fault_preserves_preflight_error) | test(=m1_coupled_tests::m1_opt_in_diagnostic_observation_retains_physical_preflight_error) | test(=m1_coupled_tests::m1_complete_success_observes_real_evaluator_hydraulic_trial_materialization_work)",
+    "--no-fail-fast",
+    "--success-output",
+    "immediate",
+    "--failure-output",
+    "immediate"
+  ],
+  "physical": true,
+  "timeout_seconds": 180,
+  "classification": "Five inventoried existing original60 observer/error/work-hook controls; not canonical support0 or authenticatedsupport1 targetarms"
+}

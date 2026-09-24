@@ -1,0 +1,337 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find `M1TrustRegionWitnessPath` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1548:16
+     |
+1548 |         super::M1TrustRegionWitnessPath::InstalledRoot,
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWitnessPath` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionWitnessPath` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1549:16
+     |
+1549 |         super::M1TrustRegionWitnessPath::FullNoUpdate,
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWitnessPath` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionWitnessPath` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1550:16
+     |
+1550 |         super::M1TrustRegionWitnessPath::FirstValidReplacement,
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWitnessPath` in the crate root
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1647:20
+     |
+1647 |             super::M1TrustRegionTestAssembly::nonfinite_entry(),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1647 -             super::M1TrustRegionTestAssembly::nonfinite_entry(),
+1647 +             super::M1TrustRegionAssemblyKind::nonfinite_entry(),
+     |
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1651:20
+     |
+1651 |             super::M1TrustRegionTestAssembly::requires_65_jacobi_sweeps(),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1651 -             super::M1TrustRegionTestAssembly::requires_65_jacobi_sweeps(),
+1651 +             super::M1TrustRegionAssemblyKind::requires_65_jacobi_sweeps(),
+     |
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1655:20
+     |
+1655 |             super::M1TrustRegionTestAssembly::singular_values([1.0, 0.0]),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1655 -             super::M1TrustRegionTestAssembly::singular_values([1.0, 0.0]),
+1655 +             super::M1TrustRegionAssemblyKind::singular_values([1.0, 0.0]),
+     |
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1659:20
+     |
+1659 |             super::M1TrustRegionTestAssembly::unbracketed_lambda(),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1659 -             super::M1TrustRegionTestAssembly::unbracketed_lambda(),
+1659 +             super::M1TrustRegionAssemblyKind::unbracketed_lambda(),
+     |
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1663:20
+     |
+1663 |             super::M1TrustRegionTestAssembly::inaccurate_ball_endpoint(),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1663 -             super::M1TrustRegionTestAssembly::inaccurate_ball_endpoint(),
+1663 +             super::M1TrustRegionAssemblyKind::inaccurate_ball_endpoint(),
+     |
+
+error[E0433]: cannot find `M1TrustRegionTestAssembly` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1667:20
+     |
+1667 |             super::M1TrustRegionTestAssembly::forty_three_crossing_face(),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestAssembly` in the crate root
+     |
+help: an enum with a similar name exists
+     |
+1667 -             super::M1TrustRegionTestAssembly::forty_three_crossing_face(),
+1667 +             super::M1TrustRegionAssemblyKind::forty_three_crossing_face(),
+     |
+
+error[E0425]: cannot find function `m1_trust_region_with_trial_domain_poison_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1531:25
+     |
+1531 |     let domain = super::m1_trust_region_with_trial_domain_poison_for_test(&input, &trial());
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_with_selected_side_error_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1542:27
+     |
+1542 |     let terminal = super::m1_trust_region_with_selected_side_error_for_test(&input, &trial());
+     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_witness_thresholds_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1552:30
+     |
+1552 |           let witness = super::m1_trust_region_witness_thresholds_for_test(&input, &trial(), path);
+     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1281:1
+     |
+1281 | / pub(crate) fn m1_trust_region_solve_subproblem_for_test(
+1282 | |     _input: &super::M1CoupledColumnInput,
+1283 | |     _trial: &super::M1CoupledColumnTrial,
+1284 | |     input: &super::M1TrustRegionSubproblemInput,
+...    |
+1325 | | }
+     | |_- similarly named function `m1_trust_region_solve_subproblem_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+1552 -         let witness = super::m1_trust_region_witness_thresholds_for_test(&input, &trial(), path);
+1552 +         let witness = super::m1_trust_region_solve_subproblem_for_test(&input, &trial(), path);
+     |
+
+error[E0425]: cannot find value `M1_GOVERNED_STEP_NORMS` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1555:57
+     |
+1555 |         assert_eq!(witness.governed_norms.len(), super::M1_GOVERNED_STEP_NORMS);
+     |                                                         ^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_phase_capacity_tie_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1578:24
+     |
+1578 |     let phase = super::m1_trust_region_phase_capacity_tie_for_test(&input, &trial());
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_natural_tangent_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1597:26
+     |
+1597 |       let natural = super::m1_trust_region_natural_tangent_for_test(&input, &trial());
+     |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:210:1
+     |
+ 210 | / pub(crate) fn m1_trust_region_frozen_merit_for_test(
+ 211 | |     _input: &super::M1CoupledColumnInput,
+ 212 | |     _trial: &super::M1CoupledColumnTrial,
+ 213 | |     value: M1TrustRegionMeritInput,
+...    |
+ 231 | |     })
+ 232 | | }
+     | |_- similarly named function `m1_trust_region_frozen_merit_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+1597 -     let natural = super::m1_trust_region_natural_tangent_for_test(&input, &trial());
+1597 +     let natural = super::m1_trust_region_frozen_merit_for_test(&input, &trial());
+     |
+
+error[E0425]: cannot find function `m1_trust_region_cap_boundary_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1613:30
+     |
+1613 |           let refusal = super::m1_trust_region_cap_boundary_for_test(&input, &trial(), limit);
+     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:210:1
+     |
+ 210 | / pub(crate) fn m1_trust_region_frozen_merit_for_test(
+ 211 | |     _input: &super::M1CoupledColumnInput,
+ 212 | |     _trial: &super::M1CoupledColumnTrial,
+ 213 | |     value: M1TrustRegionMeritInput,
+...    |
+ 231 | |     })
+ 232 | | }
+     | |_- similarly named function `m1_trust_region_frozen_merit_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+1613 -         let refusal = super::m1_trust_region_cap_boundary_for_test(&input, &trial(), limit);
+1613 +         let refusal = super::m1_trust_region_frozen_merit_for_test(&input, &trial(), limit);
+     |
+
+error[E0425]: cannot find function `m1_trust_region_radius_exhaustion_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1619:28
+     |
+1619 |       let exhausted = super::m1_trust_region_radius_exhaustion_for_test(&input, &trial());
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+     |
+ 682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+ 683 | |     input: M1TrustRegionJacobiInput,
+ 684 | | ) -> M1TrustRegionJacobiObservation {
+ 685 | |     let mut observed_sweeps = 0;
+...    |
+ 728 | | }
+     | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+1619 -     let exhausted = super::m1_trust_region_radius_exhaustion_for_test(&input, &trial());
+1619 +     let exhausted = super::m1_trust_region_jacobi_observation_for_test(&input, &trial());
+     |
+
+error[E0425]: cannot find function `m1_trust_region_with_controlled_assembly_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1672:20
+     |
+1672 |             super::m1_trust_region_with_controlled_assembly_for_test(&input, &trial(), assembly)
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_controller_transition_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:167:24
+    |
+167 |           let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+    |
+682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+683 | |     input: M1TrustRegionJacobiInput,
+684 | | ) -> M1TrustRegionJacobiObservation {
+685 | |     let mut observed_sweeps = 0;
+...   |
+728 | | }
+    | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+167 -         let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+167 +         let t = super::m1_trust_region_jacobi_observation_for_test(&mut f).unwrap();
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_transition_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:199:20
+    |
+199 |       let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+    |
+682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+683 | |     input: M1TrustRegionJacobiInput,
+684 | | ) -> M1TrustRegionJacobiObservation {
+685 | |     let mut observed_sweeps = 0;
+...   |
+728 | | }
+    | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+199 -     let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+199 +     let t = super::m1_trust_region_jacobi_observation_for_test(&mut f).unwrap();
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_transition_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:215:20
+    |
+215 |       let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+    |
+682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+683 | |     input: M1TrustRegionJacobiInput,
+684 | | ) -> M1TrustRegionJacobiObservation {
+685 | |     let mut observed_sweeps = 0;
+...   |
+728 | | }
+    | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+215 -     let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+215 +     let t = super::m1_trust_region_jacobi_observation_for_test(&mut f).unwrap();
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_run_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:237:20
+    |
+237 |       let r = super::m1_trust_region_controller_run_for_test(&mut f).unwrap();
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:210:1
+    |
+210 | / pub(crate) fn m1_trust_region_frozen_merit_for_test(
+211 | |     _input: &super::M1CoupledColumnInput,
+212 | |     _trial: &super::M1CoupledColumnTrial,
+213 | |     value: M1TrustRegionMeritInput,
+...   |
+231 | |     })
+232 | | }
+    | |_- similarly named function `m1_trust_region_frozen_merit_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+237 -     let r = super::m1_trust_region_controller_run_for_test(&mut f).unwrap();
+237 +     let r = super::m1_trust_region_frozen_merit_for_test(&mut f).unwrap();
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_run_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:260:20
+    |
+260 |       let r = super::m1_trust_region_controller_run_for_test(&mut f).unwrap();
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:210:1
+    |
+210 | / pub(crate) fn m1_trust_region_frozen_merit_for_test(
+211 | |     _input: &super::M1CoupledColumnInput,
+212 | |     _trial: &super::M1CoupledColumnTrial,
+213 | |     value: M1TrustRegionMeritInput,
+...   |
+231 | |     })
+232 | | }
+    | |_- similarly named function `m1_trust_region_frozen_merit_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+260 -     let r = super::m1_trust_region_controller_run_for_test(&mut f).unwrap();
+260 +     let r = super::m1_trust_region_frozen_merit_for_test(&mut f).unwrap();
+    |
+
+error[E0425]: cannot find function `m1_trust_region_seeded_entry_guard_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:274:20
+    |
+274 |     let g = super::m1_trust_region_seeded_entry_guard_for_test(&mut f, 6500).unwrap();
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 24 previous errors

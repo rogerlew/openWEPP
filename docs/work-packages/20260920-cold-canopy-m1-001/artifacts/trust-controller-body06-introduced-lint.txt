@@ -1,0 +1,81 @@
+error: unused `self` argument
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:226:9
+    |
+226 |         &self,
+    |         ^^^^^
+    |
+    = help: consider refactoring to an associated function
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unused_self
+    = note: `-D clippy::unused-self` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unused_self)]`
+
+error: this function has too many arguments (13/7)
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:225:5
+    |
+225 | /     fn transition_trace(
+226 | |         &self,
+227 | |         model: &ProposalModel,
+228 | |         radius_before: f64,
+...   |
+238 | |         entered_materializations: u8,
+239 | |     ) -> super::m1_trust_region_controller_interface::M1TrustRegionControllerTransition {
+    | |_______________________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_arguments
+    = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: this function has too many arguments (9/7)
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:299:5
+    |
+299 | /     fn install_candidate<E>(
+300 | |         &mut self,
+301 | |         model: &ProposalModel,
+302 | |         candidate: M1TrustRegionControllerEvaluation<P>,
+...   |
+311 | |         M1TrustRegionControllerError<E>,
+312 | |     > {
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_arguments
+
+error: this function has too many arguments (9/7)
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:343:5
+    |
+343 | /     fn shrink_transition(
+344 | |         &mut self,
+345 | |         model: &ProposalModel,
+346 | |         radius_before: f64,
+...   |
+352 | |         candidate_max: Option<f64>,
+353 | |     ) -> super::m1_trust_region_controller_interface::M1TrustRegionControllerTransition {
+    | |_______________________________________________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_arguments
+
+error: matching over `()` is more explicit
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:205:49
+    |
+205 |             selected_phase: selected_phase.map(|_| 0),
+    |                                                 ^ help: use `()` instead of `_`: `()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ignored_unit_patterns
+    = note: `-D clippy::ignored-unit-patterns` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::ignored_unit_patterns)]`
+
+error: matching over `()` is more explicit
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:244:9
+    |
+244 |         _: &(),
+    |         ^ help: use `()` instead of `_`: `()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#ignored_unit_patterns
+
+error: consider adding a `;` to the last statement for consistent formatting
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:265:5
+    |
+265 |     assert!((a - b).abs() <= DERIVED_TOLERANCE)
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: add a `;` here: `assert!((a - b).abs() <= DERIVED_TOLERANCE);`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned
+

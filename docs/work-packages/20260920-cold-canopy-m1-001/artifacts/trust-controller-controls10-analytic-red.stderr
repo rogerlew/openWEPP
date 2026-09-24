@@ -1,0 +1,128 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find function `m1_trust_region_controller_transition_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:291:24
+    |
+291 |           let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+    |
+682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+683 | |     input: M1TrustRegionJacobiInput,
+684 | | ) -> M1TrustRegionJacobiObservation {
+685 | |     let mut observed_sweeps = 0;
+...   |
+728 | | }
+    | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+291 -         let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+291 +         let t = super::m1_trust_region_jacobi_observation_for_test(&mut f).unwrap();
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_transition_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:394:20
+    |
+394 |       let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+    |
+682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+683 | |     input: M1TrustRegionJacobiInput,
+684 | | ) -> M1TrustRegionJacobiObservation {
+685 | |     let mut observed_sweeps = 0;
+...   |
+728 | | }
+    | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+394 -     let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+394 +     let t = super::m1_trust_region_jacobi_observation_for_test(&mut f).unwrap();
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_transition_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:455:20
+    |
+455 |       let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:682:1
+    |
+682 | / pub(crate) fn m1_trust_region_jacobi_observation_for_test(
+683 | |     input: M1TrustRegionJacobiInput,
+684 | | ) -> M1TrustRegionJacobiObservation {
+685 | |     let mut observed_sweeps = 0;
+...   |
+728 | | }
+    | |_- similarly named function `m1_trust_region_jacobi_observation_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+455 -     let t = super::m1_trust_region_controller_transition_for_test(&mut f).unwrap();
+455 +     let t = super::m1_trust_region_jacobi_observation_for_test(&mut f).unwrap();
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_run_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:537:20
+    |
+537 |       let r = super::m1_trust_region_controller_run_for_test(&mut f).unwrap();
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:210:1
+    |
+210 | / pub(crate) fn m1_trust_region_frozen_merit_for_test(
+211 | |     _input: &super::M1CoupledColumnInput,
+212 | |     _trial: &super::M1CoupledColumnTrial,
+213 | |     value: M1TrustRegionMeritInput,
+...   |
+231 | |     })
+232 | | }
+    | |_- similarly named function `m1_trust_region_frozen_merit_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+537 -     let r = super::m1_trust_region_controller_run_for_test(&mut f).unwrap();
+537 +     let r = super::m1_trust_region_frozen_merit_for_test(&mut f).unwrap();
+    |
+
+error[E0425]: cannot find function `m1_trust_region_controller_run_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:662:20
+    |
+662 |       let r = super::m1_trust_region_controller_run_for_test(&mut f).unwrap();
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+   ::: crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:210:1
+    |
+210 | / pub(crate) fn m1_trust_region_frozen_merit_for_test(
+211 | |     _input: &super::M1CoupledColumnInput,
+212 | |     _trial: &super::M1CoupledColumnTrial,
+213 | |     value: M1TrustRegionMeritInput,
+...   |
+231 | |     })
+232 | | }
+    | |_- similarly named function `m1_trust_region_frozen_merit_for_test` defined here
+    |
+help: a function with a similar name exists
+    |
+662 -     let r = super::m1_trust_region_controller_run_for_test(&mut f).unwrap();
+662 +     let r = super::m1_trust_region_frozen_merit_for_test(&mut f).unwrap();
+    |
+
+error[E0425]: cannot find function `m1_trust_region_seeded_entry_guard_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:788:20
+    |
+788 |     let g = super::m1_trust_region_seeded_entry_guard_for_test(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+error[E0425]: cannot find function `m1_trust_region_seeded_entry_guard_for_test` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:817:32
+    |
+817 |     let entered_guard = super::m1_trust_region_seeded_entry_guard_for_test(
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 7 previous errors

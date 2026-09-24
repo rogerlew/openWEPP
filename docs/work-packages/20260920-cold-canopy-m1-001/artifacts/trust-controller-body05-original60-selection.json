@@ -1,0 +1,35 @@
+{
+  "selected_tests": [
+    [
+      "land_surface_energy_shadow::m1_coupled_expected_red::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure",
+      "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_hillslope_orchestrator-0ad665558c5e4d7c"
+    ]
+  ],
+  "binary_sha256": "38180532d7f1b99e86b22503c38dc29c8664b2940d585d27945701375d2fb4a9",
+  "source_tree_sha256": "d5ce8ca60bb1ca78420b12918b566697337bd21b80b7d5afbbc5da242f462d8e",
+  "intended_argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "env",
+    "CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-target",
+    "CARGO_BUILD_JOBS=2",
+    "cargo",
+    "nextest",
+    "run",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "--lib",
+    "-E",
+    "test(=land_surface_energy_shadow::m1_coupled_expected_red::m1_original_sixty_second_solve_has_original_geometry_active_cold_shade_and_real_closure)",
+    "--no-fail-fast",
+    "--success-output",
+    "immediate",
+    "--failure-output",
+    "immediate"
+  ],
+  "physical": true,
+  "timeout_seconds": 180,
+  "classification": "Existing source-defined original60 fixture only; no canonical support0 prefix, authenticated support1, baseline or treatment"
+}
