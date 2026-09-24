@@ -84,7 +84,7 @@ Runtime and review/reconstruction copies remain detached under
 recorder deadline and recovery patches only; unrelated dirty Rust is preserved.
 Independent QA additionally rehashed all 764 reconstruction entries with zero
 mismatches and approved recovery/disposition custody. Publication verification is
-recorded below when completed.
+recorded below.
 
 The carried charge is 308113.959294 seconds. One fixed 16:10Z anchor governs the new
 14400-second envelope, cumulative ceiling 322513.959294, 19:40Z implementation cutoff
@@ -93,6 +93,23 @@ At 19:41:17.386421Z the charge was 320791.345715 seconds, with 1722.613579 secon
 for disposition/publication ([stop ledger](artifacts/witness-terminal-stop-ledger.json)).
 The final publication ledger will add all subsequent elapsed time. Unspent reserve
 is not permission to resume implementation.
+
+### Verified publication and closing ledger
+
+Ran: source/evidence commit `f28363a46a363eb352096cd82a0f73b2eef6af2e` was pushed to already-authorized
+`main`; `refs/heads/main` was independently read back at19:46:12Z with the identical
+commit ([publication receipt](artifacts/witness-publication-01.json)). The complete
+terminal source/recovery chain and retained failed controls are remotely available.
+Experimental Rust remains detached; neither unrelated dirty Rust file was staged.
+This metadata update records that verified publication without changing runtime source.
+
+The [closing publication ledger](artifacts/witness-final-publication.json) conservatively
+charges through **2026-09-24 19:55:00 UTC**: resumed13500.000000s plus
+carry308113.959294s = **321613.959294 charged seconds**, below the
+322513.959294 ceiling. It records observed charge separately from this closing upper
+bound; final metadata publication/response must finish within that bound or update it.
+The remaining900.000000s is protected, unused disposition balance, not permission
+to resume implementation. Overall INCOMPLETE/HOLD and all target slots remain unchanged.
 
 ### Authorized execution and retained evidence
 

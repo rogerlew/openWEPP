@@ -1,0 +1,10 @@
+{
+  "phase": "scoped evidence publication",
+  "commit": "f28363a46a363eb352096cd82a0f73b2eef6af2e",
+  "start_utc": "2026-09-24T19:46:01.327678+00:00",
+  "end_utc": "2026-09-24T19:46:11.701595+00:00",
+  "push_exit_code": 0,
+  "remote_verified": true,
+  "remote_head": "f28363a46a363eb352096cd82a0f73b2eef6af2e",
+  "verified_utc": "2026-09-24T19:46:12.117627+00:00"
+}
