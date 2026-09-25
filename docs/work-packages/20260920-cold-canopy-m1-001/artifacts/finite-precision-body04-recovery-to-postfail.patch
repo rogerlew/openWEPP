@@ -1,0 +1,42 @@
+--- /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs	2026-09-25 12:27:48.754608802 -0700
++++ /tmp/finite-precision-body04-postfail-stage1.rs	2026-09-25 12:27:43.047991334 -0700
+@@ -824,8 +824,9 @@
+     }
+     let raw_jacobian =
+         std::array::from_fn(|row| std::array::from_fn(|column| weighted_matrix[row][column]));
+-    record_face_pivot_capture(|capture| {
+-        *capture = M1FacePivotCapture {
++    let _ = FACE_PIVOT_CAPTURE.try_with(|cell| {
++        if let Ok(mut capture) = cell.try_borrow_mut() {
++            *capture = Some(M1FacePivotCapture {
+             base: [0.0; 21],
+             raw_residual: *weighted_residual,
+             raw_jacobian,
+@@ -842,7 +843,8 @@
+             post_update_admissions: Vec::new(),
+             lifecycle: Vec::new(),
+             refusal: None,
+-        };
++            });
++        }
+     });
+ }
+ 
+@@ -3095,7 +3097,7 @@
+         lower_active,
+         upper_active,
+         free,
+-        initial_free: free,
++        initial_free: [true; 21],
+         events: Vec::new(),
+         entered: 1,
+         completed_pivots: 0,
+@@ -3975,7 +3977,7 @@
+                 result.entered_svd_factorizations
+             );
+             assert_eq!(operation.completed_pivots, result.completed_face_pivots);
+-            assert_eq!(operation.completed_sweeps, 0);
++            assert_eq!(operation.completed_sweeps, result.event_trace.len() as u8);
+         }
+         assert_eq!(first.final_residual, [0.0; 21]);
+         assert_ne!(second.scaled_step, [0.0; 21]);

@@ -1,0 +1,103 @@
+{
+  "reviewer": "/root/finite_qa",
+  "role": "secondary QA/evidence reviewer",
+  "recorded_utc": "2026-09-25",
+  "evidence_class": {
+    "static_by_reviewer": [
+      "BODY13 serializer-only diff and frozen private cfg(test) scope",
+      "ordinary-positive control source, input/coordinate join, failure path, capture JSON, and receipt/stderr consistency",
+      "terminal recovery, terminal diff reconciliation, binary-input custody, format/default/inventory, and lint-comparison artifacts"
+    ],
+    "ran_by_reviewer": [],
+    "supplied_run_evidence_inspected": [
+      "finite-precision-body13-selected-controls.json/.stderr",
+      "finite-precision-body13-ordinary-positive.json/.stderr",
+      "finite-precision-terminal-recovery.json",
+      "finite-precision-terminal-diff-reconciliation.json",
+      "finite-precision-binary-input-custody.json"
+    ]
+  },
+  "frozen_scope": {
+    "method_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+    "lib_sha256": "083250b17a6b6e15818859e5f41d8d204a918a94158a14d0d0125cdbb955b82d",
+    "stage1_sha256": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a",
+    "source_tree_sha256": "d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884",
+    "production_scope": "No production/main adoption; the detached BODY13 implementation and evidence are accepted only as a bounded cfg(test) negative-control package.",
+    "unreleased": [
+      "public interfaces",
+      "targets",
+      "full-feature qualification",
+      "physical acceptance"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "blocker",
+      "location": "m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization",
+      "finding": "The required ordinary-positive physical control fails at the first subproblem with TrustRegionOptimalityIndeterminate / optimality_free_stationarity at coordinate 11. It prevents physical acceptance, interface release, and target release.",
+      "evidence": "finite-precision-body13-ordinary-positive.json/.stderr: one selected test failed; command elapsed 1.521342 seconds, while nextest reports 0.021 seconds for the test including setup. Neither duration is solver-only."
+    }
+  ],
+  "selected116_receipt": {
+    "label": "finite-precision-body13-selected-controls",
+    "result": "116 tests run: 113 passed, 3 failed, 242 skipped",
+    "command_elapsed_seconds": 11.507425939198583,
+    "failure_classification": {
+      "physical_controls": [
+        "m1_trust_region_physical_adapter_run_captures_and_restores_owned_budget_scope",
+        "m1_trust_region_physical_adapter_original60_setup_is_separate_from_deferred_proposal"
+      ],
+      "preexisting_ranking_assertion": "m1_trust_region_kkt_upper_sign_and_largest_violation_variants_are_observed"
+    },
+    "scope": "This receipt is distinct from the separately selected ordinary-positive one-test receipt."
+  },
+  "ordinary_positive_observation": {
+    "fixture_join": "canonical non-target original60 accepted coordinates with coordinate 20 increased by +1e-4; accepted and perturbed bit vectors are emitted",
+    "capture_sha256": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+    "solver_events": {
+      "activation_operations": 1,
+      "optimality_refusals": 1,
+      "entered_svd_factorizations": 2,
+      "face_pivots": 1,
+      "jacobi_sweeps": 7,
+      "finite_operation_accounting": 6654
+    },
+    "runtime_work": {
+      "complete_evaluator_entries": 41,
+      "raw_jacobian_assemblies": 1,
+      "jacobian_observation": 1,
+      "controller_assemblies": 0,
+      "hydraulic_entries": 0,
+      "actual_hydraulic_entries": 0,
+      "materialization_entries": 0
+    },
+    "atomicity_and_custody": {
+      "accepted_installs": 0,
+      "post_update_admissions": 0,
+      "completed_subproblems": 0,
+      "lifecycle_entries": 0,
+      "controller_run": "None",
+      "accepted_capture": "None",
+      "protected_input_and_trial": true,
+      "budget": "prior=None, restored=None; source scope is dropped after snapshot",
+      "phase": "one initial Mixed/Drainage uncorrected phase observation; it is not an accepted or materialized physical state"
+    }
+  },
+  "terminal_evidence": {
+    "recovery": "Supplied fresh reconstruction records 764 entries, all hashes and inventory equal, runtime source unchanged.",
+    "binary_input_custody": "Supplied durable binary-input-custody receipt records binary SHA-256 5a1283ae…cdd7a9d.",
+    "diff_reconciliation": "Supplied receipt reports only lib.rs and m1_trust_region_stage1.rs differ from authenticated entry; physical test, SVD/rank/ball/lambda search, and physical acceptance are unchanged.",
+    "gates": "Supplied BODY13 format/default/inventory receipts pass. Strict lint remains 238 inherited diagnostic blocks with 0 introduced and 0 removed; it is not a green strict-lint gate."
+  },
+  "verdict": "QA accepts the bounded BODY13 serializer/evidence package and its negative-control custody. Physical/interface/target/full-feature release remains HOLD because the required ordinary-positive control fails before materialization. No physical result or performance claim is supported.",
+  "verification": {
+    "same_reviewer_count_scope_fix": {
+      "status": "accepted",
+      "static_evidence": "Package summary now distinguishes individual core/raw-J/hydraulic/SVD/materialization budget pairs from the separate one attempted/refused subproblem and zero completed-subproblem summaries."
+    },
+    "staged_whitespace_scope": {
+      "status": "accepted as limitation",
+      "static_evidence": "Authored documentation/recorder diff check passes; broad staged check findings are limited to preserved patch-context and raw-log whitespace, which must not be characterized as a clean all-staged whitespace pass."
+    }
+  }
+}

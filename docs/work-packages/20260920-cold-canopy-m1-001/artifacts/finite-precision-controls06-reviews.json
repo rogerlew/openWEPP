@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Static source review and Ran receipt inspection by distinct independent reviewers",
+  "source_tree_sha256": "044d04ac4ab593347929b057065ca63a0dbc021a0b0221ea4067cfa6ccc8e43d",
+  "receipt": "finite-precision-controls06-red.json",
+  "reviewers": {
+    "/root/finite_correctness": "APPROVED controls-before-body after source/receipt check; all21 controls4PASS17expectedFAIL, no unexplained failure, invalid fixture, synthetic path, policy body or source/support drift",
+    "/root/finite_qa": "APPROVED controls-before-body after dedicated receipt check closes initial missing-receipt conditional; exact4new cases fail intended oldgeneric/oldselector direction"
+  },
+  "body_release": "Frozen02 method only; physical execution remains pending body/source review and green numerical controls",
+  "reused": "unchanged formula review, independent retained oracle and negative-drainage prebody evidence"
+}

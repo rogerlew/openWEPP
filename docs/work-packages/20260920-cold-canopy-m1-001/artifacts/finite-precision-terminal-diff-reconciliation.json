@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: complete 764-entry terminal source comparison to authenticated method01 source; Static: consequence classification",
+  "entry_count": 764,
+  "terminal_count": 764,
+  "changed": [
+    {
+      "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+      "entry": "2f338df17c8f93e1b3ba6421207c034fe380e18fcf46a2b8a589ed837d789fe4",
+      "terminal": "083250b17a6b6e15818859e5f41d8d204a918a94158a14d0d0125cdbb955b82d"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "entry": "c8c218651dc6ce51dd93a32ee816f47e471b0aa242f155be6a66c6305cf0f2d7",
+      "terminal": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a"
+    }
+  ],
+  "reachability": "Unconditional cfg(test) Stage1 only; no production activation; same independent reviewers accepted private/noncritical posture.",
+  "intent_reconciled": "Two detached files only: lib.rs keeps private test gate; m1_trust_region_stage1.rs revised policy, controls, real telemetry and serializer. Physical test, SVD/rank/ball/lambda search and physical acceptance remain unchanged. No full-feature/interfaces/target edits.",
+  "qualification": "Selected116:113PASS/3FAIL; mandatory ordinary-positive FAIL; no physical acceptance or performance claim. Strict lint FAIL238 inherited/0new/0removed; fmt/default/inventory PASS. Historical full-feature18 errors/8groups and parent HOLDs retained.",
+  "critical_full_workspace": "NOT RUN; private noncritical classification retained; no new Critical trigger. Not campaign/release qualification."
+}

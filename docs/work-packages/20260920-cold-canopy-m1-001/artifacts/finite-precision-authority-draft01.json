@@ -1,0 +1,13 @@
+{
+  "status": "PROPOSED not effective pending both independent reviews",
+  "observed_utc": "2026-09-25T18:05:52.452032+00:00",
+  "method_id": "COLD-CANOPY-M1-TR-SVD-BVLS-02",
+  "files": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "eb5f1fd4e54891b5d73e2201733690140a707d89220bc35fd7b14fe20bfd3e85",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "2f7cd16c087c895dd712327cef22a63c73c10eac83058b47379623488bbd77d5",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "5e521ebbfc1dc842451b32054d3fbdb74b675877fdb3764dd1ba5c1990551594",
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": "cc1157e55c5c2175f7cf8f0d882743e9ab89fed8fbc625f7d5cdc266ae86bf15"
+  },
+  "source_body_unchanged": true,
+  "numerical_execution": false
+}

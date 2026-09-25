@@ -1,0 +1,1402 @@
+{
+  "cbar_tau_work_all_coordinates": {
+    "additions": 1750,
+    "bounded_operations": 6522,
+    "divisions": 0,
+    "multiplications": 1511,
+    "upward_steps": 3261,
+    "zero_multiplications_skipped": 8233,
+    "zero_right_additions_skipped": 8414
+  },
+  "coefficient_bits": "3d05c0000000003c",
+  "coefficient_setup_work_if_evaluated_inside_each_nonzero_cbar_call": {
+    "additions": 0,
+    "bounded_operations": 26,
+    "divisions": 13,
+    "multiplications": 0,
+    "upward_steps": 13,
+    "zero_multiplications_skipped": 0,
+    "zero_right_additions_skipped": 0
+  },
+  "coefficient_single_value_evaluation_work": {
+    "additions": 0,
+    "bounded_operations": 2,
+    "divisions": 1,
+    "multiplications": 0,
+    "upward_steps": 1,
+    "zero_multiplications_skipped": 0,
+    "zero_right_additions_skipped": 0
+  },
+  "coordinates": [
+    {
+      "cbar_bits": "0000000000000000",
+      "coordinate": 0,
+      "h_hat_bits": "0000000000000000",
+      "release_candidate": false,
+      "tau_bits": "0000000000000000",
+      "work": {
+        "additions": 80,
+        "bounded_operations": 296,
+        "divisions": 0,
+        "multiplications": 68,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 21,
+            "zero_right_additions_skipped": 21
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 148,
+        "zero_multiplications_skipped": 396,
+        "zero_right_additions_skipped": 404
+      }
+    },
+    {
+      "cbar_bits": "4070d7d2f42f07e8",
+      "coordinate": 1,
+      "h_hat_bits": "3d69320fba07e04a",
+      "release_candidate": false,
+      "tau_bits": "3d86e562c3efef00",
+      "work": {
+        "additions": 86,
+        "bounded_operations": 322,
+        "divisions": 0,
+        "multiplications": 75,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 6,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 6,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 15,
+            "zero_right_additions_skipped": 15
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 161,
+        "zero_multiplications_skipped": 389,
+        "zero_right_additions_skipped": 398
+      }
+    },
+    {
+      "cbar_bits": "404d1f35e4cb5842",
+      "coordinate": 2,
+      "h_hat_bits": "bd31254894d2afc0",
+      "release_candidate": false,
+      "tau_bits": "3d63cb36a1823634",
+      "work": {
+        "additions": 85,
+        "bounded_operations": 318,
+        "divisions": 0,
+        "multiplications": 74,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 5,
+            "bounded_operations": 20,
+            "divisions": 0,
+            "multiplications": 5,
+            "upward_steps": 10,
+            "zero_multiplications_skipped": 16,
+            "zero_right_additions_skipped": 16
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 159,
+        "zero_multiplications_skipped": 390,
+        "zero_right_additions_skipped": 399
+      }
+    },
+    {
+      "cbar_bits": "40cfe65f3a4f6554",
+      "coordinate": 3,
+      "h_hat_bits": "bd3b63528754b233",
+      "release_candidate": false,
+      "tau_bits": "3de5ae94b9a1f71c",
+      "work": {
+        "additions": 89,
+        "bounded_operations": 334,
+        "divisions": 0,
+        "multiplications": 78,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 9,
+            "bounded_operations": 36,
+            "divisions": 0,
+            "multiplications": 9,
+            "upward_steps": 18,
+            "zero_multiplications_skipped": 12,
+            "zero_right_additions_skipped": 12
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 167,
+        "zero_multiplications_skipped": 386,
+        "zero_right_additions_skipped": 395
+      }
+    },
+    {
+      "cbar_bits": "40bfb2941d68febe",
+      "coordinate": 4,
+      "h_hat_bits": "3d6dcd65001a13b8",
+      "release_candidate": false,
+      "tau_bits": "3dd58b60abfd5d62",
+      "work": {
+        "additions": 81,
+        "bounded_operations": 302,
+        "divisions": 0,
+        "multiplications": 70,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 1,
+            "bounded_operations": 4,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 2,
+            "zero_multiplications_skipped": 20,
+            "zero_right_additions_skipped": 20
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 151,
+        "zero_multiplications_skipped": 394,
+        "zero_right_additions_skipped": 403
+      }
+    },
+    {
+      "cbar_bits": "3fa2bc8fc138fe7f",
+      "coordinate": 5,
+      "h_hat_bits": "bd44b78ab227b7d5",
+      "release_candidate": true,
+      "tau_bits": "3cb978536aa97a3c",
+      "work": {
+        "additions": 82,
+        "bounded_operations": 306,
+        "divisions": 0,
+        "multiplications": 71,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 2,
+            "bounded_operations": 8,
+            "divisions": 0,
+            "multiplications": 2,
+            "upward_steps": 4,
+            "zero_multiplications_skipped": 19,
+            "zero_right_additions_skipped": 19
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 153,
+        "zero_multiplications_skipped": 393,
+        "zero_right_additions_skipped": 402
+      }
+    },
+    {
+      "cbar_bits": "0000000000000000",
+      "coordinate": 6,
+      "h_hat_bits": "0000000000000000",
+      "release_candidate": false,
+      "tau_bits": "0000000000000000",
+      "work": {
+        "additions": 80,
+        "bounded_operations": 296,
+        "divisions": 0,
+        "multiplications": 68,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 21,
+            "zero_right_additions_skipped": 21
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 148,
+        "zero_multiplications_skipped": 396,
+        "zero_right_additions_skipped": 404
+      }
+    },
+    {
+      "cbar_bits": "407130cca65024cf",
+      "coordinate": 7,
+      "h_hat_bits": "3d55b8c7b5806ee2",
+      "release_candidate": false,
+      "tau_bits": "3d875e563214f24b",
+      "work": {
+        "additions": 86,
+        "bounded_operations": 322,
+        "divisions": 0,
+        "multiplications": 75,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 6,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 6,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 15,
+            "zero_right_additions_skipped": 15
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 161,
+        "zero_multiplications_skipped": 389,
+        "zero_right_additions_skipped": 398
+      }
+    },
+    {
+      "cbar_bits": "404a76ffffe7eb9d",
+      "coordinate": 8,
+      "h_hat_bits": "bd34726e38707b38",
+      "release_candidate": false,
+      "tau_bits": "3d61fce1ffefa257",
+      "work": {
+        "additions": 85,
+        "bounded_operations": 318,
+        "divisions": 0,
+        "multiplications": 74,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 5,
+            "bounded_operations": 20,
+            "divisions": 0,
+            "multiplications": 5,
+            "upward_steps": 10,
+            "zero_multiplications_skipped": 16,
+            "zero_right_additions_skipped": 16
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 159,
+        "zero_multiplications_skipped": 390,
+        "zero_right_additions_skipped": 399
+      }
+    },
+    {
+      "cbar_bits": "40d2851e80a8d227",
+      "coordinate": 9,
+      "h_hat_bits": "3d943e7b3cdb981b",
+      "release_candidate": false,
+      "tau_bits": "3de92cf576e57df3",
+      "work": {
+        "additions": 89,
+        "bounded_operations": 334,
+        "divisions": 0,
+        "multiplications": 78,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 9,
+            "bounded_operations": 36,
+            "divisions": 0,
+            "multiplications": 9,
+            "upward_steps": 18,
+            "zero_multiplications_skipped": 12,
+            "zero_right_additions_skipped": 12
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 167,
+        "zero_multiplications_skipped": 386,
+        "zero_right_additions_skipped": 395
+      }
+    },
+    {
+      "cbar_bits": "40c2bdb4e0283629",
+      "coordinate": 10,
+      "h_hat_bits": "3d7dcd65001a13b8",
+      "release_candidate": false,
+      "tau_bits": "3dd979e1e0b6a9e7",
+      "work": {
+        "additions": 81,
+        "bounded_operations": 302,
+        "divisions": 0,
+        "multiplications": 70,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 1,
+            "bounded_operations": 4,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 2,
+            "zero_multiplications_skipped": 20,
+            "zero_right_additions_skipped": 20
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 151,
+        "zero_multiplications_skipped": 394,
+        "zero_right_additions_skipped": 403
+      }
+    },
+    {
+      "cbar_bits": "3f9961d4c3c37e6c",
+      "coordinate": 11,
+      "h_hat_bits": "3d37f0c72f41f1ee",
+      "release_candidate": false,
+      "tau_bits": "3cb1407e9d0ee01e",
+      "work": {
+        "additions": 82,
+        "bounded_operations": 306,
+        "divisions": 0,
+        "multiplications": 71,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 2,
+            "bounded_operations": 8,
+            "divisions": 0,
+            "multiplications": 2,
+            "upward_steps": 4,
+            "zero_multiplications_skipped": 19,
+            "zero_right_additions_skipped": 19
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 153,
+        "zero_multiplications_skipped": 393,
+        "zero_right_additions_skipped": 402
+      }
+    },
+    {
+      "cbar_bits": "40b573c426389210",
+      "coordinate": 12,
+      "h_hat_bits": "bd7291a93205b722",
+      "release_candidate": false,
+      "tau_bits": "3dcd295ea3f4e6df",
+      "work": {
+        "additions": 90,
+        "bounded_operations": 338,
+        "divisions": 0,
+        "multiplications": 79,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 10,
+            "bounded_operations": 40,
+            "divisions": 0,
+            "multiplications": 10,
+            "upward_steps": 20,
+            "zero_multiplications_skipped": 11,
+            "zero_right_additions_skipped": 11
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 169,
+        "zero_multiplications_skipped": 385,
+        "zero_right_additions_skipped": 394
+      }
+    },
+    {
+      "cbar_bits": "40c64d6408a16422",
+      "coordinate": 13,
+      "h_hat_bits": "bd7eda7ac8670a31",
+      "release_candidate": false,
+      "tau_bits": "3dde5133fbbb6473",
+      "work": {
+        "additions": 87,
+        "bounded_operations": 326,
+        "divisions": 0,
+        "multiplications": 76,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 7,
+            "bounded_operations": 28,
+            "divisions": 0,
+            "multiplications": 7,
+            "upward_steps": 14,
+            "zero_multiplications_skipped": 14,
+            "zero_right_additions_skipped": 14
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 163,
+        "zero_multiplications_skipped": 388,
+        "zero_right_additions_skipped": 397
+      }
+    },
+    {
+      "cbar_bits": "4073990ba08690a1",
+      "coordinate": 14,
+      "h_hat_bits": "bd862ede994aae20",
+      "release_candidate": false,
+      "tau_bits": "3d8aa40bce36ece5",
+      "work": {
+        "additions": 87,
+        "bounded_operations": 326,
+        "divisions": 0,
+        "multiplications": 76,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 7,
+            "bounded_operations": 28,
+            "divisions": 0,
+            "multiplications": 7,
+            "upward_steps": 14,
+            "zero_multiplications_skipped": 14,
+            "zero_right_additions_skipped": 14
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 2,
+            "divisions": 0,
+            "multiplications": 1,
+            "upward_steps": 1,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 163,
+        "zero_multiplications_skipped": 388,
+        "zero_right_additions_skipped": 397
+      }
+    },
+    {
+      "cbar_bits": "0000000000000000",
+      "coordinate": 15,
+      "h_hat_bits": "0000000000000000",
+      "release_candidate": false,
+      "tau_bits": "0000000000000000",
+      "work": {
+        "additions": 80,
+        "bounded_operations": 296,
+        "divisions": 0,
+        "multiplications": 68,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 21,
+            "zero_right_additions_skipped": 21
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 148,
+        "zero_multiplications_skipped": 396,
+        "zero_right_additions_skipped": 404
+      }
+    },
+    {
+      "cbar_bits": "0000000000000000",
+      "coordinate": 16,
+      "h_hat_bits": "0000000000000000",
+      "release_candidate": false,
+      "tau_bits": "0000000000000000",
+      "work": {
+        "additions": 80,
+        "bounded_operations": 296,
+        "divisions": 0,
+        "multiplications": 68,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 21,
+            "zero_right_additions_skipped": 21
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 148,
+        "zero_multiplications_skipped": 396,
+        "zero_right_additions_skipped": 404
+      }
+    },
+    {
+      "cbar_bits": "0000000000000000",
+      "coordinate": 17,
+      "h_hat_bits": "0000000000000000",
+      "release_candidate": false,
+      "tau_bits": "0000000000000000",
+      "work": {
+        "additions": 80,
+        "bounded_operations": 296,
+        "divisions": 0,
+        "multiplications": 68,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 21,
+            "zero_right_additions_skipped": 21
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 148,
+        "zero_multiplications_skipped": 396,
+        "zero_right_additions_skipped": 404
+      }
+    },
+    {
+      "cbar_bits": "0000000000000000",
+      "coordinate": 18,
+      "h_hat_bits": "0000000000000000",
+      "release_candidate": false,
+      "tau_bits": "0000000000000000",
+      "work": {
+        "additions": 80,
+        "bounded_operations": 296,
+        "divisions": 0,
+        "multiplications": 68,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 21,
+            "zero_right_additions_skipped": 21
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 148,
+        "zero_multiplications_skipped": 396,
+        "zero_right_additions_skipped": 404
+      }
+    },
+    {
+      "cbar_bits": "0000000000000000",
+      "coordinate": 19,
+      "h_hat_bits": "0000000000000000",
+      "release_candidate": false,
+      "tau_bits": "0000000000000000",
+      "work": {
+        "additions": 80,
+        "bounded_operations": 296,
+        "divisions": 0,
+        "multiplications": 68,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 21,
+            "zero_right_additions_skipped": 21
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 148,
+        "zero_multiplications_skipped": 396,
+        "zero_right_additions_skipped": 404
+      }
+    },
+    {
+      "cbar_bits": "0000000000000000",
+      "coordinate": 20,
+      "h_hat_bits": "0000000000000000",
+      "release_candidate": false,
+      "tau_bits": "0000000000000000",
+      "work": {
+        "additions": 80,
+        "bounded_operations": 296,
+        "divisions": 0,
+        "multiplications": 68,
+        "sections": {
+          "inner_products_and_sums": {
+            "additions": 68,
+            "bounded_operations": 272,
+            "divisions": 0,
+            "multiplications": 68,
+            "upward_steps": 136,
+            "zero_multiplications_skipped": 373,
+            "zero_right_additions_skipped": 373
+          },
+          "lambda_term_and_sum": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 1
+          },
+          "row_contributions_and_outer_sums": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 21,
+            "zero_right_additions_skipped": 21
+          },
+          "row_scale_additions": {
+            "additions": 12,
+            "bounded_operations": 24,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 12,
+            "zero_multiplications_skipped": 0,
+            "zero_right_additions_skipped": 9
+          },
+          "tau_product": {
+            "additions": 0,
+            "bounded_operations": 0,
+            "divisions": 0,
+            "multiplications": 0,
+            "upward_steps": 0,
+            "zero_multiplications_skipped": 1,
+            "zero_right_additions_skipped": 0
+          }
+        },
+        "upward_steps": 148,
+        "zero_multiplications_skipped": 396,
+        "zero_right_additions_skipped": 404
+      }
+    }
+  ],
+  "counting_scope": {
+    "cbar_tau": "executed multiplication, addition, and next_up operations; permitted zero terms count zero",
+    "coefficient_setup": "a single Gamma87 value evaluation is one division plus one next_up; the candidate source-level shape evaluates it once for each nonzero Cbar, reported separately; exact integer denominator construction is not counted",
+    "kkt": "ordered KKT vectors are independently reconstructed for predicates but are unchanged reused work and excluded from added-work counts",
+    "ranking": "one division for each genuine active release with nonzero tau; comparisons and ordering are not arithmetic"
+  },
+  "evidence_class": "independent offline binary64 work oracle; no Rust treatment or physical execution",
+  "input_identity": {
+    "capture_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-observed-capture.json",
+    "capture_sha256": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c",
+    "method_path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "method_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+    "operation_action": "release",
+    "operation_index": 1,
+    "script_path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-correctness-work-oracle.py",
+    "script_sha256": "0f97de91a99b5aca56c4d1b9248c508e95901131bb50b7b7cbd92595ed0702c6"
+  },
+  "nonzero_cbar_coordinates": 13,
+  "release_candidates": [
+    {
+      "bound": "lower",
+      "coordinate": 5,
+      "rank_kind": "finite_ratio",
+      "ratio_bits": "407a074215732d98"
+    }
+  ],
+  "release_ranking_work": {
+    "additions": 0,
+    "bounded_operations": 1,
+    "divisions": 1,
+    "multiplications": 0,
+    "upward_steps": 0,
+    "zero_multiplications_skipped": 0,
+    "zero_right_additions_skipped": 0
+  },
+  "zero_identity_check": {
+    "cbar_tau_work_all_coordinates": {
+      "additions": 0,
+      "bounded_operations": 0,
+      "divisions": 0,
+      "multiplications": 0,
+      "upward_steps": 0,
+      "zero_multiplications_skipped": 9744,
+      "zero_right_additions_skipped": 10164
+    },
+    "passes_exact_zero_work": true
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "source_receipt": "finite-precision-body11-format-source.json",
+  "correctness_reviewer": "/root/finite_correctness",
+  "qa_reviewer": "/root/finite_qa",
+  "verdict": "Both reviewers APPROVE unchanged116 selected controls then separate unchanged ordinary-positive; no full-feature/target release",
+  "correctness": "Exact policy, physical fixed mask, finite guards/reasons, all-coordinate stationarity, ratio/ties, no SVD/cap changes, complete assessed-operation input lineage and work verified. Format-only transition independently verified.",
+  "qa": "All capture/work/refusal/Return/cross-subproblem findings verified fixed, private cfg(test),31 focused PASS,238 inherited lint blocks/0 introduced, default/inventory PASS, final canonical fmt PASS. Boxed scalar metadata limits inline Err size without suppression.",
+  "scope_limits": [
+    "No physical outcome claimed before execution",
+    "body06 source citation remains unbound and excluded",
+    "358 inventory is listing only",
+    "Coefficient work separate from Cbar/tau counter"
+  ]
+}

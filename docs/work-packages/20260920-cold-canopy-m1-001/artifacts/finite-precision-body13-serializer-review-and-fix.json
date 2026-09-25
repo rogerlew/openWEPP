@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Static: original writer and independent reviewer responses retained by root",
+  "writer": "/root/finite_repair_writer",
+  "serializer_source_sha256": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a",
+  "writer_result": "Serializer-only BODY13 frozen; reason JSON escaped string/null, coordinate number/null, radius/lambda exact bit string/null. Existing populated parser checks null and populated forms. Initial missing-mut test compile failure preserved; final focused parser PASS1/357skipped. No numerical/physical/ranking assertions changed.",
+  "qa": "/root/finite_qa",
+  "qa_original_response": "Body13 is a serializer-only repair with complete null and populated refusal coverage, including signed-zero and infinity bit encodings. It does not alter physical behavior or policy assertions. Run and record canonical parser/selected-control revalidation on the exact frozen source, then proceed with the required ordinary-positive control.",
+  "correctness_review": "finite-precision-correctness-body13-serializer-review.json",
+  "root_revalidation": "finite-precision-body13-selected-controls.json",
+  "result": "Parser PASS;113PASS/3FAIL selected. Required ordinary-positive separately executed unchanged and FAIL."
+}

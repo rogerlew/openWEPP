@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: fixed-anchor accounting; conservative future closing charge",
+  "anchor_utc": "2026-09-25T17:56:00+00:00",
+  "carry_seconds": "339493.959294",
+  "fixed_ceiling_seconds": "353893.959294",
+  "implementation_cutoff_utc": "2026-09-25T21:26:00+00:00",
+  "hard_deadline_utc": "2026-09-25T21:56:00+00:00",
+  "protected_reserve_seconds": 1800,
+  "conservatively_charged_through_utc": "2026-09-25T20:15:00+00:00",
+  "new_charged_seconds": "8340.0",
+  "cumulative_charged_seconds": "347833.959294",
+  "remaining_under_fixed_ceiling_seconds": "6060.000000",
+  "accounting": "All wall time since original first-reading anchor charged once, including concurrency, reading, corrections, waits, independent review, preservation and publication. Conservative closing excess is not refundable; no reanchor or old allowance addition. If publication crosses this timestamp, append greater charge under same ceiling.",
+  "stop": "Source-conforming required-positive refusal; bounded negative disposition. No policy tuning or target continuation.",
+  "target_slots": "All UNUSED / NOT RELEASED"
+}

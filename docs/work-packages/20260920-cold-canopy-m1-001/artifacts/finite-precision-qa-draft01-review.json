@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Static plus Ran hash/diff checks; no Rust or numerical execution",
+  "reviewer": "/root/finite_qa",
+  "source": "finite-precision-authority-draft01.json",
+  "verdict": "HOLD",
+  "blocker": "numerical-methods.md ordinary-positive-before-any-body wording conflicts with adopted sequence. Retain authenticated01 failure as prebody custody, review02 controls/body, then unchanged original60/coordinate20 positive before broader release.01 never qualifies02.",
+  "quality": "Retain test-only reachability and same-command baseline/candidate238 inherited/zero introduced; format, strict affected Clippy, contract controls and applicable A0/A1/A3; deny if dependency resolution changes.",
+  "checks": "All four hashes match; git diff --check PASS",
+  "observed_utc": "2026-09-25T18:08:18.536350+00:00"
+}

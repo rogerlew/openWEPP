@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Static: independent prospective correctness review",
+  "reviewer": "/root/finite_correctness",
+  "source": "finite-precision-authority-draft01.json",
+  "verdict": "HOLD before body release",
+  "findings": [
+    "Exhaustive LSEB-E-034 taxonomy omits TrustRegionOptimalityIndeterminate; specify kind and reason tokens.",
+    "Normal-arithmetic model needs exact-zero addition guards and nonzero-subnormal operand checks before zero-term skip.",
+    "Active-ranking ratio needs explicit checked arithmetic overflow/subnormal/nonfinite policy and controls.",
+    "Sequencing must reuse retained source-bound01 ordinary-positive failure pre-body, then execute unchanged02 positive after source/control review; no redundant old replay.",
+    "Clarify fixed lower==upper coordinates outside active/free tests and say strictly checked box/radius feasible."
+  ],
+  "core_assessment": "Formula core appears conservative and fixture-independent; a posteriori KKT assessment legitimately makes no SVD forward-error claim.",
+  "observed_utc": "2026-09-25T18:07:11.007753+00:00"
+}

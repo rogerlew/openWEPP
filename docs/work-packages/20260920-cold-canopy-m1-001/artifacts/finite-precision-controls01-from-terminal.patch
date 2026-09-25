@@ -1,0 +1,295 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -2378,3 +2378,292 @@
+ ) -> Result<super::M1TrustRegionSubproblemObservation, super::M1TrustRegionSubproblemRefusal> {
+     solve_subproblem(input)
+ }
++
++#[cfg(test)]
++pub(crate) fn m1_trust_region_kkt_transition_for_test(
++    weighted_matrix: Vec<Vec<f64>>,
++    weighted_residual: [f64; 21],
++    step: [f64; 21],
++    lower_active: [bool; 21],
++    upper_active: [bool; 21],
++    free: [bool; 21],
++    lambda: f64,
++) -> Result<Option<super::M1TrustRegionKktAction>, super::M1TrustRegionSubproblemRefusal> {
++    let prepared = PreparedSubproblem {
++        raw_max: weighted_residual
++            .iter()
++            .fold(0.0_f64, |maximum, value| maximum.max(value.abs())),
++        weighted_residual: weighted_residual.to_vec(),
++        weighted_matrix,
++        scaled_lower: [f64::NEG_INFINITY; 21],
++        scaled_upper: [f64::INFINITY; 21],
++    };
++    let mut state = SubproblemState {
++        p: step,
++        lower_active,
++        upper_active,
++        free,
++        initial_free: free,
++        events: Vec::new(),
++        entered: 1,
++        completed_pivots: 0,
++        completed_sweeps: 0,
++    };
++    let solution = FaceSolution {
++        free_ids: Vec::new(),
++        trace: LambdaTrace {
++            lambda,
++            ..LambdaTrace::default()
++        },
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        radius: 1.0,
++    };
++    let result = kkt_transition(&prepared, &mut state, &solution)?;
++    Ok(result.and_then(|_| state.events.last().map(|event| event.action)))
++}
++
++#[cfg(test)]
++mod finite_precision_controls {
++    use super::{
++        box_feasible_kkt_values, largest_kkt_release, m1_trust_region_kkt_transition_for_test,
++    };
++    use crate::M1TrustRegionKktAction;
++    use serde_json::Value;
++
++    const RETAINED_CAPTURE: &str = include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-observed-capture.json"
++    ));
++
++    fn bit(value: &Value) -> f64 {
++        f64::from_bits(
++            u64::from_str_radix(value.as_str().expect("binary64 hex"), 16)
++                .expect("valid binary64 bits"),
++        )
++    }
++
++    fn vector(value: &Value) -> [f64; 21] {
++        std::array::from_fn(|index| bit(&value[index]))
++    }
++
++    #[test]
++    fn retained_capture_uses_shared_ordered_kkt_operation_before_policy_change() {
++        let capture: Value = serde_json::from_str(RETAINED_CAPTURE).expect("retained capture");
++        let release = capture["operations"]
++            .as_array()
++            .expect("operation array")
++            .iter()
++            .find(|operation| operation["action"] == "release")
++            .expect("recorded lower release");
++        let matrix = capture["weighted_matrix"]
++            .as_array()
++            .expect("weighted matrix")
++            .iter()
++            .map(|row| vector(row).to_vec())
++            .collect::<Vec<_>>();
++        let values = box_feasible_kkt_values(
++            &matrix,
++            &vector(&capture["weighted_residual"]),
++            &vector(&release["p_before"]),
++            bit(&release["lambda"]),
++        )
++        .expect("shared KKT operation on retained finite operands");
++        let recorded_h = vector(&release["h"]);
++        assert_eq!(values.h.map(f64::to_bits), recorded_h.map(f64::to_bits));
++        let lower = std::array::from_fn(|index| {
++            release["lower_before"][index]
++                .as_bool()
++                .expect("lower mask")
++        });
++        let upper = std::array::from_fn(|index| {
++            release["upper_before"][index]
++                .as_bool()
++                .expect("upper mask")
++        });
++        assert_eq!(
++            largest_kkt_release(&lower, &upper, &values.h),
++            Some((5, true))
++        );
++    }
++
++    #[test]
++    fn expected_red_cancellation_band_must_not_release_on_sign_alone() {
++        // A real shared KKT calculation gives a negative lower multiplier
++        // through cancellation.  The reviewed 02 envelope retains it; this
++        // assertion is intentionally red until the shared transition applies
++        // that policy, rather than the current sign-only helper.
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        matrix[0][1] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = -1.0 - f64::EPSILON;
++        let mut step = [0.0; 21];
++        step[1] = 1.0;
++        let lower = std::array::from_fn(|index| index == 0);
++        let upper = [false; 21];
++        assert_eq!(
++            m1_trust_region_kkt_transition_for_test(
++                matrix,
++                residual,
++                step,
++                lower,
++                upper,
++                [false; 21],
++                0.0
++            )
++            .expect("shared KKT transition"),
++            None,
++            "expected-red: reviewed 02 uncertainty-band decision replaces sign-only release"
++        );
++    }
++
++    #[test]
++    fn expected_red_upper_and_free_coordinates_require_full_shared_transition() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        matrix[0][1] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = 1.0 + f64::EPSILON;
++        let mut step = [0.0; 21];
++        step[1] = -1.0;
++        let upper = std::array::from_fn(|index| index == 0);
++        assert_eq!(
++            m1_trust_region_kkt_transition_for_test(
++                matrix.clone(),
++                residual,
++                step,
++                [false; 21],
++                upper,
++                [false; 21],
++                0.0
++            )
++            .expect("shared upper transition"),
++            None,
++            "expected-red: uncertainty-band upper multiplier is retained"
++        );
++
++        let mut free_matrix = vec![vec![0.0; 21]; 21];
++        free_matrix[0][0] = 1.0;
++        let mut free_residual = [0.0; 21];
++        free_residual[0] = 1.0;
++        let free = std::array::from_fn(|index| index == 0);
++        assert!(
++            m1_trust_region_kkt_transition_for_test(
++                free_matrix,
++                free_residual,
++                [0.0; 21],
++                [false; 21],
++                [false; 21],
++                free,
++                0.0,
++            )
++            .is_err(),
++            "expected-red: materially nonstationary free coordinate must refuse"
++        );
++    }
++
++    #[test]
++    fn shared_signed_zero_descent_and_nonfinite_operand_controls_are_not_canned() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = -1.0;
++        let lower = std::array::from_fn(|index| index == 0);
++        let mut step = [0.0; 21];
++        step[0] = -0.0;
++        assert_eq!(
++            m1_trust_region_kkt_transition_for_test(
++                matrix.clone(),
++                residual,
++                step,
++                lower,
++                [false; 21],
++                [false; 21],
++                0.0
++            )
++            .expect("shared signed-zero descent transition"),
++            Some(M1TrustRegionKktAction::ReleaseLower)
++        );
++        matrix[0][0] = f64::NAN;
++        assert!(
++            m1_trust_region_kkt_transition_for_test(
++                matrix,
++                residual,
++                step,
++                lower,
++                [false; 21],
++                [false; 21],
++                0.0
++            )
++            .is_err()
++        );
++    }
++
++    #[test]
++    fn expected_red_cancellation_band_is_stable_under_scaling_and_permutation() {
++        for scale in [1.0, 8.0] {
++            let mut matrix = vec![vec![0.0; 21]; 21];
++            matrix[0][0] = scale;
++            matrix[0][1] = scale;
++            let mut residual = [0.0; 21];
++            residual[0] = (-1.0 - f64::EPSILON) * scale;
++            let mut step = [0.0; 21];
++            step[1] = 1.0;
++            let lower = std::array::from_fn(|index| index == 0);
++            assert_eq!(
++                m1_trust_region_kkt_transition_for_test(
++                    matrix,
++                    residual,
++                    step,
++                    lower,
++                    [false; 21],
++                    [false; 21],
++                    0.0
++                )
++                .expect("shared scaled transition"),
++                None,
++                "expected-red: scaled cancellation band remains unresolved"
++            );
++        }
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        matrix[0][1] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = -1.0 - f64::EPSILON;
++        let mut step = [0.0; 21];
++        step[0] = 1.0;
++        let lower = std::array::from_fn(|index| index == 1);
++        assert_eq!(
++            m1_trust_region_kkt_transition_for_test(
++                matrix,
++                residual,
++                step,
++                lower,
++                [false; 21],
++                [false; 21],
++                0.0
++            )
++            .expect("shared permuted transition"),
++            None,
++            "expected-red: permuted cancellation band remains unresolved"
++        );
++    }
++
++    #[test]
++    fn exact_fixed_bound_is_outside_shared_active_and_free_sets() {
++        let matrix = vec![vec![0.0; 21]; 21];
++        assert_eq!(
++            m1_trust_region_kkt_transition_for_test(
++                matrix,
++                [0.0; 21],
++                [0.0; 21],
++                [false; 21],
++                [false; 21],
++                [false; 21],
++                0.0,
++            )
++            .expect("shared fixed-only transition"),
++            Some(M1TrustRegionKktAction::Return)
++        );
++    }
++}

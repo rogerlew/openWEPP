@@ -1,0 +1,7 @@
+{
+  "evidence_class": "Static independent correctness adjudication; no physical execution",
+  "reviewer": "/root/finite_correctness",
+  "source_stage1_sha256": "df8f0156cea0bd60b4075adef8191f510ebb3141a90793ab32f9bbc7fe9d79bc",
+  "original_final_response": "Static review; no physical execution.\n\n- High: The direct transition seam sets initial_free: free, confusing current active status with physical fixedness. Use initial_free: [true; 21] because this seam has no physical fixed-bound inputs.\n- High: Capture seeding is a no-op: capture begins as None, while record_face_pivot_capture only mutates Some. Seed the TLS slot directly with Some(actual_capture).\n- Test oracle: Both identity solves complete exactly 1 Jacobi sweep. Assert completed_sweeps == 1 for each return operation and corresponding completed-subproblem summary. Event count is unrelated to sweep work.\n\nThese narrow corrections are approved. The current seven failures are consistent with the two seam defects and incorrect zero-sweep expectation.",
+  "derivation": "Identity column pairs have alpha=beta=1,gamma=0; sweep1 visits pairs without rotations then stores sweep/work_counter1 before breaking. Residual is not a factorization input."
+}

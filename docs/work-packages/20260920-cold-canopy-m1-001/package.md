@@ -1,5 +1,503 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Finite-precision active-face amendment — adopted 2026-09-25
+
+**Terminal disposition: COMPLETE bounded negative experiment; physical qualification and M1 remain HOLD.**
+The adopted finite-precision amendment was implemented and independently reviewed
+in the detached test-only runtime. The unchanged required ordinary-positive ran
+and **FAILS** before its first accepted update. This source-conforming negative
+triggers the adopted stop: no further numerical tuning, interface/full-feature
+work or target execution. All target slots remain **UNUSED / NOT RELEASED**.
+
+The frozen method is `COLD-CANOPY-M1-TR-SVD-BVLS-02`. For the returned scaled
+`A,f,p,lambda`, ordered `r=f+A*p` and `h=A^T*r+lambda*p` are assessed against
+`tau_i=up_mul(Gamma87,Cbar_i)`, where `Gamma87=next_up(87/(2^53-87))` and
+`C_i=sum_r |A_ri| (|f_r|+sum_j |A_rj||p_j|)+|lambda||p_i|` is enclosed with
+the specified upward operations. The 87-operation derivation covers residual,
+gradient and multiplier formation; the all-coordinate test is an a-posteriori
+stationarity requirement, not a forward-accuracy certificate for SVD. Lower/upper
+bounds release only beyond `-tau/+tau`; every free coordinate must satisfy
+`abs(h)<=tau`. Violating bounds rank by `abs(h)/tau`, with lowest-index exact ties.
+Primal feasibility, SVD/rank/ball/lambda search, all physical/root/step predicates
+and caps remain unchanged. Normal/zero/underflow/nonfinite guards fail closed.
+Distinct correctness and QA accepted this policy before implementation; no result
+was used to adjust its thresholds. Exact frozen authority SHA-256:
+`7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23`.
+
+Ran: the [independent retained-system oracle](artifacts/finite-precision-correctness-oracle-retained-face.json)
+remains negative: coordinate 5 still releases (`h=-1.472028549313008e-13`,
+`tau=3.5346757239268617e-16`), while free coordinate 11 cannot return
+(`h=8.505388150508881e-14`, `tau=2.3941865113805926e-16`). This historical
+same-system result is separate from the newly executed physical control.
+
+Ran: the [unchanged required ordinary-positive](artifacts/finite-precision-body13-ordinary-positive.json)
+uses original60 and the original coordinate-20 `+1e-4 K` perturbation. It returns
+`TrustRegionOptimalityIndeterminate / optimality_free_stationarity`, coordinate 11,
+in its first subproblem. [Independent reconstruction](artifacts/finite-precision-correctness-ordinary-positive-reconstruction.json)
+with [reviewer-owned code](artifacts/finite-precision-correctness-ordinary-positive-reconstruction.py)
+matches all 21 ordered `r/g/lambda*p/h/Cbar/tau` bit patterns, masks, classes,
+feasibility, transition and refusal. Coordinates 5 and 11 initially cross lower
+zero at `theta=-0.0`; the exact tie activates 5. On the constrained face, coordinate
+5 has positive `h=4.639685871761676e-14` and remains lower-active. No bound is
+releasable. Free coordinate 11 has `h=3.842944627154267e-14`,
+`Cbar=0.018446775816381954`, `tau=1.781763066005799e-16`, ratio
+`215.68213532279827`; it alone fails free stationarity. No implementation or
+recording discrepancy was found. The required accepted update, subsequent witness,
+physical acceptance, real materialization and independent reservoir closure are
+**NOT ESTABLISHED**: their successful-path assertions are not reached.
+
+Actual nested solve work: **41 core entries, 1 raw Jacobian, 0 hydraulic entries,
+2 SVD factorizations, 1 face pivot, maximum 7 Jacobi sweeps, 0 trials, 0 installs,
+0 materializations**. The core/raw-J/hydraulic/SVD/materialization budget attempted and completed
+counts agree individually. Separately, one subproblem is attempted and refused;
+there are zero completed-subproblem summaries. One initial natural
+Mixed/Drainage phase observation occurs; it is not an accepted-state result.
+The optimality assessment uses **6654** threshold arithmetic/upward steps
+(1534 multiplies + 1793 additions + 3327 next-up operations), plus **28** separate
+coefficient-construction operations (14 divisions + 14 next-up operations), and
+zero release-ranking divisions: **6682 added logical operations**. The reused
+1827-operation ordered KKT calculation is excluded from this added count. These
+are logical operation counts, not processor instructions or performance savings.
+The recorded command takes 1.521342 s (GNU time user 1.07 s/system 0.31 s);
+nextest reports 0.021 s for the test including setup. Neither is solver-only timing.
+Input/trial protection holds; accepted capture and controller-run are absent;
+prior/restored budget scopes are both `None`.
+
+Ran: [final selected controls](artifacts/finite-precision-body13-selected-controls.json)
+are **113 PASS / 3 FAIL / 242 skipped** out of 116 selected tests. All 31 new
+numerical controls and the repaired serializer parser pass. Two unchanged
+original60 physical-success controls refuse at free coordinate 11; the third
+failure is the unchanged old magnitude-ranking assertion (`[1,0]` versus the
+correct revised ratio/tie order `[0,1]`). These failures remain visible. The
+separate required-positive is **0 PASS / 1 FAIL / 357 skipped**. Historical
+method-01 85-PASS and positive-FAIL evidence is preserved, not transferred to 02.
+The [serializer fix and same-reviewer verification](artifacts/finite-precision-body13-serializer-review-and-fix.json)
+correct invalid JSON `None/Some` encoding only; no physical assertion or policy
+was rewritten to turn a failure green. Initial BODY12 parser compile failure is
+preserved. The earlier BODY06 log/source citation remains **UNBOUND** and is not
+used for acceptance; fresh BODY13 receipts supply terminal evidence.
+
+Ran: final [format](artifacts/finite-precision-body13-format.json),
+[default check](artifacts/finite-precision-body13-default-check.json) and
+[compile/list inventory](artifacts/finite-precision-body13-inventory.json) PASS;
+358 tests are **listed**, not all executed. [Strict lint](artifacts/finite-precision-body13-lint.json)
+remains FAIL; [actual diagnostic-block comparison](artifacts/finite-precision-body13-lint-comparison.json)
+finds exactly **238 inherited / 0 introduced / 0 removed**. The reviewed private,
+noncritical classification permits this bounded disposition, not a lint waiver.
+Documentary A0 admission and binding-index structural checks remain valid on the
+unchanged frozen authority. Detached physical/A1/A3 qualification, historical
+full09/A1/strict-lint/material-BGC/parent/cycle/performance HOLDs remain unresolved.
+No Critical trigger was introduced; full-workspace correctness was NOT RUN here.
+Authored documentation/recorder diff check passes. The [full staged whitespace check](artifacts/finite-precision-staged-whitespace-check.json)
+flags preserved patch-context and raw-log whitespace only; those authenticated
+evidence bytes remain unchanged.
+The eight full-feature producer/interface groups and their historical 18 errors
+remain unworked; support-0 prefix and baseline/treatment targets were NOT RUN.
+
+Static/Ran: original independent correctness `/root/finite_correctness` performed
+the offline reconstruction and finds no arithmetic/transition discrepancy; it
+accepts bounded negative disposition and explicitly withholds physical/M1,
+interface and target release. Original independent QA `/root/finite_qa` inspected
+source and supplied run/custody evidence, with no Rust execution by that reviewer;
+its [terminal review](artifacts/finite-precision-qa-terminal-review.json) accepts
+BODY13 test-only evidence and identifies the required-positive failure as a
+qualification blocker. Both same reviewers verified their accepted fixes; no
+reviewer became the source author. Root rejected post-result conversion of
+physical-success assertions to passing negative tests; correctness subsequently
+withdrew that proposal. Further numerical policy would require new owner direction.
+
+Exact [terminal diff reconciliation](artifacts/finite-precision-terminal-diff-reconciliation.json)
+finds only detached `lib.rs` and `m1_trust_region_stage1.rs` changed from the
+method-01 entry. The 764-entry source tree is
+`d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884`;
+Stage1 is `9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a`.
+[Fresh recovery](artifacts/finite-precision-terminal-recovery.json) applies exactly
+one full patch to the authenticated observer copy and verifies every entry/hash.
+Patch SHA-256: `0c29089a81c2e18c3fe4100282c396780eec8e51f1485be8109eb82e96fb0786`.
+[Binary/input custody](artifacts/finite-precision-binary-input-custody.json) retains
+the compiled binary locally with SHA-256
+`5a1283ae0a61497f11d9ccce0ba39e79ba794a1ac80b59cafa690cce6cdd7a9d`;
+unchanged physical test source is
+`b9f5fa46ba58b255c18cd316a4c886ba40526fe51a6ced2d80d3ca747400946e` and
+original input-reference identity is
+`4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54`.
+The source/support manifests bind all workflow inputs. Main Rust and unrelated
+dirty work remain untouched; only authority, package/evidence, recorder deadline
+and recovery are in the authorized publication scope.
+
+The [conservative final ledger](artifacts/finite-precision-final-ledger.json) charges
+through **2026-09-25 20:15:00 UTC**: **8340 new seconds**, cumulative
+**347833.959294 s**, leaving **6060 s** under the unchanged **353893.959294 s**
+ceiling. Reading, waits, parallel work, review and publication are charged once;
+no closing excess is refundable. The fixed 21:26 implementation cutoff and 21:56
+hard deadline were not reset. [Publication receipt](artifacts/finite-precision-final-publication.json)
+records the scoped payload commit and remote verification; experimental Rust
+remains detached.
+
+The following chronological execution evidence preserves rejected cuts and
+review findings; it does not supersede the terminal disposition above.
+
+Verified carry **339493.959294 s**, fixed ceiling **353893.959294 s**. The published
+face-pivot final ledger and publication receipt were inspected once; no later
+package ledger or detached-root receipt was found. Conservative first-reading
+anchor **2026-09-25T17:56:00Z** fixes implementation cutoff **21:26:00Z** and hard
+deadline **21:56:00Z**, with **1800 s** reserved for independent disposition,
+preservation and publication. All elapsed reading, concurrent work, corrections,
+waits and publication counts once, with no refunds, old allowance addition or
+reanchoring. Two failed corrections or 60 charged minutes triggers Astra's
+internal evidence-based continue/reassign/escalate decision, not renewed time.
+
+Ran: [start verification](artifacts/finite-precision-start-verification.json)
+compares all 764 live and recovered entries with terminal tree
+`18518425e882575c3e0c69e26e7fe6d8be0793ed1dba640d314e0c6b0bbbdb5b`,
+with no mismatches or extra crate files. Retained binary and both draft04
+canonical authority hashes match. Main starts at evidence commit `275f3225e`;
+unrelated dirty/staged/untracked work is preserved. Main Rust is not the
+experimental source and is outside the write scope.
+
+Intent and sequence: derive and freeze an independently justified numerical
+optimality policy as revision `COLD-CANOPY-M1-TR-SVD-BVLS-02`; obtain distinct
+correctness and QA review of formula, finite arithmetic, limits and controls;
+write discriminating controls and preserve unamended failures before body edits;
+implement only the reviewed all-coordinate policy; validate actual retained
+operands and unchanged physical ordinary-positive. Its original60 setup and
+coordinate20 +1e-4 K perturbation remain fixed. If those prerequisites pass,
+continue the eight retained real producer/interface groups, private harness and
+conditionally released target comparison within the same allowance. No fixture
+tuning, changed physics/root/step predicates, factorization/pivot expansion,
+runtime precision change, fallback, main adoption or parent progression.
+
+Sole writer `/root/finite_writer` uses the configured implementer role. Root owns
+package/evidence integration, budget, review decisions and scoped publication.
+Distinct correctness and QA reviewers assess changed claims and verify their own
+findings; unchanged historical review is reused. Initial writer assignment is
+formula/authority only, with no Rust body edits or result-bearing execution until
+prospective review. Intended writes: canonical diagnostic method section and
+vegetation cross-reference; detached Stage1 numerical policy, real controls and
+conditionally physical interface/harness connections; necessary recorder deadline;
+package and `finite-precision-*` evidence. Exact terminal diff determines reachability.
+
+Validation selection: source/control sequencing review, complete retained-system
+operands and independent numerical reconstruction, lower/upper/free/sign-zero/
+scaling/permutation/finite-edge discriminators, unchanged root/witness/phase/
+hydraulic/materialization/failure-state controls, exact ordinary-positive with
+independent reservoir closure and complete nested counts; selected/default build,
+format, A0/A1/A3 affected obligations and same-command strict-lint inheritance.
+The bounded no-new-relevant-diagnostics posture is conditional on proven private,
+noncritical reachability; 238 inherited diagnostics remain FAIL, never waived.
+The exact 900-second Critical command applies if its governing trigger is reached;
+ordinary physical commands are bounded180s, and full declared bounds plus reserve
+must fit. Unmet full-feature, qualification and historical M1 obligations remain
+visible. Source-conforming refusal requiring a different policy, unavailable
+indispensable role/source/independence after bounded recovery, uncontained integrity
+loss, owner stop, allowance/run limit or complete bounded disposition stops work.
+
+Ran: only the recorder hard deadline changes17:59Z→21:56Z; [five direct
+bound controls](artifacts/finite-precision-recorder-deadline-controls.json) PASS.
+No command or physical solve is launched by these controls.
+
+Static: independent correctness `/root/finite_correctness` confirms Stage1 is
+unconditionally `cfg(test)` in detached `lib.rs:132–134`; feature-enabled normal
+libraries cannot reach it. Bounded noncritical/inherited-lint classification is
+accepted only if the exact diff retains that test boundary and expiring diagnostic
+authority. Changes to gating, global features, production authority or required-suite
+posture reopen it. This is preliminary scope review, not method approval.
+
+Static: sole author freezes [draft01 authority](artifacts/finite-precision-authority-draft01.json)
+for distinct correctness `/root/finite_correctness` and QA `/root/finite_qa` review.
+The draft uses upward-enclosed `Gamma87=87/(2^53-87)` and
+`C_i=sum_r |A_ri| (|f_r|+sum_j |A_rj||p_j|)+|lambda||p_i|`, with
+`tau_i=upward(Gamma87*Cbar_i)`. The87 count covers43 residual,42 gradient and2
+lambda/add operations. It proposes a-posteriori all-coordinate stationarity,
+not forward accuracy of the SVD, retaining all primal/physical predicates.
+This is a proposed formula, not yet method approval or a numerical result.
+Four canonical authority files changed, including required LSE metadata/BEI and
+vegetation cross-reference. No Rust body/test or numerical execution occurred.
+
+Static: draft01 is **REJECTED / no body release**. Correctness finds missing
+new-refusal taxonomy/reasons, underspecified checked arithmetic/ranking, fixed-coordinate
+classification, and sequencing wording; QA independently confirms the sequencing
+blocker and exact authority hashes. Reviews are retained in
+[correctness](artifacts/finite-precision-correctness-draft01-review.json) and
+[QA](artifacts/finite-precision-qa-draft01-review.json). Same author corrects these
+clauses without changing the gamma87 formula. Root requests correctness re-evaluate
+its claim that unequal binary64 operands can add to rounded zero under gradual
+underflow; explicit fail-closed guards remain reasonable, but unsupported severity
+or actual-counterexample claims must not persist. No body/test/result execution.
+
+Static: same correctness and QA reviewers **ACCEPT draft02 authority for controls
+authoring only**, exact numerical hash `321d92cc…d2b4e`; [fix verification](artifacts/finite-precision-authority-draft02-reviews.json).
+No physical or target release follows. All substantive findings are verified fixed.
+Correctness withdraws its unequal-binary64-addition-to-zero counterexample rationale
+and recognizes ratio overflow guards as defensive under scale-consistent operands.
+The accepted gamma87/Cbar formula is unchanged. Same writer now authors real numeric
+controls on the unchanged01 shared solver before body edits; root records expected-red
+and reviewers assess control discrimination before body release. Sole author may
+activate reviewed diagnostic authority and remove duplicate conjunction; substantive
+formula changes would reopen prospective review. No numerical result is yet claimed.
+
+Internal reassessment after specification corrections: **CONTINUE**. Reviewers
+accept the formula and a-posteriori accuracy model; remaining progress is supported
+by explicit directed-operation definitions, then shared tests and independent
+operands. Before any oracle/shared numerical execution, author resolves a zero-term
+ambiguity with `up_mul(a,b)=0` for either zero operand, otherwise `next_up(fl(a*b))`;
+`up_add(a,b)=a` only for zero right addend, otherwise `next_up(fl(a+b))`, even
+when the left operand is zero. All operands are guarded first. Formula is unchanged;
+[draft03](artifacts/finite-precision-authority-draft03.json) freezes method hash
+`7c596afd…dfe23` for affected review. No data-dependent threshold selection, body edit,
+physical run or target occurs. Fixed cutoff/deadline/ceiling remain unchanged.
+
+Ran: correctness independently executes the [frozen-policy retained-operand oracle](artifacts/finite-precision-correctness-oracle-retained-face.json)
+with [independent code](artifacts/finite-precision-correctness-oracle-retained-face.py).
+All ordered r/g/lambda*p/h bits match. Coordinate5 has
+`h=-1.472028549313008e-13`, `tau=3.5346757239268617e-16` (ratio416.454), so its
+lower bound still releases. Free coordinate11 has `h=8.505388150508881e-14`,
+`tau=2.3941865113805926e-16` (ratio355.252), so it cannot satisfy return stationarity.
+All other free coordinates, exact box/radius/masks and lambda0 pass. Active release
+has prescribed precedence: all21 constrained faces release5; all22 all-free faces
+activate5 at signed-zero crossing, predicting the same42-pivot terminal refusal.
+This is **negative offline control evidence**, not a revised Rust/physical result.
+No threshold is changed. Same writer continues shared controls/body; the unchanged
+required physical-positive remains to execute after reviewed prerequisites.
+
+Tool friction: QA resume briefly hits thread capacity while completed correctness
+still occupies a slot. One available wake/interruption cycle, the previously verified
+bounded remedy, releases that slot and same-QA followup succeeds. No nested tool,
+role substitution or replacement reviewer is used; unchanged review remains valid.
+
+Ran: [main authority admission](artifacts/finite-precision-authority-admission01.json)
+returns `A0_ADMITTED`,49contracts/0science source surfaces, exact amended method
+hash `7c596afd…dfe23`. It qualifies only main documentary authority; detached
+non-Git source qualification and physical/A1/A3 evidence remain separate.
+
+Static: root rejects an unexecuted control draft that duplicated02 arithmetic
+instead of exercising shared01 code, including an incorrect residual accumulation
+order. [Rejected source](artifacts/finite-precision-controls-unreviewed-oracle01.rs)
+and [finding](artifacts/finite-precision-controls-unreviewed-oracle01.json) are preserved.
+Same writer removes the duplicate arithmetic and unnecessary new Cargo feature;
+actual shared-operation controls remain in progress. No body or physical execution
+is authorized by this rejected cut. Next supported step is complete shared-operation
+expected-red controls, then both reviews and unchanged-policy implementation.
+
+Internal reassessment after two control-draft rejections: **CONTINUE with the same
+writer and unchanged method**, because the next correction is concrete. Root's
+[controls01 review](artifacts/finite-precision-controls01-review.json) finds that
+`result.and_then` in the thin wrapper suppresses actual release events: old-policy
+release returnsNone, so purported expected-red uncertainty assertions would pass
+for the wrong reason. No tests ran. The full rejected source/patch are preserved;
+author must observe actual transition actions, separate upper/free tests and add
+actual crossing/finite-edge discrimination. QA independently checks the preserved
+cut while author corrects it. No new policy, allowance, physical or target release.
+
+Ran: [controls03 expected-red](artifacts/finite-precision-controls03-red.json)
+on tree `2afa1d77ad1d9c8aa31311b7e6c3c0f5859595b0794e66b8d3c72ffa740495d1`
+executes11tests: **5PASS/6FAIL**,327notselected,0.818s recorded command time;
+source/support remain unchanged. Failures distinguish lower/upper sign-only release,
+free stationarity, subnormal operands, underflow-to-zero and the initial scaling case.
+No Rust02 body, physical controller or target ran. This is useful prebody evidence,
+not complete control acceptance: both reviewers HOLD body release for mask partition,
+explicit theta bits, resolvable upper, exact typed reasons, threshold/zero/enclosure
+observations and precise reuse of negative-drainage evidence. Same writer corrects
+controls, preserving all failed cuts and the frozen negative policy result.
+QA's nonzero fixed-bound-step request is referred to correctness because an admitted
+base equals an equal physical bound, so its fixed scaled step is necessarily zero;
+no invalid fixture will be fabricated to satisfy an impossible obligation.
+
+Internal reassessment after repeated controls01–04 fixture/observation defects:
+**REASSIGN** at18:47Z to sole writer `/root/finite_repair_writer`, using the same
+canonical implementer role. Prior writer loses source ownership; both original
+independent reviewers remain assigned. Frozen controls04 lib`15765496…c477` and
+Stage1`59781902…9027` are preserved in
+[review evidence](artifacts/finite-precision-controls04-review.json) and
+[patch](artifacts/finite-precision-controls04-from-terminal.patch). No controls04
+red run occurs: JSON array indexing, overflow-before-enclosure and successful-result
+refusal assertions would fail for the wrong reasons. Both reviewers require exact
+actual typed-error assertions, an upper release, all21 ordered observations and
+fixed-coordinate expected-red evidence. Replacement corrects this bounded packet
+before body release. Method`7c596afd…dfe23`, negative oracle, target HOLD and fixed
+budget remain unchanged. This is internal reassignment, not renewed allowance or
+reviewer-to-author conversion.
+
+Ran: [controls05 expected-red](artifacts/finite-precision-controls05-red.json)
+executes17 tests, **4PASS/13FAIL**,327skipped,0.718s on unchanged01 numerical
+body. Source/support remain fixed. Both actual typed-refusal assertions and
+new02 observation expectations now fail against old behavior. Correctness verifies
+all controls04 corrections, but identifies two remaining frozen-policy coverage
+gaps: ratio-versus-magnitude release ranking, and exact nonfinite/negative-lambda
+transition reasons. Both [independent reviews](artifacts/finite-precision-controls05-reviews.json) agree.
+These are bounded additional controls, not threshold changes;
+body release remains HOLD pending their prebody evidence and same-reviewer checks.
+
+Internal60-minute reassessment at18:57Z: **CONTINUE with replacement writer**.
+The replacement has fixed all rejected control defects and added the two precise
+reviewed coverage gaps without policy changes. [Controls06 expected-red](artifacts/finite-precision-controls06-red.json)
+executes21tests,4PASS/17FAIL,327skipped,0.822s, source/support unchanged. Correctness
+statically verifies the full-rank ratio fixture and real selected-coordinate/typed
+refusal observations; receipt review and QA remain pending. Supported next action
+is exactly frozen02 implementation after both releases, followed by controls and
+unchanged physical-positive. No renewed allowance;21:26Z/21:56Z limits remain.
+
+Static/Ran: both [original reviewers](artifacts/finite-precision-controls06-reviews.json)
+verify controls06 source and dedicated red receipt and **APPROVE controls-before-body**.
+All17 failures have the intended old-sign/old-selector/absent-observation/old-generic
+cause; no unexplained failure or source/support drift remains. At19:00Z root
+releases sole replacement implementer for exact frozen02 body plus required real
+optimality/work observations. No threshold adjustment, physical execution,
+full-feature connection or target is released. Body review and green numerical
+controls precede the unchanged required physical-positive.
+
+Ran: `.venv/bin/python tools/check_sc_binding_exposure.py <contract>` separately
+PASSes amended LSE (directory-v1,25rows/106definitions; structural evidence only)
+and vegetation (20consolidatedrows). `git diff --check` passes. Tool accepts exactly
+one positional contract and no `--help`; initial invocation errors did not execute
+a check and are not passes. Documentary checks do not qualify detached execution.
+
+Static: first incomplete body compile cut is [preserved](artifacts/finite-precision-body01-compile-failed.json).
+Writer reports only E0277 for missing`Debug` on the new typed internal failure at
+an existing test`expect`; no numerical workflow ran. Root preserves the exact
+source patch before the mechanical derive correction. Real capture completion
+and reviewed body validation remain pending; no policy or acceptance change.
+
+Ran: frozen body03 [numerical controls](artifacts/finite-precision-body03-controls.json)
+PASS21/21,327skipped,0.672s; format/default-check/inventory PASS (348listed).
+Source/support remain unchanged. Same-command [strict lint](artifacts/finite-precision-body03-lint.json)
+FAIL101/11.357s; [actual diagnostic comparison](artifacts/finite-precision-body03-lint-comparison.json)
+finds238inherited plus7introduced,0removed. Writer's235 compiler-summary number is
+not the diagnostic-block count and does not establish inheritance.
+
+Static: QA **HOLDS physical release** for incomplete early-error capture, absent
+successful-return threshold capture, and scalar work counting helper invocations
+instead of actual arithmetic/upward steps. Required fixes retain exact02 policy:
+real shared-operation capture/work controls before corrections, complete typed
+reason/coordinate/available-operand recording, and no added lint diagnostics.
+Numerical PASS alone does not clear those evidence/quality requirements. Correctness
+body review remains pending; no physical or target execution occurred.
+
+Static: [correctness and QA body03 reviews](artifacts/finite-precision-body03-reviews.json)
+accept frozen arithmetic but **HOLD physical execution**. Correctness additionally
+finds that equality of rounded scaled bounds can misclassify physically distinct
+bounds as fixed; existing original physical fixed/free classification must govern.
+A real collapsed-scaled-bound regression precedes its fix. Refusal capture must
+also retain actual face radius/lambda/free IDs instead of zero/None/empty placeholders.
+Root accepts these findings and releases only new real shared-operation controls
+on unchanged body03, then their red evidence and reviewed corrections. The exact
+frozen gamma87 policy and independently negative retained-system result remain.
+
+Static: correctness also requires exact enclosure underflow/subnormal reason
+tokens instead of collapsed`optimality_upward_enclosure`; a normal-KKT/normal-Cbar
+but subnormal-tau control and real enclosure-underflow control precede that fix.
+This corrects implementation of frozen authority, not its thresholds. Root corrects
+a review wording slip:348 is a compile/list inventory, **not348executed tests**;
+only21 numerical tests ran. No broader workflow pass is claimed.
+
+Ran: [controls07 red](artifacts/finite-precision-controls07-red.json) executes29
+controls, **21PASS/8FAIL**,327skipped,0.568s, source/support unchanged. Both
+[reviewers](artifacts/finite-precision-controls07-reviews.json) accept the eight
+failures and narrow remaining control work to exact capture metadata. Tests must
+compare actual radius/lambda/free IDs and return vectors/work; completed-KKT
+enclosure failures retain available vectors, while early NaN explicitly lacks
+them. A free-stationarity metadata control prevents the existing placeholders
+from passing. Internal decision: **CONTINUE** with this precise controls08 packet
+and unchanged numerical policy; no new allowance or physical execution.
+
+Ran: [controls08 red](artifacts/finite-precision-controls08-red.json) executes30
+controls, **21PASS/9FAIL**,327skipped,0.568s, source/support unchanged. Both
+[reviews](artifacts/finite-precision-controls08-reviews.json) accept exact metadata
+coverage. One controls09 custody test remains: two distinguishable real subproblem
+returns in the same capture scope must retain both ordered assessments/work records
+and completed summaries. Existing reset drops earlier operations; whole-run work
+cannot be inferred from the last subproblem alone. All accepted body corrections
+remain frozen in scope; no physical execution or numerical-policy change.
+
+Ran: [controls09 red](artifacts/finite-precision-controls09-red.json) executes31
+controls, **21PASS/10FAIL**,327skipped,0.568s, source/support unchanged. Both
+[original reviewers](artifacts/finite-precision-controls09-reviews.json) verify the
+real two-solve custody discriminator and dedicated receipt, and **RELEASE the
+accepted correction body**. Same sole writer implements the fixed-mask, reason,
+actual work-count, comparator, complete capture/custody and mechanical lint fixes.
+Frozen method/SVD/physics/caps are unchanged. Physical/target execution remains
+HOLD pending green31controls, corrected-body review and lint attribution.
+
+Ran: writer's [body04 failed cut](artifacts/finite-precision-body04-failed.json)
+executes31 focused controls, **24PASS/7FAIL**. Root durably preserves the restored
+exact failed source, raw logs and transient-edit recovery delta. Two seam defects
+remain: current free-mask membership was mistaken for original physical fixedness,
+and capture initialization used a mutator that only operates on an existing record.
+An incorrect zero-sweep test oracle also fails. Root rejects the writer's transient
+substitution of event count for sweep work; no such assertion remains.
+
+Static: same [correctness reviewer](artifacts/finite-precision-body04-correctness-adjudication.json)
+independently derives exactly **one Jacobi sweep** for both identity solves from
+the unchanged pair products and loop exit, and approves strict operation/summary
+assertions to that value plus the two precise seam fixes. Internal reassessment:
+**CONTINUE** with this evidenced packet; no tolerance, solver, caps or allowance
+changes. Physical execution remains held until source/control/quality review.
+
+Ran: the independent [threshold-work oracle](artifacts/finite-precision-correctness-work-oracle.json)
+reconstructs retained-face`Cbar/tau/h` bits and **6522** executed threshold
+arithmetic/upward steps (1511multiplications,1750additions,3261next_up), below39816.
+Coefficient construction and release-ranking division are separate; this is not
+an instruction count, added SVD work or a physical result.
+
+Custody limitation: the [body06 backup](artifacts/finite-precision-body06-prelint.json)
+hashes`c00f78a0…`, unlike the author's unsubstantiated green-run Stage1 citation
+`fe213a50…`. Its source/logs are retained but **UNBOUND**, not reused for acceptance.
+This bounded intermediate-report discrepancy does not alter retained failed04,
+frozen method/controls or current source; fresh exact-source evidence is required.
+
+Ran: [body10 controls](artifacts/finite-precision-body10-controls.json) PASS31/31,
+327skipped,0.969s on source`68ae9bd…`; default check and compile/list inventory PASS.
+[Strict lint](artifacts/finite-precision-body10-lint.json) remainsFAIL101/11.111s,
+but [actual comparison](artifacts/finite-precision-body10-lint-comparison.json)
+proves238inherited/0introduced/0removed diagnostic blocks. Static QA verifies all
+capture/work/custody corrections and private scope. Recorded format FAIL is only
+initializer indentation and return-call wrapping; rustfmt and a fresh source-bound
+format receipt remain before physical release. Correctness review remains pending.
+
+Static/Ran: both [reviewers](artifacts/finite-precision-body11-reviews.json) verify
+final Stage1`6caa460f…5b916`, lib`083250b1…b82d`, and the exact formatter-only change
+(indentation, wrapping/optional trailing comma). Canonical [format](artifacts/finite-precision-body11-format.json)
+PASS4.084s on final tree`86f2a6c…`; writer's wrong-edition direct rustfmt parse error
+is not a pass. Policy/core/source checks and exact238/0-new lint evidence remain
+applicable. **Physical release:** unchanged historical selected expression (85old
+plus31new controls=116), followed separately by the unchanged required ordinary
+positive, each bounded180s. No full-feature/target release follows before results.
+
+Ran: final reviewed [selected controls](artifacts/finite-precision-body11-selected-controls.json)
+execute116 tests, **112PASS/4FAIL**,242skipped,14.719s, source/support unchanged.
+Two actual original60 accepted-root controls now refuse with
+`TrustRegionOptimalityIndeterminate / optimality_free_stationarity`, coordinate11,
+radius1/lambda0,2factorizations/1pivot/7maximum sweeps. These are new physical
+failures, not successful numerical or materialization outcomes. The historical
+largest-multiplier test expects order[1,0], while revised ratio selection gives[0,1].
+All31 revised focused controls still pass; original85PASS remains historical only.
+
+The fourth failure is a genuine recording defect: refusal JSON Debug-formats
+optional fields as Rust`None/Some`, causing parser failure at column22506. QA
+permits only serializer correction to JSON null/values and exact-bit optional
+radius/lambda, with strengthened existing parser assertions. Numerical/physical
+failure assertions and all inputs/policy remain unchanged. The required ordinary
+positive is not launched until its capture serialization is valid. Full-feature
+and target work remain HOLD; no response to a negative result changes thresholds.
+
+Static/Ran: [independent ranking reconstruction](artifacts/finite-precision-correctness-ranking-oracle.json)
+proves equal ratio bits`42d78a4c8178a483` at coordinates0/1, so02 correctly selects
+[0,1]; the old magnitude-order assertion is an explicit01/02 expectation mismatch.
+Correctness proposed rewriting both physical-success controls as passing typed
+negatives. Root **rejects that acceptance change** and retains their unchanged
+assertions and physical FAILs, consistent with QA. Correct mathematical refusal
+is not physical success. [Adjudication](artifacts/finite-precision-selected-failure-adjudication.json)
+preserves the disagreement. Required unchanged ordinary-positive measurement
+remains necessary after serializer verification; no further numerical tuning,
+full-feature work or target release follows from these negative results.
+
+Static: correctness rechecks adopted§§3–4 and **withdraws** the proposed physical
+test conversion and all-selected-green prerequisite for collecting the required
+ordinary-positive. Both reviewers now agree: preserve the three FAILs unchanged;
+verify serializer repair, then run the exact required measurement. Further
+interfaces/full-feature/targets remain prohibited because their prerequisites fail.
+A source-conforming ordinary-positive refusal stops numerical-method work.
+
 ## Non-target face-pivot attribution — adopted 2026-09-25
 
 **Terminal disposition: COMPLETE limited attribution / method limitation.** The

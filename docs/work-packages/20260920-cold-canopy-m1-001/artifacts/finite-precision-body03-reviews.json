@@ -1,0 +1,28 @@
+{
+  "source_receipt": "finite-precision-body03-controls-source.json",
+  "method_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+  "correctness": {
+    "reviewer": "/root/finite_correctness",
+    "verdict": "HOLD physical; arithmetic/threshold policy otherwise conformant",
+    "findings": [
+      "Scaled-bound equality can collapse distinct physical bounds and incorrectly exempt free coordinate; use original physical fixed mask",
+      "Capture early errors, actual radius/lambda/free_ids in refusals, and successful Return assessment",
+      "Replace positive finite ratio partial_cmp default Equal by total_cmp with unchanged coordinate tie-break",
+      "Upward helpers must retain exact underflow-to-zero/subnormal-intermediate reason tokens rather than collapse them into upward_enclosure",
+      "Use bounded non-saturating diagnostic operation counts"
+    ],
+    "oracle": "Independent original oracle rerun bit-stable; retained lower5 release/free11 refusal; negative recurrence unchanged"
+  },
+  "qa": {
+    "reviewer": "/root/finite_qa",
+    "verdict": "HOLD physical",
+    "findings": [
+      "All typed optimality errors need capture with reason/coordinate and actual available operands",
+      "Successful Return lacks assessment capture",
+      "scalar_operations counts helper calls rather than actual arithmetic/upward steps",
+      "7 new lint diagnostic blocks must be fixed"
+    ]
+  },
+  "decision": "Accepted findings; sole replacement writer adds discriminating controls on unchanged body03 before corrections. No policy tuning or physical execution.",
+  "validation_correction": "Correctness final response called348 broader tests green; root corrects348 to compile/list inventory, only21 numerical tests ran. No348 workflow pass is claimed."
+}

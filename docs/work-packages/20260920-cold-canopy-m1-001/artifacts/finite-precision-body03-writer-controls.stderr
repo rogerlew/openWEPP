@@ -1,0 +1,176 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.86s
+────────────
+ Nextest run ID 3aa238da-5db6-4c05-9848-fa21c4f657f1 with nextest profile: default
+    Starting 21 tests across 1 binary (327 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_overflow_kkt_operand_has_typed_optimality_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cbar_overflow_has_typed_02_transition_metadata ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_nonfinite_kkt_operand_has_typed_optimality_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_release_ranking_uses_observed_ratio_not_multiplier_magnitude ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_operand_must_refuse ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_negative_lambda_has_typed_optimality_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_at_diagonal_scale ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_intermediate_must_refuse ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_zero_cbar_with_zero_h_is_an_explicit_02_observation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_under_coordinate_permutation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_must_not_release_on_sign_alone ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_at_unit_scale ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_underflow_to_zero_kkt_product_must_refuse ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_must_refuse_from_shared_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_upper_cancellation_band_must_not_release_on_sign_alone ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::fixed_finite_bound_uses_shared_prepare_and_full_solve_metadata ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::zero_scale_is_rejected_by_shared_preparation_before_kkt_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::shared_normal_nonfinite_and_overflow_kkt_operands_are_real_operations ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::resolvable_upper_violation_releases_through_shared_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::shared_signed_zero_crossing_precedes_genuine_descent_release ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::retained_capture_uses_shared_ordered_kkt_operation_before_policy_change ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.01s
+
+
+────────────
+     Summary [   0.016s] 21 tests run: 21 passed, 327 skipped

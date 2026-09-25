@@ -1,0 +1,7 @@
+{
+  "evidence_class": "Static: rejected unexecuted controls draft",
+  "source_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_finite_precision_controls.rs",
+  "sha256": "42eee85170f7321b01ffbd61c32c293e8612b34365131bca18701434b93132cc",
+  "issue": "Tests exercise standalone duplicate Rust02 oracle rather than unchanged shared Stage1. Also r accumulates from f instead of Ap from0 then+f. No test run/body acceptance. Writer redirected to shared-code discriminators.",
+  "observed_utc": "2026-09-25T18:20:53.639985+00:00"
+}

@@ -1,0 +1,953 @@
+{
+  "classifications": {
+    "free_pass": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "free_refuse": [
+      11
+    ],
+    "release_lower": [
+      5
+    ]
+  },
+  "complete_return_test_passes": false,
+  "coordinates": [
+    {
+      "cbar": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "classification": "free_pass",
+      "coordinate": 0,
+      "diagnostic_abs_h_over_tau": null,
+      "h_hat": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "c024000000000000",
+      "scaled_upper": "4059000000000000",
+      "tau": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "4070d7d2f42f07e8",
+        "decimal": "269.4890024029869"
+      },
+      "classification": "free_pass",
+      "coordinate": 1,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3fd19b5f778d63a4",
+        "decimal": "0.275108210325522"
+      },
+      "h_hat": {
+        "bits": "3d69320fba07e04a",
+        "decimal": "7.161006712446371e-13"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "bd117a3f39b0d538",
+        "decimal": "-1.552316252637436e-14"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "bff161e3bdf7fd00",
+      "scaled_upper": "405b3a787108200c",
+      "tau": {
+        "bits": "3d86e562c3efef00",
+        "decimal": "2.6029781895542498e-12"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "404d1f35e4cb5842",
+        "decimal": "58.243832206048424"
+      },
+      "classification": "free_pass",
+      "coordinate": 2,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3fbbb8033fa66ea2",
+        "decimal": "0.10827656082113404"
+      },
+      "h_hat": {
+        "bits": "bd31254894d2afc0",
+        "decimal": "-6.091354533081345e-14"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "bd0b0f1362baba37",
+        "decimal": "-1.2016560880444887e-14"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "bff1ad48889f1f00",
+      "scaled_upper": "405b394adddd8384",
+      "tau": {
+        "bits": "3d63cb36a1823634",
+        "decimal": "5.625736989507705e-13"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "40cfe65f3a4f6554",
+        "decimal": "16332.74396698425"
+      },
+      "classification": "free_pass",
+      "coordinate": 3,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3f4435f0ce912bc9",
+        "decimal": "0.0006167817892984646"
+      },
+      "h_hat": {
+        "bits": "bd3b63528754b233",
+        "decimal": "-9.730164420691528e-14"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "bc8cdd50910efddd",
+        "decimal": "-5.007194415916802e-17"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "3de5ae94b9a1f71c",
+        "decimal": "1.577569991448473e-10"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "40bfb2941d68febe",
+        "decimal": "8114.578573763078"
+      },
+      "classification": "free_pass",
+      "coordinate": 4,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3f8621f9fbe1c9b9",
+        "decimal": "0.010806992530182013"
+      },
+      "h_hat": {
+        "bits": "3d6dcd65001a13b8",
+        "decimal": "8.470329474268636e-13"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "bcc655de26d7fc91",
+        "decimal": "-6.199324669286153e-16"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "3dd58b60abfd5d62",
+        "decimal": "7.837823011917986e-11"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "3fa2bc8fc138fe7f",
+        "decimal": "0.03659486039805148"
+      },
+      "classification": "release_lower",
+      "coordinate": 5,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "407a074215732d98",
+        "decimal": "416.4536337374825"
+      },
+      "h_hat": {
+        "bits": "bd44b78ab227b7d5",
+        "decimal": "-1.472028549313008e-13"
+      },
+      "mask": "lower_active",
+      "p": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "primal_feasible": true,
+      "release_ratio": {
+        "bits": "407a074215732d98",
+        "decimal": "416.4536337374825"
+      },
+      "scaled_lower": "0000000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "3cb978536aa97a3c",
+        "decimal": "3.5346757239268617e-16"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "classification": "free_pass",
+      "coordinate": 6,
+      "diagnostic_abs_h_over_tau": null,
+      "h_hat": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "c024000000000000",
+      "scaled_upper": "4059000000000000",
+      "tau": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "407130cca65024cf",
+        "decimal": "275.0499632959954"
+      },
+      "classification": "free_pass",
+      "coordinate": 7,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3fbdbebc3f20d110",
+        "decimal": "0.1161916402932699"
+      },
+      "h_hat": {
+        "bits": "3d55b8c7b5806ee2",
+        "decimal": "3.086853058301715e-13"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "bd208f3d8e334c2a",
+        "decimal": "-2.941563972302675e-14"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "bff282bfb9db0a00",
+      "scaled_upper": "405b35f5011893d8",
+      "tau": {
+        "bits": "3d875e563214f24b",
+        "decimal": "2.6566911789096356e-12"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "404a76ffffe7eb9d",
+        "decimal": "52.929687488787046"
+      },
+      "classification": "free_pass",
+      "coordinate": 8,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3fc22ffa0f6d30f1",
+        "decimal": "0.1420891356777996"
+      },
+      "h_hat": {
+        "bits": "bd34726e38707b38",
+        "decimal": "-7.264231644955317e-14"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "bd157a9039b49868",
+        "decimal": "-1.907697396065256e-14"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "bff3b12581018b00",
+      "scaled_upper": "405b313b69fbf9d4",
+      "tau": {
+        "bits": "3d61fce1ffefa257",
+        "decimal": "5.112446923055146e-13"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "40d2851e80a8d227",
+        "decimal": "18964.47660275004"
+      },
+      "classification": "free_pass",
+      "coordinate": 9,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3f99bb4d3490a462",
+        "decimal": "0.02512856133776998"
+      },
+      "h_hat": {
+        "bits": "3d943e7b3cdb981b",
+        "decimal": "4.602968137637987e-12"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "bc91762c2995518a",
+        "decimal": "-6.058213432745232e-17"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "3de92cf576e57df3",
+        "decimal": "1.8317674759674383e-10"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "40c2bdb4e0283629",
+        "decimal": "9595.413090731092"
+      },
+      "classification": "free_pass",
+      "coordinate": 10,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3f92b78fbb780aa1",
+        "decimal": "0.018278356377786967"
+      },
+      "h_hat": {
+        "bits": "3d7dcd65001a13b8",
+        "decimal": "1.6940658948537272e-12"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "bcd8cce9862b5759",
+        "decimal": "-1.376700880793287e-15"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "3dd979e1e0b6a9e7",
+        "decimal": "9.268152233383878e-11"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "3f9961d4c3c37e6c",
+        "decimal": "0.02478725857588275"
+      },
+      "classification": "free_refuse",
+      "coordinate": 11,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "40763406f0c877c5",
+        "decimal": "355.2516944723869"
+      },
+      "h_hat": {
+        "bits": "3d37f0c72f41f1ee",
+        "decimal": "8.505388150508881e-14"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "bad0419700000000",
+        "decimal": "-2.101065940031484e-25"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "bad0975340000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "3cb1407e9d0ee01e",
+        "decimal": "2.3941865113805926e-16"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "40b573c426389210",
+        "decimal": "5491.766208205852"
+      },
+      "classification": "free_pass",
+      "coordinate": 12,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3f946059e942368a",
+        "decimal": "0.01989880071828635"
+      },
+      "h_hat": {
+        "bits": "bd7291a93205b722",
+        "decimal": "-1.0555247608246255e-12"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "3d0b069328a31757",
+        "decimal": "1.2001814193207938e-14"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "c01840bec5027c40",
+      "scaled_upper": "405b3bf413afd83c",
+      "tau": {
+        "bits": "3dcd295ea3f4e6df",
+        "decimal": "5.3044642024814723e-11"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "40c64d6408a16422",
+        "decimal": "11418.781513379949"
+      },
+      "classification": "free_pass",
+      "coordinate": 13,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3f904872b9dc5e9e",
+        "decimal": "0.015901367754024613"
+      },
+      "h_hat": {
+        "bits": "bd7eda7ac8670a31",
+        "decimal": "-1.7538147868200102e-12"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "bc950c932963d5db",
+        "decimal": "-7.302880699134927e-17"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "bfe8a0d49a0e55d2",
+      "scaled_upper": "4058cebe56cbe355",
+      "tau": {
+        "bits": "3dde5133fbbb6473",
+        "decimal": "1.1029332909907212e-10"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "4073990ba08690a1",
+        "decimal": "313.56533863605915"
+      },
+      "classification": "free_pass",
+      "coordinate": 14,
+      "diagnostic_abs_h_over_tau": {
+        "bits": "3feaa5423cb05c2b",
+        "decimal": "0.8326731858568385"
+      },
+      "h_hat": {
+        "bits": "bd862ede994aae20",
+        "decimal": "-2.5219246808854176e-12"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "b9c8832366f00000",
+        "decimal": "-2.4170953473651465e-30"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "3d8aa40bce36ece5",
+        "decimal": "3.0287088904998223e-12"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "classification": "free_pass",
+      "coordinate": 15,
+      "diagnostic_abs_h_over_tau": null,
+      "h_hat": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "classification": "free_pass",
+      "coordinate": 16,
+      "diagnostic_abs_h_over_tau": null,
+      "h_hat": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "classification": "free_pass",
+      "coordinate": 17,
+      "diagnostic_abs_h_over_tau": null,
+      "h_hat": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "classification": "free_pass",
+      "coordinate": 18,
+      "diagnostic_abs_h_over_tau": null,
+      "h_hat": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "classification": "free_pass",
+      "coordinate": 19,
+      "diagnostic_abs_h_over_tau": null,
+      "h_hat": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      }
+    },
+    {
+      "cbar": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "classification": "free_pass",
+      "coordinate": 20,
+      "diagnostic_abs_h_over_tau": null,
+      "h_hat": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "mask": "free",
+      "p": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      },
+      "primal_feasible": true,
+      "release_ratio": null,
+      "scaled_lower": "fff0000000000000",
+      "scaled_upper": "7ff0000000000000",
+      "tau": {
+        "bits": "0000000000000000",
+        "decimal": "0.0"
+      }
+    }
+  ],
+  "evidence_class": "independent offline binary64 control oracle; no Rust treatment or physical execution",
+  "face_checks": {
+    "all_coordinates_primal_feasible": true,
+    "ball_feasible": true,
+    "lambda": {
+      "bits": "0000000000000000",
+      "decimal": "0.0",
+      "nonnegative": true
+    },
+    "mask_partition_valid": true,
+    "ordered_norm": {
+      "bits": "3d279f8989958d67",
+      "decimal": "4.19632193966604e-14"
+    },
+    "ordered_norm_square": {
+      "bits": "3a61707116dd5dd2",
+      "decimal": "1.7609117821322557e-27"
+    },
+    "radius": {
+      "bits": "3ff0000000000000",
+      "decimal": "1.0"
+    }
+  },
+  "formula_identity": {
+    "gamma87": {
+      "bits": "3d05c0000000003c",
+      "decimal": "9.658940314238957e-15"
+    },
+    "gamma_operation_count": 87,
+    "method_path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "method_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+    "zero_term_interpretation": "skip an explicit zero right-hand term; a nonzero term accumulated into a zero running sum is a written addition and receives next_up"
+  },
+  "g_hat_bits": [
+    "0000000000000000",
+    "3d69320fba07e04a",
+    "bd31254894d2afc0",
+    "bd3b63528754b233",
+    "3d6dcd65001a13b8",
+    "bd44b78ab227b7d5",
+    "0000000000000000",
+    "3d55b8c7b5806ee2",
+    "bd34726e38707b38",
+    "3d943e7b3cdb981b",
+    "3d7dcd65001a13b8",
+    "3d37f0c72f41f1ee",
+    "bd7291a93205b722",
+    "bd7eda7ac8670a31",
+    "bd862ede994aae20",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000"
+  ],
+  "h_hat_bits": [
+    "0000000000000000",
+    "3d69320fba07e04a",
+    "bd31254894d2afc0",
+    "bd3b63528754b233",
+    "3d6dcd65001a13b8",
+    "bd44b78ab227b7d5",
+    "0000000000000000",
+    "3d55b8c7b5806ee2",
+    "bd34726e38707b38",
+    "3d943e7b3cdb981b",
+    "3d7dcd65001a13b8",
+    "3d37f0c72f41f1ee",
+    "bd7291a93205b722",
+    "bd7eda7ac8670a31",
+    "bd862ede994aae20",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000"
+  ],
+  "input_identity": {
+    "capture_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-observed-capture.json",
+    "capture_sha256": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c",
+    "historical_reconstruction_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-correctness-reconstruction.json",
+    "historical_reconstruction_sha256": "92ecb417d22118ddb2e39268ea29d5d3aa6e3a37e73a940efffba90e7cf3fb1c",
+    "operation_action": "release",
+    "operation_index": 1,
+    "script_path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-correctness-oracle-retained-face.py",
+    "script_sha256": "1d0522d70802d979aff0d166a810dd6647ea17d52da339da0c367c171b977eb6"
+  },
+  "lambda_p_bits": [
+    "0000000000000000",
+    "8000000000000000",
+    "8000000000000000",
+    "8000000000000000",
+    "8000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "8000000000000000",
+    "8000000000000000",
+    "8000000000000000",
+    "8000000000000000",
+    "8000000000000000",
+    "0000000000000000",
+    "8000000000000000",
+    "8000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000"
+  ],
+  "r_hat_bits": [
+    "0000000000000000",
+    "bbe4500000000000",
+    "3b85000000000000",
+    "bbe0a23000000000",
+    "3b90000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "bbd8800000000000",
+    "3ba8800000000000",
+    "3bdd928000000000",
+    "3ba0000000000000",
+    "3ba88771d7800000",
+    "bbc9000000000000",
+    "3baeb90000000000",
+    "bba6d42d8de411a4",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000",
+    "0000000000000000"
+  ],
+  "record_correspondence": {
+    "g_hat_exact_bits": true,
+    "h_hat_exact_bits": true,
+    "lambda_p_exact_bits": true,
+    "r_hat_exact_bits": true
+  },
+  "trajectory_audit": {
+    "activation_count": 22,
+    "all_activations_are_coordinate_5_negative_zero_lower_crossings": true,
+    "all_releases_remain_coordinate_5_resolvable_lower_releases": true,
+    "captured_operation_count": 43,
+    "captured_refusal_kind": "FacePivotLimit",
+    "captured_refusal_stage": "activate-first-crossing",
+    "last_operation": {
+      "action": "activate-cap",
+      "applied": false,
+      "candidate_coordinate_bits": "baf4c63ed8000000",
+      "candidate_violates_lower": true,
+      "record_index": 42,
+      "selected_coordinate": 5,
+      "selected_lower": true,
+      "theta_bits": "8000000000000000"
+    },
+    "release_count": 21,
+    "release_records": [
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 1,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 3,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 5,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 7,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 9,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 11,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 13,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 15,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 17,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 19,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 21,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 23,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 25,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 27,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 29,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 31,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 33,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 35,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 37,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 39,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      },
+      {
+        "classification_at_selected_coordinate": "release_lower",
+        "complete_return_test_passes": false,
+        "h_exact_template": true,
+        "record_index": 41,
+        "selected_coordinate": 5,
+        "step_exact_template": true
+      }
+    ],
+    "revised_policy_implication": "The 21 constrained faces still release coordinate 5; the 22 all-free faces still activate its lower bound at negative-zero theta. The revised predicate therefore preserves the recorded two-face recurrence and terminal FacePivotLimit rather than returning a step or tuning tau."
+  }
+}

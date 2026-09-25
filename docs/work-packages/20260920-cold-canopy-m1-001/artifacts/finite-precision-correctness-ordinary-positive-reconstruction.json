@@ -1,0 +1,1961 @@
+{
+  "assessed_operation_indices": [
+    1
+  ],
+  "assessment": {
+    "action": "optimality-refusal",
+    "active_release_candidates": [],
+    "coordinates": [
+      {
+        "abs_h_over_tau": null,
+        "cbar_bits": "0000000000000000",
+        "cbar_tau_work": {
+          "additions": 82,
+          "bounded_operations": 302,
+          "divisions": 0,
+          "multiplications": 69,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 21,
+              "zero_right_additions_skipped": 21
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 151,
+          "zero_multiplications_skipped": 395,
+          "zero_right_additions_skipped": 402
+        },
+        "class": "FreePass",
+        "coordinate": 0,
+        "h_bits": "0000000000000000",
+        "tau_bits": "0000000000000000"
+      },
+      {
+        "abs_h_over_tau": 0.013473654632816233,
+        "cbar_bits": "406b05f9e19134e9",
+        "cbar_tau_work": {
+          "additions": 88,
+          "bounded_operations": 328,
+          "divisions": 0,
+          "multiplications": 76,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 6,
+              "bounded_operations": 24,
+              "divisions": 0,
+              "multiplications": 6,
+              "upward_steps": 12,
+              "zero_multiplications_skipped": 15,
+              "zero_right_additions_skipped": 15
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 164,
+          "zero_multiplications_skipped": 388,
+          "zero_right_additions_skipped": 396
+        },
+        "class": "FreePass",
+        "coordinate": 1,
+        "h_bits": "bd1fad4e7d6bd342",
+        "tau_bits": "3d825e0fd750b22a"
+      },
+      {
+        "abs_h_over_tau": 0.10452335140114688,
+        "cbar_bits": "4046d8833f2a0c19",
+        "cbar_tau_work": {
+          "additions": 87,
+          "bounded_operations": 324,
+          "divisions": 0,
+          "multiplications": 75,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 5,
+              "bounded_operations": 20,
+              "divisions": 0,
+              "multiplications": 5,
+              "upward_steps": 10,
+              "zero_multiplications_skipped": 16,
+              "zero_right_additions_skipped": 16
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 162,
+          "zero_multiplications_skipped": 389,
+          "zero_right_additions_skipped": 397
+        },
+        "class": "FreePass",
+        "coordinate": 2,
+        "h_bits": "3d29f7f44fb01418",
+        "tau_bits": "3d5f0e5269dd28c9"
+      },
+      {
+        "abs_h_over_tau": 0.03148955238894019,
+        "cbar_bits": "40d0b143c683e052",
+        "cbar_tau_work": {
+          "additions": 91,
+          "bounded_operations": 340,
+          "divisions": 0,
+          "multiplications": 79,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 9,
+              "bounded_operations": 36,
+              "divisions": 0,
+              "multiplications": 9,
+              "upward_steps": 18,
+              "zero_multiplications_skipped": 12,
+              "zero_right_additions_skipped": 12
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 170,
+          "zero_multiplications_skipped": 385,
+          "zero_right_additions_skipped": 393
+        },
+        "class": "FreePass",
+        "coordinate": 3,
+        "h_bits": "bd96dd7fbae44d6d",
+        "tau_bits": "3de6b0f821db452f"
+      },
+      {
+        "abs_h_over_tau": 0.03347546663864135,
+        "cbar_bits": "40c0a0f0af4ac78a",
+        "cbar_tau_work": {
+          "additions": 83,
+          "bounded_operations": 308,
+          "divisions": 0,
+          "multiplications": 71,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 1,
+              "bounded_operations": 4,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 2,
+              "zero_multiplications_skipped": 20,
+              "zero_right_additions_skipped": 20
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 154,
+          "zero_multiplications_skipped": 393,
+          "zero_right_additions_skipped": 401
+        },
+        "class": "FreePass",
+        "coordinate": 4,
+        "h_bits": "bd8836e210153006",
+        "tau_bits": "3dd69ac72e49a77f"
+      },
+      {
+        "abs_h_over_tau": 140.21577178607458,
+        "cbar_bits": "3fa18a4452b92745",
+        "cbar_tau_work": {
+          "additions": 84,
+          "bounded_operations": 312,
+          "divisions": 0,
+          "multiplications": 72,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 2,
+              "bounded_operations": 8,
+              "divisions": 0,
+              "multiplications": 2,
+              "upward_steps": 4,
+              "zero_multiplications_skipped": 19,
+              "zero_right_additions_skipped": 19
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 156,
+          "zero_multiplications_skipped": 392,
+          "zero_right_additions_skipped": 400
+        },
+        "class": "RetainLower",
+        "coordinate": 5,
+        "h_bits": "3d2a1e7df5097a5d",
+        "tau_bits": "3cb7d7f4e073b1a5"
+      },
+      {
+        "abs_h_over_tau": null,
+        "cbar_bits": "0000000000000000",
+        "cbar_tau_work": {
+          "additions": 82,
+          "bounded_operations": 302,
+          "divisions": 0,
+          "multiplications": 69,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 21,
+              "zero_right_additions_skipped": 21
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 151,
+          "zero_multiplications_skipped": 395,
+          "zero_right_additions_skipped": 402
+        },
+        "class": "FreePass",
+        "coordinate": 6,
+        "h_bits": "0000000000000000",
+        "tau_bits": "0000000000000000"
+      },
+      {
+        "abs_h_over_tau": 0.032474719650138026,
+        "cbar_bits": "406cd13e5f3916a9",
+        "cbar_tau_work": {
+          "additions": 88,
+          "bounded_operations": 328,
+          "divisions": 0,
+          "multiplications": 76,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 6,
+              "bounded_operations": 24,
+              "divisions": 0,
+              "multiplications": 6,
+              "upward_steps": 12,
+              "zero_multiplications_skipped": 15,
+              "zero_right_additions_skipped": 15
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 164,
+          "zero_multiplications_skipped": 388,
+          "zero_right_additions_skipped": 396
+        },
+        "class": "FreePass",
+        "coordinate": 7,
+        "h_bits": "3d345abb94c195f3",
+        "tau_bits": "3d83963864b8cd9e"
+      },
+      {
+        "abs_h_over_tau": 0.12221527879335085,
+        "cbar_bits": "404854e2c59318b6",
+        "cbar_tau_work": {
+          "additions": 87,
+          "bounded_operations": 324,
+          "divisions": 0,
+          "multiplications": 75,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 5,
+              "bounded_operations": 20,
+              "divisions": 0,
+              "multiplications": 5,
+              "upward_steps": 10,
+              "zero_multiplications_skipped": 16,
+              "zero_right_additions_skipped": 16
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 162,
+          "zero_multiplications_skipped": 389,
+          "zero_right_additions_skipped": 397
+        },
+        "class": "FreePass",
+        "coordinate": 8,
+        "h_bits": "3d302b60e7ad1dc4",
+        "tau_bits": "3d6089b22249fafa"
+      },
+      {
+        "abs_h_over_tau": 0.010525847610636534,
+        "cbar_bits": "40ce02539c0772cf",
+        "cbar_tau_work": {
+          "additions": 91,
+          "bounded_operations": 340,
+          "divisions": 0,
+          "multiplications": 79,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 9,
+              "bounded_operations": 36,
+              "divisions": 0,
+              "multiplications": 9,
+              "upward_steps": 18,
+              "zero_multiplications_skipped": 12,
+              "zero_right_additions_skipped": 12
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 170,
+          "zero_multiplications_skipped": 385,
+          "zero_right_additions_skipped": 393
+        },
+        "class": "FreePass",
+        "coordinate": 9,
+        "h_bits": "bd7b7b14b72ecdb5",
+        "tau_bits": "3de46594d40d1042"
+      },
+      {
+        "abs_h_over_tau": 0.00564464667293196,
+        "cbar_bits": "40be57e866b59921",
+        "cbar_tau_work": {
+          "additions": 83,
+          "bounded_operations": 308,
+          "divisions": 0,
+          "multiplications": 71,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 1,
+              "bounded_operations": 4,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 2,
+              "zero_multiplications_skipped": 20,
+              "zero_right_additions_skipped": 20
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 154,
+          "zero_multiplications_skipped": 393,
+          "zero_right_additions_skipped": 401
+        },
+        "class": "FreePass",
+        "coordinate": 10,
+        "h_bits": "bd5dcd65001a13b8",
+        "tau_bits": "3dd49fbff5cf6e4e"
+      },
+      {
+        "abs_h_over_tau": 215.68213532279827,
+        "cbar_bits": "3f92e3b62b645b36",
+        "cbar_tau_work": {
+          "additions": 84,
+          "bounded_operations": 312,
+          "divisions": 0,
+          "multiplications": 72,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 2,
+              "bounded_operations": 8,
+              "divisions": 0,
+              "multiplications": 2,
+              "upward_steps": 4,
+              "zero_multiplications_skipped": 19,
+              "zero_right_additions_skipped": 19
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 156,
+          "zero_multiplications_skipped": 392,
+          "zero_right_additions_skipped": 400
+        },
+        "class": "FreeRefuse",
+        "coordinate": 11,
+        "h_bits": "3d25a244520e5279",
+        "tau_bits": "3ca9ad8ba2fc6c45"
+      },
+      {
+        "abs_h_over_tau": 0.02244470057909795,
+        "cbar_bits": "40b359dae67e9e8b",
+        "cbar_tau_work": {
+          "additions": 92,
+          "bounded_operations": 344,
+          "divisions": 0,
+          "multiplications": 80,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 10,
+              "bounded_operations": 40,
+              "divisions": 0,
+              "multiplications": 10,
+              "upward_steps": 20,
+              "zero_multiplications_skipped": 11,
+              "zero_right_additions_skipped": 11
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 172,
+          "zero_multiplications_skipped": 384,
+          "zero_right_additions_skipped": 392
+        },
+        "class": "FreePass",
+        "coordinate": 12,
+        "h_bits": "3d72e4ab46103a78",
+        "tau_bits": "3dca4e2591541fcf"
+      },
+      {
+        "abs_h_over_tau": 0.020097511368178608,
+        "cbar_bits": "40c484d846083af1",
+        "cbar_tau_work": {
+          "additions": 89,
+          "bounded_operations": 332,
+          "divisions": 0,
+          "multiplications": 77,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 7,
+              "bounded_operations": 28,
+              "divisions": 0,
+              "multiplications": 7,
+              "upward_steps": 14,
+              "zero_multiplications_skipped": 14,
+              "zero_right_additions_skipped": 14
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 166,
+          "zero_multiplications_skipped": 387,
+          "zero_right_additions_skipped": 395
+        },
+        "class": "FreePass",
+        "coordinate": 13,
+        "h_bits": "3d81f041977edc2c",
+        "tau_bits": "3ddbe495ff33306e"
+      },
+      {
+        "abs_h_over_tau": 0.32080218722449366,
+        "cbar_bits": "4070e53a4148d8ee",
+        "cbar_tau_work": {
+          "additions": 89,
+          "bounded_operations": 332,
+          "divisions": 0,
+          "multiplications": 77,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 7,
+              "bounded_operations": 28,
+              "divisions": 0,
+              "multiplications": 7,
+              "upward_steps": 14,
+              "zero_multiplications_skipped": 14,
+              "zero_right_additions_skipped": 14
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 166,
+          "zero_multiplications_skipped": 387,
+          "zero_right_additions_skipped": 395
+        },
+        "class": "FreePass",
+        "coordinate": 14,
+        "h_bits": "bd6d78c31b15ad42",
+        "tau_bits": "3d86f79b30bf0724"
+      },
+      {
+        "abs_h_over_tau": null,
+        "cbar_bits": "0000000000000000",
+        "cbar_tau_work": {
+          "additions": 82,
+          "bounded_operations": 302,
+          "divisions": 0,
+          "multiplications": 69,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 21,
+              "zero_right_additions_skipped": 21
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 151,
+          "zero_multiplications_skipped": 395,
+          "zero_right_additions_skipped": 402
+        },
+        "class": "FreePass",
+        "coordinate": 15,
+        "h_bits": "0000000000000000",
+        "tau_bits": "0000000000000000"
+      },
+      {
+        "abs_h_over_tau": null,
+        "cbar_bits": "0000000000000000",
+        "cbar_tau_work": {
+          "additions": 82,
+          "bounded_operations": 302,
+          "divisions": 0,
+          "multiplications": 69,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 21,
+              "zero_right_additions_skipped": 21
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 151,
+          "zero_multiplications_skipped": 395,
+          "zero_right_additions_skipped": 402
+        },
+        "class": "FreePass",
+        "coordinate": 16,
+        "h_bits": "0000000000000000",
+        "tau_bits": "0000000000000000"
+      },
+      {
+        "abs_h_over_tau": null,
+        "cbar_bits": "0000000000000000",
+        "cbar_tau_work": {
+          "additions": 82,
+          "bounded_operations": 302,
+          "divisions": 0,
+          "multiplications": 69,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 21,
+              "zero_right_additions_skipped": 21
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 151,
+          "zero_multiplications_skipped": 395,
+          "zero_right_additions_skipped": 402
+        },
+        "class": "FreePass",
+        "coordinate": 17,
+        "h_bits": "0000000000000000",
+        "tau_bits": "0000000000000000"
+      },
+      {
+        "abs_h_over_tau": null,
+        "cbar_bits": "0000000000000000",
+        "cbar_tau_work": {
+          "additions": 82,
+          "bounded_operations": 302,
+          "divisions": 0,
+          "multiplications": 69,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 21,
+              "zero_right_additions_skipped": 21
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 151,
+          "zero_multiplications_skipped": 395,
+          "zero_right_additions_skipped": 402
+        },
+        "class": "FreePass",
+        "coordinate": 18,
+        "h_bits": "0000000000000000",
+        "tau_bits": "0000000000000000"
+      },
+      {
+        "abs_h_over_tau": null,
+        "cbar_bits": "0000000000000000",
+        "cbar_tau_work": {
+          "additions": 82,
+          "bounded_operations": 302,
+          "divisions": 0,
+          "multiplications": 69,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 21,
+              "zero_right_additions_skipped": 21
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 151,
+          "zero_multiplications_skipped": 395,
+          "zero_right_additions_skipped": 402
+        },
+        "class": "FreePass",
+        "coordinate": 19,
+        "h_bits": "0000000000000000",
+        "tau_bits": "0000000000000000"
+      },
+      {
+        "abs_h_over_tau": 0.00753287356510922,
+        "cbar_bits": "42e6bcc41e5ef8fb",
+        "cbar_tau_work": {
+          "additions": 83,
+          "bounded_operations": 308,
+          "divisions": 0,
+          "multiplications": 71,
+          "sections": {
+            "inner_products_and_sums": {
+              "additions": 69,
+              "bounded_operations": 276,
+              "divisions": 0,
+              "multiplications": 69,
+              "upward_steps": 138,
+              "zero_multiplications_skipped": 372,
+              "zero_right_additions_skipped": 372
+            },
+            "lambda_term_and_sum": {
+              "additions": 0,
+              "bounded_operations": 0,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 0,
+              "zero_multiplications_skipped": 1,
+              "zero_right_additions_skipped": 1
+            },
+            "row_contributions_and_outer_sums": {
+              "additions": 1,
+              "bounded_operations": 4,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 2,
+              "zero_multiplications_skipped": 20,
+              "zero_right_additions_skipped": 20
+            },
+            "row_scale_additions": {
+              "additions": 13,
+              "bounded_operations": 26,
+              "divisions": 0,
+              "multiplications": 0,
+              "upward_steps": 13,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 8
+            },
+            "tau_product": {
+              "additions": 0,
+              "bounded_operations": 2,
+              "divisions": 0,
+              "multiplications": 1,
+              "upward_steps": 1,
+              "zero_multiplications_skipped": 0,
+              "zero_right_additions_skipped": 0
+            }
+          },
+          "upward_steps": 154,
+          "zero_multiplications_skipped": 393,
+          "zero_right_additions_skipped": 401
+        },
+        "class": "FreePass",
+        "coordinate": 20,
+        "h_bits": "3f8dcd64ffdfde8e",
+        "tau_bits": "3ffee89a99491acb"
+      }
+    ],
+    "decision": {
+      "coordinate": 11,
+      "kind": "TrustRegionOptimalityIndeterminate",
+      "reason": "optimality_free_stationarity"
+    },
+    "feasibility": {
+      "box_feasible": true,
+      "inside_radius": true,
+      "norm_bits": "3f1a36e2eb1c432c",
+      "squared_norm_bits": "3e45798ee2308c39"
+    },
+    "free_refusal_coordinates": [
+      11
+    ],
+    "g_hat_bits": [
+      "0000000000000000",
+      "bd1fad4e7d6bd342",
+      "3d29f7f44fb01418",
+      "bd96dd7fbae44d6d",
+      "bd8836e210153006",
+      "3d2a1e7df5097a5d",
+      "0000000000000000",
+      "3d345abb94c195f3",
+      "3d302b60e7ad1dc4",
+      "bd7b7b14b72ecdb5",
+      "bd5dcd65001a13b8",
+      "3d25a244520e5279",
+      "3d72e4ab46103a78",
+      "3d81f041977edc2c",
+      "bd6d78c31b15ad42",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "3f8dcd64ffdfde8e"
+    ],
+    "h_hat_bits": [
+      "0000000000000000",
+      "bd1fad4e7d6bd342",
+      "3d29f7f44fb01418",
+      "bd96dd7fbae44d6d",
+      "bd8836e210153006",
+      "3d2a1e7df5097a5d",
+      "0000000000000000",
+      "3d345abb94c195f3",
+      "3d302b60e7ad1dc4",
+      "bd7b7b14b72ecdb5",
+      "bd5dcd65001a13b8",
+      "3d25a244520e5279",
+      "3d72e4ab46103a78",
+      "3d81f041977edc2c",
+      "bd6d78c31b15ad42",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "3f8dcd64ffdfde8e"
+    ],
+    "lambda_bits": "0000000000000000",
+    "lambda_times_p_bits": [
+      "0000000000000000",
+      "8000000000000000",
+      "8000000000000000",
+      "8000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "8000000000000000",
+      "8000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "8000000000000000",
+      "8000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "8000000000000000"
+    ],
+    "operation_index": 1,
+    "p_bits": [
+      "0000000000000000",
+      "bd0c095f3d5287a4",
+      "bd01e3ca1e6ea0b1",
+      "bc8f140de3c73a6a",
+      "3cec1d743abe1df3",
+      "0000000000000000",
+      "0000000000000000",
+      "3d20f6cb2da66e2f",
+      "bd13a7b8aadb4650",
+      "bc890c078ee4608c",
+      "3ce7ecfd6a2e4631",
+      "3ad0975340000000",
+      "3d0f16eeb3a3a66a",
+      "bcb2157c2a95056c",
+      "b9b12a20defa0000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "bf1a36e2eb1c432c"
+    ],
+    "r_hat_bits": [
+      "0000000000000000",
+      "bbb4000000000000",
+      "bbce200000000000",
+      "3bbeb00000000000",
+      "bbaa000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "bbc0000000000000",
+      "bbcf300000000000",
+      "bbcb760000000000",
+      "bb80000000000000",
+      "3c02fcad8da60000",
+      "bbbc000000000000",
+      "3b88d00000000000",
+      "bb8ff8b3b31b0a87",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "3db0000000000000"
+    ],
+    "radius_bits": "3ff0000000000000",
+    "weighted_inputs_equal_top_level_capture": true,
+    "work": {
+      "policy_added_arithmetic_including_source_shape_gamma_setup": 6682,
+      "ranking_separate": {
+        "additions": 0,
+        "bounded_operations": 0,
+        "divisions": 0,
+        "multiplications": 0,
+        "upward_steps": 0,
+        "zero_multiplications_skipped": 0,
+        "zero_right_additions_skipped": 0
+      },
+      "reconstructed_cbar_tau": {
+        "additions": 1793,
+        "bounded_operations": 6654,
+        "divisions": 0,
+        "multiplications": 1534,
+        "upward_steps": 3327,
+        "zero_multiplications_skipped": 8210,
+        "zero_right_additions_skipped": 8371
+      },
+      "recorded_cbar_tau_scalar_operations": 6654,
+      "reused_ordered_kkt_operations": {
+        "gradient": 882,
+        "included_in_policy_added_count": false,
+        "lambda_product_and_h_add": 42,
+        "residual": 903,
+        "total": 1827
+      },
+      "source_shape_gamma_setup_separate": {
+        "additions": 0,
+        "bounded_operations": 28,
+        "divisions": 14,
+        "multiplications": 0,
+        "upward_steps": 14,
+        "zero_multiplications_skipped": 0,
+        "zero_right_additions_skipped": 0
+      }
+    }
+  },
+  "disposition": "source-conforming negative ordinary-positive result: coordinate 5 activates at signed -0 and remains lower-active; with no releasable active bound, free coordinate 11 fails stationarity and the initial subproblem refuses before any update or materialization",
+  "evidence_class": "independent offline binary64 reconstruction from captured operands; no Rust treatment helper and no physical execution",
+  "face_transition": {
+    "action": "activate",
+    "completed_pivots": 1,
+    "completed_sweeps": 7,
+    "conceptual_p_after_bits": [
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000"
+    ],
+    "crossing_candidates": [
+      {
+        "coordinate": 5,
+        "denominator_bits": "bae0bf2d43000000",
+        "lower": true,
+        "numerator_bits": "0000000000000000",
+        "theta_bits": "8000000000000000"
+      },
+      {
+        "coordinate": 11,
+        "denominator_bits": "babd68de50000000",
+        "lower": true,
+        "numerator_bits": "0000000000000000",
+        "theta_bits": "8000000000000000"
+      }
+    ],
+    "entered_factorizations": 1,
+    "free_after": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "lower_after": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "selected": {
+      "coordinate": 5,
+      "denominator_bits": "bae0bf2d43000000",
+      "lower": true,
+      "numerator_bits": "0000000000000000",
+      "theta_bits": "8000000000000000"
+    },
+    "upper_after": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "identity": {
+    "capture_path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-observed-capture.json",
+    "capture_sha256": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+    "method_path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "method_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+    "receipt_path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-body13-ordinary-positive.json",
+    "receipt_sha256": "8805ddd0958b76dad0d23a6a05239b630089186695193b986f64a8098e82d5ce",
+    "reconstruction_script_path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-correctness-ordinary-positive-reconstruction.py",
+    "reconstruction_script_sha256": "1308400f73698e5f88762af4a68b59d30bee42026be5819fa5345217203bffd3",
+    "stage1_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "stage1_sha256": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a",
+    "stderr_path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-body13-ordinary-positive.stderr",
+    "stderr_sha256": "74a0864b5275252a520139ab7151e32fb5a070f0aa2097e888b19bb3d484f4bc",
+    "work_oracle_path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-correctness-work-oracle.py",
+    "work_oracle_sha256": "0f97de91a99b5aca56c4d1b9248c508e95901131bb50b7b7cbd92595ed0702c6"
+  },
+  "physical_nested_counts_from_recorded_receipt": {
+    "accepted_installs": 0,
+    "core_attempted": 41,
+    "core_completed": 41,
+    "hydraulic_attempted": 0,
+    "hydraulic_completed": 0,
+    "materialization_attempted": 0,
+    "materialization_completed": 0,
+    "raw_jacobian_attempted": 1,
+    "raw_jacobian_completed": 1,
+    "stage1_factorization_attempted": 2,
+    "stage1_factorization_completed": 2,
+    "trial_entries": 0
+  },
+  "terminal_refusal": {
+    "coordinate": 11,
+    "entered": 2,
+    "free": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "free_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "kind": "TrustRegionOptimalityIndeterminate",
+    "lambda": "0000000000000000",
+    "lower": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "optimality": {
+      "coordinates": [
+        {
+          "cbar": "0000000000000000",
+          "class": "FreePass",
+          "coordinate": 0,
+          "h": "0000000000000000",
+          "tau": "0000000000000000"
+        },
+        {
+          "cbar": "406b05f9e19134e9",
+          "class": "FreePass",
+          "coordinate": 1,
+          "h": "bd1fad4e7d6bd342",
+          "tau": "3d825e0fd750b22a"
+        },
+        {
+          "cbar": "4046d8833f2a0c19",
+          "class": "FreePass",
+          "coordinate": 2,
+          "h": "3d29f7f44fb01418",
+          "tau": "3d5f0e5269dd28c9"
+        },
+        {
+          "cbar": "40d0b143c683e052",
+          "class": "FreePass",
+          "coordinate": 3,
+          "h": "bd96dd7fbae44d6d",
+          "tau": "3de6b0f821db452f"
+        },
+        {
+          "cbar": "40c0a0f0af4ac78a",
+          "class": "FreePass",
+          "coordinate": 4,
+          "h": "bd8836e210153006",
+          "tau": "3dd69ac72e49a77f"
+        },
+        {
+          "cbar": "3fa18a4452b92745",
+          "class": "RetainLower",
+          "coordinate": 5,
+          "h": "3d2a1e7df5097a5d",
+          "tau": "3cb7d7f4e073b1a5"
+        },
+        {
+          "cbar": "0000000000000000",
+          "class": "FreePass",
+          "coordinate": 6,
+          "h": "0000000000000000",
+          "tau": "0000000000000000"
+        },
+        {
+          "cbar": "406cd13e5f3916a9",
+          "class": "FreePass",
+          "coordinate": 7,
+          "h": "3d345abb94c195f3",
+          "tau": "3d83963864b8cd9e"
+        },
+        {
+          "cbar": "404854e2c59318b6",
+          "class": "FreePass",
+          "coordinate": 8,
+          "h": "3d302b60e7ad1dc4",
+          "tau": "3d6089b22249fafa"
+        },
+        {
+          "cbar": "40ce02539c0772cf",
+          "class": "FreePass",
+          "coordinate": 9,
+          "h": "bd7b7b14b72ecdb5",
+          "tau": "3de46594d40d1042"
+        },
+        {
+          "cbar": "40be57e866b59921",
+          "class": "FreePass",
+          "coordinate": 10,
+          "h": "bd5dcd65001a13b8",
+          "tau": "3dd49fbff5cf6e4e"
+        },
+        {
+          "cbar": "3f92e3b62b645b36",
+          "class": "FreeRefuse",
+          "coordinate": 11,
+          "h": "3d25a244520e5279",
+          "tau": "3ca9ad8ba2fc6c45"
+        },
+        {
+          "cbar": "40b359dae67e9e8b",
+          "class": "FreePass",
+          "coordinate": 12,
+          "h": "3d72e4ab46103a78",
+          "tau": "3dca4e2591541fcf"
+        },
+        {
+          "cbar": "40c484d846083af1",
+          "class": "FreePass",
+          "coordinate": 13,
+          "h": "3d81f041977edc2c",
+          "tau": "3ddbe495ff33306e"
+        },
+        {
+          "cbar": "4070e53a4148d8ee",
+          "class": "FreePass",
+          "coordinate": 14,
+          "h": "bd6d78c31b15ad42",
+          "tau": "3d86f79b30bf0724"
+        },
+        {
+          "cbar": "0000000000000000",
+          "class": "FreePass",
+          "coordinate": 15,
+          "h": "0000000000000000",
+          "tau": "0000000000000000"
+        },
+        {
+          "cbar": "0000000000000000",
+          "class": "FreePass",
+          "coordinate": 16,
+          "h": "0000000000000000",
+          "tau": "0000000000000000"
+        },
+        {
+          "cbar": "0000000000000000",
+          "class": "FreePass",
+          "coordinate": 17,
+          "h": "0000000000000000",
+          "tau": "0000000000000000"
+        },
+        {
+          "cbar": "0000000000000000",
+          "class": "FreePass",
+          "coordinate": 18,
+          "h": "0000000000000000",
+          "tau": "0000000000000000"
+        },
+        {
+          "cbar": "0000000000000000",
+          "class": "FreePass",
+          "coordinate": 19,
+          "h": "0000000000000000",
+          "tau": "0000000000000000"
+        },
+        {
+          "cbar": "42e6bcc41e5ef8fb",
+          "class": "FreePass",
+          "coordinate": 20,
+          "h": "3f8dcd64ffdfde8e",
+          "tau": "3ffee89a99491acb"
+        }
+      ],
+      "scalar_operations": 6654,
+      "selected_release": null
+    },
+    "p": [
+      "0000000000000000",
+      "bd0c095f3d5287a4",
+      "bd01e3ca1e6ea0b1",
+      "bc8f140de3c73a6a",
+      "3cec1d743abe1df3",
+      "0000000000000000",
+      "0000000000000000",
+      "3d20f6cb2da66e2f",
+      "bd13a7b8aadb4650",
+      "bc890c078ee4608c",
+      "3ce7ecfd6a2e4631",
+      "3ad0975340000000",
+      "3d0f16eeb3a3a66a",
+      "bcb2157c2a95056c",
+      "b9b12a20defa0000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "0000000000000000",
+      "bf1a36e2eb1c432c"
+    ],
+    "pivots": 1,
+    "radius": "3ff0000000000000",
+    "reason": "optimality_free_stationarity",
+    "stage": "kkt-optimality",
+    "sweeps": 7,
+    "upper": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "terminal_refusal_matches_assessment": true,
+  "unassessed_transition_operation_indices": [
+    0
+  ]
+}

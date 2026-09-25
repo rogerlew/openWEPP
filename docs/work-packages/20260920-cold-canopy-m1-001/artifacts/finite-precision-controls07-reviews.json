@@ -1,0 +1,21 @@
+{
+  "receipt": "finite-precision-controls07-red.json",
+  "correctness_reviewer": "/root/finite_correctness",
+  "qa_reviewer": "/root/finite_qa",
+  "result": "29 selected,21 PASS,8 legitimate expected-red failures; exact source/support unchanged",
+  "verdict": "HOLD correction body only for exact capture metadata discriminators",
+  "accepted": [
+    "physical-distinct scaled-collapse fixture",
+    "zero/nonzero actual arithmetic counts0/6",
+    "tau subnormal reason",
+    "normal multiplication underflow reason",
+    "capture gap failures authentic"
+  ],
+  "remaining": [
+    "Refusal radius/lambda fields and exact actual values",
+    "Seam free IDs from supplied mask and authentic capture input initialization",
+    "Return exact radius/lambda/free IDs/vectors/work instead of presence checks",
+    "Completed-KKT enclosure failure retains available KKT vectors; early NaN may mark unavailable",
+    "Free-stationarity capture metadata control"
+  ]
+}

@@ -1,0 +1,18 @@
+waiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...
+warning: Git tree '/workdir/openWEPP' is dirty
+error (ignored): SQLite database '/home/roger/.cache/nix/eval-cache-v6/1fab7ab2eae56ec9d8becf95284f3bf46573a5b05e7bb805ab6d6e1b01a41df7.sqlite' is busy
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0596]: cannot borrow `capture.refusal` as mutable, as `capture` is not declared as mutable
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:823:19
+    |
+823 |     let refusal = capture.refusal.as_mut().expect("populated refusal");
+    |                   ^^^^^^^^^^^^^^^ cannot borrow as mutable
+    |
+help: consider changing this to be mutable
+    |
+811 |     let mut capture = populated_face_pivot_capture_for_test();
+    |         +++
+
+For more information about this error, try `rustc --explain E0596`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

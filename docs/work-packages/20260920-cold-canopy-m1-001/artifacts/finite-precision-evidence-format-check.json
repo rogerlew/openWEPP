@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Ran: artifact format inspection",
+  "json_extension_files_checked": 117,
+  "standalone_json_valid": 116,
+  "raw_stdout_exception": {
+    "path": "finite-precision-body02-writer-nextest-list.json",
+    "explanation": "Historical writer inventory stdout includes Nix shell preamble followed by valid nextest JSON. Preserved unchanged; filename is not evidence of standalone JSON format.",
+    "embedded_json_valid": true
+  }
+}

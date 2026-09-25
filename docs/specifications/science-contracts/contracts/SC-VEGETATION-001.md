@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 36
+contract_version: 37
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -2286,6 +2286,7 @@ calibration, identifiability, empirical validity, or transferability.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-09-25 | 37 | Codex | Added the detached `COLD-CANOPY-M1-TR-SVD-BVLS-02` cross-reference only: `01` remains historical evidence and `02` can supersede its diagnostic numerical policy only after its named independent correctness and QA reviews; primal vegetation/capacity law, production representation, accepted-state predicates, and production HOLD remain unchanged. |
 | 2026-08-26 | 29 | Codex | Preserved exact V9 generation-host provenance and admitted a one-object SHA-256 provider-equivalence verification route requiring known-answer, remaining-runtime, protected-byte, and complete-output equality proofs. |
 | 2026-08-17 | 13 | Codex | Admitted prospective `OPENWEPP_C3_WOODY_V9` with exact V8 science/runtime import, exact identity-only migration, and content-addressed non-Rust oracle runtime and serialization; preserved V1--V8 bytes. |
 | 2026-08-14 | 12 | Codex | Admitted `OPENWEPP_C3_WOODY_V8` reciprocal multirank ground longwave, shared tile canopy-air ground H/E coupling, joint potential/final transaction, strict migration and independent LSE coupling; preserved V1--V7. |
@@ -3584,7 +3585,10 @@ Notwithstanding this production representation, the separately bounded
 diagnostic `COLD-CANOPY-M1-TR-SVD-BVLS-01` supersedes it solely while its
 expiring diagnostic arm is active: it retains the complete selected
 21-coordinate matrix, including every drainage coordinate and coupling, rather
-than applying affine elimination.  Its exact bounded trust-region policy,
+than applying affine elimination. `01` remains historical evidence. The named
+independent correctness and QA reviews accepted `COLD-CANOPY-M1-TR-SVD-BVLS-02`
+as premeasurement authority; it supersedes `01`'s numerical policy only in the
+revised detached treatment build. Its exact bounded trust-region policy,
 fixed work caps, expiration, and prohibition on production admission are
 canonical in [the LSE numerical-method section](SC-LANDSURFACEENERGY-001/numerical-methods.md#cold-canopy-m1-trust-region-experiment).
 It does not amend this primal capacity law, selected tangent, M1 Newton

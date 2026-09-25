@@ -1,0 +1,27 @@
+{
+  "evidence_class": "Static independent source reviews plus inspection of recorded expected-red workflow",
+  "reviewed_source": {
+    "lib.rs": "bb637d3caada81ee9ec2fcd14c273fb787254d995d255bd19dfababc585b09c6",
+    "m1_trust_region_stage1.rs": "d94550663653c07e2adf82b6791790684d0442f2a50fa62b124e3fb68f0bcdf1"
+  },
+  "method_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+  "receipt": "finite-precision-controls05-red.json",
+  "correctness": {
+    "reviewer": "/root/finite_correctness",
+    "verdict": "HOLD body; all controls04 fixes verified; 4PASS/13FAIL all legitimate expected-red",
+    "remaining": [
+      "Real selected-coordinate observation and two-active ratio-vs-magnitude selector discriminator on full-rank free face",
+      "Exact transition optimality_nonfinite and optimality_negative_lambda kind/reason/coordinate assertions"
+    ]
+  },
+  "qa": {
+    "reviewer": "/root/finite_qa",
+    "verdict": "HOLD body aligned with correctness; repairs real, source unchanged01, no fake observation factory",
+    "additional_blockers": []
+  },
+  "withdrawn_impossible_requests": [
+    "unequal finite binary64 addition rounding to zero",
+    "invalid release ratio from scale-consistent guarded operands",
+    "nonzero fixed step from admitted equal-bound base"
+  ]
+}

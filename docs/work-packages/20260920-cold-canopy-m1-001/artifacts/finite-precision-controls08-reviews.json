@@ -1,0 +1,15 @@
+{
+  "receipt": "finite-precision-controls08-red.json",
+  "correctness_reviewer": "/root/finite_correctness",
+  "qa_reviewer": "/root/finite_qa",
+  "result": "30 selected,21 PASS,9 expected-red failures,0.568s; source/support unchanged",
+  "verdict": "Exact metadata control repairs accepted; HOLD body only for two-solve same-scope custody control",
+  "accepted": [
+    "actual radius/lambda/free IDs",
+    "return exact KKT vectors and scalar work",
+    "enclosure available vectors retained",
+    "early nonfinite unavailable vectors explicit",
+    "free-stationarity actual metadata"
+  ],
+  "remaining": "Two distinguishable real successful subproblems in one scope retain both ordered Return assessments and completed summaries; current reset loses first operation"
+}

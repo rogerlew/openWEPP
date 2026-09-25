@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Writer reported compilation failure; root preserved exact source; no numeric workflow ran",
+  "failure": "E0277 OptimalityFailure lacks Debug for existing retained-control expect; capture extension still pending",
+  "files": {
+    "crates/openwepp-land-surface-energy/src/lib.rs": "ed8685141ec796e86b687ac14c15a83d4a1de394bf0647014062df6d6dcc0f4b",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "05ef3f2354554fd82ab1c1d398cf493a39c6b9f19f7abbd0de1bc61b4f6902c5"
+  },
+  "patch": "finite-precision-body01-compile-failed-from-terminal.patch",
+  "patch_sha256": "b2c055681f89409aae0ea25e715e0d9416edf8b8c8f0a4aceae722162dd00790",
+  "base": "face-pivot-terminal-recovery.json"
+}

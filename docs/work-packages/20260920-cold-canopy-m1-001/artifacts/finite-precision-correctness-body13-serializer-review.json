@@ -1,0 +1,23 @@
+{
+  "evidence_class": "Static: serializer-only diff inspection; no Rust or physical execution",
+  "findings": [],
+  "inputs": {
+    "diff_path": "/tmp/finite-precision-body13-serializer.diff",
+    "diff_sha256": "a1e45822abb23adcb955a1c81a4ab823edc22d76f24525dc86fcb8f44858b580",
+    "lib_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/lib.rs",
+    "lib_sha256": "083250b17a6b6e15818859e5f41d8d204a918a94158a14d0d0125cdbb955b82d",
+    "stage1_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "stage1_sha256": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a"
+  },
+  "reviewed_at_utc": "2026-09-25T19:59:40.397288+00:00",
+  "reviewer": "/root/finite_correctness",
+  "scope": "BODY13 refusal JSON encoding and parser-test assertions relative to BODY11",
+  "verdict": "No correctness blocker in BODY13 serializer-only diff. Release exact unchanged required ordinary-positive measurement. Preserve three selected qualification failures; no full-feature/interface/target release.",
+  "verification": [
+    "optimality reason is emitted as escaped JSON string or null",
+    "coordinate is emitted as JSON integer or null",
+    "radius and lambda are emitted by the existing exact-binary64 bit-string helper or null",
+    "parser test covers all four null encodings and populated reason/coordinate/-0/infinity exact bits",
+    "diff contains no numerical policy, solver, physical input, old-ranking assertion, or original60 assertion change"
+  ]
+}

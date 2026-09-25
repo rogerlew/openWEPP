@@ -1,0 +1,174 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID 6cf3fd25-d46a-4b36-8feb-1a768da8a50e with nextest profile: default
+    Starting 11 tests across 1 binary (327 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::shared_normal_nonfinite_and_overflow_kkt_operands_are_real_operations ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::fixed_finite_bound_uses_shared_prepare_and_full_solve_metadata ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::shared_signed_zero_crossing_precedes_genuine_descent_release ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::zero_scale_is_rejected_by_shared_preparation_before_kkt_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+
+        FAIL [   0.006s] ( 5/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_underflow_to_zero_kkt_product_must_refuse
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_underflow_to_zero_kkt_product_must_refuse ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_underflow_to_zero_kkt_product_must_refuse
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_underflow_to_zero_kkt_product_must_refuse' (308048) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2666:9:
+    expected-red: nonzero normal operands whose KKT product underflows must refuse
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 6/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_must_not_release_on_sign_alone
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_must_not_release_on_sign_alone ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_must_not_release_on_sign_alone
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_must_not_release_on_sign_alone' (308057) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2552:9:
+    assertion `left == right` failed: expected-red: reviewed 02 uncertainty-band decision replaces sign-only release
+      left: Some(ReleaseLower)
+     right: Some(Return)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 7/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_upper_cancellation_band_must_not_release_on_sign_alone
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_upper_cancellation_band_must_not_release_on_sign_alone ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_upper_cancellation_band_must_not_release_on_sign_alone
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_upper_cancellation_band_must_not_release_on_sign_alone' (308053) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2578:9:
+    assertion `left == right` failed: expected-red: uncertainty-band upper multiplier is retained
+      left: Some(ReleaseUpper)
+     right: Some(Return)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 8/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_under_scaling_and_permutation
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_under_scaling_and_permutation ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_under_scaling_and_permutation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_under_scaling_and_permutation' (308051) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2742:13:
+    assertion `left == right` failed: expected-red: scaled cancellation band remains unresolved
+      left: Some(ReleaseLower)
+     right: Some(Return)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] ( 9/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_operand_must_refuse
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_operand_must_refuse ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_operand_must_refuse
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_operand_must_refuse' (308050) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2654:9:
+    expected-red: nonzero subnormal KKT operand must refuse
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (10/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_must_refuse_from_shared_transition
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_must_refuse_from_shared_transition ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_must_refuse_from_shared_transition
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_must_refuse_from_shared_transition' (308058) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2601:9:
+    expected-red: materially nonstationary free coordinate must refuse
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::retained_capture_uses_shared_ordered_kkt_operation_before_policy_change ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.00s
+
+
+────────────
+     Summary [   0.011s] 11 tests run: 5 passed, 6 failed, 327 skipped
+        FAIL [   0.006s] ( 5/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_underflow_to_zero_kkt_product_must_refuse
+        FAIL [   0.006s] ( 6/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_must_not_release_on_sign_alone
+        FAIL [   0.006s] ( 7/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_upper_cancellation_band_must_not_release_on_sign_alone
+        FAIL [   0.006s] ( 8/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_under_scaling_and_permutation
+        FAIL [   0.006s] ( 9/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_operand_must_refuse
+        FAIL [   0.006s] (10/11) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_must_refuse_from_shared_transition
+error: test run failed

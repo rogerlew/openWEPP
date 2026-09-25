@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Writer-run focused controls and failed strict lint; root preserved supplied source backups and logs",
+  "files": {
+    "crates/openwepp-land-surface-energy/src/lib.rs": "083250b17a6b6e15818859e5f41d8d204a918a94158a14d0d0125cdbb955b82d",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "c00f78a0a1099ab7852625bd770fcd6e32207a53665024c6e6c65abcbda1f411"
+  },
+  "patch": "finite-precision-body06-prelint-from-terminal.patch",
+  "patch_sha256": "46781c4c5deba3b6c577dec571eef69b507220d42daa73a42b728f77529ef762",
+  "base": "face-pivot-terminal-recovery.json",
+  "result": "31 numerical controls PASS; strict lint FAIL, inheritance not established from compiler summary",
+  "custody_limitation": "Saved Stage1 backup c00f78a0... does not match author-reported green-run fe213a50...; reconciliation requested. Logs are writer-reported, not accepted source-bound workflow evidence. Fresh frozen recorded final run required.",
+  "author_reported_stage1_sha256": "fe213a50eb0462fa802518a87451ec8616f7cbafe04c0281b6f1313e638a5ec7"
+}

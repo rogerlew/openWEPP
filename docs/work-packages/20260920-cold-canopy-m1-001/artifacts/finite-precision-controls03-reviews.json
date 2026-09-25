@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Static distinct controls03 reviews using recorded red receipt",
+  "source_file_sha256": "4225bf7e30c0e8a255f1f3e5ff0f444b3a887145cc77ef4bd716605d4aa7f7dd",
+  "correctness_reviewer": "/root/finite_correctness",
+  "qa_reviewer": "/root/finite_qa",
+  "verdict": "HOLD body; controls04 authorized",
+  "accepted_gaps": [
+    "Valid mask/bound partition",
+    "Actual negative-zero theta bits and negative candidate",
+    "Resolvable upper release",
+    "Exact retained Cbar/tau/h and coordinate classifications",
+    "Exact typed metadata",
+    "Reachable upward enclosure overflow and exact zero scale success"
+  ],
+  "adjudication": {
+    "nonzero_fixed_step": "Rejected request: admitted equalphysicalbounds forcebase=bound andscaledp0; nonzeroactive radius isdistinct obligation.",
+    "release_ratio_overflow": "Unreachable fromvalidguardedscale; defensivehelper tests mayfollowbody,notprebodyblocker andno broadfakeAPI.",
+    "prebody_interfaces": "Permitted exacterror/observation declarations with honestabsentNone02data; no policy arithmetic/fakeoutcomes; expectedredmustrequireSome exactoraclevectors."
+  },
+  "observed_utc": "2026-09-25T18:34:31.440231+00:00"
+}

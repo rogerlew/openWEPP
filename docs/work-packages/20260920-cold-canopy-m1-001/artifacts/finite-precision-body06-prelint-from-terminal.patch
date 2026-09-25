@@ -1,0 +1,2381 @@
+--- a/crates/openwepp-land-surface-energy/src/lib.rs
++++ b/crates/openwepp-land-surface-energy/src/lib.rs
+@@ -217,6 +217,7 @@
+     LambdaBracket,
+     BallAccuracy,
+     FacePivotLimit,
++    TrustRegionOptimalityIndeterminate,
+     #[cfg(any(
+         feature = "m1-trust-region-controller-stage",
+         feature = "m1-trust-region-analytic-stage",
+@@ -338,9 +339,50 @@
+     Return,
+ }
+ 
++// Test-only observation contract for COLD-CANOPY-M1-TR-SVD-BVLS-02.
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub(crate) enum M1TrustRegionOptimalityClass {
++    ReleaseLower,
++    ReleaseUpper,
++    RetainLower,
++    RetainUpper,
++    FreePass,
++    FreeRefuse,
++    Fixed,
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug)]
++pub(crate) struct M1TrustRegionOptimalityCoordinateObservation {
++    pub(crate) coordinate: usize,
++    pub(crate) h: f64,
++    pub(crate) cbar: f64,
++    pub(crate) tau: f64,
++    pub(crate) class: M1TrustRegionOptimalityClass,
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug)]
++pub(crate) struct M1TrustRegionOptimalityReleaseObservation {
++    pub(crate) coordinate: usize,
++    pub(crate) lower: bool,
++    pub(crate) ratio: Option<f64>,
++    pub(crate) tied_coordinates: u8,
++}
++
++#[cfg(test)]
++#[derive(Clone, Debug)]
++pub(crate) struct M1TrustRegionOptimalityObservation {
++    pub(crate) coordinates: Vec<M1TrustRegionOptimalityCoordinateObservation>,
++    pub(crate) selected_release: Option<M1TrustRegionOptimalityReleaseObservation>,
++    pub(crate) scalar_operations: u16,
++}
++
+ #[cfg(test)]
+ #[derive(Clone, Debug)]
+ pub(crate) struct M1TrustRegionSubproblemObservation {
++    pub(crate) optimality_observation: Option<M1TrustRegionOptimalityObservation>,
+     pub(crate) initial_face_step: [f64; 21],
+     pub(crate) base_coordinates: [f64; 21],
+     pub(crate) candidate_coordinates: [f64; 21],
+@@ -365,6 +407,10 @@
+ #[derive(Clone, Debug)]
+ pub(crate) struct M1TrustRegionSubproblemRefusal {
+     pub(crate) kind: M1TrustRegionRefusalKind,
++    pub(crate) optimality_reason: Option<&'static str>,
++    pub(crate) optimality_coordinate: Option<usize>,
++    pub(crate) optimality_radius: Option<Box<f64>>,
++    pub(crate) optimality_lambda: Option<Box<f64>>,
+     pub(crate) attempted_subproblems: u8,
+     pub(crate) completed_jacobi_sweeps: u8,
+     pub(crate) completed_face_pivots: u8,
+@@ -372,6 +418,14 @@
+     pub(crate) raw_residual_max: f64,
+     #[cfg(feature = "m1-trust-region-physical-stage")]
+     pub(crate) budget_refusal: Option<M1PhysicalBudgetRefusal>,
++}
++
++#[cfg(test)]
++#[derive(Clone, Debug)]
++pub(crate) struct M1TrustRegionKktTransitionObservation {
++    pub(crate) action: Option<M1TrustRegionKktAction>,
++    pub(crate) selected_coordinate: Option<usize>,
++    pub(crate) optimality: Option<M1TrustRegionOptimalityObservation>,
+ }
+ #[cfg(test)]
+ mod m1_zero_par_tests;
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -14,6 +14,8 @@
+     M1TrustRegionRefusalKind,
+ };
+ use super::{M1TrustRegionMeritInput, M1TrustRegionMeritObservation};
++
++const TWO_POW_53: f64 = 9_007_199_254_740_992.0;
+ 
+ // This is a deliberately opt-in, test-only flight recorder for one retained
+ // physical refusal.  It copies operands already produced by Stage 1; every
+@@ -113,12 +115,16 @@
+     pub(crate) free_ids: Vec<usize>,
+     pub(crate) radius: f64,
+     pub(crate) lambda: Option<f64>,
++    pub(crate) weighted_residual: Option<[f64; 21]>,
++    pub(crate) weighted_matrix: Option<Vec<Vec<f64>>>,
+     pub(crate) crossing_theta: Option<f64>,
+     pub(crate) selected_coordinate: Option<usize>,
+     pub(crate) selected_lower: Option<bool>,
++    pub(crate) residual: Option<[f64; 21]>,
+     pub(crate) g: Option<[f64; 21]>,
+     pub(crate) lambda_times_p: Option<[f64; 21]>,
+     pub(crate) h: Option<[f64; 21]>,
++    pub(crate) optimality: Option<super::M1TrustRegionOptimalityObservation>,
+     pub(crate) entered_factorizations: u8,
+     pub(crate) completed_pivots: u8,
+     pub(crate) completed_sweeps: u8,
+@@ -129,6 +135,11 @@
+ pub(crate) struct M1FacePivotCaptureRefusal {
+     pub(crate) stage: &'static str,
+     pub(crate) kind: M1TrustRegionRefusalKind,
++    pub(crate) optimality_reason: Option<&'static str>,
++    pub(crate) optimality_coordinate: Option<usize>,
++    pub(crate) radius: Option<f64>,
++    pub(crate) lambda: Option<f64>,
++    pub(crate) free_ids: Vec<usize>,
+     pub(crate) p: [f64; 21],
+     pub(crate) lower: [bool; 21],
+     pub(crate) upper: [bool; 21],
+@@ -136,6 +147,7 @@
+     pub(crate) entered_factorizations: u8,
+     pub(crate) completed_pivots: u8,
+     pub(crate) completed_sweeps: u8,
++    pub(crate) optimality: Option<super::M1TrustRegionOptimalityObservation>,
+ }
+ 
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+@@ -277,6 +289,56 @@
+ }
+ 
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_optimality_json(
++    output: &mut String,
++    observation: Option<&super::M1TrustRegionOptimalityObservation>,
++) {
++    use std::fmt::Write;
++
++    let Some(observation) = observation else {
++        output.push_str("null");
++        return;
++    };
++    let _ = write!(
++        output,
++        "{{\"scalar_operations\":{},\"coordinates\":[",
++        observation.scalar_operations
++    );
++    for (index, coordinate) in observation.coordinates.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        let _ = write!(
++            output,
++            "{{\"coordinate\":{},\"h\":\"{:016x}\",\"cbar\":\"{:016x}\",\"tau\":\"{:016x}\",\"class\":\"{:?}\"}}",
++            coordinate.coordinate,
++            coordinate.h.to_bits(),
++            coordinate.cbar.to_bits(),
++            coordinate.tau.to_bits(),
++            coordinate.class
++        );
++    }
++    output.push_str("],\"selected_release\":");
++    match observation.selected_release {
++        Some(release) => {
++            let _ = write!(
++                output,
++                "{{\"coordinate\":{},\"lower\":{},\"ratio\":",
++                release.coordinate, release.lower
++            );
++            append_optional_bit(output, release.ratio);
++            let _ = write!(
++                output,
++                ",\"tied_coordinates\":{}}}",
++                release.tied_coordinates
++            );
++        }
++        None => output.push_str("null"),
++    }
++    output.push('}');
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+ fn append_operation_json(output: &mut String, operation: &M1FacePivotCaptureOperation) {
+     use std::fmt::Write;
+ 
+@@ -318,6 +380,24 @@
+         }
+         None => output.push_str("null"),
+     }
++    output.push_str(",\"weighted_residual\":");
++    append_optional_bits(output, operation.weighted_residual);
++    output.push_str(",\"weighted_matrix\":");
++    match &operation.weighted_matrix {
++        Some(matrix) => {
++            output.push('[');
++            for (index, row) in matrix.iter().enumerate() {
++                if index != 0 {
++                    output.push(',');
++                }
++                output.push('[');
++                append_slice_bits(output, row);
++                output.push(']');
++            }
++            output.push(']');
++        }
++        None => output.push_str("null"),
++    }
+     output.push_str(",\"theta\":");
+     append_optional_bit(output, operation.crossing_theta);
+     let _ = write!(output, ",\"coordinate\":");
+@@ -340,6 +420,7 @@
+         operation.entered_factorizations, operation.completed_pivots, operation.completed_sweeps
+     );
+     for (name, values) in [
++        ("residual", operation.residual),
+         ("g", operation.g),
+         ("lambda_times_p", operation.lambda_times_p),
+         ("h", operation.h),
+@@ -347,6 +428,8 @@
+         let _ = write!(output, ",\"{name}\":");
+         append_optional_bits(output, values);
+     }
++    output.push_str(",\"optimality\":");
++    append_optimality_json(output, operation.optimality.as_ref());
+     output.push('}');
+ }
+ 
+@@ -550,9 +633,14 @@
+         Some(refusal) => {
+             let _ = write!(
+                 output,
+-                "{{\"stage\":\"{}\",\"kind\":\"{:?}\",\"entered\":{},\"pivots\":{},\"sweeps\":{},\"p\":",
++                "{{\"stage\":\"{}\",\"kind\":\"{:?}\",\"reason\":{:?},\"coordinate\":{:?},\"radius\":{:?},\"lambda\":{:?},\"free_ids\":{:?},\"entered\":{},\"pivots\":{},\"sweeps\":{},\"p\":",
+                 refusal.stage,
+                 refusal.kind,
++                refusal.optimality_reason,
++                refusal.optimality_coordinate,
++                refusal.radius,
++                refusal.lambda,
++                refusal.free_ids,
+                 refusal.entered_factorizations,
+                 refusal.completed_pivots,
+                 refusal.completed_sweeps
+@@ -564,6 +652,8 @@
+             append_bool_bits(output, &refusal.upper);
+             output.push_str(",\"free\":");
+             append_bool_bits(output, &refusal.free);
++            output.push_str(",\"optimality\":");
++            append_optimality_json(output, refusal.optimality.as_ref());
+             output.push('}');
+         }
+         None => output.push_str("null"),
+@@ -619,12 +709,16 @@
+             free_ids: vec![1],
+             radius: 1.0,
+             lambda: Some(-0.0),
++            weighted_residual: None,
++            weighted_matrix: None,
+             crossing_theta: Some(f64::INFINITY),
+             selected_coordinate: Some(1),
+             selected_lower: Some(true),
++            residual: Some([0.5; 21]),
+             g: Some([1.0; 21]),
+             lambda_times_p: Some([2.0; 21]),
+             h: Some([3.0; 21]),
++            optimality: None,
+             entered_factorizations: 43,
+             completed_pivots: 42,
+             completed_sweeps: 7,
+@@ -674,6 +768,11 @@
+         refusal: Some(M1FacePivotCaptureRefusal {
+             stage: "cap",
+             kind: M1TrustRegionRefusalKind::FacePivotLimit,
++            optimality_reason: None,
++            optimality_coordinate: None,
++            radius: None,
++            lambda: None,
++            free_ids: Vec::new(),
+             p: [1.0; 21],
+             lower: [false; 21],
+             upper: [true; 21],
+@@ -681,6 +780,7 @@
+             entered_factorizations: 43,
+             completed_pivots: 42,
+             completed_sweeps: 7,
++            optimality: None,
+         }),
+     }
+ }
+@@ -710,6 +810,42 @@
+             if let Some(capture) = capture.as_mut() {
+                 f(capture);
+             }
++        }
++    });
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn seed_kkt_transition_capture_for_test(
++    weighted_matrix: &[Vec<f64>],
++    weighted_residual: &[f64; 21],
++    lower: [f64; 21],
++    upper: [f64; 21],
++) {
++    if !m1_face_pivot_capture_enabled_for_test() {
++        return;
++    }
++    let raw_jacobian =
++        std::array::from_fn(|row| std::array::from_fn(|column| weighted_matrix[row][column]));
++    let _ = FACE_PIVOT_CAPTURE.try_with(|cell| {
++        if let Ok(mut capture) = cell.try_borrow_mut() {
++            *capture = Some(M1FacePivotCapture {
++                base: [0.0; 21],
++                raw_residual: *weighted_residual,
++                raw_jacobian,
++                normalizers: [1.0; 21],
++                scales: [1.0; 21],
++                lower,
++                upper,
++                weighted_residual: weighted_residual.to_vec(),
++                weighted_matrix: weighted_matrix.to_vec(),
++                initial_radius: 1.0,
++                completed_subproblems: Vec::new(),
++                operations: Vec::new(),
++                accepted_installs: Vec::new(),
++                post_update_admissions: Vec::new(),
++                lifecycle: Vec::new(),
++                refusal: None,
++            });
+         }
+     });
+ }
+@@ -1467,6 +1603,10 @@
+ ) -> super::M1TrustRegionSubproblemRefusal {
+     super::M1TrustRegionSubproblemRefusal {
+         kind,
++        optimality_reason: None,
++        optimality_coordinate: None,
++        optimality_radius: None,
++        optimality_lambda: None,
+         attempted_subproblems,
+         completed_jacobi_sweeps,
+         completed_face_pivots,
+@@ -1543,12 +1683,16 @@
+             free_ids: operation.free_ids,
+             radius: operation.radius,
+             lambda: operation.lambda,
++            weighted_residual: operation.weighted_residual,
++            weighted_matrix: operation.weighted_matrix,
+             crossing_theta: operation.crossing_theta,
+             selected_coordinate: operation.selected_coordinate,
+             selected_lower: operation.selected_lower,
++            residual: operation.residual,
+             g: operation.g,
+             lambda_times_p: operation.lambda_times_p,
+             h: operation.h,
++            optimality: operation.optimality,
+             entered_factorizations: state.entered,
+             completed_pivots: state.completed_pivots,
+             completed_sweeps: state.completed_sweeps,
+@@ -1566,6 +1710,11 @@
+         capture.refusal = Some(M1FacePivotCaptureRefusal {
+             stage: refusal_stage,
+             kind,
++            optimality_reason: None,
++            optimality_coordinate: None,
++            radius: None,
++            lambda: None,
++            free_ids: Vec::new(),
+             p: state.p,
+             lower: state.lower_active,
+             upper: state.upper_active,
+@@ -1573,6 +1722,7 @@
+             entered_factorizations: state.entered,
+             completed_pivots: state.completed_pivots,
+             completed_sweeps: state.completed_sweeps,
++            optimality: None,
+         });
+         capture
+             .completed_subproblems
+@@ -1582,6 +1732,74 @@
+                 completed_sweeps: state.completed_sweeps,
+                 refused: true,
+             });
++    });
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn capture_optimality_failure(
++    state: &SubproblemState,
++    solution: &FaceSolution,
++    prepared: &PreparedSubproblem,
++    values: Option<&KktValues>,
++    assessment: Option<&OptimalityAssessment>,
++    failure: OptimalityFailure,
++) {
++    record_face_pivot_capture(|capture| {
++        if let Some(values) = values {
++            capture.operations.push(M1FacePivotCaptureOperation {
++                action: "optimality-refusal",
++                p_before: state.p,
++                p_candidate: state.p,
++                conceptual_p_after: state.p,
++                scratch_p_at_refusal: None,
++                applied: false,
++                lower_before: state.lower_active,
++                upper_before: state.upper_active,
++                free_before: state.free,
++                lower_after: state.lower_active,
++                upper_after: state.upper_active,
++                free_after: state.free,
++                free_ids: solution.free_ids.clone(),
++                radius: solution.radius,
++                lambda: Some(solution.trace.lambda),
++                weighted_residual: Some(
++                    prepared
++                        .weighted_residual
++                        .clone()
++                        .try_into()
++                        .expect("fixed KKT dimension"),
++                ),
++                weighted_matrix: Some(prepared.weighted_matrix.clone()),
++                crossing_theta: None,
++                selected_coordinate: None,
++                selected_lower: None,
++                residual: Some(values.residual),
++                g: Some(values.gradient),
++                lambda_times_p: Some(values.lambda_times_step),
++                h: Some(values.h),
++                optimality: assessment.map(|value| value.observation.clone()),
++                entered_factorizations: state.entered,
++                completed_pivots: state.completed_pivots,
++                completed_sweeps: state.completed_sweeps,
++            });
++        }
++        capture.refusal = Some(M1FacePivotCaptureRefusal {
++            stage: "kkt-optimality",
++            kind: M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate,
++            optimality_reason: Some(failure.reason),
++            optimality_coordinate: Some(failure.coordinate),
++            radius: Some(solution.radius),
++            lambda: Some(solution.trace.lambda),
++            free_ids: solution.free_ids.clone(),
++            p: state.p,
++            lower: state.lower_active,
++            upper: state.upper_active,
++            free: state.free,
++            entered_factorizations: state.entered,
++            completed_pivots: state.completed_pivots,
++            completed_sweeps: state.completed_sweeps,
++            optimality: assessment.map(|value| value.observation.clone()),
++        });
+     });
+ }
+ 
+@@ -1632,12 +1850,16 @@
+             free_ids: solution.free_ids.clone(),
+             radius: solution.radius,
+             lambda: Some(solution.trace.lambda),
++            weighted_residual: None,
++            weighted_matrix: None,
+             crossing_theta: Some(crossing_theta),
+             selected_coordinate: Some(selected_coordinate),
+             selected_lower: Some(selected_lower),
++            residual: None,
+             g: None,
+             lambda_times_p: None,
+             h: None,
++            optimality: None,
+             entered_factorizations: 0,
+             completed_pivots: 0,
+             completed_sweeps: 0,
+@@ -1648,7 +1870,9 @@
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+ struct ReleaseCapture<'a> {
+     solution: &'a FaceSolution,
++    prepared: &'a PreparedSubproblem,
+     values: &'a KktValues,
++    assessment: &'a OptimalityAssessment,
+     p_before: [f64; 21],
+     masks_before: ([bool; 21], [bool; 21], [bool; 21]),
+     selected: (usize, bool),
+@@ -1684,12 +1908,72 @@
+             free_ids: capture.solution.free_ids.clone(),
+             radius: capture.solution.radius,
+             lambda: Some(capture.solution.trace.lambda),
++            weighted_residual: Some(
++                capture
++                    .prepared
++                    .weighted_residual
++                    .clone()
++                    .try_into()
++                    .expect("fixed KKT dimension"),
++            ),
++            weighted_matrix: Some(capture.prepared.weighted_matrix.clone()),
+             crossing_theta: None,
+             selected_coordinate: Some(selected_coordinate),
+             selected_lower: Some(selected_lower),
++            residual: Some(capture.values.residual),
+             g: Some(capture.values.gradient),
+             lambda_times_p: Some(capture.values.lambda_times_step),
+             h: Some(capture.values.h),
++            optimality: Some(capture.assessment.observation.clone()),
++            entered_factorizations: 0,
++            completed_pivots: 0,
++            completed_sweeps: 0,
++        },
++    );
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn capture_return(
++    state: &SubproblemState,
++    solution: &FaceSolution,
++    prepared: &PreparedSubproblem,
++    values: &KktValues,
++    assessment: &OptimalityAssessment,
++) {
++    capture_operation(
++        state,
++        M1FacePivotCaptureOperation {
++            action: "kkt-return",
++            p_before: state.p,
++            p_candidate: state.p,
++            conceptual_p_after: state.p,
++            scratch_p_at_refusal: None,
++            applied: true,
++            lower_before: state.lower_active,
++            upper_before: state.upper_active,
++            free_before: state.free,
++            lower_after: [false; 21],
++            upper_after: [false; 21],
++            free_after: [false; 21],
++            free_ids: solution.free_ids.clone(),
++            radius: solution.radius,
++            lambda: Some(solution.trace.lambda),
++            weighted_residual: Some(
++                prepared
++                    .weighted_residual
++                    .clone()
++                    .try_into()
++                    .expect("fixed KKT dimension"),
++            ),
++            weighted_matrix: Some(prepared.weighted_matrix.clone()),
++            crossing_theta: None,
++            selected_coordinate: None,
++            selected_lower: None,
++            residual: Some(values.residual),
++            g: Some(values.gradient),
++            lambda_times_p: Some(values.lambda_times_step),
++            h: Some(values.h),
++            optimality: Some(assessment.observation.clone()),
+             entered_factorizations: 0,
+             completed_pivots: 0,
+             completed_sweeps: 0,
+@@ -1712,6 +1996,27 @@
+     )
+ }
+ 
++fn optimality_state_refusal(
++    failure: OptimalityFailure,
++    state: &SubproblemState,
++    raw_max: f64,
++    solution: &FaceSolution,
++) -> super::M1TrustRegionSubproblemRefusal {
++    let mut refusal = state_refusal(
++        M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate,
++        state,
++        raw_max,
++    );
++    refusal.optimality_reason = Some(failure.reason);
++    refusal.optimality_coordinate = Some(failure.coordinate);
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    {
++        refusal.optimality_radius = Some(Box::new(solution.radius));
++        refusal.optimality_lambda = Some(Box::new(solution.trace.lambda));
++    }
++    refusal
++}
++
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+ fn state_budget_refusal(
+     state: &SubproblemState,
+@@ -1723,13 +2028,92 @@
+     refusal
+ }
+ 
++#[derive(Clone, Copy, Debug)]
++struct OptimalityFailure {
++    reason: &'static str,
++    coordinate: usize,
++}
++
++fn optimality_failure(reason: &'static str, coordinate: usize) -> OptimalityFailure {
++    OptimalityFailure { reason, coordinate }
++}
++
++fn checked_optimality_operand(value: f64, coordinate: usize) -> Result<(), OptimalityFailure> {
++    if !value.is_finite() {
++        return Err(optimality_failure("optimality_nonfinite", coordinate));
++    }
++    if value != 0.0 && !value.is_normal() {
++        return Err(optimality_failure(
++            "optimality_non_normal_operand",
++            coordinate,
++        ));
++    }
++    Ok(())
++}
++
++fn checked_optimality_product(
++    left: f64,
++    right: f64,
++    coordinate: usize,
++) -> Result<f64, OptimalityFailure> {
++    checked_optimality_operand(left, coordinate)?;
++    checked_optimality_operand(right, coordinate)?;
++    let product = left * right;
++    if !product.is_finite() {
++        return Err(optimality_failure("optimality_nonfinite", coordinate));
++    }
++    if product == 0.0 && left != 0.0 && right != 0.0 {
++        return Err(optimality_failure(
++            "optimality_underflow_to_zero",
++            coordinate,
++        ));
++    }
++    if product != 0.0 && !product.is_normal() {
++        return Err(optimality_failure(
++            "optimality_subnormal_intermediate",
++            coordinate,
++        ));
++    }
++    Ok(product)
++}
++
++fn checked_optimality_add(
++    left: f64,
++    right: f64,
++    coordinate: usize,
++) -> Result<f64, OptimalityFailure> {
++    checked_optimality_operand(left, coordinate)?;
++    checked_optimality_operand(right, coordinate)?;
++    let sum = left + right;
++    if !sum.is_finite() {
++        return Err(optimality_failure("optimality_nonfinite", coordinate));
++    }
++    if sum == 0.0
++        && (left != 0.0 || right != 0.0)
++        && left.to_bits() != (-right).to_bits()
++    {
++        return Err(optimality_failure("optimality_zero_addition", coordinate));
++    }
++    if sum != 0.0 && !sum.is_normal() {
++        return Err(optimality_failure(
++            "optimality_subnormal_intermediate",
++            coordinate,
++        ));
++    }
++    Ok(sum)
++}
++
+ fn box_feasible_kkt_values(
+     weighted_matrix: &[Vec<f64>],
+     weighted_residual: &[f64],
+     step: &[f64; 21],
+     lambda: f64,
+-) -> Result<KktValues, M1TrustRegionRefusalKind> {
++) -> Result<KktValues, OptimalityFailure> {
+     const N: usize = 21;
++    if lambda < 0.0 {
++        return Err(optimality_failure("optimality_negative_lambda", 0));
++    }
++    checked_optimality_operand(lambda, 0)?;
+     let mut residual = [0.0; N];
+     let mut gradient = [0.0; N];
+     let mut lambda_times_step = [0.0; N];
+@@ -1737,36 +2121,18 @@
+     for row in 0..N {
+         let mut ap_sum = 0.0;
+         for col in 0..N {
+-            let term = weighted_matrix[row][col] * step[col];
+-            if !term.is_finite() {
+-                return Err(M1TrustRegionRefusalKind::SvdNonFinite);
+-            }
+-            ap_sum += term;
+-            if !ap_sum.is_finite() {
+-                return Err(M1TrustRegionRefusalKind::SvdNonFinite);
+-            }
+-        }
+-        residual[row] = weighted_residual[row] + ap_sum;
+-        if !residual[row].is_finite() {
+-            return Err(M1TrustRegionRefusalKind::SvdNonFinite);
+-        }
++            let term = checked_optimality_product(weighted_matrix[row][col], step[col], col)?;
++            ap_sum = checked_optimality_add(ap_sum, term, col)?;
++        }
++        residual[row] = checked_optimality_add(weighted_residual[row], ap_sum, row)?;
+     }
+     for col in 0..N {
+         for row in 0..N {
+-            let term = weighted_matrix[row][col] * residual[row];
+-            if !term.is_finite() {
+-                return Err(M1TrustRegionRefusalKind::SvdNonFinite);
+-            }
+-            gradient[col] += term;
+-            if !gradient[col].is_finite() {
+-                return Err(M1TrustRegionRefusalKind::SvdNonFinite);
+-            }
+-        }
+-        lambda_times_step[col] = lambda * step[col];
+-        h[col] = gradient[col] + lambda_times_step[col];
+-        if !lambda_times_step[col].is_finite() || !h[col].is_finite() {
+-            return Err(M1TrustRegionRefusalKind::SvdNonFinite);
+-        }
++            let term = checked_optimality_product(weighted_matrix[row][col], residual[row], col)?;
++            gradient[col] = checked_optimality_add(gradient[col], term, col)?;
++        }
++        lambda_times_step[col] = checked_optimality_product(lambda, step[col], col)?;
++        h[col] = checked_optimality_add(gradient[col], lambda_times_step[col], col)?;
+     }
+     Ok(KktValues {
+         residual,
+@@ -1878,29 +2244,279 @@
+     Ok(crossing)
+ }
+ 
+-fn largest_kkt_release(
+-    lower_active: &[bool; 21],
+-    upper_active: &[bool; 21],
+-    h: &[f64; 21],
+-) -> Option<(usize, bool)> {
+-    let mut release = None;
+-    for col in 0..21 {
+-        let violation = if lower_active[col] && h[col] < 0.0 {
+-            Some((-h[col], true))
+-        } else if upper_active[col] && h[col] > 0.0 {
+-            Some((h[col], false))
++fn upward_operand(value: f64, coordinate: usize) -> Result<f64, OptimalityFailure> {
++    checked_optimality_operand(value, coordinate)?;
++    let magnitude = value.abs();
++    if !magnitude.is_finite() || (magnitude != 0.0 && !magnitude.is_normal()) {
++        return Err(optimality_failure(
++            "optimality_upward_enclosure",
++            coordinate,
++        ));
++    }
++    Ok(magnitude)
++}
++
++fn upward_mul(
++    left: f64,
++    right: f64,
++    coordinate: usize,
++    operations: &mut u16,
++) -> Result<f64, OptimalityFailure> {
++    if left < 0.0 || right < 0.0 {
++        return Err(optimality_failure(
++            "optimality_upward_enclosure",
++            coordinate,
++        ));
++    }
++    let left = upward_operand(left, coordinate)?;
++    let right = upward_operand(right, coordinate)?;
++    if left == 0.0 || right == 0.0 {
++        return Ok(0.0);
++    }
++    *operations += 1;
++    let product = left * right;
++    if !product.is_finite() {
++        return Err(optimality_failure(
++            "optimality_upward_enclosure",
++            coordinate,
++        ));
++    }
++    if product == 0.0 {
++        return Err(optimality_failure(
++            "optimality_underflow_to_zero",
++            coordinate,
++        ));
++    }
++    if !product.is_normal() {
++        return Err(optimality_failure(
++            "optimality_subnormal_intermediate",
++            coordinate,
++        ));
++    }
++    let upward = product.next_up();
++    if !upward.is_finite() || !upward.is_normal() {
++        return Err(optimality_failure(
++            "optimality_upward_enclosure",
++            coordinate,
++        ));
++    }
++    *operations += 1;
++    Ok(upward)
++}
++
++fn upward_add(
++    left: f64,
++    right: f64,
++    coordinate: usize,
++    operations: &mut u16,
++) -> Result<f64, OptimalityFailure> {
++    if left < 0.0 || right < 0.0 {
++        return Err(optimality_failure(
++            "optimality_upward_enclosure",
++            coordinate,
++        ));
++    }
++    let left = upward_operand(left, coordinate)?;
++    let right = upward_operand(right, coordinate)?;
++    if right == 0.0 {
++        return Ok(left);
++    }
++    *operations += 1;
++    let sum = left + right;
++    if !sum.is_finite() || sum == 0.0 {
++        return Err(optimality_failure(
++            "optimality_upward_enclosure",
++            coordinate,
++        ));
++    }
++    if !sum.is_normal() {
++        return Err(optimality_failure(
++            "optimality_subnormal_intermediate",
++            coordinate,
++        ));
++    }
++    let upward = sum.next_up();
++    if !upward.is_finite() || !upward.is_normal() {
++        return Err(optimality_failure(
++            "optimality_upward_enclosure",
++            coordinate,
++        ));
++    }
++    *operations += 1;
++    Ok(upward)
++}
++
++fn cbar_and_tau(
++    weighted_matrix: &[Vec<f64>],
++    weighted_residual: &[f64],
++    step: &[f64; 21],
++    lambda: f64,
++    coordinate: usize,
++    operations: &mut u16,
++) -> Result<(f64, f64), OptimalityFailure> {
++    let mut cbar = 0.0;
++    for row in 0..21 {
++        let mut inner = 0.0;
++        for column in 0..21 {
++            let term = upward_mul(
++                upward_operand(weighted_matrix[row][column], coordinate)?,
++                upward_operand(step[column], coordinate)?,
++                coordinate,
++                operations,
++            )?;
++            inner = upward_add(inner, term, coordinate, operations)?;
++        }
++        let row_scale = upward_add(
++            upward_operand(weighted_residual[row], coordinate)?,
++            inner,
++            coordinate,
++            operations,
++        )?;
++        let row_term = upward_mul(
++            upward_operand(weighted_matrix[row][coordinate], coordinate)?,
++            row_scale,
++            coordinate,
++            operations,
++        )?;
++        cbar = upward_add(cbar, row_term, coordinate, operations)?;
++    }
++    let lambda_term = upward_mul(
++        upward_operand(lambda, coordinate)?,
++        upward_operand(step[coordinate], coordinate)?,
++        coordinate,
++        operations,
++    )?;
++    cbar = upward_add(cbar, lambda_term, coordinate, operations)?;
++    if cbar == 0.0 {
++        return Ok((0.0, 0.0));
++    }
++    let gamma = (87.0 / (TWO_POW_53 - 87.0)).next_up();
++    if !gamma.is_finite() || !gamma.is_normal() {
++        return Err(optimality_failure(
++            "optimality_upward_enclosure",
++            coordinate,
++        ));
++    }
++    let tau = upward_mul(gamma, cbar, coordinate, operations)?;
++    Ok((cbar, tau))
++}
++
++struct OptimalityAssessment {
++    observation: super::M1TrustRegionOptimalityObservation,
++    release: Option<(usize, bool)>,
++    free_refusal: Option<usize>,
++}
++
++struct KktTransitionOutcome {
++    values: Option<KktValues>,
++    observation: super::M1TrustRegionOptimalityObservation,
++}
++
++fn assess_optimality(
++    prepared: &PreparedSubproblem,
++    state: &SubproblemState,
++    values: &KktValues,
++    lambda: f64,
++) -> Result<OptimalityAssessment, OptimalityFailure> {
++    let mut operations = 0;
++    let mut coordinates = Vec::with_capacity(21);
++    let mut candidates: Vec<(usize, bool, Option<f64>)> = Vec::new();
++    let mut free_refusal = None;
++    for coordinate in 0..21 {
++        let (cbar, tau) = cbar_and_tau(
++            &prepared.weighted_matrix,
++            &prepared.weighted_residual,
++            &state.p,
++            lambda,
++            coordinate,
++            &mut operations,
++        )?;
++        let h = values.h[coordinate];
++        checked_optimality_operand(h, coordinate)?;
++        let fixed = !state.initial_free[coordinate];
++        let class = if fixed {
++            super::M1TrustRegionOptimalityClass::Fixed
++        } else if state.lower_active[coordinate] {
++            if h < -tau {
++                let ratio = if tau == 0.0 {
++                    None
++                } else {
++                    let ratio = h.abs() / tau;
++                    if !ratio.is_finite() || !ratio.is_normal() {
++                        return Err(optimality_failure("optimality_release_ratio", coordinate));
++                    }
++                    Some(ratio)
++                };
++                candidates.push((coordinate, true, ratio));
++                super::M1TrustRegionOptimalityClass::ReleaseLower
++            } else {
++                super::M1TrustRegionOptimalityClass::RetainLower
++            }
++        } else if state.upper_active[coordinate] {
++            if h > tau {
++                let ratio = if tau == 0.0 {
++                    None
++                } else {
++                    let ratio = h.abs() / tau;
++                    if !ratio.is_finite() || !ratio.is_normal() {
++                        return Err(optimality_failure("optimality_release_ratio", coordinate));
++                    }
++                    Some(ratio)
++                };
++                candidates.push((coordinate, false, ratio));
++                super::M1TrustRegionOptimalityClass::ReleaseUpper
++            } else {
++                super::M1TrustRegionOptimalityClass::RetainUpper
++            }
++        } else if h.abs() <= tau {
++            super::M1TrustRegionOptimalityClass::FreePass
+         } else {
+-            None
++            free_refusal.get_or_insert(coordinate);
++            super::M1TrustRegionOptimalityClass::FreeRefuse
+         };
+-        if let Some((size, is_lower)) = violation {
+-            if release.is_none_or(|(best, index, _)| {
+-                size > best || (size.partial_cmp(&best) == Some(Ordering::Equal) && col < index)
+-            }) {
+-                release = Some((size, col, is_lower));
+-            }
+-        }
+-    }
+-    release.map(|(_, col, is_lower)| (col, is_lower))
++        if cbar == 0.0 && h != 0.0 {
++            return Err(optimality_failure(
++                "optimality_free_stationarity",
++                coordinate,
++            ));
++        }
++        coordinates.push(super::M1TrustRegionOptimalityCoordinateObservation {
++            coordinate,
++            h,
++            cbar,
++            tau,
++            class,
++        });
++    }
++    candidates.sort_by(|left, right| match (left.2, right.2) {
++        (None, None) => left.0.cmp(&right.0),
++        (None, Some(_)) => Ordering::Less,
++        (Some(_), None) => Ordering::Greater,
++        (Some(left_ratio), Some(right_ratio)) => right_ratio
++            .total_cmp(&left_ratio)
++            .then_with(|| left.0.cmp(&right.0)),
++    });
++    let selected_release = candidates.first().map(|(coordinate, lower, ratio)| {
++        let tied_coordinates = candidates
++            .iter()
++            .filter(|(_, _, candidate_ratio)| candidate_ratio == ratio)
++            .fold(0_u8, |count, _| count + 1);
++        super::M1TrustRegionOptimalityReleaseObservation {
++            coordinate: *coordinate,
++            lower: *lower,
++            ratio: *ratio,
++            tied_coordinates,
++        }
++    });
++    Ok(OptimalityAssessment {
++        release: selected_release.map(|selected| (selected.coordinate, selected.lower)),
++        free_refusal: selected_release.is_none().then_some(free_refusal).flatten(),
++        observation: super::M1TrustRegionOptimalityObservation {
++            coordinates,
++            selected_release,
++            scalar_operations: operations,
++        },
++    })
+ }
+ 
+ fn prepare_subproblem(
+@@ -2192,7 +2808,7 @@
+     prepared: &PreparedSubproblem,
+     state: &mut SubproblemState,
+     solution: &FaceSolution,
+-) -> Result<Option<KktValues>, super::M1TrustRegionSubproblemRefusal> {
++) -> Result<KktTransitionOutcome, super::M1TrustRegionSubproblemRefusal> {
+     let lambda = solution.trace.lambda;
+     #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     let p_before = state.p;
+@@ -2202,16 +2818,38 @@
+     let upper_before = state.upper_active;
+     #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     let free_before = state.free;
+-    let values = box_feasible_kkt_values(
++    let values = match box_feasible_kkt_values(
+         &prepared.weighted_matrix,
+         &prepared.weighted_residual,
+         &state.p,
+         lambda,
+-    )
+-    .map_err(|kind| state_refusal(kind, state, prepared.raw_max))?;
+-    if let Some((col, is_lower)) =
+-        largest_kkt_release(&state.lower_active, &state.upper_active, &values.h)
+-    {
++    ) {
++        Ok(values) => values,
++        Err(failure) => {
++            #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++            capture_optimality_failure(state, solution, prepared, None, None, failure);
++            return Err(optimality_state_refusal(
++                failure,
++                state,
++                prepared.raw_max,
++                solution,
++            ));
++        }
++    };
++    let assessment = match assess_optimality(prepared, state, &values, lambda) {
++        Ok(assessment) => assessment,
++        Err(failure) => {
++            #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++            capture_optimality_failure(state, solution, prepared, Some(&values), None, failure);
++            return Err(optimality_state_refusal(
++                failure,
++                state,
++                prepared.raw_max,
++                solution,
++            ));
++        }
++    };
++    if let Some((col, is_lower)) = assessment.release {
+         if state.completed_pivots >= 42 {
+             #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+             {
+@@ -2219,7 +2857,9 @@
+                     state,
+                     &ReleaseCapture {
+                         solution,
++                        prepared,
+                         values: &values,
++                        assessment: &assessment,
+                         p_before,
+                         masks_before: (lower_before, upper_before, free_before),
+                         selected: (col, is_lower),
+@@ -2261,14 +2901,36 @@
+             state,
+             &ReleaseCapture {
+                 solution,
++                prepared,
+                 values: &values,
++                assessment: &assessment,
+                 p_before,
+                 masks_before: (lower_before, upper_before, free_before),
+                 selected: (col, is_lower),
+                 applied: true,
+             },
+         );
+-        return Ok(None);
++        return Ok(KktTransitionOutcome {
++            values: None,
++            observation: assessment.observation,
++        });
++    }
++    if let Some(coordinate) = assessment.free_refusal {
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        capture_optimality_failure(
++            state,
++            solution,
++            prepared,
++            Some(&values),
++            Some(&assessment),
++            optimality_failure("optimality_free_stationarity", coordinate),
++        );
++        return Err(optimality_state_refusal(
++            optimality_failure("optimality_free_stationarity", coordinate),
++            state,
++            prepared.raw_max,
++            solution,
++        ));
+     }
+     state.events.push(super::M1TrustRegionKktEvent {
+         action: super::M1TrustRegionKktAction::Return,
+@@ -2280,7 +2942,12 @@
+         lambda_times_p: Some(values.lambda_times_step),
+         h: Some(values.h),
+     });
+-    Ok(Some(values))
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    capture_return(state, solution, prepared, &values, &assessment);
++    Ok(KktTransitionOutcome {
++        values: Some(values),
++        observation: assessment.observation,
++    })
+ }
+ 
+ pub(crate) fn solve_subproblem(
+@@ -2308,6 +2975,9 @@
+                     let completed_subproblems = slot
+                         .as_ref()
+                         .map_or_else(Vec::new, |prior| prior.completed_subproblems.clone());
++                    let operations = slot
++                        .as_ref()
++                        .map_or_else(Vec::new, |prior| prior.operations.clone());
+                     *slot = Some(M1FacePivotCapture {
+                         base: input.base,
+                         raw_residual: input.raw_residual,
+@@ -2320,7 +2990,7 @@
+                         weighted_matrix: prepared.weighted_matrix.clone(),
+                         initial_radius: input.initial_radius,
+                         completed_subproblems,
+-                        operations: Vec::new(),
++                        operations,
+                         accepted_installs,
+                         post_update_admissions,
+                         lifecycle,
+@@ -2336,7 +3006,8 @@
+         if activate_first_crossing(&prepared, &mut state, &solution)? {
+             continue;
+         }
+-        let Some(values) = kkt_transition(&prepared, &mut state, &solution)? else {
++        let transition = kkt_transition(&prepared, &mut state, &solution)?;
++        let Some(values) = transition.values else {
+             continue;
+         };
+         let candidate = candidate_coordinates(input, &state.p).ok_or_else(|| {
+@@ -2349,6 +3020,7 @@
+         #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+         capture_successful_subproblem(&state);
+         return Ok(super::M1TrustRegionSubproblemObservation {
++            optimality_observation: Some(transition.observation),
+             initial_face_step: [0.0; N],
+             base_coordinates: input.base,
+             candidate_coordinates: candidate,
+@@ -2378,3 +3050,1196 @@
+ ) -> Result<super::M1TrustRegionSubproblemObservation, super::M1TrustRegionSubproblemRefusal> {
+     solve_subproblem(input)
+ }
++
++#[cfg(test)]
++pub(crate) fn m1_trust_region_kkt_transition_for_test(
++    weighted_matrix: Vec<Vec<f64>>,
++    weighted_residual: [f64; 21],
++    step: [f64; 21],
++    lower_active: [bool; 21],
++    upper_active: [bool; 21],
++    free: [bool; 21],
++    lambda: f64,
++) -> Result<super::M1TrustRegionKktTransitionObservation, super::M1TrustRegionSubproblemRefusal> {
++    assert!(
++        (0..21).all(|index| {
++            usize::from(lower_active[index])
++                + usize::from(upper_active[index])
++                + usize::from(free[index])
++                == 1
++        }),
++        "test seam requires a complete active/free partition"
++    );
++    let mut scaled_lower = [f64::NEG_INFINITY; 21];
++    let mut scaled_upper = [f64::INFINITY; 21];
++    for index in 0..21 {
++        if lower_active[index] {
++            scaled_lower[index] = step[index];
++        }
++        if upper_active[index] {
++            scaled_upper[index] = step[index];
++        }
++    }
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    seed_kkt_transition_capture_for_test(
++        &weighted_matrix,
++        &weighted_residual,
++        scaled_lower,
++        scaled_upper,
++    );
++    let prepared = PreparedSubproblem {
++        raw_max: weighted_residual
++            .iter()
++            .fold(0.0_f64, |maximum, value| maximum.max(value.abs())),
++        weighted_residual: weighted_residual.to_vec(),
++        weighted_matrix,
++        scaled_lower,
++        scaled_upper,
++    };
++    let mut state = SubproblemState {
++        p: step,
++        lower_active,
++        upper_active,
++        free,
++        initial_free: [true; 21],
++        events: Vec::new(),
++        entered: 1,
++        completed_pivots: 0,
++        completed_sweeps: 0,
++    };
++    let solution = FaceSolution {
++        free_ids: (0..21).filter(|&index| free[index]).collect(),
++        trace: LambdaTrace {
++            lambda,
++            ..LambdaTrace::default()
++        },
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        radius: 1.0,
++    };
++    let transition = kkt_transition(&prepared, &mut state, &solution)?;
++    Ok(super::M1TrustRegionKktTransitionObservation {
++        action: state.events.last().map(|event| event.action),
++        selected_coordinate: state.events.last().map(|event| event.selected_coordinate),
++        optimality: Some(transition.observation),
++    })
++}
++
++#[cfg(test)]
++fn m1_trust_region_signed_zero_crossing_then_kkt_for_test(
++    weighted_matrix: Vec<Vec<f64>>,
++    weighted_residual: [f64; 21],
++    crossing_step: [f64; 21],
++) -> Result<(f64, Vec<super::M1TrustRegionKktAction>), super::M1TrustRegionSubproblemRefusal> {
++    let mut lower = [f64::NEG_INFINITY; 21];
++    let upper = [f64::INFINITY; 21];
++    lower[0] = 0.0;
++    let prepared = PreparedSubproblem {
++        raw_max: weighted_residual
++            .iter()
++            .fold(0.0_f64, |maximum, value| maximum.max(value.abs())),
++        weighted_residual: weighted_residual.to_vec(),
++        weighted_matrix,
++        scaled_lower: lower,
++        scaled_upper: upper,
++    };
++    let mut state = SubproblemState {
++        p: [0.0; 21],
++        lower_active: [false; 21],
++        upper_active: [false; 21],
++        free: [true; 21],
++        initial_free: [true; 21],
++        events: Vec::new(),
++        entered: 1,
++        completed_pivots: 0,
++        completed_sweeps: 0,
++    };
++    let solution = FaceSolution {
++        free_ids: (0..21).collect(),
++        trace: LambdaTrace {
++            lambda: 0.0,
++            step: crossing_step.to_vec(),
++            ..LambdaTrace::default()
++        },
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        radius: 1.0,
++    };
++    let theta = first_crossing(
++        &crossing_step,
++        &state.p,
++        &solution.free_ids,
++        &prepared.scaled_lower,
++        &prepared.scaled_upper,
++    )
++    .map_err(|kind| state_refusal(kind, &state, prepared.raw_max))?
++    .expect("negative candidate crosses lower bound")
++    .0;
++    assert!(activate_first_crossing(&prepared, &mut state, &solution)?);
++    let _ = kkt_transition(&prepared, &mut state, &solution)?;
++    Ok((
++        theta,
++        state.events.iter().map(|event| event.action).collect(),
++    ))
++}
++
++#[cfg(test)]
++mod finite_precision_controls {
++    use super::{
++        box_feasible_kkt_values, m1_trust_region_kkt_transition_for_test,
++        m1_trust_region_signed_zero_crossing_then_kkt_for_test, upward_mul,
++    };
++    use crate::{
++        M1TrustRegionKktAction, M1TrustRegionRefusalKind, M1TrustRegionSubproblemInput,
++        M1TrustRegionTestWorkState,
++    };
++    use serde_json::Value;
++
++    const RETAINED_CAPTURE: &str = include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-observed-capture.json"
++    ));
++    const RETAINED_ORACLE: &str = include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-correctness-oracle-retained-face.json"
++    ));
++
++    fn bit(value: &Value) -> f64 {
++        f64::from_bits(
++            u64::from_str_radix(value.as_str().expect("binary64 hex"), 16)
++                .expect("valid binary64 bits"),
++        )
++    }
++
++    fn vector(value: &Value) -> [f64; 21] {
++        std::array::from_fn(|index| bit(&value[index]))
++    }
++
++    fn bits(values: [f64; 21]) -> [u64; 21] {
++        values.map(f64::to_bits)
++    }
++
++    fn partition(lower: [bool; 21], upper: [bool; 21]) -> [bool; 21] {
++        std::array::from_fn(|index| !lower[index] && !upper[index])
++    }
++
++    fn capture_return_input() -> M1TrustRegionSubproblemInput {
++        let mut jacobian = [[0.0; 21]; 21];
++        for coordinate in 0..21 {
++            jacobian[coordinate][coordinate] = 1.0;
++        }
++        M1TrustRegionSubproblemInput {
++            raw_residual: [0.0; 21],
++            raw_jacobian: jacobian,
++            normalizers: [1.0; 21],
++            scales: [1.0; 21],
++            lower: [f64::NEG_INFINITY; 21],
++            upper: [f64::INFINITY; 21],
++            initial_radius: 1.0,
++            base: [0.0; 21],
++            test_work: M1TrustRegionTestWorkState::default(),
++        }
++    }
++
++    fn capture_nonzero_return_input() -> M1TrustRegionSubproblemInput {
++        let mut input = capture_return_input();
++        input.raw_residual[0] = 0.25;
++        input
++    }
++
++    #[test]
++    fn retained_capture_uses_shared_ordered_kkt_operation_before_policy_change() {
++        let capture: Value = serde_json::from_str(RETAINED_CAPTURE).expect("retained capture");
++        let oracle: Value =
++            serde_json::from_str(RETAINED_ORACLE).expect("independent retained oracle");
++        let release = capture["operations"]
++            .as_array()
++            .expect("operation array")
++            .iter()
++            .find(|operation| operation["action"] == "release")
++            .expect("recorded lower release");
++        let matrix = capture["weighted_matrix"]
++            .as_array()
++            .expect("weighted matrix")
++            .iter()
++            .map(|row| vector(row).to_vec())
++            .collect::<Vec<_>>();
++        let values = box_feasible_kkt_values(
++            &matrix,
++            &vector(&capture["weighted_residual"]),
++            &vector(&release["p_before"]),
++            bit(&release["lambda"]),
++        )
++        .expect("shared KKT operation on retained finite operands");
++        let recorded_h = vector(&release["h"]);
++        assert_eq!(values.h.map(f64::to_bits), recorded_h.map(f64::to_bits));
++        let lower = std::array::from_fn(|index| {
++            release["lower_before"][index]
++                .as_bool()
++                .expect("lower mask")
++        });
++        let upper = std::array::from_fn(|index| {
++            release["upper_before"][index]
++                .as_bool()
++                .expect("upper mask")
++        });
++        let transition = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            vector(&capture["weighted_residual"]),
++            vector(&release["p_before"]),
++            lower,
++            upper,
++            partition(lower, upper),
++            bit(&release["lambda"]),
++        )
++        .expect("shared retained transition");
++        assert_eq!(
++            transition.action,
++            Some(M1TrustRegionKktAction::ReleaseLower)
++        );
++        let optimality = transition
++            .optimality
++            .expect("expected-red: 02 retained all-coordinate observation");
++        assert_eq!(optimality.coordinates.len(), 21);
++        for (coordinate, actual) in optimality.coordinates.iter().enumerate() {
++            assert_eq!(actual.coordinate, coordinate);
++        }
++        let oracle_coordinates = oracle["coordinates"]
++            .as_array()
++            .expect("independent oracle coordinates");
++        assert_eq!(oracle_coordinates.len(), 21);
++        for coordinate in [5usize, 11usize] {
++            let expected = &oracle_coordinates[coordinate];
++            let actual = &optimality.coordinates[coordinate];
++            assert_eq!(
++                actual.h.to_bits(),
++                bit(&expected["h_hat"]["bits"]).to_bits()
++            );
++            assert_eq!(
++                actual.cbar.to_bits(),
++                bit(&expected["cbar"]["bits"]).to_bits()
++            );
++            assert_eq!(
++                actual.tau.to_bits(),
++                bit(&expected["tau"]["bits"]).to_bits()
++            );
++            assert_eq!(
++                actual.class,
++                if coordinate == 5 {
++                    crate::M1TrustRegionOptimalityClass::ReleaseLower
++                } else {
++                    crate::M1TrustRegionOptimalityClass::FreeRefuse
++                }
++            );
++        }
++    }
++
++    #[test]
++    fn expected_red_cancellation_band_must_not_release_on_sign_alone() {
++        // A real shared KKT calculation gives a negative lower multiplier
++        // through cancellation.  The reviewed 02 envelope retains it; this
++        // assertion is intentionally red until the shared transition applies
++        // that policy, rather than the current sign-only helper.
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        matrix[0][1] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = -1.0 - f64::EPSILON;
++        let mut step = [0.0; 21];
++        step[1] = 1.0;
++        let lower = std::array::from_fn(|index| index == 0);
++        let upper = [false; 21];
++        assert_eq!(
++            m1_trust_region_kkt_transition_for_test(
++                matrix,
++                residual,
++                step,
++                lower,
++                upper,
++                partition(lower, upper),
++                0.0
++            )
++            .expect("shared KKT transition")
++            .action,
++            Some(M1TrustRegionKktAction::Return),
++            "expected-red: reviewed 02 uncertainty-band decision replaces sign-only release"
++        );
++    }
++
++    #[test]
++    fn expected_red_upper_cancellation_band_must_not_release_on_sign_alone() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        matrix[0][1] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = 1.0 + f64::EPSILON;
++        let mut step = [0.0; 21];
++        step[1] = -1.0;
++        let upper = std::array::from_fn(|index| index == 0);
++        assert_eq!(
++            m1_trust_region_kkt_transition_for_test(
++                matrix.clone(),
++                residual,
++                step,
++                [false; 21],
++                upper,
++                partition([false; 21], upper),
++                0.0
++            )
++            .expect("shared upper transition")
++            .action,
++            Some(M1TrustRegionKktAction::Return),
++            "expected-red: uncertainty-band upper multiplier is retained"
++        );
++    }
++
++    #[test]
++    fn resolvable_upper_violation_releases_through_shared_transition() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = 1.0;
++        let upper = std::array::from_fn(|index| index == 0);
++        assert_eq!(
++            m1_trust_region_kkt_transition_for_test(
++                matrix,
++                residual,
++                [0.0; 21],
++                [false; 21],
++                upper,
++                partition([false; 21], upper),
++                0.0,
++            )
++            .expect("shared resolvable upper transition")
++            .action,
++            Some(M1TrustRegionKktAction::ReleaseUpper)
++        );
++    }
++
++    #[test]
++    fn expected_red_release_ranking_uses_observed_ratio_not_multiplier_magnitude() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        matrix[1][1] = 1.0;
++        matrix[2][0] = 100.0;
++        matrix[2][2] = 1.0;
++        for coordinate in 3..21 {
++            matrix[coordinate][coordinate] = 1.0;
++        }
++        let mut residual = [0.0; 21];
++        residual[0] = -2.0;
++        residual[1] = -1.0;
++        residual[2] = -1.0;
++        let mut step = [0.0; 21];
++        step[2] = 1.0;
++        let lower = std::array::from_fn(|coordinate| coordinate < 2);
++        let transition = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            step,
++            lower,
++            [false; 21],
++            partition(lower, [false; 21]),
++            0.0,
++        )
++        .expect("shared release-ranking transition");
++        assert_eq!(
++            transition.action,
++            Some(M1TrustRegionKktAction::ReleaseLower)
++        );
++        assert_eq!(
++            transition.selected_coordinate,
++            Some(1),
++            "expected-red: larger absolute multiplier at coordinate 0 has the smaller observed ratio"
++        );
++        let observation = transition
++            .optimality
++            .expect("expected-red: release-ranking optimality observation");
++        let coordinate_zero = &observation.coordinates[0];
++        let coordinate_one = &observation.coordinates[1];
++        assert!(coordinate_zero.h.abs() > coordinate_one.h.abs());
++        assert!(coordinate_zero.tau.is_normal());
++        assert!(coordinate_one.tau.is_normal());
++        assert!(
++            coordinate_one.h.abs() / coordinate_one.tau
++                > coordinate_zero.h.abs() / coordinate_zero.tau,
++            "expected-red: shared observed thresholds order release ratios"
++        );
++    }
++
++    #[test]
++    fn expected_red_free_stationarity_must_refuse_from_shared_transition() {
++        let mut free_matrix = vec![vec![0.0; 21]; 21];
++        free_matrix[0][0] = 1.0;
++        let mut free_residual = [0.0; 21];
++        free_residual[0] = 1.0;
++        let free = [true; 21];
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            free_matrix,
++            free_residual,
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            free,
++            0.0,
++        )
++        .expect_err("expected-red: materially nonstationary free coordinate must refuse");
++        assert_eq!(
++            refusal.kind,
++            M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate
++        );
++        assert_eq!(
++            refusal.optimality_reason,
++            Some("optimality_free_stationarity")
++        );
++        assert_eq!(refusal.optimality_coordinate, Some(0));
++    }
++
++    #[test]
++    fn shared_signed_zero_crossing_precedes_genuine_descent_release() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = -1.0;
++        let mut step = [0.0; 21];
++        step[0] = -f64::MIN_POSITIVE;
++        let (theta, actions) =
++            m1_trust_region_signed_zero_crossing_then_kkt_for_test(matrix, residual, step)
++                .expect("shared signed-zero crossing and descent");
++        assert_eq!(theta.to_bits(), (-0.0_f64).to_bits());
++        assert_eq!(
++            actions,
++            vec![
++                M1TrustRegionKktAction::ActivateLower,
++                M1TrustRegionKktAction::ReleaseLower,
++            ]
++        );
++    }
++
++    #[test]
++    fn shared_normal_nonfinite_and_overflow_kkt_operands_are_real_operations() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = 1.0;
++        assert!(box_feasible_kkt_values(&matrix, &residual, &[0.0; 21], 0.0).is_ok());
++        matrix[0][0] = f64::NAN;
++        assert!(box_feasible_kkt_values(&matrix, &residual, &[0.0; 21], 0.0).is_err());
++        matrix[0][0] = f64::MAX;
++        residual[0] = f64::MAX;
++        assert!(box_feasible_kkt_values(&matrix, &residual, &[0.0; 21], 0.0).is_err());
++    }
++
++    #[test]
++    fn expected_red_nonfinite_kkt_operand_has_typed_optimality_refusal() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = f64::NAN;
++        let mut residual = [0.0; 21];
++        residual[0] = 1.0;
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect_err("expected-red: nonfinite KKT operand must have 02 refusal metadata");
++        assert_eq!(
++            refusal.kind,
++            M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate
++        );
++        assert_eq!(refusal.optimality_reason, Some("optimality_nonfinite"));
++        assert_eq!(refusal.optimality_coordinate, Some(0));
++    }
++
++    #[test]
++    fn expected_red_overflow_kkt_operand_has_typed_optimality_refusal() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = f64::MAX;
++        let mut residual = [0.0; 21];
++        residual[0] = f64::MAX;
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect_err("expected-red: overflowing KKT product must have 02 refusal metadata");
++        assert_eq!(
++            refusal.kind,
++            M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate
++        );
++        assert_eq!(refusal.optimality_reason, Some("optimality_nonfinite"));
++        assert_eq!(refusal.optimality_coordinate, Some(0));
++    }
++
++    #[test]
++    fn expected_red_negative_lambda_has_typed_optimality_refusal() {
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            vec![vec![0.0; 21]; 21],
++            [0.0; 21],
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            -1.0,
++        )
++        .expect_err("expected-red: negative lambda must have 02 refusal metadata");
++        assert_eq!(
++            refusal.kind,
++            M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate
++        );
++        assert_eq!(
++            refusal.optimality_reason,
++            Some("optimality_negative_lambda")
++        );
++        assert_eq!(refusal.optimality_coordinate, Some(0));
++    }
++
++    #[test]
++    fn expected_red_subnormal_kkt_operand_must_refuse() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = f64::from_bits(1);
++        let mut residual = [0.0; 21];
++        residual[0] = 1.0;
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect_err("expected-red: nonzero subnormal KKT operand must refuse");
++        assert_eq!(
++            refusal.kind,
++            M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate
++        );
++        assert_eq!(
++            refusal.optimality_reason,
++            Some("optimality_non_normal_operand")
++        );
++        assert_eq!(refusal.optimality_coordinate, Some(0));
++    }
++
++    #[test]
++    fn expected_red_underflow_to_zero_kkt_product_must_refuse() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = f64::MIN_POSITIVE;
++        let mut residual = [0.0; 21];
++        residual[0] = f64::MIN_POSITIVE;
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect_err(
++            "expected-red: nonzero normal operands whose KKT product underflows must refuse",
++        );
++        assert_eq!(
++            refusal.kind,
++            M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate
++        );
++        assert_eq!(
++            refusal.optimality_reason,
++            Some("optimality_underflow_to_zero")
++        );
++        assert_eq!(refusal.optimality_coordinate, Some(0));
++    }
++
++    #[test]
++    fn expected_red_subnormal_kkt_intermediate_must_refuse() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = f64::MIN_POSITIVE;
++        let mut residual = [0.0; 21];
++        residual[0] = 0.5;
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect_err("expected-red: nonzero subnormal KKT intermediate must refuse");
++        assert_eq!(
++            refusal.kind,
++            M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate
++        );
++        assert_eq!(
++            refusal.optimality_reason,
++            Some("optimality_subnormal_intermediate")
++        );
++        assert_eq!(refusal.optimality_coordinate, Some(0));
++    }
++
++    #[test]
++    fn expected_red_zero_cbar_with_zero_h_is_an_explicit_02_observation() {
++        let transition = m1_trust_region_kkt_transition_for_test(
++            vec![vec![0.0; 21]; 21],
++            [0.0; 21],
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect("shared zero KKT transition");
++        let observation = transition
++            .optimality
++            .expect("expected-red: zero-Cbar 02 observation");
++        let coordinate = observation
++            .coordinates
++            .iter()
++            .find(|entry| entry.coordinate == 0)
++            .expect("expected-red: zero-Cbar coordinate");
++        assert_eq!(coordinate.h.to_bits(), 0.0f64.to_bits());
++        assert_eq!(coordinate.cbar.to_bits(), 0.0f64.to_bits());
++        assert_eq!(coordinate.tau.to_bits(), 0.0f64.to_bits());
++        assert_eq!(
++            coordinate.class,
++            crate::M1TrustRegionOptimalityClass::FreePass
++        );
++    }
++
++    #[test]
++    fn expected_red_zero_identity_enclosure_records_no_scalar_arithmetic() {
++        let transition = m1_trust_region_kkt_transition_for_test(
++            vec![vec![0.0; 21]; 21],
++            [0.0; 21],
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect("shared zero transition");
++        assert_eq!(
++            transition
++                .optimality
++                .expect("02 zero observation")
++                .scalar_operations,
++            0,
++            "expected-red: skipped zero identities perform neither scalar arithmetic nor upward steps"
++        );
++    }
++
++    #[test]
++    fn expected_red_nonzero_enclosure_records_exact_scalar_arithmetic() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = 1.0;
++        let lower = std::array::from_fn(|coordinate| coordinate == 0);
++        let transition = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            [0.0; 21],
++            lower,
++            [false; 21],
++            partition(lower, [false; 21]),
++            0.0,
++        )
++        .expect("shared nonzero enclosure transition");
++        let observation = transition.optimality.expect("02 nonzero observation");
++        assert_eq!(observation.scalar_operations, 6);
++        assert!(observation.scalar_operations <= 39_816);
++    }
++
++    #[test]
++    fn expected_red_tau_subnormal_has_typed_optimality_refusal() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = f64::MIN_POSITIVE;
++        let lower = std::array::from_fn(|coordinate| coordinate == 0);
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            [0.0; 21],
++            lower,
++            [false; 21],
++            partition(lower, [false; 21]),
++            0.0,
++        )
++        .expect_err("expected-red: subnormal tau must refuse with its stable reason");
++        assert_eq!(
++            refusal.kind,
++            M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate
++        );
++        assert_eq!(
++            refusal.optimality_reason,
++            Some("optimality_subnormal_intermediate")
++        );
++        assert_eq!(refusal.optimality_coordinate, Some(0));
++    }
++
++    #[test]
++    fn expected_red_upward_normal_operands_underflow_with_stable_reason() {
++        let mut operations = 0;
++        let failure = upward_mul(f64::MIN_POSITIVE, f64::MIN_POSITIVE, 0, &mut operations)
++            .expect_err("expected-red: nonzero normal enclosure product underflows");
++        assert_eq!(failure.reason, "optimality_underflow_to_zero");
++        assert_eq!(failure.coordinate, 0);
++        assert_eq!(operations, 1);
++    }
++
++    #[test]
++    fn expected_red_cbar_overflow_has_typed_02_transition_metadata() {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = f64::MAX;
++        let mut residual = [0.0; 21];
++        residual[0] = -f64::MAX;
++        let mut step = [0.0; 21];
++        step[0] = 1.0;
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            step,
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect_err("expected-red: 02 upward-enclosure transition refusal");
++        assert_eq!(
++            refusal.kind,
++            M1TrustRegionRefusalKind::TrustRegionOptimalityIndeterminate
++        );
++        assert_eq!(
++            refusal.optimality_reason,
++            Some("optimality_upward_enclosure")
++        );
++        assert_eq!(refusal.optimality_coordinate, Some(0));
++    }
++
++    #[test]
++    fn fixed_finite_bound_uses_shared_prepare_and_full_solve_metadata() {
++        let mut jacobian = [[0.0; 21]; 21];
++        jacobian[0][1] = 1.0;
++        let mut lower = [0.0; 21];
++        let mut upper = [0.0; 21];
++        lower[1] = f64::NEG_INFINITY;
++        upper[1] = f64::INFINITY;
++        let result = super::solve_subproblem(&M1TrustRegionSubproblemInput {
++            raw_residual: [
++                1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
++                0.0, 0.0, 0.0, 0.0, 0.0,
++            ],
++            raw_jacobian: jacobian,
++            normalizers: [1.0; 21],
++            scales: [1.0; 21],
++            lower,
++            upper,
++            initial_radius: 2.0,
++            base: [0.0; 21],
++            test_work: M1TrustRegionTestWorkState::default(),
++        })
++        .expect("shared finite fixed-bound solve");
++        assert!(!result.initial_free_mask[0]);
++        let observation = result
++            .optimality_observation
++            .expect("expected-red: fixed coordinate has an explicit 02 observation");
++        let fixed = observation
++            .coordinates
++            .iter()
++            .find(|coordinate| coordinate.coordinate == 0)
++            .expect("expected-red: fixed coordinate observation");
++        assert_eq!(fixed.class, crate::M1TrustRegionOptimalityClass::Fixed);
++        assert!(result.initial_free_mask[1]);
++        assert_eq!(result.scaled_step[0].to_bits(), 0.0f64.to_bits());
++        assert!(result.candidate_coordinates[0].is_finite());
++        assert!(result.scaled_step[1].abs() <= 2.0);
++    }
++
++    #[test]
++    fn expected_red_physical_distinct_bounds_that_collapse_when_scaled_are_free() {
++        let mut jacobian = [[0.0; 21]; 21];
++        jacobian[0][0] = f64::MIN_POSITIVE;
++        for coordinate in 1..21 {
++            jacobian[coordinate][coordinate] = 1.0;
++        }
++        let mut lower = [f64::NEG_INFINITY; 21];
++        let mut upper = [f64::INFINITY; 21];
++        let mut base = [0.0; 21];
++        let mut scales = [1.0; 21];
++        lower[0] = 1.0;
++        upper[0] = 1.0f64.next_up();
++        base[0] = 1.0;
++        scales[0] = f64::MAX;
++        let result = super::solve_subproblem(&M1TrustRegionSubproblemInput {
++            raw_residual: [0.0; 21],
++            raw_jacobian: jacobian,
++            normalizers: [1.0; 21],
++            scales,
++            lower,
++            upper,
++            initial_radius: 1.0,
++            base,
++            test_work: M1TrustRegionTestWorkState::default(),
++        })
++        .expect("shared distinct physical-bound solve");
++        let observation = result
++            .optimality_observation
++            .expect("02 physical-bound observation");
++        assert_eq!(
++            observation.coordinates[0].class,
++            crate::M1TrustRegionOptimalityClass::FreePass,
++            "expected-red: only physically equal bounds are fixed"
++        );
++    }
++
++    #[test]
++    fn expected_red_successful_return_capture_has_complete_02_operands() {
++        let _scope = super::m1_face_pivot_capture_begin_for_test();
++        let result =
++            super::solve_subproblem(&capture_return_input()).expect("shared return capture solve");
++        let capture = super::m1_face_pivot_capture_take_for_test()
++            .expect("expected-red: successful return capture");
++        let operation = capture
++            .operations
++            .iter()
++            .find(|operation| operation.action == "kkt-return")
++            .expect("expected-red: return operation");
++        assert_eq!(operation.p_before, result.scaled_step);
++        assert_eq!(operation.lower_before, result.active_lower);
++        assert_eq!(operation.upper_before, result.active_upper);
++        assert_eq!(operation.free_before, [true; 21]);
++        assert_eq!(operation.radius, 1.0);
++        assert_eq!(operation.lambda, Some(result.lambda));
++        assert_eq!(operation.free_ids, (0..21).collect::<Vec<_>>());
++        assert_eq!(operation.residual, Some(result.final_residual));
++        assert_eq!(operation.g, Some(result.final_g));
++        assert_eq!(operation.lambda_times_p, Some(result.final_lambda_times_p));
++        assert_eq!(operation.h, Some(result.final_h));
++        let optimality = operation
++            .optimality
++            .as_ref()
++            .expect("expected-red: return optimality observation");
++        assert_eq!(optimality.coordinates.len(), 21);
++        for (coordinate, observation) in optimality.coordinates.iter().enumerate() {
++            assert_eq!(observation.coordinate, coordinate);
++            assert_eq!(
++                observation.class,
++                crate::M1TrustRegionOptimalityClass::FreePass
++            );
++        }
++        assert_eq!(optimality.scalar_operations, 0);
++        assert_eq!(
++            operation.entered_factorizations,
++            result.entered_svd_factorizations
++        );
++        assert_eq!(operation.completed_pivots, result.completed_face_pivots);
++    }
++
++    #[test]
++    fn expected_red_capture_retains_ordered_return_records_across_real_subproblems() {
++        let _scope = super::m1_face_pivot_capture_begin_for_test();
++        let first =
++            super::solve_subproblem(&capture_return_input()).expect("first shared return solve");
++        let second = super::solve_subproblem(&capture_nonzero_return_input())
++            .expect("second shared return solve");
++        let capture = super::m1_face_pivot_capture_take_for_test()
++            .expect("expected-red: combined return capture");
++        let returns = capture
++            .operations
++            .iter()
++            .filter(|operation| operation.action == "kkt-return")
++            .collect::<Vec<_>>();
++        assert_eq!(
++            returns.len(),
++            2,
++            "expected-red: both subproblem returns persist"
++        );
++        for (operation, result) in [(returns[0], &first), (returns[1], &second)] {
++            assert_eq!(operation.p_before, result.scaled_step);
++            assert_eq!(operation.lower_before, result.active_lower);
++            assert_eq!(operation.upper_before, result.active_upper);
++            assert_eq!(operation.free_before, [true; 21]);
++            assert_eq!(operation.lambda, Some(result.lambda));
++            assert_eq!(operation.residual, Some(result.final_residual));
++            assert_eq!(operation.g, Some(result.final_g));
++            assert_eq!(operation.lambda_times_p, Some(result.final_lambda_times_p));
++            assert_eq!(operation.h, Some(result.final_h));
++            let recorded = operation
++                .optimality
++                .as_ref()
++                .expect("expected-red: ordered return assessment");
++            let observed = result
++                .optimality_observation
++                .as_ref()
++                .expect("02 returned assessment");
++            assert_eq!(recorded.coordinates.len(), 21);
++            assert_eq!(recorded.scalar_operations, observed.scalar_operations);
++            assert_eq!(
++                operation.entered_factorizations,
++                result.entered_svd_factorizations
++            );
++            assert_eq!(operation.completed_pivots, result.completed_face_pivots);
++            assert_eq!(operation.completed_sweeps, 1);
++        }
++        assert_eq!(first.final_residual, [0.0; 21]);
++        assert_ne!(second.scaled_step, [0.0; 21]);
++        assert_eq!(capture.completed_subproblems.len(), 2);
++        for (summary, result) in capture.completed_subproblems.iter().zip([&first, &second]) {
++            assert!(!summary.refused);
++            assert_eq!(summary.completed_sweeps, 1);
++            assert_eq!(summary.completed_sweeps, result.entered_svd_factorizations);
++            assert_eq!(
++                summary.entered_factorizations,
++                result.entered_svd_factorizations
++            );
++            assert_eq!(summary.completed_pivots, result.completed_face_pivots);
++        }
++    }
++
++    #[test]
++    fn expected_red_nonfinite_transition_capture_records_typed_refusal_without_mutation() {
++        let _scope = super::m1_face_pivot_capture_begin_for_test();
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = f64::NAN;
++        let mut residual = [0.0; 21];
++        residual[0] = 1.0;
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect_err("shared nonfinite transition refusal");
++        assert_eq!(refusal.optimality_reason, Some("optimality_nonfinite"));
++        assert_eq!(refusal.optimality_radius.as_deref(), Some(&1.0));
++        assert_eq!(refusal.optimality_lambda.as_deref(), Some(&0.0));
++        let capture = super::m1_face_pivot_capture_take_for_test()
++            .expect("expected-red: nonfinite transition capture");
++        let recorded = capture
++            .refusal
++            .expect("expected-red: typed capture refusal");
++        assert_eq!(recorded.kind, refusal.kind);
++        assert_eq!(recorded.optimality_reason, refusal.optimality_reason);
++        assert_eq!(
++            recorded.optimality_coordinate,
++            refusal.optimality_coordinate
++        );
++        assert_eq!(recorded.p, [0.0; 21]);
++        assert_eq!(recorded.lower, [false; 21]);
++        assert_eq!(recorded.upper, [false; 21]);
++        assert_eq!(recorded.free, [true; 21]);
++        assert_eq!(recorded.entered_factorizations, 1);
++        assert_eq!(recorded.completed_pivots, 0);
++        assert_eq!(recorded.completed_sweeps, 0);
++        assert!(recorded.optimality.is_none());
++        assert!(capture.operations.is_empty());
++    }
++
++    #[test]
++    fn expected_red_enclosure_transition_capture_records_typed_refusal_without_fake_arrays() {
++        let _scope = super::m1_face_pivot_capture_begin_for_test();
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = f64::MAX;
++        let mut residual = [0.0; 21];
++        residual[0] = -f64::MAX;
++        let mut step = [0.0; 21];
++        step[0] = 1.0;
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            step,
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect_err("shared enclosure transition refusal");
++        assert_eq!(
++            refusal.optimality_reason,
++            Some("optimality_upward_enclosure")
++        );
++        assert_eq!(refusal.optimality_radius.as_deref(), Some(&1.0));
++        assert_eq!(refusal.optimality_lambda.as_deref(), Some(&0.0));
++        let capture = super::m1_face_pivot_capture_take_for_test()
++            .expect("expected-red: enclosure transition capture");
++        let recorded = capture
++            .refusal
++            .expect("expected-red: enclosure typed capture refusal");
++        assert_eq!(recorded.kind, refusal.kind);
++        assert_eq!(recorded.optimality_reason, refusal.optimality_reason);
++        assert_eq!(
++            recorded.optimality_coordinate,
++            refusal.optimality_coordinate
++        );
++        assert!(recorded.optimality.is_none());
++        let operation = capture
++            .operations
++            .iter()
++            .find(|operation| operation.action == "optimality-refusal")
++            .expect("expected-red: enclosure refusal operation");
++        assert_eq!(operation.p_before, step);
++        assert_eq!(operation.lower_before, [false; 21]);
++        assert_eq!(operation.upper_before, [false; 21]);
++        assert_eq!(operation.free_before, [true; 21]);
++        assert_eq!(operation.radius, 1.0);
++        assert_eq!(operation.lambda, Some(0.0));
++        assert_eq!(operation.free_ids, (0..21).collect::<Vec<_>>());
++        assert_eq!(operation.residual, Some([0.0; 21]));
++        assert_eq!(operation.g, Some([0.0; 21]));
++        assert_eq!(operation.lambda_times_p, Some([0.0; 21]));
++        assert_eq!(operation.h, Some([0.0; 21]));
++    }
++
++    #[test]
++    fn expected_red_free_stationarity_capture_retains_real_face_metadata() {
++        let _scope = super::m1_face_pivot_capture_begin_for_test();
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][0] = 1.0;
++        let mut residual = [0.0; 21];
++        residual[0] = 1.0;
++        let refusal = m1_trust_region_kkt_transition_for_test(
++            matrix,
++            residual,
++            [0.0; 21],
++            [false; 21],
++            [false; 21],
++            [true; 21],
++            0.0,
++        )
++        .expect_err("shared free-stationarity refusal");
++        assert_eq!(
++            refusal.optimality_reason,
++            Some("optimality_free_stationarity")
++        );
++        assert_eq!(refusal.optimality_radius.as_deref(), Some(&1.0));
++        assert_eq!(refusal.optimality_lambda.as_deref(), Some(&0.0));
++        let capture =
++            super::m1_face_pivot_capture_take_for_test().expect("shared free-stationarity capture");
++        let recorded = capture
++            .refusal
++            .expect("shared free-stationarity refusal record");
++        assert_eq!(recorded.optimality_reason, refusal.optimality_reason);
++        assert_eq!(
++            recorded.optimality_coordinate,
++            refusal.optimality_coordinate
++        );
++        assert_eq!(recorded.p, [0.0; 21]);
++        assert_eq!(recorded.lower, [false; 21]);
++        assert_eq!(recorded.upper, [false; 21]);
++        assert_eq!(recorded.free, [true; 21]);
++        assert_eq!(recorded.entered_factorizations, 1);
++        assert_eq!(recorded.completed_pivots, 0);
++        assert_eq!(recorded.completed_sweeps, 0);
++        let operation = capture
++            .operations
++            .iter()
++            .find(|operation| operation.action == "optimality-refusal")
++            .expect("shared free-stationarity operation");
++        assert_eq!(operation.radius, 1.0);
++        assert_eq!(operation.lambda, Some(0.0));
++        assert_eq!(operation.free_ids, (0..21).collect::<Vec<_>>());
++        assert_eq!(
++            operation.residual,
++            Some([
++                1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
++                0.0, 0.0, 0.0, 0.0, 0.0
++            ])
++        );
++        assert_eq!(
++            operation.g,
++            Some([
++                1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
++                0.0, 0.0, 0.0, 0.0, 0.0
++            ])
++        );
++        assert_eq!(operation.lambda_times_p, Some([0.0; 21]));
++        assert_eq!(
++            operation.h,
++            Some([
++                1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
++                0.0, 0.0, 0.0, 0.0, 0.0
++            ])
++        );
++    }
++
++    #[test]
++    fn zero_scale_is_rejected_by_shared_preparation_before_kkt_transition() {
++        let mut jacobian = [[0.0; 21]; 21];
++        jacobian[0][0] = 1.0;
++        let mut lower = [0.0; 21];
++        let mut upper = [0.0; 21];
++        lower[0] = f64::NEG_INFINITY;
++        upper[0] = f64::INFINITY;
++        let mut scales = [1.0; 21];
++        scales[0] = 0.0;
++        let refusal = super::solve_subproblem(&M1TrustRegionSubproblemInput {
++            raw_residual: [
++                1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
++                0.0, 0.0, 0.0, 0.0, 0.0,
++            ],
++            raw_jacobian: jacobian,
++            normalizers: [1.0; 21],
++            scales,
++            lower,
++            upper,
++            initial_radius: 1.0,
++            base: [0.0; 21],
++            test_work: M1TrustRegionTestWorkState::default(),
++        })
++        .expect_err("shared zero-scale preparation refusal");
++        assert_eq!(refusal.kind, M1TrustRegionRefusalKind::SvdNonFinite);
++        assert_eq!(refusal.optimality_reason, None);
++        assert_eq!(refusal.optimality_coordinate, None);
++        assert_eq!(refusal.entered_svd_factorizations, 0);
++    }
++
++    fn cancellation_band_transition(scale: f64, active_coordinate: usize, step_coordinate: usize) {
++        let mut matrix = vec![vec![0.0; 21]; 21];
++        matrix[0][active_coordinate] = scale;
++        matrix[0][step_coordinate] = scale;
++        let mut residual = [0.0; 21];
++        residual[0] = (-1.0 - f64::EPSILON) * scale;
++        let mut step = [0.0; 21];
++        step[step_coordinate] = 1.0;
++        let lower = std::array::from_fn(|index| index == active_coordinate);
++        assert_eq!(
++            m1_trust_region_kkt_transition_for_test(
++                matrix,
++                residual,
++                step,
++                lower,
++                [false; 21],
++                partition(lower, [false; 21]),
++                0.0
++            )
++            .expect("shared permuted transition")
++            .action,
++            Some(M1TrustRegionKktAction::Return),
++            "expected-red: cancellation band remains unresolved"
++        );
++    }
++
++    #[test]
++    fn expected_red_cancellation_band_is_stable_at_unit_scale() {
++        cancellation_band_transition(1.0, 0, 1);
++    }
++
++    #[test]
++    fn expected_red_cancellation_band_is_stable_at_diagonal_scale() {
++        cancellation_band_transition(8.0, 0, 1);
++    }
++
++    #[test]
++    fn expected_red_cancellation_band_is_stable_under_coordinate_permutation() {
++        cancellation_band_transition(1.0, 1, 0);
++    }
++}

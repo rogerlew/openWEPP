@@ -1,0 +1,18 @@
+{
+  "receipt": "finite-precision-controls09-red.json",
+  "correctness_reviewer": "/root/finite_correctness",
+  "qa_reviewer": "/root/finite_qa",
+  "result": "31 selected,21 PASS,10 expected-red failures,0.568s; source/support unchanged",
+  "verdict": "Both independent reviewers RELEASE accepted body correction packet; source and receipt conditions closed",
+  "accepted": "Two genuine full-rank identity solves (zero then residual0=.25) require ordered durable exact return records, assessments, work counts and two completed summaries",
+  "release_scope": [
+    "physical fixed mask",
+    "exact reason taxonomy",
+    "actual bounded arithmetic/up-step accounting",
+    "total_cmp",
+    "actual refusal/Return metadata and available operands",
+    "cross-subproblem custody",
+    "mechanical no-new-lint corrections"
+  ],
+  "physical_release": "HOLD until corrected-source review and green focused controls"
+}

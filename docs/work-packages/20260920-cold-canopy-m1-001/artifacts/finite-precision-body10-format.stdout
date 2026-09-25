@@ -1,0 +1,78 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:677:
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+ fn populated_face_pivot_operation_for_test() -> M1FacePivotCaptureOperation {
+     M1FacePivotCaptureOperation {
+[31m-            action: "activate-cap",
+[m[31m-            p_before: [0.0; 21],
+[m[31m-            p_candidate: [1.0; 21],
+[m[31m-            conceptual_p_after: [0.0; 21],
+[m[31m-            scratch_p_at_refusal: Some([1.0; 21]),
+[m[31m-            applied: false,
+[m[31m-            lower_before: [false; 21],
+[m[31m-            upper_before: [false; 21],
+[m[31m-            free_before: [true; 21],
+[m[31m-            lower_after: [false; 21],
+[m[31m-            upper_after: [false; 21],
+[m[31m-            free_after: [true; 21],
+[m[31m-            free_ids: vec![1],
+[m[31m-            radius: 1.0,
+[m[31m-            lambda: Some(-0.0),
+[m[31m-            weighted_residual: None,
+[m[31m-            weighted_matrix: None,
+[m[31m-            crossing_theta: Some(f64::INFINITY),
+[m[31m-            selected_coordinate: Some(1),
+[m[31m-            selected_lower: Some(true),
+[m[31m-            residual: Some([0.5; 21]),
+[m[31m-            g: Some([1.0; 21]),
+[m[31m-            lambda_times_p: Some([2.0; 21]),
+[m[31m-            h: Some([3.0; 21]),
+[m[31m-            optimality: None,
+[m[31m-            entered_factorizations: 43,
+[m[31m-            completed_pivots: 42,
+[m[31m-            completed_sweeps: 7,
+[m[32m+        action: "activate-cap",
+[m[32m+        p_before: [0.0; 21],
+[m[32m+        p_candidate: [1.0; 21],
+[m[32m+        conceptual_p_after: [0.0; 21],
+[m[32m+        scratch_p_at_refusal: Some([1.0; 21]),
+[m[32m+        applied: false,
+[m[32m+        lower_before: [false; 21],
+[m[32m+        upper_before: [false; 21],
+[m[32m+        free_before: [true; 21],
+[m[32m+        lower_after: [false; 21],
+[m[32m+        upper_after: [false; 21],
+[m[32m+        free_after: [true; 21],
+[m[32m+        free_ids: vec![1],
+[m[32m+        radius: 1.0,
+[m[32m+        lambda: Some(-0.0),
+[m[32m+        weighted_residual: None,
+[m[32m+        weighted_matrix: None,
+[m[32m+        crossing_theta: Some(f64::INFINITY),
+[m[32m+        selected_coordinate: Some(1),
+[m[32m+        selected_lower: Some(true),
+[m[32m+        residual: Some([0.5; 21]),
+[m[32m+        g: Some([1.0; 21]),
+[m[32m+        lambda_times_p: Some([2.0; 21]),
+[m[32m+        h: Some([3.0; 21]),
+[m[32m+        optimality: None,
+[m[32m+        entered_factorizations: 43,
+[m[32m+        completed_pivots: 42,
+[m[32m+        completed_sweeps: 7,
+[m     }
+ }
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2944:
+             solution,
+         ));
+     }
+[31m-    Ok(return_kkt_transition(state, solution, prepared, values, assessment))
+[m[32m+    Ok(return_kkt_transition(
+[m[32m+        state, solution, prepared, values, assessment,
+[m[32m+    ))
+[m }
+ 
+ fn return_kkt_transition(

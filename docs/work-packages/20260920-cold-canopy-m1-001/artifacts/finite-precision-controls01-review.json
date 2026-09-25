@@ -1,0 +1,13 @@
+{
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "changed_file": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+  "sha256": "289189e1a6d7925363e8602ccf83d17c62cd1cd34e25976205a8ec8c7949cc28",
+  "status": "Static root HOLD; no execution",
+  "observed_utc": "2026-09-25T18:25:56.036538+00:00",
+  "findings": [
+    "wrapper result.and_then discards release event (kkt returnsNone on release) so expectedNone uncertain tests pass old policy and true descent test fails wrong reason; need direct actual action/result discriminator",
+    "Expected uncertain-band should Return; old release should observed ReleaseLower/Upper; free check separate test so upper failure cannot hide it",
+    "Signed-zero step alone is not actual signed-zero crossing control",
+    "Missing explicit subnormal/underflow/overflow/zero-scale controls and actual fixed-bound metadata; use real existing operations without bypassing guard claims"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "evidence_class": "Static root review; no execution",
+  "sha256": "4225bf7e30c0e8a255f1f3e5ff0f444b3a887145cc77ef4bd716605d4aa7f7dd",
+  "finding": "Corrected wrapper reports actual event, but4 uncertainty expected outcomes remainNone instead ofSomeReturn. Both oldandnew policies would fail. Author assigned exact4 assertion correction only.",
+  "observed_utc": "2026-09-25T18:29:15.256878+00:00"
+}

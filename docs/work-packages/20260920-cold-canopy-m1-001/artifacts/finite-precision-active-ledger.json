@@ -1,0 +1,9 @@
+{
+  "anchor_utc": "2026-09-25T17:56:00Z",
+  "carry_seconds": 339493.959294,
+  "fixed_ceiling_seconds": 353893.959294,
+  "implementation_cutoff_utc": "2026-09-25T21:26:00Z",
+  "hard_deadline_utc": "2026-09-25T21:56:00Z",
+  "protected_reserve_seconds": 1800,
+  "accounting": "All elapsed once including reading, waits, concurrency, failed corrections, reviews and publication; no reanchoring or refunds."
+}

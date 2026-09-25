@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Static unchanged-scope reuse of source-bound executed callback control",
+  "test": "m1_coupled_tests::m1_trust_region_physical_adapter_invalid_drainage_operand_is_refused_before_work",
+  "source_checks": {
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": {
+      "historical_sha256": "b9f5fa46ba58b255c18cd316a4c886ba40526fe51a6ced2d80d3ca747400946e",
+      "current_sha256": "b9f5fa46ba58b255c18cd316a4c886ba40526fe51a6ced2d80d3ca747400946e"
+    },
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": {
+      "historical_sha256": "b9ef6d35240ecc1befb1845152d1ac2b968d3dff62c21e40d0517f7057ac40b9",
+      "current_sha256": "b9ef6d35240ecc1befb1845152d1ac2b968d3dff62c21e40d0517f7057ac40b9"
+    }
+  },
+  "historical_command_receipt": "face-pivot-cut07-controls.json",
+  "actual_pass_line": "test m1_coupled_tests::m1_trust_region_physical_adapter_invalid_drainage_operand_is_refused_before_work ... ok",
+  "scope": "Actual callback refuses coordinate5=-MIN_POSITIVE, exact input/trial preserved, no core/J/hydraulic/materialization work. No new physical replay for prebody evidence; does not qualify02 numerical solver.",
+  "observed_utc": "2026-09-25T18:36:12.195557+00:00"
+}

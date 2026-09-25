@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Static root review; no04test execution",
+  "files": {
+    "crates/openwepp-land-surface-energy/src/lib.rs": "157654969111051311d0460247cf3974f4fd3cba6b390490b90f53c36f02c477",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "59781902a42a24abf913115cb4e34d09bca67ea0db107d06c23e090cb0cd9027"
+  },
+  "findings": [
+    "Oracle coordinates array incorrectly indexed by string",
+    "Cbaroverflow fixture overflows KKTgradientfirst,not intendedenclosureonly",
+    "Missing actual resolvableReleaseUpper despite enumconstructor",
+    "Seam propagatesErr while tests expectOkrefusalmetadata"
+  ],
+  "observed_utc": "2026-09-25T18:42:50.121206+00:00"
+}

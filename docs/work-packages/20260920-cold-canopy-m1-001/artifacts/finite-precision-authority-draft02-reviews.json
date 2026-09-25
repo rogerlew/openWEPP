@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Static same-reviewer fix verification; QA hashes/diff checked",
+  "source": "finite-precision-authority-draft02.json",
+  "numerical_sha256": "321d92cc4f9eb322e990fb6e5ff24a07d8aae36ee77730b0845c1242a58d2b4e",
+  "correctness": {
+    "reviewer": "/root/finite_correctness",
+    "verdict": "ACCEPTED for02 authority/control authoring",
+    "fixes": "All substantive draft01 findings resolved:02 error taxonomy/reasons, operand and zero guards, checked ratios, fixed coordinates, historical/new control sequence.",
+    "withdrawal": "Unequal finite binary64 addition rounding to zero under gradual underflow was not a supported counterexample; certificate-failure rationale withdrawn. Scale-consistent ratio overflow likewise defensive, not established actual defect."
+  },
+  "qa": {
+    "reviewer": "/root/finite_qa",
+    "verdict": "PASS for prospective controls authoring only",
+    "fixes": "Historical01 failure/prebody02 discriminators/postbody unchanged physical control sequence now explicit; hashes and diff clean; test-only cfg intact."
+  },
+  "nonblocking": "duplicate and can be removed without substantive policy change",
+  "missing": "Actual operands/reconstruction, numeric controls/body, unchanged physical positive, interfaces/harness/targets/qualification",
+  "observed_utc": "2026-09-25T18:11:03.013821+00:00"
+}

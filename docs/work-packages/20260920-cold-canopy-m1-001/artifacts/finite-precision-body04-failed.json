@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Writer-run numerical failure; root preserved restored exact failed source and raw logs",
+  "files": {
+    "crates/openwepp-land-surface-energy/src/lib.rs": "15bb660088dcf09da5c376c58c94aa4eb9677dd9ddca1fdc2d222087a2f43fa9",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "df8f0156cea0bd60b4075adef8191f510ebb3141a90793ab32f9bbc7fe9d79bc"
+  },
+  "patch": "finite-precision-body04-failed-from-terminal.patch",
+  "patch_sha256": "211ff5254ce9516a5b2ca57d286988acff457fd39eb6e758cc4cc4bbee02f603",
+  "base": "face-pivot-terminal-recovery.json",
+  "result": "31 selected;24pass7fail; no physical run",
+  "findings": [
+    "Direct seam initializes through Some-only capture mutator although scope begins None",
+    "Direct seam initial_free wrongly equals current free mask, treating active coordinates as fixed",
+    "Two-solve test hardcodes Jacobi sweeps0; actual unchanged identity SVD reports1"
+  ],
+  "rejected_transient_change": "Substituting event_trace.len for Jacobi sweeps; restored before adjudication",
+  "transient_delta": "finite-precision-body04-recovery-to-postfail.patch"
+}

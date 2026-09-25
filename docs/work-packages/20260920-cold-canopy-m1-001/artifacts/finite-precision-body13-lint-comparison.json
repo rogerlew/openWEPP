@@ -1,0 +1,9 @@
+{
+  "baseline": "face-pivot-cut07-lint.stderr",
+  "candidate": "finite-precision-body13-lint.stderr",
+  "normalization": "Actual diagnostic/source blocks; only source line/column locations normalized; compiler summary excluded.",
+  "baseline_count": 238,
+  "candidate_count": 238,
+  "introduced": [],
+  "removed": []
+}

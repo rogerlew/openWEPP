@@ -530,6 +530,222 @@ raw and dynamically normalized residual maxima when available, predicted and
 actual reductions when available, and all monotonic work counters.  Missing
 values are null only when their owning evaluation did not occur.
 
+### COLD-CANOPY-M1-TR-SVD-BVLS-02 finite-precision active-face amendment
+
+**Status: ACCEPTED / premeasurement diagnostic authority only.** Distinct
+independent correctness and QA review accepted its exact formula, operation
+model, scope, and controls before body work. It supersedes the
+exact-sign release paragraph of `COLD-CANOPY-M1-TR-SVD-BVLS-01` only in the
+revised detached treatment build. The `01` source, wording, controls, result,
+and its `FacePivotLimit` observation remain historical evidence; they are not
+relabelled as a defective implementation. All other `01` rules in this section
+remain unchanged unless this amendment states otherwise. This is one revised
+finite-precision policy from the first face of every subproblem, never an
+old-policy attempt followed by a rescue policy.
+
+For the revised policy only, the exhaustive `01` `LSEB-E-034` taxonomy is
+extended by `TrustRegionOptimalityIndeterminate`; the historical `01` wording
+and its recorded refusal remain unchanged.
+
+The primal problem, exact box/radius feasibility, 21-coordinate order,
+binary64 SVD, pair/sweep/rank/ball/lambda rules, frozen raw-J and merit rules,
+phase rules, work caps, nonlinear acceptance, governed-step predicates,
+materialization, physical residuals, and typed physical-domain failures are
+unchanged. It adds no factorization, evaluation, precision mode, regularizer,
+pivot expansion, clipping, fallback, or physical/model uncertainty term. The
+only added work is the bounded scalar/vector optimality assessment below.
+
+Let `u=2^-53` be binary64 unit roundoff and
+`gamma_q=q*u/(1-q*u)`. This amendment uses `q=87`; `87*u<1`. Its implemented
+coefficient is the upward-rounded binary64 value
+`Gamma87=upward(87/(2^53-87))`, whose positive denominator is the exact
+rewriting of `1-87*u`. At a finite face
+solution returned by the unchanged SVD/ball procedure, use the exact stored
+binary64 operands `A`, `f`, `p`, and nonnegative `lambda` and retain the
+existing ordered calculation
+
+```text
+r_hat = fl(f + A*p)
+g_hat = fl(A^T*r_hat)
+h_hat = fl(g_hat + fl(lambda*p)).
+```
+
+Here every product and addition is separately rounded binary64, all sums begin
+at zero and accumulate ascending index, and no FMA, reassociation,
+compensation, reduction tree, extended precision, or overflow-to-finite
+substitution is allowed. For coordinate `i`, define the nonnegative exact
+operand scale
+
+```text
+C_i = sum_r |A_ri| ( |f_r| + sum_j |A_rj| |p_j| ) + |lambda| |p_i|,
+E_i = gamma_87 C_i.
+```
+
+There are 43 rounded operations in each residual component (21 products, 21
+accumulations, and the addition of `f`), 42 in each gradient component (21
+products and 21 accumulations), and two in `lambda*p` plus its addition to the
+gradient. Their serial composition is bounded by `gamma_(43+42+2)` times the
+displayed absolute operand scale, under the normal finite arithmetic model
+below. Thus `E_i` is a rounding envelope for evaluating the KKT quantity at
+the returned `p`; it is not a forward-error bound for the SVD solution and is
+not a physical tolerance.
+
+Compute an upper binary64 enclosure `Cbar_i >= C_i` in ascending index order.
+After guarding every operand as stated below, use exactly
+`up_mul(a,b)=0` if `a==0` or `b==0`, otherwise
+`next_up(fl(a*b))`; and `up_add(a,b)=a` if `b==0`, otherwise
+`next_up(fl(a+b))`, including when `a==0`. Thus every nonzero explicit term
+into a zero running sum receives its required upward step. Apply these
+functions in the written order of `C_i`, including `up_add(|f_r|,inner_r)`,
+which skips only when `inner_r` is zero and otherwise evaluates and steps even
+when `|f_r|` is zero. Compute `tau_i` by upward-rounded
+evaluation of `Gamma87*Cbar_i`, again moving the result once toward
+`+infinity`. The checked tolerance is exactly
+
+```text
+tau_i = upward(Gamma87 * Cbar_i).
+```
+
+The check accepts only normal finite nonzero intermediate magnitudes in this
+enclosure calculation. Only explicit zero products and additions with a zero
+right addend may be skipped; a nonzero
+subnormal operand, product, partial sum, `Cbar_i`, `tau_i`, or KKT operand,
+and every NaN, infinity, overflow, invalid `next_up`, negative lambda, or
+otherwise nonfinite intermediate makes the numerical status indeterminate and
+returns typed `TrustRegionOptimalityIndeterminate`. This is fail closed rather
+than silently treating an underflowed scale as a zero tolerance. If the
+enclosure is exactly zero, require the corresponding computed `h_hat_i` to be
+exact zero (either signed zero) and set `tau_i=0`; any nonzero `h_hat_i` is the
+same typed refusal. The implementation records the reason and does not
+materialize, mutate, shrink a radius, or invoke another solver.
+
+In particular, before a zero product is treated as a skipped zero term, the
+check tests whether both finite operands were nonzero; that condition is an
+underflow-to-zero refusal. Before that test, every nonzero operand is checked
+normal, so a nonzero subnormal cannot be hidden by a later zero skip. It also
+rejects every nonzero subnormal output of a checked multiplication or
+accumulation. Before a checked addition producing signed zero is accepted, its
+finite inputs must either both be signed zero or be exact binary64 additive
+opposites; otherwise it is an indeterminate zero-addition refusal. This is a
+prospective conservative guard, not a claim that an unequal binary64 finite
+addition has been observed to round to zero under gradual underflow. Signed
+cancellation satisfying that exact-opposites guard remains representable, but
+cannot waive normal finite guards on its operands or the independent `Cbar`
+enclosure. All `r_hat`, `g_hat`, `lambda*p`, and `h_hat` products, partial
+sums, additions, and final values are guarded.
+
+The stable `TrustRegionOptimalityIndeterminate` reason token is exactly one of
+`optimality_nonfinite`, `optimality_negative_lambda`,
+`optimality_non_normal_operand`, `optimality_subnormal_intermediate`,
+`optimality_underflow_to_zero`, `optimality_zero_addition`,
+`optimality_upward_enclosure`, `optimality_release_ratio`, or
+`optimality_free_stationarity`. Each records the coordinate when one applies;
+the existing refusal record retains the masks, radius, lambda, and work
+counters. No implementation may substitute a generic numerical error or a
+success result for one of these reasons.
+
+The returned `p` is assessed as an approximate KKT point, rather than assumed
+accurate because the SVD completed. Every free coordinate must satisfy
+`abs(h_hat_i) <= tau_i`; this is the explicit acceptance of the finite
+SVD/face-solve accuracy relevant to this decision. Every lower-active
+coordinate must satisfy `h_hat_i >= -tau_i` and every upper-active coordinate
+must satisfy `h_hat_i <= tau_i`. The old sign-only release is replaced by:
+
+```text
+lower active: release only if h_hat_i < -tau_i
+upper active: release only if h_hat_i >  tau_i
+free:         return only if abs(h_hat_i) <= tau_i.
+```
+
+Among genuinely violating active bounds, rank
+`abs(h_hat_i)/tau_i` descending when `tau_i>0`; calculate that division only
+after its nonzero normal finite numerator and denominator have been checked,
+then require a normal finite result. An overflow, subnormal, zero, NaN, or
+infinite ratio returns `TrustRegionOptimalityIndeterminate` with
+`optimality_release_ratio`; it is never silently ranked. A true-sign violation
+at `tau_i=0` ranks above every finite ratio; exact ties select the lowest
+coordinate index. The selected bound is released and the unchanged face loop
+continues. If no active bound is releasable but any free-coordinate test fails,
+return `TrustRegionOptimalityIndeterminate` with
+`optimality_free_stationarity`; an unchecked constrained corner is never
+returned.
+
+A coordinate with `lower_i==upper_i` is classified `fixed` before every face:
+its `p_i` is exactly that scaled bound, it contributes to the existing radius
+calculation, and it is outside the lower-active, upper-active, and free
+optimality/release tests. Any other inverted or nonfinite box retains the
+existing typed refusal. A return is permitted only after the existing ordered
+binary64 checks establish finite `p`, `lower_i <= p_i <= upper_i` for every
+coordinate (including fixed coordinates), and `||p||_2 <= Delta`; it returns
+the already strictly checked box/radius-feasible constrained-face `p`. A
+signed-zero crossing remains an exact activation under the existing crossing
+rule; this amendment neither normalizes its sign nor permits an infeasible
+all-free or clipped direction.
+
+For normal finite checked arithmetic, the directed enclosure gives
+`|h_hat_i-h_i(p)| <= tau_i`, where `h_i(p)` is the real-arithmetic KKT value at
+the returned binary64 `p`. Consequently a release (`h_hat_i < -tau_i` at a
+lower bound or `h_hat_i > tau_i` at an upper bound) is a resolvable strict
+sign violation of `h_i(p)`, while a returned face has free
+`|h_i(p)| <= 2*tau_i`, lower `h_i(p) >= -2*tau_i`, and upper
+`h_i(p) <= 2*tau_i`. This is the accepted a-posteriori stationarity accuracy of
+the unchanged face solve. It deliberately makes no forward-error claim about
+the Jacobi SVD's `p`: the complete free-coordinate test measures the quantity
+needed for an approximate KKT decision, and the unchanged finite/rank/ball
+guards remain separate conditions for accepting the solve. A last-dot-product
+rounding estimate is therefore not represented as a certificate for the SVD
+output.
+
+For fixed dimension 21, constructing one `Cbar_i` and `tau_i` takes at most
+`21*(21*4+2+2+2)+4+2 = 1896` bounded binary64 arithmetic or upward-step
+operations: the inner absolute products/sums, the row contribution and outer
+sum, then the lambda term, final sum, and coefficient multiplication. All 21
+coordinate thresholds take at most 39,816 such operations. The existing KKT
+vector calculation is reused; the amendment performs no additional SVD,
+evaluator, hydraulic block, radius proposal, or solver iteration.
+
+#### Contract-derived 02 controls and recording
+
+Before any revised-body or result-bearing execution, tests using the shared
+implementation and real numeric operands must establish all of the following:
+
+1. independent ordered arithmetic reconstructs `Cbar`, `tau`, `r_hat`,
+   `g_hat`, and `h_hat` without calling the candidate helper; the retained
+   cancellation-sensitive face records all of those values and either returns
+   only after the complete all-coordinate test or retains its refusal. Its
+   observed multiplier is not an input to the formula or a threshold choice;
+2. resolvable lower and upper violations release, an active coordinate within
+   its uncertainty band remains bound, a materially nonstationary free
+   coordinate refuses, and an exact feasible bound is retained. Include a
+   signed-zero crossing with an independently established descent obligation so
+   a zero-length crossing cannot lock a bound;
+3. a coordinate permutation and mathematically corresponding diagonal scaling
+   preserve the applicable dimensionless release/return predicates, while a
+   real negative drainage step remains inadmissible. These are numerical
+   equivalence checks, not unjustified bit-identity requirements across changed
+   finite operation orders;
+4. fixed lower-equals-upper coordinates stay outside active/free tests while
+   retaining their exact box/radius contribution; zero-scale terms, nonzero
+   subnormal operands/intermediates, underflow-to-zero products, unchecked
+   zero additions, ratio overflow/subnormal/nonfinite results, overflow, NaN,
+   infinity, and invalid upward-enclosure operations fail closed with the
+   corresponding stable typed reason; and
+   and
+5. the check adds no SVD factorization, evaluator, hydraulic block, radius
+   proposal, solver path, or materialization. The original exact feasibility,
+   full residual/root, phase, hydraulic, owner, closure, and failure-atomicity
+   predicates remain operative after a local return.
+
+The treatment records masks, `lambda`, `p`, `Cbar`, `tau`, all three KKT
+vectors, the per-coordinate classification, selected release ratio/tie data
+when any, and the typed indeterminate reason when any. These records are
+diagnostic evidence, not a new acceptance surface. The retained authenticated
+`01` ordinary-positive failure is pre-body historical custody, not a redundant
+physical replay. The discriminating 02 controls above precede any 02 body
+change. After the reviewed 02 body, run the unchanged original60 plus
+coordinate-20 `+1e-4 K` non-target ordinary-positive control before any
+full-feature or target work; all source/input/counter custody remains required.
+
 ### Contract-derived experiment controls
 
 Independent expected values, never the candidate helper, must cover: an

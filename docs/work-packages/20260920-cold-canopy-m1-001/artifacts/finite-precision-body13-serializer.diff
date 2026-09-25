@@ -1,0 +1,70 @@
+--- /tmp/finite-precision-body11-prefixed-serializer-stage1.rs	2026-09-25 12:54:24.696191500 -0700
++++ /tmp/finite-precision-body13-serializer-final-stage1.rs	2026-09-25 12:56:17.343495778 -0700
+@@ -633,13 +633,29 @@
+         Some(refusal) => {
+             let _ = write!(
+                 output,
+-                "{{\"stage\":\"{}\",\"kind\":\"{:?}\",\"reason\":{:?},\"coordinate\":{:?},\"radius\":{:?},\"lambda\":{:?},\"free_ids\":{:?},\"entered\":{},\"pivots\":{},\"sweeps\":{},\"p\":",
+-                refusal.stage,
+-                refusal.kind,
+-                refusal.optimality_reason,
+-                refusal.optimality_coordinate,
+-                refusal.radius,
+-                refusal.lambda,
++                "{{\"stage\":\"{}\",\"kind\":\"{:?}\",\"reason\":",
++                refusal.stage, refusal.kind,
++            );
++            match refusal.optimality_reason {
++                Some(reason) => output.push_str(
++                    &serde_json::to_string(reason).expect("static optimality reason serializes"),
++                ),
++                None => output.push_str("null"),
++            }
++            output.push_str(",\"coordinate\":");
++            match refusal.optimality_coordinate {
++                Some(coordinate) => {
++                    let _ = write!(output, "{coordinate}");
++                }
++                None => output.push_str("null"),
++            }
++            output.push_str(",\"radius\":");
++            append_optional_bit(output, refusal.radius);
++            output.push_str(",\"lambda\":");
++            append_optional_bit(output, refusal.lambda);
++            let _ = write!(
++                output,
++                ",\"free_ids\":{:?},\"entered\":{},\"pivots\":{},\"sweeps\":{},\"p\":",
+                 refusal.free_ids,
+                 refusal.entered_factorizations,
+                 refusal.completed_pivots,
+@@ -792,13 +808,29 @@
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+ #[test]
+ fn m1_face_pivot_populated_capture_json_parses() {
+-    let capture = populated_face_pivot_capture_for_test();
++    let mut capture = populated_face_pivot_capture_for_test();
+     let json = m1_face_pivot_capture_json_for_test(Some(&capture));
+     let parsed: serde_json::Value = serde_json::from_str(&json).expect("valid populated JSON");
+     assert_eq!(parsed["operations"][0]["coordinate"], 1);
+     assert_eq!(parsed["operations"][0]["lower"], true);
+     assert_eq!(parsed["post_update_admissions"][0]["pass"], false);
+     assert_eq!(parsed["refusal"]["kind"], "FacePivotLimit");
++    assert!(parsed["refusal"]["reason"].is_null());
++    assert!(parsed["refusal"]["coordinate"].is_null());
++    assert!(parsed["refusal"]["radius"].is_null());
++    assert!(parsed["refusal"]["lambda"].is_null());
++
++    let refusal = capture.refusal.as_mut().expect("populated refusal");
++    refusal.optimality_reason = Some("optimality_nonfinite");
++    refusal.optimality_coordinate = Some(3);
++    refusal.radius = Some(-0.0);
++    refusal.lambda = Some(f64::INFINITY);
++    let json = m1_face_pivot_capture_json_for_test(Some(&capture));
++    let parsed: serde_json::Value = serde_json::from_str(&json).expect("valid populated JSON");
++    assert_eq!(parsed["refusal"]["reason"], "optimality_nonfinite");
++    assert_eq!(parsed["refusal"]["coordinate"], 3);
++    assert_eq!(parsed["refusal"]["radius"], "8000000000000000");
++    assert_eq!(parsed["refusal"]["lambda"], "7ff0000000000000");
+ }
+ 
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]

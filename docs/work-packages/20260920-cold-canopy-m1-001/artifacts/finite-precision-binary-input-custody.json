@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Ran: exact compiled binary retained locally; inventory is listing, not execution",
+  "tree_sha256": "d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884",
+  "binary": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-1b46d3e792990fc1",
+  "binary_sha256": "5a1283ae0a61497f11d9ccce0ba39e79ba794a1ac80b59cafa690cce6cdd7a9d",
+  "durable_binary": "/home/roger/openwepp-experiments/cold-canopy-m1-finite-precision-binary-20260925/openwepp_land_surface_energy-1b46d3e792990fc1",
+  "bytes": 113180872,
+  "build_receipt": "finite-precision-body13-selected-controls.json",
+  "inventory_receipt": "finite-precision-body13-inventory.json",
+  "inventory_tests": 358,
+  "original_input_reference_sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+  "test_source_sha256": "b9f5fa46ba58b255c18cd316a4c886ba40526fe51a6ced2d80d3ca747400946e",
+  "non_target_fixture": "original60 canonical setup; coordinate20 +1e-4 K unchanged; setup excluded from trust counts",
+  "target_slots": "all UNUSED; not released"
+}

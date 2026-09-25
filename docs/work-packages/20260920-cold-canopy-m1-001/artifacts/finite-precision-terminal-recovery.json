@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Ran: fresh observer entry copy plus one complete patch; full inventory and hashes verified",
+  "recorded_utc": "2026-09-25T20:01:48.974343+00:00",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source_tree_sha256": "d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884",
+  "entry_count": 764,
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "terminal_patch": "finite-precision-body13-ordinary-positive-from-observer-cut02.patch",
+  "terminal_patch_sha256": "0c29089a81c2e18c3fe4100282c396780eec8e51f1485be8109eb82e96fb0786",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-finite-precision-reconstruction-20260925",
+  "patch_exit_code": 0,
+  "all_entry_hashes_equal": true,
+  "exact_file_inventory_equal": true,
+  "runtime_source_unchanged": true
+}

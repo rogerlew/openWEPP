@@ -1,0 +1,111 @@
+{
+  "after_coordinate_0_release": {
+    "h_hat_first5_bits": [
+      "0000000000000000",
+      "c000000000000000",
+      "4000000000000000",
+      "4018000000000000",
+      "0000000000000000"
+    ],
+    "release_candidates": [
+      {
+        "bound": "lower",
+        "coordinate": 1,
+        "rank_kind": "finite_ratio",
+        "ratio_bits": "42d78a4c8178a483"
+      }
+    ],
+    "selected_coordinate": 1,
+    "step_first5": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "evidence_class": "independent offline binary64 reconstruction; no Rust treatment helper or physical execution",
+  "expected_release_order": [
+    0,
+    1
+  ],
+  "expected_second_h_first5": [
+    0.0,
+    -2.0,
+    2.0,
+    6.0,
+    0.0
+  ],
+  "fixture": {
+    "initial_step_first5": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "lambda": 0.0,
+    "lower_active_first4": true,
+    "raw_first5": [
+      -1.0,
+      -2.0,
+      2.0,
+      4.0,
+      0.0
+    ]
+  },
+  "identity": {
+    "coupled_tests_sha256": "b9f5fa46ba58b255c18cd316a4c886ba40526fe51a6ced2d80d3ca747400946e",
+    "method_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+    "oracle_script_sha256": "0f97de91a99b5aca56c4d1b9248c508e95901131bb50b7b7cbd92595ed0702c6",
+    "stage1_sha256": "6caa460f4534265093afc7084b379d2138e1474daca37f770c54aa40b1a5b916"
+  },
+  "initial_face": {
+    "coordinates": [
+      {
+        "cbar_bits": "3ff0000000000002",
+        "coordinate": 0,
+        "h_hat_bits": "bff0000000000000",
+        "release_candidate": true,
+        "tau_bits": "3d05c00000000040"
+      },
+      {
+        "cbar_bits": "4000000000000002",
+        "coordinate": 1,
+        "h_hat_bits": "c000000000000000",
+        "release_candidate": true,
+        "tau_bits": "3d15c00000000040"
+      },
+      {
+        "cbar_bits": "4008000000000003",
+        "coordinate": 2,
+        "h_hat_bits": "4008000000000000",
+        "release_candidate": false,
+        "tau_bits": "3d20500000000030"
+      },
+      {
+        "cbar_bits": "4018000000000003",
+        "coordinate": 3,
+        "h_hat_bits": "4018000000000000",
+        "release_candidate": false,
+        "tau_bits": "3d30500000000030"
+      }
+    ],
+    "release_candidates": [
+      {
+        "bound": "lower",
+        "coordinate": 0,
+        "rank_kind": "finite_ratio",
+        "ratio_bits": "42d78a4c8178a483"
+      },
+      {
+        "bound": "lower",
+        "coordinate": 1,
+        "rank_kind": "finite_ratio",
+        "ratio_bits": "42d78a4c8178a483"
+      }
+    ],
+    "selected_coordinate": 0,
+    "selection_basis": "coordinates 0 and 1 have exactly equal nonzero ratio bits; frozen tie rule selects lowest coordinate index"
+  }
+}

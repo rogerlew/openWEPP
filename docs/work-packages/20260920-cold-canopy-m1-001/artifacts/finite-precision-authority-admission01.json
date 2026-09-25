@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "bash",
+    "tools/release/check_science_contract_admission.sh",
+    "--base-ref",
+    "275f3225e16ddeb4c5ee198180c44acebe4b87df",
+    "--worktree"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "exit_code": 0,
+  "wall_seconds": 0.33533691382035613,
+  "observed_utc": "2026-09-25T18:21:42.436446+00:00",
+  "scope": "Main worktree documentary authority admission; not detached numerical source qualification. Preserves preexisting unrelated dirty Rust/tests.",
+  "method_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23"
+}

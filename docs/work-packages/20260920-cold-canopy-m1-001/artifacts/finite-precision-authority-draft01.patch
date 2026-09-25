@@ -1,0 +1,246 @@
+diff --git a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md
+index 843b7cd5b..210960ad8 100644
+--- a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md
++++ b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md
+@@ -4,7 +4,7 @@ title: Land-Surface Energy-Balance Process Contract
+ status: approved
+ maturity: active
+ owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
+-contract_version: 38
++contract_version: 39
+ producer_scope:
+   - Future snow-free land-surface energy control-volume evaluator
+   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
+@@ -62,6 +62,7 @@ chapter's Dependencies and introduction. Uncertainty expands reading.
+ 
+ <a id="change-log"></a>
+ ## Change Log
++2026-09-25 v39: proposed `COLD-CANOPY-M1-TR-SVD-BVLS-02` finite-precision active-face amendment; it preserves `01` as historical evidence and defines a premeasurement, scale-aware all-coordinate approximate-KKT test for the detached diagnostic only. Pending independent correctness and QA review; production HOLD.
+ 2026-09-21 v38: review-pending M1 selected-drainage affine-elimination binding; it preserves the primal capacity equation and selected branch, reduces/reconstructs the same normalized Newton system, and retains physical candidate admission and production HOLD.
+ 2026-09-21 v37: review-pending M1 phase-join directional-linearization binding; it fixes only bounded Newton tangent selection and expected-red obligations, retaining primal phase/residual/receiver/transaction authority and production HOLD.
+ 2026-09-20 v36: review-pending cold-canopy M1 component and typed liquid-receiver join; V35 bytes unchanged.
+diff --git a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md
+index 7858c7015..300286be3 100644
+--- a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md
++++ b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md
+@@ -39,6 +39,7 @@ Structural schema/definition and original-span preservation locators. Scientific
+ | `LSE-COLD-CANOPY-M1-V1` | [Cold-canopy vapor amendment](water-vapor.md#cold-canopy-m1-prospective-vapor-amendment); [diagnostic envelope](interface.md#m1-diagnostic-envelope) | `active` | `unpromoted-binding` | `INV-LANDSURFACEENERGY-167, OBL-LANDSURFACEENERGY-C-023` | `flagged-binding-addition` | Review-pending phase-aware external vapor primitive, assembled reservoir residual and liquid-only real receiver; bounded two-occupancy/six-soil represented-snow entry. |
+ | `LSE-COLD-CANOPY-M1-PHASE-JOIN-20260921` | [M1 phase-join directional linearization](../SC-VEGETATION-001.md#m1-prospective-phase-join-directional-linearization-amendment); [cold-canopy vapor amendment](water-vapor.md#cold-canopy-m1-prospective-vapor-amendment) | `active` | `unpromoted-binding` | `INV-LANDSURFACEENERGY-167, OBL-LANDSURFACEENERGY-C-023` | `flagged-binding-addition` | Review-pending bounded predictor/final-direction phase-and-capacity tangent selection; primal phase ties, M/H residuals, receipt and solver limits are unchanged. |
+ | `LSE-COLD-CANOPY-M1-DRAINAGE-ELIMINATION-20260921` | [M1 selected-drainage affine elimination](../SC-VEGETATION-001.md#m1-prospective-selected-drainage-affine-elimination-amendment); [cold-canopy vapor amendment](water-vapor.md#cold-canopy-m1-prospective-vapor-amendment) | `active` | `unpromoted-binding` | `INV-LANDSURFACEENERGY-167, OBL-LANDSURFACEENERGY-C-023` | `flagged-binding-addition` | Review-pending branch-defined affine drainage reduction under `SC-VEGETATION-001#INV-VEGETATION-145/OBL-VEGETATION-C-009`, with retained normalized coupling, original-system reporting, feasible candidate evaluation, and unchanged phase/capacity/receipt/solver bounds. |
++| `LSE-COLD-CANOPY-M1-TR-SVD-BVLS-02` | [Finite-precision active-face amendment](numerical-methods.md#cold-canopy-m1-tr-svd-bvls-02-finite-precision-active-face-amendment) | `active` | `unpromoted-binding` | `INV-LANDSURFACEENERGY-167, OBL-LANDSURFACEENERGY-C-023` | `science-review-follow-on` | Detached-only prospective all-coordinate approximate-KKT policy with binary64 operation-bound threshold and typed indeterminacy; owner: openWEPP maintainers; next evidence gate: distinct independent correctness and QA review; retained: numerical-methods.md#cold-canopy-m1-tr-svd-bvls-02-finite-precision-active-face-amendment; it is not effective until review and preserves `01` evidence, all primal/physical acceptance, and production HOLD. |
+ | `EXP-B01-LSE-GRID40-20260919` | [Original-start fixed-grid experiment](solve-boundary.md#b01-grid40-original-start-experiment) | `active` | `maps-to-existing-INV` | `INV-LANDSURFACEENERGY-108, INV-LANDSURFACEENERGY-112, INV-LANDSURFACEENERGY-138, INV-LANDSURFACEENERGY-139` | `flagged-binding-addition` | Experiment-only strict b0..40; unchanged witness b0..20, exact captured input, fixed costs, dual prospective review and no production activation. |
+ 
+ 
+diff --git a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md
+index 7224d0c13..1be279bf9 100644
+--- a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md
++++ b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md
+@@ -530,6 +530,175 @@ raw and dynamically normalized residual maxima when available, predicted and
+ actual reductions when available, and all monotonic work counters.  Missing
+ values are null only when their owning evaluation did not occur.
+ 
++### COLD-CANOPY-M1-TR-SVD-BVLS-02 finite-precision active-face amendment
++
++**Status: PROPOSED / premeasurement authority only.** This amendment is not
++effective until distinct independent correctness and QA review approve its exact
++formula, operation model, scope, and controls. It then supersedes the
++exact-sign release paragraph of `COLD-CANOPY-M1-TR-SVD-BVLS-01` only in the
++revised detached treatment build. The `01` source, wording, controls, result,
++and its `FacePivotLimit` observation remain historical evidence; they are not
++relabelled as a defective implementation. All other `01` rules in this section
++remain unchanged unless this amendment states otherwise. This is one revised
++finite-precision policy from the first face of every subproblem, never an
++old-policy attempt followed by a rescue policy.
++
++The primal problem, exact box/radius feasibility, 21-coordinate order,
++binary64 SVD, pair/sweep/rank/ball/lambda rules, frozen raw-J and merit rules,
++phase rules, work caps, nonlinear acceptance, governed-step predicates,
++materialization, physical residuals, and typed physical-domain failures are
++unchanged. It adds no factorization, evaluation, precision mode, regularizer,
++pivot expansion, clipping, fallback, or physical/model uncertainty term. The
++only added work is the bounded scalar/vector optimality assessment below.
++
++Let `u=2^-53` be binary64 unit roundoff and
++`gamma_q=q*u/(1-q*u)`. This amendment uses `q=87`; `87*u<1`. Its implemented
++coefficient is the upward-rounded binary64 value
++`Gamma87=upward(87/(2^53-87))`, whose positive denominator is the exact
++rewriting of `1-87*u`. At a finite face
++solution returned by the unchanged SVD/ball procedure, use the exact stored
++binary64 operands `A`, `f`, `p`, and nonnegative `lambda` and retain the
++existing ordered calculation
++
++```text
++r_hat = fl(f + A*p)
++g_hat = fl(A^T*r_hat)
++h_hat = fl(g_hat + fl(lambda*p)).
++```
++
++Here every product and addition is separately rounded binary64, all sums begin
++at zero and accumulate ascending index, and no FMA, reassociation,
++compensation, reduction tree, extended precision, or overflow-to-finite
++substitution is allowed. For coordinate `i`, define the nonnegative exact
++operand scale
++
++```text
++C_i = sum_r |A_ri| ( |f_r| + sum_j |A_rj| |p_j| ) + |lambda| |p_i|,
++E_i = gamma_87 C_i.
++```
++
++There are 43 rounded operations in each residual component (21 products, 21
++accumulations, and the addition of `f`), 42 in each gradient component (21
++products and 21 accumulations), and two in `lambda*p` plus its addition to the
++gradient. Their serial composition is bounded by `gamma_(43+42+2)` times the
++displayed absolute operand scale, under the normal finite arithmetic model
++below. Thus `E_i` is a rounding envelope for evaluating the KKT quantity at
++the returned `p`; it is not a forward-error bound for the SVD solution and is
++not a physical tolerance.
++
++Compute an upper binary64 enclosure `Cbar_i >= C_i` in ascending index order:
++each nonnegative absolute product and addition is rounded, then moved once to
++its next representable binary64 value toward `+infinity`; do the same after the
++final addition of `|lambda|*|p_i|`. Compute `tau_i` by upward-rounded
++evaluation of `Gamma87*Cbar_i`, again moving the result once toward
++`+infinity`. The checked tolerance is exactly
++
++```text
++tau_i = upward(Gamma87 * Cbar_i).
++```
++
++The check accepts only normal finite nonzero intermediate magnitudes in this
++enclosure calculation. Zero exact terms may be skipped, but a nonzero
++subnormal operand, product, partial sum, `Cbar_i`, `tau_i`, or KKT operand,
++and every NaN, infinity, overflow, invalid `next_up`, negative lambda, or
++otherwise nonfinite intermediate makes the numerical status indeterminate and
++returns typed `TrustRegionOptimalityIndeterminate`. This is fail closed rather
++than silently treating an underflowed scale as a zero tolerance. If the
++enclosure is exactly zero, require the corresponding computed `h_hat_i` to be
++exact zero (either signed zero) and set `tau_i=0`; any nonzero `h_hat_i` is the
++same typed refusal. The implementation records the reason and does not
++materialize, mutate, shrink a radius, or invoke another solver.
++
++In particular, before a zero product is treated as a skipped zero term, the
++check tests whether both finite operands were nonzero; that condition is an
++underflow-to-zero refusal. It also rejects every nonzero subnormal output of a
++checked multiplication or accumulation. Signed cancellation to an exact zero
++in the existing KKT evaluation remains representable, but it cannot waive the
++normal finite guards on its operands or the independent `Cbar` enclosure.
++All `r_hat`, `g_hat`, `lambda*p`, and `h_hat` products, partial sums, and final
++values are guarded; a guard failure has the same typed indeterminate outcome.
++
++The returned `p` is assessed as an approximate KKT point, rather than assumed
++accurate because the SVD completed. Every free coordinate must satisfy
++`abs(h_hat_i) <= tau_i`; this is the explicit acceptance of the finite
++SVD/face-solve accuracy relevant to this decision. Every lower-active
++coordinate must satisfy `h_hat_i >= -tau_i` and every upper-active coordinate
++must satisfy `h_hat_i <= tau_i`. The old sign-only release is replaced by:
++
++```text
++lower active: release only if h_hat_i < -tau_i
++upper active: release only if h_hat_i >  tau_i
++free:         return only if abs(h_hat_i) <= tau_i.
++```
++
++Among genuinely violating active bounds, rank
++`abs(h_hat_i)/tau_i` descending when `tau_i>0`; a true-sign violation at
++`tau_i=0` ranks above every finite ratio. Exact rank ties select the lowest
++coordinate index. The selected bound is released and the unchanged face loop
++continues. If no active bound is releasable but any free-coordinate test fails,
++return `TrustRegionOptimalityIndeterminate`; an unchecked constrained corner
++is never returned. If all tests pass, return the already strictly primal-feasible
++constrained-face `p`. A signed-zero crossing remains an exact activation under
++the existing crossing rule; this amendment neither normalizes its sign nor
++permits an infeasible all-free or clipped direction.
++
++For normal finite checked arithmetic, the directed enclosure gives
++`|h_hat_i-h_i(p)| <= tau_i`, where `h_i(p)` is the real-arithmetic KKT value at
++the returned binary64 `p`. Consequently a release (`h_hat_i < -tau_i` at a
++lower bound or `h_hat_i > tau_i` at an upper bound) is a resolvable strict
++sign violation of `h_i(p)`, while a returned face has free
++`|h_i(p)| <= 2*tau_i`, lower `h_i(p) >= -2*tau_i`, and upper
++`h_i(p) <= 2*tau_i`. This is the accepted a-posteriori stationarity accuracy of
++the unchanged face solve. It deliberately makes no forward-error claim about
++the Jacobi SVD's `p`: the complete free-coordinate test measures the quantity
++needed for an approximate KKT decision, and the unchanged finite/rank/ball
++guards remain separate conditions for accepting the solve. A last-dot-product
++rounding estimate is therefore not represented as a certificate for the SVD
++output.
++
++For fixed dimension 21, constructing one `Cbar_i` and `tau_i` takes at most
++`21*(21*4+2+2+2)+4+2 = 1896` bounded binary64 arithmetic or upward-step
++operations: the inner absolute products/sums, the row contribution and outer
++sum, then the lambda term, final sum, and coefficient multiplication. All 21
++coordinate thresholds take at most 39,816 such operations. The existing KKT
++vector calculation is reused; the amendment performs no additional SVD,
++evaluator, hydraulic block, radius proposal, or solver iteration.
++
++#### Contract-derived 02 controls and recording
++
++Before any revised-body or result-bearing execution, tests using the shared
++implementation and real numeric operands must establish all of the following:
++
++1. independent ordered arithmetic reconstructs `Cbar`, `tau`, `r_hat`,
++   `g_hat`, and `h_hat` without calling the candidate helper; the retained
++   cancellation-sensitive face records all of those values and either returns
++   only after the complete all-coordinate test or retains its refusal. Its
++   observed multiplier is not an input to the formula or a threshold choice;
++2. resolvable lower and upper violations release, an active coordinate within
++   its uncertainty band remains bound, a materially nonstationary free
++   coordinate refuses, and an exact feasible bound is retained. Include a
++   signed-zero crossing with an independently established descent obligation so
++   a zero-length crossing cannot lock a bound;
++3. a coordinate permutation and mathematically corresponding diagonal scaling
++   preserve the applicable dimensionless release/return predicates, while a
++   real negative drainage step remains inadmissible. These are numerical
++   equivalence checks, not unjustified bit-identity requirements across changed
++   finite operation orders;
++4. zero scales, nonzero subnormal intermediates, overflow, NaN, infinity, and
++   invalid upward-enclosure operations fail closed with the named typed reason;
++   and
++5. the check adds no SVD factorization, evaluator, hydraulic block, radius
++   proposal, solver path, or materialization. The original exact feasibility,
++   full residual/root, phase, hydraulic, owner, closure, and failure-atomicity
++   predicates remain operative after a local return.
++
++The treatment records masks, `lambda`, `p`, `Cbar`, `tau`, all three KKT
++vectors, the per-coordinate classification, selected release ratio/tie data
++when any, and the typed indeterminate reason when any. These records are
++diagnostic evidence, not a new acceptance surface. The unchanged non-target
++ordinary-positive control and all source/input/counter custody precede any
++body change; its former `01` failure remains an explicit required control.
++
+ ### Contract-derived experiment controls
+ 
+ Independent expected values, never the candidate helper, must cover: an
+diff --git a/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md b/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+index 49ef2f954..a40a337bb 100644
+--- a/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
++++ b/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md
+@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
+ status: approved
+ maturity: active
+ owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
+-contract_version: 36
++contract_version: 37
+ producer_scope:
+   - Native vegetation configuration/runtime separation and stratum topology
+   - Stage A potential response and Stage C vegetation finalization boundaries
+@@ -2286,6 +2286,7 @@ calibration, identifiability, empirical validity, or transferability.
+ 
+ | Date | Version | Author | Change |
+ |---|---:|---|---|
++| 2026-09-25 | 37 | Codex | Added the detached `COLD-CANOPY-M1-TR-SVD-BVLS-02` cross-reference only: `01` remains historical evidence and `02` can supersede its diagnostic numerical policy only after its named independent correctness and QA reviews; primal vegetation/capacity law, production representation, accepted-state predicates, and production HOLD remain unchanged. |
+ | 2026-08-26 | 29 | Codex | Preserved exact V9 generation-host provenance and admitted a one-object SHA-256 provider-equivalence verification route requiring known-answer, remaining-runtime, protected-byte, and complete-output equality proofs. |
+ | 2026-08-17 | 13 | Codex | Admitted prospective `OPENWEPP_C3_WOODY_V9` with exact V8 science/runtime import, exact identity-only migration, and content-addressed non-Rust oracle runtime and serialization; preserved V1--V8 bytes. |
+ | 2026-08-14 | 12 | Codex | Admitted `OPENWEPP_C3_WOODY_V8` reciprocal multirank ground longwave, shared tile canopy-air ground H/E coupling, joint potential/final transaction, strict migration and independent LSE coupling; preserved V1--V7. |
+@@ -3584,7 +3585,10 @@ Notwithstanding this production representation, the separately bounded
+ diagnostic `COLD-CANOPY-M1-TR-SVD-BVLS-01` supersedes it solely while its
+ expiring diagnostic arm is active: it retains the complete selected
+ 21-coordinate matrix, including every drainage coordinate and coupling, rather
+-than applying affine elimination.  Its exact bounded trust-region policy,
++than applying affine elimination. `01` remains historical evidence. Only after
++the named independent correctness and QA reviews approve its premeasurement
++authority may `COLD-CANOPY-M1-TR-SVD-BVLS-02` supersede `01`'s numerical policy
++in the revised detached treatment build. Its exact bounded trust-region policy,
+ fixed work caps, expiration, and prohibition on production admission are
+ canonical in [the LSE numerical-method section](SC-LANDSURFACEENERGY-001/numerical-methods.md#cold-canopy-m1-trust-region-experiment).
+ It does not amend this primal capacity law, selected tangent, M1 Newton

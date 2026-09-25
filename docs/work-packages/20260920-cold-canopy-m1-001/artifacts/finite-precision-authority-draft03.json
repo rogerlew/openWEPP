@@ -1,0 +1,13 @@
+{
+  "status": "ACCEPTED core formula; deterministic zero-operation clarification awaiting affected verification before numerical execution",
+  "observed_utc": "2026-09-25T18:15:13.076993+00:00",
+  "method_id": "COLD-CANOPY-M1-TR-SVD-BVLS-02",
+  "files": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "48a302a903489bdaabdbe6a0f263e032eeba54d5bd203e552f1a4421b212732f",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "6ce5f410dfa57d5b8217f1835d5a39e5569153333d2a470e060c0e1fa4ad4994",
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": "8069bfa7f20e0a252597a1f52cf7fe0a3bbde21cd3ac35b1a76ef75d4496d9ff"
+  },
+  "source_body_unchanged": true,
+  "numerical_execution": false
+}

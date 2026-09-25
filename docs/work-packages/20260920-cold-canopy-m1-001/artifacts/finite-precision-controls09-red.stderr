@@ -1,0 +1,394 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID e287521b-ea3a-4593-a8cb-91282aec4b4d with nextest profile: default
+    Starting 31 tests across 1 binary (327 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_overflow_kkt_operand_has_typed_optimality_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+        FAIL [   0.006s] ( 2/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_nonzero_enclosure_records_exact_scalar_arithmetic
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_nonzero_enclosure_records_exact_scalar_arithmetic ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_nonzero_enclosure_records_exact_scalar_arithmetic
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_nonzero_enclosure_records_exact_scalar_arithmetic' (381457) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3575:9:
+    assertion `left == right` failed
+      left: 19888
+     right: 6
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_must_refuse_from_shared_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_under_coordinate_permutation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+        FAIL [   0.007s] ( 5/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_capture_retains_real_face_metadata
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_capture_retains_real_face_metadata ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_capture_retains_real_face_metadata
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_capture_retains_real_face_metadata' (381458) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3940:9:
+    assertion `left == right` failed
+      left: None
+     right: Some(1.0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_at_diagonal_scale ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_negative_lambda_has_typed_optimality_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+        FAIL [   0.007s] ( 8/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_physical_distinct_bounds_that_collapse_when_scaled_are_free
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_physical_distinct_bounds_that_collapse_when_scaled_are_free ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_physical_distinct_bounds_that_collapse_when_scaled_are_free
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_physical_distinct_bounds_that_collapse_when_scaled_are_free' (381463) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3715:9:
+    assertion `left == right` failed: expected-red: only physically equal bounds are fixed
+      left: Fixed
+     right: FreePass
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_nonfinite_kkt_operand_has_typed_optimality_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_at_unit_scale ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+        FAIL [   0.007s] (11/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_enclosure_transition_capture_records_typed_refusal_without_fake_arrays
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_enclosure_transition_capture_records_typed_refusal_without_fake_arrays ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_enclosure_transition_capture_records_typed_refusal_without_fake_arrays
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_enclosure_transition_capture_records_typed_refusal_without_fake_arrays' (381468) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3887:9:
+    assertion `left == right` failed
+      left: None
+     right: Some(1.0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.007s] (12/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_nonfinite_transition_capture_records_typed_refusal_without_mutation
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_nonfinite_transition_capture_records_typed_refusal_without_mutation ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_nonfinite_transition_capture_records_typed_refusal_without_mutation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_nonfinite_transition_capture_records_typed_refusal_without_mutation' (381469) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3840:9:
+    assertion `left == right` failed
+      left: None
+     right: Some(1.0)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_must_not_release_on_sign_alone ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cbar_overflow_has_typed_02_transition_metadata ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_release_ranking_uses_observed_ratio_not_multiplier_magnitude ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+        FAIL [   0.009s] (16/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_capture_retains_ordered_return_records_across_real_subproblems
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_capture_retains_ordered_return_records_across_real_subproblems ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_capture_retains_ordered_return_records_across_real_subproblems
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_capture_retains_ordered_return_records_across_real_subproblems' (381456) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3779:9:
+    assertion `left == right` failed: expected-red: both subproblem returns persist
+      left: 0
+     right: 2
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_intermediate_must_refuse ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_underflow_to_zero_kkt_product_must_refuse ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_operand_must_refuse ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::shared_normal_nonfinite_and_overflow_kkt_operands_are_real_operations ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+        FAIL [   0.006s] (21/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_tau_subnormal_has_typed_optimality_refusal
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_tau_subnormal_has_typed_optimality_refusal ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_tau_subnormal_has_typed_optimality_refusal
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_tau_subnormal_has_typed_optimality_refusal' (381497) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3600:9:
+    assertion `left == right` failed
+      left: Some("optimality_upward_enclosure")
+     right: Some("optimality_subnormal_intermediate")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (22/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_upward_normal_operands_underflow_with_stable_reason
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_upward_normal_operands_underflow_with_stable_reason ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_upward_normal_operands_underflow_with_stable_reason
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_upward_normal_operands_underflow_with_stable_reason' (381492) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3612:9:
+    assertion `left == right` failed
+      left: "optimality_upward_enclosure"
+     right: "optimality_underflow_to_zero"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.006s] (23/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_zero_identity_enclosure_records_no_scalar_arithmetic
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_zero_identity_enclosure_records_no_scalar_arithmetic ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_zero_identity_enclosure_records_no_scalar_arithmetic
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_zero_identity_enclosure_records_no_scalar_arithmetic' (381490) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3547:9:
+    assertion `left == right` failed: expected-red: skipped zero identities perform neither scalar arithmetic nor upward steps
+      left: 19887
+     right: 0
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_zero_cbar_with_zero_h_is_an_explicit_02_observation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::zero_scale_is_rejected_by_shared_preparation_before_kkt_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::resolvable_upper_violation_releases_through_shared_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::fixed_finite_bound_uses_shared_prepare_and_full_solve_metadata ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::shared_signed_zero_crossing_precedes_genuine_descent_release ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_upper_cancellation_band_must_not_release_on_sign_alone ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+
+        FAIL [   0.008s] (30/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_successful_return_capture_has_complete_02_operands
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_successful_return_capture_has_complete_02_operands ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::finite_precision_controls::expected_red_successful_return_capture_has_complete_02_operands
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::finite_precision_controls::expected_red_successful_return_capture_has_complete_02_operands' (381495) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3733:14:
+    expected-red: return operation
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::retained_capture_uses_shared_ordered_kkt_operation_before_policy_change ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 357 filtered out; finished in 0.01s
+
+
+────────────
+     Summary [   0.020s] 31 tests run: 21 passed, 10 failed, 327 skipped
+        FAIL [   0.006s] ( 2/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_nonzero_enclosure_records_exact_scalar_arithmetic
+        FAIL [   0.007s] ( 5/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_capture_retains_real_face_metadata
+        FAIL [   0.007s] ( 8/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_physical_distinct_bounds_that_collapse_when_scaled_are_free
+        FAIL [   0.007s] (11/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_enclosure_transition_capture_records_typed_refusal_without_fake_arrays
+        FAIL [   0.007s] (12/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_nonfinite_transition_capture_records_typed_refusal_without_mutation
+        FAIL [   0.009s] (16/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_capture_retains_ordered_return_records_across_real_subproblems
+        FAIL [   0.006s] (21/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_tau_subnormal_has_typed_optimality_refusal
+        FAIL [   0.006s] (22/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_upward_normal_operands_underflow_with_stable_reason
+        FAIL [   0.006s] (23/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_zero_identity_enclosure_records_no_scalar_arithmetic
+        FAIL [   0.008s] (30/31) openwepp-land-surface-energy m1_trust_region_stage1::finite_precision_controls::expected_red_successful_return_capture_has_complete_02_operands
+error: test run failed

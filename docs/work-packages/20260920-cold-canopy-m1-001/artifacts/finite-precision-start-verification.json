@@ -1,0 +1,26 @@
+{
+  "live": {
+    "tree_sha256": "18518425e882575c3e0c69e26e7fe6d8be0793ed1dba640d314e0c6b0bbbdb5b",
+    "entries": 764,
+    "mismatches": [],
+    "extra_crate_files": []
+  },
+  "reconstruction": {
+    "tree_sha256": "18518425e882575c3e0c69e26e7fe6d8be0793ed1dba640d314e0c6b0bbbdb5b",
+    "entries": 764,
+    "mismatches": [],
+    "extra_crate_files": []
+  },
+  "binary": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-face-pivot-binary-20260925/openwepp_land_surface_energy-1b46d3e792990fc1",
+    "actual_sha256": "11057805904facee126e2e18d78a74e7305fafc636ebdd5792286488db6adb64",
+    "expected_sha256": "11057805904facee126e2e18d78a74e7305fafc636ebdd5792286488db6adb64"
+  },
+  "authority": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63",
+    "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md": "a54f0fc436dd63273c50f252069098d786f0e80e1b4228cb2cf2df565ae61599"
+  },
+  "later_ledger_files_by_mtime": [],
+  "detached_root_ledger_files": [],
+  "observed_utc": "2026-09-25T17:58:28.304691+00:00"
+}

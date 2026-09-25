@@ -1,0 +1,11 @@
+{
+  "changed_entries": [
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+  ],
+  "old_sha256": "ad9d42c33b7de2ee9aa40b2e94e260b699834bdd91223e240f2a2d7788093149",
+  "new_sha256": "6caa460f4534265093afc7084b379d2138e1474daca37f770c54aa40b1a5b916",
+  "diff": "finite-precision-body10-rustfmt.diff",
+  "change": "Only indentation and call wrapping with a syntactically optional trailing argument comma; exact known call normalized, then remaining whitespace comparison matches",
+  "source_elsewhere_unchanged": true,
+  "writer_invocation_limitation": "Direct rustfmt edition2021 reported unrelated2024 parse failure; no success claim. Canonical workspace cargo fmt check follows."
+}

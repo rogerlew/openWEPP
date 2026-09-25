@@ -4,7 +4,7 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 38
+contract_version: 39
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -62,6 +62,7 @@ chapter's Dependencies and introduction. Uncertainty expands reading.
 
 <a id="change-log"></a>
 ## Change Log
+2026-09-25 v39: accepted `COLD-CANOPY-M1-TR-SVD-BVLS-02` finite-precision active-face amendment after distinct independent correctness and QA review; it preserves `01` as historical evidence and defines a premeasurement, scale-aware all-coordinate approximate-KKT test for the detached diagnostic only. Production HOLD.
 2026-09-21 v38: review-pending M1 selected-drainage affine-elimination binding; it preserves the primal capacity equation and selected branch, reduces/reconstructs the same normalized Newton system, and retains physical candidate admission and production HOLD.
 2026-09-21 v37: review-pending M1 phase-join directional-linearization binding; it fixes only bounded Newton tangent selection and expected-red obligations, retaining primal phase/residual/receiver/transaction authority and production HOLD.
 2026-09-20 v36: review-pending cold-canopy M1 component and typed liquid-receiver join; V35 bytes unchanged.

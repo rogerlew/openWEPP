@@ -1,0 +1,14 @@
+{
+  "receipt": "finite-precision-body11-selected-controls.json",
+  "correctness_reviewer": "/root/finite_correctness",
+  "qa_reviewer": "/root/finite_qa",
+  "accepted": [
+    "Serializer Debug Option output is malformed JSON; serializer-only repair and parsing checks authorized",
+    "Independent ratio tie reconstruction proves02 order[0,1]; see ranking oracle",
+    "Two unchanged original60 success controls actually refuse free_stationarity at coordinate11"
+  ],
+  "review_disagreement": "Correctness recommended converting physical success assertions into exact-refusal passing tests and held required-positive pending that rewrite. QA requires preserving physical failures.",
+  "root_disposition": "Reject post-result conversion of physical-success controls to green negatives; keep assertions/inputs and FAIL qualification visible. Keep historical ranking test unchanged, annotate01/02 expectation difference. No policy tuning. Required unchanged ordinary-positive still must execute once valid JSON recording is verified. Full-feature/targets remain HOLD.",
+  "pending": "Serializer-only fix verification and required unchanged positive measurement",
+  "correctness_reconsideration": "APPROVE exact unchanged ordinary-positive after verified serializer/parser. Authorization section3 requires measurement; section4 conditions only further interfaces/full-feature/targets. Prior proposed physical-test conversion and all-selected-green prerequisite withdrawn. Keep all three failures visible with unchanged assertions."
+}

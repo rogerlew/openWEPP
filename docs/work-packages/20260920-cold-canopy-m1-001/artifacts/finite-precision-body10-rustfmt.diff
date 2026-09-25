@@ -1,0 +1,76 @@
+--- /tmp/finite-precision-body10-final-stage1.rs	2026-09-25 12:40:02.303584512 -0700
++++ /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs	2026-09-25 12:46:31.400598962 -0700
+@@ -677,34 +677,34 @@
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+ fn populated_face_pivot_operation_for_test() -> M1FacePivotCaptureOperation {
+     M1FacePivotCaptureOperation {
+-            action: "activate-cap",
+-            p_before: [0.0; 21],
+-            p_candidate: [1.0; 21],
+-            conceptual_p_after: [0.0; 21],
+-            scratch_p_at_refusal: Some([1.0; 21]),
+-            applied: false,
+-            lower_before: [false; 21],
+-            upper_before: [false; 21],
+-            free_before: [true; 21],
+-            lower_after: [false; 21],
+-            upper_after: [false; 21],
+-            free_after: [true; 21],
+-            free_ids: vec![1],
+-            radius: 1.0,
+-            lambda: Some(-0.0),
+-            weighted_residual: None,
+-            weighted_matrix: None,
+-            crossing_theta: Some(f64::INFINITY),
+-            selected_coordinate: Some(1),
+-            selected_lower: Some(true),
+-            residual: Some([0.5; 21]),
+-            g: Some([1.0; 21]),
+-            lambda_times_p: Some([2.0; 21]),
+-            h: Some([3.0; 21]),
+-            optimality: None,
+-            entered_factorizations: 43,
+-            completed_pivots: 42,
+-            completed_sweeps: 7,
++        action: "activate-cap",
++        p_before: [0.0; 21],
++        p_candidate: [1.0; 21],
++        conceptual_p_after: [0.0; 21],
++        scratch_p_at_refusal: Some([1.0; 21]),
++        applied: false,
++        lower_before: [false; 21],
++        upper_before: [false; 21],
++        free_before: [true; 21],
++        lower_after: [false; 21],
++        upper_after: [false; 21],
++        free_after: [true; 21],
++        free_ids: vec![1],
++        radius: 1.0,
++        lambda: Some(-0.0),
++        weighted_residual: None,
++        weighted_matrix: None,
++        crossing_theta: Some(f64::INFINITY),
++        selected_coordinate: Some(1),
++        selected_lower: Some(true),
++        residual: Some([0.5; 21]),
++        g: Some([1.0; 21]),
++        lambda_times_p: Some([2.0; 21]),
++        h: Some([3.0; 21]),
++        optimality: None,
++        entered_factorizations: 43,
++        completed_pivots: 42,
++        completed_sweeps: 7,
+     }
+ }
+ 
+@@ -2944,7 +2944,9 @@
+             solution,
+         ));
+     }
+-    Ok(return_kkt_transition(state, solution, prepared, values, assessment))
++    Ok(return_kkt_transition(
++        state, solution, prepared, values, assessment,
++    ))
+ }
+ 
+ fn return_kkt_transition(
