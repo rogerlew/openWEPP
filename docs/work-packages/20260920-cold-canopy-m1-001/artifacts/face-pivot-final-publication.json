@@ -1,0 +1,35 @@
+{
+  "evidence_class": "Ran: scoped commit/push; remote main and committed recovery/input/verdict/ledger bytes verified",
+  "payload_commit": "0a83ae93e130a475801702b57cf77c96b51b9903",
+  "remote": "origin",
+  "remote_main_sha": "0a83ae93e130a475801702b57cf77c96b51b9903",
+  "observed_utc": "2026-09-25T17:11:32.335247+00:00",
+  "checks": {
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-cut07-ordinary-positive-from-observer-cut02.patch": {
+      "sha256": "5daf4c5fec831aa19a6bfdcce7833eb5047730af1c7750fc3b7c6599a72fe729",
+      "committed_bytes_equal_local": true
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/provider-parent-observer-base-from-c6dc28f.patch": {
+      "sha256": "468321b6959ffc3b205da88636ffb6f543549cf720cc3695167286bdfdb5a53b",
+      "committed_bytes_equal_local": true
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json": {
+      "sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+      "committed_bytes_equal_local": true
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-correctness-verdict.json": {
+      "sha256": "04a07e9df8ce562fdbc86135f879592e5f50a2a670f37073b7febcfb6ac14274",
+      "committed_bytes_equal_local": true
+    },
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-final-ledger.json": {
+      "sha256": "97d32c3d4ce347f5f8ae03904892baa663616cd6c7451d7a3c78d982d594caac",
+      "committed_bytes_equal_local": true
+    }
+  },
+  "source_recovery": "face-pivot-terminal-recovery.json",
+  "source_tree_sha256": "18518425e882575c3e0c69e26e7fe6d8be0793ed1dba640d314e0c6b0bbbdb5b",
+  "binary_publication": "Exact binary retained locally; source/build/input identities published, no binary upload claimed",
+  "main_rust_adopted": false,
+  "observer_base_commit": "c6dc28f55fc551d6f414d270c697ae1e60cc57f1",
+  "observer_base_is_remote_ancestor": true
+}

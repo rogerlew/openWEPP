@@ -76,8 +76,10 @@ bind the five private observation files; main Rust is not adopted.
 [Build/input custody](artifacts/face-pivot-binary-input-custody.json) binds executable
 SHA `11057805904facee126e2e18d78a74e7305fafc636ebdd5792286488db6adb64`,
 the retained local binary copy, exact toolchain command/support pins and original
-fixture. Source/evidence publication is pending the scoped commit below; binary
-bytes remain local, with their source/build identity retained for reproduction.
+fixture. Source/evidence is published in `0a83ae93e130a475801702b57cf77c96b51b9903`;
+[publication receipt](artifacts/face-pivot-final-publication.json) verifies remote
+main and committed recovery/input/verdict/ledger bytes. Binary bytes remain local,
+with their source/build identity retained for reproduction.
 
 [Final ledger](artifacts/face-pivot-final-ledger.json) conservatively charges through
 **17:15 UTC**: **4560 new seconds**, **339493.959294 cumulative seconds**, leaving
