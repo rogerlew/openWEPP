@@ -1,0 +1,9 @@
+{
+  "baseline_blocks": 238,
+  "candidate_blocks": 238,
+  "introduced_blocks": 0,
+  "removed_blocks": 0,
+  "normalization": "Location-only; includes Rust help suggestion line markers ~ as well as | + -; all diagnostic text retained",
+  "introduced": [],
+  "removed": []
+}

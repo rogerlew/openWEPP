@@ -1,0 +1,23 @@
+	Command being timed: "nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-target CARGO_BUILD_JOBS=2 cargo nextest list -p openwepp-land-surface-energy -p openwepp-hillslope-orchestrator"
+	User time (seconds): 193.16
+	System time (seconds): 9.34
+	Percent of CPU this job got: 190%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:46.29
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3757192
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 3735
+	Minor (reclaiming a frame) page faults: 4132794
+	Voluntary context switches: 56459
+	Involuntary context switches: 3406
+	Swaps: 0
+	File system inputs: 2572928
+	File system outputs: 9183144
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

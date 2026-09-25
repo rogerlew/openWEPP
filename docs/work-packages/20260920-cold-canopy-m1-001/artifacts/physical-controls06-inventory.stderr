@@ -1,0 +1,18 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: methods `complete_current_hydraulics` and `reset_current_hydraulics_after_nonroot_post_update` are never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:65:8
+   |
+38 | pub(crate) trait M1TrustRegionControllerEvaluator {
+   |                  -------------------------------- methods in this trait
+...
+65 |     fn complete_current_hydraulics(
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+72 |     fn reset_current_hydraulics_after_nonroot_post_update(
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.38s

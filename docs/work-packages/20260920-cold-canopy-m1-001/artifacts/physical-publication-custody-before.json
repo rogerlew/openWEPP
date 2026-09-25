@@ -1,0 +1,9 @@
+{
+  "unrelated_tracked_diff_sha256": "55727da427bf40447cdc1ed92829cc4c08578bcd7ac97f5f6efa305b845f5e00",
+  "paths": [
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs",
+    "tests/integration/advisory_linter_authority_contract.rs"
+  ],
+  "branch": "main",
+  "head": "2dc489fb1df9ceeb37f0180441bdcc98362d9916"
+}

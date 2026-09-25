@@ -1,0 +1,9 @@
+{
+  "baseline_count": 238,
+  "candidate_count": 240,
+  "added": [
+    "error: long literal lacking separators\n    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:LINE:COL\n     |\nLINE |     assert_eq!(raw_jacobian[14][14].to_bits(), 0x3fefffffffdd8000);\n     |                                                ^^^^^^^^^^^^^^^^^^ help: consider: `0x3fef_ffff_ffdd_8000`\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unreadable_literal",
+    "error: this function has too many lines (109/100)\n   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:LINE:COL\n    |\nLINE | /     fn transition<E, V>(\nLINE | |         &mut self,\nLINE | |         evaluator: &mut V,\nLINE | |     ) -> Result<\n...   |\nLINE | |     where\nLINE | |         V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,\n    | |___________________________________________________________________________________^\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines"
+  ],
+  "removed": []
+}

@@ -1,0 +1,80 @@
+waiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+────────────
+ Nextest run ID 3d9451b3-221b-4f64-b593-8cf9a8dce425 with nextest profile: default
+    Starting 9 tests across 1 binary
+  stdout ───
+
+    running 1 test
+    test m1_vapor_boundary_domain_and_overflow_guards_are_typed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_all_inverse_and_ice_jacobian_controls ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_all_saturation_and_join_derivative_controls ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_empty_surface_guards_enumerate_all_controls ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_restart_rejects_wrong_parent_day ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_primitive_domains_reject_nonfinite_and_invalid_forcing ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_signed_vapor_ledger_and_capacity_controls ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_assembled_ice_residual_jacobian_columns ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_restart_roundtrips_three_positives_and_rejects_23_poisons ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+
+────────────
+     Summary [   0.009s] 9 tests run: 9 passed, 0 skipped

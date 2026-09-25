@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: fresh verified observer plus exactly one full terminal patch",
+  "recorded_utc": "2026-09-25T05:51:58.588432+00:00",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+  "entry_count": 764,
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "observer_recovery": "witness-observer-recovery-verification.json",
+  "terminal_patch": "physical-body12-custody-from-observer-cut02.patch",
+  "terminal_patch_sha256": "6d44b35b3b8171feb0c1d872d901df5c1e383907a0120350afd3bec88313a5a6",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-physical-terminal-reconstruction-20260925",
+  "patch_exit_code": 0,
+  "all_entry_hashes_equal": true,
+  "exact_file_inventory_equal": true,
+  "runtime_source_unchanged": true,
+  "publication": "Local until scoped commit and verified remote publication"
+}

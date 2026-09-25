@@ -1,0 +1,276 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning: unused imports: `m1_trust_region_controller_run_for_test`, `m1_trust_region_controller_transition_for_test`, and `m1_trust_region_seeded_entry_guard_for_test`
+  --> crates/openwepp-land-surface-energy/src/lib.rs:47:5
+   |
+47 |     m1_trust_region_controller_run_for_test, m1_trust_region_controller_transition_for_test,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+48 |     m1_trust_region_seeded_entry_guard_for_test,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: enum `M1TrustRegionControllerOperation` is never used
+   --> crates/openwepp-land-surface-energy/src/lib.rs:162:17
+    |
+162 | pub(crate) enum M1TrustRegionControllerOperation {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: variants `RadiusExhausted` and `WorkCap` are never constructed
+   --> crates/openwepp-land-surface-energy/src/lib.rs:220:5
+    |
+208 | pub(crate) enum M1TrustRegionRefusalKind {
+    |                 ------------------------ variants in this enum
+...
+220 |     RadiusExhausted,
+    |     ^^^^^^^^^^^^^^^
+...
+226 |     WorkCap,
+    |     ^^^^^^^
+    |
+    = note: `M1TrustRegionRefusalKind` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: variants `Own`, `Subproblem`, `CoreWorkCap`, and `Numerical` are never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:7:5
+   |
+ 6 | pub(crate) enum M1TrustRegionControllerError<E> {
+   |                 ---------------------------- variants in this enum
+ 7 |     Own(E),
+   |     ^^^
+ 8 |     Subproblem(super::M1TrustRegionSubproblemRefusal),
+   |     ^^^^^^^^^^
+ 9 |     CoreWorkCap,
+   |     ^^^^^^^^^^^
+10 |     Numerical(&'static str),
+   |     ^^^^^^^^^
+   |
+   = note: `M1TrustRegionControllerError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: struct `CoreBudget` is never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:14:8
+   |
+14 | struct CoreBudget {
+   |        ^^^^^^^^^^
+
+warning: associated items `new` and `enter` are never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:20:8
+   |
+19 | impl CoreBudget {
+   | --------------- associated items in this implementation
+20 |     fn new(incoming: u16) -> Self {
+   |        ^^^
+...
+27 |     fn enter<E, P, V: M1TrustRegionControllerEvaluator<Error = E, Payload = P>>(
+   |        ^^^^^
+
+warning: struct `FoundationState` is never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:40:19
+   |
+40 | pub(crate) struct FoundationState<P, Phase> {
+   |                   ^^^^^^^^^^^^^^^
+
+warning: enum `ReplacementWitnessEligibility` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:58:6
+   |
+58 | enum ReplacementWitnessEligibility {
+   |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `ProposalModel` is never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:63:19
+   |
+63 | pub(crate) struct ProposalModel {
+   |                   ^^^^^^^^^^^^^
+
+warning: struct `TransitionBasis` is never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:68:8
+   |
+68 | struct TransitionBasis<'a> {
+   |        ^^^^^^^^^^^^^^^
+
+warning: struct `TransitionOutcome` is never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:73:8
+   |
+73 | struct TransitionOutcome {
+   |        ^^^^^^^^^^^^^^^^^
+
+warning: struct `TrialMerit` is never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:84:8
+   |
+84 | struct TrialMerit {
+   |        ^^^^^^^^^^
+
+warning: enum `GovernedStep` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:90:6
+   |
+90 | enum GovernedStep {
+   |      ^^^^^^^^^^^^
+
+warning: function `finite_max` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:94:4
+   |
+94 | fn finite_max(values: impl IntoIterator<Item = f64>) -> Option<f64> {
+   |    ^^^^^^^^^^
+
+warning: multiple associated items are never used
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:100:19
+    |
+ 99 | impl<P: Clone, Phase: Clone + PartialEq> FoundationState<P, Phase> {
+    | ------------------------------------------------------------------ associated items in this implementation
+100 |     pub(crate) fn initialize<
+    |                   ^^^^^^^^^^
+...
+132 |     pub(crate) fn solve_proposal(
+    |                   ^^^^^^^^^^^^^^
+...
+180 |     fn weighted_array(model: &ProposalModel) -> [[f64; 21]; 21] {
+    |        ^^^^^^^^^^^^^^
+...
+184 |     fn physical_direction(&self, step: [f64; 21]) -> Result<[f64; 21], &'static str> {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+193 |     fn dynamic_max(evaluation: &M1TrustRegionControllerEvaluation<P>) -> Result<f64, &'static str> {
+    |        ^^^^^^^^^^^
+...
+210 |     fn governed_step_pass(
+    |        ^^^^^^^^^^^^^^^^^^
+...
+288 |     fn transition_trace(
+    |        ^^^^^^^^^^^^^^^^
+...
+312 |     fn frozen_trial_merit<E>(
+    |        ^^^^^^^^^^^^^^^^^^
+...
+341 |     fn materialize_current<E, V>(
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+356 |     fn install_candidate<E>(
+    |        ^^^^^^^^^^^^^^^^^
+...
+398 |     fn shrink_transition(
+    |        ^^^^^^^^^^^^^^^^^
+...
+408 |     fn trial_domain_refusal(
+    |        ^^^^^^^^^^^^^^^^^^^^
+...
+432 |     fn no_predicted_reduction_transition(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+453 |     fn root_admit<E, V>(
+    |        ^^^^^^^^^^
+...
+484 |     fn transition<E, V>(
+    |        ^^^^^^^^^^
+...
+586 |     fn proposal_model<E>(&self) -> Result<ProposalModel, M1TrustRegionControllerError<E>> {
+    |        ^^^^^^^^^^^^^^
+...
+602 |     fn phase_model<E, V>(
+    |        ^^^^^^^^^^^
+...
+657 |     fn post_update_admit<E, V>(
+    |        ^^^^^^^^^^^^^^^^^
+...
+683 |     fn reassemble_current<E, V>(
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_controller_transition_for_test` is never used
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:703:15
+    |
+703 | pub(crate) fn m1_trust_region_controller_transition_for_test<E, P, Phase, V>(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_controller_run_for_test` is never used
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:718:15
+    |
+718 | pub(crate) fn m1_trust_region_controller_run_for_test<E, P, Phase, V>(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_seeded_entry_guard_for_test` is never used
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:784:15
+    |
+784 | pub(crate) fn m1_trust_region_seeded_entry_guard_for_test<
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `M1_TRUST_REGION_CONTROLLER_DIMENSION` is never used
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:3:18
+  |
+3 | pub(crate) const M1_TRUST_REGION_CONTROLLER_DIMENSION: usize = 21;
+  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `M1_TRUST_REGION_CORE_ENTRY_CAP` is never used
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:4:18
+  |
+4 | pub(crate) const M1_TRUST_REGION_CORE_ENTRY_CAP: u16 = 6_500;
+  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: enum `M1TrustRegionProposalDisposition` is never used
+ --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:7:17
+  |
+7 | pub(crate) enum M1TrustRegionProposalDisposition {
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `M1TrustRegionControllerEvaluation` is never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:15:19
+   |
+15 | pub(crate) struct M1TrustRegionControllerEvaluation<P> {
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: trait `M1TrustRegionControllerEvaluator` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:29:18
+   |
+29 | pub(crate) trait M1TrustRegionControllerEvaluator {
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `M1TrustRegionControllerTransition` is never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:78:19
+   |
+78 | pub(crate) struct M1TrustRegionControllerTransition {
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `M1TrustRegionControllerRun` is never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:99:19
+   |
+99 | pub(crate) struct M1TrustRegionControllerRun {
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `M1TrustRegionSeededEntryGuard` is never constructed
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:112:19
+    |
+112 | pub(crate) struct M1TrustRegionSeededEntryGuard<E> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_governed_step_components_pass_for_trust_region` is never used
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:481:15
+    |
+481 | pub(crate) fn m1_governed_step_components_pass_for_trust_region(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 27 warnings (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID 12d3614c-5fb5-4615-8d44-b943626ebf50 with nextest profile: default
+    Starting 1 test across 1 binary (256 tests skipped)
+        FAIL [   0.005s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_physical_adapter_initialization_binds_real_current_operands
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_physical_adapter_initialization_binds_real_current_operands ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_trust_region_physical_adapter_initialization_binds_real_current_operands
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 256 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_trust_region_physical_adapter_initialization_binds_real_current_operands' (3348973) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:4587:10:
+    physical adapter initialization must use the shared foundation state: IncompleteScope
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.007s] 1 test run: 0 passed, 1 failed, 256 skipped
+        FAIL [   0.005s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_physical_adapter_initialization_binds_real_current_operands
+error: test run failed

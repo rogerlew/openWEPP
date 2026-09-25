@@ -17,7 +17,7 @@ HERE = Path(__file__).resolve().parent
 SOURCE = Path('/home/roger/openwepp-experiments/cold-canopy-m1-20260920')
 BASE = Path('/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918')
 LOGS = Path('/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts')
-DEADLINE = dt.datetime.fromisoformat('2026-09-24T20:10:00+00:00')
+DEADLINE = dt.datetime.fromisoformat('2026-09-25T06:28:00+00:00')
 SPEC = importlib.util.spec_from_file_location(
     'snapshot_tool',
     Path('/workdir/openWEPP/docs/work-packages/20260911-b01-wb14-verified-cadence-repair-001/artifacts/execution-discretion-20260915/run-recorded.py'),

@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: complete snapshot equality; Static: adopted accounting",
+  "observed_utc": "2026-09-25T02:32:07.331195+00:00",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "entry_count": 764,
+  "tree_sha256": "9ecfa70f1c174d4bb5b99536db545167fa1eced9394c03368b832c841a176405",
+  "main_commit": "2dc489fb1df9ceeb37f0180441bdcc98362d9916",
+  "anchor_utc": "2026-09-25T02:28:00+00:00",
+  "carry_seconds": 321613.959294,
+  "ceiling_seconds": 336013.959294,
+  "implementation_cutoff_utc": "2026-09-25T05:58:00+00:00",
+  "hard_deadline_utc": "2026-09-25T06:28:00+00:00",
+  "authorization_sha256": "d7ace28e5cfa878f4071ab88dbe668276bca677932d5f9ca255a46cecc21190e"
+}

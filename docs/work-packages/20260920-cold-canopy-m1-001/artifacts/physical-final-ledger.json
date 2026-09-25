@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Observed elapsed plus conservative closing publication/response charge",
+  "observed_utc": "2026-09-25T05:59:04.652144+00:00",
+  "anchor_utc": "2026-09-25T02:28:00+00:00",
+  "carry_seconds": 321613.959294,
+  "observed_session_seconds": 12664.652144,
+  "observed_cumulative_seconds": 334278.611438,
+  "conservative_charged_through_utc": "2026-09-25T06:10:00+00:00",
+  "conservative_session_seconds": 13320.0,
+  "conservative_final_cumulative_seconds": 334933.959294,
+  "ceiling_seconds": 336013.959294,
+  "remaining_against_conservative_close_seconds": 1080.0,
+  "hard_deadline_utc": "2026-09-25T06:28:00+00:00",
+  "policy": "All elapsed including concurrency/waits once; no prior refunds and no old900 addition. Conservative close covers publication/response; overrun requires upward reconciliation within fixed ceiling."
+}

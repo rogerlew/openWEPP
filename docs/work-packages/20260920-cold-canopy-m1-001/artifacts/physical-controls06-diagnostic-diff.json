@@ -1,0 +1,10 @@
+{
+  "baseline_count": 238,
+  "candidate_count": 240,
+  "added": [
+    "error: methods `complete_current_hydraulics` and `reset_current_hydraulics_after_nonroot_post_update` are never used\n  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:LINE:COL\n   |\nLINE | pub(crate) trait M1TrustRegionControllerEvaluator {\n   |                  -------------------------------- methods in this trait\n...\nLINE |     fn complete_current_hydraulics(\n   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n...\nLINE |     fn reset_current_hydraulics_after_nonroot_post_update(\n   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n   |\n   = note: `-D dead-code` implied by `-D warnings`\n   = help: to override `-D warnings` add `#[expect(dead_code)]` or `#[allow(dead_code)]`",
+    "error: more than 3 bools in a struct\n   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:LINE:COL\n    |\nLINE | / struct HydraulicLifecycleFixture {\nLINE | |     pending_initial_current: bool,\nLINE | |     pending_candidates: bool,\nLINE | |     completion_leaves_pending: bool,\n...   |\nLINE | |     post_update_selected_side_error: bool,\nLINE | | }\n    | |_^\n    |\n    = help: consider using a state machine or refactoring bools into two-variant enums\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#struct_excessive_bools\n    = note: `-D clippy::struct-excessive-bools` implied by `-D warnings`\n    = help: to override `-D warnings` add `#[allow(clippy::struct_excessive_bools)]`"
+  ],
+  "removed": [],
+  "normalization": "Only source and help-suggestion line coordinates; lint/path/message/context retained."
+}

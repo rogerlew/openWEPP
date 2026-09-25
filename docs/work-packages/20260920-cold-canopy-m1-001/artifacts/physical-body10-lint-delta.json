@@ -1,0 +1,9 @@
+{
+  "baseline": "physical-lint-baseline01.stderr",
+  "candidate": "physical-body10-lint.stderr",
+  "normalization": "Location only: file line/column and gutter numeric line including +, -, ~ help markers",
+  "baseline_blocks": 238,
+  "candidate_blocks": 238,
+  "introduced": [],
+  "removed": []
+}

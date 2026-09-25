@@ -1,0 +1,24 @@
+Command exited with non-zero status 101
+	Command being timed: "nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=target/physical-lint CARGO_BUILD_JOBS=2 cargo clippy -p openwepp-land-surface-energy --all-targets --no-deps --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage -- -D warnings"
+	User time (seconds): 16.90
+	System time (seconds): 0.97
+	Percent of CPU this job got: 154%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:11.60
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 763332
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 173
+	Minor (reclaiming a frame) page faults: 349268
+	Voluntary context switches: 46470
+	Involuntary context switches: 209
+	Swaps: 0
+	File system inputs: 14608
+	File system outputs: 149272
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 101

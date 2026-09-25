@@ -1,0 +1,14 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning: variant `Refused` is never constructed
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2322:5
+     |
+2320 | pub(crate) enum M1PhysicalTrustRegionAdapterOutcome {
+     |                 ----------------------------------- variant in this enum
+2321 |     Accepted(M1CoupledEvaluation),
+2322 |     Refused(crate::M1TrustRegionRefusalKind),
+     |     ^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s

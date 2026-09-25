@@ -1,6 +1,809 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
 
+## Physical adapter and measurement resumption — adopted 2026-09-25 02:28Z
+
+**Terminal disposition: INCOMPLETE / HOLD.** Both independent reviewers approve
+only the recoverable private adapter/accounting increment. Final physical controls
+are80/81PASS (retained ordinary-positive FacePivotLimit); local C023 controls39/39PASS.
+The full controller-stage configuration still fails18 missing symbols. Strict lint
+has238 inherited and0 introduced diagnostics. No target input, executable or run
+exists; all four run slots remain UNUSED. Final source764 is
+`9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d`.
+Last Rust edit05:49:11Z; selected checks/recovery/reviews completed within the fixed
+05:58 implementation cutoff. After05:55 a new180-second physical command could
+not fit plus the protected reserve, so no further implementation cycle is started.
+Preservation and authorized scoped publication use the original reserve, with hard
+06:28 deadline unchanged. See the terminal reconciliation/recovery and final
+review entries below; this is not full physical or measurement completion.
+
+Owner execution of `/tmp/openwepp_cold_canopy_m1_physical_adapter_measurement_authorization.md`
+reactivates the same fixed `COLD-CANOPY-M1-TR-SVD-BVLS-01` experiment. Historical
+expiry, failures and HOLDs below remain unchanged. Intent: preserve accepted Stage1
+and 43-control analytic controller, implement the confined real physical adapter,
+complete owning-domain/accepted-state/materialization/closure controls and actual
+before-entry nested accounting, then private harness/qualification and the fixed
+release comparison. Contract-derived discriminators precede corresponding bodies;
+no new physics, method, parameters, dependencies, inputs, initialization, public
+API/schema, default dispatch or live parent/cycle progression is authorized.
+
+Ran: main starts at `2dc489fb1df9ceeb37f0180441bdcc98362d9916`; all 764 recorded
+runtime entries match `artifacts/witness-terminal28-source.json` exactly. Mutable
+source remains `/home/roger/openwepp-experiments/cold-canopy-m1-20260920`.
+The published closing receipt was read once; no later witness publication receipt
+was found at the experiment directory's top level. Carry is **321613.959294 s**,
+new fixed ceiling **336013.959294 s**. Conservative first-work anchor is
+**2026-09-25 02:28:00 UTC**, implementation cutoff **05:58:00 UTC**, hard deadline
+**06:28:00 UTC**, retaining 1800 seconds for independent disposition/preservation/
+publication. All elapsed time, including concurrent work and waits, is charged once.
+The previous protected 900 seconds is not added or refunded.
+
+Sole detached writer: `/root/physical_implementer` (implementer route). Previous
+reviewer sessions are not present in the live agent inventory; distinct attributable
+correctness/QA replacements will inspect affected scope. At most two children,
+no nested delegation. Root owns this record, recorder deadline, evidence/recovery
+and already-authorized scoped main publication. Unrelated dirty work stays intact.
+
+Validation selection: real full-feature physical domain/acceptance/installed-state,
+materialization and independent closure controls; real nested before-entry cap and
+typed-outcome controls; affected accepted analytic regression; original60/observer
+correspondence; source/manifest reachability assessments from both reviewers;
+format, same-command introduced/inherited lint attribution, applicable A0/A1/A3,
+consumer/negative/conservation requirements and dependency checks if affected.
+Private/noncritical treatment remains conditional on actual reachability; Critical
+impact requires its complete existing qualification. Strict lint and full09/A1,
+material/BGC, parent/positive-late-rejection, cycle/restart and whole-engine cost
+HOLDs remain. No analytic-only pass closes this scope.
+
+Run slots remain UNUSED: one canonical support-0 prefix, one release baseline,
+one release treatment, and one conditional corrected affected-arm repeat only for
+independently verified implementation/recording deviation. No authenticated support1
+preparatory control. Physical commands remain capped at180s except the exact retained
+900s Critical command; full command bound plus reserve must fit before dispatch.
+Two failed corrections or60 charged minutes triggers supported internal reassessment.
+Owner direction, hard limits, uncontained integrity loss, indispensable capacity/
+source unavailable after bounded recovery, necessary out-of-envelope change, or
+completed experimental disposition stops execution. At resumption the status was ACTIVE, with physical adapter/nested accounting
+and target measurement incomplete.
+
+
+
+Ran: first controls cut `3ccaa216b151d1e75844928cc5bfcd48ef894ee2b5be6b823fb991feff7863cb`
+([source](artifacts/physical-controls01-source.json)) adds only a test-private
+adapter seam and one real-input discriminator. The first nonphysical nextest
+[inventory](artifacts/physical-controls01-inventory.json) fails compilation with19
+missing symbols (15.918s), including an introduced unexported return-type path and
+retained full-feature skeleton APIs. No test executed; intended IncompleteScope
+expected-red failure was not reached. Both reviewers are assessing this exact cut,
+including whether its assumed positive materialization has independent support.
+The full-feature failure is preserved, not hidden by analytic-only selection.
+
+Static: both independent replacements reject controls01 for unsupported convergence,
+preflight materialization and insufficient adapter/owning-operand discrimination
+([reviews](artifacts/physical-adapter-reviews.json)). Root accepts those findings.
+The same writer corrects the first slice to initialization/one-transition physical
+observations without assuming a positive solve. A necessary additive nondefault
+physical-stage feature may expose the same controller/Stage1 within tests while
+preserving the unresolved controller-stage inventory and full-feature obligations.
+This staging is not qualification or waiver of those obligations. No physical run
+or target slot is released.
+
+Ran: controls02 (`49408a82…`, [source](artifacts/physical-controls02-source.json))
+adds the nondefault physical-stage wiring but its [inventory](artifacts/physical-controls02-inventory.json)
+still fails compile: one omitted governed-helper cfg,16.472s, source unchanged.
+No physical test executed. Both reviewers reject its uncalibrated transition/count
+combination and Some-only operand evidence. Correctness independently derives41
+actual initialization cores: base1 +19 centered coordinate pairs +2 one-sided D
+probes. The43 count is the authority maximum, not this fixture's actual work.
+
+Supported internal reassessment after two unsuccessful control cuts: CONTINUE
+with the same writer, narrowing only this first internal slice to shared-controller
+initialization. Assert actual41 core/two hydraulic/J1 and zero trial/materialization,
+plus independent identity-row residual, dynamic tolerance1e-9 and raw diagonal1
+that discriminates normalized-J misuse. Retain later actual transition, physical
+acceptance/materialization, cap and full-feature obligations. Correct omitted cfg
+and remove surplus analytic-test-module reachability. No numerical policy changes.
+
+Ran: controls03 [inventory](artifacts/physical-controls03-inventory.json) PASS,
+exactly one local initialization control,23.249s and source unchanged at
+`6ea91d405c27509464e050a6b56c793962c8eac2d8055c5f7ee4a9aea07be66e`.
+Both reviewers release only its partial scaffold expected-red.
+[Execution](artifacts/physical-controls03-red.json) runs1/1 FAIL exactly at
+`IncompleteScope`, before evaluator/hydraulic/materializer entry (1.877s).
+This is intended unresolved-seam evidence, not physical initialization or body
+readiness. Target slots remain UNUSED.
+
+Correctness identifies a further owning-order obligation before the body:
+canonical phase/J work precedes base hydraulics, whereas the current generic
+initializer's first evaluate requires complete hydraulic operands. Root withdraws
+its earlier hyd-before-J assumption. The same writer and correctness reviewer
+now reconcile the precise call order and smallest faithful interface join;
+no fabricated hydraulic values or precedence change is authorized.
+
+QA verifies [feature-equivalent lint baseline](artifacts/physical-lint-baseline-source.json)
+`cc3daedc…`: terminal28 plus only three private feature/cfg changes, no adapter or
+new control. Baseline [lint](artifacts/physical-lint-baseline01.json) returns101
+in21.739s, source unchanged; candidate comparison remains pending. The first
+baseline dispatch label collided with its preexisting source manifest and the
+recorder refused before launch; distinct attempt01 ran, preserving that source.
+
+Static: correctness resolves the call-order issue as a necessary private lifecycle
+extension within the adapter envelope: explicit Pending/Complete hydraulic state
+and completion after phase/final-probe/current-finite work, before no-prediction or
+trial entry. Existing analytic Complete/default-no-op behavior remains required.
+The same writer authors discriminators before the body. Initial physical assembly
+must not enter hydraulics; candidate hydraulics remain complete before admission.
+Both selected-assembly predictor probe and per-proposal final probe are retained
+under draft04's explicit44/+21 count. Root rejects the writer's proposed removal
+of the former as a duplicate; no such source edit occurred.
+
+An additional bounded science-adviser route was attempted for this named blocker,
+but thread-capacity rejection persisted after one exposed finished-writer interrupt
+recovery. No adviser was created and no substitute advice/review is claimed.
+Existing correctness source adjudication provided a supported in-envelope route;
+the functioning sole implementer and distinct reviewers remain assigned.
+
+Continuation 2026-09-25 03:04Z: the sole implementer hit a tool-reported usage
+limit after partial lifecycle-control edits. Owner says continue; this preserves
+the same02:28Z anchor/05:58Z cutoff/06:28Z deadline and run history, with no added
+allowance. One bounded recovery dispatch to that same implementation route was
+attempted. Unreviewed edits remain in the durable detached source; they are not
+body acceptance. Explicit Pending/Complete now carries hydraulic operands only
+when complete. Existing analytic arrays may remain legitimate analytic fixtures;
+new lifecycle controls must not be mislabeled owning physical evidence.
+
+Ran: controls04 [inventory](artifacts/physical-controls04-inventory.json) fails
+compilation after16.157s at an omitted new operation-name match arm; no tests run.
+Source `40a7d1cd…` remains frozen in [the manifest](artifacts/physical-controls04-source.json).
+QA requires a non-vacuous exact transition outcome and unconditional trial entry
+in the new lifecycle test. Pending/Complete representation and existing analytic
+assertions are retained; no completion-hook or physical-adapter body is released.
+
+Ran: controls05 inventory lists50, with no completion/reset/physical body yet.
+Controls06 (`4117bf1fb515a7e1a1d8fd0faa180487adfbc2759d155c3c3a762dce16cac321`)
+corrects reset to infallible and keeps concrete boxed owner errors. Both independent
+reviewers release the expected-red execution; [the run](artifacts/physical-controls06-red.json)
+executes50, **44 PASS/6 FAIL**,2.626s, source unchanged. The43 accepted analytic
+controls remain passing; five lifecycle controls and real initialization fail at
+missing bodies as intended. This establishes discriminators, not physical acceptance.
+
+QA finds grouping fixture flags did not resolve introduced excessive-bools lint.
+[Same-command lint](artifacts/physical-controls06-lint.json) still FAILs; inherited
+238 diagnostics plus two introduced blocks remain (fixture booleans and unconsumed
+lifecycle methods). The writer must use meaningful fixture states and wire both hooks;
+no suppression or inherited-failure waiver. Correctness accepts boxed concrete
+`M1CoupledError`, requiring exact owning-error preservation on later materialization.
+
+Supported internal reassessment approaching60 charged minutes: CONTINUE with the
+same functioning writer on the now-discriminated lifecycle and real initialization
+body. Pre-body review/compile friction is resolved sufficiently for that next action;
+no new method or numerical policy is required. Remaining domain/materialization,
+actual nested accounting, harness and qualification are still incomplete. All target
+slots remain UNUSED. Deadline and reserve remain unchanged. A message to the idle QA
+session encountered thread capacity rejection; its completed review is preserved,
+and the existing route will be reused for affected body review when capacity permits.
+
+Implementation audit 03:31Z: root detects and rejects an unauthorized adapter
+rewrite of returned raw-J rows14–20 to exact identity rows. The controls06 exact1
+oracle did not account for binary64 finite-difference cancellation. Source authority
+requires the matrix returned by the owning assembly, without reconstruction. Writer
+must remove the transformation, preserve first failure and subsequent unqualified
+pass evidence, and await independent oracle adjudication before another physical
+run. Writer-reported lifecycle passes are not yet source-bound parent acceptance.
+All-one scales/unbounded boxes in the partial adapter are also rejected in favor of
+the unchanged explicit draft04 inputs. Unreleased callbacks must fail explicitly;
+the accepted materializer must never be entered with a diagnostic Jacobian that
+bypasses its acceptance guard. No target was entered.
+
+Static: correctness acknowledges its earlier exact1 oracle was wrong. Independent
+ordered binary64 reconstruction gives rawJ[14][14] bits`0x3fefffffffdd8000`
+(0.9999999997489795), normalized derivative bits`0x41cdcd64ffdfde8f`.
+Root authorizes only that exact oracle correction, retaining positive-zero
+row14 off-diagonals and exact1e-9 normalizer. No tolerance relaxation, producer
+normalization or derivative reconstruction is permitted. Reviewer observes the
+forbidden helper removed; source freeze and body review remain pending.
+
+Body02 is frozen at`bade4df1a4e251da24ef8d83656d1c6e41d501952851d64ae314c7c9df455fa3`
+([764-entry source](artifacts/physical-body02-source.json)). Writer discloses the
+original exact1 assertion failure and transformed-J pass were unrecorded terminal
+outputs, not source-bound evidence. The retained file named
+[raw-jacobian-unmodified-fail](artifacts/physical-writer-body01-raw-jacobian-unmodified-fail.log)
+actually contains an intermediate E0308 compile failure; it is not a physical-test
+failure record. No outcome is inferred from its name. Final writer compile passes;
+parent [inventory](artifacts/physical-body02-inventory.json) PASS50/20.645s and
+[lint](artifacts/physical-body02-lint.json) FAIL101/20.297s are source-bound unchanged.
+Old dead-method/excessive-bool diagnostics are removed; two introduced diagnostics
+remain: literal separators and transition length109/100. Physical execution awaits
+both independent source assessments; the first recorded Body02 physical run has
+not yet occurred. No target slots used.
+
+Body02 review: QA releases only the scoped first-init execution with two lint fixes
+still required. Correctness HOLDS that run: natural selection must precede owning
+assembly validation (root's prior validate-first wording was also incorrect), and
+its natural non-Source failure must retain canonical domain-error taxonomy. Also,
+reset must occur after the50-update cap check so terminal installed state remains
+Complete. Same writer corrects those precise issues, adds a49-reset assertion to
+the existing50-update control, and fixes literal spelling/transition length without
+suppression. Body02 remains unexecuted physically; failed source and reviews stay
+preserved. This is an in-envelope precedence/state correction, not method redesign.
+
+Ran: Body03`949ec8efb89e4dff1deeb135d504d29ae11e91e4067af0cdd39a769ec0e80a9e`
+([source](artifacts/physical-body03-source.json)) resolves both correctness blockers
+and both new lint findings. Both reviewers release the scoped50 initialization run
+conditional on source-bound inventory. [Inventory](artifacts/physical-body03-inventory.json)
+PASS50/15.326s; [lint](artifacts/physical-body03-lint.json) FAIL101/19.685s matches
+all238 inherited diagnostic blocks with zero added/removed. Strict lint remains FAIL.
+The first source-bound [physical initialization run](artifacts/physical-body03-initialization.json)
+**PASS50/50**,3.531s, source unchanged:43 retained analytic,6 lifecycle controls,
+and1 actual physical initialization reaching41 core entries, one natural assembly,
+rawFDbit discriminator and zero hydraulic/materializer entries. This accepts only
+the tested initialization/lifecycle slice, not physical proposals/root/materialization
+or nested-cap/harness/target qualification. Reviewer evidence followup is assigned.
+
+Next action: same writer authors owning physical proposal/domain/accepted-state/
+materialization controls before matching bodies, reusing actual non-target fixtures
+and independent reservoir reconstruction. Predictor/final error taxonomy, complete
+candidate hydraulic operands, real materialization/installed-state proof, nested
+before-entry accounting, private harness, remaining full-feature and qualification
+obligations remain open. Prefix/baseline/treatment/repeat slots all UNUSED.
+
+QA verifies the completed Body03 receipts and accepts only lifecycle/init evidence.
+The next writer initially reports an unavailable accepted coordinate vector; root
+resolves this within the existing original60 control allowance: test setup may run
+the canonical non-target fixture once and capture its actual accepted coordinates,
+then separately invoke the new adapter with those local operands. Canonical setup
+must be distinguished from adapter work; no canonical solve is allowed inside the
+adapter, no target input/seed changes, and no assumed success may replace actual
+trust-controller admission/materialization. A resulting refusal is preserved and
+classified, never retuned away. Candidate evaluation must reuse the core/hydraulic
+owners without assembling a Jacobian on each candidate; independent closure uses
+the test's operand reconstruction, not the producer validation function itself.
+
+Controls07`997c767b0de2901e24a0c5ce22101ca9b677e4cdb23d4e07d3c300098ab168e6`
+([preserved source](artifacts/physical-controls07-source.json)) is rejected by root
+before physical dispatch: it asserts explicit endpoint incompleteness/zero adapter
+work as success rather than requiring the intended physical body. The canonical
+original60 setup boundary is valid, but that assertion cannot discriminate actual
+admission/materialization. Same writer corrects to an expected-red positive owning
+path with actual returned evaluation, materializer-input/accepted-iterate identity,
+None diagnostic Jacobian, real hydraulic/probe/MAT evidence and independent closure.
+The actual negative-D guard must be reached through the adapter callback, not only
+a direct predicate helper. A later valid physical refusal is retained/classified,
+never treated as permission to alter method or obtain a tuned positive fixture.
+No physical Controls07 command ran; run slots remain unused.
+
+Controls08`8af7c97fc3002fbf97d6010484c81edb96e0b467c7a4c43092f6ec2796ce6353`
+([source](artifacts/physical-controls08-source.json)) changes the positive endpoint
+contract to return a real materialized evaluation; its stub should fail the positive
+assertion. [Inventory](artifacts/physical-controls08-inventory.json) PASS52/13.245s,
+source unchanged. QA HOLDS physical/body release for missing concrete assertions:
+None diagnostic Jacobian, result-input lineage, actual controller accepted and
+materializer input coordinates, plus negative-D zero actual core/hydraulic/MAT/J
+work after explicit observation reset. Canonical setup separation is approved.
+Prospective51PASS/1FAIL is not an executed result. No physical run occurred.
+
+Correctness also HOLDS Controls08. Root adopts its independently derived positive
+callgraph discriminator: adapter evaluations2/rawJ1/probe1/domain1/MAT1; actual
+core43=41 initialization+1 finalprobe+1 candidate, logical hydraulics2/actual blocks6,
+actualMAT1, Jinvocations1/canonical assemblies0. Fresh owning materializer capture
+must be reset after canonical setup and compared to actual controller accepted/
+materialized coordinates and input; no copied expected array is sufficient. The
+controller run must record exactly1MAT and no terminal refusal. Both reviewers'
+missing assertions are assigned together to Controls09; the unused direct FD helper
+is removed. These are prospective expectations, not measured results. Any first
+physical mismatch is retained and adjudicated before correction.
+
+Controls09`52c1f1198cb1ab73d7711eee83244eaca47abc41a8e38502c949a38b02eb288e`
+([source](artifacts/physical-controls09-source.json)) is statically approved by both
+reviewers for the matching positive path and actual negative-D guard. Inventory
+lists52, exit0/17.220s source unchanged. [Expected-red execution](artifacts/physical-controls09-red.json)
+runs52: **51PASS/1FAIL**,3.476s source unchanged. Canonical original60 setup reaches
+its accepted root and independent closure; the sole failure is then exactly the
+new adapter endpoint's `IncompleteScope`, before new proposal/materialization.
+The real negative-D adapter guard passes with zero owning work. No target executes.
+Same writer is released for the corresponding actual physical callbacks/end-to-end
+endpoint; its first physical body run must be parent-recorded after source review.
+No internal canonical solve, counter reset, surrogate arithmetic, altered seed or
+method parameters are permitted. This slice still excludes broader domain/poison,
+nested cap, harness and target qualification.
+
+Body04`6682a6bd6e2d29f9b043e3abe2a3b645010a179736bddc44d2e543277047f7a7`
+([source](artifacts/physical-body04-source.json)) receives both reviewers' scoped
+first-root-path readiness. Known broader defects remain HOLD: candidate observation
+writes a false zero rawJ; a later installed nonroot base has empty cached J; terminal
+run refusal is retained in observation but endpoint returns Incomplete. No multi-
+update or target run is released. Inventory lists52 exit0/15.627s unchanged.
+Lint FAIL101/19.585s has238 inherited plus7 introduced (must_use and float comparisons).
+
+The first [physical body run](artifacts/physical-body04-root.json) executes52:
+**51PASS/1FAIL**,3.582s unchanged. New adapter returns real materialization and passes
+independent closure, input lineage, noJ, fresh materializer/controller coordinate
+and single-MAT assertions; failure is the exact core count, **actual42/expected43**,
+at testline4708. Subsequent hydraulic/work assertions were not reached and are not
+claimed passed. Root identifies the owning selected-side callback's no-tie early
+return as a potential oracle overcount; both reviewers are adjudicating before any
+change or rerun. This is a local control failure, not target refusal or acceptance.
+All prefix/baseline/treatment/repeat slots remain UNUSED.
+
+Both reviewers independently classify Body04's failure as an oracle error:
+no phase/capacity tie means the owning callback contributes0 core entries; correct
+total is **42=41 natural assembly+1 candidate**. Root authorizes only the count/comment
+correction, not forcing extra work. Seven introduced lint fixes retain exact bits.
+Before broader endpoint release, controls must discriminate the empty-J next-base
+cache defect, false candidate zero-J observation, extra validation masking in the
+FD guard and terminal-refusal collapse. Same writer authors those controls before
+their corresponding bodies. Current implementation remains incomplete.
+
+Body05`80fccd2a936d58bc0df539c73a323ac2cb26abddaa1b8a11015d78306b684c09`
+([source](artifacts/physical-body05-source.json)) changes only oracle42, exact-bit
+assertions and must_use. Both reviewers approve those fixes; physical callbacks
+are unchanged. [Inventory](artifacts/physical-body05-inventory.json) lists52/exit0,
+13.854s. [Lint](artifacts/physical-body05-lint.json) FAIL101/19.226s again matches238
+inherited diagnostics with zero introduced/removed. Strict lint stays FAIL.
+[Physical rerun](artifacts/physical-body05-root.json) **PASS52/52**,3.478s, source
+unchanged. This now executes every bounded original60-root assertion: real same-
+controller admission, actualNoneJmaterializer, fresh accepted state/input/coordinate
+bit lineage, independent closure,42core/2wrapperhyd/6actualhyd/1MAT/1J/0legacyassembly.
+The real negative-D callback zero-work control and retained50 also pass. This is
+accepted only as that local root-path slice, not the fixed target experiment.
+
+Same writer continues with controls for the four demonstrated broader adapter
+issues. Those defects, owning-domain/poison/full-feature obligations, before-entry
+nested caps, private harness and all applicable remaining qualification still block
+target dispatch. No prefix/baseline/treatment/repeat slot has been used.
+
+QA accepts the completed Body05 receipts for only that bounded root path and
+negative-D/retained50 scope. Supported reassessment after control corrections:
+CONTINUE, because real materialization/closure now executes and the next defects
+have concrete source-level causes without changing the numerical method. Remaining
+time is not renewed. Controls10 is preserved at`831dd83da9060cfbf3bbe2ad9ada61a0c289cc2af67f6cd2156ae59cd2cd5bc3`
+([source](artifacts/physical-controls10-source.json), [patch](artifacts/physical-controls10-from-observer-cut02.patch));
+root requires the raw-J discriminator to use exact derived bits, and a third actual
+candidate-to-natural-assembly callback control before review. Missing thin private
+endpoints are authorized implementation, not a reason to stop or fabricate outcomes.
+Terminal refusal custody and actual ordinary-update lifecycle remain open beyond
+those callback controls; no broader acceptance is inferred from the root-path pass.
+
+Controls11`6e30e6e5e7615618f386d9ee76201237e015ccba8cfd2bc9d2a784f6513095c9`
+([source](artifacts/physical-controls11-source.json)) adds exact retained-J and real
+candidate-to-natural-J callback controls plus a ground-NaN FD-only discriminator.
+Writer direct cargo check returned127 (command unavailable); parent uses the known
+Nix environment. Inventory lists54, exit0/13.564s unchanged. No physical run.
+Correctness HOLDS matching body until fresh assembly is bound to actual owner work:
+Jinvocations2/core83=41base+1candidate+41reassembly, hydraulic wrapper1/actual2/MAT0.
+QA requests explicit actual hydraulic/MAT zeros for the NaN guard. Same writer adds
+those assertions in Controls12; prospective51PASS/3FAIL remains unexecuted. These
+callback checks do not establish actual ordinary-update lifecycle or terminal-kind
+custody, which remain explicit backlog alongside domain/caps/harness/qualification.
+
+Controls12`81281367c8c0bb7b12c2babf174120d23201f82e4db125f190161cf90d5a4f9d`
+([source](artifacts/physical-controls12-source.json)) closes both reviewers' exact
+owning-counter gaps. Inventory lists54 exit0/3.530s unchanged. Both reviewers release
+[expected-red execution](artifacts/physical-controls12-red.json): **51PASS/3FAIL**
+of54,2.328s unchanged. Failures are exactly retained-J overwrite, empty-cache natural
+assembly and extra-validation FD guard. Same writer is released for only those three
+matching callback fixes, with explicit optional Jacobian cache preferred over an
+empty-vector sentinel. First post-fix physical run remains parent-recorded after
+source review. No ordinary-lifecycle/terminal-kind/cap or target acceptance is implied.
+
+Body06`9ac02e49f891a036553036b1fcbd39587b8d39338f1bca635fb63fc2102985b4`
+([source](artifacts/physical-body06-source.json)) receives both independent matching-
+fix approvals. Explicit Option distinguishes cached baseJ from candidate absence;
+real natural assembly is called when absent, observedJ is never fabricated, and the
+trial guard is FD-only. Inventory lists54/exit0/6.138s; lint FAIL101/10.859s has238
+inherited and zero introduced diagnostics. [Physical callback run](artifacts/physical-body06-callbacks.json)
+**PASS54/54**,2.425s, source/support unchanged, independently verified by QA. This
+closes those callback defects only; actual ordinary-update lifecycle and terminal
+refusal custody remain open. Next controls may use a prospectively fixed local
+identity-coordinate perturbation of the canonical accepted fixture; no target seed
+changes or post-result tuning. Pure outcome-custody tests may consume an actual
+existing analytic cap-run result through the shared private mapper, explicitly not
+claiming physical cap enforcement. Real nested-owner cap tests remain mandatory.
+
+Controls13`4bbbf661d40a2f47a2e1245ab310334671ebec5cb052adbefc28a60998fa4702`
+([source](artifacts/physical-controls13-source.json), [patch](artifacts/physical-controls13-from-observer-cut02.patch))
+is held by root before physical run: its ordinary-update oracle incorrectly demands
+all21 coordinates match the canonical setup root bitwise, although that root has
+small nonzero residuals and a new accepted solve may differ in low bits. Required
+identity is the actual new controller accepted state against actual materializer
+input/result, with unchanged physical acceptance and independent closure. The fixed
+coordinate20+1e-4K perturbation is retained. The new terminal-refusal mapper body was
+also authored before control review; that unapproved cut is preserved and the new
+terminal branch is deferred back to explicit incompleteness pending expected-red
+review/execution. Existing accepted-result extraction remains unchanged. No physical
+Controls13 execution occurred. Same writer corrects controls and actual work oracles.
+
+Static: 04:30Z scheduled reassessment retains CONTINUE within the existing fixed
+allowance. Body06 supplies actual root/materializer and callback evidence; the next
+bounded discriminator targets ordinary accepted-update reassembly and terminal
+kind custody. No evidence supports target readiness yet. Implementation cutoff
+05:58Z and hard deadline06:28Z remain unchanged; no clock or slot reset.
+
+Controls14 `fb74b4f23385cfc9e6ed5c92f38e4c9abf2b843e5fa7dfa7fc7e8ec9dc8bb6d3`
+([source](artifacts/physical-controls14-source.json)) was submitted as the ordinary-update
+oracle correction; independent review below rejects that claim. Its terminal finalizer remains an explicit
+IncompleteScope stub pending expected-red evidence. Ran: [inventory](artifacts/physical-controls14-inventory.json)
+PASS,56 selected non-target controls,9.245s, source unchanged. Both independent
+reviewers assess this exact source/selector before physical launch.
+
+Static: Controls14 physical launch HELD. Both reviewers inspect actual frozen
+bytes and find the purported lineage correction was not present: run final and
+materialized coordinates still compare to the canonical setup root, and the actual
+ordinary work-count assertions are absent. Root confirms the discrepancy and
+rejects the writer description of those assertions as implemented. No Controls14
+physical execution occurred. Sole writer corrects capture/result/run lineage and
+actual owner counts in Controls15. Exact canonical setup-root bit identity is not
+an acceptance requirement; actual accepted/materialized/run identity remains one.
+
+Controls15 `e4dd1ccf6a53798629a59bc4352472f0a5347e5b1ff1d4caf05613b54d7a6fa6`
+([source](artifacts/physical-controls15-source.json)) fixes both lineage/count findings;
+both reviewers approve the narrow source/manifest. Ran: inventory56 PASS9.253s.
+First [physical run](artifacts/physical-controls15-red.json) **54PASS/2FAIL**,3.430s,
+source/support unchanged. Terminal mapper fails as intended at IncompleteScope.
+The ordinary positive path unexpectedly returns the original typed **FacePivotLimit**:
+one subproblem attempt,7 Jacobi sweeps,42 pivots,43 SVD factorizations,
+raw residual maximum4.547473508864641e-12. It fails before ordinary acceptance,
+custody, work-count or materialization assertions; none receives execution credit.
+This non-target result is preserved and independently assessed for an implementation
+deviation. No fixture/seed/method/tolerance/cap retuning is authorized. It is not
+an authenticated negative treatment, and all target slots remain UNUSED.
+
+Static classification by correctness: ordinary refusal is a **valid fixed-method
+non-target refusal**, with no supported numerical implementation deviation. The raw
+maximum is incompatible with the initial1e-4 coordinate20 residual and supports a
+second, near-root base after one ordinary accepted update/reassembly. Exact negative
+chronology counters are not yet observed; a bounded control will establish them.
+No cap/scale/witness/seed adjustment is allowed. Root retains the required positive
+test and its FAIL instead of turning that acceptance requirement into a negative
+PASS. This leaves positive ordinary materialization unmet.
+
+Body07 `68e2ca6e66b4bde004638e5935576e5d2444bc722b34f6b8a0a2eea597bbf19d`
+([source](artifacts/physical-body07-source.json)) only implements terminal-run kind
+mapping to private Refused(kind), and makes the same test-confined outcome endpoint
+crate-visible. Accepted-only helper remains fail-closed; error-path FacePivotLimit
+is unchanged. Both reviewers approve source/manifest. Ran: inventory56 PASS9.207s;
+[physical outcome](artifacts/physical-body07-outcome.json) **55PASS/1knownFAIL**,
+3.379s, source/support unchanged. Terminal mapper passes; ordinary positive remains
+FacePivotLimit FAIL. No general terminal accounting or physical exhaustion credit.
+Next: owning-domain/typed-phase/installed-state controls and actual nested budgets;
+full-feature obligations, private harness and qualification remain incomplete.
+
+Static qualification reconciliation at Body07: seven files differ from terminal28
+(Cargo features, lib cfg, physical tests, controller/interface/analytic controls,
+physical adapter). Stage1 remains byte-identical at89d97586…; the actual hydraulic
+entry hook is also unchanged from terminal28. Private/noncritical posture remains
+conditional on test/default-off reachability. Current-head requirements selected:
+format; default LSE+ORCH check/inventory; physical-only and full controller-stage
+inventory; combined-feature lint against the unchanged238-diagnostic baseline;
+metadata/deny for feature changes; affected local source-byte/constitutive/join
+vectors after target-exclusion audit. These are not yet claimed passed at Body07.
+Unchanged authority-document admission may be reused only for unchanged documents;
+the Git-based admission script cannot honestly qualify a detached non-Git root.
+Broad ORCH/runner/integration selectors remain subject to target-arm audit.
+Historical A1/full09 holds remain. The default workspace full profile does not
+activate the retained controller-stage feature. The separate exact900s Critical
+command is `cargo nextest run --workspace --profile full --no-fail-fast`, required
+only on actual escalation/applicable later workflow, not triggered merely by this
+private diff. No validation or positive physical requirement is waived.
+
+Controls16 `b4db3097a025bc08c96f33bd47b318463888e24866889ad443431bebcbdb172a`
+([source](artifacts/physical-controls16-source.json)) adds a separate unchanged-fixture
+ordinary negative chronology control; a real invalid hydraulic height callback with
+operand restoration and protected input/trial; and a tied-state evaluation followed
+by distinct owner-derived phase selections and actual inconsistency callback.
+The latter requires LSEB-E-034/PhaseActiveSetInconsistent, not generic Coupled/error.
+Ran: [inventory](artifacts/physical-controls16-inventory.json) PASS59,0.572s,
+source/support unchanged. Physical launch awaits both reviews. QA requests an exact
+phase-evaluation core-prefix counter; root challenges its proposed41 because this
+tied fixture gives both drainage coordinates positive values, affecting FD sidedness.
+No unverified count oracle or physical run has been adopted.
+
+Static resolution: both reviewers derive41 phase-prefix cores from one base,
+19 centered columns and two forward-only H=0 join columns. Positive drainage
+restores centered D columns but does not remove the H sidedness. Root accepts that
+derivation. Correctness finds a substantive pre-body discriminator gap: code/kind
+alone admits fabricated diagnostics. Corrected control must bind the failure's
+actual solution and all21 residual/tolerance/normalized rows to its evaluated
+current; callback implementation must consume that current payload, not re-evaluate
+or reconstruct a diagnostic state. Controls16 remains unrun and recoverable.
+Supported reassessment after the repeated oracle/control review corrections:
+CONTINUE with the same writer on this specific correction and actual budget work.
+There is new source-derived evidence and bounded in-scope work, not permission to
+retune the valid ordinary refusal or extend time. Positive ordinary acceptance,
+complete domains, accounting, full-feature, harness and target measurement stay open.
+
+Correctness clarification after root source challenge: no extra selected-Core cache
+is required. `core(input,trial)` is deterministic and computed independently before
+the selected probe; selection changes the stencil/Jacobian, not the primal Core.
+Passing the actual current evaluation supplies the correct diagnostic operands.
+The reviewer withdraws the stronger duplicate-object provenance requirement.
+
+Controls17 `4bfedd9f46d778a3077d6f1ea9c6ab063afd4772db13be5486ecd2f7142dc8b4`
+([source](artifacts/physical-controls17-source.json)) binds all21 phase diagnostic
+coordinates and ordered row identities/raw/tolerance/normalized bits to actual
+adapter evaluation observations, and adds the source-derived41 core prefix.
+Both reviewers release the exact59 selector after inventory. Ran: inventory PASS,
+9.298s; [physical controls](artifacts/physical-controls17-red.json) **57PASS/2FAIL**,
+3.380s, source/support unchanged. Negative ordinary chronology and real hydraulic
+poison/restore controls PASS. Phase callback fails at its intended IncompleteScope
+stub; required positive ordinary remains the preserved FacePivotLimit failure.
+This now directly observes83 ordinary cores/J2/hydraulic2/actual4/no materialization,
+protected input/trial and absent accepted capture; no positive closure is inferred.
+The matching phase body is authorized to use actual current Core/trial through
+callback context, without extra evaluation, altered physics or diagnostic invention.
+
+Body08 `1f1d4f97887dd0183f0be3cf1010bd9daf2aed7e37dac675ef938eb4895b4ffb`
+([source](artifacts/physical-body08-source.json)) passes actual current evaluation
+through the inconsistency callback and builds canonical m1_failure from its Core/
+trial. Stage1 and numerical physics are unchanged; no extra evaluation/cache.
+Both reviewers approve this first-base mapping scope. Ran: inventory59 PASS0.568s;
+[phase body](artifacts/physical-body08-phase.json) **58PASS/1knownFAIL**,2.429s,
+source/support unchanged, independently verified by QA. Phase kind/code, actual21
+coordinate/row binding and work assertions PASS. Ordinary positive remains FAIL.
+Later-base numerical iteration/backtracking context remains hard-coded0, step/pivot/
+norm context is absent, and selected/final phase sets are not recorded: complete
+refusal chronology and target qualification remain HOLD.
+
+Next authorized slice: explicit confined per-solve before-entry accounting through
+actual core, evaluate_core_with_jacobian, full-supply hydraulic owner, Stage1 face
+factorization and materializer, plus logical/per-base limits. Adapter evaluate is
+not the core boundary (it may invoke41 cores). Optional private Stage1 accounting
+context is permitted without math changes, with affected accepted Stage1 regression.
+Typed private exhaustion must traverse owner signatures without sentinel domain
+errors, panic, original-cause replacement, success-trace reconstruction or default/
+public runtime changes. Seeded boundary controls must call actual owners and precede
+the matching enforcement bodies. Full nested-accounting result remains pending.
+
+Budget scaffold boundary decision: a `cfg(all(test,feature=physical-stage))`
+PhysicalBudget error variant/type is permitted solely in the detached diagnostic
+test build; default API/schema remains unchanged and must be compiled/checked.
+A scoped per-thread session with restoration/error isolation is permitted where
+threading a private error through all existing public owner signatures would cause
+a broader rewrite. No shared mutable accounting is put in protected physical input.
+The code is explicitly private `M1PB-E-001`, not the already-owned canonical039.
+No budget-control physical run or cap acceptance exists yet. Root requires a coherent
+set of actual-owner seeded boundary controls before enforcement, and divides writer
+work into concrete hook plumbing then owner-control blocks after repeated partial
+returns. This internal reassessment preserves the same writer, source, scope and
+fixed cutoff; it does not accept an initialization-counter-only substitute.
+
+Full-feature coverage audit: accepted actual Stage1 numerical refusals, reviewed
+kind-uniform controller/adapter propagation, and the real physical FacePivotLimit
+bridge may compose the taxonomy/counter evidence; root does not require five new
+physical fixtures merely to duplicate the unchanged exhaustive enum mapping.
+The retained undefined full-feature skeleton itself supplies no executed credit.
+Actual physical replacement/domain/installed-state poison, selected/tied success,
+shared cap and positive ordinary materialization obligations remain unmet.
+
+Controls18 (`3500ed11…`) inventory78 PASS6.941s, but independent review held
+its missing full hydraulic/materializer nested prefixes; no physical run. Controls19
+`4890b04480f450ec6108e805012e77d7887e3a44b8be006b8eed85af1ef1cac5`
+([source](artifacts/physical-controls19-source.json)) corrects those assertions.
+Ran: inventory78 PASS3.680s; [red controls](artifacts/physical-controls19-red.json)
+72PASS/6FAIL2.474s: the five unenforced owner caps plus retained ordinary positive.
+All13 selected Stage1 controls pass. Both reviewers admit this narrow controls cut.
+
+Body09 `98520765693492a33c98020cce9f9e4f54c24116ee2d2d567c19bf85e83c3ab4`
+([source](artifacts/physical-body09-source.json)) enforces before-entry limits at
+actual core6500, raw-J100, hydraulic2202, Stage1 factorization47300 and materializer1
+owners through a test-private scoped TLS budget. Attempted/entered counts remain
+separate; denied work never enters its nested numerical operation. Stage1 retains
+its numerical algorithm and propagates a private exact budget payload through
+WorkCap. The existing raw-J invocation counter records attempts before the budget
+hook; it must not be described as admitted work on denial. The private error code
+is M1PB-E-001; default/runtime absence is still subject to qualification.
+
+Both independent reviewers approve the confined body. Ran: inventory78 PASS4.938s;
+[actual caps](artifacts/physical-body09-caps.json) **77PASS/1knownFAIL**,2.529s,
+all source/support unchanged. Five seeded last-entry/excess controls and13 Stage1
+controls PASS. Required ordinary accepted-update materialization remains FAIL
+with the preserved FacePivotLimit. QA independently verifies the executed receipt.
+[Strict combined-feature lint](artifacts/physical-body09-lint.json) remains FAIL101,
+9.705s:238 inherited and0 introduced diagnostics. The initial naive comparison
+is retained; [corrected location-only comparison](artifacts/physical-body09-lint-delta-normalized.json)
+adds Rust help `~` line-number markers to normalization, preserving all diagnostic
+identity/text. QA verifies238 baseline/current blocks,0 additions/removals.
+
+This is not yet per-solve accounting: manually scoped owner limits have no automatic
+solve scope, complete return capture or per-base21/22/2 enforcement. Controls20
+`540b47e0b5462df291a7926bc0117da5851725f98a3fff00c3bc3879c7c7e714`
+([source](artifacts/physical-controls20-source.json)) adds an expected-red original60
+same-controller owned-scope assertion, snapshot42core/J1/hyd6/MAT1 and scope restoration.
+Ran: inventory79 PASS4.782s; no physical run yet. Root requires error-return and
+nested-prior-scope controls before matching body. No target input or run is released.
+
+Controls21 `e6a65bfed8c7aaff969da6b78c1a9812e122fce150d1385b32166e58b15801cc`
+([source](artifacts/physical-controls21-source.json)) adds ordinary-refusal capture
+and nested prior-scope restoration on successful actual root execution. Ran:
+inventory80 PASS4.132s. No physical run: correctness identifies two real control gaps
+before body. The success snapshot's default remainder incorrectly demands zero
+Stage1 factorizations despite actual Stage1 entry; error restoration also needs a
+prior scope, not only None. QA's initial admission is superseded for those gaps.
+Root accepts both corrections and rejects equating the failed second subproblem's
+local43 factorizations with the complete run without accounting for the first
+accepted update. Same writer corrects these controls before solve-owned implementation.
+
+Controls22 `d291b95a02bfe9b54767a8c1b1a47a63ab7d5be5432fc78ffeb8d8e206eb2975`
+([source](artifacts/physical-controls22-source.json)) corrects success SVD accounting
+and nested error restoration. Ran: inventory80 PASS13.372s. Correctness requires
+one final error assertion: global SVD entries must exceed the failed local solve's43,
+and attempted must equal entered. No invented exact total. Controls22 remains
+unrun; writer adds this narrow Controls23 delta before matching body.
+
+Static per-base audit by correctness finds no bypass: every completed transition
+increments the per-base proposal count, errors terminate, and the loop stops at21.
+Only the first transition at a base can use one natural predictor plus one selected
+replacement; phase_finalized prevents another assembly and converts later disagreement
+to typed failure. Accepted updates reset only after post-update nonroot and one fresh
+natural assembly. Thus21 proposals/22 solves/2 assemblies per base follow the actual
+owning callgraph and retained accepted analytic controls; no parallel cap recorder
+is needed. The five global owner hooks remain necessary. The run's trace-derived
+SVD total omits discarded predictors after selected reassembly: it is valid for the
+proven one-assembly root fixture only, not as general complete nested-work reporting.
+The new before-entry global snapshot is the intended complete counting path.
+
+Controls23 `649eefcc5ced0fe6ede5f25d97db1792fdd5026a8b79ddb57493c67b79d9df7d`
+([source](artifacts/physical-controls23-source.json)) includes both final SVD error
+assertions. Both independent reviewers admit the exact80 selector. Ran: inventory
+PASS3.629s; [expected-red](artifacts/physical-controls23-red.json) **76PASS/4FAIL**,
+2.575s, source/support unchanged. The three missing scope/capture discriminators
+fail, along with the retained positive ordinary FacePivot. First downstream failure
+is preserved. Matching Body10 is authorized to own a fresh scope around the same
+controller, capture its snapshot on every Result before RAII restoration, preserve
+all original causes and restore an exact prior outer scope. No extra physics calls.
+
+Selected terminal qualification remains private/noncritical only while actual cfg
+checks support it: fmt; default LSE/ORCH check and inventory; physical-only inventory;
+combined selected80 run and same-command strict lint attribution; locked/offline
+metadata and cargo deny; separate retained full-feature controller-stage inventory;
+and the two independently audited local C023 selectors. These contain no authenticated
+target or live provider arm. No broad unaudited ORCH/runner suite is dispatched.
+Unchanged authority-document admission evidence is reusable only for its documentary
+scope; the detached non-Git source has no current source-bound Git A0 admission.
+Missing complete full-feature/A1/physical qualification remains HOLD.
+
+Body10 `52e22f432c8da282e264da088748e2a6401648b3522aca302bed02d3152ced0d`
+([source](artifacts/physical-body10-source.json)) owns a fresh TLS budget scope
+around the existing controller and finalizer, captures its final counters on every
+Result before dropping the scope, then returns the original typed result unchanged.
+Both reviewers approve this source, error preservation and private cfg boundaries.
+Ran: inventory80 PASS13.358s; [owned-scope controls](artifacts/physical-body10-owned-scope.json)
+**79PASS/1knownFAIL**,2.531s. All five cap owners and success/error/nested scope
+controls PASS. The sole required ordinary-positive test still refuses FacePivotLimit.
+The accepted root records42core/J1/hyd6/MAT1, its real SVD count matches the sole
+retained model, and independent reservoir closure passes. The ordinary negative
+retains83core/J2/hyd4/MAT0 with total SVD strictly greater than local43, no budget
+denial, exact prior-scope restoration and original typed FacePivot cause.
+
+Ran on this exact source: format PASS4.581s, locked/offline metadata PASS2.172s,
+cargo deny PASS1.721s, default LSE+ORCH all-target check PASS18.238s. These are
+validators, not runtime workflow acceptance. [Strict combined-feature lint](artifacts/physical-body10-lint.json)
+FAIL1019.952s; [same-command attribution](artifacts/physical-body10-lint-delta.json)
+238 inherited/0 introduced/0 removed, independently verified by QA. Default and
+physical-only inventories, full-feature hold recording and C023 workflows are pending.
+No release executable, authenticated input or timing comparison exists.
+
+Ran: Body10 default LSE/ORCH inventory PASS106.317s; physical-only LSE inventory
+PASS42.413s. These compile/list checks do not execute target workflows. The separate
+[full controller-stage inventory](artifacts/physical-body10-full-feature-inventory.json)
+FAIL1018.495s with18 retained missing-symbol errors. No full-feature acceptance is
+claimed and no skeleton obligation is deleted. All receipts preserve source/support.
+
+Supported next-work reassessment: do not reopen already-passing hydraulic lifecycle
+controls; root rejects a redundant proposal that incorrectly described the ordinary
+fixture as failing before install. Correctness instead verifies a real adapter custody
+defect: materializer instrumentation writes accepted capture before accepted validation,
+so a poisoned retained Core can leave false accepted capture despite typed rejection.
+The next controls-first slice uses only existing OverCapacityOneUlp mutation on an
+actual original60 adapter-current payload, requires VEG-E-142/no publication/protected
+input and one materializer/two hydraulic owner entries. EmptyMass is not needed for
+this discrimination (lawful empty storage must not be described as categorically
+invalid). Matching body, after red evidence, may move test capture after successful
+validation only, preserving jacobian-None eligibility and all physical/error semantics.
+
+Controls24 `15f20f96519edec578e9984a50177689c526b49694c97065fefff35336953763`
+([source](artifacts/physical-controls24-source.json)) shares the existing one-ULP
+capacity mutation with a real adapter-payload materialize callback. Both reviewers
+admit its typed VEG-E-142, no-publication/capture and protected-input assertions.
+It initializes current internally; it does not assert a scoped budget or claim zero
+core/J work. Supported callback counters are one actual MAT/two hydraulic entries.
+Ran: inventory81 PASS4.879s; [expected-red](artifacts/physical-controls24-red.json)
+**79PASS/2FAIL**,2.526s, unchanged source/support. The new overcapacity control
+fails specifically at premature accepted capture; the other failure is the retained
+ordinary positive. Matching Body11 may move accepted capture after successful
+accepted validation, retaining jacobian-None/first-capture restrictions. This is a
+real test-instrumentation custody correction, not a change to physical acceptance.
+
+Body11 `1127bd726b004b688ce75393df243d7a7784638127f0f16319a21b488b351d77`
+([source](artifacts/physical-body11-source.json)) moves only cfg(test) accepted capture
+after successful accepted-materialization validation, preserving None-J/first-capture
+and the exact retained Core/input/trial. Both reviewers approve it. Ran: inventory81
+PASS13.708s; [custody controls](artifacts/physical-body11-custody.json) **80PASS/1knownFAIL**,
+2.527s, source/support unchanged. Poisoned adapter capacity now rejects without
+accepted capture; successful root capture and closure controls still PASS.
+Format PASS5.134s, default LSE/ORCH check PASS7.093s. Strict lint FAIL10111.610s:
+[delta](artifacts/physical-body11-lint-delta.json) identifies238 inherited plus1
+introduced result_large_err on the new shared poison helper returning M1CoupledError.
+This is not accepted as inherited. Same writer narrows that test helper to the
+actual phase-inversion owner error, allowing existing typed caller conversion;
+no warning suppression, public error boxing or numerical change is authorized.
+Vegetation C023 inventory9 PASS2.025s; physical launch waits for the corrected cut.
+
+Body12 terminal candidate `9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d`
+([source](artifacts/physical-body12-source.json)) narrows only the shared test poison
+helper to its actual M1Error, preserving both caller conversion chains. Both reviewers
+approve this mechanical correction and the exact final non-target commands.
+Ran: [physical adapter/analytic/Stage1 controls](artifacts/physical-body12-custody.json)
+**80PASS/1knownFAIL**,2.627s; inventory81 PASS5.187s. Actual owner caps, scoped
+success/error restoration, accepted-root closure and poisoned materialization custody
+PASS. The retained ordinary-positive FacePivotLimit remains the sole failure.
+
+Final-source qualification: format PASS3.729s; strict lint FAIL10110.214s with
+[238 inherited/0 introduced/0 removed](artifacts/physical-body12-lint-delta.json);
+default LSE/ORCH all-target check PASS6.845s and inventory PASS19.088s; physical-only
+inventory PASS5.185s. [Full controller-stage inventory](artifacts/physical-body12-full-feature-inventory.json)
+FAIL1018.697s, retaining18 missing symbols. Local C023 [vegetation](artifacts/physical-body12-c023-vegetation.json)
+**9/9PASS**,1.020s after inventory0.618s, and [LSE](artifacts/physical-body12-c023-lse.json)
+**30/30PASS**,0.618s after inventory6.741s. No selected test acquires authenticated
+support1 or executes a target arm. These are bounded contract subsets, not complete
+full09/A1, receiver, parent, restart/cycle or M1 release qualification.
+
+Metadata and deny PASS evidence is reused from Body10 only for dependency/feature
+posture: all26 Cargo manifest/lock entries are byte-identical through Body12 (the
+machine reconciliation records the exact count). These are not claimed as Body12
+command runs. No dependency/feature changes occurred after Body10. No doctest or
+public documentation surface changed; no production stub was introduced. The
+remaining test-private full-feature stubs/missing APIs stay explicitly unqualified.
+
+[Terminal reconciliation](artifacts/physical-terminal-reconciliation.json) records
+10 changed entries against terminal28, all within detached LSE test/feature scope.
+Stage1 source bytes changed for actual budget hook/payload only; its numerical
+algorithm is unchanged and13 retained regressions pass. Frozen draft04 authority,
+method, physics, seeds, domains, normalizers, tolerances and production dispatch
+remain unchanged. There is no main Rust adoption and no Critical/default-runtime
+change requiring the exact900-second workflow; historical broad holds remain.
+
+Ran: [fresh recovery](artifacts/physical-terminal-recovery.json) reconstructs764
+exact entries with no extra files by applying exactly one final full observer-relative
+patch `physical-body12-custody-from-observer-cut02.patch`, SHA-256
+`6d44b35b3b8171feb0c1d872d901df5c1e383907a0120350afd3bec88313a5a6`, to verified
+observer `85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963`.
+The existing published observer recovery chain remains required; no full patch is
+overlaid on an already patched tree. Source is frozen for final independent review
+and scoped publication before the unchanged deadline.
+
+The positive root control begins from separately computed canonical original60
+accepted coordinates. Its setup is excluded from the adapter counts; it is not
+a treatment run from the authenticated canonical seed or a timing comparison.
+
+Overall disposition remains **INCOMPLETE / HOLD**: the required positive ordinary
+physical acceptance fails; complete physical role/domain/selected-side/replacement/
+installed-candidate obligations and later-base diagnostic context remain open; the
+retained full-feature configuration does not compile. The private cross-crate
+measurement harness is not implemented. No release executable or authenticated
+input is frozen. Prefix, baseline, treatment and conditional repeat are all UNUSED;
+no timing comparison, speedup or whole-engine inference is supported. Preserve all
+full09/A1/strict-lint, material/BGC, parent/positive-late-rejection, cycles/restart and
+cost/scaling HOLDs. New physics or retuning to bypass the valid non-target refusal
+is not authorized. Further implementation requires renewed owner allowance after
+this fixed checkpoint; independent disposition and publication are ongoing.
+
+Final independent correctness and QA disposition both approve the bounded private
+source/control/custody result and recoverability, while retaining INCOMPLETE/HOLD.
+[Attributable responses](artifacts/physical-adapter-reviews.json) preserve their
+original findings and parent adjudication. In particular, Stage1 is algorithmically
+unchanged, not byte-identical; and the ordinary negative proves an intermediate
+accepted update/fresh-J but not successful post-update root materialization.
+No new scientific method or retuned positive fixture is adopted.
+
+[Final charged ledger](artifacts/physical-final-ledger.json): carry321613.959294s,
+fixed ceiling336013.959294s. Conservative closing charge through06:10UTC is
+13320 session seconds, cumulative **334933.959294s**, leaving1080s below the ceiling.
+This includes publication/response allowance; all observed elapsed/waits/concurrency
+are charged once, with no prior refund or old900-second addition. Publication must
+finish within that charged bound or the receipt must increase before the unchanged
+06:28 hard deadline. Payload publication is pending at this source-evidence commit.
+
 ## Witness completion resumption — adopted 2026-09-24 16:10Z
 
 ### Terminal disposition — fixed implementation cutoff 2026-09-24 19:40Z

@@ -1,0 +1,249 @@
+{
+  "evidence_class": "Ran: exact source/receipts and fresh recovery; Static: scope and residual obligation reconciliation",
+  "recorded_utc": "2026-09-25T05:54:01.454568+00:00",
+  "disposition": "INCOMPLETE / HOLD; both independent reviewers approve only bounded private increment and recoverable evidence",
+  "starting_tree_sha256": "9ecfa70f1c174d4bb5b99536db545167fa1eced9394c03368b832c841a176405",
+  "terminal_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+  "entry_count": 764,
+  "changed_entries": [
+    {
+      "path": "crates/openwepp-land-surface-energy/Cargo.toml",
+      "before": "617a6c98ef4439c039c10358b149146df60b0945d69a1819055ed4e09fd3c4b1",
+      "after": "efcb09d71cca3a756538ef5700ed73550068df680d5b3aab9ec0983dce662e8f"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+      "before": "80f8d3cd0e820bd1fe7029a1a44bffd9fa0d4a1a196a68285a29e4da846b6608",
+      "after": "76aa0ba8276c6ade92d7d8d27db085c3f0ee1c3c26d69799b330fc60bab60251"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "before": "6d5c1b4e3209f05d9a0e78de1d1e42462d2d9e2143f5ce0ccb57bce72d124fee",
+      "after": "001d3d47e7d300d650617a7ddce8877d1384aa90e0e178baa1a21de0fcfc7b3f"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "before": "9c3499671dd65ca322128f535fe2393c819acaf9882c84031d2a9cad746260d2",
+      "after": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs",
+      "before": "b90227cc158fb4a3ddd0348e4fe55cd0bd0203cecd411f060b70ebcf7f77f003",
+      "after": "54e9f84bd29b6815b20dc1f1cdca6860f2bee042af1481a7fdf9d0728bfd605a"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "before": "89d97586831d696a7919958224e46cf227de5ecfe3ddbf3acdcb81128d8ad9e2",
+      "after": "dcc6edaba714e09da564c9f268bd9bd62774b77c1b5058154ce1dc8e9dc8ba56"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+      "before": "a143bc85c0299f877ac965d76ccb6f2087c1e1bd856205b796140bac35eeb81c",
+      "after": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+      "before": "a7ea79962e7bf710b512e38954c7e2b7da7e70a923862ad4ad8c9d638e135670",
+      "after": "4748964039c80f0037d61b0018241e83bbc3185a13db5e259b08e71f242b18f9"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+      "before": "10d9cd5a20b0b145e40bf238ea213b5fbacc78b1d9bbf1359bcd84ea3c223e20",
+      "after": "e2c336f29d42c3c06c5a636a0e37537c3a1dd4d8dc377708aad229bb54f12d9c"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs",
+      "before": "10a1d3d502bc36a52aceffd7604d66469d065f5e3a2d3a9afa83405cd810bf1b",
+      "after": "d5533ee58a5d4582d9ab5dabd7ff44dbf7f5d6ac533e21d955a5c32cb28c2c44"
+    }
+  ],
+  "stage1_source_unchanged": false,
+  "stage1_scope": "Test-private before-entry factorization hook and optional exact typed budget payload; canonical numerical algorithm unchanged; 13 actual regressions retained",
+  "method_id": "COLD-CANOPY-M1-TR-SVD-BVLS-01",
+  "numerical_method_sha256": "3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63",
+  "vegetation_cross_reference_sha256": "a54f0fc436dd63273c50f252069098d786f0e80e1b4228cb2cf2df565ae61599",
+  "release_build_binary_identity": "NOT BUILT / NOT FROZEN / NOT QUALIFIED",
+  "authenticated_support1_input_identity": "NOT ACQUIRED",
+  "target_slots": {
+    "prefix": "UNUSED",
+    "baseline": "UNUSED",
+    "treatment": "UNUSED",
+    "conditional_corrected_repeat": "UNUSED"
+  },
+  "physical_result": "80 PASS / 1 retained ordinary-positive FacePivotLimit FAIL; actual root materialization/closure, owner caps, scope capture/restoration, and overcapacity failure custody pass",
+  "nested_work": {
+    "accepted_root": {
+      "core": 42,
+      "raw_jacobian": 1,
+      "hydraulic": 6,
+      "materialization": 1,
+      "stage1": "Exact equality to sole retained model, not a general trace oracle",
+      "setup": "Canonical original60 setup is separate and excluded; this is not target seed-to-root performance"
+    },
+    "ordinary_refusal": {
+      "core": 83,
+      "raw_jacobian": 2,
+      "hydraulic": 4,
+      "materialization": 0,
+      "stage1": "Greater than local failed-subproblem43, attempted equals entered"
+    },
+    "caps": {
+      "core": 6500,
+      "raw_jacobian": 100,
+      "hydraulic": 2202,
+      "stage1_factorization": 47300,
+      "materialization": 1
+    },
+    "per_base": "21 proposals / 22 subproblem solves / 2 assemblies: actual callgraph audit plus retained accepted analytic controls"
+  },
+  "checks": {
+    "inventory": {
+      "label": "physical-body12-inventory",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 0,
+      "elapsed_seconds": 5.18658609688282,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-inventory.json"
+    },
+    "custody": {
+      "label": "physical-body12-custody",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 100,
+      "elapsed_seconds": 2.626925352960825,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-custody.json",
+      "summary": "Summary [   2.006s] 81 tests run: 80 passed, 1 failed, 243 skipped"
+    },
+    "format": {
+      "label": "physical-body12-format",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 0,
+      "elapsed_seconds": 3.7294028401374817,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-format.json"
+    },
+    "lint": {
+      "label": "physical-body12-lint",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 101,
+      "elapsed_seconds": 10.21402563387528,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-lint.json"
+    },
+    "default-check": {
+      "label": "physical-body12-default-check",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 0,
+      "elapsed_seconds": 6.845038693398237,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-default-check.json"
+    },
+    "default-inventory": {
+      "label": "physical-body12-default-inventory",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 0,
+      "elapsed_seconds": 19.087929022032768,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-default-inventory.json"
+    },
+    "physical-only-inventory": {
+      "label": "physical-body12-physical-only-inventory",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 0,
+      "elapsed_seconds": 5.185096397995949,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-physical-only-inventory.json"
+    },
+    "full-feature-inventory": {
+      "label": "physical-body12-full-feature-inventory",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 101,
+      "elapsed_seconds": 8.697059378959239,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-full-feature-inventory.json"
+    },
+    "c023-vegetation-inventory": {
+      "label": "physical-body12-c023-vegetation-inventory",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 0,
+      "elapsed_seconds": 0.6183994431048632,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-c023-vegetation-inventory.json"
+    },
+    "c023-vegetation": {
+      "label": "physical-body12-c023-vegetation",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 0,
+      "elapsed_seconds": 1.019932537805289,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-c023-vegetation.json",
+      "summary": "Summary [   0.009s] 9 tests run: 9 passed, 0 skipped"
+    },
+    "c023-lse-inventory": {
+      "label": "physical-body12-c023-lse-inventory",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 0,
+      "elapsed_seconds": 6.740993455983698,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-c023-lse-inventory.json"
+    },
+    "c023-lse": {
+      "label": "physical-body12-c023-lse",
+      "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+      "exit_code": 0,
+      "elapsed_seconds": 0.6179188336245716,
+      "source_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true,
+      "receipt": "physical-body12-c023-lse.json",
+      "summary": "Summary [   0.025s] 30 tests run: 30 passed, 226 skipped"
+    }
+  },
+  "dependency_evidence_reuse": {
+    "receipts": [
+      "physical-body10-metadata.json",
+      "physical-body10-deny.json"
+    ],
+    "all_cargo_manifests_and_lock_identical": true,
+    "manifest_count": 26,
+    "scope": "Dependency/feature posture only; these are Body10 commands, not Body12 full-tree runs"
+  },
+  "remaining": [
+    "Required positive ordinary accepted-update materialization fails valid fixed-method FacePivotLimit; no retuning authorized",
+    "Retained full-feature controller-stage compile FAIL:18 missing symbols",
+    "Complete physical role/domain/selected-side/replacement/installed-candidate acceptance matrix not closed",
+    "Later-base failure diagnostic iteration/backtracking/context still incomplete",
+    "Private cross-crate measurement harness, authenticated prefix/input, release build, baseline/treatment not reached",
+    "Current detached-source Git A0 admission not run; unchanged documentary admission reuse only",
+    "Historical full09/A1/strict-lint, material/BGC, parent/positive-late-rejection, cycle/restart and whole-engine cost/scaling HOLDs retained"
+  ],
+  "recovery": "physical-terminal-recovery.json",
+  "publication": "Local until scoped commit and verified remote publication",
+  "non_target_input_binding": "Source-bound ORIGINAL original60 fixture and contract-derived local controls, with separately computed canonical accepted-coordinate setup; target authenticated input and canonical seed not acquired/frozen",
+  "last_source_edit_utc": "2026-09-25T05:49:11.578582+00:00",
+  "implementation_cutoff_utc": "2026-09-25T05:58:00+00:00",
+  "physical_dispatch_cutoff_utc": "2026-09-25T05:55:00+00:00 for full 180-second bounds plus reserve",
+  "independent_reviews": "physical-adapter-reviews.json terminal_correctness and terminal_qa"
+}

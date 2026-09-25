@@ -1,0 +1,3 @@
+waiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...
+warning: Git tree '/workdir/openWEPP' is dirty
+error (ignored): SQLite database '/home/roger/.cache/nix/eval-cache-v6/8e830f7a8f0bfa23807d6dcda1bc375ee843323c5fcf0655da4d1562dd84ed5a.sqlite' is busy

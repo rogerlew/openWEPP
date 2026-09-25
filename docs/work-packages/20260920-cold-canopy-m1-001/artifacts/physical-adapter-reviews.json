@@ -1,0 +1,575 @@
+{
+  "controls01_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static; no Rust or physical commands run",
+    "tree_sha256": "3ccaa216b151d1e75844928cc5bfcd48ef894ee2b5be6b823fb991feff7863cb",
+    "verdict": "HOLD",
+    "findings": [
+      "Unsupported positive convergence/materialization oracle; canonical evaluator success does not prove frozen TR method convergence and canned Run could pass.",
+      "Preflight evaluate_m1_coupled_column already materializes and executes two hydraulic solves; does not establish adapter-owned sole materialization.",
+      "Raw Jacobian accessor is raw but shape-only assertion cannot bind adapter raw-versus-normalized use.",
+      "19 compile failures:18 retained full-feature skeleton APIs and introduced unexported return-type path."
+    ],
+    "assessment": "Same-crate child adapter can reuse private Core and owning equations; distinct nondefault physical staging may preserve full-feature skeleton obligations. Cross-crate orchestrator bridge needs actual nondefault test-support cfg propagation; dependency cfg(test) is absent. Before-entry shared counters must cover actual core/FD/probe, hydraulics, assembly, SVD faces and materialization and survive typed errors. Reconcile base caching with 43/44 core assembly bounds."
+  },
+  "controls01_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static; inspected recorded nonphysical inventory failure",
+    "tree_sha256": "3ccaa216b151d1e75844928cc5bfcd48ef894ee2b5be6b823fb991feff7863cb",
+    "verdict": "HOLD",
+    "findings": [
+      "Current test does not prove real owning transition, raw-J/Stage1/trial/hydraulic/materializer lineage; canned Run could pass.",
+      "Compile/list failed19 unresolved symbols; zero physical execution, not intended expected-red.",
+      "Split initialization from actual transition observations; no unsupported solver success prerequisite.",
+      "Physical/quality/A0/A1/A3 qualification remains unmet."
+    ],
+    "verified": "764 entries rehash; exactly2 files changed versus terminal28. No authenticated support1/target argv. Ledger anchor02:28Z carry321613.959294 ceiling336013.959294 cutoff05:58Z deadline06:28Z reserve1800. Recorder only authorized deadline diff."
+  },
+  "controls02_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static plus inspected compile failure",
+    "tree_sha256": "49408a82d8d4216768bc4109e78886cd946697b606b2c73cb9abe6f5afcf7e0a",
+    "verdict": "HOLD",
+    "findings": [
+      "Initialization-only counts cannot describe uncalibrated transition accepting any typed result.",
+      "Actual natural initialization core41=1+19*2+2*1; D5,D11 zero forbid negative probes,43 is maximum only.",
+      "Some operand fields do not bind raw versus normalized J; require independently derived row14 residual, tolerance1e-9, raw diagonal1 and zeros.",
+      "Missing physical-stage cfg for governed-step helper causes compile failure; surplus physical feature enables Stage2 analytic module."
+    ],
+    "required_fix": "Initialization-only shared FoundationState endpoint with real observations, no materialization or broad outcome union; later calibrated transition binds raw matrix to Stage1."
+  },
+  "controls02_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static plus inspected compile failure",
+    "tree_sha256": "49408a82d8d4216768bc4109e78886cd946697b606b2c73cb9abe6f5afcf7e0a",
+    "verdict": "HOLD",
+    "findings": [
+      "Missing governed-helper feature cfg stops compile.",
+      "Some fields and broad typed result do not bind actual owning operation/first-error lineage.",
+      "Fixed43 work total ungrounded; need exact initialization endpoint and operand identities.",
+      "Remove surplus physical-stage reachability of analytic Stage2 test module."
+    ],
+    "verified": "All764 entries match; four expected deltas; additive nondefault cfg(test) with no runtime/default reachability, retained full skeleton assertions unchanged."
+  },
+  "controls03_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static; inspected inventory",
+    "tree_sha256": "6ea91d405c27509464e050a6b56c793962c8eac2d8055c5f7ee4a9aea07be66e",
+    "verdict": "Partial scaffold expected-red READY; matching body HOLD",
+    "verified": [
+      "Fixture core41, row14 residual/normalizer1e-9/rawJidentity, zero materialization correct.",
+      "Helper cfg repaired and physical-stage excludes analytic test module."
+    ],
+    "blocker": "Generic initializer requires complete hydraulics before rawJ but canonical physical phase/J work precedes base hydraulics; operation-order discriminator and faithful adapter seam required before body."
+  },
+  "controls03_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static plus inspected successful inventory",
+    "tree_sha256": "6ea91d405c27509464e050a6b56c793962c8eac2d8055c5f7ee4a9aea07be66e",
+    "verdict": "Partial non-target scaffold expected-red READY",
+    "verified": "764 hashes; expected cfg fixes; exact1 selected inventory exit0/23.248718s; conservative physical180 scaffold can failIncompleteScope before any owning physical operation. No target use/physical acceptance."
+  },
+  "lint_baseline_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static source/manifests",
+    "tree_sha256": "cc3daedc0059a621961e11f4e04f67a36afd8e06d623dadeacc0e82effee92f0",
+    "verdict": "READY for exact combined-feature same-command lint baseline",
+    "verified": "764 entries; onlyCargo/lib/helper cfg differences terminal28; no adapter/control; standalone physical-only compile separately required."
+  },
+  "physical_order_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static source+draft04 adjudication",
+    "source": "controls03",
+    "verdict": "Eager hydraulics BLOCKED; private lifecycle extension in envelope, controls before body",
+    "required_order": "natural selection -> natural assembly -> Stage1 predictor -> predictor selection -> optional selected assembly including predictor probe -> optional selected Stage1 -> final selection -> per-proposal final probe -> current finite/max -> base hydraulics -> noPred/trial/candidate",
+    "findings": [
+      "Mandatory complete hydraulic array in initial interface cannot preserve physical order. Explicit Pending/Complete and method-neutral completion hook can.",
+      "Pending must becomeComplete from actual owning call; failed/unfinished completion fails closed. Once/base with retry reuse and reset oninstall; candidate hydraulics Complete and postupdate admission preserved.",
+      "Selected-assembly predictor probe and finalproposal probe are distinct required calls;44 bound includes first, +21includes latter. Do not remove either."
+    ],
+    "retained": "Analytic Complete/default-no-op behavior must remain and43 regression run. Full physical acceptance/nested accounting/qualification remain HOLD."
+  },
+  "controls04_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static plus inspected inventory failure",
+    "tree_sha256": "40a7d1cd052af1e0e06c2a2b1fc8a5823a88a0746f8da2f8a5157f047f8ca3ad",
+    "verdict": "HOLD",
+    "findings": [
+      "Compile nonexhaustive operation_names missingCompleteCurrentHydraulics.",
+      "Order test ignoresResult and optionaltrialcheck can pass withouttrial; require exactoutcome and actualentry."
+    ],
+    "verified": "Pending|Complete([8]) no placeholders; mechanical analyticComplete values/oldassertions preserved; physicalinitpendingzeroHyd. Fullfeature18HOLD unchanged."
+  },
+  "controls06_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "tree_sha256": "4117bf1fb515a7e1a1d8fd0faa180487adfbc2759d155c3c3a762dce16cac321",
+    "evidence_class": "Static; expected-red release",
+    "verdict": "READY for exact expected-red execution",
+    "verified": [
+      "Reset infallible; fixture grouping mechanical; analytic Complete defaults and assertions retained.",
+      "Box<M1CoupledError> acceptable concrete typed cause; private cfg(test) route."
+    ],
+    "remaining": "Matching materializer body must map error exactly once to boxed Own, never string/IncompleteScope. No body acceptance.",
+    "original_final_response": "Static review: **READY for the exact expected-red execution.**\n\nNo correctness findings in Controls06:\n\n- Reset is now infallible.\n- Lifecycle fixture grouping preserves the prior assertions.\n- Default analytic fixtures remain `Complete` and retain existing traces.\n- The physical adapter and boxed concrete owner error remain test-only and crate-private.\n- `Box<M1CoupledError>` preserves typed materializer failures; the body must map them once to `ControllerError::Own` without string conversion or `IncompleteScope`.\n\nExpected unchanged-body result: **50 tests, 44 pass and 6 intended fail**.\n\nRan release remains pending the parent\u2019s source-bound inventory/execution artifact. I ran no Rust or physical command."
+  },
+  "controls06_qa": {
+    "reviewer": "/root/physical_qa",
+    "tree_sha256": "4117bf1fb515a7e1a1d8fd0faa180487adfbc2759d155c3c3a762dce16cac321",
+    "evidence_class": "Static and inspected recorded inventory/lint",
+    "verdict": "Expected-red READY; lint/body qualification HOLD",
+    "findings": [
+      "Introduced HydraulicLifecycleFixture still five bools and excessive_bools; use meaningful enum states.",
+      "Unconsumed lifecycle methods dead_code; body must wire both."
+    ],
+    "verified": "Inventory50 exit0/6.084s source unchanged; boxed concrete ownererror and infallible reset; no physical body or acceptance.",
+    "original_final_response": "**Findings**\n\n- **Medium \u2014 `m1_trust_region_stage2_controls.rs:237`:** `HydraulicLifecycleFixture` still triggers `clippy::struct_excessive_bools`; grouping did not remove the five boolean state flags. Replace related flags with meaningful lifecycle enums.\n\n- **Medium \u2014 `m1_trust_region_controller_interface.rs:65`:** New lifecycle trait methods remain dead code pre-body. Controller wiring must use both methods without lint suppression.\n\n**Ran:** Controls06 inventory is source-bound to `4117bf\u2026cac321`, passed, and lists 50 selected tests. The combined-feature Clippy run is source-bound and fails; it confirms both findings.\n\nThe 50-test expected-red control is ready to run, prospectively **44 pass / 6 fail**. It remains an initialization/scope check only; no physical adapter or controller body acceptance is evidenced."
+  },
+  "physical_raw_j_oracle_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static independent binary64 derivation; no run/edit",
+    "source": "mutable body01 on2026-09-25 around03:33UTC",
+    "original_final_response": "Static adjudication:\n\n- The row-14 overwrite is forbidden and must remain removed.\n- The exact owning raw finite-difference result is:\n\nJraw[14][14] = 0.9999999997489795\nbits = 0x3fefffffffdd8000\n\n- Correct only the test oracle from exact `1.0` to those exact bits.\n- Keep exact positive-zero assertions for row-14 off-diagonals.\n- The normalized derivative is `999999999.7489794` (`0x41cdcd64ffdfde8f`), so the corrected assertion still strongly distinguishes raw from normalized Jacobians.\n\nMy earlier exact-`1.0` recommendation was incorrect. Current mutable source appears to copy and return the owning Jacobian directly, with the overwrite removed. No run or edit performed.",
+    "derivation": "x14=snowtemperature=265.15 bits4070926666666666; high/low residual \u00b19.999999997489795e-5 bits3f1a36e2eb000000/bf1a36e2eb000000; numerator1.999999999497959e-4 bits3f2a36e2eb000000 divided by2*1e-4 bits3f2a36e2eb1c432d."
+  },
+  "body02_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static source review; no run/edit",
+    "tree_sha256": "bade4df1a4e251da24ef8d83656d1c6e41d501952851d64ae314c7c9df455fa3",
+    "verdict": "HOLD physical50 run",
+    "findings": [
+      "High: explicit validate before natural phase reverses canonical precedence; remove, preserve natural selection then assembly-owned validate. Source phase failures preserve originalbox, nonSource natural selection maps canonical domain_error not Incomplete.",
+      "Medium: reset before50update cap leaves terminal evaluationPending; reset only aftercap before reassembly. Add49-reset assertion to50cap control."
+    ],
+    "verified": [
+      "Draft04scalesbox exact; rawJ untransformed; zero selection cache; operands sameCore; initPendingnohyd.",
+      "Corrected exactrawFDbits3fefffffffdd8000 and positivezero offdiagonals approved.",
+      "Intermediate E0308 compileonly; no physicalvalidationcredit."
+    ]
+  },
+  "body02_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static and inspected sourcebound inventory/lint",
+    "tree_sha256": "bade4df1a4e251da24ef8d83656d1c6e41d501952851d64ae314c7c9df455fa3",
+    "verdict": "Scoped init50run READY from QA; lint HOLD",
+    "findings": [
+      "unreadable_literal: spell0x3fef_ffff_ffdd_8000 unchangedvalue.",
+      "transition109lines: extract completion/validation helper retaining order, no lint waiver."
+    ],
+    "verified": "238inherited+2new0removed; previousbool/deadmethods fixed; enumfixturecohesive; inventory50PASS20.645s/sourceunchanged; lintFAIL10120.297s/sourceunchanged; realinit reachesowners copiesrawJ; Pendingnohyd/materializerincomplete; E0308log no physicalcredit."
+  },
+  "body03_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static fix verification; no commands",
+    "tree_sha256": "949ec8efb89e4dff1deeb135d504d29ae11e91e4067af0cdd39a769ec0e80a9e",
+    "verdict": "READY scoped50physicalinit conditional sourceboundinventory",
+    "verified": [
+      "Natural selector before assemblyvalidation and canonical natural error mapping.",
+      "Completionhelper semanticextraction exactorder.",
+      "Capbefore49resets; rawJunchanged and exactoraclebits."
+    ],
+    "remaining": "Predictor/final selection need context-specific PhaseActiveSetUnrepresentable/source mapping; materialization/phaseinconsistency incomplete, no acceptance."
+  },
+  "body03_qa_static": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static fix verification, results still running at review",
+    "tree_sha256": "949ec8efb89e4dff1deeb135d504d29ae11e91e4067af0cdd39a769ec0e80a9e",
+    "verdict": "No blockers;50selectorready conditional completedinventory",
+    "verified": "Literal/helper fix; exactoracle, naturalbeforeassembly, capbefore49resets, init only actualowners zeroHyd/MAT. Results not yet inspected at staticreview; followup evidenceverification assigned."
+  },
+  "body03_qa_ran": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Ran receipt/log verification; Staticscope",
+    "tree_sha256": "949ec8efb89e4dff1deeb135d504d29ae11e91e4067af0cdd39a769ec0e80a9e",
+    "original_final_response": "**Ran:** Body03 evidence is accepted for lifecycle and physical initialization only.\n\n- Inventory: 50 selected tests, passed.\n- Physical initialization control: 50 passed, source unchanged.\n- Combined-feature Clippy: 238 baseline diagnostics and 238 candidate diagnostics, with 0 introduced or removed.\n\nAll receipts bind tree `949ec8\u2026e80a9e`.\n\nNo evidence yet supports transition, materialization, accepted solve, target/corpus execution, default-feature checks, fmt, deny, or release qualification."
+  },
+  "controls08_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static controls plus Ran inventoryinspection",
+    "tree_sha256": "8af7c97fc3002fbf97d6010484c81edb96e0b467c7a4c43092f6ec2796ce6353",
+    "verdict": "HOLD physicalrun/body untilmissingdiscriminators",
+    "findings": [
+      "Positive lacks NoneJ, result.is_bound_to(input), actual controlleraccepted coordinates and actualmaterializerinput coordinates capturecomparison.",
+      "NegativeD must resetrealobservations and assert actualcore/hydraulic/actualhydraulic/MAT/J/controllerassembly zero, logicaldomaincheck1."
+    ],
+    "verified": "Canonical original60 setup separate and independentlyclosed; stubIncomplete appropriateexpectedred;52inventoryPASS13.245s sourceunchanged; prospective51pass1fail notrun."
+  },
+  "controls08_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static; no Rust/physical commands",
+    "tree_sha256": "8af7c97fc3002fbf97d6010484c81edb96e0b467c7a4c43092f6ec2796ce6353",
+    "verdict": "HOLD for actualownercapture/controllerresult/countdiscriminators",
+    "findings": [
+      "Positive: assert resultisboundinput and noJcodeLSEB-E-030; resetacceptedcaptureaftersetup, captureactualnewmaterializer input/trial; exposeactualcontrollerrun enteredMAT1/matchingfinal+materializedcoords/no terminalrefusal.",
+      "Replaceweakcounts with exactfixturecallgraph adaptereval2/rawJ1/probe1/domain1/MAT1; runtimecore43=41+1+1,hyd2,actualHyd6,MAT1; Jinvocation1/canonicalcontrollerassemblies0.",
+      "Negative: resetallobservations, domain1, all otheradapter/actualruntime/workcounts0. Remove unusedfdhelper."
+    ],
+    "clarification": "Parent inventory52means52listednames, no physicalpositivePASS; no Controls08 testexecution occurred.",
+    "count_provenance_correction": "Reviewer briefly proposed41total based on acceptedx0/x6=TF but explicitly retracted after inspecting original-input-reference.json: BOTH sunleafareas zero, so leafphasejoin area>0 false. Final43 total unchanged:41natural+1probe+1candidate. Both messages reached writer before anyphysicalrun; finalexpected43."
+  },
+  "controls09_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static fixverification; no reviewerphysicalrun",
+    "tree_sha256": "52c1f1198cb1ab73d7711eee83244eaca47abc41a8e38502c949a38b02eb288e",
+    "verdict": "READY exactexpectedred andmatchingphysicalbody conditionalcompletedinventory",
+    "verified": "Freshactualcapture/inputlineage/noJ/actualcontrollerrun/exactowner43core6Hyd1MAT counts; negativeadapterguardreset+zeroactualwork. StubIncomplete; intended51PASS1FAIL. No adaptercanonicalsolve/targetinput.",
+    "remaining": "Preservefirstrealrefusal/countmismatch; no methodtuning. Broaderdomains/caps/harness/qualification remainopen.",
+    "original_final_response": "Static review only; no reviewer execution.\n\nNo correctness blockers in Controls09. The prior gaps are closed:\n\n- Fresh materializer capture and input/coordinate lineage.\n- Typed no-J result assertion.\n- Actual controller run receipt and single materialization.\n- Exact 43 core, 2 wrapper-hydraulic, 6 actual-hydraulic, 1 Jacobian, and 1 materialization expectations.\n- Negative real guard with reset observations and zero physical work.\n\nControls09 is ready for the expected physical red: **51 pass, 1 intended positive-stub failure**. The matching body must preserve and classify the first real refusal or count mismatch without retuning."
+  },
+  "controls09_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static fixverification; no reviewerphysicalrun",
+    "tree_sha256": "52c1f1198cb1ab73d7711eee83244eaca47abc41a8e38502c949a38b02eb288e",
+    "verdict": "READY exactexpectedred andmatchingphysicalbody conditionalcompletedinventory",
+    "verified": "Freshactualcapture/inputlineage/noJ/actualcontrollerrun/exactowner43core6Hyd1MAT counts; negativeadapterguardreset+zeroactualwork. StubIncomplete; intended51PASS1FAIL. No adaptercanonicalsolve/targetinput.",
+    "remaining": "Preservefirstrealrefusal/countmismatch; no methodtuning. Broaderdomains/caps/harness/qualification remainopen.",
+    "original_final_response": "**Static:** Controls09 fixes the Controls08 gaps: input lineage, no-Jacobian result, controller accepted-coordinate capture, exact activity counts, and real zero-work assertions for invalid drainage.\n\nThe endpoint remains `IncompleteScope`; expected-red remains **51 pass / 1 fail** across 52 selected tests. This is ready only as the control contract for a matching body.\n\n**Missing evidence:** Inventory has not completed. No physical execution has occurred."
+  },
+  "body04_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static scopedfirstrootpath readiness",
+    "tree_sha256": "6682a6bd6e2d29f9b043e3abe2a3b645010a179736bddc44d2e543277047f7a7",
+    "verdict": "READY firstphysical52 boundedinitialrootpath; broaderworkHOLD",
+    "verified": "Existingcontrollerentry, baseJcache, candidatecore+hyd noJ, NoneJactualmaterializer, actualfreshcapture/run observation, no canonicalsolveinsideadapter.",
+    "remaining": "CandidateobservationzeroJfalse; laternonrootbaseemptycachedJ; runterminalrefusal mappedIncomplete; broad domains/caps/harness incomplete."
+  },
+  "body04_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static scopedfirstrootpath readiness",
+    "tree_sha256": "6682a6bd6e2d29f9b043e3abe2a3b645010a179736bddc44d2e543277047f7a7",
+    "verdict": "READY firstphysical52 boundedinitialrootpath; broaderworkHOLD",
+    "verified": "Existingcontrollerentry, baseJcache, candidatecore+hyd noJ, NoneJactualmaterializer, actualfreshcapture/run observation, no canonicalsolveinsideadapter.",
+    "remaining": "CandidateobservationzeroJfalse; laternonrootbaseemptycachedJ; runterminalrefusal mappedIncomplete; broad domains/caps/harness incomplete."
+  },
+  "body04_failure_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static source and parentrunfailureinspection",
+    "verdict": "Oracleerror: correct42; do not forceprobecore",
+    "derivation": "No phase/capacitytie atoriginal60Mixedacceptedstate, m1_selected_probe returnsOk beforecore.41initialJ+0probe+1candidate=42. callbackcount1 retained.",
+    "required_next": [
+      "Trialguard exactlyfdpredicate; validate.is_ok masksowningfailures.",
+      "InstalledcandidateemptyJ mustownernaturalassemble.",
+      "Candidate mustnotpublishfalsezeroJ."
+    ],
+    "scope": "Firstrootpathassertions beforecountpass; laterhyd/workassertions not reached. BroaderfullrunHOLD."
+  },
+  "body04_failure_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Ran receipts/rawfailure/lint comparison and Staticearlyreturn",
+    "verdict": "Oracle42, sevenintroducedlintfixes required",
+    "verified": "52run51pass1fail onlyactual42expected43; positiveclosure/lineage/noJ/capture/MAT beforefail passed. Sourceunchanged6682.245lint238inherited+7new0removed.",
+    "fix": "42count; #[must_use]; exactbitcomparisons nottolerances."
+  },
+  "body05_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static fixverification beforephysicalrerun",
+    "tree_sha256": "80fccd2a936d58bc0df539c73a323ac2cb26abddaa1b8a11015d78306b684c09",
+    "verdict": "READY narrow52rerun; no newscope",
+    "verified": "Oracle42 no-tiecorrect; mustuse and all exactbitcoordinate/sunassertions; no callbackbodychanges. KnownbroaderissuesHOLD."
+  },
+  "body05_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static fixverification beforephysicalrerun",
+    "tree_sha256": "80fccd2a936d58bc0df539c73a323ac2cb26abddaa1b8a11015d78306b684c09",
+    "verdict": "READY narrow52rerun; no newscope",
+    "verified": "Oracle42 no-tiecorrect; mustuse and all exactbitcoordinate/sunassertions; no callbackbodychanges. KnownbroaderissuesHOLD."
+  },
+  "body05_qa_ran": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Ran primaryreceipt/logverification",
+    "tree_sha256": "80fccd2a936d58bc0df539c73a323ac2cb26abddaa1b8a11015d78306b684c09",
+    "original_final_response": "**Ran:** Body05 is accepted for the bounded root materialization path, invalid-drainage refusal, and 50 retained controls.\n\n- Inventory: 52 selected.\n- Physical control: 52 passed.\n- Clippy delta: 238 baseline, 238 candidate, no introduced diagnostics.\n\nAll receipts are source-bound and unchanged. Broader adapter defect cases and release qualification remain open.",
+    "count_clarification": "The retained50 are49Stage2controls(43accepted+6lifecycle) plus1physicalinitializer, not50Stage2 tests."
+  },
+  "controls11_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static noRust/physicalrun",
+    "tree_sha256": "6e30e6e5e7615618f386d9ee76201237e015ccba8cfd2bc9d2a784f6513095c9",
+    "verdict": "HOLD matchingbody untilactualfreshassemblycounts",
+    "verified": "RetainedexactJ and FDonlyNaN guards discriminatecurrentbugs.",
+    "findings": "CandidateJtest mustactualwork(2,0),core83=41+1+41,hyd1,actualHyd2,MAT0; logicalcounter+row insufficient.",
+    "matchingfix": "FDonlypredicate; preserveobservedactualJ; absentcandidatecache triggersrealnaturalassembly. PreferOptioncache."
+  },
+  "controls11_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static; inventory stillrunningatreview",
+    "tree_sha256": "6e30e6e5e7615618f386d9ee76201237e015ccba8cfd2bc9d2a784f6513095c9",
+    "verdict": "Expectedred54=51pass3fail; addNaNactualhyd/MATzero assertions",
+    "verified": "Realcallbackhelper candidateComplete and rawJrow; no canonicalsolveinsideadapter/fakeWorkCap; terminalordinaryscopesremainopen.",
+    "finding": "GroundNaN addhydraulic/actualHyd/MATzero toexistingcore/workzero."
+  },
+  "controls12_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static exactfixverification, parentinventorythencompleted",
+    "tree_sha256": "81281367c8c0bb7b12c2babf174120d23201f82e4db125f190161cf90d5a4f9d",
+    "verdict": "READY54expectedred andmatching3callbackfixes",
+    "verified": "Actual83core/2J/hyd1actual2/MAT0, adaptercollisionzeros andNaNguardactualzero; bodyunchanged; expected51pass3fail.",
+    "remaining": "Ordinaryupdate,terminalkind,broaderdomains/caps/releaseopen."
+  },
+  "controls12_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static exactfixverification, parentinventorythencompleted",
+    "tree_sha256": "81281367c8c0bb7b12c2babf174120d23201f82e4db125f190161cf90d5a4f9d",
+    "verdict": "READY54expectedred andmatching3callbackfixes",
+    "verified": "Actual83core/2J/hyd1actual2/MAT0, adaptercollisionzeros andNaNguardactualzero; bodyunchanged; expected51pass3fail.",
+    "remaining": "Ordinaryupdate,terminalkind,broaderdomains/caps/releaseopen."
+  },
+  "body06_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "evidence_class": "Static matchingfixreview plus QAinspectedinventory/lint",
+    "tree_sha256": "9ac02e49f891a036553036b1fcbd39587b8d39338f1bca635fb63fc2102985b4",
+    "verdict": "READY firstphysical54",
+    "verified": "Optioncache baseSome/candidateNone, observedactualJretained, absentcandidatecache invokesownerassembly, FDonlyguard. No default/publicreachabilitychange."
+  },
+  "body06_qa": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Static matchingfixreview plus QAinspectedinventory/lint",
+    "tree_sha256": "9ac02e49f891a036553036b1fcbd39587b8d39338f1bca635fb63fc2102985b4",
+    "verdict": "READY firstphysical54",
+    "verified": "Optioncache baseSome/candidateNone, observedactualJretained, absentcandidatecache invokesownerassembly, FDonlyguard. No default/publicreachabilitychange."
+  },
+  "body06_qa_ran": {
+    "reviewer": "/root/physical_qa",
+    "evidence_class": "Ran receipt/source/support/diagnosticverification",
+    "tree_sha256": "9ac02e49f891a036553036b1fcbd39587b8d39338f1bca635fb63fc2102985b4",
+    "original_final_response": "**Ran:** Body06 callback receipt passed 54/54 in 2.425s on immutable tree `9ac02e\u2026`; source and support bindings were unchanged. Inventory passed 54. Clippy added no diagnostics beyond the 238-item inherited baseline.\n\nQA pass for root/callback fixes only. Ordinary update, terminal/domain/cap behavior, harness, default/fmt/deny, and target/corpus qualification remain open."
+  },
+  "controls14_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "source_tree": "fb74b4f23385cfc9e6ed5c92f38e4c9abf2b843e5fa7dfa7fc7e8ec9dc8bb6d3",
+    "disposition": "HOLD",
+    "findings": [
+      "Actual ordinary result/capture not joined to controller final/materialized state.",
+      "Actual ordinary owner counters absent.",
+      "Terminal expected-red mapper seam appropriate; accepted-only wrapper still collapses Refused."
+    ],
+    "root_resolution": "Accept lineage/count findings. Do not adopt requested canonical setup root bit equality; actual result/capture/run identity is the requirement."
+  },
+  "controls14_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static and Ran receipt inspection",
+    "source_tree": "fb74b4f23385cfc9e6ed5c92f38e4c9abf2b843e5fa7dfa7fc7e8ec9dc8bb6d3",
+    "disposition": "HOLD",
+    "findings": [
+      "Frozen tests retain canonical setup coordinate equality, contrary to claimed corrected oracle.",
+      "Inventory56 PASS9.245s sourcebound.",
+      "Replace canonical equality with actual-final/capture join and distinguish perturbed input."
+    ],
+    "original_final_response": "**Finding \u2014 medium:** Controls14 still asserts final and materialized coordinates equal the canonical setup root. It does not meet the stated corrected actual-final-coordinate discriminator.\n\n**Ran:** Source-bound inventory passed with 56 selected tests in 9.245s.\n\nHold the expected-red physical run until coordinate lineage is corrected to actual final/capture values and distinguishes them from the perturbed initial coordinates."
+  },
+  "controls15_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "source_tree": "e4dd1ccf6a53798629a59bc4352472f0a5347e5b1ff1d4caf05613b54d7a6fa6",
+    "disposition": "READY expected-red56",
+    "findings": "Both prior lineage and actual work-count blockers fixed. No canonical root bitidentity imposed.",
+    "original_final_response": "Static review only.\n\nControls15 fixes both blockers:\n\n- Exact-bit custody now joins result, capture, run final, and run materialized coordinates.\n- The terminal state is explicitly distinct from the perturbed initial state.\n- Ordinary lifecycle and owner counts are fully bound: 84 core, 4 hydraulic wrappers, 10 actual hydraulic solves, 1 materialization, and `(2, 0)` Jacobian work.\n\nReady for physical56 expected red: **55 pass / 1 intended terminal-custody failure**."
+  },
+  "controls15_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static and Ran receipt inspection",
+    "disposition": "Source/manifest approved,54PASS2FAIL verified",
+    "findings": "Ordinary typed FacePivotLimit before positive assertions; terminal IncompleteScope expected. No retuning authorized. Inventory60 lines includes headers,56 actual tests.",
+    "root_clarification": "Ordinary refusal not presumed missing body or implementation defect; correctness classification pending.",
+    "original_final_response": "**Ran:** Controls15 expected-red is valid: 56 run, 54 passed, 2 failed, source unchanged.\n\nThe ordinary path fails before custody assertions with preserved typed `FacePivotLimit` refusal: 1 attempt, 7 sweeps, 42 pivots, 43 SVDs, residual max `4.547473508864641e-12`. Terminal mapping separately fails at `IncompleteScope`.\n\nThis is narrow expected-red evidence only; no ordinary acceptance, materialization, target/corpus, or release qualification is proven."
+  },
+  "controls15_negative_classification": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static interpretation of Ran parent evidence",
+    "disposition": "valid fixed-method non-target refusal; no numerical correction",
+    "evidence": "raw4.547473508864641e-12 incompatible initial1e-4 residual; second proposal exhausts42pivots/43SVD; unchanged typed propagation. Exact adapter chronology counter observation pending.",
+    "root_resolution": "Retain required positive FAIL; add separate negative chronology evidence, no retuning."
+  },
+  "body07_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "source_tree": "68e2ca6e66b4bde004638e5935576e5d2444bc722b34f6b8a0a2eea597bbf19d",
+    "disposition": "APPROVE scoped source/manifest",
+    "findings": "Exact terminal kind retained before extraction, test+feature confinement intact. Expected55PASS1knownordinaryFAIL."
+  },
+  "body07_qa_static": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static",
+    "disposition": "APPROVE conditional inventory completion, satisfied9.207s",
+    "findings": "Minimal terminal mapper + crateprivate visibility; no defaultreachability. Ordinarypositive remains unmet."
+  },
+  "body07_qa_ran": {
+    "reviewer": "/root/physical_qa",
+    "class": "Ran receipt inspection",
+    "disposition": "PASS terminal mapper scope only",
+    "evidence": "Body07 immutable receipt inventory9.207s; physical3.379s55PASS1knownordinaryFacePivotLimitFAIL; same source/support; terminal WorkCap mapperPASS.",
+    "original_final_response": "**Ran:** Body07 passed terminal-kind mapping. The source-bound run recorded 56 tests: 55 passed and one unchanged ordinary `FacePivotLimit` failure.\n\nQA pass for the terminal mapper only."
+  },
+  "body07_qualification_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static with corrected qualification selection",
+    "disposition": "private/noncritical conditional; current qualification missing",
+    "corrections": "Fullcontrollerstage distinct from defaultworkspacefull; Critical exact --no-fail-fast only on actual trigger; detachednonGit A0 script would assess wrongtree; broadORCHtargets unaudited; C023 namedselectors extraction pending.",
+    "selected": "fmt,defaultcheck/list,physicalonly/fullfeature inventory,combinedlint,metadata/deny,actualaffectedlocalvectors after audit"
+  },
+  "controls16_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "source_tree": "b4db3097a025bc08c96f33bd47b318463888e24866889ad443431bebcbdb172a",
+    "disposition": "HOLD strengthen diagnosticstate binding beforebody",
+    "findings": "Phase core41 correctly derived H0 forward2, centered19. Missingcounter alone nonblocking; actualdiagnostic solution/21row binding material. Pass actualcurrent evaluation into inconsistencycallback to avoid fabricated/stale operands.",
+    "clarification_original_response": "**Static clarification:** no selected-`Core` cache is required.\n\n`evaluate_core_with_jacobian` computes `core(input, trial)` independently before the selected probe. Selection changes the finite-difference stencil and Jacobian, not the primal `Core`. Therefore `current.payload.core` is numerically and provenance-equivalent for the same input and trial.\n\nThe narrow requirement is to provide the actual current evaluation to the inconsistency callback and bind its 21 diagnostic coordinates, residuals, tolerances, and normalized values. No duplicate evaluation or object-identity assertion is justified."
+  },
+  "controls16_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static and Ran inventory inspection",
+    "disposition": "HOLD requestedphasecore41 assertion",
+    "findings": "Hydraulic restore, exacttypedownererror andordinarynegative provenance/counts sound. Inventory59PASS0.572s same source/support.41 derivation sourceconfirmed: H0 forwardcols4/10,19centered."
+  },
+  "controls17_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "source_tree": "4bfedd9f46d778a3077d6f1ea9c6ab063afd4772db13be5486ecd2f7142dc8b4",
+    "original_final_response": "**Static review \u2014 no findings.**\n\nControls17 implements the requested phase-diagnostic discriminator:\n\n- Exact `LSEB-E-034` and `PhaseActiveSetInconsistent`.\n- All 21 failed-solution coordinates bind to the actual evaluation.\n- Every ordered row binds exact raw, tolerance, and normalized bits.\n- The **41-core** count is correct for the tied H=0 fixture.\n- Zero hydraulic and materialization work remains explicit.\n\nTree and 59-test selector match. Approved for the expected-red run: **57 PASS / 2 expected FAIL**. Static only; no edits or runs."
+  },
+  "controls17_qa_static": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static",
+    "disposition": "APPROVE conditional inventory completion satisfied59PASS9.298s",
+    "original_final_response": "**Static:** Controls17 adds the required exact 41-core prefix and binds the typed phase error\u2019s failed coordinates and all 21 diagnostic rows to actual adapter observations. It explicitly rejects generic `IncompleteScope`.\n\nInventory completion is still missing. Once the source-bound 59-test inventory exists, the expected 57-pass/2-fail run is appropriate."
+  },
+  "controls17_qa_ran": {
+    "reviewer": "/root/physical_qa",
+    "class": "Ran receipt inspection",
+    "original_final_response": "**Ran:** Controls17 passed 57/59. The two failures are exactly the retained ordinary `FacePivotLimit` positive and phase callback `IncompleteScope`; hydraulic-owner and ordinary-negative controls pass.\n\nQA accepts this as narrow expected-red evidence for the phase callback body."
+  },
+  "body08_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "source_tree": "1f1d4f97887dd0183f0be3cf1010bd9daf2aed7e37dac675ef938eb4895b4ffb",
+    "original_final_response": "**Static Body08 review \u2014 no blocker for the scoped run.**\n\nThe callback now receives the actual current evaluation and constructs the canonical typed `PhaseActiveSetInconsistent` failure from its retained `Core` and trial. Both controller call sites pass `self.current`; analytic behavior changes only by an ignored parameter. No extra evaluation, cache, or reconstruction was added.\n\nApproved for physical59 after inventory, expecting **58 PASS / 1 known ordinary-positive FAIL**.\n\nResidual HOLD: iteration/backtracking remain hard-coded zero, other contextual diagnostics remain null, and selected/final phase sets are not recorded. This does not qualify later-base refusal chronology or the complete adapter. Static only; no edits or runs."
+  },
+  "body08_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static and Ran receipt inspection",
+    "original_final_response": "**Ran:** Body08\u2019s source-bound phase receipt passed 58/59 in 2.429s. The sole failure remains the known ordinary `FacePivotLimit` path.\n\nQA accepts the phase code/kind, actual 21-row diagnostics, and work-bound evidence only."
+  },
+  "c023_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static preassessment",
+    "disposition": "Approve exacttwo local180s qualificationselectors afterstableheadinventory/source",
+    "findings": "Vegetation9tests localreference/restartJSON; LSEphase/drainage/guard/gaslocalfixtures. Noauthenticatedsupport1/provider/ORCH/runner. Receiver/late-rollbackHOLD."
+  },
+  "c023_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static extraction",
+    "selectors": [
+      "-p openwepp-vegetation --test cold_canopy_m1_expected_red",
+      "-p openwepp-land-surface-energy --lib -E test(m1_phase_join_expected_red_) | test(m1_structural_drainage_) | test(m1_guard_expected_red_) | test(m1_internal_liquid_zero_par_rows_match_frozen_gas_controls) | test(m1_zero_par_leaf_rejects_)"
+    ],
+    "findings": "LocalcompiletimeJSON/constructedoperands only. Realreceiver/weightedreceipt/laterollbacknotqualified."
+  },
+  "full_feature_mapping_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static mapping with correctedcompositionalreuse",
+    "findings": "Missingactualphysicalreplacement/domaincustody/installedpoison/selectedtie/caps. Withdrawfivephysicalsubproblemfixture demand: uniform Subproblem propagation has no kindbranch; actualStage1mathproof plusrealFacePivotbridge transfer enum/counters.",
+    "root_correction": "Undefined retainedskeletontests are not executed evidence; reuse only actualaccepted Stage1/controller controls."
+  },
+  "body09_qa_ran": {
+    "reviewer": "/root/physical_qa",
+    "class": "Ran receipt inspection",
+    "original_final_response": "Ran Body09: 77 passed and one retained ordinary FacePivotLimit failure. The normalized lint delta is 238 inherited diagnostics with zero introduced. Static Controls20: its new owned-scope assertion is correctly expected-red. The run wrapper does not yet open or capture the TLS budget scope, so budget_snapshot remains None pending its matching body."
+  },
+  "body09_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static and parent receipt inspection",
+    "original_response": "Static: Reviewed frozen tree 98520765693492a33c98020cce9f9e4f54c24116ee2d2d567c19bf85e83c3ab4, central budget guard and five owner joins. No correctness blocker: each operation increments attempted first, refuses when entered is already at its exact cap, preserves entered on refusal, and propagates the typed private PhysicalBudget/WorkCap path; default inactive scope remains behavior-neutral. Ran: no commands; inspected parent receipt reporting 78 selected tests = 77 PASS plus the previously classified ordinary-positive failure, including all five nested-cap controls and 13 Stage1 regressions. Residual risk was explicitly limited to then-unimplemented solve-owned scope/capture and shared per-solve restoration. Approved Body09 within that bounded scope."
+  },
+  "controls21_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "disposition": "HOLD",
+    "findings": [
+      "Default zero Stage1 snapshot contradicts actual owner entry",
+      "Nested prior error scope restoration missing"
+    ],
+    "root_adjudication": "Accept these controls gaps; challenge local43 as global error-run SVD count without first-update work"
+  },
+  "controls21_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static and Ran inventory inspection",
+    "original_final_response": "Controls21 inventory passed with 80 selected tests. The controls correctly expect four failures: positive ordinary, original60 scope capture, nested scope restoration, and ordinary-negative capture. The matching body must create, capture, and restore the owned TLS scope.",
+    "disposition": "Superseded by accepted correctness control gaps before body/physical run"
+  },
+  "controls23_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static conditional approval, parent verifies exact two-assert delta",
+    "source_tree": "649eefcc5ced0fe6ede5f25d97db1792fdd5026a8b79ddb57493c67b79d9df7d",
+    "original_final_response": "Static review \u2014 Controls22/conditional Controls23. Ran: none. Blocking until Controls23: the ordinary FacePivot error control must assert stage1_factorization > 43 and stage1_factorization_attempted == stage1_factorization. The total includes the first base\u2019s successful subproblem plus the next base\u2019s 43-factorization refusal; the local refusal count alone is not the solve total. The nested error-path restoration is now sound: an outer seed of 29 must survive exactly, then dropping it must restore None. The success oracle is sound for original60 because raw-J count 1 proves no selected-tangent reassembly; comparing its budgeted Stage 1 count with the retained controller-run count is valid for this fixture. No per-base bypass found. The controller permits at most 21 proposals, 22 subproblem solves, and two phase assemblies per base. Accepted updates reset those bounds only after installing a new base. Existing analytic controls transfer; no parallel recorder is needed. Preserve the caveat that controller-run Stage 1 totals omit discarded predictor work when phase reassembly occurs. They are not a general global face-work oracle. Conditional approval for the 80-test expected-red once Controls23 contains the two Stage 1 error assertions."
+  },
+  "controls23_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static and inventory receipt inspection",
+    "original_final_response": "Controls23 passed inventory with 80 selected tests. The negative SVD assertions are present and meaningful. Release the expected-red run: 76 passes and four known failures."
+  },
+  "body10_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static with parent receipt inspection",
+    "source_tree": "52e22f432c8da282e264da088748e2a6401648b3522aca302bed02d3152ced0d",
+    "original_final_response": "Static: No Body10 blocker. The wrapper correctly captures the active inner budget on success or error, restores prior TLS state, and returns the original typed result. Test-only feature privacy remains intact. Ran: No reviewer commands. Inspected source-bound evidence: Controls23 produced 76 passes and four intended failures; Body10 inventory passed. Default and deny checks remain pending execution. Approved for the 80-test physical run and default/deny qualification."
+  },
+  "body10_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static",
+    "original_final_response": "Body10 correctly scopes, captures, and restores TLS budget state on both success and error paths. Release its 80-test run: expected 79 passes and one retained ordinary FacePivotLimit failure."
+  },
+  "body10_qa_ran": {
+    "reviewer": "/root/physical_qa",
+    "class": "Ran receipt inspection",
+    "original_final_response": "Verified receipts: Body10 has 79 passes and the single retained ordinary failure. Formatting, metadata, deny, and default LSE/ORCH checks pass. Strict lint has zero introduced diagnostics after valid location-only normalization. Default inventory, physical-only inventory, full-feature hold, and C023 selector receipts remain outstanding."
+  },
+  "adapter_poison_correctness_preassessment": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "original_final_response": "Static: Admit one adapter-level OverCapacityOneUlp control. It exposes a real custody defect: accepted capture is currently written before materialization validation, so a failed materialization can appear accepted. The control should verify typed VEG-E-142, no adapter materialized state, no accepted capture, unchanged input/trial, one materialization entry, and two hydraulic entries. Move accepted capture after successful validation. EmptyMass is unnecessary for this adapter-level check."
+  },
+  "controls24_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "original_final_response": "Static: Controls24 is ready for the 81-test expected-red. The control reaches the real adapter materializer, reuses the existing one-ULP poison logic, preserves typed VEG-E-142, and checks failed-publication custody with supported counters. Expected result: 79 pass / 2 fail\u2014the known ordinary-positive failure and the new premature accepted-capture failure."
+  },
+  "controls24_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static",
+    "original_final_response": "Controls24 is a focused real-adapter materialization regression. It proves the typed rejection and absence of accepted state/capture, while correctly distinguishing one attempted materialization from zero accepted adapter entries. It does not establish scoped budget counters. Pending inventory, forecast remains 81 selected, 79 passes, and two failures."
+  },
+  "body11_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "original_final_response": "Static: Body11 has no blocker. It moves only test capture after successful accepted-materialization validation, preserving exact Core/input/trial data, first-capture semantics, typed failures, and default behavior. Approved for the 81-test run. Expected: 80 pass / 1 known ordinary-positive failure."
+  },
+  "body11_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static",
+    "original_final_response": "Body11 correctly captures only after accepted validation and retains the None-Jacobian guard. Release its 81-test run: expected 80 passes and one retained ordinary FacePivotLimit failure. Body10 metadata/deny evidence can be reused for unchanged Cargo manifests, with that limitation recorded."
+  },
+  "body12_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static",
+    "original_final_response": "Static: Body12 is a mechanical error-size fix with no arithmetic or taxonomy change. Both callers preserve the same M1CoupledError and adapter Coupled/VEG-E-142 path. Approved for final 81-test and previously audited C023 non-target qualification."
+  },
+  "body12_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static and inventory receipt inspection",
+    "original_final_response": "Body12 correctly narrows the helper error type and explicitly converts at the adapter boundary, removing Body11\u2019s only introduced lint finding. Inventory passed with 81 tests. Release the final physical selector (expected 80 passes, one retained ordinary failure) and the two audited non-target C023 groups."
+  },
+  "terminal_qa": {
+    "reviewer": "/root/physical_qa",
+    "class": "Static and Ran receipt inspection",
+    "source_tree": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+    "original_final_response": "QA final: INCOMPLETE / HOLD. High: Body12 retains the ordinary-positive FacePivotLimit failure and the full controller-stage feature fails with 18 missing symbols. Physical completion, full-feature readiness, release, and target work remain unqualified. Medium: Describe Stage1 as algorithmically unchanged; its source changed for the test-private factorization hook. Ran evidence is source-bound: custody 80/81 passed, format/default checks/inventories/C023 selectors passed, and strict lint has 238 inherited diagnostics with none introduced. Recovery reconstructs all 764 terminal entries from the observer plus one patch. The bounded private control and custody work passes QA.",
+    "root_response": "Accept overall HOLD and source-vs-algorithm distinction. Reconciliation already explicitly records stage1_source_unchanged=false; no source-byte-identity claim is made for the terminal hook change."
+  },
+  "terminal_correctness": {
+    "reviewer": "/root/physical_correctness",
+    "class": "Static plus inspected recorded evidence; no reviewer Rust/physical/target commands",
+    "source_tree": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+    "original_final_response": "Final independent correctness disposition \u2014 Static plus inspected recorded evidence; no reviewer Rust, physical, or target commands run.\n\nFindings\n1. High \u2014 Required ordinary positive acceptance remains unmet. m1_coupled_tests.rs:5249 fails with the unchanged fixed method\u2019s typed FacePivotLimit: 42 completed pivots, 43 entered factorizations, and raw residual maximum 4.547473508864641e-12. This is a valid non-target negative result and does not authorize retuning, but it blocks the required ordinary accepted-update, fresh-base reassembly, and root-materialization claim.\n2. High \u2014 Full-feature configuration does not compile. physical-body12-full-feature-inventory.json exits 101 with 18 retained missing-symbol errors. The test-private physical-only route compiles, but it does not close the retained controller-stage/full-feature obligation.\n3. High \u2014 Measurement and release qualification were never reached. No private cross-crate measurement harness, authenticated support-1 input, frozen release executable, baseline, or treatment exists. Prefix, baseline, treatment, and conditional-repeat slots are all UNUSED. No timing, speedup, target behavior, or whole-engine inference is supported.\n4. Medium \u2014 Physical acceptance coverage remains incomplete. The complete role/domain, selected-side, replacement, installed-candidate, and later-base diagnostic-context obligations remain open. The current later-base phase failure still lacks complete iteration/backtracking context. Historical full09/A1, material/BGC, receiver/parent, restart/cycle, and cost/scaling holds remain applicable.\n\nVerified bounded behavior\n- The ten changed entries are confined to the LSE test/feature implementation. The default feature set remains empty, and the physical adapter, controller, budget types, and callbacks remain test-only.\n- Stage 1\u2019s changed bytes add only the test-private pre-entry budget hook and typed refusal payload. The numerical algorithm is unchanged; the retained 13 regressions pass.\n- Actual original60 root evidence reaches materialization and independent reservoir closure with 42 core entries, one raw Jacobian, six hydraulic entries, and one materialization.\n- The ordinary negative preserves 83 core entries, two raw Jacobians, four hydraulic entries, zero materializations, cumulative Stage 1 work greater than the local failing 43, and the original typed cause.\n- Exact before-entry caps pass for core 6500, raw Jacobian 100, hydraulics 2202, Stage 1 factorizations 47300, and one materialization. Solve-owned scope capture and nested restoration pass on success and error.\n- The one-ULP overcapacity payload returns VEG-E-142 without adapter publication or accepted capture.\n- Recorded qualification is source-bound to 9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d: physical controls 80/81 pass with the single known failure; C023 vegetation 9/9 and LSE 30/30 pass; format, default check/inventory, and physical-only inventory pass. Strict lint remains failed with 238 inherited and zero introduced diagnostics.\n- Recovery is coherent: the recorded observer plus exactly one patch reconstructs all 764 entries with no extras. I independently confirmed patch SHA-256 6d44b35b3b8171feb0c1d872d901df5c1e383907a0120350afd3bec88313a5a6. Terminal publication is still recorded as local/pending.\n\nVerdict: approve the terminal source and evidence only as a recoverable bounded private-adapter increment. Final package disposition is INCOMPLETE / HOLD, not implementation completion or experimental qualification.",
+    "root_clarification": "The ordinary negative does prove the first accepted update/install and fresh-base Jacobian (83=41+1+41); the unproved positive claim is the complete chain through root materialization. Both reviewers approve only the bounded increment and INCOMPLETE/HOLD disposition."
+  }
+}

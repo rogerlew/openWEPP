@@ -1,0 +1,5 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-biogeochemistry v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-biogeochemistry)
+   Compiling approx v0.5.1
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.40s

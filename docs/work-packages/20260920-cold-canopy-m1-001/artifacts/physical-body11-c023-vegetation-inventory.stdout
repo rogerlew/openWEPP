@@ -1,0 +1,13 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+openwepp-vegetation::cold_canopy_m1_expected_red m1_all_inverse_and_ice_jacobian_controls
+openwepp-vegetation::cold_canopy_m1_expected_red m1_all_saturation_and_join_derivative_controls
+openwepp-vegetation::cold_canopy_m1_expected_red m1_assembled_ice_residual_jacobian_columns
+openwepp-vegetation::cold_canopy_m1_expected_red m1_empty_surface_guards_enumerate_all_controls
+openwepp-vegetation::cold_canopy_m1_expected_red m1_primitive_domains_reject_nonfinite_and_invalid_forcing
+openwepp-vegetation::cold_canopy_m1_expected_red m1_restart_rejects_wrong_parent_day
+openwepp-vegetation::cold_canopy_m1_expected_red m1_restart_roundtrips_three_positives_and_rejects_23_poisons
+openwepp-vegetation::cold_canopy_m1_expected_red m1_signed_vapor_ledger_and_capacity_controls
+openwepp-vegetation::cold_canopy_m1_expected_red m1_vapor_boundary_domain_and_overflow_guards_are_typed
