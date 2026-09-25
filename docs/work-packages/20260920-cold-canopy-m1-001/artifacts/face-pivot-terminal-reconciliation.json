@@ -1,0 +1,43 @@
+{
+  "implementation_intent": "Private opt-in observation and nonphysical serializer/scope controls; no numerical-policy correction",
+  "terminal_tree_sha256": "18518425e882575c3e0c69e26e7fe6d8be0793ed1dba640d314e0c6b0bbbdb5b",
+  "preincrement_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+  "changed_paths": [
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+  ],
+  "incremental_patch": "face-pivot-observation-from-physical-terminal.patch",
+  "incremental_patch_sha256": "947785f2f1cda88fcffe8f9ba42216f8370018f04fbbebec227e208cee29ca0d",
+  "source_entry_count": 764,
+  "unchanged_manifest_and_lock": true,
+  "unchanged_production_adoption": "No main Rust adopted; experimental algorithm entry points retain test/feature gates",
+  "validation": {
+    "inventory": "face-pivot-cut07-inventory.json PASS327listed",
+    "format": "face-pivot-cut07-format.json PASS",
+    "default_build": "face-pivot-cut07-default-check.json PASS; validator only",
+    "selected_controls": "face-pivot-cut07-controls.json85/85PASS",
+    "required_positive": "face-pivot-cut07-ordinary-positive.json FAIL1/1 FacePivotLimit; sole planned replay",
+    "strict_lint": "face-pivot-cut07-lint-comparison.json238inherited0new0removed; lintcommand101FAILbaseline"
+  },
+  "authority_and_fixture_changes": false,
+  "reused_evidence": "Unchanged accepted materialization/closure and owner caps/nested restoration; previous39localC023 scope; no new globalacceptance",
+  "holds_retained": [
+    "full-feature18interfaces",
+    "full09/A1/strict-lint",
+    "material/BGC",
+    "parent",
+    "positive-late-rejection",
+    "cycle/restart",
+    "performance",
+    "M1physical-controller qualification"
+  ],
+  "targets": "allUNUSED/notreleased",
+  "independent_disposition": "COMPLETE limited attribution; independent correctness reconstructs every decision exactly, QA closes observer/replay/default/recovery; no numerical implementation deviation",
+  "attribution_verdict": "face-pivot-correctness-verdict.json",
+  "counter_state_custody": "face-pivot-counter-state-custody.json",
+  "runtime_correction": "None; policy change required for further method progress",
+  "smallest_prospective_decision": "Specify a bounded deterministic finite-precision degeneracy policy for signed-zero crossing and cancellation-scale release on the same bound, including scaling, action and a same-system discriminating control; retain current limits/admission until adopted."
+}

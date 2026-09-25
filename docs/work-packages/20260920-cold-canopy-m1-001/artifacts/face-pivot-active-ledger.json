@@ -1,0 +1,9 @@
+{
+  "anchor_utc": "2026-09-25T15:59:00Z",
+  "carry_seconds": 334933.959294,
+  "ceiling_seconds": 342133.959294,
+  "implementation_cutoff_utc": "2026-09-25T17:29:00Z",
+  "hard_deadline_utc": "2026-09-25T17:59:00Z",
+  "protected_seconds": 1800,
+  "policy": "All elapsed once; no waits deductions, old reserve or refunds"
+}

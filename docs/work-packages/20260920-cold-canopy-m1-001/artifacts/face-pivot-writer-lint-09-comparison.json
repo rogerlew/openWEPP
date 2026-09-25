@@ -1,0 +1,8 @@
+{
+  "baseline_count": 238,
+  "current_count": 239,
+  "introduced": [
+    "this function has too many lines (104/100)\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE | fn m1_face_pivot_populated_capture_json_parses() {\n| ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n|\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines"
+  ],
+  "removed": []
+}

@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: fresh exact observer copy plus exactly one full terminal patch; all entries verified",
+  "recorded_utc": "2026-09-25T17:02:29.608732+00:00",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source_tree_sha256": "18518425e882575c3e0c69e26e7fe6d8be0793ed1dba640d314e0c6b0bbbdb5b",
+  "entry_count": 764,
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "observer_recovery": "witness-observer-recovery-verification.json",
+  "terminal_patch": "face-pivot-cut07-ordinary-positive-from-observer-cut02.patch",
+  "terminal_patch_sha256": "5daf4c5fec831aa19a6bfdcce7833eb5047730af1c7750fc3b7c6599a72fe729",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-face-pivot-reconstruction-20260925",
+  "patch_exit_code": 0,
+  "all_entry_hashes_equal": true,
+  "exact_file_inventory_equal": true,
+  "runtime_source_unchanged": true
+}

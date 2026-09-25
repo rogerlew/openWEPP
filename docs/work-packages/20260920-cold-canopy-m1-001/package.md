@@ -1,5 +1,202 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Non-target face-pivot attribution — adopted 2026-09-25
+
+**Terminal disposition: COMPLETE limited attribution / method limitation.** The
+required ordinary-positive remains **FAIL**; physical-controller/M1 qualification
+remains **HOLD**. No numerical implementation deviation was found, no numerical
+policy correction was made, and all target slots remain **UNUSED / NOT RELEASED**.
+
+**Ran:** the single source-bound ordinary-positive replay preserves the original
+`FacePivotLimit`. After one accepted update, all 21 normalized residuals pass
+(maximum `4.547473508864641e-6`), but its temperature step
+`9.999999997489795e-5 K` exceeds the unchanged `1e-8 K` threshold. Humidity
+(`2.168404344971009e-19 kg/kg` versus `1e-12`), hydraulic (`0` versus `1e-7 mm`)
+and beta (`0` versus `1e-10`) pass. Admission correctly declines materialization;
+`FullProposal` eligibility is retained at the fresh base. The next subproblem
+fails before it can provide a complete no-update witness. The raw maximum
+`4.547473508864641e-12` alone never establishes root acceptance.
+
+**Independent reconstruction:** all 43 reached face operations match the prescribed
+ordered binary64 calculation with **zero mismatches**. Coordinate 5 is drainage,
+with finite lower bound0, upper infinity and scale `1e-5 kg m^-2 s^-1`.
+Its all-free candidate is `p5=-1.0740111222326397e-24`; the unique first crossing
+has `theta=-0.0`, activating the lower bound. On that face, `lambda=0`, radius 1,
+and the unique strict-release multiplier is
+`h5=g5=-1.472028549313008e-13`, releasing the same bound. From face 2 onward,
+the masks, steps/candidates, active values, radius, lambda and selection data
+repeat bit-for-bit. After 21 activations and 21 releases, the would-be 22nd
+activation is refused at the existing 42-pivot cap. The record explicitly separates
+unapplied conceptual pivot state from the already-written scratch candidate.
+This is a finite-precision zero-progress recurrence, not 42 progressing faces.
+[Independent verdict](artifacts/face-pivot-correctness-verdict.json),
+[full reconstruction](artifacts/face-pivot-correctness-reconstruction.json), and
+[execution bindings](artifacts/face-pivot-correctness-execution.json) retain the
+actual arrays, arithmetic, feasibility and selection checks.
+
+The [same-system higher-precision diagnostic](artifacts/face-pivot-correctness-high-precision.json)
+drives the problematic free-coordinate value and constrained multiplier toward
+zero as decimal precision increases 50→200 digits. This supports cancellation
+sensitivity; it is neither symbolic proof, a runtime policy nor a nonlinear
+convergence result. **Smallest prospective decision:** numerical-method authority
+must define a bounded finite-precision degeneracy policy for signed-zero crossing
+and cancellation-scale release on the same bound, including scaling, deterministic
+action and a discriminating retained-system control. No epsilon, pivot/radius
+increase, clipping, new precision policy or fixture/admission relaxation is adopted.
+
+[Counter/state custody](artifacts/face-pivot-counter-state-custody.json) verifies
+83 core entries, 2 raw-J assemblies, 4 actual hydraulic entries, 45 total Stage1
+factorizations and 0 materializations, with no budget denial. The first subproblem
+uses 2 factorizations/1 pivot; the failed local subproblem uses 43/42. Each reports
+maximum Jacobi sweep index 7; summing those maxima is not total sweep work.
+Canonical setup is separate. Exact bits join its sole coordinate 20 `+1e-4 K`
+perturbation to the installed update, admission operands and failed base. Protected
+input/trial remain equal, accepted capture is absent, and budget scope restores
+`None→None`. The required-positive failure occurs at the unchanged `expect` after
+capture emission; no additional physical replay was warranted or run.
+
+Final verification on source `18518425e882575c3e0c69e26e7fe6d8be0793ed1dba640d314e0c6b0bbbdb5b`:
+85/85 selected controls PASS; the separately selected required positive FAIL 1/1;
+compile/inventory 327, format and default check PASS; same-command strict lint
+FAIL with 238 inherited and 0 introduced/removed diagnostic blocks. Distinct
+correctness and QA reviewers close the observer-only attribution scope, including
+reviewer-owned fix verification; [reviews](artifacts/face-pivot-reviews.json) retain
+all rejected cuts. The 18 full-feature errors remain eight unfinished producer/
+interface groups in the [source-bound map](artifacts/face-pivot-full-feature-seams.json).
+The 39 prior local C023 passes and accepted closure/owner/nested-scope controls are
+reused only within unchanged scope. All historical full09/A1/strict-lint,
+material/BGC, parent, positive-late-rejection, cycle/restart and performance HOLDs
+remain; no full-workspace or target qualification is claimed.
+
+Exact 764-entry detached recovery is verified from the 747-entry observer plus
+patch SHA `5daf4c5fec831aa19a6bfdcce7833eb5047730af1c7750fc3b7c6599a72fe729`.
+[Recovery](artifacts/face-pivot-terminal-recovery.json) and
+[terminal diff reconciliation](artifacts/face-pivot-terminal-reconciliation.json)
+bind the five private observation files; main Rust is not adopted.
+[Build/input custody](artifacts/face-pivot-binary-input-custody.json) binds executable
+SHA `11057805904facee126e2e18d78a74e7305fafc636ebdd5792286488db6adb64`,
+the retained local binary copy, exact toolchain command/support pins and original
+fixture. Source/evidence publication is pending the scoped commit below; binary
+bytes remain local, with their source/build identity retained for reproduction.
+
+[Final ledger](artifacts/face-pivot-final-ledger.json) conservatively charges through
+**17:15 UTC**: **4560 new seconds**, **339493.959294 cumulative seconds**, leaving
+**2640 seconds** below the fixed ceiling. Reading, failed corrections, waits,
+parallel work, validation and publication are charged once; no refund/reanchoring.
+The 17:29 implementation cutoff and 17:59 hard deadline are unchanged. Limited
+attribution is complete; unused allowance does not authorize a changed method.
+
+Historical execution notes for this increment follow.
+
+Owner execution of `/tmp/openwepp_cold_canopy_m1_face_pivot_attribution_authorization.md`
+reactivates only bounded attribution/correction in `COLD-CANOPY-M1-TR-SVD-BVLS-01`.
+Status: terminal limited attribution COMPLETE; historical positive FAIL, expiry and all qualification HOLDs remain.
+Main starts at `21f0d48db390aeae58f6da378f1a0567c558229e`; experimental Rust remains
+in `/home/roger/openwepp-experiments/cold-canopy-m1-20260920`; initial764-entry
+comparison with terminal `9ec7bf…a3d` was verified before writer edits. No main Rust adoption.
+
+Carry is **334933.959294 seconds**, fixed ceiling **342133.959294 seconds**.
+The published physical-final-ledger was read once; inspection found no later
+receipt at the detached source root and no later package ledger. Conservative
+first-work anchor **2026-09-25 15:59:00 UTC** includes initial reading; fixed
+implementation cutoff **17:29:00 UTC**, hard deadline **17:59:00 UTC**. All elapsed
+including waits/concurrency counts once. No old reserve addition or charge refund.
+At least1800 seconds stays protected for independent disposition/preservation/publication.
+
+Intent: inspect retained observations; if insufficient, add bounded opt-in private
+observation of actual admission and active-face operations, then one planned replay
+of `m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization`
+with the unchanged original60 setup and coordinate 20 +1e-4K perturbation. Independently
+reconstruct the retained linear system and distinguish implementation deviation,
+finite-precision stagnation, progressing bound exhaustion or incomplete observation.
+Numerical policy, physics, fixture and all target slots are frozen. A correction
+requires independently verified deviation; recording rerun requires a named missing
+discriminator. Each physical command is bounded180s and needs full bound plus reserve.
+Two unsuccessful corrections or60 charged minutes triggers internal reassessment;
+completed attribution or required out-of-envelope method change stops implementation.
+
+Sole detached writer `/root/face_writer` uses the implementer route. Root owns
+package/evidence integration and scoped publication; distinct correctness and QA
+reviewers assess affected claims, reusing unchanged accepted findings. Intended writes
+are private observation hooks/tests in detached LSE and `face-pivot-*` raw evidence
+here. Inspect the18 retained full-feature seams and identify real producer connections;
+no broad harness campaign or canned refusal factories. Preserve unrelated dirty files.
+
+Selected validation: affected compile/format, existing non-target observation and
+analytic controls, the one real positive replay (retain FAIL if it refuses), exact
+trajectory/counter/state/scope custody, independent array reconstruction, source and
+manifest reachability, same-command lint attribution against verified unchanged238
+baseline diagnostics. Applicable touched A0/A1/A3/typed guards remain binding; no
+broad historical failure census. No constitutive/production change is intended;
+unknown reachability or behavior change escalates under the testing strategy.
+Recovery must bind actual detached bytes and the final patch to available source.
+This attribution can complete without qualifying the physical controller or M1.
+
+
+
+Ran: writer verified764/764 terminal source hashes before edits. Root independently
+compared the complete terminal reconstruction with the manifest: exact equality.
+Root's live-tree comparison occurred after authorized Stage1 editing began and is
+explicitly labeled accordingly in [start verification](artifacts/face-pivot-start-verification.json).
+Both frozen authority hashes match. The existing command recorder changes only
+its adopted deadline to17:59Z; [five direct bound controls](artifacts/face-pivot-recorder-deadline-controls.json)
+PASS, with no launched physical command.
+
+Static: `/root/face_correctness` initially confirms unchanged terminal sign/tie/
+crossing/gradient rules, with no demonstrated numerical deviation. Existing logs
+lack decisive face data. Its in-progress-hook blockers are opt-in initialization,
+nested/error scope restoration, complete admission operands and precise cap-stage
+semantics; writer must resolve these before replay. No numerical run has launched.
+Distinct QA replacement `/root/face_qa` inspects evidence/reachability and interfaces.
+[Full-feature seam mapping](artifacts/face-pivot-full-feature-seams.json) binds all18
+retained errors to8 producer/interface groups. Existing analytic/owner operations
+cover components, but physical path/threshold, selected-side/tie and observed result
+joins remain unfinished; no canned factories or interface acceptance are selected.
+
+
+Internal reassessment, 2026-09-25 16:27 UTC: **CONTINUE** after two unsuccessful
+recorder-lint correction cuts. Exact retained-command diagnostic comparison shows
+238 unchanged inherited blocks, with introduced blocks reduced9→4 and none removed.
+Remaining issues are one local name collision and three observation-inflated helper
+lengths; narrow extraction/renaming is a supported next action. No numerical-method
+correction or physical replay has occurred, and the fixed budget/deadline is unchanged.
+Writer default/physical test compilation and formatting pass provisionally; final
+source-bound validation remains pending. Review history, including QA's withdrawn
+positive/negative test-identity finding, is retained in [reviews](artifacts/face-pivot-reviews.json).
+
+
+Cut01 pre-replay review, 16:37 UTC: both reviewers **REJECT** source
+`7cd06fc…731ce5`. Capture JSON contains debug Options/enums; admission recording
+must restore the original residual short circuit; whole-solve Stage1 counters and
+strict opt-in construction are incomplete; cap scratch state needs unambiguous
+labeling. These are recorder defects, not demonstrated defects in the retained
+numerical method. Writer owns narrow fixes; the sole physical replay remains unused.
+Root recorded compile/inventory and format PASS on cut01, and exact lint comparison
+finds238 inherited,0 introduced and 0 removed diagnostic blocks. Source stayed fixed
+through all three commands. Failed source and review findings remain preserved.
+
+
+Internal reassessment, 16:50 UTC: **CONTINUE** after cut01/cut02 pre-replay
+rejections. Cut02 `da574ac6…26d61` corrects source serializers and admission/counter
+hooks, but QA finds its parser control leaves the originally invalid branches empty.
+The smallest next action is a populated operation/install/admission/FacePivotLimit
+serializer test, without any physical solve or numerical change. Final cut02 recorded
+inventory, format and default check PASS; lint238 inherited/0 new/0 removed. Three
+nonphysical controls PASS within their narrower actual coverage. About39 minutes
+remain before the unchanged implementation cutoff, plus the protected30 minutes;
+no budget reset or target release. Writer owns this discriminating control correction.
+
+
+Internal reassessment near the60-minute checkpoint, 16:58 UTC: **CONTINUE only
+the named observation completion and attribution**. Correctness accepts the witness
+entry semantics and all other capture content; the remaining introduced lint is
+transition length101/100. Two ineffective line-count cuts are retained. Moving the
+observation-only event to the first statement of `phase_model` preserves its required
+pre-Stage1 timing without refactoring numerical branches. Approximately31 minutes
+remain before implementation cutoff, plus the unchanged1800-second protected reserve.
+Replay count remains0. Final source review/validation, one replay, independent
+reconstruction and preservation are still required; no method completion is claimed.
+
 
 ## Physical adapter and measurement resumption — adopted 2026-09-25 02:28Z
 

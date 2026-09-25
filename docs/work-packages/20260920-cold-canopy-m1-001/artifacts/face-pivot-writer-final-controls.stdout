@@ -1,0 +1,12 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+
+running 3 tests
+test m1_coupled_tests::m1_face_pivot_capture_scope_is_opt_in_nested_and_error_preserving ... ok
+test solver::m1_coupled::m1_face_pivot_populated_phase_json_parses ... ok
+test m1_trust_region_stage1::m1_face_pivot_populated_capture_json_parses ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 274 filtered out; finished in 0.00s
+

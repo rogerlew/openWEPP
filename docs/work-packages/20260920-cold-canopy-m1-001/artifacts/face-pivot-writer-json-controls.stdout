@@ -1,0 +1,22 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+
+running 1 test
+test m1_trust_region_stage1::m1_face_pivot_populated_capture_json_parses ... FAILED
+
+failures:
+
+---- m1_trust_region_stage1::m1_face_pivot_populated_capture_json_parses stdout ----
+
+thread 'm1_trust_region_stage1::m1_face_pivot_populated_capture_json_parses' (163353) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:614:10:
+bit-preserving populated recorder JSON: Error("expected `,` or `]`", line: 1, column: 11137)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    m1_trust_region_stage1::m1_face_pivot_populated_capture_json_parses
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 275 filtered out; finished in 0.00s
+

@@ -1,0 +1,113 @@
+{
+  "correctness_reviewer": "/root/face_correctness",
+  "qa_reviewer": "/root/face_qa",
+  "writer": "/root/face_writer",
+  "initial_scope": "Static live recorder design inspection against frozen terminal source and authority; no new physical run",
+  "initial_correctness_findings": [
+    "Stage1 observer initially lacked opt-in initialization and exact cap state/radius; corrected in reviewed follow-on cut.",
+    "RAII nested restoration now accepted statically.",
+    "Accepted-install recording now uses existing current_max instead of a new fallible call.",
+    "Replay withheld pending complete admission/phase/counter/custody data.",
+    "Eight-group full-feature seam mapping accepted as coherent HOLD."
+  ],
+  "initial_qa_findings": [
+    "Only deadline changed in run_recorded.py; five direct guard controls support fixed deadline and180s+reserve.",
+    "Start-verification timing caveat correctly distinguishes writer pristine verification from root post-edit comparison; exact terminal reconstruction equality independently established.",
+    "Recorder-only fallible dynamic_max call rejected, writer corrected by passing existing value.",
+    "Exact replay source/binary/input custody, parseable capture and lint inheritance pending."
+  ],
+  "qa_withdrawn_finding": {
+    "claim": "Instrumentation wrapped a success fixture rather than the retained FacePivotLimit positive.",
+    "withdrawal": "Reviewer inspected physical-body12-custody.stderr468-497 and withdrew: authorization-selected ordinary_update_reassembles_before_root_materialization is the retained failing positive, and capture before unchanged expect is correct. Companion ordinary_perturbation_refuses... is passing negative."
+  },
+  "status": "Independent correctness and QA complete for limited attribution; M1/controller qualification and all original targets remain HOLD/UNUSED",
+  "cut01": {
+    "tree": "7cd06fc758dc90e0020ed2532a2dc1f576122dfb3f494f99eff426b957731ce5",
+    "verdict": "REJECT before replay",
+    "correctness_findings": [
+      "Restore original governed-step short circuit when current_max > 1.0",
+      "Encode Option and enum data as valid JSON throughout capture and phases",
+      "Retain whole-solve Stage1 counters independently of failed local subproblem",
+      "Gate record construction and phase mutations at enabled call sites",
+      "Distinguish conceptual unapplied pivot state from actual scratch state at cap"
+    ],
+    "qa_findings": [
+      "Invalid JSON refusal kind and phase selections",
+      "Existing current_max reuse avoids new fallible computation; accepted statically"
+    ],
+    "ran_root_checks": {
+      "inventory": "PASS",
+      "format": "PASS",
+      "lint": "238 inherited; zero introduced or removed"
+    },
+    "physical_replays": 0,
+    "correctness_original_response": "Static review against terminal tree `9ec7bf\u2026a3d`; no Rust or physical replay ran.\n\nHigh \u2014 algorithmic branch drift: m1_trust_region_controller.rs:749 evaluates governed_step_pass unconditionally. The terminal code short-circuits when current_max > 1.0. Cut01 can therefore return a numerical error where the retained controller would simply decline admission.\nHigh \u2014 unusable evidence format: m1_trust_region_stage1.rs:245 emits Some(...) and unquoted enum variants through Debug formatting. m1_coupled.rs:2392 does the same for phase selections. Both records labeled JSON are invalid JSON.\nHigh \u2014 missing whole-solve Stage 1 counters: m1_trust_region_stage1.rs:2074 replaces the capture for every subproblem and retains no successful-subproblem counter summaries. Because controller errors leave controller_run unset, the output cannot separate whole-solve factorization/pivot/sweep totals from the failing local 43/42 counts.\nMedium \u2014 observation is not fully opt-in: phase events are pushed in every physical-feature test, while pivot/install/admission records and free_ids clones are constructed before the enabled check. Gate construction and phase recording at their call sites.\nMedium \u2014 cap scratch semantics remain ambiguous: an unapplied activation records p_after = p_before, although the actual scratch state.p already contains the infeasible face candidate. refusal.p preserves the actual state, but the schema should explicitly distinguish conceptual unapplied state from scratch state at refusal.\n\nThe captured arrays, governed operands and thresholds, lifecycle reset/reassembly events, exact-bit encoding approach, protected-state checks, budget snapshots, and RAII restoration are otherwise sufficient in shape. Missing controls include parsing both emitted JSON records and proving disabled capture performs no recorder mutations.\nCut01 is rejected for the one selected physical replay. A new frozen cut should correct these recorder-only defects before consuming the authorized run.",
+    "qa_original_response": "Static QA \u2014 cut01 is not replay-ready.\nHigh \u2014 m1_trust_region_stage1.rs: Capture serialization is invalid JSON on the required failure: refusal kind is emitted as bare FacePivotLimit. Phase output in m1_coupled.rs also emits bare debug enum selections. The retained capture cannot be reliably parsed for independent reconstruction until those values are encoded as JSON strings or stable numeric values.\nNon-blocking: The accepted-install recorder now receives the already-computed current_max; it adds no evaluator call or fallible numerical path. The scope control passes and confirms TLS enablement/restoration, but the actual replay receipt must still bind the preserved typed FacePivotLimit, counters, protected input/trial, and budget scope.\nThe five-file cut is source-bound to 7cd06fc\u2026731ce5; same-command lint remains 238 inherited diagnostics, with none introduced or removed."
+  },
+  "validation_selection_qa": {
+    "verdict": "Sound with explicit parser controls required",
+    "excluded_replays": [
+      "ordinary_update_reassembles_before_root_materialization reserved once",
+      "ordinary_perturbation_refuses_face_pivot_before_materialization prior accepted evidence reused",
+      "run_restores_nested_prior_budget_scope budget implementation unchanged"
+    ],
+    "full_feature": "All 18 errors/eight seams remain HOLD; seeded 64/42 controls do not establish actual 65-sweep/43-crossing boundary"
+  },
+  "reviewer_capacity_recovery": {
+    "initial_followup_errors": "Correctness followup and message returned agent thread limit reached while writer and completed QA occupied available threads",
+    "bounded_recovery": "After QA returned bounded validation review, same correctness reviewer followup succeeded; no replacement or workaround"
+  },
+  "cut02": {
+    "tree": "da574ac6dd6a5d01cff7b351ef3ee5f9c1432eb53b4359bc3fc2deb15ec26d61",
+    "qa_verdict": "REJECT pre-replay: capture JSON parser control does not exercise operations, installs, admissions, or refusal; populate all originally invalid branches. Phase parser adequate.",
+    "ran": "3 nonphysical controls PASS but incomplete coverage; recorded inventory/format/defaultcheck PASS; lint238 inherited0introduced0removed",
+    "correctness": {
+      "verdict": "REJECT pre-replay",
+      "resolved": [
+        "Restored postupdate short circuit",
+        "JSON valid by source inspection",
+        "Whole-solve successful/refused Stage1 summaries",
+        "Conceptual versus scratch cap state",
+        "Controller admission/install and phase opt-in construction"
+      ],
+      "remaining": [
+        "Gate Stage1 capture-only snapshots, free_ids clones and operation construction at call sites",
+        "Populate parser operation/install/admission/refusal optional and scratch branches",
+        "Record actual witness eligibility at proposal entry instead of inferential lifecycle only"
+      ],
+      "calculator": "face-pivot-correctness-reconstruct.py supports cut02 schema; py_compile only before actual record"
+    },
+    "replay_count": 0
+  },
+  "cut03": {
+    "tree": "a56ef2998cfeed485654c2a836dd407d3edaea7fccaaf955784e126a0f2e9bd0",
+    "correctness_verdict": "REJECT solely witness capture location: trial_domain_refusal is not reached by Stage1 failure; capture before phase_model in transition",
+    "accepted": [
+      "Helper-level Stage1 enable guards prevent operation struct/free_ids construction; remaining Copy snapshots non-arithmetic and acceptable",
+      "Populated JSON operations/installs/admissions/refusal/scratch/nonfinite bits coverage",
+      "Cap scratch semantics and aggregate counters"
+    ],
+    "lint": "1new populatedtest linecount104/100; no removed baseline blocks"
+  },
+  "cut04": {
+    "tree": "b6669ddb93778883e836d9fcbeac2db70f656157d4803928e1d78d90e2b1f612",
+    "change": "Parser fixture helper extraction preserves assertions",
+    "ran": "3 controlsPASS, lint238inherited0new0removed",
+    "pending": "Gated witness event at actual proposal entry; same reviewer verification pending"
+  },
+  "final_correctness": {
+    "reviewer": "/root/face_correctness",
+    "source_tree": "18518425e882575c3e0c69e26e7fe6d8be0793ed1dba640d314e0c6b0bbbdb5b",
+    "pre_replay": "APPROVE cut07; exact immutable manifest and event placement verified",
+    "disposition": "PASS limited attribution, zero reconstruction mismatches; no implementation deviation; exact finite-precision two-face recurrence",
+    "evidence": "face-pivot-correctness-verdict.json",
+    "scope": "Frozen weighted assembly and ordered Jacobi/free-face/ball/crossing/release/arithmetic, actual normalized/governed admission, local/whole counters, exact repeat classification; labelled higher-precision same-system diagnostic"
+  },
+  "final_qa": {
+    "reviewer": "/root/face_qa",
+    "disposition": "PASS observer-only scope and sole replay; no further physical replay warranted",
+    "scope": "Populated parser and opt-in fixes; source/binary/input/counter/state/budget custody;85controls;defaultcheck;exact764entry recovery; terminaldiff/HOLD reconciliation",
+    "raw_final_response": "Findings: None. The default cargo check -p openwepp-land-surface-energy --lib passed against the frozen cut07 tree, with unchanged source, observer base, pins, and support links. Recovery independently rebuilt the764-entry terminal source from a fresh observer copy plus the single terminal patch5daf4c\u2026fe729; every entry hash and inventory match18518425\u2026bdb5b. Reconciliation bounds the change to the five observation files, retains all listed qualification holds, and records the expected selected-control and retained-positive outcomes. The failure occurs at the unchanged expect after observation capture has emitted, not at a pre-expect assertion. QA closes for the observer-only scope and sole replay. The implementation did not change numerical policy or release any held target; no further physical replay is warranted.",
+    "counter_clarification": "Authoritative owner counts83core,2raw_jacobian,4hydraulic,45stage1_factorization,0materialization; runtimehydraulic_entries2 is separate from actual_hydraulic_entries4. Never sum nested counts. Raw receipt controls exact naming."
+  }
+}

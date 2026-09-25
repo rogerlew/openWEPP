@@ -1,0 +1,9 @@
+{
+  "evidence_class": "Ran: fresh exact observer copy; terminal patch not yet applied",
+  "observed_utc": "2026-09-25T16:42:36.740274+00:00",
+  "observer": "/home/roger/openwepp-experiments/b01-wb14-observer-source-cut02-20260918",
+  "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+  "entry_count": 747,
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-face-pivot-reconstruction-20260925",
+  "all_entry_hashes_equal": true
+}

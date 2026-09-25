@@ -1,0 +1,67 @@
+{
+  "evidence_class": "independent offline ordered-binary64 reconstruction plus labelled higher-precision same-system diagnostic",
+  "source_tree_sha256": "18518425e882575c3e0c69e26e7fe6d8be0793ed1dba640d314e0c6b0bbbdb5b",
+  "binary_sha256": "11057805904facee126e2e18d78a74e7305fafc636ebdd5792286488db6adb64",
+  "ordered_binary64": {
+    "weighted_system_exact": true,
+    "record_mismatches": 0,
+    "terminal": "FacePivotLimit:activate-first-crossing",
+    "failed_subproblem": {
+      "entered_factorizations": 43,
+      "completed_pivots": 42,
+      "max_completed_sweep_index": 7
+    },
+    "whole_stage1": {
+      "entered_factorizations": 45,
+      "completed_pivots": 43,
+      "per_subproblem_max_sweep_indices": [7, 7],
+      "whole_factor_sweep_sum": "not derivable from retained successful-subproblem summaries"
+    },
+    "sequence": {
+      "completed_activations": 21,
+      "completed_releases": 21,
+      "refused_would_be_activation": 1,
+      "coordinate": 5,
+      "physical_lower": 0.0,
+      "physical_upper": "infinity",
+      "scale": 0.00001,
+      "scaled_lower": 0.0,
+      "scaled_upper": "infinity",
+      "all_free_candidate_coordinate_5": -1.0740111222326397e-24,
+      "lower_violation": 1.0740111222326397e-24,
+      "crossing_theta_bits": "8000000000000000",
+      "crossing_theta": "negative zero",
+      "lower_face_lambda": 0.0,
+      "lower_face_g5": -1.472028549313008e-13,
+      "lower_face_h5": -1.472028549313008e-13,
+      "lower_face_max_abs_free_h": 4.602968137637987e-12,
+      "crossing_ties": [5],
+      "release_ties": [5],
+      "radius": 1.0,
+      "exact_cycle": "from face 2 onward the all-free and coordinate-5-lower faces repeat their masks, candidates, radius, lambda, crossing and release values bit-for-bit"
+    }
+  },
+  "admission": {
+    "normalized_max": 4.547473508864641e-6,
+    "normalized_residuals_pass": true,
+    "temperature_step_k": 9.999999997489795e-5,
+    "temperature_threshold_k": 1e-8,
+    "humidity_step_kg_kg": 2.168404344971009e-19,
+    "humidity_threshold_kg_kg": 1e-12,
+    "hydraulic_step_mm": 0.0,
+    "hydraulic_threshold_mm": 1e-7,
+    "beta_step": 0.0,
+    "beta_threshold": 1e-10,
+    "governed_pass": false,
+    "materialized": false,
+    "witness_at_failing_proposal": "FullProposal",
+    "reason": "temperature governed-step threshold exceeded despite all normalized residuals passing"
+  },
+  "classification": {
+    "implementation_deviation": false,
+    "kind": "prescribed binary64 zero-progress two-face recurrence exhausting the existing pivot bound",
+    "higher_precision": "same-system decimal elimination from 50 through 200 digits drives both all-free p5 and constrained-face g5 toward zero with precision, supporting cancellation sensitivity; it is not symbolic proof or a runtime precision policy",
+    "runtime_correction_authorized": false
+  },
+  "smallest_prospective_decision": "Numerical-method authority must specify a finite-precision degeneracy policy for a signed-zero crossing followed by a cancellation-scale release on the same bound, including its scaling, deterministic terminal action, and discriminating same-system control. Until then retain FacePivotLimit, the required positive FAIL, and all package HOLDs."
+}

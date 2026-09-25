@@ -1,0 +1,17 @@
+{
+  "anchor_utc": "2026-09-25T15:59:00Z",
+  "observed_utc": "2026-09-25T17:08:58.463469+00:00",
+  "conservative_close_utc": "2026-09-25T17:15:00Z",
+  "carry_seconds": 334933.959294,
+  "new_charged_seconds": 4560,
+  "cumulative_charged_seconds": 339493.959294,
+  "fixed_ceiling_seconds": 342133.959294,
+  "unused_seconds_at_conservative_close": 2640,
+  "implementation_cutoff_utc": "2026-09-25T17:29:00Z",
+  "hard_deadline_utc": "2026-09-25T17:59:00Z",
+  "protected_reserve_seconds": 1800,
+  "accounting": "All elapsed once including reading, waits, concurrent agents, failed corrections, validation, disposition and publication; conservative close is not refunded. No old reserve stacked or reanchoring. If publication exceeds close, ledger must increase before final return.",
+  "disposition": "COMPLETE limited non-target method-attribution; no further implementation or physical replay selected; unused balance does not authorize changed numerical policy",
+  "required_positive": "FAIL FacePivotLimit retained",
+  "target_slots": "allUNUSED/notreleased"
+}

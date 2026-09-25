@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: existing snapshot helper actual byte comparison",
+  "observed_utc": "2026-09-25T16:04:25.625711+00:00",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "entries": 764,
+  "actual_tree_sha256": "92740417ce4623dcf72c7534bbc5d86ccf83df7a48d777ef70f4c38801f44dda",
+  "terminal_manifest_equal": false,
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-physical-terminal-reconstruction-20260925",
+  "reconstruction_manifest_equal": true,
+  "method_sha256": "3931d006af19db61f321abd23e0990d088770b297eb23cc56a004c704df5bb63",
+  "vegetation_sha256": "a54f0fc436dd63273c50f252069098d786f0e80e1b4228cb2cf2df565ae61599",
+  "timing": "Root comparison occurred after writer began authorized recorder edits; not pristine-start verification. Writer separately verified764 entries before edits. Exact reconstruction independently matches terminal.",
+  "current_changed_paths": [
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+  ]
+}

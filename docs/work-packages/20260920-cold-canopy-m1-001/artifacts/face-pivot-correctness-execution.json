@@ -1,0 +1,53 @@
+{
+  "evidence_class": "offline calculator execution receipt",
+  "source_tree_sha256": "18518425e882575c3e0c69e26e7fe6d8be0793ed1dba640d314e0c6b0bbbdb5b",
+  "rust_binary_sha256": "11057805904facee126e2e18d78a74e7305fafc636ebdd5792286488db6adb64",
+  "environment": {
+    "python": "3.12.14",
+    "libc": "Ubuntu GLIBC 2.43-2ubuntu2.4",
+    "binary64_hypot": "ctypes process-symbol libc hypot",
+    "rust_executed_by_correctness_reviewer": false,
+    "nonlinear_evaluator_executed_by_correctness_reviewer": false
+  },
+  "inputs": {
+    "face-pivot-observed-capture.json": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c",
+    "face-pivot-observed-phases.json": "31b05f8981cc49808a34d35a7372d7e53ff470ca709edf46ddf92460047d4ec0",
+    "face-pivot-observed-setup.json": "dc00f4eedef2e5516e1f5f976c485617e32d27544a3d2f23cd4171e31d77186f",
+    "face-pivot-cut07-ordinary-positive.stderr": "0f9299cc4278f08ca5006f03356748ef55302c610ceba92f9c95302cf3d50636"
+  },
+  "accepted_executions": [
+    {
+      "command": ".venv/bin/python -m py_compile face-pivot-correctness-reconstruct.py face-pivot-correctness-high-precision.py",
+      "exit_status": 0
+    },
+    {
+      "command": ".venv/bin/python face-pivot-correctness-reconstruct.py face-pivot-observed-capture.json --output face-pivot-correctness-reconstruction.json",
+      "exit_status": 0,
+      "result": "zero exact record mismatches"
+    },
+    {
+      "command": ".venv/bin/python face-pivot-correctness-high-precision.py face-pivot-observed-capture.json --output face-pivot-correctness-high-precision.json",
+      "exit_status": 0,
+      "result": "labelled same-system decimal convergence diagnostic"
+    }
+  ],
+  "discarded_calculator_development_attempts": [
+    {
+      "exit_status": 1,
+      "result": "Jacobi no convergence",
+      "calculator_defect": "incorrectly fed the reported prior maximum sweep index into the next factorization; frozen Rust seeds each physical factorization from test_work zero"
+    },
+    {
+      "exit_status": 1,
+      "result": "22 comparison mismatches",
+      "calculator_defect": "comparison aliased the pre-interpolation candidate and labelled release p_before as face-entry state instead of post-free-solve scratch state"
+    }
+  ],
+  "outputs": {
+    "face-pivot-correctness-reconstruct.py": "c3a473f117eeecdb1b40270b1f3e48900635490e31e0ed1569dbc9865162bc3f",
+    "face-pivot-correctness-reconstruction.json": "92ecb417d22118ddb2e39268ea29d5d3aa6e3a37e73a940efffba90e7cf3fb1c",
+    "face-pivot-correctness-high-precision.py": "9ae850ed430ba2e3f7d72c6c1a2d763396425fcd0bed6ab437cd3c07eb01cc4a",
+    "face-pivot-correctness-high-precision.json": "7f4d41bbd6f7d0eed98ab10a263d98cad3d670c360df53a660824760892cabef",
+    "face-pivot-correctness-verdict.json": "04a07e9df8ce562fdbc86135f879592e5f50a2a670f37073b7febcfb6ac14274"
+  }
+}

@@ -1,0 +1,295 @@
+{
+  "evidence_class": "Static: source/retained compiler-output reconciliation; no Rust run or interface change",
+  "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-physical-terminal-reconstruction-20260925",
+  "compiler_evidence": "physical-body12-full-feature-inventory.stderr",
+  "seams": [
+    {
+      "seam": "m1_trust_region_with_trial_domain_poison_for_test",
+      "compiler_errors": 1,
+      "actual_operations_and_retained_controls": [
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn transition",
+          "line": 298,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "symbol": "fn pre_evaluator_trial_domain",
+          "line": 2747,
+          "sha256": "e2c336f29d42c3c06c5a636a0e37537c3a1dd4d8dc377708aad229bb54f12d9c"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+          "symbol": "fn m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal",
+          "line": 1789,
+          "sha256": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+        }
+      ],
+      "smallest_missing_connection": "Connect a private real adapter domain-refused candidate to retained base/J/normalizer/selection and radius observations. Analytic fixture is controller evidence, not this physical fixture.",
+      "disposition": "HOLD; no interface implementation or execution claimed"
+    },
+    {
+      "seam": "m1_trust_region_with_selected_side_error_for_test",
+      "compiler_errors": 1,
+      "actual_operations_and_retained_controls": [
+        {
+          "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "symbol": "fn selected_side_probe",
+          "line": 2866,
+          "sha256": "e2c336f29d42c3c06c5a636a0e37537c3a1dd4d8dc377708aad229bb54f12d9c"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn phase_model",
+          "line": 641,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+          "symbol": "fn m1_stage2_selected_side_owner_error_follows_final_phase_verification",
+          "line": 1767,
+          "sha256": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+        }
+      ],
+      "smallest_missing_connection": "Reach existing selected-side owner rejection with actual adapter operands and bind typed VEG-E-142 plus unchanged radius/input; existing overcapacity materialization poison is a different stage.",
+      "disposition": "HOLD; no interface implementation or execution claimed"
+    },
+    {
+      "seam": "M1TrustRegionWitnessPath (3 uses); m1_trust_region_witness_thresholds_for_test; M1_GOVERNED_STEP_NORMS",
+      "compiler_errors": 5,
+      "actual_operations_and_retained_controls": [
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn post_update_admit",
+          "line": 704,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn governed_step_pass",
+          "line": 210,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn root_admit",
+          "line": 463,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+          "symbol": "fn m1_stage2_post_update_root_materializes_installed_base_before_reassembly",
+          "line": 3035,
+          "sha256": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+          "symbol": "fn m1_stage2_full_no_update_materializes_current_base",
+          "line": 2342,
+          "sha256": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+          "symbol": "fn m1_stage2_first_valid_radius_replacement_materializes_original_base",
+          "line": 3124,
+          "sha256": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+          "symbol": "fn m1_stage2_finite_governed_threshold_operands_gate_full_no_update_admission",
+          "line": 2544,
+          "sha256": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+        }
+      ],
+      "smallest_missing_connection": "Bind three actual paths/operand poisons, all21 raw/normalized rows, four governed norms (ci diagnostic), threshold boundaries and exact preinstall custody. Missing physical path/threshold result type cannot be a boolean factory or public export.",
+      "disposition": "HOLD; no interface implementation or execution claimed"
+    },
+    {
+      "seam": "m1_trust_region_phase_capacity_tie_for_test",
+      "compiler_errors": 1,
+      "actual_operations_and_retained_controls": [
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn phase_model",
+          "line": 641,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "symbol": "fn select_phase",
+          "line": 2821,
+          "sha256": "e2c336f29d42c3c06c5a636a0e37537c3a1dd4d8dc377708aad229bb54f12d9c"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "symbol": "fn raw_jacobian",
+          "line": 2756,
+          "sha256": "e2c336f29d42c3c06c5a636a0e37537c3a1dd4d8dc377708aad229bb54f12d9c"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+          "symbol": "fn m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1",
+          "line": 1680,
+          "sha256": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "symbol": "fn m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns",
+          "line": 509,
+          "sha256": "001d3d47e7d300d650617a7ddce8877d1384aa90e0e178baa1a21de0fcfc7b3f"
+        }
+      ],
+      "smallest_missing_connection": "Bind real physical tie to both assemblies/probe entries, both raw D columns and radius-limited D direction; analytic phase and Stage1 D controls cover components only.",
+      "disposition": "HOLD; no interface implementation or execution claimed"
+    },
+    {
+      "seam": "m1_trust_region_natural_tangent_for_test",
+      "compiler_errors": 1,
+      "actual_operations_and_retained_controls": [
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn phase_model",
+          "line": 641,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+          "symbol": "fn m1_stage2_unchanged_predictor_phase_uses_one_assembly_and_final_probe",
+          "line": 1658,
+          "sha256": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+        }
+      ],
+      "smallest_missing_connection": "Project actual natural/selected assembly and probe counts; retain one final selected-side probe. Earlier fixture failure cannot supply successful counts.",
+      "disposition": "HOLD; no interface implementation or execution claimed"
+    },
+    {
+      "seam": "m1_trust_region_cap_boundary_for_test",
+      "compiler_errors": 1,
+      "actual_operations_and_retained_controls": [
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn m1_trust_region_controller_run_for_test",
+          "line": 765,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn m1_trust_region_seeded_entry_guard_for_test",
+          "line": 832,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "symbol": "fn m1_trust_region_physical_budget_core_cap_control_reaches_actual_owner",
+          "line": 4576,
+          "sha256": "001d3d47e7d300d650617a7ddce8877d1384aa90e0e178baa1a21de0fcfc7b3f"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "symbol": "fn m1_trust_region_physical_budget_raw_jacobian_cap_control_reaches_actual_owner",
+          "line": 4618,
+          "sha256": "001d3d47e7d300d650617a7ddce8877d1384aa90e0e178baa1a21de0fcfc7b3f"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "symbol": "fn m1_trust_region_physical_budget_hydraulic_cap_control_reaches_actual_owner",
+          "line": 4657,
+          "sha256": "001d3d47e7d300d650617a7ddce8877d1384aa90e0e178baa1a21de0fcfc7b3f"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "symbol": "fn m1_trust_region_physical_budget_stage1_factorization_cap_reaches_actual_face",
+          "line": 4708,
+          "sha256": "001d3d47e7d300d650617a7ddce8877d1384aa90e0e178baa1a21de0fcfc7b3f"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "symbol": "fn m1_trust_region_physical_budget_materialization_cap_reaches_actual_owner",
+          "line": 4762,
+          "sha256": "001d3d47e7d300d650617a7ddce8877d1384aa90e0e178baa1a21de0fcfc7b3f"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+          "symbol": "fn m1_stage2_long_progress_work_cap_is_fifty_accepted_proposals",
+          "line": 2709,
+          "sha256": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+        }
+      ],
+      "smallest_missing_connection": "Compose five real owner-cap controls with controller per-base proposal/subproblem and50-update bounds. Select typed operation as well as numeric limit; preserve actual attempted/entered/state instead of synthetic counts.",
+      "disposition": "HOLD; no interface implementation or execution claimed"
+    },
+    {
+      "seam": "m1_trust_region_radius_exhaustion_for_test",
+      "compiler_errors": 1,
+      "actual_operations_and_retained_controls": [
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn shrink_transition",
+          "line": 408,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+          "symbol": "fn m1_stage2_stationarity_exhausts_after_eleven_proposals_and_twenty_two_faces",
+          "line": 2283,
+          "sha256": "ebb626fd46f1a48f1d466cc66cf6e27057f73d4656d1ec3e8c0a721078a044fa"
+        }
+      ],
+      "smallest_missing_connection": "Expose actual shrink sequence and boundary from private controller observation with terminal kind/state. Existing analytic sequence is not physical original60 evidence.",
+      "disposition": "HOLD; no interface implementation or execution claimed"
+    },
+    {
+      "seam": "M1TrustRegionTestAssembly (6 uses); m1_trust_region_with_controlled_assembly_for_test",
+      "compiler_errors": 7,
+      "actual_operations_and_retained_controls": [
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+          "symbol": "fn solve_subproblem",
+          "line": 1308,
+          "sha256": "dcc6edaba714e09da564c9f268bd9bd62774b77c1b5058154ce1dc8e9dc8ba56"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+          "symbol": "fn jacobi_factor",
+          "line": 581,
+          "sha256": "dcc6edaba714e09da564c9f268bd9bd62774b77c1b5058154ce1dc8e9dc8ba56"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+          "symbol": "fn svd_lambda_ball",
+          "line": 369,
+          "sha256": "dcc6edaba714e09da564c9f268bd9bd62774b77c1b5058154ce1dc8e9dc8ba56"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+          "symbol": "fn proposal_model",
+          "line": 625,
+          "sha256": "f0a21001ab4b65558d183b93fa2bd1799ac52dee6c1dbcdd69cf8f2fd2ec549e"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "symbol": "fn m1_trust_region_stage1_numeric_refusals_are_input_derived",
+          "line": 737,
+          "sha256": "001d3d47e7d300d650617a7ddce8877d1384aa90e0e178baa1a21de0fcfc7b3f"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "symbol": "fn m1_trust_region_real_post_bisection_ball_guard_has_boundary_pass_and_fail",
+          "line": 884,
+          "sha256": "001d3d47e7d300d650617a7ddce8877d1384aa90e0e178baa1a21de0fcfc7b3f"
+        },
+        {
+          "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "symbol": "fn m1_trust_region_physical_adapter_ordinary_perturbation_refuses_face_pivot_before_materialization",
+          "line": 5409,
+          "sha256": "001d3d47e7d300d650617a7ddce8877d1384aa90e0e178baa1a21de0fcfc7b3f"
+        }
+      ],
+      "smallest_missing_connection": "Reuse numerical inputs/boundary operations and kind-independent Subproblem propagation with private assembly input/counter/state observations. Existing sweep/pivot tests seed64/42 counters, not65 actual sweeps/43 crossings; preserve scope. No factory may merely return named refusal.",
+      "disposition": "HOLD; no interface implementation or execution claimed"
+    }
+  ],
+  "conclusion": "Existing operations cover portions of obligations; no reviewed drop-in producer/result mapping closes all assertions. Full-feature acceptance remains HOLD. No broader physical harness implementation selected."
+}

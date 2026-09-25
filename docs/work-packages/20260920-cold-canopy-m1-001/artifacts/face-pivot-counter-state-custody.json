@@ -1,0 +1,54 @@
+{
+  "evidence_class": "Ran: direct extraction from sole replay stderr; independent QA checked raw custody",
+  "source_receipt": "face-pivot-cut07-ordinary-positive.json",
+  "raw_stderr_sha256": "0f9299cc4278f08ca5006f03356748ef55302c610ceba92f9c95302cf3d50636",
+  "owner_budget": {
+    "core_attempted": 83,
+    "core": 83,
+    "raw_jacobian_attempted": 2,
+    "raw_jacobian": 2,
+    "hydraulic_attempted": 4,
+    "hydraulic": 4,
+    "stage1_factorization_attempted": 45,
+    "stage1_factorization": 45,
+    "materialization_attempted": 0,
+    "materialization": 0
+  },
+  "runtime_nested_metrics": {
+    "hydraulic_entries": 2,
+    "actual_hydraulic_entries": 4,
+    "meaning": "Two block-pair entries and four actual owner entries; do not add to owner counters"
+  },
+  "subproblem_summaries": [
+    {
+      "successful": true,
+      "factorizations": 2,
+      "pivots": 1,
+      "maximum_jacobi_sweeps_per_factorization": 7
+    },
+    {
+      "successful": false,
+      "factorizations": 43,
+      "pivots": 42,
+      "maximum_jacobi_sweeps_per_factorization": 7
+    }
+  ],
+  "aggregate_factorizations": 45,
+  "aggregate_pivots": 43,
+  "total_jacobi_sweep_work": "Not claimed from the sum of per-subproblem maxima",
+  "input_protected": true,
+  "prior_budget": "None",
+  "restored_budget": "None",
+  "materialization": 0,
+  "budget_denial": false,
+  "setup_bits": "face-pivot-observed-setup.json",
+  "setup_scope": "Canonical original60 solve occurs before counters and capture; fixed coordinate20 +1e-4 K only",
+  "failure": "Unchanged required-positive expect panics on actual typed FacePivotLimit; exit100; not relabeled expected success",
+  "exact_state_joins": {
+    "only_coordinate20_perturbed": true,
+    "binary64_accepted_plus_1e_minus4_equal_perturbed": true,
+    "installed_base_before_equals_perturbed_bits": true,
+    "installed_base_after_equals_failing_base_bits": true,
+    "admission_previous_current_equal_install_before_after": true
+  }
+}

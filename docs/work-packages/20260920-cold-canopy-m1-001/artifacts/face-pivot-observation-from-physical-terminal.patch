@@ -1,0 +1,1622 @@
+--- a/crates/openwepp-land-surface-energy/src/lib.rs
++++ b/crates/openwepp-land-surface-energy/src/lib.rs
+@@ -144,6 +144,11 @@
+     )
+ ))]
+ mod m1_trust_region_stage2_controls;
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) use m1_trust_region_stage1::{
++    m1_face_pivot_capture_begin_for_test, m1_face_pivot_capture_enabled_for_test,
++    m1_face_pivot_capture_json_for_test, m1_face_pivot_capture_take_for_test,
++};
+ #[cfg(test)]
+ pub(crate) use m1_trust_region_stage1::{
+     m1_trust_region_frozen_merit_for_test, m1_trust_region_jacobi_observation_for_test,
+--- a/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -5222,6 +5222,25 @@
+ 
+ #[cfg(feature = "m1-trust-region-physical-stage")]
+ #[test]
++fn m1_face_pivot_capture_scope_is_opt_in_nested_and_error_preserving() {
++    assert!(!super::m1_face_pivot_capture_enabled_for_test());
++    let outer = super::m1_face_pivot_capture_begin_for_test();
++    assert!(super::m1_face_pivot_capture_enabled_for_test());
++    {
++        let inner = super::m1_face_pivot_capture_begin_for_test();
++        assert!(super::m1_face_pivot_capture_enabled_for_test());
++        assert!(super::m1_face_pivot_capture_take_for_test().is_none());
++        drop(inner);
++    }
++    assert!(super::m1_face_pivot_capture_enabled_for_test());
++    let original_error: Result<(), &'static str> = Err("original typed error");
++    drop(outer);
++    assert!(!super::m1_face_pivot_capture_enabled_for_test());
++    assert_eq!(original_error, Err("original typed error"));
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++#[test]
+ fn m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization() {
+     let original: Value = serde_json::from_str(ORIGINAL).expect("original input");
+     let input = M1CoupledColumnInput::from_covered_column(
+@@ -5237,6 +5256,8 @@
+     let accepted_coordinates = *setup.accepted_coordinates();
+     let mut perturbed_coordinates = accepted_coordinates;
+     perturbed_coordinates[20] += 1.0e-4;
++    let setup_coordinate_bits = accepted_coordinates.map(f64::to_bits);
++    let perturbed_coordinate_bits = perturbed_coordinates.map(f64::to_bits);
+     assert!(perturbed_coordinates[20] - accepted_coordinates[20] > 1.0e-8);
+     assert!(perturbed_coordinates[20] - accepted_coordinates[20] < 1.0);
+     let protected_input = input.clone();
+@@ -5244,8 +5265,30 @@
+     super::m1_reset_accepted_capture_for_test();
+     super::m1_reset_loop_activity_observation_for_test();
+     super::m1_reset_work_observation_for_test();
++    let prior_budget = super::m1_physical_budget_observation_for_test();
+     let mut adapter = super::M1PhysicalTrustRegionAdapter::new(input, protected_trial.clone());
+-    let result = super::m1_trust_region_physical_adapter_proposal_for_test(&mut adapter)
++    let capture_scope = super::m1_face_pivot_capture_begin_for_test();
++    let observed_result = super::m1_trust_region_physical_adapter_proposal_for_test(&mut adapter);
++    let face_capture = super::m1_face_pivot_capture_take_for_test();
++    let face_capture_json = super::m1_face_pivot_capture_json_for_test(face_capture.as_ref());
++    let phase_events_json = adapter.observation().face_pivot_phase_json_for_test();
++    let accepted_capture_is_none = super::m1_captured_accepted_adapter_binding_for_test().is_none();
++    let restored_budget = super::m1_physical_budget_observation_for_test();
++    let _ = std::io::Write::write_fmt(
++        &mut std::io::stderr().lock(),
++        format_args!(
++            "FACE_PIVOT_SETUP accepted_bits={setup_coordinate_bits:?} perturbed_bits={perturbed_coordinate_bits:?}\nFACE_PIVOT_CAPTURE {face_capture_json}\nFACE_PIVOT_PHASES {phase_events_json}\nFACE_PIVOT_ADAPTER {:#?}\nFACE_PIVOT_RUNTIME {:#?}\nFACE_PIVOT_WORK {:?}\nFACE_PIVOT_BUDGET prior={prior_budget:#?} restored={restored_budget:#?}\nFACE_PIVOT_OUTER_BUDGET {:#?}\nFACE_PIVOT_PROTECTED input={} trial={} accepted_capture_none={}\n",
++            adapter.observation(),
++            super::m1_loop_activity_observation_for_test(),
++            super::m1_work_observation_for_test(),
++            super::m1_physical_budget_observation_for_test(),
++            adapter.input == protected_input,
++            adapter.initial_trial == protected_trial,
++            accepted_capture_is_none,
++        ),
++    );
++    drop(capture_scope);
++    let result = observed_result
+         .expect("ordinary accepted update must reassemble its nonroot base and materialize root");
+     independently_reconstruct_reservoirs(&result, true);
+     assert!(result.is_bound_to(&protected_input));
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs
+@@ -60,6 +60,18 @@
+     ReplacementAvailable,
+     ReplacementConsumed,
+ }
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn capture_witness_eligibility_for_test(eligibility: ReplacementWitnessEligibility) {
++    if !super::m1_face_pivot_capture_enabled_for_test() {
++        return;
++    }
++    let event = match eligibility {
++        ReplacementWitnessEligibility::FullProposal => "witness-full-proposal",
++        ReplacementWitnessEligibility::ReplacementAvailable => "witness-replacement-available",
++        ReplacementWitnessEligibility::ReplacementConsumed => "witness-replacement-consumed",
++    };
++    super::m1_trust_region_stage1::m1_face_pivot_capture_lifecycle_for_test(event);
++}
+ pub(crate) struct ProposalModel {
+     pub(crate) observation: super::M1TrustRegionSubproblemObservation,
+     pub(crate) weighted_jacobian: Vec<Vec<f64>>,
+@@ -87,8 +99,16 @@
+     moving_merit: f64,
+     candidate_max: f64,
+ }
++#[derive(Clone, Copy)]
+ enum GovernedStep {
+-    Complete(bool),
++    Complete {
++        pass: bool,
++        temperature: f64,
++        humidity: f64,
++        hydraulic: f64,
++        beta: f64,
++        ci: [f64; 4],
++    },
+     Incomplete,
+ }
+ fn finite_max(values: impl IntoIterator<Item = f64>) -> Option<f64> {
+@@ -267,12 +287,7 @@
+         ) else {
+             return Err("nonfinite governed step operand");
+         };
+-        let ci = candidate
+-            .ci_pa
+-            .iter()
+-            .zip(current.ci_pa.iter())
+-            .map(|(a, b)| a - b)
+-            .collect::<Vec<_>>();
++        let ci = std::array::from_fn(|index| candidate.ci_pa[index] - current.ci_pa[index]);
+         if !humidity.is_finite() || ci.iter().any(|value| !value.is_finite()) {
+             return Err("nonfinite governed step operand");
+         }
+@@ -284,15 +299,20 @@
+         {
+             return Ok(GovernedStep::Incomplete);
+         }
+-        Ok(GovernedStep::Complete(
+-            super::solver::m1_governed_step_components_pass_for_trust_region(
++        Ok(GovernedStep::Complete {
++            pass: super::solver::m1_governed_step_components_pass_for_trust_region(
+                 temperature,
+                 humidity,
+                 hydraulic,
+                 beta,
+                 &ci,
+             ),
+-        ))
++            temperature,
++            humidity,
++            hydraulic,
++            beta,
++            ci,
++        })
+     }
+ 
+     fn transition_trace(
+@@ -368,15 +388,30 @@
+         basis: &TransitionBasis<'_>,
+         candidate: M1TrustRegionControllerEvaluation<P>,
+         merit: &TrialMerit,
++        current_max: f64,
+     ) -> Result<
+         super::m1_trust_region_controller_interface::M1TrustRegionControllerTransition,
+         M1TrustRegionControllerError<E>,
+     > {
+         use super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition;
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        let recorder_current = if super::m1_face_pivot_capture_enabled_for_test() {
++            Some((
++                self.current.raw_residual,
++                self.current.dynamic_normalizers,
++                current_max,
++            ))
++        } else {
++            None
++        };
+         self.preceding = Some(self.current.clone());
+         self.current = candidate;
+         self.accepted_updates += 1;
+         self.witness_eligibility = ReplacementWitnessEligibility::FullProposal;
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        super::m1_trust_region_stage1::m1_face_pivot_capture_lifecycle_for_test(
++            "installed-witness-full-proposal",
++        );
+         if merit.rho < 0.25 {
+             self.radius *= 0.25;
+         } else if merit.rho > 0.75
+@@ -388,6 +423,27 @@
+                 >= 0.99 * basis.radius_before
+         {
+             self.radius = (2.0 * self.radius).min(8.0);
++        }
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        if let Some(recorder_current) = recorder_current {
++            super::m1_trust_region_stage1::m1_face_pivot_capture_accepted_install_for_test(
++                super::m1_trust_region_stage1::M1FacePivotAcceptedInstall {
++                    base_before: basis.base_before,
++                    raw_before: recorder_current.0,
++                    normalizers_before: recorder_current.1,
++                    base_after: self.current.coordinates,
++                    raw_after: self.current.raw_residual,
++                    normalizers_after: self.current.dynamic_normalizers,
++                    scaled_step: basis.model.observation.scaled_step,
++                    rho: merit.rho,
++                    predicted_reduction: basis.model.predicted_reduction,
++                    actual_reduction: merit.actual_reduction,
++                    dynamic_max_before: recorder_current.2,
++                    dynamic_max_after: merit.candidate_max,
++                    radius_before: basis.radius_before,
++                    radius_after: self.radius,
++                },
++            );
+         }
+         Ok(Self::transition_trace(
+             basis,
+@@ -419,14 +475,15 @@
+         &mut self,
+         basis: &TransitionBasis<'_>,
+     ) -> super::m1_trust_region_controller_interface::M1TrustRegionControllerTransition {
+-        use super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition as Disposition;
+         if self.witness_eligibility == ReplacementWitnessEligibility::FullProposal {
+             self.witness_eligibility = ReplacementWitnessEligibility::ReplacementAvailable;
+         }
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        capture_witness_eligibility_for_test(self.witness_eligibility);
+         self.shrink_transition(
+             basis,
+             TransitionOutcome {
+-                disposition: Disposition::MeritRejectedAndShrunk,
++                disposition: super::m1_trust_region_controller_interface::M1TrustRegionProposalDisposition::MeritRejectedAndShrunk,
+                 actual_reduction: None,
+                 rho: None,
+                 moving_merit: None,
+@@ -580,10 +637,10 @@
+         }
+         if current_max <= 1.0 && root_witness {
+             match governed {
+-                GovernedStep::Complete(true) => {
++                GovernedStep::Complete { pass: true, .. } => {
+                     return self.root_admit(evaluator, &basis, merit.as_ref(), candidate_max);
+                 }
+-                GovernedStep::Complete(false) => {
++                GovernedStep::Complete { pass: false, .. } => {
+                     if self.witness_eligibility == ReplacementWitnessEligibility::FullProposal {
+                         self.witness_eligibility =
+                             ReplacementWitnessEligibility::ReplacementAvailable;
+@@ -599,10 +656,10 @@
+         }
+         let ordinary_update_eligible = current_max > 1.0
+             || self.witness_eligibility == ReplacementWitnessEligibility::ReplacementConsumed;
+-        if matches!(governed, GovernedStep::Complete(_)) && ordinary_update_eligible {
++        if matches!(governed, GovernedStep::Complete { .. }) && ordinary_update_eligible {
+             if let Some(merit) = merit.as_ref() {
+                 if merit.rho >= 0.1 && merit.candidate_max < current_max {
+-                    return self.install_candidate(&basis, candidate, merit);
++                    return self.install_candidate(&basis, candidate, merit, current_max);
+                 }
+             }
+         }
+@@ -645,6 +702,8 @@
+     where
+         V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,
+     {
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        capture_witness_eligibility_for_test(self.witness_eligibility);
+         let predictor = self.proposal_model()?;
+         let predictor_direction = self
+             .physical_direction(predictor.observation.scaled_step)
+@@ -711,15 +770,69 @@
+         let Some(previous) = self.preceding.as_ref() else {
+             return Ok(false);
+         };
+-        let admitted = Self::dynamic_max(&self.current)
+-            .map_err(M1TrustRegionControllerError::Numerical)?
+-            <= 1.0
+-            && matches!(
+-                Self::governed_step_pass(previous, &self.current)
+-                    .map_err(M1TrustRegionControllerError::Numerical)?,
+-                GovernedStep::Complete(true)
++        let current_max =
++            Self::dynamic_max(&self.current).map_err(M1TrustRegionControllerError::Numerical)?;
++        let governed = (current_max <= 1.0)
++            .then(|| Self::governed_step_pass(previous, &self.current))
++            .transpose()
++            .map_err(M1TrustRegionControllerError::Numerical)?;
++        let admitted = matches!(governed, Some(GovernedStep::Complete { pass: true, .. }));
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        if super::m1_face_pivot_capture_enabled_for_test() {
++            super::m1_trust_region_stage1::m1_face_pivot_capture_post_update_admission_for_test(
++                super::m1_trust_region_stage1::M1FacePivotPostUpdateAdmission {
++                    previous_coordinates: previous.coordinates,
++                    previous_raw: previous.raw_residual,
++                    previous_normalizers: previous.dynamic_normalizers,
++                    previous_wet_temperature_k: previous.wet_temperature_k,
++                    previous_hydraulics: previous.current_hydraulics,
++                    previous_beta: previous.beta,
++                    previous_ci_pa: previous.ci_pa,
++                    current_coordinates: self.current.coordinates,
++                    current_raw: self.current.raw_residual,
++                    current_normalizers: self.current.dynamic_normalizers,
++                    current_wet_temperature_k: self.current.wet_temperature_k,
++                    current_hydraulics: self.current.current_hydraulics,
++                    current_beta: self.current.beta,
++                    current_ci_pa: self.current.ci_pa,
++                    current_max,
++                    governed_temperature: match governed {
++                        Some(GovernedStep::Complete { temperature, .. }) => Some(temperature),
++                        _ => None,
++                    },
++                    governed_humidity: match governed {
++                        Some(GovernedStep::Complete { humidity, .. }) => Some(humidity),
++                        _ => None,
++                    },
++                    governed_hydraulic: match governed {
++                        Some(GovernedStep::Complete { hydraulic, .. }) => Some(hydraulic),
++                        _ => None,
++                    },
++                    governed_beta: match governed {
++                        Some(GovernedStep::Complete { beta, .. }) => Some(beta),
++                        _ => None,
++                    },
++                    governed_ci: match governed {
++                        Some(GovernedStep::Complete { ci, .. }) => Some(ci),
++                        _ => None,
++                    },
++                    governed_pass: match governed {
++                        Some(GovernedStep::Complete { pass, .. }) => Some(pass),
++                        _ => None,
++                    },
++                    governed_thresholds:
++                        super::solver::m1_governed_step_thresholds_for_trust_region(),
++                    admitted,
++                },
+             );
++        }
+         self.preceding = None;
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        if !admitted {
++            super::m1_trust_region_stage1::m1_face_pivot_capture_lifecycle_for_test(
++                "post-update-not-admitted",
++            );
++        }
+         if admitted {
+             self.materialize_current(evaluator)?;
+             return Ok(true);
+@@ -795,7 +908,15 @@
+                 break;
+             }
+             evaluator.reset_current_hydraulics_after_nonroot_post_update(&mut state.current);
++            #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++            super::m1_trust_region_stage1::m1_face_pivot_capture_lifecycle_for_test(
++                "current-hydraulics-reset",
++            );
+             state.reassemble_current(evaluator)?;
++            #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++            super::m1_trust_region_stage1::m1_face_pivot_capture_lifecycle_for_test(
++                "fresh-base-reassembled",
++            );
+             per_base_proposals = 0;
+             continue;
+         }
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -1,6 +1,12 @@
+ //! Private frozen-weight arithmetic shared by detached Stage 1 controls.
+ 
+ use std::cmp::Ordering;
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++use std::cell::{Cell, RefCell};
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++use crate::m1_trust_region_controller_interface::M1TrustRegionCurrentHydraulics;
+ 
+ use super::{
+     M1TrustRegionBallEndpoint, M1TrustRegionBallObservation, M1TrustRegionJacobiInput,
+@@ -8,6 +14,726 @@
+     M1TrustRegionRefusalKind,
+ };
+ use super::{M1TrustRegionMeritInput, M1TrustRegionMeritObservation};
++
++// This is a deliberately opt-in, test-only flight recorder for one retained
++// physical refusal.  It copies operands already produced by Stage 1; every
++// write is best-effort so observation can never replace the typed result.
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1FacePivotCapture {
++    pub(crate) base: [f64; 21],
++    pub(crate) raw_residual: [f64; 21],
++    pub(crate) raw_jacobian: [[f64; 21]; 21],
++    pub(crate) normalizers: [f64; 21],
++    pub(crate) scales: [f64; 21],
++    pub(crate) lower: [f64; 21],
++    pub(crate) upper: [f64; 21],
++    pub(crate) weighted_residual: Vec<f64>,
++    pub(crate) weighted_matrix: Vec<Vec<f64>>,
++    pub(crate) initial_radius: f64,
++    pub(crate) completed_subproblems: Vec<M1FacePivotSubproblemSummary>,
++    pub(crate) operations: Vec<M1FacePivotCaptureOperation>,
++    pub(crate) accepted_installs: Vec<M1FacePivotAcceptedInstall>,
++    pub(crate) post_update_admissions: Vec<M1FacePivotPostUpdateAdmission>,
++    pub(crate) lifecycle: Vec<&'static str>,
++    pub(crate) refusal: Option<M1FacePivotCaptureRefusal>,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1FacePivotSubproblemSummary {
++    pub(crate) entered_factorizations: u8,
++    pub(crate) completed_pivots: u8,
++    pub(crate) completed_sweeps: u8,
++    pub(crate) refused: bool,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1FacePivotPostUpdateAdmission {
++    pub(crate) previous_coordinates: [f64; 21],
++    pub(crate) previous_raw: [f64; 21],
++    pub(crate) previous_normalizers: [f64; 21],
++    pub(crate) previous_wet_temperature_k: [Option<f64>; 2],
++    pub(crate) previous_hydraulics: M1TrustRegionCurrentHydraulics,
++    pub(crate) previous_beta: [f64; 4],
++    pub(crate) previous_ci_pa: [f64; 4],
++    pub(crate) current_coordinates: [f64; 21],
++    pub(crate) current_raw: [f64; 21],
++    pub(crate) current_normalizers: [f64; 21],
++    pub(crate) current_wet_temperature_k: [Option<f64>; 2],
++    pub(crate) current_hydraulics: M1TrustRegionCurrentHydraulics,
++    pub(crate) current_beta: [f64; 4],
++    pub(crate) current_ci_pa: [f64; 4],
++    pub(crate) current_max: f64,
++    pub(crate) governed_temperature: Option<f64>,
++    pub(crate) governed_humidity: Option<f64>,
++    pub(crate) governed_hydraulic: Option<f64>,
++    pub(crate) governed_beta: Option<f64>,
++    pub(crate) governed_ci: Option<[f64; 4]>,
++    pub(crate) governed_pass: Option<bool>,
++    pub(crate) governed_thresholds: [f64; 4],
++    pub(crate) admitted: bool,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1FacePivotAcceptedInstall {
++    pub(crate) base_before: [f64; 21],
++    pub(crate) raw_before: [f64; 21],
++    pub(crate) normalizers_before: [f64; 21],
++    pub(crate) base_after: [f64; 21],
++    pub(crate) raw_after: [f64; 21],
++    pub(crate) normalizers_after: [f64; 21],
++    pub(crate) scaled_step: [f64; 21],
++    pub(crate) rho: f64,
++    pub(crate) predicted_reduction: f64,
++    pub(crate) actual_reduction: f64,
++    pub(crate) dynamic_max_before: f64,
++    pub(crate) dynamic_max_after: f64,
++    pub(crate) radius_before: f64,
++    pub(crate) radius_after: f64,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1FacePivotCaptureOperation {
++    pub(crate) action: &'static str,
++    pub(crate) p_before: [f64; 21],
++    pub(crate) p_candidate: [f64; 21],
++    pub(crate) conceptual_p_after: [f64; 21],
++    pub(crate) scratch_p_at_refusal: Option<[f64; 21]>,
++    pub(crate) applied: bool,
++    pub(crate) lower_before: [bool; 21],
++    pub(crate) upper_before: [bool; 21],
++    pub(crate) free_before: [bool; 21],
++    pub(crate) lower_after: [bool; 21],
++    pub(crate) upper_after: [bool; 21],
++    pub(crate) free_after: [bool; 21],
++    pub(crate) free_ids: Vec<usize>,
++    pub(crate) radius: f64,
++    pub(crate) lambda: Option<f64>,
++    pub(crate) crossing_theta: Option<f64>,
++    pub(crate) selected_coordinate: Option<usize>,
++    pub(crate) selected_lower: Option<bool>,
++    pub(crate) g: Option<[f64; 21]>,
++    pub(crate) lambda_times_p: Option<[f64; 21]>,
++    pub(crate) h: Option<[f64; 21]>,
++    pub(crate) entered_factorizations: u8,
++    pub(crate) completed_pivots: u8,
++    pub(crate) completed_sweeps: u8,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1FacePivotCaptureRefusal {
++    pub(crate) stage: &'static str,
++    pub(crate) kind: M1TrustRegionRefusalKind,
++    pub(crate) p: [f64; 21],
++    pub(crate) lower: [bool; 21],
++    pub(crate) upper: [bool; 21],
++    pub(crate) free: [bool; 21],
++    pub(crate) entered_factorizations: u8,
++    pub(crate) completed_pivots: u8,
++    pub(crate) completed_sweeps: u8,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++thread_local! {
++    static FACE_PIVOT_CAPTURE: RefCell<Option<M1FacePivotCapture>> = const { RefCell::new(None) };
++    static FACE_PIVOT_CAPTURE_ENABLED: Cell<bool> = const { Cell::new(false) };
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) struct M1FacePivotCaptureScope {
++    prior_enabled: bool,
++    prior_capture: Option<M1FacePivotCapture>,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++impl Drop for M1FacePivotCaptureScope {
++    fn drop(&mut self) {
++        let _ = FACE_PIVOT_CAPTURE_ENABLED.try_with(|enabled| enabled.set(self.prior_enabled));
++        let _ = FACE_PIVOT_CAPTURE.try_with(|cell| {
++            if let Ok(mut capture) = cell.try_borrow_mut() {
++                *capture = self.prior_capture.take();
++            }
++        });
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_face_pivot_capture_begin_for_test() -> M1FacePivotCaptureScope {
++    let prior_enabled = FACE_PIVOT_CAPTURE_ENABLED
++        .try_with(Cell::get)
++        .unwrap_or(false);
++    let prior_capture = FACE_PIVOT_CAPTURE
++        .try_with(|cell| cell.try_borrow().ok().and_then(|capture| capture.clone()))
++        .ok()
++        .flatten();
++    let _ = FACE_PIVOT_CAPTURE_ENABLED.try_with(|enabled| enabled.set(true));
++    let _ = FACE_PIVOT_CAPTURE.try_with(|cell| {
++        if let Ok(mut capture) = cell.try_borrow_mut() {
++            *capture = None;
++        }
++    });
++    M1FacePivotCaptureScope {
++        prior_enabled,
++        prior_capture,
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_face_pivot_capture_enabled_for_test() -> bool {
++    FACE_PIVOT_CAPTURE_ENABLED
++        .try_with(Cell::get)
++        .unwrap_or(false)
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_face_pivot_capture_take_for_test() -> Option<M1FacePivotCapture> {
++    FACE_PIVOT_CAPTURE
++        .try_with(|cell| {
++            cell.try_borrow_mut()
++                .ok()
++                .and_then(|mut capture| capture.take())
++        })
++        .ok()
++        .flatten()
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_bits<const N: usize>(output: &mut String, values: &[f64; N]) {
++    use std::fmt::Write;
++
++    output.push('[');
++    for (index, value) in values.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        let _ = write!(output, "\"{:016x}\"", value.to_bits());
++    }
++    output.push(']');
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_bool_bits<const N: usize>(output: &mut String, values: &[bool; N]) {
++    output.push('[');
++    for (index, value) in values.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        output.push_str(if *value { "true" } else { "false" });
++    }
++    output.push(']');
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_optional_bits<const N: usize>(output: &mut String, values: Option<[f64; N]>) {
++    match values {
++        Some(values) => append_bits(output, &values),
++        None => output.push_str("null"),
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_optional_bit(output: &mut String, value: Option<f64>) {
++    use std::fmt::Write;
++
++    match value {
++        Some(value) => {
++            let _ = write!(output, "\"{:016x}\"", value.to_bits());
++        }
++        None => output.push_str("null"),
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_optional_bits_array<const N: usize>(output: &mut String, values: &[Option<f64>; N]) {
++    output.push('[');
++    for (index, value) in values.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        append_optional_bit(output, *value);
++    }
++    output.push(']');
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_hydraulics(output: &mut String, hydraulics: M1TrustRegionCurrentHydraulics) {
++    match hydraulics {
++        M1TrustRegionCurrentHydraulics::Pending => output.push_str("null"),
++        M1TrustRegionCurrentHydraulics::Complete(values) => append_bits(output, &values),
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_named_bits<const N: usize>(output: &mut String, name: &str, values: &[f64; N]) {
++    use std::fmt::Write;
++
++    let _ = write!(output, "\"{name}\":");
++    append_bits(output, values);
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_operation_json(output: &mut String, operation: &M1FacePivotCaptureOperation) {
++    use std::fmt::Write;
++
++    let _ = write!(
++        output,
++        "{{\"action\":\"{}\",\"applied\":{}",
++        operation.action, operation.applied
++    );
++    for (name, values) in [
++        ("p_before", &operation.p_before),
++        ("p_candidate", &operation.p_candidate),
++        ("conceptual_p_after", &operation.conceptual_p_after),
++    ] {
++        output.push(',');
++        append_named_bits(output, name, values);
++    }
++    let _ = write!(output, ",\"scratch_p_at_refusal\":");
++    append_optional_bits(output, operation.scratch_p_at_refusal);
++    for (name, values) in [
++        ("lower_before", &operation.lower_before),
++        ("upper_before", &operation.upper_before),
++        ("free_before", &operation.free_before),
++        ("lower_after", &operation.lower_after),
++        ("upper_after", &operation.upper_after),
++        ("free_after", &operation.free_after),
++    ] {
++        let _ = write!(output, ",\"{name}\":");
++        append_bool_bits(output, values);
++    }
++    let _ = write!(
++        output,
++        ",\"free_ids\":{:?},\"radius\":\"{:016x}\",\"lambda\":",
++        operation.free_ids,
++        operation.radius.to_bits()
++    );
++    match operation.lambda {
++        Some(value) => {
++            let _ = write!(output, "\"{:016x}\"", value.to_bits());
++        }
++        None => output.push_str("null"),
++    }
++    output.push_str(",\"theta\":");
++    append_optional_bit(output, operation.crossing_theta);
++    let _ = write!(output, ",\"coordinate\":");
++    match operation.selected_coordinate {
++        Some(value) => {
++            let _ = write!(output, "{value}");
++        }
++        None => output.push_str("null"),
++    }
++    let _ = write!(output, ",\"lower\":");
++    match operation.selected_lower {
++        Some(value) => {
++            let _ = write!(output, "{value}");
++        }
++        None => output.push_str("null"),
++    }
++    let _ = write!(
++        output,
++        ",\"entered\":{},\"pivots\":{},\"sweeps\":{}",
++        operation.entered_factorizations, operation.completed_pivots, operation.completed_sweeps
++    );
++    for (name, values) in [
++        ("g", operation.g),
++        ("lambda_times_p", operation.lambda_times_p),
++        ("h", operation.h),
++    ] {
++        let _ = write!(output, ",\"{name}\":");
++        append_optional_bits(output, values);
++    }
++    output.push('}');
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_capture_input_json(output: &mut String, capture: &M1FacePivotCapture) {
++    use std::fmt::Write;
++
++    for (index, (name, values)) in [
++        ("base", &capture.base),
++        ("raw_residual", &capture.raw_residual),
++        ("normalizers", &capture.normalizers),
++        ("scales", &capture.scales),
++        ("lower", &capture.lower),
++        ("upper", &capture.upper),
++    ]
++    .iter()
++    .enumerate()
++    {
++        if index != 0 {
++            output.push(',');
++        }
++        append_named_bits(output, name, values);
++    }
++    output.push_str(",\"raw_jacobian\":[");
++    for (index, row) in capture.raw_jacobian.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        append_bits(output, row);
++    }
++    output.push_str("],\"weighted_residual\":[");
++    append_slice_bits(output, &capture.weighted_residual);
++    output.push_str("],\"weighted_matrix\":[");
++    for (index, row) in capture.weighted_matrix.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        output.push('[');
++        append_slice_bits(output, row);
++        output.push(']');
++    }
++    let _ = write!(
++        output,
++        "],\"initial_radius\":\"{:016x}\",\"operations\":[",
++        capture.initial_radius.to_bits()
++    );
++    for (index, operation) in capture.operations.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        append_operation_json(output, operation);
++    }
++    output.push_str("],\"completed_subproblems\":[");
++    for (index, summary) in capture.completed_subproblems.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        let _ = write!(
++            output,
++            "{{\"entered\":{},\"pivots\":{},\"sweeps\":{},\"refused\":{}}}",
++            summary.entered_factorizations,
++            summary.completed_pivots,
++            summary.completed_sweeps,
++            summary.refused
++        );
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_slice_bits(output: &mut String, values: &[f64]) {
++    use std::fmt::Write;
++
++    for (index, value) in values.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        let _ = write!(output, "\"{:016x}\"", value.to_bits());
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_installs_json(output: &mut String, installs: &[M1FacePivotAcceptedInstall]) {
++    use std::fmt::Write;
++
++    output.push_str("],\"accepted_installs\":[");
++    for (index, install) in installs.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        output.push('{');
++        for (number, (name, values)) in [
++            ("base_before", &install.base_before),
++            ("raw_before", &install.raw_before),
++            ("normalizers_before", &install.normalizers_before),
++            ("base_after", &install.base_after),
++            ("raw_after", &install.raw_after),
++            ("normalizers_after", &install.normalizers_after),
++            ("scaled_step", &install.scaled_step),
++        ]
++        .iter()
++        .enumerate()
++        {
++            if number != 0 {
++                output.push(',');
++            }
++            append_named_bits(output, name, values);
++        }
++        let _ = write!(
++            output,
++            ",\"rho\":\"{:016x}\",\"predicted\":\"{:016x}\",\"actual\":\"{:016x}\",\"max_before\":\"{:016x}\",\"max_after\":\"{:016x}\",\"radius_before\":\"{:016x}\",\"radius_after\":\"{:016x}\"}}",
++            install.rho.to_bits(),
++            install.predicted_reduction.to_bits(),
++            install.actual_reduction.to_bits(),
++            install.dynamic_max_before.to_bits(),
++            install.dynamic_max_after.to_bits(),
++            install.radius_before.to_bits(),
++            install.radius_after.to_bits()
++        );
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_admissions_json(output: &mut String, admissions: &[M1FacePivotPostUpdateAdmission]) {
++    use std::fmt::Write;
++
++    output.push_str("],\"post_update_admissions\":[");
++    for (index, admission) in admissions.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        output.push('{');
++        for (number, (name, values)) in [
++            ("previous_coordinates", &admission.previous_coordinates),
++            ("previous_raw", &admission.previous_raw),
++            ("previous_normalizers", &admission.previous_normalizers),
++            ("current_coordinates", &admission.current_coordinates),
++            ("current_raw", &admission.current_raw),
++            ("current_normalizers", &admission.current_normalizers),
++        ]
++        .iter()
++        .enumerate()
++        {
++            if number != 0 {
++                output.push(',');
++            }
++            append_named_bits(output, name, values);
++        }
++        output.push(',');
++        append_named_bits(output, "thresholds", &admission.governed_thresholds);
++        output.push(',');
++        append_named_bits(output, "previous_beta", &admission.previous_beta);
++        output.push(',');
++        append_named_bits(output, "previous_ci_pa", &admission.previous_ci_pa);
++        output.push(',');
++        append_named_bits(output, "current_beta", &admission.current_beta);
++        output.push(',');
++        append_named_bits(output, "current_ci_pa", &admission.current_ci_pa);
++        output.push_str(",\"previous_hydraulics\":");
++        append_hydraulics(output, admission.previous_hydraulics);
++        output.push_str(",\"current_hydraulics\":");
++        append_hydraulics(output, admission.current_hydraulics);
++        output.push_str(",\"previous_wet_temperature_k\":");
++        append_optional_bits_array(output, &admission.previous_wet_temperature_k);
++        output.push_str(",\"current_wet_temperature_k\":");
++        append_optional_bits_array(output, &admission.current_wet_temperature_k);
++        let _ = write!(
++            output,
++            ",\"current_max\":\"{:016x}\",\"temperature\":",
++            admission.current_max.to_bits()
++        );
++        append_optional_bit(output, admission.governed_temperature);
++        output.push_str(",\"humidity\":");
++        append_optional_bit(output, admission.governed_humidity);
++        output.push_str(",\"hydraulic\":");
++        append_optional_bit(output, admission.governed_hydraulic);
++        output.push_str(",\"beta\":");
++        append_optional_bit(output, admission.governed_beta);
++        output.push_str(",\"ci\":");
++        append_optional_bits(output, admission.governed_ci);
++        let _ = write!(
++            output,
++            ",\"pass\":{},\"admitted\":{}}}",
++            admission
++                .governed_pass
++                .map_or("null".to_owned(), |value| value.to_string()),
++            admission.admitted
++        );
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_refusal_json(output: &mut String, capture: &M1FacePivotCapture) {
++    use std::fmt::Write;
++
++    let _ = write!(
++        output,
++        "],\"lifecycle\":{:?},\"refusal\":",
++        capture.lifecycle
++    );
++    match &capture.refusal {
++        Some(refusal) => {
++            let _ = write!(
++                output,
++                "{{\"stage\":\"{}\",\"kind\":\"{:?}\",\"entered\":{},\"pivots\":{},\"sweeps\":{},\"p\":",
++                refusal.stage,
++                refusal.kind,
++                refusal.entered_factorizations,
++                refusal.completed_pivots,
++                refusal.completed_sweeps
++            );
++            append_bits(output, &refusal.p);
++            output.push_str(",\"lower\":");
++            append_bool_bits(output, &refusal.lower);
++            output.push_str(",\"upper\":");
++            append_bool_bits(output, &refusal.upper);
++            output.push_str(",\"free\":");
++            append_bool_bits(output, &refusal.free);
++            output.push('}');
++        }
++        None => output.push_str("null"),
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_face_pivot_capture_json_for_test(capture: Option<&M1FacePivotCapture>) -> String {
++    let Some(capture) = capture else {
++        return "null".to_owned();
++    };
++    let mut output = String::from("{");
++    append_capture_input_json(&mut output, capture);
++    append_installs_json(&mut output, &capture.accepted_installs);
++    append_admissions_json(&mut output, &capture.post_update_admissions);
++    append_refusal_json(&mut output, capture);
++    output.push('}');
++    output
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn populated_face_pivot_capture_for_test() -> M1FacePivotCapture {
++    M1FacePivotCapture {
++        base: [f64::NEG_INFINITY; 21],
++        raw_residual: [-0.0; 21],
++        raw_jacobian: [[0.0; 21]; 21],
++        normalizers: [1.0; 21],
++        scales: [1.0; 21],
++        lower: [0.0; 21],
++        upper: [1.0; 21],
++        weighted_residual: vec![f64::INFINITY],
++        weighted_matrix: vec![vec![f64::NAN]],
++        initial_radius: 1.0,
++        completed_subproblems: vec![M1FacePivotSubproblemSummary {
++            entered_factorizations: 1,
++            completed_pivots: 0,
++            completed_sweeps: 0,
++            refused: false,
++        }],
++        operations: vec![M1FacePivotCaptureOperation {
++            action: "activate-cap",
++            p_before: [0.0; 21],
++            p_candidate: [1.0; 21],
++            conceptual_p_after: [0.0; 21],
++            scratch_p_at_refusal: Some([1.0; 21]),
++            applied: false,
++            lower_before: [false; 21],
++            upper_before: [false; 21],
++            free_before: [true; 21],
++            lower_after: [false; 21],
++            upper_after: [false; 21],
++            free_after: [true; 21],
++            free_ids: vec![1],
++            radius: 1.0,
++            lambda: Some(-0.0),
++            crossing_theta: Some(f64::INFINITY),
++            selected_coordinate: Some(1),
++            selected_lower: Some(true),
++            g: Some([1.0; 21]),
++            lambda_times_p: Some([2.0; 21]),
++            h: Some([3.0; 21]),
++            entered_factorizations: 43,
++            completed_pivots: 42,
++            completed_sweeps: 7,
++        }],
++        accepted_installs: vec![M1FacePivotAcceptedInstall {
++            base_before: [0.0; 21],
++            raw_before: [1.0; 21],
++            normalizers_before: [2.0; 21],
++            base_after: [3.0; 21],
++            raw_after: [4.0; 21],
++            normalizers_after: [5.0; 21],
++            scaled_step: [6.0; 21],
++            rho: 0.5,
++            predicted_reduction: 1.0,
++            actual_reduction: 0.5,
++            dynamic_max_before: 1.0,
++            dynamic_max_after: 0.5,
++            radius_before: 1.0,
++            radius_after: 2.0,
++        }],
++        post_update_admissions: vec![M1FacePivotPostUpdateAdmission {
++            previous_coordinates: [0.0; 21],
++            previous_raw: [1.0; 21],
++            previous_normalizers: [2.0; 21],
++            previous_wet_temperature_k: [Some(273.15), None],
++            previous_hydraulics: M1TrustRegionCurrentHydraulics::Complete([1.0; 8]),
++            previous_beta: [1.0; 4],
++            previous_ci_pa: [2.0; 4],
++            current_coordinates: [3.0; 21],
++            current_raw: [4.0; 21],
++            current_normalizers: [5.0; 21],
++            current_wet_temperature_k: [Some(274.15), Some(275.15)],
++            current_hydraulics: M1TrustRegionCurrentHydraulics::Complete([2.0; 8]),
++            current_beta: [3.0; 4],
++            current_ci_pa: [4.0; 4],
++            current_max: 0.5,
++            governed_temperature: Some(1.0),
++            governed_humidity: Some(2.0),
++            governed_hydraulic: Some(3.0),
++            governed_beta: Some(4.0),
++            governed_ci: Some([5.0; 4]),
++            governed_pass: Some(false),
++            governed_thresholds: [1.0; 4],
++            admitted: false,
++        }],
++        lifecycle: vec!["test"],
++        refusal: Some(M1FacePivotCaptureRefusal {
++            stage: "cap",
++            kind: M1TrustRegionRefusalKind::FacePivotLimit,
++            p: [1.0; 21],
++            lower: [false; 21],
++            upper: [true; 21],
++            free: [false; 21],
++            entered_factorizations: 43,
++            completed_pivots: 42,
++            completed_sweeps: 7,
++        }),
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[test]
++fn m1_face_pivot_populated_capture_json_parses() {
++    let capture = populated_face_pivot_capture_for_test();
++    let json = m1_face_pivot_capture_json_for_test(Some(&capture));
++    let parsed: serde_json::Value = serde_json::from_str(&json).expect("valid populated JSON");
++    assert_eq!(parsed["operations"][0]["coordinate"], 1);
++    assert_eq!(parsed["operations"][0]["lower"], true);
++    assert_eq!(parsed["post_update_admissions"][0]["pass"], false);
++    assert_eq!(parsed["refusal"]["kind"], "FacePivotLimit");
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn record_face_pivot_capture(f: impl FnOnce(&mut M1FacePivotCapture)) {
++    let enabled = FACE_PIVOT_CAPTURE_ENABLED
++        .try_with(Cell::get)
++        .unwrap_or(false);
++    if !enabled {
++        return;
++    }
++    let _ = FACE_PIVOT_CAPTURE.try_with(|cell| {
++        if let Ok(mut capture) = cell.try_borrow_mut() {
++            if let Some(capture) = capture.as_mut() {
++                f(capture);
++            }
++        }
++    });
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_face_pivot_capture_accepted_install_for_test(install: M1FacePivotAcceptedInstall) {
++    record_face_pivot_capture(|capture| {
++        capture.accepted_installs.push(install);
++    });
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_face_pivot_capture_post_update_admission_for_test(
++    admission: M1FacePivotPostUpdateAdmission,
++) {
++    record_face_pivot_capture(|capture| {
++        capture.post_update_admissions.push(admission);
++    });
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_face_pivot_capture_lifecycle_for_test(event: &'static str) {
++    record_face_pivot_capture(|capture| capture.lifecycle.push(event));
++}
+ 
+ pub(crate) fn checked_sum_squares(values: &[f64]) -> Result<f64, &'static str> {
+     let mut sum = 0.0;
+@@ -798,6 +1524,179 @@
+     }
+ }
+ 
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn capture_operation(state: &SubproblemState, operation: M1FacePivotCaptureOperation) {
++    record_face_pivot_capture(|capture| {
++        capture.operations.push(M1FacePivotCaptureOperation {
++            action: operation.action,
++            p_before: operation.p_before,
++            p_candidate: operation.p_candidate,
++            conceptual_p_after: operation.conceptual_p_after,
++            scratch_p_at_refusal: operation.scratch_p_at_refusal,
++            applied: operation.applied,
++            lower_before: operation.lower_before,
++            upper_before: operation.upper_before,
++            free_before: operation.free_before,
++            lower_after: state.lower_active,
++            upper_after: state.upper_active,
++            free_after: state.free,
++            free_ids: operation.free_ids,
++            radius: operation.radius,
++            lambda: operation.lambda,
++            crossing_theta: operation.crossing_theta,
++            selected_coordinate: operation.selected_coordinate,
++            selected_lower: operation.selected_lower,
++            g: operation.g,
++            lambda_times_p: operation.lambda_times_p,
++            h: operation.h,
++            entered_factorizations: state.entered,
++            completed_pivots: state.completed_pivots,
++            completed_sweeps: state.completed_sweeps,
++        });
++    });
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn capture_refusal(
++    refusal_stage: &'static str,
++    kind: M1TrustRegionRefusalKind,
++    state: &SubproblemState,
++) {
++    record_face_pivot_capture(|capture| {
++        capture.refusal = Some(M1FacePivotCaptureRefusal {
++            stage: refusal_stage,
++            kind,
++            p: state.p,
++            lower: state.lower_active,
++            upper: state.upper_active,
++            free: state.free,
++            entered_factorizations: state.entered,
++            completed_pivots: state.completed_pivots,
++            completed_sweeps: state.completed_sweeps,
++        });
++        capture
++            .completed_subproblems
++            .push(M1FacePivotSubproblemSummary {
++                entered_factorizations: state.entered,
++                completed_pivots: state.completed_pivots,
++                completed_sweeps: state.completed_sweeps,
++                refused: true,
++            });
++    });
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn capture_successful_subproblem(state: &SubproblemState) {
++    record_face_pivot_capture(|capture| {
++        capture
++            .completed_subproblems
++            .push(M1FacePivotSubproblemSummary {
++                entered_factorizations: state.entered,
++                completed_pivots: state.completed_pivots,
++                completed_sweeps: state.completed_sweeps,
++                refused: false,
++            });
++    });
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn capture_activation(
++    state: &SubproblemState,
++    solution: &FaceSolution,
++    p_before: [f64; 21],
++    p_candidate: [f64; 21],
++    masks_before: ([bool; 21], [bool; 21], [bool; 21]),
++    crossing: (f64, usize, bool),
++    applied: bool,
++) {
++    if !m1_face_pivot_capture_enabled_for_test() {
++        return;
++    }
++    let (crossing_theta, selected_coordinate, selected_lower) = crossing;
++    let (lower_before, upper_before, free_before) = masks_before;
++    capture_operation(
++        state,
++        M1FacePivotCaptureOperation {
++            action: if applied { "activate" } else { "activate-cap" },
++            p_before,
++            p_candidate,
++            conceptual_p_after: if applied { state.p } else { p_before },
++            scratch_p_at_refusal: (!applied).then_some(p_candidate),
++            applied,
++            lower_before,
++            upper_before,
++            free_before,
++            lower_after: [false; 21],
++            upper_after: [false; 21],
++            free_after: [false; 21],
++            free_ids: solution.free_ids.clone(),
++            radius: solution.radius,
++            lambda: Some(solution.trace.lambda),
++            crossing_theta: Some(crossing_theta),
++            selected_coordinate: Some(selected_coordinate),
++            selected_lower: Some(selected_lower),
++            g: None,
++            lambda_times_p: None,
++            h: None,
++            entered_factorizations: 0,
++            completed_pivots: 0,
++            completed_sweeps: 0,
++        },
++    );
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++struct ReleaseCapture<'a> {
++    solution: &'a FaceSolution,
++    values: &'a KktValues,
++    p_before: [f64; 21],
++    masks_before: ([bool; 21], [bool; 21], [bool; 21]),
++    selected: (usize, bool),
++    applied: bool,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn capture_release(state: &SubproblemState, capture: &ReleaseCapture<'_>) {
++    if !m1_face_pivot_capture_enabled_for_test() {
++        return;
++    }
++    let (lower_before, upper_before, free_before) = capture.masks_before;
++    let (selected_coordinate, selected_lower) = capture.selected;
++    capture_operation(
++        state,
++        M1FacePivotCaptureOperation {
++            action: if capture.applied {
++                "release"
++            } else {
++                "release-cap"
++            },
++            p_before: capture.p_before,
++            p_candidate: state.p,
++            conceptual_p_after: capture.p_before,
++            scratch_p_at_refusal: (!capture.applied).then_some(state.p),
++            applied: capture.applied,
++            lower_before,
++            upper_before,
++            free_before,
++            lower_after: [false; 21],
++            upper_after: [false; 21],
++            free_after: [false; 21],
++            free_ids: capture.solution.free_ids.clone(),
++            radius: capture.solution.radius,
++            lambda: Some(capture.solution.trace.lambda),
++            crossing_theta: None,
++            selected_coordinate: Some(selected_coordinate),
++            selected_lower: Some(selected_lower),
++            g: Some(capture.values.gradient),
++            lambda_times_p: Some(capture.values.lambda_times_step),
++            h: Some(capture.values.h),
++            entered_factorizations: 0,
++            completed_pivots: 0,
++            completed_sweeps: 0,
++        },
++    );
++}
++
+ fn state_refusal(
+     kind: M1TrustRegionRefusalKind,
+     state: &SubproblemState,
+@@ -1117,6 +2016,8 @@
+ struct FaceSolution {
+     free_ids: Vec<usize>,
+     trace: LambdaTrace,
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    radius: f64,
+ }
+ 
+ fn solve_face(
+@@ -1184,6 +2085,8 @@
+     Ok(FaceSolution {
+         free_ids: face.free_ids,
+         trace,
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        radius: face.radius,
+     })
+ }
+ 
+@@ -1193,6 +2096,12 @@
+     solution: &FaceSolution,
+ ) -> Result<bool, super::M1TrustRegionSubproblemRefusal> {
+     let previous_p = state.p;
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let lower_before = state.lower_active;
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let upper_before = state.upper_active;
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let free_before = state.free;
+     for (slot, &col) in solution.free_ids.iter().enumerate() {
+         state.p[col] = solution.trace.step[slot];
+     }
+@@ -1207,7 +2116,26 @@
+     let Some((theta, col, is_lower)) = crossing else {
+         return Ok(false);
+     };
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let candidate_p = state.p;
+     if state.completed_pivots >= 42 {
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        {
++            capture_activation(
++                state,
++                solution,
++                previous_p,
++                candidate_p,
++                (lower_before, upper_before, free_before),
++                (theta, col, is_lower),
++                false,
++            );
++            capture_refusal(
++                "activate-first-crossing",
++                M1TrustRegionRefusalKind::FacePivotLimit,
++                state,
++            );
++        }
+         return Err(state_refusal(
+             M1TrustRegionRefusalKind::FacePivotLimit,
+             state,
+@@ -1247,14 +2175,33 @@
+         lambda_times_p: None,
+         h: None,
+     });
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    capture_activation(
++        state,
++        solution,
++        previous_p,
++        candidate_p,
++        (lower_before, upper_before, free_before),
++        (theta, col, is_lower),
++        true,
++    );
+     Ok(true)
+ }
+ 
+ fn kkt_transition(
+     prepared: &PreparedSubproblem,
+     state: &mut SubproblemState,
+-    lambda: f64,
++    solution: &FaceSolution,
+ ) -> Result<Option<KktValues>, super::M1TrustRegionSubproblemRefusal> {
++    let lambda = solution.trace.lambda;
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let p_before = state.p;
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let lower_before = state.lower_active;
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let upper_before = state.upper_active;
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let free_before = state.free;
+     let values = box_feasible_kkt_values(
+         &prepared.weighted_matrix,
+         &prepared.weighted_residual,
+@@ -1266,6 +2213,25 @@
+         largest_kkt_release(&state.lower_active, &state.upper_active, &values.h)
+     {
+         if state.completed_pivots >= 42 {
++            #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++            {
++                capture_release(
++                    state,
++                    &ReleaseCapture {
++                        solution,
++                        values: &values,
++                        p_before,
++                        masks_before: (lower_before, upper_before, free_before),
++                        selected: (col, is_lower),
++                        applied: false,
++                    },
++                );
++                capture_refusal(
++                    "kkt-release",
++                    M1TrustRegionRefusalKind::FacePivotLimit,
++                    state,
++                );
++            }
+             return Err(state_refusal(
+                 M1TrustRegionRefusalKind::FacePivotLimit,
+                 state,
+@@ -1290,6 +2256,18 @@
+         state.upper_active[col] = false;
+         state.free[col] = true;
+         state.completed_pivots += 1;
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        capture_release(
++            state,
++            &ReleaseCapture {
++                solution,
++                values: &values,
++                p_before,
++                masks_before: (lower_before, upper_before, free_before),
++                selected: (col, is_lower),
++                applied: true,
++            },
++        );
+         return Ok(None);
+     }
+     state.events.push(super::M1TrustRegionKktEvent {
+@@ -1310,13 +2288,55 @@
+ ) -> Result<super::M1TrustRegionSubproblemObservation, super::M1TrustRegionSubproblemRefusal> {
+     const N: usize = 21;
+     let prepared = prepare_subproblem(input)?;
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    {
++        if FACE_PIVOT_CAPTURE_ENABLED
++            .try_with(Cell::get)
++            .unwrap_or(false)
++        {
++            let _ = FACE_PIVOT_CAPTURE.try_with(|cell| {
++                if let Ok(mut slot) = cell.try_borrow_mut() {
++                    let accepted_installs = slot
++                        .as_ref()
++                        .map_or_else(Vec::new, |prior| prior.accepted_installs.clone());
++                    let post_update_admissions = slot
++                        .as_ref()
++                        .map_or_else(Vec::new, |prior| prior.post_update_admissions.clone());
++                    let lifecycle = slot
++                        .as_ref()
++                        .map_or_else(Vec::new, |prior| prior.lifecycle.clone());
++                    let completed_subproblems = slot
++                        .as_ref()
++                        .map_or_else(Vec::new, |prior| prior.completed_subproblems.clone());
++                    *slot = Some(M1FacePivotCapture {
++                        base: input.base,
++                        raw_residual: input.raw_residual,
++                        raw_jacobian: input.raw_jacobian,
++                        normalizers: input.normalizers,
++                        scales: input.scales,
++                        lower: input.lower,
++                        upper: input.upper,
++                        weighted_residual: prepared.weighted_residual.clone(),
++                        weighted_matrix: prepared.weighted_matrix.clone(),
++                        initial_radius: input.initial_radius,
++                        completed_subproblems,
++                        operations: Vec::new(),
++                        accepted_installs,
++                        post_update_admissions,
++                        lifecycle,
++                        refusal: None,
++                    });
++                }
++            });
++        }
++    }
+     let mut state = SubproblemState::new(input);
+     loop {
+         let solution = solve_face(input, &prepared, &mut state)?;
+         if activate_first_crossing(&prepared, &mut state, &solution)? {
+             continue;
+         }
+-        let Some(values) = kkt_transition(&prepared, &mut state, solution.trace.lambda)? else {
++        let Some(values) = kkt_transition(&prepared, &mut state, &solution)? else {
+             continue;
+         };
+         let candidate = candidate_coordinates(input, &state.p).ok_or_else(|| {
+@@ -1326,6 +2346,8 @@
+                 prepared.raw_max,
+             )
+         })?;
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        capture_successful_subproblem(&state);
+         return Ok(super::M1TrustRegionSubproblemObservation {
+             initial_face_step: [0.0; N],
+             base_coordinates: input.base,
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
+@@ -487,6 +487,16 @@
+ ) -> bool {
+     ci_pa.iter().all(|value| value.is_finite())
+         && m1_governed_step_components_pass(temperature_k, humidity_kg_kg, hydraulic_mm, beta)
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_governed_step_thresholds_for_trust_region() -> [f64; 4] {
++    [
++        M1_STEP_TEMPERATURE_MAX_K,
++        M1_STEP_HUMIDITY_MAX_KG_KG,
++        M1_STEP_HYDRAULIC_MAX_MM,
++        M1_STEP_BETA_MAX,
++    ]
+ }
+ 
+ #[derive(Clone, Debug, PartialEq)]
+@@ -2365,6 +2375,81 @@
+     /// Solve-owned capture is intentionally populated by the next lifecycle body.
+     pub(crate) budget_snapshot: Option<crate::M1PhysicalBudgetSnapshot>,
+     pub(crate) controller_run: Option<M1PhysicalTrustRegionControllerRunObservation>,
++    pub(crate) phase_events: Vec<M1PhysicalTrustRegionPhaseObservation>,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1PhysicalTrustRegionPhaseObservation {
++    pub(crate) coordinates: [f64; 21],
++    pub(crate) direction: [f64; 21],
++    pub(crate) selections: [M1PhaseJoinSelection; 2],
++    pub(crate) natural_cache: bool,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++impl M1PhysicalTrustRegionAdapterObservation {
++    pub(crate) fn face_pivot_phase_json_for_test(&self) -> String {
++        use std::fmt::Write;
++
++        let mut output = String::from("[");
++        for (event_index, event) in self.phase_events.iter().enumerate() {
++            if event_index != 0 {
++                output.push(',');
++            }
++            let _ = write!(output, "{{\"coordinates\":[");
++            for (index, value) in event.coordinates.iter().enumerate() {
++                if index != 0 {
++                    output.push(',');
++                }
++                let _ = write!(output, "\"{:016x}\"", value.to_bits());
++            }
++            output.push_str("],\"direction\":[");
++            for (index, value) in event.direction.iter().enumerate() {
++                if index != 0 {
++                    output.push(',');
++                }
++                let _ = write!(output, "\"{:016x}\"", value.to_bits());
++            }
++            output.push_str("],\"selections\":[");
++            for (index, selection) in event.selections.iter().enumerate() {
++                if index != 0 { output.push(','); }
++                let _ = write!(
++                    output,
++                    "{{\"phase\":\"{:?}\",\"capacity\":\"{:?}\",\"corrected\":{},\"mass\":\"{:016x}\",\"enthalpy\":\"{:016x}\",\"capacity_value\":\"{:016x}\",\"drainage\":\"{:016x}\",\"duration_s\":\"{:016x}\"}}",
++                    selection.phase, selection.capacity, selection.corrected,
++                    selection.mass.to_bits(), selection.enthalpy.to_bits(),
++                    selection.capacity_value.to_bits(), selection.drainage.to_bits(), selection.duration_s.to_bits()
++                );
++            }
++            let _ = write!(output, "],\"natural_cache\":{}}}", event.natural_cache);
++        }
++        output.push(']');
++        output
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[test]
++fn m1_face_pivot_populated_phase_json_parses() {
++    let selection = M1PhaseJoinSelection {
++        phase: openwepp_vegetation::cold_canopy_m1::M1Phase::Ice,
++        capacity: openwepp_vegetation::cold_canopy_m1::M1CapacityBranch::Capacity,
++        corrected: true,
++        mass: -0.0,
++        enthalpy: f64::INFINITY,
++        capacity_value: f64::NAN,
++        drainage: 1.0,
++        duration_s: 2.0,
++    };
++    let observation = M1PhysicalTrustRegionAdapterObservation {
++        phase_events: vec![M1PhysicalTrustRegionPhaseObservation {
++            coordinates: [0.0; 21], direction: [-0.0; 21], selections: [selection; 2], natural_cache: false,
++        }],
++        ..Default::default()
++    };
++    serde_json::from_str::<serde_json::Value>(&observation.face_pivot_phase_json_for_test())
++        .expect("bit-preserving populated phase JSON");
+ }
+ 
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+@@ -2829,10 +2914,27 @@
+             && let Some((coordinates, phase)) = self.natural_phase_cache
+             && coordinates == current.coordinates
+         {
++            if crate::m1_face_pivot_capture_enabled_for_test() {
++                self.observation.phase_events.push(M1PhysicalTrustRegionPhaseObservation {
++                    coordinates: current.coordinates,
++                    direction: physical_direction,
++                    selections: phase,
++                    natural_cache: true,
++                });
++            }
+             return Ok(phase);
+         }
+-        phase_join_selections(&self.input, &current.payload.trial, &physical_direction)
+-            .map_err(m1_physical_adapter_phase_failure)
++        let phase = phase_join_selections(&self.input, &current.payload.trial, &physical_direction)
++            .map_err(m1_physical_adapter_phase_failure)?;
++        if crate::m1_face_pivot_capture_enabled_for_test() {
++            self.observation.phase_events.push(M1PhysicalTrustRegionPhaseObservation {
++                coordinates: current.coordinates,
++                direction: physical_direction,
++                selections: phase,
++                natural_cache: false,
++            });
++        }
++        Ok(phase)
+     }
+ 
+     fn phase_active_set_inconsistent(

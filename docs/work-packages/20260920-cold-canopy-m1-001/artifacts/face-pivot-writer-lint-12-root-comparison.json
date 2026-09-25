@@ -1,0 +1,8 @@
+{
+  "baseline_count": 238,
+  "current_count": 239,
+  "introduced": [
+    "this function has too many lines (101/100)\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:LINE:COL\n|\nLINE | /     fn transition<E, V>(\nLINE | |         &mut self,\nLINE | |         evaluator: &mut V,\nLINE | |     ) -> Result<\n...   |\nLINE | |     where\nLINE | |         V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,\n| |___________________________________________________________________________________^\n|\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines"
+  ],
+  "removed": []
+}

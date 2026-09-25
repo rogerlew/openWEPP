@@ -1,0 +1,9 @@
+{
+  "baseline": "physical-body12-lint.stderr",
+  "current": "face-pivot-cut01-lint.stderr",
+  "baseline_count": 238,
+  "current_count": 238,
+  "introduced": [],
+  "removed": [],
+  "normalization": "Only source line/column positions and numbered diagnostic gutter widths; complete messages/context retained."
+}

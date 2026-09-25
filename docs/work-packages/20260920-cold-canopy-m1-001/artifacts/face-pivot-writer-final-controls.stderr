@@ -1,0 +1,109 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused imports: `m1_trust_region_controller_run_for_test`, `m1_trust_region_controller_transition_for_test`, and `m1_trust_region_seeded_entry_guard_for_test`
+  --> crates/openwepp-land-surface-energy/src/lib.rs:47:5
+   |
+47 |     m1_trust_region_controller_run_for_test, m1_trust_region_controller_transition_for_test,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+48 |     m1_trust_region_seeded_entry_guard_for_test,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: enum `M1TrustRegionControllerOperation` is never used
+   --> crates/openwepp-land-surface-energy/src/lib.rs:167:17
+    |
+167 | pub(crate) enum M1TrustRegionControllerOperation {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `m1_trust_region_controller_transition_for_test` is never used
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:848:15
+    |
+848 | pub(crate) fn m1_trust_region_controller_transition_for_test<E, P, Phase, V>(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_seeded_entry_guard_for_test` is never used
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:938:15
+    |
+938 | pub(crate) fn m1_trust_region_seeded_entry_guard_for_test<
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: multiple fields are never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:103:16
+    |
+102 | pub(crate) struct M1TrustRegionControllerTransition {
+    |                   --------------------------------- fields in this struct
+103 |     pub(super) scaled_step: [f64; M1_TRUST_REGION_CONTROLLER_DIMENSION],
+    |                ^^^^^^^^^^^
+104 |     pub(super) lambda: f64,
+    |                ^^^^^^
+105 |     pub(super) predicted_reduction: f64,
+    |                ^^^^^^^^^^^^^^^^^^^
+106 |     pub(super) actual_reduction: Option<f64>,
+    |                ^^^^^^^^^^^^^^^^
+107 |     pub(super) rho: Option<f64>,
+    |                ^^^
+108 |     pub(super) installed: bool,
+109 |     pub(super) next_radius: f64,
+    |                ^^^^^^^^^^^
+110 |     pub(super) weighted_jacobian:
+    |                ^^^^^^^^^^^^^^^^^
+...
+113 |     pub(super) radius_before: f64,
+    |                ^^^^^^^^^^^^^
+114 |     pub(super) base_before: [f64; M1_TRUST_REGION_CONTROLLER_DIMENSION],
+    |                ^^^^^^^^^^^
+115 |     pub(super) stage1_observation: super::M1TrustRegionSubproblemObservation,
+116 |     pub(super) moving_merit: Option<f64>,
+    |                ^^^^^^^^^^^^
+117 |     pub(super) dynamic_max_normalized_residual: Option<f64>,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+118 |     pub(super) base_after: [f64; M1_TRUST_REGION_CONTROLLER_DIMENSION],
+    |                ^^^^^^^^^^
+119 |     pub(super) entered_materializations: u8,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionControllerTransition` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: field `initial_radius` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:124:16
+    |
+123 | pub(crate) struct M1TrustRegionControllerRun {
+    |                   -------------------------- field in this struct
+124 |     pub(super) initial_radius: f64,
+    |                ^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionControllerRun` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: struct `M1TrustRegionSeededEntryGuard` is never constructed
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:136:19
+    |
+136 | pub(crate) struct M1TrustRegionSeededEntryGuard<E> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2340:13
+     |
+2340 |     Refused(crate::M1TrustRegionRefusalKind),
+     |     ------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |     |
+     |     field in this variant
+     |
+     = note: `M1PhysicalTrustRegionAdapterOutcome` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+     |
+2340 -     Refused(crate::M1TrustRegionRefusalKind),
+2340 +     Refused(()),
+     |
+
+warning: function `m1_trust_region_physical_adapter_terminal_outcome_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2528:15
+     |
+2528 | pub(crate) fn m1_trust_region_physical_adapter_terminal_outcome_for_test(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 9 warnings (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.90s
+     Running unittests src/lib.rs (/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-bd6d2328c723e74c)
