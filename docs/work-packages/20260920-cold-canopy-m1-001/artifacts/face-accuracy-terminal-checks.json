@@ -28,9 +28,11 @@
     "runtime recovery",
     "production benchmark"
   ],
-  "pending": [
-    "scoped staging and publication"
-  ],
+  "pending": [],
   "same_reviewers_final_claim_checks": "PASS: face-accuracy-correctness-record-review.json and face-accuracy-qa-terminal-03.json",
-  "closing_ledger": "face-accuracy-final-ledger.json"
+  "closing_ledger": "face-accuracy-final-ledger.json",
+  "staged_payload_files": 16,
+  "staged_whitespace_check": "PASS",
+  "publication_receipt": "face-accuracy-publication.json",
+  "reviewed_substantive_cut_unchanged": true
 }

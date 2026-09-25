@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Ran: authorized scoped main push, remote main SHA check and committed-payload byte comparison",
+  "payload_commit": "259bca5c6286f5ad24b5857e3a7d75663fde4d31",
+  "parent_commit": "15b45db425e03a7217bbd2f0be2ea20ca454c7e2",
+  "remote": "origin",
+  "remote_main": "259bca5c6286f5ad24b5857e3a7d75663fde4d31",
+  "remote_main_verified_utc": "2026-09-25T21:24:21.581870+00:00",
+  "published_scoped_files": 16,
+  "all_payload_bytes_match_local": true,
+  "push_exit_code": 0,
+  "push_stdout": "",
+  "push_stderr": "To https://github.com/rogerlew/openWEPP\n   15b45db42..259bca5c6  HEAD -> main\n",
+  "method_and_runtime": "Unchanged frozen BVLS-02 and runtime; no Rust adopted",
+  "ledger": "face-accuracy-final-ledger.json",
+  "reviewed_author_source_sha256": "0a3f16b05a9e94385fba79f81f88d1832085be36f1713a8795b630aa450a25d1",
+  "reviewed_correctness_source_sha256": "7d1ee0a07e0959dcc5aacc7ba1a6963c3e9e03da1ba13ca5cce34c302cc8e4aa",
+  "receipt_publication": "This receipt and final package publication note follow in a metadata-only commit; final remote SHA reported in user response."
+}

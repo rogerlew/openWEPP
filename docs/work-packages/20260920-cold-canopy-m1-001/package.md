@@ -179,7 +179,10 @@ The [closing ledger](artifacts/face-accuracy-final-ledger.json) conservatively
 charges through **2026-09-25T21:28:00Z**: **1500 new seconds**, cumulative
 **349333.959294 s**, leaving **4560 s** under the unchanged ceiling. Unused time
 is not permission to implement or run a successor experiment. Source/evidence
-are locally preserved; authorized scoped remote publication is the final step.
+are committed and remotely verified in scoped payload `259bca5c6286f5ad24b5857e3a7d75663fde4d31`.
+The [publication receipt](artifacts/face-accuracy-publication.json) records the
+remote main check and byte-equal 16-file payload. This receipt and final status
+follow in a metadata-only commit; no numerical evidence changes.
 
 ## Finite-precision active-face amendment — adopted 2026-09-25
 
