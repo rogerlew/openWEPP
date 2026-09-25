@@ -1,0 +1,20 @@
+{
+  "evidence_class": "Ran: authorized scoped push, remote main SHA verification and committed payload byte comparison",
+  "payload_commit": "0dba6dc5e900e08d6b5a03d610fe440ceceb2f76",
+  "parent_commit": "275f3225e16ddeb4c5ee198180c44acebe4b87df",
+  "remote": "origin",
+  "remote_main": "0dba6dc5e900e08d6b5a03d610fe440ceceb2f76",
+  "remote_main_verified_utc": "2026-09-25T20:10:02.624884+00:00",
+  "published_scoped_files": 269,
+  "all_payload_bytes_match_local": true,
+  "source_recovery_receipt": "finite-precision-terminal-recovery.json",
+  "source_patch_sha256": "0c29089a81c2e18c3fe4100282c396780eec8e51f1485be8109eb82e96fb0786",
+  "binary_custody": "finite-precision-binary-input-custody.json",
+  "binary_publication": "Binary retained locally; recovery/source/input/method/evidence published. No main Rust adoption.",
+  "ledger": "finite-precision-final-ledger.json",
+  "unrelated_dirty_files_preserved": [
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs",
+    "tests/integration/advisory_linter_authority_contract.rs"
+  ],
+  "receipt_publication": "This receipt and raw push/remote logs follow in a metadata-only commit; its final remote SHA is reported to the user."
+}
