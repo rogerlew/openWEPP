@@ -1,0 +1,51 @@
+{
+  "schema": "cold-canopy-m1-face-accuracy-qa-terminal/v1",
+  "reviewer": "/root/accuracy_qa",
+  "role": "independent QA/evidence reviewer",
+  "reviewed_cut": {
+    "author_source_sha256": "c89f1d3128415c998f41570bfa139393bd399d044ae1087240d3f84dcdce1692",
+    "author_results_sha256": "e805b07274031fd83c62333e0cdfdde219b7624ba669e7e590b8cc7fbecef953",
+    "author_plan_sha256": "a7bfe3ffb40f33a2708f9b16988c5c295b979ed101598dd00eb323b5bd2cbc9a"
+  },
+  "evidence_class": {
+    "static_by_reviewer": [
+      "author source, plan, execution record, complete result structure, frozen-capture/oracle/replay dependency hashes, and operation loops"
+    ],
+    "ran_by_reviewer": [
+      "SHA-256 and JSON-syntax validation only; no Rust, physical run, or new face-solve calculation"
+    ]
+  },
+  "custody_checks": {
+    "two_cases_distinct_and_correctly_bound": true,
+    "ordinary_capture_sha256": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+    "older_capture_sha256": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c",
+    "guarded_oracle_sha256": "1d0522d70802d979aff0d166a810dd6647ea17d52da339da0c367c171b977eb6",
+    "jacobi_replay_sha256": "c3a473f117eeecdb1b40270b1f3e48900635490e31e0ed1569dbc9865162bc3f",
+    "execution_errors_preserved": true,
+    "correction_cap_observed": "two numbered corrections for each case; zero correction factorizations; no clipping or active-set change observed"
+  },
+  "findings": [
+    {
+      "id": "FAA-QA-001",
+      "severity": "HIGH",
+      "location": "face-accuracy-author.py correction residual formation, ordinary_binary64_residual branch",
+      "finding": "The ordinary residual correction uses Python built-in sum() for the dot product. On Python 3.12, this is compensated summation, whereas the frozen BVLS-02 arithmetic requires ascending, separately rounded binary64 accumulation with no compensation or reassociation. The resulting ordinary correction is therefore not an admissible frozen-protocol result.",
+      "evidence": "Source expression: residual=[r[i]+sum(a[i][j]*current[j] for j in range(N)) for i in range(N)]. The same source already defines ordered ascending loops for frozen KKT evaluation, demonstrating the required form.",
+      "required_fix_verification": "Recompute the ordinary correction with explicit sequential binary64 loops; retain the failed initial attempts, rebind source/result hashes, and recheck only affected correction/result claims."
+    },
+    {
+      "id": "FAA-QA-002",
+      "severity": "HIGH",
+      "location": "face-accuracy-author-results.json operation_counts.per_correction_lambda_step_principal_binary64_ops",
+      "finding": "principal_total=18440 is a subtotal, not the full correction operation count, and the result omits residual formation and free-coordinate update work.",
+      "evidence": "For m=21 and n=20, lambda_step has 9260 multiplications, 9240 additions, 440 divisions, and 20 negations: 18960 total. The 18440 subtotal omits 40 products, 20 denominator additions, 440 divisions, and 20 negations. Each correction also has 903 full-residual operations and 20 free-coordinate update additions. KKT=1827 and enclosure=39816 must be labelled separately; the latter is the contract upper bound rather than an observed count.",
+      "required_fix_verification": "Report subtotal and complete per-correction arithmetic breakdown distinctly, including each assessment and the explicit upper-bound status of 39816."
+    }
+  ],
+  "limits_and_pending": [
+    "The author correctly retains the ordinary QR coordinate-11 negative residue as unresolved and does not clip it; correctness-owned exact/Householder evidence remains needed before an exact-reference comparison is accepted.",
+    "The author result contains no populated exact-certificate rounded-reference assessment and no explicit full-original-KKT/active-equality boolean; the independent correctness artifact is expected to supply those predicates.",
+    "No numerical or runtime recommendation is accepted by this QA record."
+  ],
+  "verdict": "BLOCKED pending correction of FAA-QA-001 and FAA-QA-002 and same-reviewer verification of the revised cut. Custody and the two-case/two-correction boundary were otherwise satisfactory."
+}

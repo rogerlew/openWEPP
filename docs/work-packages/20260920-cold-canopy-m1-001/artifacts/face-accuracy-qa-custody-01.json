@@ -1,0 +1,86 @@
+{
+  "schema": "cold-canopy-m1-face-accuracy-qa-custody/v1",
+  "reviewer": "/root/accuracy_qa",
+  "role": "independent QA/evidence reviewer",
+  "evidence_class": {
+    "ran": [
+      "SHA-256 checks of frozen captures, prior reconstruction/oracle inputs, Stage1 source, final ledger, and method authority",
+      "independent 764-entry detached-runtime snapshot hash using the recorded snapshot algorithm",
+      "JSON syntax checks of author premeasurement plan and start-custody record"
+    ],
+    "not_run": [
+      "Rust execution or build",
+      "physical callback/run",
+      "full detached-runtime recovery",
+      "face-solve calculation"
+    ]
+  },
+  "reviewed_head": "15b45db425e03a7217bbd2f0be2ea20ca454c7e2",
+  "authorization": {
+    "path": "/tmp/openwepp_cold_canopy_m1_face_solve_accuracy_authorization.md",
+    "sha256": "25dddfe2b71261b7c65a8cf68fb480594483ecc8fd3804812b909cba0d3f84da",
+    "root_anchor_utc": "2026-09-25T21:03:00Z",
+    "calculation_cutoff_utc": "2026-09-25T22:14:00Z",
+    "hard_deadline_utc": "2026-09-25T22:44:00Z"
+  },
+  "frozen_runtime": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "snapshot_algorithm": "recorded crates-plus-root-file snapshot algorithm",
+    "entry_count": 764,
+    "actual_tree_sha256": "d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884",
+    "expected_tree_sha256": "d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884",
+    "status": "PASS",
+    "stage1_path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "stage1_actual_sha256": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a",
+    "stage1_expected_sha256": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a",
+    "method_actual_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+    "method_expected_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23"
+  },
+  "input_custody": {
+    "ordinary_positive_first_failing_face": {
+      "capture": "finite-precision-observed-capture.json",
+      "actual_sha256": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+      "expected_sha256": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+      "operations": 2,
+      "operation_1_refusal": "TrustRegionOptimalityIndeterminate / optimality_free_stationarity / coordinate 11"
+    },
+    "older_retained_face": {
+      "capture": "face-pivot-observed-capture.json",
+      "actual_sha256": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c",
+      "expected_sha256": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c",
+      "operations": 43,
+      "terminal_refusal": "FacePivotLimit",
+      "oracle_input_hash_matches": true
+    },
+    "case_distinction": "PASS: the ordinary capture and older capture have distinct authenticated hashes and incompatible terminal histories; neither may substitute for the other.",
+    "prior_oracle": {
+      "oracle_json_sha256": "601f5c54f6c3ad59deb2c6831e9d44dbfa5592c95c5cb4a8ab98c4308ee075a9",
+      "oracle_python_sha256": "1d0522d70802d979aff0d166a810dd6647ea17d52da339da0c367c171b977eb6",
+      "historical_reconstruction_sha256": "92ecb417d22118ddb2e39268ea29d5d3aa6e3a37e73a940efffba90e7cf3fb1c"
+    },
+    "ordinary_reconstruction": {
+      "json_sha256": "0c5a3fddaf95bc0c7543762cb652867b3ddfbbece0d48610b4eef08f9e91a135",
+      "python_sha256": "1308400f73698e5f88762af4a68b59d30bee42026be5819fa5345217203bffd3"
+    }
+  },
+  "prior_recovery_and_ledger": {
+    "terminal_recovery_sha256": "4e47540569ef0f10be5bdb8756ec85187bfad28af7a22509f6855050652e480f",
+    "recovery_claim": "764 entries, exact inventory/hash equality, runtime source unchanged",
+    "qa_terminal_review_sha256": "90d76327f268fb064219efa26fa8594f51b4300260427b8e20e377249f034b35",
+    "binary_input_custody_sha256": "212a38078ae8cf0c307fa5fde83f997048b63c10c0d3fd446b7089468149e5c0",
+    "final_ledger_sha256": "80a75f1e61bfbfcb3b77793e95ec3555ed3eec7c1f8db60a28b745d1d5325b28",
+    "carry_seconds": "347833.959294",
+    "ceiling_seconds": "353893.959294",
+    "remaining_seconds": "6060.000000",
+    "status": "PASS; checked once only and no ledger archival change made"
+  },
+  "author_plan_premeasurement_review": {
+    "plan_sha256": "a7bfe3ffb40f33a2708f9b16988c5c295b979ed101598dd00eb323b5bd2cbc9a",
+    "json_valid": true,
+    "two_cases_named": true,
+    "operation_accounting_cap": "two corrections per face, one ordinary-binary64 residual correction followed by one separately labelled higher-precision-residual diagnostic",
+    "protocol_cap_status": "PASS provisionally: plan declares no new factorization, active set, tolerance, solver family, clipping, or projection. Terminal QA must verify results preserve this declaration and report every attempted/rejected correction."
+  },
+  "findings": [],
+  "verdict": "PASS for input custody and premeasurement protocol admission only. This is not acceptance of a numerical result, an attainable-runtime claim, or a runtime amendment."
+}

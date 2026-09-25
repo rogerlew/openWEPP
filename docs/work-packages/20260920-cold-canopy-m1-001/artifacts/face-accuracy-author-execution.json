@@ -1,0 +1,15 @@
+{
+  "schema": "cold-canopy-m1-face-accuracy-author-execution/v1",
+  "pre_result_attempts": [
+    {
+      "command": "timeout 300s .venv/bin/python artifacts/face-accuracy-author.py",
+      "result": "failed before calculator launch: package-directory-relative .venv path absent"
+    },
+    {
+      "command": "timeout 300s /workdir/openWEPP/.venv/bin/python artifacts/face-accuracy-author.py",
+      "result": "calculator TypeError: bad operand type for abs(): generator in Decimal free-stationarity aggregation; no result emitted",
+      "fix": "move abs inside the max generator; later audit also retains Decimal (not rounded binary64) reference stationarity"
+    }
+  ],
+  "execution_bound_seconds": 300
+}

@@ -1,5 +1,186 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Retained face-solve accuracy audit — adopted 2026-09-25
+
+**COMPLETE: independently checked offline numerical audit.** The failure
+on both retained faces is a computed-step accuracy problem, not primarily rounding
+in the stationarity evaluation. Feasible once-rounded exact face references pass
+the unchanged BVLS-02 criterion on both cases. This establishes attainability for
+these systems, not a guarantee for arbitrary inputs or for the current SVD.
+BVLS-02 remains COMPLETE bounded negative; physical/M1 qualification and all
+broader HOLDs remain unchanged. No revision 03 or runtime implementation is adopted.
+
+The owner adopted `/tmp/openwepp_cold_canopy_m1_face_solve_accuracy_authorization.md`.
+Evidence is pinned to main `15b45db425e03a7217bbd2f0be2ea20ca454c7e2` and the frozen
+764-entry runtime `d47b4697…a9884`; Stage1 `9f169637…6603a` and method
+`7c596afd…dfe23` are unchanged. [Initial custody](artifacts/face-accuracy-start-custody.json)
+and [independent QA](artifacts/face-accuracy-qa-custody-01.json) bind full hashes,
+the two separate captures, previous reconstruction dependencies and recovery.
+No complete runtime recovery or Rust workflow was repeated.
+
+The final ledger was verified: carry **347833.959294 s**, unchanged ceiling
+**353893.959294 s**, remaining **6060 s**, including **1800 s** protected closing
+reserve. Conservative first-reading anchor **2026-09-25T21:03:00Z** fixes the
+calculation cutoff **22:14:00Z** and hard deadline **22:44:00Z**. All reading,
+concurrent work, waits, corrections, review and publication count once; no old
+charge is refunded and no interruption reanchors the budget. Closing charges
+and publication identity are recorded below once sealed.
+
+The [premeasurement protocol](artifacts/face-accuracy-author-plan.json) selects
+operation 1 from each distinct capture: the new ordinary-positive first failing
+face and the historical near-root constrained face. It freezes exact-bit inputs,
+100/200-digit orthogonal references, original masks/bounds/radius/multiplier, and
+at most two correction steps per face. Step 1 forms the ordinary ordered binary64
+residual; step 2 forms a 200-digit residual at the step-1 vector, rounds it once,
+and reuses the same factors. Step 2 is explicitly a higher-precision diagnostic,
+not evidence for binary64-only refinement. No clipping, normalization, tolerance
+search, changed face, solver family search or nonlinear evaluation occurred.
+
+Ran: the [author calculation](artifacts/face-accuracy-author.py) and
+[raw output](artifacts/face-accuracy-author-results.json) are independently checked
+by a separate [correctness calculator](artifacts/face-accuracy-correctness.py) and
+[full certificate](artifacts/face-accuracy-correctness.json). These retain all 21
+coordinates, exact rational residuals/h/evaluation errors, masks, operand bits,
+Cbar/tau, bounds, step errors and classifications. Existing p/h/Cbar/tau bits,
+exact-h fractions, both correction delta vectors and every corrected p/h/Cbar/tau
+bit agree. All independently guarded intermediates are normal or zero, and every
+observed evaluation error lies within tau. No historical BVLS-02 derivation or
+implementation finding is reopened.
+
+At the existing new-face coordinate 11, exact h is **3.8429758623e-14** against
+**tau=1.7817630660e-16**: h/tau **215.683888**, while the signed evaluation
+error/tau is **-0.001753045**. The old face has exact h11 **8.5052766782e-14**,
+tau **2.3941865114e-16**, h/tau **355.247039**, and evaluation error/tau
+**+0.004655959**. Its active coordinate 5 independently violates the lower-bound
+sign (exact h5/tau **-416.453130**); the new face retains that bound. These ratios
+are not condition numbers or forward-error estimates. Gamma87 bounds evaluation
+at a supplied p; the all-coordinate test separately measures that p's accuracy.
+
+The compact comparisons below use maximum **free-coordinate computed |h_hat|/tau**
+(zero-scale coordinates pass exact zero), complete BVLS-02 sign/stationarity,
+original box/radius feasibility, Euclidean step error against the exact reference,
+and the ordered binary64 objective **0.5*||f+A*p||²**. Exact-reference rows have
+zero residual, objective and all 21 h values, certified independently.
+
+| New ordinary-positive face | Max free ratio | Complete criteria | Step error L2 | Objective |
+| --- | ---: | --- | ---: | ---: |
+| Existing step / exact h evaluation | 215.682135 | Stationarity FAIL; box/ball PASS | 7.43322e-21 | 1.05879e-22 |
+| 100/200-digit reference, exact certificate | 0 (exact h) | Exact full KKT and box/ball PASS | 0 (exact reference) | 0 (exact) |
+| Once-rounded exact reference | 0.00773747 | PASS | 6.11931e-21 | 1.68594e-43 |
+| Correction 1: ordinary binary64 residual | 0.00773747 | Stationarity PASS; box FAIL at 11 | 6.11931e-21 | 7.84731e-44 |
+| Correction 2: 200-digit-residual diagnostic | 0.00773747 | PASS | 6.11931e-21 | 1.68594e-43 |
+
+| Historical near-root face | Max free ratio | Complete criteria | Step error L2 | Objective |
+| --- | ---: | --- | ---: | ---: |
+| Existing step / exact h evaluation | 355.251694 | Free 11 and active 5 FAIL; box/ball PASS | 5.51455e-27 | 1.59105e-39 |
+| 100/200-digit reference, exact certificate | 0 (exact h) | Exact full KKT and box/ball PASS | 0 (exact reference) | 0 (exact) |
+| Once-rounded exact reference | 0.00575826 | PASS | 1.67964e-30 | 2.01787e-43 |
+| Correction 1: ordinary binary64 residual | 0.00575826 | PASS | 1.47497e-29 | 1.12454e-43 |
+| Correction 2: 200-digit-residual diagnostic | 0.00575826 | PASS | 1.67964e-30 | 2.01787e-43 |
+
+Both cases retain active coordinate 5 at its exact bound, have lambda=0 and
+remaining radius=1. Exact-reference norms are approximately 1e-4 and
+4.1963219397e-14, strictly interior. Thus the solution at the recorded multiplier
+is also the fixed-face trust-ball minimizer. Exact rank-20 certificates and full
+original box KKT establish bounded-subproblem minimizers for these two systems;
+no different face/radius is substituted. The once-rounded points satisfy
+approximate BVLS-02, not exact mathematical stationarity. Residual infinity norms
+fall from 1.45519e-11 / 3.44107e-20 to 4.23516e-22 for the rounded references.
+
+The 100/200-digit QR calculation alone cannot certify a bound sign at a structural
+zero. For the new face, its coordinate 11 values are approximately -1.88864e-110
+and -6.95792e-211; the actually rounded 200-digit QR vector is retained as a box
+failure, not clipped into a passing reference. Independent exact rational
+elimination proves coordinate 11 is exactly zero. The separate once-rounded
+**exact** reference above therefore is not normalization of the QR output. For
+the old face, exact coordinate 11 is
+`-4349261/20282409603651670423947251286016` and is box feasible. Ordinary correction
+1 on the new face remains rejected: p11=-1.3775324424e-40 below its zero lower
+bound, despite passing every stationarity coordinate. Its second correction is
+an offline diagnostic continuation, not acceptance or a nonlinear trial.
+
+Author modified-Gram-Schmidt and independent Householder QR use the two declared
+precisions. At 200 digits, independent Householder errors against the exact
+nonzero coordinates are at most **2e-204 / 2e-212**; maximum factor residuals are
+**1.1135e-190 / 1.0135e-190**, and orthogonality defects **2e-199 / 1e-199**.
+The 100-digit factor residuals are 1.3e-90 with orthogonality defects at most
+3.7e-99. Exact rational normal equations are used without rounding to certify
+rank/signs/zeros; no finite-precision normal-equation solve is used as the
+accuracy reference. Reconstructed Jacobi singular values estimate condition
+numbers **4069.647306** for both matrices; each replay needs 7 sweeps/319 rotations
+and matches the captured step. This does not import LAPACK stability guarantees
+into the custom implementation. The complete precision vectors and residuals
+remain in the raw evidence, including finite-precision zero artifacts.
+
+Each correction reuses the same face factors and performs **18,960** arithmetic
+operations in the existing lambda-step evaluation: 9,260 multiplies, 9,240 adds,
+440 divisions and 20 negations. This includes recomputing A_free*V. Ordinary
+residual formation adds **903** operations, update adds **20**, and the complete
+KKT reevaluation adds **1,827**. The separate enclosure has a **39,816-operation
+upper bound**, not a measured actual count; feasibility/guard/control operations
+are additional. Step 2 uses the same expression topology for residual formation
+in Decimal, plus 21 conversions; its cost is not binary64 cost. Offline work also
+includes one reconstructed Jacobi factorization per case, two author QR
+factorizations per case, independent QR/exact certification, and rejected-cut
+replay overhead. There is zero added factorization **within** either correction.
+No offline elapsed time is presented as production kernel timing.
+
+Direction: the evidence supports **(a), investigating an accuracy-improving
+face-solve amendment**, rather than treating these failures as unattainable under
+the current componentwise criterion. It does not support relaxing tau under (b),
+or adopting the tested one-step binary64 refinement: that step fails feasibility
+on the new case. Use the certified feasible references as acceptance controls in
+a separately authorized amendment investigation, retaining original bounds and
+all-coordinate stationarity. No exact Rust amendment is recommended from this
+audit, because the successful second step uses a different residual precision.
+No implementation permission or general attainability guarantee follows.
+
+Authorship/review: `/root/accuracy_author` authored the calculator;
+`/root/accuracy_correctness` independently reconstructed the mathematics and
+verified the fixes. `/root/accuracy_qa` independently checked custody and work
+accounting, recording [initial findings](artifacts/face-accuracy-qa-terminal-01.json)
+and [same-reviewer fixes](artifacts/face-accuracy-qa-terminal-02.json).
+Final [correctness claim review](artifacts/face-accuracy-correctness-record-review.json)
+and [QA claim/certificate review](artifacts/face-accuracy-qa-terminal-03.json)
+both PASS without unresolved findings.
+Initial premeasurement case/factor-plan mistakes were corrected before execution.
+[Rejected output](artifacts/face-accuracy-author-initial-result.json) and
+[execution failures](artifacts/face-accuracy-author-execution.json) remain visible.
+HIGH findings corrected before acceptance were mistaking tiny QR residues for
+true bound violations and Python 3.12 compensated float sums in a supposedly
+ordered-binary64 calculation. Correctness also fixed its own reporting precision
+and objective-summation issues before freezing its independent certificate.
+Internal reassessments continued only these localized, supported corrections;
+no time or scientific scope was added. One saturated author-resumption request
+was resolved by ending completed QA work before resumption; there were no
+repeated saturated retries or replacement reviewers.
+
+Validation: author and correctness executed only standalone Python calculations
+under 300-second command bounds. Python syntax/JSON, exact input/output custody,
+all-coordinate arithmetic/domain/feasibility, reference convergence and independent
+fix checks apply. Canonical authority is the deterministic bounded-subproblem and
+BVLS-02 clauses of `SC-LANDSURFACEENERGY-001/numerical-methods.md`. Production
+A0/A1/A3, full09/A1/strict-lint, material/BGC, 18-symbol/eight-interface-group,
+parent/late-rejection, cycles/restart and scale obligations remain untouched.
+The two physical-success failures and old magnitude-ranking expectation remain
+three distinct failures. No Rust build/test, physical callback, target, provider/
+prefix run or new acquisition occurred. All four target slots remain UNUSED /
+NOT RELEASED. Permitted writes are only this record and new `face-accuracy-*`
+offline evidence. Main Rust, frozen runtime, canonical authority, prior artifacts
+and unrelated dirty work are preserved; scoped publication on existing main is
+authorized. Final diff and publication checks follow below.
+
+Ran: [terminal scoped checks](artifacts/face-accuracy-terminal-checks.json) pass
+Python syntax, JSON, local evidence links, author/reviewer source-output binding
+and unchanged prior tracked artifacts/authority/unrelated dirty hashes. Scoped
+whitespace checks pass. The reviewed substantive numerical cut is unchanged;
+final additions only record the two accepted reviews, checks and accounting.
+The [closing ledger](artifacts/face-accuracy-final-ledger.json) conservatively
+charges through **2026-09-25T21:28:00Z**: **1500 new seconds**, cumulative
+**349333.959294 s**, leaving **4560 s** under the unchanged ceiling. Unused time
+is not permission to implement or run a successor experiment. Source/evidence
+are locally preserved; authorized scoped remote publication is the final step.
+
 ## Finite-precision active-face amendment — adopted 2026-09-25
 
 **Terminal disposition: COMPLETE bounded negative experiment; physical qualification and M1 remain HOLD.**

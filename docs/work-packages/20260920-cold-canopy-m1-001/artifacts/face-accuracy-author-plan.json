@@ -1,0 +1,30 @@
+{
+  "schema": "cold-canopy-m1-face-accuracy-author-plan/v1",
+  "status": "declared_before_evaluation",
+  "pinned_head": "15b45db425e03a7217bbd2f0be2ea20ca454c7e2",
+  "author_scope": "offline retained-face numerical audit only; no Rust, package.md, callback, or runtime changes",
+  "cases": [
+    "finite_precision_observed_capture:ordinary_positive_first_failing_selected_lower_face:operation_1",
+    "face_pivot_observed_capture:older_retained_selected_lower_face:operation_1"
+  ],
+  "input_custody": {
+    "ordinary_capture": {"path": "artifacts/finite-precision-observed-capture.json", "sha256": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642"},
+    "older_capture": {"path": "artifacts/face-pivot-observed-capture.json", "sha256": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c"}
+  },
+  "fixed_protocol": {
+    "inputs": "decode every A, f, p, lambda, radius and box value from captured 16-hex-digit IEEE-754 binary64 bits; retain bit identity in results",
+    "exact_evaluation": "use Python Fraction.from_float for exact-rational r=f+A*p and h=A^T*r+lambda*p at each recorded p; compare with frozen ordered binary64 h_hat and independently reconstructed unchanged Gamma87/Cbar/tau",
+    "reference": "at decimal precisions 100 and 200, use Decimal modified-Gram-Schmidt QR on the fixed free-face augmented system [A_free; sqrt(lambda) I] x = [-f-A_active*p_active; 0], then assess recorded-lambda stationarity; separately assess the fixed-face trust-ball minimizer only if the recorded multiplier/radius indicates its boundary, retaining active values and never changing masks",
+    "reference_checks": "precision agreement, QR factorization residual/orthogonality, free stationarity, active equality, all original box bounds, and radius/multiplier consistency",
+    "binary64_reference": "round each free reference coordinate once by conversion to binary64; restore active coordinates from their captured exact bound bits; do not clip or normalize; recompute frozen ordered BVLS-02 KKT/enclosure and feasibility",
+    "corrections": {
+      "maximum_actual_per_face": 2,
+      "replay_gate": "before a correction, replay the fixed current face's captured Jacobi/SVD factorization and require its reconstructed candidate p to match every captured binary64 bit; if it fails, record correction unavailable",
+      "factor_policy": "only the verified replayed current-face Jacobi/SVD factors from the captured A/free mask may be reused; no independent QR reference factor, new active set, tolerance, seed, rank threshold, solver family, additional factorization, clipping, or projection",
+      "step_1": "ordinary-binary64 residual correction using those reused current-face factors; update only free coordinates and preserve captured active values; test complete original bounds/radius/BVLS-02",
+      "step_2": "one separate higher-precision-residual diagnostic: form the residual at 200 decimal digits, round that residual once to binary64, apply the same reused factors once, update the step-1 vector's free coordinates, and test complete criteria. It is explicitly not binary64-only attainability evidence. No additional correction branch exists."
+    },
+    "reported": "all coordinates, exact h, h_hat-exact_h, Cbar/tau, classifications, feasibility, radius, objective/residual, singular-value condition estimates, factor residual/orthogonality, operation counts and limits"
+  },
+  "interpretation_rule": "Gamma87/tau bounds evaluation of h at supplied p; it does not certify forward step accuracy. No runtime recommendation is made unless the fixed protocol supports it."
+}

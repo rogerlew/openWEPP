@@ -1,0 +1,36 @@
+{
+  "evidence_class": "Ran: root scoped terminal syntax, JSON, reference, identity and diff checks; no numerical rerun",
+  "recorded_utc": "2026-09-25T21:21:57.608194+00:00",
+  "base_commit": "15b45db425e03a7217bbd2f0be2ea20ca454c7e2",
+  "branch": "main",
+  "python_ast_files": [
+    "face-accuracy-author.py",
+    "face-accuracy-correctness.py"
+  ],
+  "json_files_checked": 9,
+  "new_section_local_links_checked": 11,
+  "author_source_sha256": "0a3f16b05a9e94385fba79f81f88d1832085be36f1713a8795b630aa450a25d1",
+  "author_results_sha256": "73af08c872dc7b69406d46edd73027b2e2d942beae713bf03930425d6d641320",
+  "correctness_source_sha256": "7d1ee0a07e0959dcc5aacc7ba1a6963c3e9e03da1ba13ca5cce34c302cc8e4aa",
+  "correctness_results_sha256": "3740e7329974317cfa39483d6547aa6d7794912da9a0d6d4568d4dd285d2192d",
+  "prior_tracked_artifacts_and_authority_unchanged": true,
+  "unrelated_dirty_hashes_preserved": true,
+  "tracked_diff_paths": [
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs",
+    "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+    "tests/integration/advisory_linter_authority_contract.rs"
+  ],
+  "index_initially_empty": true,
+  "status": "PASS",
+  "not_run": [
+    "Rust build/test",
+    "physical callbacks",
+    "runtime recovery",
+    "production benchmark"
+  ],
+  "pending": [
+    "scoped staging and publication"
+  ],
+  "same_reviewers_final_claim_checks": "PASS: face-accuracy-correctness-record-review.json and face-accuracy-qa-terminal-03.json",
+  "closing_ledger": "face-accuracy-final-ledger.json"
+}

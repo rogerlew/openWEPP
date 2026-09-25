@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: initial source/dirty-file custody; scoped offline audit",
+  "base_commit": "15b45db425e03a7217bbd2f0be2ea20ca454c7e2",
+  "branch": "main",
+  "unrelated_dirty_sha256": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  },
+  "authorization_sha256": "25dddfe2b71261b7c65a8cf68fb480594483ecc8fd3804812b909cba0d3f84da",
+  "anchor_utc": "2026-09-25T21:03:00Z",
+  "calculation_cutoff_utc": "2026-09-25T22:14:00Z",
+  "hard_deadline_utc": "2026-09-25T22:44:00Z",
+  "carry_seconds": "347833.959294",
+  "ceiling_seconds": "353893.959294",
+  "reserve_seconds": 1800
+}

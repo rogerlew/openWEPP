@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: fixed-anchor elapsed accounting with conservative closing charge",
+  "anchor_utc": "2026-09-25T21:03:00Z",
+  "carry_seconds": "347833.959294",
+  "fixed_ceiling_seconds": "353893.959294",
+  "calculation_cutoff_utc": "2026-09-25T22:14:00Z",
+  "hard_deadline_utc": "2026-09-25T22:44:00Z",
+  "protected_reserve_seconds": 1800,
+  "conservatively_charged_through_utc": "2026-09-25T21:28:00Z",
+  "new_charged_seconds": "1500",
+  "cumulative_charged_seconds": "349333.959294",
+  "remaining_under_fixed_ceiling_seconds": "4560",
+  "accounting": "All reading, concurrent work, waits, calculator corrections, independent review, preservation and publication elapsed since the fixed first-reading anchor charged once. Conservative excess is not refundable. If publication passes closing timestamp, append greater charge under unchanged hard ceiling. No old reserve or closing charge refunded.",
+  "disposition": "COMPLETE offline accuracy audit; BVLS-02 bounded negative and all broader HOLDs preserved",
+  "target_slots": "All four UNUSED / NOT RELEASED"
+}

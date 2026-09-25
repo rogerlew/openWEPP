@@ -1,0 +1,37 @@
+{
+  "schema": "cold-canopy-m1-face-accuracy-qa-terminal/v3",
+  "reviewer": "/root/accuracy_qa",
+  "role": "same-reviewer affected-claim verification; no fresh verifier wave",
+  "evidence_class": {
+    "static_by_reviewer": [
+      "final correctness source/result identity and dependency receipt",
+      "correctness author-fix comparison fields",
+      "Retained face-solve accuracy audit package section through the next Finite-precision heading"
+    ],
+    "ran_by_reviewer": [
+      "SHA-256 and JSON syntax checks only; no Rust, physical run, runtime reconstruction, or author calculation rerun"
+    ]
+  },
+  "final_identity": {
+    "correctness_source_sha256": "7d1ee0a07e0959dcc5aacc7ba1a6963c3e9e03da1ba13ca5cce34c302cc8e4aa",
+    "correctness_result_sha256": "3740e7329974317cfa39483d6547aa6d7794912da9a0d6d4568d4dd285d2192d",
+    "author_source_sha256": "0a3f16b05a9e94385fba79f81f88d1832085be36f1713a8795b630aa450a25d1",
+    "author_result_sha256": "73af08c872dc7b69406d46edd73027b2e2d942beae713bf03930425d6d641320",
+    "note": "The prefinal correctness-result hash bound by QA terminal-02 is superseded only by the final receipt above; author source/result identity is unchanged."
+  },
+  "affected_certificate_checks": {
+    "dependency_receipt_binds_plan_author_and_prior_inputs": true,
+    "ordinary_and_historical_case_hashes_match_prior_custody": true,
+    "author_fix_comparisons": "For both cases, existing p/h/Cbar/tau bits and exact-h fractions match; replay sweep/rotation/candidate agreement holds; both correction delta vectors and every corrected p/h/Cbar/tau bit match; independent normal guards pass.",
+    "exact_reference_fields": "Each case now records exact rank-20/20-pivot fixed-face minimizer evidence, all-coordinate exact residual/h values, original-box KKT, interior-ball/lambda-zero equivalence, and once-rounded full BVLS-02/box/ball checks.",
+    "ordinary_structural_zero_interpretation": "The final certificate establishes exact coordinate-11 zero for the ordinary face. The package correctly keeps tiny Decimal QR residues as diagnostics and does not call the QR-rounded negative value a feasible reference."
+  },
+  "package_claim_review": {
+    "scope_and_limits": "PASS: the section distinguishes two retained operation-1 cases, bounded offline evidence from runtime/physical qualification, and exact-reference attainability from a general current-SVD guarantee. It preserves BVLS-02 bounded-negative and all broader HOLDs.",
+    "tables_and_feasibility": "PASS: the two tables distinguish existing step, exact reference, once-rounded exact reference, ordinary correction, and higher-precision diagnostic; the ordinary new-face correction-1 box failure is retained rather than clipped. Exact/reference and approximate BVLS-02 terminology is separated.",
+    "operation_accounting": "PASS: lambda-step cost is complete at 18960 (9260 multiply, 9240 add, 440 divide, 20 negate); residual 903, update 20, KKT 1827, and enclosure 39816 as an upper bound are separately stated. It records zero added factorization within corrections and labels additional offline work/Decimal cost without presenting timing as kernel performance.",
+    "review_and_correction_account": "PASS: author, independent correctness, and QA roles remain distinct; initial rejected output/execution failures, HIGH findings, localized corrections, and same-reviewer verification are visible."
+  },
+  "findings": [],
+  "verdict": "PASS for the final certificate identity and the affected package claims. This acceptance is limited to the offline retained-face audit. It neither releases targets nor authorizes a Rust solver amendment, tolerance change, binary64 refinement policy, physical callback, or M1 qualification."
+}

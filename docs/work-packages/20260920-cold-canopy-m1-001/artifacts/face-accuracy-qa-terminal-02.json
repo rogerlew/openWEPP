@@ -1,0 +1,49 @@
+{
+  "schema": "cold-canopy-m1-face-accuracy-qa-terminal/v2",
+  "reviewer": "/root/accuracy_qa",
+  "role": "independent QA/evidence reviewer; same-reviewer verification of FAA-QA-001 and FAA-QA-002",
+  "evidence_class": {
+    "static_by_reviewer": [
+      "revised author source and result structure",
+      "author plan/execution record and frozen dependency bindings",
+      "independent correctness result for complementary exact/Householder/reference predicates"
+    ],
+    "ran_by_reviewer": [
+      "SHA-256 and JSON-syntax checks only; no Rust, physical run, or new face-solve calculation"
+    ]
+  },
+  "reviewed_cut": {
+    "author_source_sha256": "0a3f16b05a9e94385fba79f81f88d1832085be36f1713a8795b630aa450a25d1",
+    "author_results_sha256": "73af08c872dc7b69406d46edd73027b2e2d942beae713bf03930425d6d641320",
+    "author_plan_sha256": "a7bfe3ffb40f33a2708f9b16988c5c295b979ed101598dd00eb323b5bd2cbc9a",
+    "correctness_result_sha256": "2aa45b2ae006924a59437d75a0c9581d58610b2825acd02e888d01ef668b41ab",
+    "correctness_source_sha256": "823503710f47c68c475b4631cf6e6c30569b69f48865c678343d4c722a4107b5"
+  },
+  "same_reviewer_fix_verification": {
+    "FAA-QA-001": {
+      "status": "PASS",
+      "evidence": "Revised author source defines serial_sum as an explicit left-to-right binary64 loop and uses residual64(a,r,p) for the ordinary correction. It also uses serial_sum for norm/objective and face-RHS accumulation. The ordinary correction no longer calls Python's compensated sum() in a frozen binary64 calculation.",
+      "result_effect": "The ordinary positive first correction is retained and explicitly recorded as free-stationary but box-infeasible; it is not clipped. The second, separately labelled Decimal-200-residual diagnostic is box/ball/BVLS-02 feasible. Historical case corrections one and two are both box/ball/BVLS-02 feasible."
+    },
+    "FAA-QA-002": {
+      "status": "PASS",
+      "evidence": "Each case reports per-correction lambda-step full binary64 arithmetic as 9260 multiplications + 9240 additions + 440 divisions + 20 negations = 18960, plus residual formation 903 and free update 20. It separately records assessment KKT=1827 and labels all-coordinate enclosure=39816 as an enclosure_contract_upper_bound_all_coordinates, rather than an observed operation count. It records correction_factorizations=0 and correction_solves=2."
+    }
+  },
+  "custody_and_protocol": {
+    "ordinary_capture_sha256": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+    "older_capture_sha256": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c",
+    "two_distinct_operation_1_cases": true,
+    "bit_exact_jacobi_replay_each_case": true,
+    "two_corrections_per_case": true,
+    "correction_factorizations": 0,
+    "no_clipping_or_active_set_change_observed": true,
+    "prior_author_execution_errors_preserved": true
+  },
+  "complementary_correctness_evidence_inspected": {
+    "ordinary_exact_face": "exact reference has coordinate 11 exactly zero, full original KKT pass, box and ball feasible; once-rounded exact reference passes BVLS-02/box/ball.",
+    "older_exact_face": "exact reference full original KKT pass, box and ball feasible; once-rounded exact reference passes BVLS-02/box/ball.",
+    "qr_limit": "The author QR coordinate-11 residue remains a finite-precision diagnostic and is not represented as an infeasible mathematical minimizer."
+  },
+  "verdict": "PASS for the revised QA scope. FAA-QA-001 and FAA-QA-002 are fixed and verified. The audit supports only the stated offline retained-face results; it does not authorize a Rust amendment, runtime accuracy guarantee, tolerance change, physical run, or target release."
+}
