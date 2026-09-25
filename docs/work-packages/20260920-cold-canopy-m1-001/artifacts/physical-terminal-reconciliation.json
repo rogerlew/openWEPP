@@ -240,7 +240,11 @@
     "Historical full09/A1/strict-lint, material/BGC, parent/positive-late-rejection, cycle/restart and whole-engine cost/scaling HOLDs retained"
   ],
   "recovery": "physical-terminal-recovery.json",
-  "publication": "Local until scoped commit and verified remote publication",
+  "publication": {
+    "payload_commit": "98fca77c0f81b07eff3fc7d56d7e5cc21fdb6638",
+    "remote_main_verified_utc": "2026-09-25T06:00:29.976598+00:00",
+    "receipt": "physical-final-publication.json"
+  },
   "non_target_input_binding": "Source-bound ORIGINAL original60 fixture and contract-derived local controls, with separately computed canonical accepted-coordinate setup; target authenticated input and canonical seed not acquired/frozen",
   "last_source_edit_utc": "2026-09-25T05:49:11.578582+00:00",
   "implementation_cutoff_utc": "2026-09-25T05:58:00+00:00",

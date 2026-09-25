@@ -13,6 +13,8 @@ exists; all four run slots remain UNUSED. Final source764 is
 Last Rust edit05:49:11Z; selected checks/recovery/reviews completed within the fixed
 05:58 implementation cutoff. After05:55 a new180-second physical command could
 not fit plus the protected reserve, so no further implementation cycle is started.
+Payload evidence/recovery is published at `98fca77c0f81b07eff3fc7d56d7e5cc21fdb6638`;
+[publication receipt](artifacts/physical-final-publication.json) verifies remote main.
 Preservation and authorized scoped publication use the original reserve, with hard
 06:28 deadline unchanged. See the terminal reconciliation/recovery and final
 review entries below; this is not full physical or measurement completion.
@@ -802,7 +804,10 @@ fixed ceiling336013.959294s. Conservative closing charge through06:10UTC is
 This includes publication/response allowance; all observed elapsed/waits/concurrency
 are charged once, with no prior refund or old900-second addition. Publication must
 finish within that charged bound or the receipt must increase before the unchanged
-06:28 hard deadline. Payload publication is pending at this source-evidence commit.
+06:28 hard deadline. Payload commit `98fca77c0f81b07eff3fc7d56d7e5cc21fdb6638` is pushed and remote main verified;
+[publication receipt](artifacts/physical-final-publication.json) records custody.
+The following documentation commit publishes that receipt; experimental Rust
+remains detached and unrelated dirty work is unchanged.
 
 ## Witness completion resumption — adopted 2026-09-24 16:10Z
 

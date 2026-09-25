@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Ran: scoped payload commit pushed; remote main verified; committed recovery patch checked",
+  "verified_utc": "2026-09-25T06:00:29.976598+00:00",
+  "payload_commit": "98fca77c0f81b07eff3fc7d56d7e5cc21fdb6638",
+  "remote": "https://github.com/rogerlew/openWEPP",
+  "remote_ref": "refs/heads/main",
+  "remote_commit": "98fca77c0f81b07eff3fc7d56d7e5cc21fdb6638",
+  "source_tree_sha256": "9ec7bf7698d055d267e41cac381eaafb56ca57fa1fce5a62359da1d3714a9a3d",
+  "entry_count": 764,
+  "terminal_patch": "physical-body12-custody-from-observer-cut02.patch",
+  "terminal_patch_sha256": "6d44b35b3b8171feb0c1d872d901df5c1e383907a0120350afd3bec88313a5a6",
+  "recovery": "physical-terminal-recovery.json",
+  "reconciliation": "physical-terminal-reconciliation.json",
+  "reviews": "physical-adapter-reviews.json",
+  "ledger": "physical-final-ledger.json",
+  "disposition": "INCOMPLETE / HOLD",
+  "experimental_rust": "Detached only; no main runtime adoption",
+  "unrelated_tracked_diff_preserved": true,
+  "target_slots": {
+    "prefix": "UNUSED",
+    "baseline": "UNUSED",
+    "treatment": "UNUSED",
+    "conditional_corrected_repeat": "UNUSED"
+  },
+  "receipt_publication": "This receipt is prepared for a following scoped documentation commit; it verifies the payload commit above, not its own future commit."
+}
