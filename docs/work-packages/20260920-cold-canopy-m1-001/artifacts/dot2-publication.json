@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: authorized scoped main push, remote-main SHA check and committed-payload byte comparison",
+  "payload_commit": "4ba9afb9bf88d5fd140545a85d41af01b9a4f654",
+  "parent_commit": "9f7230eca9de4889d6eaf92b548742b2bff26b19",
+  "remote": "origin",
+  "remote_main": "4ba9afb9bf88d5fd140545a85d41af01b9a4f654",
+  "verified_utc": "2026-09-26T00:44:11.462837+00:00",
+  "published_scoped_files": 22,
+  "all_payload_bytes_match_local": true,
+  "push_exit_code": 0,
+  "push_stdout": "",
+  "push_stderr": "To https://github.com/rogerlew/openWEPP\n   9f7230eca..4ba9afb9b  HEAD -> main\n",
+  "disposition": "Numerical two-case PASS; execution-cadence FAIL; clean prototype acceptance HOLD",
+  "runtime": "Unchanged; no Rust or revision03 adoption",
+  "ledger": "dot2-final-ledger.json",
+  "receipt_publication": "This receipt and package publication note follow in metadata-only commit; final remote identity reported to owner."
+}

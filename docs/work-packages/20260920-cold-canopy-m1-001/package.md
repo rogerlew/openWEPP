@@ -207,6 +207,12 @@ not clean acceptance. No numerical source/output changed after their substantive
 review. Only these terminal-check/review/publication links and custody metadata
 are added at sealing. Scoped publication to main preserves the disclosed result.
 
+Publication: payload `4ba9afb9bf88d5fd140545a85d41af01b9a4f654` is pushed to main and remotely
+verified, with all 22 scoped files byte-equal to the committed payload.
+The [publication receipt](artifacts/dot2-publication.json) and this note follow
+in a metadata-only commit. Numerical output, independent reviews and the
+PASS/FAIL/HOLD disposition are unchanged.
+
 ## Retained face-solve accuracy audit — adopted 2026-09-25
 
 **COMPLETE: independently checked offline numerical audit.** The failure
