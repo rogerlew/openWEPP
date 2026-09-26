@@ -1,0 +1,66 @@
+{
+  "schema": "openwepp.refinement-correctness.c3-fixreview01.v1",
+  "evidence_class": "Static: source inspection only; parent reported C3 in debug01 passed, but reviewer performed no build, test, candidate replay, numerical execution, physical run, or target run",
+  "reviewer": "/root/refinement_correctness",
+  "scope": "C3 actual scratch isolation, positive and refusal observation, owner Option custody, direct phase/merit counters, error trace, and nested physical-budget restoration",
+  "disposition": "BLOCKED_PENDING_DISCRIMINATING_C3_OBSERVATIONS",
+  "source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "opening_sha256": "23a84587bcfd6ec0cb1c5337de65bc720245ad8bdda2f8e862048dc4b70017fb",
+    "closing_sha256": "0cb6e82380b3708ecddcb7ff081191acab85e435d89cc0a98092261e87d08074",
+    "closing_probe_stable": true,
+    "moving_source_limit": "The sole writer changed C4 concurrently. All C3 anchors named below were re-probed under the stable closing hash; this review does not assess or approve the concurrent C4 change."
+  },
+  "accepted_static_components": [
+    "RefinementScratchGlobalSnapshot reads the actual M1LoopActivityObservation, exact Option accepted adapter binding, direct phase-selection counter, direct frozen-weighted-merit counter, evaluator/hydraulic/trial/materialization/final-assembly counters, work observation, and physical-budget observation.",
+    "The owner binding is retained as the actual Option value; no unrelated live-state fallback is substituted for None.",
+    "refine_face_before_crossing records live state at entry and exit around the inner result, including Err paths.",
+    "m1_trust_region_refinement_retained_face_for_test captures actual physical budget snapshots before and after its nested scope on both Ok and Err."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "paths": [
+        "m1_trust_region_stage1.rs:3211-3300",
+        "m1_trust_region_stage1.rs:3590-3684",
+        "m1_trust_region_stage1.rs:6493-6586 at the reviewed opening layout"
+      ],
+      "finding": "Negative mutation assertions use fields initialized to constants by refinement_observation_refusal: returned_step=None, bvls02_fallback_calls=0, materialization_calls=0, and physical_evaluator_calls=0. Although the helper captures actual global snapshots into the refusal, the negative test does not assert them. A regression reaching a physical or owner hook could therefore leave these assertions green.",
+      "minimal_required_correction": "Remove the canned fields and their assertions. For each negative mutation, require global_before/global_after to be present and exactly equal. This existing real snapshot covers evaluator, hydraulic, phase, merit, trial, materializer, final assembly, work, physical budget, and exact Option owner binding. The typed Err already proves no returned step; if dynamic no-KKT/fallback evidence remains required, add one actual trace event rather than a literal zero."
+    },
+    {
+      "severity": "high",
+      "paths": [
+        "m1_trust_region_stage1.rs:3347-3378",
+        "m1_trust_region_stage1.rs:3617-3629",
+        "m1_trust_region_stage1.rs:4261-4272"
+      ],
+      "finding": "The core wrapper records actual live-state entry and exit on Err, but the raw retained-face helper returns without taking that trace. The scratch helper then overwrites both refusal values with the same decoded pre-call array. The negative unchanged-state assertion is therefore copied-input tautology rather than observation of the failing runtime path.",
+      "minimal_required_correction": "Take the observation trace before returning the refinement refusal, store its actual live_state_entry/live_state_exit in the refusal, and remove the outer copied-before overwrite. Assert those actual values are equal for every negative mutation."
+    },
+    {
+      "severity": "high",
+      "paths": [
+        "m1_trust_region_stage1.rs:3332-3375",
+        "m1_trust_region_stage1.rs:3470-3499",
+        "m1_trust_region_stage1.rs:6535-6652 at the reviewed opening layout"
+      ],
+      "finding": "Actual nested physical-budget before/after snapshots are attached on Ok and Err, but C3 does not assert them. The asserted nested_budget fields instead contain equal scalar-ledger copies or literal zeros and cannot detect failure to restore the nested physical budget scope.",
+      "minimal_required_correction": "On positive and every negative C3 path, require budget_before and budget_after to be Some and equal. Remove the legacy nested_budget fields/assertions or rename any remaining scalar-ledger observation accurately. Full global snapshot equality should also retain ambient budget/work equality."
+    },
+    {
+      "severity": "medium",
+      "paths": [
+        "m1_trust_region_stage1.rs:3535-3684",
+        "m1_trust_region_stage1.rs:6426-6458 at the reviewed closing layout"
+      ],
+      "finding": "The positive path has strong actual snapshots, but retains literal merit_calls=0 and dot2_calls=21 fields. The test asserts these alongside partial snapshot comparisons, so those two claims are not discriminating runtime observations.",
+      "minimal_required_correction": "Assert the entire actual global snapshot before equals after and remove redundant scalar hook summaries. Remove dot2_calls because C2 already checks all 21 actual second-residual rows, or populate it from a direct trace/counter. Do not retain a literal expected value as an observed field."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "C3 requires a corrected frozen-source review and parent-run focused result before acceptance.",
+    "The passing debug01 result does not close C3 because its negative assertions are currently fed by canned values.",
+    "Whole-work accounting and C4 outcome issues remain separate and are recorded in their own correctness artifacts."
+  ]
+}

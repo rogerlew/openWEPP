@@ -1,0 +1,23 @@
+{
+  "evidence_class": "Static: frozen compile-ready C1 source cut; author did not run compilation, tests, numerical calculation, physical command, or target execution",
+  "runtime_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source": {
+    "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "sha256": "539c91b660d48c0ec2e05e77cd4c20ba5157585e51972a407bba26d9e1d292ce",
+    "patch": "artifacts/bvls03-c1-body02-counter-fix.patch",
+    "patch_sha256": "124fd4add546806eabbe624dc59d28cae2069bd51be585cd6e836c8b62580b25"
+  },
+  "scope": "test-only 22-term ORO Dot2 primitive and C1 controls; no controller, factor reuse, refinement integration, physical evaluator, materializer, or main-worktree write",
+  "source_properties": [
+    "primary product precedes Split; TwoSum/Split/TwoProduct parenthesization remains scalar and non-FMA",
+    "additive cancellation and signed zero remain admitted; only a nonzero multiplication rounded to zero refuses",
+    "RefinementDot2Refusal retains arithmetic, guard, exceptional-guard, and signed-zero counters on every error for later shared-controller accounting",
+    "splitter classification uses the original failed multiplication result and does not recompute an uncounted product",
+    "all 42 retained rows compare independent output bits and guard counts; signed-zero control distinguishes leading product -0 from computed final +0"
+  ],
+  "parent_commands": [
+    "cargo nextest run -p openwepp-land-surface-energy m1_trust_region_refinement_dot2_",
+    "cargo test --release -p openwepp-land-surface-energy m1_trust_region_refinement_dot2_"
+  ],
+  "remaining": "Parent-dispatched green C1 commands and independent source review. C2-C4 retain controller/failure-count integration work and are not authorized by this cut."
+}

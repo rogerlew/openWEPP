@@ -1,0 +1,54 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static: bounded working-core review; no compile, Rust test, Python/candidate replay, physical command, or target execution by reviewer",
+  "disposition": "CORRECTIONS_REQUIRED_WORKING_SOURCE_NOT_FROZEN",
+  "review_scope": "Integrated BVLS-03 numerical core in detached stage1/lib: eligibility, residual order, factor reuse, private scratch, final checks, unchanged BVLS-02 continuation, typed failures, and dimension-aware reservation linkage. Incomplete observation/API coverage and full counter plumbing were excluded for the later frozen-body review.",
+  "source_custody": {
+    "stage1_initial_sha256": "a91ed69d734c8f7bab324f50e87a7d2dcefae88f8fe8d492686d2ab34f1cd9e4",
+    "stage1_intermediate_recheck_sha256": "a91ed69d734c8f7bab324f50e87a7d2dcefae88f8fe8d492686d2ab34f1cd9e4",
+    "stage1_closing_sha256": "ba0548ed3b910667be28094316d272ef133b5fb11fe46348b72be59ac4b816c5",
+    "lib_initial_and_closing_sha256": "469ff7f7e84553d2adfc6606b60c316142cefbb0a5548f3db91d4bfea0088a39",
+    "durable_working_patch": "artifacts/refinement-body-working01-from-observer.patch",
+    "durable_working_patch_sha256": "9a8b8b849a0f4767b9fa8cda00e3ddba5e75d8c9b119ec0698bda1bc32fc0505",
+    "limitation": "The stage1 source moved after substantive inspection and before closure. Findings below are attributable to the twice-observed a91ed69d cut. The closing ba0548ed cut is not reviewed or approved; the durable patch aided source context but is not asserted to be an exact snapshot of a91ed69d."
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:a91ed69d cut, refinement_active_admit and refine_face_before_crossing eligibility",
+      "finding": "Eligibility calls the EFT normal-or-zero guard on every p0 coordinate and treats any error as ineligibility. A completed finite, box-feasible, strict-interior p0 with a free subnormal therefore falls through to BVLS-02 rather than entering refinement and returning the required source-operand typed refusal.",
+      "required_fix": "Separate algebraic eligibility active-bit equality from post-entry EFT source guarding. Once the specified lambda/box/active/radius predicates admit the face, a guarded source-domain failure must return a refinement refusal with no BVLS-02 fallback."
+    },
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:a91ed69d cut, refinement_refusal and optimality_state_refusal",
+      "finding": "The refusal kinds are swapped: refinement_refusal constructs TrustRegionOptimalityIndeterminate, while unchanged KKT optimality failures construct TrustRegionRefinementIndeterminate. This mislabels true refinement failures and changes ineligible BVLS-02 failure behavior.",
+      "required_fix": "Use TrustRegionRefinementIndeterminate only for failures originating after refinement entry; retain TrustRegionOptimalityIndeterminate for unchanged BVLS-02 KKT/enclosure failures."
+    },
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:a91ed69d cut, p1 lambda_norm error mapping",
+      "finding": "A p1 lambda_norm arithmetic failure is hardcoded as refinement_subnormal_intermediate although lambda_norm reports nonfinite norm arithmetic. Overflow/nonfinite failures are therefore mislabeled as subnormal; a finite norm above radius is separately and correctly a scratch-radius refusal.",
+      "required_fix": "Map nonfinite ordered-norm arithmetic to the stable nonfinite refinement reason and reserve refinement_scratch_radius for a finite norm exceeding the radius."
+    },
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs controls05 one-less reservation and its future adapter",
+      "finding": "The retained capture has 20 free coordinates, but the control supplies the 21-free global maxima K=95784 and G=287607. The real dimension-aware core requires K(20)=92038 and G(20)=276367, so a one-less global-max reservation would admit the actual retained face and could only pass through a caller-driven or fabricated denial.",
+      "required_fix": "Correct the retained control to remaining K=92037/G=276366 and required K=92038/G=276367. The thin adapter must derive and enforce the actual free-dimension requirement from the shared core rather than accepting caller-provided expected work as authority."
+    }
+  ],
+  "conforming_observations": [
+    "The a91ed69d cut formed ordinary r0 in the existing sum-Ap-then-add-f binary64 order and formed r1 through the shared frozen 22-term Dot2 order.",
+    "Both corrections reused the same retained JacobiFactor through the same lambda_step operation and added no refactorization or third correction.",
+    "p1 remained in a private RefinementScratch and was consumed only by its norm, second residual, and retained factor application before p2 construction.",
+    "The final path checked original scaled box feasibility, active-value preservation, and ordered radius before installing p2 for unchanged crossing/KKT logic; masks were not changed within refinement."
+  ],
+  "residual_risk": "A frozen implementation review must re-read the corrected source, verify all control adapters observe the shared core without fixture-derived verdicts, and audit exact scalar/guard accounting, including factor-output/update guards and inclusion of pre-admission eligibility work exactly once in K(m)/G(m).",
+  "missing_evidence": [
+    "Immutable corrected body/API freeze",
+    "Full exact-source numerical correctness review of that freeze",
+    "Parent-owned compiled-release green controls",
+    "Required later physical and target evidence"
+  ]
+}

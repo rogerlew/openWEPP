@@ -1,0 +1,198 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused variable: `before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3624:9
+     |
+3624 |     let before = initial_state.p.map(f64::to_bits);
+     |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_before`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `lower_before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3904:9
+     |
+3904 |     let lower_before = state.lower_active.to_vec();
+     |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_lower_before`
+
+warning: unused variable: `upper_before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3905:9
+     |
+3905 |     let upper_before = state.upper_active.to_vec();
+     |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_upper_before`
+
+warning: fields `refinement_scalar_operations`, `refinement_guard_events`, `refinement_attempted_entries`, and `refinement_denied_entries` are never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:127:16
+    |
+123 | pub(crate) struct M1TrustRegionControllerRun {
+    |                   -------------------------- fields in this struct
+...
+127 |     pub(crate) refinement_scalar_operations: u64,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+128 |     pub(crate) refinement_guard_events: u64,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^
+129 |     pub(crate) refinement_attempted_entries: u16,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+130 |     pub(crate) refinement_denied_entries: u16,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionControllerRun` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `original_lower`, `original_upper`, `base`, `scale`, and `radius` are never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:202:9
+    |
+199 |     FinalBox {
+    |     -------- fields in this variant
+...
+202 |         original_lower: f64,
+    |         ^^^^^^^^^^^^^^
+203 |         original_upper: f64,
+    |         ^^^^^^^^^^^^^^
+204 |         base: f64,
+    |         ^^^^
+205 |         scale: f64,
+    |         ^^^^^
+206 |         radius: f64,
+    |         ^^^^^^
+    |
+    = note: `RefinementRawCandidateMutation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `original_lower`, `original_upper`, `base`, and `scale` are never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:211:9
+    |
+208 |     ScratchRadius {
+    |     ------------- fields in this variant
+...
+211 |         original_lower: f64,
+    |         ^^^^^^^^^^^^^^
+212 |         original_upper: f64,
+    |         ^^^^^^^^^^^^^^
+213 |         base: f64,
+    |         ^^^^
+214 |         scale: f64,
+    |         ^^^^^
+    |
+    = note: `RefinementRawCandidateMutation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `original_lower`, `original_upper`, `base`, `scale`, and `radius` are never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:220:9
+    |
+217 |     ActiveValue {
+    |     ----------- fields in this variant
+...
+220 |         original_lower: f64,
+    |         ^^^^^^^^^^^^^^
+221 |         original_upper: f64,
+    |         ^^^^^^^^^^^^^^
+222 |         base: f64,
+    |         ^^^^
+223 |         scale: f64,
+    |         ^^^^^
+224 |         radius: f64,
+    |         ^^^^^^
+    |
+    = note: `RefinementRawCandidateMutation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: function `refinement_observation_begin` is never used
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:284:4
+    |
+284 | fn refinement_observation_begin() {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `required_scalar_operations` and `required_guard_events` are never read
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3167:5
+     |
+3164 | struct RefinementWorkReservation {
+     |        ------------------------- fields in this struct
+...
+3167 |     required_scalar_operations: u64,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+3168 |     required_guard_events: u64,
+     |     ^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `RefinementWorkReservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: multiple fields are never read
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3213:5
+     |
+3211 | struct RefinementObservationRefusal {
+     |        ---------------------------- fields in this struct
+3212 |     reason: &'static str,
+3213 |     returned_step: Option<[f64; 21]>,
+     |     ^^^^^^^^^^^^^
+3214 |     bvls02_fallback_calls: u8,
+     |     ^^^^^^^^^^^^^^^^^^^^^
+3215 |     materialization_calls: u8,
+     |     ^^^^^^^^^^^^^^^^^^^^^
+3216 |     physical_evaluator_calls: u8,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^
+3217 |     hook_log: Vec<&'static str>,
+     |     ^^^^^^^^
+3218 |     owner_snapshot_before: [u64; 21],
+     |     ^^^^^^^^^^^^^^^^^^^^^
+3219 |     owner_snapshot_after: [u64; 21],
+     |     ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `RefinementObservationRefusal` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: function `mask` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4866:8
+     |
+4866 |     fn mask(values: &Value) -> Vec<bool> {
+     |        ^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 11 warnings (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 3 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.96s
+────────────
+ Nextest run ID 4b36ff1a-6ffa-43ea-800b-85b1bdd07d0b with nextest profile: default
+    Starting 6 tests across 1 binary (358 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_preserves_negative_zero ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 363 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_refuses_guarded_primitive_domains ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 363 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_scratch_never_reaches_owner_or_physical_hooks ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 363 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_retained_face_reuses_factor_and_reproduces_all_bits ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 363 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_eligibility_uses_raw_face_predicates_and_counts_denied_work ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 363 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_all_retained_rows_preserve_independent_bits_and_guards ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 363 filtered out; finished in 0.16s
+
+
+────────────
+     Summary [   0.163s] 6 tests run: 6 passed, 358 skipped

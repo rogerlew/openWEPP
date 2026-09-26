@@ -1,0 +1,32 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static: retained failure and source/authority adjudication; no compile, Rust test, candidate replay, physical command, or target execution by reviewer",
+  "disposition": "SUPPORTED_PROSPECTIVE_METHOD_SPECIFIC_ORACLE_CORRECTION",
+  "evidence": {
+    "test_source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "test_source_sha256": "b9f5fa46ba58b255c18cd316a4c886ba40526fe51a6ced2d80d3ca747400946e",
+    "retained_stderr": "artifacts/finite-precision-body13-selected-controls.stderr",
+    "retained_stderr_sha256": "899679183e62c1a9f51836f5a21af3a9a8a8bc0b85e7326b4e3d1c14931c7e47",
+    "authority": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "authority_sha256": "90dd07cc4f7f6a8fc6cc29882759b608b78e254131f37277f3ee519e5cf70b46"
+  },
+  "adjudication": "The failed lower-bound release order [1,0] is a stale BVLS-01 largest-absolute-h oracle. Accepted BVLS-02 ranks genuine violations by abs(h)/tau and selects the lowest coordinate on an exact tie. The observed implementation order [0,1] conforms to that rule.",
+  "static_reconstruction": {
+    "initial_lower_face_h": [-1.0, -2.0, 3.0, 6.0, 0.0],
+    "relative_cbar_for_candidates": [1.0, 2.0],
+    "normalized_relation": "abs(h0)/tau0 equals abs(h1)/tau1 because tau is proportional to Cbar and Cbar1 is twice Cbar0",
+    "selected_first_coordinate": 0,
+    "second_face_h_after_releasing_coordinate_0": [0.0, -2.0, 2.0, 6.0, 0.0],
+    "selected_second_coordinate": 1,
+    "final_step_unchanged": [1.0, 2.0, 0.0, 0.0, 0.0],
+    "final_h_unchanged": [0.0, 0.0, 2.0, 4.0, 0.0]
+  },
+  "required_test_correction": [
+    "Change only the lower-bound variant release order from [1,0] to [0,1].",
+    "Change that variant's second_h from [-1,0,3,4,0] to [0,-2,2,6,0].",
+    "Retain the upper-bound variant, activation chronology, masks, final step, final h, factorization/pivot counts, and all other assertions.",
+    "Prefer wording that names uncertainty-normalized release/tie behavior rather than largest absolute violation."
+  ],
+  "protected_obligations": "The separate run_captures_and_restores_owned_budget_scope and original60_setup_is_separate_from_deferred_proposal failures are genuine physical-positive obligations and must not be weakened or relabeled by this oracle correction.",
+  "approval": "The narrowly described prospective oracle correction is numerically supported; no solver-body change is justified by this mismatch."
+}

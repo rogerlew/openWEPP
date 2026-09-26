@@ -1,0 +1,40 @@
+{
+  "schema": "openwepp.refinement-correctness.c3-c4-fixreview02.v1",
+  "evidence_class": "Static: frozen-source inspection only; parent debug05 was in flight and reviewer performed no build, test, candidate replay, numerical execution, physical run, or target run",
+  "reviewer": "/root/refinement_correctness",
+  "scope": "C3/C4 fix verification only; whole-work accounting remains separately open",
+  "source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "sha256": "7da92cc19b336d77abd971eae5b4f5bc297f95b535a10b2bcad794b0342df6af",
+    "stable_during_review": true
+  },
+  "c3_disposition": "PASS_NO_C3_BLOCKER",
+  "c3_verified": [
+    "The retained-face adapter requires an observation trace and requires actual live-state entry and exit on both successful and refinement-refusal paths; copied-state fallbacks are removed.",
+    "The positive isolation control compares the complete actual global snapshot before and after. This binds activity, exact Option owner binding, direct phase and merit counters, evaluator/hydraulic/trial/materializer/final-assembly activity, work, and ambient budget.",
+    "Each negative mutation requires actual pre/post global snapshots and compares their complete values.",
+    "Positive and negative paths require nested physical-budget snapshots, compare them after inner-scope restoration, and reject the default snapshot.",
+    "The raw negative trace supplies actual correction/factor counts and live-state endpoints."
+  ],
+  "c4_disposition": "BLOCKED_ONE_TYPED_OUTCOME_FIELD",
+  "c4_verified": [
+    "Baseline and observed helpers no longer install solution.trace.step into state.p before the shared ordinary path. activate_first_crossing receives the face-start state.",
+    "The outside-box probe explicitly requires a crossing, a selected coordinate, an action, and a free-to-active mask transition before KKT.",
+    "An unchanged-BVLS-02 baseline is constructed only for probes expected to be ineligible, and the complete current outcome structure is compared for those probes.",
+    "The one-less-cap control derives eligibility scalar/guard work from mandatory trace fields; derives post-eligibility executed work from the actual ledger delta; derives correction and factor counts from the trace; and checks actual attempted/denied counters and restored nondefault budget snapshots."
+  ],
+  "finding": {
+    "severity": "high",
+    "paths": [
+      "m1_trust_region_stage1.rs:3753-3824",
+      "m1_trust_region_stage1.rs:6638-6640"
+    ],
+    "finding": "RefinementBvls02Outcome still omits M1TrustRegionSubproblemRefusal.kind. Both crossing/KKT refusal arms reduce every typed failure to outcome='refusal' plus optional optimality reason and coordinate. Full-structure comparison therefore cannot detect drift among SvdNonFinite, FacePivotLimit, TrustRegionOptimalityIndeterminate, or another owning refusal kind.",
+    "required_correction": "Add kind: Option<M1TrustRegionRefusalKind>; populate Some(refusal.kind) in both refusal arms and None on crossing/success. The existing full-structure baseline comparison will then bind it. Preserve the current owner kind; do not translate it into a refinement refusal."
+  },
+  "residual_risk_and_missing_tests": [
+    "C4 requires this single exact source fix, a frozen-source check, and parent-run focused evidence before C3/C4 are jointly released.",
+    "Typed-refusal work is still emitted as zero in this helper. Its actual partial KKT/enclosure accounting belongs to the already-open whole-work tranche and must replace that placeholder there.",
+    "No physical-source, target, whole-work, or package approval is granted."
+  ]
+}

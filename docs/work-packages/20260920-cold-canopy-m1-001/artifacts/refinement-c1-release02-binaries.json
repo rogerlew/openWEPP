@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Ran: release executable inventory immediately after C1 run; exact selected binary to bind via nextest inventory at integration",
+  "executables": [
+    {
+      "path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+      "size": 9046984,
+      "mtime": "2026-09-26T02:29:30.539861+00:00",
+      "sha256": "b61ba5165290d714361e35bc09697b5eef897f768ed9b2f8f76a64a2a7bf7fda"
+    },
+    {
+      "path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-1ff193c8871ea613",
+      "size": 7430960,
+      "mtime": "2026-09-22T04:23:13.396231+00:00",
+      "sha256": "0bdd1869bd0375c109b54523adfcc9b192bec3b543743d864d9fb1ca61e8e515"
+    }
+  ],
+  "source_tree_sha256": "88c59a5a7268c01e731f10ef089c448e0de5c4da078b8e09647702c58f5d5987"
+}

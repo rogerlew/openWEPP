@@ -1,0 +1,54 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static: bounded C2/C3 adapter review and prospective C4 baseline adjudication; no compile, Rust test, Python/candidate replay, physical command, or target execution by reviewer",
+  "disposition": "CORRECTIONS_REQUIRED_WORKING_SOURCE_NOT_FROZEN",
+  "source_custody": {
+    "stage1_reviewed_sha256": "25ca4cd120e461ee0adbcc2528a44c5545bec56b9a8a7a7ddc5367e7bc14ce10",
+    "stage1_intermediate_recheck_sha256": "25ca4cd120e461ee0adbcc2528a44c5545bec56b9a8a7a7ddc5367e7bc14ce10",
+    "stage1_closing_sha256": "2d9239fa9468def1069efc6d573030dc4888ff1917fa4463b6ba3d3ff1cfdbf7",
+    "limitation": "Concurrent C4 authoring changed stage1 after the bounded C2/C3 inspection. Findings are attributable to the twice-observed 25ca4cd1 cut. The closing 2d9239fa cut, including moving C4 code, is not reviewed or approved here."
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "location": "m1_trust_region_stage1.rs::m1_trust_region_refinement_retained_face_for_test",
+      "finding": "C2 formats the actual optimality enum with Rust Debug names such as FreePass and RetainLower, while the retained oracle uses stable snake-case tokens free_pass and retain_lower. The control will fail for representation rather than numerical behavior.",
+      "required_fix": "Map each observed enum variant explicitly to its stable retained token; do not transform or copy the expected JSON."
+    },
+    {
+      "severity": "high",
+      "location": "m1_trust_region_stage1.rs::RefinementObservationTrace and m1_trust_region_refinement_retained_face_for_test",
+      "finding": "Factor application identities are manufactured by repeating one preobserved pointer for the reported count. The p0, p1 and p2 masks are likewise returned as repeated copies of the initial mask rather than checkpoint observations. These fields cannot prove same-factor application or fixed-mask custody.",
+      "required_fix": "Push the actual factor identity at each shared lambda_step application and record actual lower/upper masks at p0, p1, p2 and exit in the shared refinement trace. Return those records without synthesizing repetitions in the adapter."
+    },
+    {
+      "severity": "high",
+      "location": "m1_trust_region_stage1.rs::refinement_observation_refusal and m1_trust_region_refinement_scratch_hooks_for_test",
+      "finding": "C3 currently manufactures zero physical/phase/hydraulic/merit/materializer/receipt/owner calls, an empty hook log, and equal before/after owner/live snapshots by copying one initial state. These are assertions encoded as results, not observations of the actual controller/owner seams.",
+      "required_fix": "Use existing owner/global observation snapshots and actual hook/counter deltas around the shared call. Preserve literal zero only in test assertions against observed deltas, not in the candidate observation constructor."
+    },
+    {
+      "severity": "medium",
+      "location": "m1_trust_region_stage1.rs::m1_trust_region_refinement_scratch_hooks_for_test",
+      "finding": "C3 compares scaled p1 values directly with the capture's original physical-unit lower and upper arrays and reports an any-coordinate boolean. This is dimensionally invalid and does not identify the actual rejected free-box coordinate.",
+      "required_fix": "Compare p1 with PreparedSubproblem.scaled_lower/scaled_upper, restrict the observation to the free set, and retain the concrete violating coordinate/status."
+    },
+    {
+      "severity": "high",
+      "location": "prospective C4 ineligible-face baseline design",
+      "finding": "Comparing differently mutated lambda, radius and p0/box probes to one unmutated BVLS-02 baseline does not prove unchanged behavior. Those mutations can legitimately change the BVLS-02 outcome, masks and work, and a common baseline encourages copied expected results.",
+      "required_fix": "For every ineligible probe, compute a paired unchanged-BVLS-02 result from the identical mutated operands with refinement bypassed, then compare the dispatcher arm to that probe-specific shared result for outcome, masks and work."
+    }
+  ],
+  "conforming_observations": [
+    "The C2 adapter decodes raw retained operands, rebuilds preparation, runs the shared face solve, invokes the shared refinement, installs its actual p2, and runs the shared KKT assessment; expected result JSON is not supplied to the candidate path.",
+    "C2 p0, delta0, p1, Dot2 residual, delta1, p2, h, Cbar, tau and feasibility values originate from shared numerical calculations rather than the expected result fixture.",
+    "C3 raw mutations enter the actual p1/p2 shared guard locations and returned reason tokens originate from the shared refusal path."
+  ],
+  "residual_risk": "The final frozen-body review must verify the corrected observation wiring, probe-specific BVLS-02 pairing, real reservation derivation, complete guard/work retention and no selector-driven or fixture-derived verdicts.",
+  "missing_evidence": [
+    "Immutable corrected C2-C4 API/body freeze",
+    "Actual owner/global observation delta integration",
+    "Parent-owned compiled-release green controls"
+  ]
+}

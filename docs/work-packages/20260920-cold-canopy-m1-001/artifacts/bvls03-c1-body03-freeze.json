@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Static: C1 source correction after parent-preserved compile failure; no author compilation, test, numerical calculation, physical command, or target execution",
+  "runtime_source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "sha256": "6cca4b8500c101f4a697d464a1db37c57ae201c409b413bc6499536ca049fdc4",
+    "patch": "artifacts/bvls03-c1-body03-exact-refusal-counters.patch",
+    "patch_sha256": "87588275f8823cd807dd8c7efc181e4a5d2dd8597a223a8573420bc473c51912"
+  },
+  "authority_source": {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "sha256": "90dd07cc4f7f6a8fc6cc29882759b608b78e254131f37277f3ee519e5cf70b46",
+    "change": "wording-only status ACCEPTED/prospective staged body work and retained review bindings; no formula or physical/target authorization change"
+  },
+  "C1_correction": {
+    "compile_fix": "widen observed u16 guard count to u64 before comparison with JSON evidence",
+    "refusal_tuples": {
+      "nan_infinity_input_subnormal": [0, 1, 1, 0],
+      "min_normal_times_half_subnormal": [1, 45, 1, 0],
+      "max_times_one_splitter_overflow": [2, 46, 1, 0],
+      "max_times_max_nonfinite": [1, 45, 1, 0],
+      "min_normal_squared_underflow": [1, 45, 1, 1]
+    }
+  },
+  "parent_green_command": "cargo nextest run -p openwepp-land-surface-energy m1_trust_region_refinement_dot2_",
+  "remaining": "Parent release/run and independent source review only; C2-C4/controller integration remains out of scope."
+}

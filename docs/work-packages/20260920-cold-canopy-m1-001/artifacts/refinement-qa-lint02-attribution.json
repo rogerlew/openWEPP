@@ -1,0 +1,47 @@
+{
+  "evidence_class": "Static: inspected parent-run frozen-source lint receipt, raw stderr, normalized comparison, baseline stderr, and frozen pre-edit source; reviewer ran no lint or test command",
+  "reviewer": "/root/refinement_qa",
+  "frozen_stage1_sha256": "5b59aa0a593b86ca69315ea97ceb497e12941cd7ab05c9a53ad1adc658daba6e",
+  "evidence": {
+    "candidate_receipt": "refinement-lint02.json",
+    "candidate_receipt_sha256": "5ea583b6e78d609a8a0d4f58fb02796227648ea3b533e3a6daf1a44a1fafe6bb",
+    "candidate_stderr": "refinement-lint02.stderr",
+    "candidate_stderr_sha256": "bbd3ef41fec2bd628e99ce428e73166ce3188927499ee574c63d024f73268e84",
+    "baseline_stderr": "finite-precision-body13-lint.stderr",
+    "baseline_stderr_sha256": "f88a933aeb90b5caf3fa43b1ad60f707ea7ec9d1f3f9622255a8c5019b83fcd0",
+    "comparison": "refinement-lint02-comparison.json",
+    "comparison_sha256": "5ca3f5c2f2cc32a87bc15709aa089fd119494472c36cf876f9d2aae113c1e4cb"
+  },
+  "comparison_limit": "The supplied normalization changes only line/column and source gutter numbers. It records 238 baseline, 318 candidate, 96 candidate-only and 16 baseline-only blocks. This is a triage aid, not permission to waive 96 blocks: changed source excerpts and context notes can split or merge diagnostic blocks.",
+  "concrete_introduced_groups": [
+    {
+      "severity": "MEDIUM",
+      "location": "m1_trust_region_stage1.rs:4102-4103",
+      "evidence": "candidate stderr reports lower_before and upper_before unused; frozen pre-edit source binds both immediately before the refinement eligibility call and never reads either.",
+      "required_fix": "Remove the two bindings. Do not add underscore names or an allow attribute."
+    },
+    {
+      "severity": "MEDIUM",
+      "location": "m1_trust_region_controller_interface.rs:127-130",
+      "evidence": "candidate stderr identifies all four new M1TrustRegionControllerRun refinement counter fields as unread.",
+      "required_fix": "Wire the fields to the intended C4 terminal/outcome observer with assertions, or remove them if no controller-facing owner needs them. Do not suppress dead_code."
+    },
+    {
+      "severity": "MEDIUM",
+      "location": "M1TrustRegionSubproblemRefusal through M1TrustRegionControllerError",
+      "evidence": "The candidate has a 128-byte controller-error result_large_err fan-out. The frozen source adds refinement_scalar_operations, refinement_guard_events, refinement_attempted_entries, and refinement_denied_entries to the refusal carried by ControllerError::Subproblem.",
+      "required_fix": "Replace the four standalone refusal fields with one named, owned refinement-work record boxed at the refusal boundary. Preserve the typed Subproblem owner and all counter values; do not box the entire controller error or add a lint allow."
+    },
+    {
+      "severity": "MEDIUM",
+      "location": "m1_trust_region_stage1.rs RefinementObservationRefusal helpers",
+      "evidence": "candidate stderr reports a 7968-byte Err variant at retained-face raw, retained-face wrapper, scratch-hooks, BVLS02, and eligibility helper Result signatures.",
+      "required_fix": "Use Box<RefinementObservationRefusal> as the test-only helper Err result and adapt callers without discarding the typed observation fields. This collapses the repeated result_large_err reports while preserving observation ownership."
+    }
+  ],
+  "remaining_comparison_obligations": {
+    "not_a_waiver": "The remaining candidate-only diagnostics include refinement-only dead-code, style, complexity, and arithmetic warnings. Their source excerpts must be mapped to the final diff after the four root repairs; unchanged baseline/context diagnostics remain historical only when their exact diagnostic source block matches the retained 238 baseline.",
+    "specific_recheck": "Re-run the exact strict-lint command at the final frozen source and compare raw normalized blocks to the retained baseline; any remaining candidate-only block requires a source-level attribution and correction, not count-based acceptance."
+  },
+  "verdict": "HOLD strict-lint disposition. The four concrete groups are introduced, actionable, and must be corrected; no suppression or wholesale baseline waiver is supported."
+}

@@ -1,0 +1,127 @@
+{
+  "evidence_class": "Ran: recorder rejected before command launch; preserved terminal tool outputs summarized without inventing execution receipts",
+  "recorded_utc": "2026-09-26T05:30:41.586476+00:00",
+  "attempts": [
+    {
+      "label": "refinement-terminal-05-debug",
+      "declared_timeout_seconds": 45,
+      "support_record": "refinement-terminal-05-debug-support.json",
+      "support_sha256": "e9819486b34607df3cbff2b378e6ae909779621bd9d6017ad367e5566ffb16b6",
+      "support_created_utc": "2026-09-26T05:29:22.273162+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-05-default",
+      "declared_timeout_seconds": 45,
+      "support_record": "refinement-terminal-05-default-support.json",
+      "support_sha256": "b424105c30dae3ab62b24f436fe044fb59604c1c15f57f0564a7a814f916f6f7",
+      "support_created_utc": "2026-09-26T05:29:22.309793+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-05-doc",
+      "declared_timeout_seconds": 45,
+      "support_record": "refinement-terminal-05-doc-support.json",
+      "support_sha256": "1d3a69020af101de89e9ea026e7f268b44e2067d148ab34df3a3dc44a5d4f727",
+      "support_created_utc": "2026-09-26T05:29:22.365237+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-05-fmt",
+      "declared_timeout_seconds": 45,
+      "support_record": "refinement-terminal-05-fmt-support.json",
+      "support_sha256": "f4277e07ad51b3761874cddf746fcb59eb2f147c1dc2155c427e8bc294f5ecdb",
+      "support_created_utc": "2026-09-26T05:29:22.347160+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-05-inventory",
+      "declared_timeout_seconds": 45,
+      "support_record": "refinement-terminal-05-inventory-support.json",
+      "support_sha256": "9b11fd5e7769af7bb9719e47aa0321f60293bf40021ee4e96fe8f3bf0cb5ed35",
+      "support_created_utc": "2026-09-26T05:29:22.328470+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-05-lint",
+      "declared_timeout_seconds": 45,
+      "support_record": "refinement-terminal-05-lint-support.json",
+      "support_sha256": "f9d99e52d43ef8af9ce458e3a05a30ca6eb8de8a7823c5ab3c76217523c902be",
+      "support_created_utc": "2026-09-26T05:29:22.291683+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-06-debug",
+      "declared_timeout_seconds": 20,
+      "support_record": "refinement-terminal-06-debug-support.json",
+      "support_sha256": "3f35ea9ea2e0d5a22a391aa80270442675e1d905bebcd7a8a00837dc61cd1b67",
+      "support_created_utc": "2026-09-26T05:29:50.208866+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-06-default",
+      "declared_timeout_seconds": 20,
+      "support_record": "refinement-terminal-06-default-support.json",
+      "support_sha256": "fed430a7baf17919820728b3eb0ab175f6adf1a7d4c7603647c9408a73ab6a1b",
+      "support_created_utc": "2026-09-26T05:29:50.245516+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-06-doc",
+      "declared_timeout_seconds": 20,
+      "support_record": "refinement-terminal-06-doc-support.json",
+      "support_sha256": "919a79d4633a112667387a4bfb9fa1d533f88f7e7b97fd0566f189eda3224d81",
+      "support_created_utc": "2026-09-26T05:29:50.299224+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-06-fmt",
+      "declared_timeout_seconds": 20,
+      "support_record": "refinement-terminal-06-fmt-support.json",
+      "support_sha256": "51292445fd0c27a3b3d7d582edf6d58bf0910d9f2c772d9da5d7e2ed57f0594c",
+      "support_created_utc": "2026-09-26T05:29:50.281436+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-06-inventory",
+      "declared_timeout_seconds": 20,
+      "support_record": "refinement-terminal-06-inventory-support.json",
+      "support_sha256": "00447837a95208a1616cedd9b44a120ec78e45009bb73a4fd48f1d321f78123d",
+      "support_created_utc": "2026-09-26T05:29:50.263447+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "label": "refinement-terminal-06-lint",
+      "declared_timeout_seconds": 20,
+      "support_record": "refinement-terminal-06-lint-support.json",
+      "support_sha256": "deb195251ef2716671166b27e862c59b4ad404fcba32c5b23d2d0d16702d0287",
+      "support_created_utc": "2026-09-26T05:29:50.227332+00:00",
+      "recorder_exit_code": 1,
+      "command_launched": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    }
+  ],
+  "disposition": "No terminal test result exists for final source32f0d149; final source remains unvalidated."
+}

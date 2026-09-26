@@ -1,0 +1,76 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3458:55
+     |
+3458 |                     .and_then(|mut slot| slot.replace(mutation))
+     |                                               ------- ^^^^^^^^ expected `RefinementRawCandidateMutation`, found `Option<RefinementRawCandidateMutation>`
+     |                                               |
+     |                                               arguments to this method are incorrect
+     |
+     = note: expected enum `RefinementRawCandidateMutation`
+                found enum `std::option::Option<RefinementRawCandidateMutation>`
+help: the return type of this call is `std::option::Option<RefinementRawCandidateMutation>` due to the type of the argument passed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3458:42
+     |
+3458 |                     .and_then(|mut slot| slot.replace(mutation))
+     |                                          ^^^^^^^^^^^^^--------^
+     |                                                       |
+     |                                                       this argument influences the return type of `replace`
+note: method defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/option.rs:1943:17
+help: consider using `Option::expect` to unwrap the `std::option::Option<RefinementRawCandidateMutation>` value, panicking if the value is an `Option::None`
+     |
+3458 |                     .and_then(|mut slot| slot.replace(mutation.expect("REASON")))
+     |                                                               +++++++++++++++++
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3804:15
+     |
+3804 |         work: transition.observation.scalar_operations,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `u64`, found `u16`
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3859:15
+     |
+3859 |         work: transition.observation.scalar_operations,
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `u64`, found `u16`
+
+error[E0382]: use of moved value: `global_before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3573:21
+     |
+3556 |     let global_before = refinement_scratch_global_snapshot();
+     |         ------------- move occurs because `global_before` has type `RefinementScratchGlobalSnapshot`, which does not implement the `Copy` trait
+...
+3570 |                 refusal.global_before = Some(global_before);
+     |                                              ------------- value moved here
+...
+3573 |                     global_before.accepted_binding_bits.unwrap_or(before);
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ value used here after move
+     |
+help: consider cloning the value if the performance cost is acceptable
+     |
+3570 |                 refusal.global_before = Some(global_before.clone());
+     |                                                           ++++++++
+
+error[E0382]: use of moved value: `global_after`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3574:48
+     |
+3560 |     let global_after = refinement_scratch_global_snapshot();
+     |         ------------ move occurs because `global_after` has type `RefinementScratchGlobalSnapshot`, which does not implement the `Copy` trait
+...
+3571 |                 refusal.global_after = Some(global_after);
+     |                                             ------------ value moved here
+...
+3574 |                 refusal.owner_snapshot_after = global_after.accepted_binding_bits.unwrap_or(before);
+     |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ value used here after move
+     |
+help: consider cloning the value if the performance cost is acceptable
+     |
+3571 |                 refusal.global_after = Some(global_after.clone());
+     |                                                         ++++++++
+
+Some errors have detailed explanations: E0308, E0382.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 5 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

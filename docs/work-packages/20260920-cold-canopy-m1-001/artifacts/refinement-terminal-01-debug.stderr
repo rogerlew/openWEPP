@@ -1,0 +1,25 @@
+waiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...
+warning: Git tree '/workdir/openWEPP' is dirty
+error (ignored): SQLite database '/home/roger/.cache/nix/eval-cache-v6/61356b822467ffedd8b63078b9a75c49e8d091e0fbb7e6b85841300db312abdf.sqlite' is busy
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:5484:13
+     |
+5482 |           refusal,
+     |           ------- this expression has type `M1TrustRegionControllerError<m1_coupled::M1PhysicalTrustRegionAdapterOwnError>`
+5483 |           super::m1_trust_region_controller::M1TrustRegionControllerError::Subproblem(
+5484 | /             super::M1TrustRegionSubproblemRefusal {
+5485 | |                 kind: super::M1TrustRegionRefusalKind::FacePivotLimit,
+5486 | |                 attempted_subproblems: 1,
+5487 | |                 completed_jacobi_sweeps: 7,
+...    |
+5490 | |                 ..
+5491 | |             }
+     | |_____________^ expected `Box<M1TrustRegionSubproblemRefusal>`, found `M1TrustRegionSubproblemRefusal`
+     |
+     = note: expected struct `Box<M1TrustRegionSubproblemRefusal>`
+                found struct `M1TrustRegionSubproblemRefusal`
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

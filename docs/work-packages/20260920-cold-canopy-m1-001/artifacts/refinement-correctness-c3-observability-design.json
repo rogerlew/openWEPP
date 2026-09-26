@@ -1,0 +1,53 @@
+{
+  "schema": "openwepp.refinement-correctness.c3-observability-design.v1",
+  "evidence_class": "Static: source-graph inspection only; no build, test, candidate replay, or numerical execution",
+  "reviewer": "/root/refinement_correctness",
+  "disposition": "CONDITIONAL_CORRECTION_REQUIRED",
+  "reviewed_source": {
+    "root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "files": {
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "2e9e3ecba2c0f415fd0ce9b3fe4b4fff0636c2543deecc9d454f84a7eee0d2fd",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "b9ef6d35240ecc1befb1845152d1ac2b968d3dff62c21e40d0517f7057ac40b9",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "f884366db7bc75f044004eaa6b6518da9758d138f28a81d35b355b533ecdba61"
+    },
+    "closing_live_stage1_sha256_unreviewed": "c49f5883084dd5815dbecf26be34e7adbfff4923045d23f8a2de12d97df263f3",
+    "moving_source_limit": "Stage1 changed after the reviewed read. Findings are attributable to the recorded 2e9e3ecb source; the closing c49f5883 bytes were not reviewed. The other two reviewed files remained byte-identical at close."
+  },
+  "findings": [
+    {
+      "severity": "medium",
+      "topic": "phase observation",
+      "finding": "Existing evaluator and trial counters do not observe every phase-selection path. The single phase_join_selections helper is called directly by adapter evaluation, adapter select_phase, and the older controller path; adapter select_phase does not increment trial_entries.",
+      "required_correction": "Add one test-only counter at the actual phase_join_selections entry and compare its before/after value, or omit the runtime phase-nonentry claim. Do not infer phase calls from trial_entries."
+    },
+    {
+      "severity": "medium",
+      "topic": "snapshot completeness",
+      "finding": "A selected-field activity snapshot is not a full activity snapshot and currently omits predictor_assemblies and other observable fields.",
+      "required_correction": "Compare the complete M1LoopActivityObservation before and after. Preserve and restore predecessor state only after recording the after snapshot."
+    },
+    {
+      "severity": "medium",
+      "topic": "owner-binding custody",
+      "finding": "Presence plus coordinate bits is not the complete owner binding, and replacing None with live-state bits fabricates a binding value.",
+      "required_correction": "Retain and compare the actual Option owner binding, including input custody when Some. Preserve None exactly; do not use unwrap_or with unrelated live-state bits."
+    }
+  ],
+  "supported_corrections": [
+    {
+      "topic": "receipt observation",
+      "basis": "The sole accepted-owner capture write is m1_coupled.rs:2317-2321 inside materialize_m1_coupled_column; materialization activity increments at m1_coupled.rs:2185 before that write.",
+      "disposition": "Remove fabricated receipt_updates. Complete materialization activity plus exact owner-binding equality covers this path; no separate receipt counter is required."
+    },
+    {
+      "topic": "merit observation",
+      "basis": "frozen_weighted_merit is the shared merit entry used by the controller.",
+      "disposition": "A test-only counter at frozen_weighted_merit entry, compared before/after with predecessor restoration after observation, is direct and sufficient."
+    },
+    {
+      "topic": "fabricated fields",
+      "disposition": "After the direct phase and merit counters and complete snapshots exist, fabricated phase_calls, receipt_updates, owner_publications, and empty hook-log claims may be removed."
+    }
+  ],
+  "residual_risk": "Final review must verify RAII restoration on success and every refusal path, actual full-value comparisons, and source stability. This review does not approve the implementation body or runtime evidence."
+}

@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Static: expected-red C2-C4 retained-face control cut; no author compilation, numerical calculation, physical command, or target execution",
+  "runtime_source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "sha256": "5a040608670f981a47b5f7905c3b61dd53e0fd411b3b8b24d3e27af5ef258a04",
+    "patch": "artifacts/bvls03-c2-c4-controls01-from-runtime-start.patch",
+    "patch_sha256": "87d0661e650c6c9483d88c1113473c71d0479d626d76172ebb9a9efd34ac5f5e"
+  },
+  "expected_red_inventory": [
+    "m1_trust_region_refinement_retained_face_reuses_factor_and_reproduces_all_bits",
+    "m1_trust_region_refinement_scratch_never_reaches_owner_or_physical_hooks",
+    "m1_trust_region_refinement_eligibility_preserves_bvls02_for_ineligible_faces"
+  ],
+  "retained_evidence": [
+    "finite-precision-observed-capture.json",
+    "face-pivot-observed-capture.json",
+    "dot2-results.json"
+  ],
+  "claims_to_become_green_only_after_corresponding_body": [
+    "both retained faces: p0/factor reuse/p1/Dot2 r1/p2/final BVLS02 decision and no extra factorization",
+    "new-face p1 box violation reaches Dot2 only; physical, phase, hydraulic, merit, materializer, receipt, owner, and live-state hooks remain untouched",
+    "lambda-zero interior refinement partition; nonzero-lambda/radius-active/initially-box-infeasible BVLS02 retention; no fallback/third correction; denied-work and nested scope custody"
+  ],
+  "parent_command": "cargo nextest run -p openwepp-land-surface-energy m1_trust_region_refinement_",
+  "scope": "C2-C4 test declarations only; no controller/refinement integration body in this cut."
+}

@@ -1,0 +1,119 @@
+{
+  "artifact": "refinement-correctness-refusal-metadata-plan",
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static control/body design on frozen Stage1; no source edit or execution",
+  "reviewed_source_sha256": "7c20bbd518d582bbc25e903b0ee1731a64831b77778cfd2a47d3f963ce182b13",
+  "objective": "Typed BVLS03 refinement refusal metadata with exact guard provenance and one canonical boxed work record",
+  "minimal_data_model": {
+    "refusal_fields": [
+      "work: Box<M1TrustRegionWorkObservation>",
+      "refinement: Option<Box<M1TrustRegionRefinementFailureMetadata>>"
+    ],
+    "metadata_fields": [
+      "reason: M1TrustRegionRefinementFailureReason",
+      "correction_position: Option<M1TrustRegionRefinementCorrectionPosition>",
+      "guard_stage: M1TrustRegionRefinementGuardStage",
+      "row: Option<u8>",
+      "term: Option<u8>",
+      "coordinate: Option<u8>",
+      "lower_active: [bool; 21]",
+      "upper_active: [bool; 21]",
+      "free: [bool; 21]",
+      "lambda: f64",
+      "original_trust_radius: f64",
+      "reduced_face_radius: f64",
+      "scratch_box_feasible: Option<bool>"
+    ],
+    "position_enum": ["First", "Second"],
+    "reason_enum": [
+      "NonfiniteOperand",
+      "SplitterOverflow",
+      "UnderflowToZero",
+      "SubnormalIntermediate",
+      "FactorOutput",
+      "CoordinateUpdate",
+      "ActiveValue",
+      "ScratchRadius",
+      "FinalBox",
+      "FinalRadius"
+    ],
+    "guard_stage_families": [
+      "P0AssemblySource/P0AssemblyEquality",
+      "ResidualSourceTerm/ResidualSourceWeight/PrimaryProduct/SplitterProduct/SplitOutput/EftRemainder/TwoSumResult/TwoSumRemainder/Accumulation",
+      "FactorApplicationOutput/CoordinateUpdate",
+      "ScratchBoxLower/ScratchBoxUpper/ActiveFinite/ActiveEquality/OrderedNorm/RadiusComparison",
+      "FinalBoxLower/FinalBoxUpper/FinalInstallEquality"
+    ],
+    "term_definition": "For a residual row, term 0 is f with weight 1 and terms 1..21 are matrix coordinates 0..20. Row and term are None outside residual work."
+  },
+  "construction_rules": [
+    "Replace string-taking refinement_refusal with typed reason, position, stage, and location arguments. Derive any compatibility reason string from the typed enum; never parse or infer metadata from a string.",
+    "Extend the internal Dot2 refusal with the primitive guard stage and term. The outer residual loop attaches correction position and row. This is the only helper refactor needed for exact residual provenance.",
+    "Construct non-Dot2 metadata at the actual failing guard site. A vector norm/radius failure has no coordinate even when a test mutation changed one source coordinate.",
+    "Snapshot masks, lambda, original trust radius, reduced face radius, and scratch-box status from the live immutable face/refinement context before returning. Do not reconstruct them from the reason or rejected output.",
+    "Store work totals once in the boxed canonical work observation on the Stage1 outcome/refusal. Metadata contains no duplicate totals. The controller absorbs the record by reference and returns the same typed refusal/error owner."
+  ],
+  "required_controls": [
+    {
+      "case": "FinalBox coordinate 13 above scaled upper",
+      "expected": {
+        "reason": "FinalBox",
+        "position": "Second",
+        "stage": "FinalBoxUpper",
+        "row": null,
+        "term": null,
+        "coordinate": 13,
+        "scratch_box_feasible": false
+      }
+    },
+    {
+      "case": "ScratchRadius with comparison radius zero",
+      "expected": {
+        "reason": "ScratchRadius",
+        "position": "First",
+        "stage": "RadiusComparison",
+        "row": null,
+        "term": null,
+        "coordinate": null,
+        "scratch_box_feasible": false
+      }
+    },
+    {
+      "case": "ActiveValue coordinate 5 mutation in p2",
+      "expected": {
+        "reason": "ActiveValue",
+        "position": "Second",
+        "stage": "ActiveEquality",
+        "row": null,
+        "term": null,
+        "coordinate": 5,
+        "scratch_box_feasible": false
+      }
+    },
+    {
+      "case": "p0 free coordinate 13 changed to the smallest nonzero subnormal",
+      "expected": {
+        "reason": "SubnormalIntermediate",
+        "position": "First",
+        "stage": "ResidualSourceWeight",
+        "row": 0,
+        "term": 14,
+        "coordinate": 13,
+        "scratch_box_feasible": null
+      },
+      "purpose": "Proves eligibility admits the finite algebraic source and the first residual reports the actual post-entry guarded source site."
+    }
+  ],
+  "common_control_assertions": [
+    "All three masks equal the retained operation's lower_before, upper_before, and free_before arrays.",
+    "Lambda, original trust radius, and reduced face radius match retained binary64 bits.",
+    "The canonical boxed work record contains the exact partial counts and is the record propagated through the controller; no copied metadata totals exist.",
+    "The existing unchanged live state, owner binding, physical/phase/hydraulic/merit/materializer/receipt hooks, and restored budget assertions remain strict."
+  ],
+  "non_goals": [
+    "No new numerical policy, solver path, fallback, reporting framework, or arithmetic instrumentation.",
+    "No coordinate attribution for a vector radius failure.",
+    "No inference from optimality_reason or another legacy string."
+  ],
+  "verdict": "Prospective metadata control/body design is adequate if implemented exactly and reviewed on a frozen cut before execution."
+}

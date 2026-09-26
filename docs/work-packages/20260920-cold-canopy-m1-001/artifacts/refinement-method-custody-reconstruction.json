@@ -1,0 +1,8 @@
+{
+  "evidence_class": "Ran: remove exact inserted draft03 section in memory and compare every predecessor byte with pinned HEAD",
+  "pre_edit_live_hash_performed": false,
+  "initial_git_status_method_clean": true,
+  "reconstructed_predecessor_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+  "all_predecessor_bytes_equal_pinned_head": true,
+  "limitation": "This verifies predecessor custody after mutation and does not claim the required pre-edit live hash occurred. Author disclosed omission; runtime independently verified before any mutation."
+}

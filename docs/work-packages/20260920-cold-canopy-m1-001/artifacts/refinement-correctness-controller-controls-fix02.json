@@ -1,0 +1,30 @@
+{
+  "artifact": "refinement-correctness-controller-controls-fix02",
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static prospective fix verification; no reviewer execution",
+  "scope": "Final tests-before-body controller accounting controls and p2 seam placement",
+  "reviewed_sources": [
+    {
+      "component": "Stage1",
+      "sha256": "7c20bbd518d582bbc25e903b0ee1731a64831b77778cfd2a47d3f963ce182b13"
+    },
+    {
+      "component": "Stage2 controls",
+      "sha256": "306c53b7610001a34612766f1aeacd152f4bedfd85a14d7e6338537f582b690f"
+    }
+  ],
+  "findings": [],
+  "verified_fixes": [
+    "p0 uses two guard-only assembly/equality events per free coordinate; p2 uses one guard-only equality event at the final ordered solution-step installation after final box, active, norm, and radius admission.",
+    "PhaseChanged and PhaseFinalSelectionError both require one final hook and full WorkObservation equality after their identical two Stage1 solves.",
+    "WorkObservation is controlled for stage1 calls, entered factorizations, seed-excluded Jacobi sweeps, completed face pivots, whole KKT operations/guards, upward-enclosure operations/guards, refinement scalar/guards, and attempted/denied entries through direct fields and full-struct equality.",
+    "The selected zero-Jacobian second solve returns the unchanged typed RankDeficient owner and must add exactly one call, one entered factorization, and one completed Jacobi sweep to the actual PhaseUnchanged baseline while leaving KKT, enclosure, refinement, and pivot categories unchanged.",
+    "Initialization failure requires one default observation. ExactRoot requires one run-level hook, calls1 equal proposals1, entered factorizations equal the legacy run field, nonzero sweeps, and refinement fields equal legacy aggregates."
+  ],
+  "red_evidence": {
+    "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-controller-controls-red02.json",
+    "classification": "Expected-red API/body absence; no green claim. Assertion-only final corrections did not require another equivalent red compile."
+  },
+  "residual_risk": "Implementation review must verify that every Stage1 Ok/Err is absorbed immediately, that the hook fires exactly once at the outer transition/run boundary, and that the physical adapter stores the same complete observation. Typed refinement refusal metadata remains separately open.",
+  "verdict": "PASS: controller accounting body is prospectively released within this reviewed scope."
+}

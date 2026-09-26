@@ -1,0 +1,45 @@
+{
+  "evidence_class": "Static: prospective authority, package, custody, recorder, and diff inspection; no candidate replay, Python numerical calculation, Rust execution, or physical command",
+  "reviewer": "/root/refinement_qa",
+  "scope": "BVLS-03 source custody, control/gate design, runtime custody, cadence, budget, reachability, and documentation consistency",
+  "reviewed_source": {
+    "base_commit": "9fbc5b317f493121017325eab1e537167cb95f2e",
+    "amended_numerical_methods_sha256": "f639315ebf892d5cb2427935aa83a191b8eeb8c4662e53ef18b1b636b80e896b",
+    "predecessor_numerical_methods_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+    "policy_diff": "A single 96-line BVLS-03 insertion relative to the pinned predecessor."
+  },
+  "custody": {
+    "runtime_entries": 764,
+    "runtime_tree_sha256": "d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884",
+    "pre_edit_live_method_hash": "NOT PERFORMED",
+    "containment": "refinement-method-custody-reconstruction.json reconstructs every pinned predecessor byte after mutation; it is not represented as a pre-edit live hash."
+  },
+  "draft01_findings": [
+    {
+      "severity": "HIGH",
+      "location": "package.md validation planning and numerical-methods.md BVLS-03 C1-C4 release conditions",
+      "finding": "Draft01 did not bind formatting, component/integration tests, warnings-denied lint attribution, cargo-deny applicability, identity capture, bounds, and failure disposition to a reviewable command matrix.",
+      "disposition": "PENDING AUTHOR FIX",
+      "required_fix": "Record the exact selected commands and scope classifications; require baseline/candidate diagnostic comparison for the retained 238 blocks, block new or ambiguous diagnostics, and select cargo deny if manifest, lockfile, toolchain, or resolution inputs change."
+    },
+    {
+      "severity": "HIGH",
+      "location": "package.md cadence statement and artifacts/run_recorded.py",
+      "finding": "The generic 05:30Z cutoff was inconsistent with the 900-second Critical command plus the 1800-second reserve.",
+      "disposition": "PENDING AUTHOR FIX",
+      "required_fix": "Declare the 900-second command not selected for the current test-only scope and require a 05:15Z latest start if an independently classified Critical trigger makes it applicable; retain 05:27Z as the 180-second latest start."
+    },
+    {
+      "severity": "MEDIUM",
+      "location": "numerical-methods.md BVLS-03 C1 and bvls03-authority-draft01.json C1-C4",
+      "finding": "The canonical policy did not expressly require release-mode compiled non-FMA equivalence although package prose did.",
+      "disposition": "PENDING AUTHOR FIX; overlaps correctness reviewer release-mode finding",
+      "required_fix": "Place release-mode primitive equivalence against independent retained operands in the exact authority controls."
+    }
+  ],
+  "prospective_verdict": "HOLD — no BVLS-03 body release until the authority corrections and the QA findings above receive same-reviewer verification.",
+  "nonblocking_notes": [
+    "The disclosed missing pre-edit live hash is a timing deviation, not a reconstructed fact.",
+    "No body, numerical result, or physical outcome is assessed by this artifact."
+  ]
+}

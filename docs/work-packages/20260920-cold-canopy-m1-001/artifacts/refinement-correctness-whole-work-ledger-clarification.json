@@ -1,0 +1,30 @@
+{
+  "schema": "openwepp.refinement-correctness.whole-work-ledger-clarification.v1",
+  "evidence_class": "Static design clarification against accepted BVLS-03 authority; no source edit, build, test, candidate replay, numerical execution, physical run, or target run",
+  "reviewer": "/root/refinement_correctness",
+  "scope": "Relationship between the BVLS-03 K/G cap ledger and user-required whole-solve ordered-KKT/enclosure accounting",
+  "disposition": "APPROVE_SEPARATE_OVERLAPPING_LEDGERS_WITH_SHARED_COUNTER_HOOK",
+  "authority": {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "lines": "763-776, 850-874",
+    "interpretation": "K(m)/G(m) reserve the complete possible work of an eligible refinement face. Whole-solve observation also records unchanged BVLS-02 KKT/enclosure work on ineligible faces without making that work consume the refinement cap."
+  },
+  "required_design": [
+    "Retain the refinement cap ledger. It includes p0/p1/p2 refinement work and actual KKT/enclosure work only for a FaceSolution that completed BVLS-03 refinement.",
+    "Add distinct observational whole-solve KKT/enclosure operation and guard counters. Increment them for every actual ordered-KKT/enclosure operation or guard on every face, including partial refusals.",
+    "Use one centralized counter hook at each shared KKT/enclosure operation: always update the whole counter and additionally update the refinement counter when the current face is marked refined. Do not duplicate the numerical path.",
+    "Mark a FaceSolution refined only after p2 passes the final box, active-bit, and radius checks. A crossing before KKT executes no KKT/enclosure for that face and charges neither KKT counter for that face.",
+    "Ineligible unchanged-BVLS-02 faces update only whole KKT/enclosure counters. These counters are observational, have no new cap, and cannot change BVLS-02 decisions or typed-error precedence.",
+    "Aggregate both accounting domains across successful proposal observations and typed subproblem/controller refusals. Preserve the owning KKT refusal kind even when the failing face was refined."
+  ],
+  "eligibility_and_norm_accounting": [
+    "lambda != 0 exits before p0 construction and charges no BVLS-03 eligibility work.",
+    "Charge actual p0 assembly, finite/active/box/radius guard events as they execute, including a face that is then found ineligible.",
+    "A radius-equality or radius-active ineligible face retains the actual p0 ordered norm charge of 43 scalar operations and its guards, then follows unchanged BVLS-02.",
+    "After all eligibility predicates pass, subtract the exact already-executed p0 scalar/guard delta from K(m)/G(m) for the admission reservation. Do not use a fixed guard subtraction.",
+    "A denied eligible entry retains p0 work and attempted/denied counts, performs zero post-admission refinement work, and does not run KKT.",
+    "p1 and p2 norm work is possible only after admission. Ordinary BVLS-02 ball-solve norms are outside the three BVLS-03 K(m) norms and are not charged to the refinement cap."
+  ],
+  "reporting_constraint": "The two published domains overlap for eligible-face KKT/enclosure. Consumers must not add refinement-cap totals to whole-KKT/enclosure totals as a unique grand total. If a unique total is required, maintain a third overall counter incremented once per actual event.",
+  "residual_review_obligation": "The frozen implementation must prove centralized counting, face-specific refinement qualification, actual partial-failure retention, no ineligible-face cap consumption, and success/refusal/controller aggregation."
+}

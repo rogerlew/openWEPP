@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static: frozen expected-red C2-C4 control-design review; no Rust, Python, candidate, physical, or target execution by reviewer",
+  "disposition": "BLOCKED_BEFORE_BODY_ONE_DECLARATION_FIX",
+  "reviewed_cut": {
+    "runtime_source_sha256": "b4b40e8fde2255dbddd577b3ceb0008c1b36309dcefb6a3aa5e4400187b2511b",
+    "patch_path": "artifacts/bvls03-c2-c4-controls04-final.patch",
+    "patch_sha256": "c7d44947bbf097363c318424f04006b3fa3526fd665fc9588be0f9d5ab8569e3"
+  },
+  "resolved_from_controls03": [
+    "The final-box probe uses free coordinate 13 with finite original bounds, finite base and scale, and a finite scaled value strictly above the scaled upper bound.",
+    "Eligible retained controls require identical lower and upper masks at p0, p1, p2 and exit.",
+    "The one-less reservation requires exact K/G values, attempted-entry and denied-entry increments, zero corrections/Dot2/factor applications, zero denied-interval executed scalar/guard work, separately recorded prior eligibility work, and restored nested scope."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4753-4754",
+      "finding": "The expected-red module calls `mask(...)` but neither defines nor imports it. The only existing `fn mask` is private to the sibling `finite_precision_controls` module, so it is not in scope.",
+      "required_fix": "Add a local assertion-side decoder from the retained JSON boolean array to Vec<bool>, then refreeze the exact control cut."
+    }
+  ],
+  "residual_risk": "Body review must verify the adapters observe the shared implementation and that the 43-operation pre-admission eligibility norm and its guards are included exactly once within total K/G accounting, without a parallel solver or fabricated observation fields.",
+  "missing_evidence": [
+    "Corrected immutable expected-red control cut with an in-scope mask decoder",
+    "Body source review and green compiled-release receipt after implementation"
+  ]
+}

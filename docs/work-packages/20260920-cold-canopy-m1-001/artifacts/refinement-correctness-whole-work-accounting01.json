@@ -1,0 +1,111 @@
+{
+  "schema": "openwepp.refinement-correctness.whole-work-accounting01.v1",
+  "evidence_class": "Static: source and accepted-authority inspection only; reviewer performed no build, test, candidate replay, Python execution, physical run, or target run",
+  "reviewer": "/root/refinement_correctness",
+  "scope": "BVLS-03 whole-work accounting integration only: refinement ledger, partial failures, ordered KKT, upward enclosure, controller result/refusal propagation; accepted C2 arithmetic was not re-reviewed",
+  "disposition": "BLOCKED_PENDING_ACCOUNTING_INTEGRATION",
+  "authority": {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "lines": "850-874",
+    "requirements": [
+      "K(m)=R(m)+39816+1827+129 and G(m)=3*K(m)+213+2*m bound each eligible face",
+      "capacity for K(m)/G(m) is established before refinement entry",
+      "each actual operation and guard category is incremented before execution, including refusal work",
+      "cap denial performs no partial refinement and retains the owning work-cap refusal"
+    ]
+  },
+  "reviewed_sources": [
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "sha256_at_close": "0ca5ea6bf8a3ed0f6ed904f329de9d0dbd2a02ca8b41217f1d29fb7e2ff461d3",
+      "stable_during_closing_probe": true,
+      "opening_frozen_sha256": "89ed9ac0c11057766cf25436bafd88459f4c4ef610b6f2072ecca21c871df8aa",
+      "moving_source_note": "Concurrent C3 authoring changed test-observation/API code while this audit ran. The closing probe rechecked every accounting anchor listed in the findings and observed identical before/after close hashes; this review does not approve the concurrent C3 additions."
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "sha256_at_close": "f884366db7bc75f044004eaa6b6518da9758d138f28a81d35b355b533ecdba61",
+      "stable_during_review": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs",
+      "sha256_at_close": "71909479292b9470f8f6b13449709fddd570de32ecf45548ad0f249ad7b4c5bf",
+      "stable_during_review": true
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+      "sha256_at_close": "61b5021dae597d70bea69262fb269f61c82694a085d46f213f4df45a1b13e715",
+      "stable_during_closing_probe": true
+    }
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "WWA-01",
+      "paths": [
+        "m1_trust_region_stage1.rs:2424-2459",
+        "m1_trust_region_stage1.rs:2554-2837",
+        "m1_trust_region_stage1.rs:4386-4423",
+        "m1_trust_region_stage1.rs:4575-4600"
+      ],
+      "finding": "The ordered KKT vector and upward Cbar/tau enclosure execute outside RefinementWorkLedger. assess_optimality retains only a local u16 operation observation, and solve_subproblem discards observations from release transitions. Actual eligible-face scalar and guard totals therefore omit both the 1827 KKT operations and every executed enclosure operation/guard, including partial failures and intermediate release faces.",
+      "minimal_required_correction": "Record whether the current FaceSolution actually applied BVLS-03, then only for that face thread the existing state ledger through checked_optimality and upward-enclosure primitives. Increment immediately before each executed arithmetic/upward operation and each operand/result guard, including error exits. Let the state ledger span release and final faces; do not post-charge the 1827/39816 maxima or reconstruct work from the final observation."
+    },
+    {
+      "severity": "high",
+      "id": "WWA-02",
+      "paths": [
+        "m1_trust_region_stage1.rs:3885-3911",
+        "m1_trust_region_stage1.rs:4043-4258"
+      ],
+      "finding": "Guard accounting at the refinement seam is incomplete. Both factor-output factor_counters are discarded; both coordinate updates discard the helper counters and substitute only one manual guard; refinement_active_admit discards its counters; p0/p1/p2 equality, finite, box and radius predicates are not charged as E(m); and the p1 rejected-box status is not evaluated at this runtime seam. Consequently successful and failing paths under-report G(m).",
+      "minimal_required_correction": "Thread or return exact counters from these helpers and absorb them on success and error. For coordinate updates, use the helper's exact arithmetic/guard delta instead of also retaining the manual scalar/guard charge. Charge the E(m) predicates at the actual ascending-order sites, including p1 rejected-box observation. Snapshot the actual pre-admission p0 scalar/guard delta and reserve K/G minus that delta; the fixed required_guards-43 subtraction at lines 4074-4075 becomes invalid once the required p0 seam guards are recorded."
+    },
+    {
+      "severity": "high",
+      "id": "WWA-03",
+      "paths": [
+        "m1_trust_region_stage1.rs:2961-3017"
+      ],
+      "finding": "The Jacobi no-convergence branch constructs a fresh subproblem_refusal, resetting all earlier refinement work to zero after prior faces may have completed or refused refinement.",
+      "minimal_required_correction": "Return state_refusal with SvdNoConvergence. jacobi_factor already advances state.completed_sweeps through the failed sweep, so preserve that state value and all monotonic refinement counters."
+    },
+    {
+      "severity": "high",
+      "id": "WWA-04",
+      "paths": [
+        "m1_trust_region_controller.rs:878-953",
+        "m1_trust_region_controller.rs:152-185",
+        "solver_covered_evaluation/m1_coupled.rs:2484-2493",
+        "solver_covered_evaluation/m1_coupled.rs:2576-2597"
+      ],
+      "finding": "Whole-controller totals are derived only from successful proposal_trace entries. A later transition error exits through ? and exposes only the current subproblem refusal, losing previously successful proposal work from the whole-solve record. The physical run observation also omits all four refinement counters, and an error prevents controller_run from being installed.",
+      "minimal_required_correction": "Accumulate the four counters monotonically at the existing controller transition boundary and surface prior-success plus current-refusal totals on typed failure without replacing the owning error/refusal kind. Copy the same totals into the physical run observation on success and retain a test-visible typed failure accounting record on error. Do not synthesize a successful proposal trace for a refusal."
+    },
+    {
+      "severity": "medium",
+      "id": "WWA-05",
+      "paths": [
+        "m1_trust_region_stage1.rs:4114-4126",
+        "m1_trust_region_stage1.rs:4199-4211"
+      ],
+      "finding": "factor_application_operations is updated only after lambda_step returns Ok. lambda_step advances the total ledger before each operation, so an error preserves total partial work but loses the corresponding factor category work.",
+      "minimal_required_correction": "Capture the lambda_step Result, update factor_application_operations from the post-call minus pre-call total on both Ok and Err, then propagate the existing typed refinement refusal."
+    },
+    {
+      "severity": "medium",
+      "id": "WWA-06",
+      "paths": [
+        "m1_trust_region_stage1.rs:1394-1496"
+      ],
+      "finding": "Several lambda_step guard increments precede combined predicates over multiple source/result values rather than one increment per actual guarded operand/result event. The current ledger therefore cannot demonstrate the authority's per-guard monotonic accounting even after discarded local counters are wired.",
+      "minimal_required_correction": "At the same arithmetic sites, increment once for each actual source or result guard that is evaluated. Preserve the frozen arithmetic grouping and existing refusal precedence."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "No implementation fix or green evidence existed for this audit; every finding requires same-reviewer static verification on a frozen body before execution is credited.",
+    "Controls must distinguish reserved maximum capacity from executed work: crossing before KKT must not charge KKT/enclosure, zero-skipped enclosure operations must not be charged, and partial failures must retain only work actually attempted through the failure.",
+    "Required focused evidence includes successful eligible face, release then later face, factor failure after partial work, KKT and enclosure early failures, Jacobi no-convergence after prior refinement, one-less-cap denial with zero post-admission work, and controller failure after at least one successful proposal.",
+    "This artifact does not approve C3/C4 APIs, physical execution, target execution, or package closure."
+  ]
+}

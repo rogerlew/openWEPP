@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static: frozen expected-red C2-C4 control-design review; no Rust, Python, candidate, physical, or target execution by reviewer",
+  "disposition": "BLOCKED_BEFORE_BODY",
+  "reviewed_cut": {
+    "declared_runtime_source_sha256": "5a040608670f981a47b5f7905c3b61dd53e0fd411b3b8b24d3e27af5ef258a04",
+    "freeze_path": "artifacts/bvls03-c2-c4-controls01-freeze.json",
+    "freeze_sha256": "5d570a6ed23cc60bef582106a56d3172bf298f8ccded04f54d780adbf5028ff3",
+    "patch_path": "artifacts/bvls03-c2-c4-controls01-from-runtime-start.patch",
+    "patch_sha256": "87d0661e650c6c9483d88c1113473c71d0479d626d76172ebb9a9efd34ac5f5e"
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs::bvls03_c2_c4_expected_red_controls (all three helper calls)",
+      "finding": "Each candidate helper receives both the retained capture and the complete expected case JSON. A helper can copy p1, Dot2 residuals, p2, the assessment, or canned eligibility values, so the controls do not discriminate a numerical implementation.",
+      "required_fix": "Keep expected JSON assertion-side. Pass only raw retained operands and typed configuration into a thin test adapter that invokes the actual shared refinement/controller seam."
+    },
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs::m1_trust_region_refinement_retained_face_reuses_factor_and_reproduces_all_bits",
+      "finding": "The retained-face control checks p1, residuals, p2, a zero added-factorization counter, and an entire assessment value. It omits p0, both correction vectors, active-coordinate preservation, actual factor reuse/application evidence, h/Cbar/tau/classification operands, and explicit final box/radius feasibility. The assessment also contains offline exact-reference fields that the runtime does not own.",
+      "required_fix": "Assert the retained p0 and active mask/value bits, delta0, p1, all Dot2 residual bits, delta1, p2, shared factor identity/application counts with no refactorization, runtime h/Cbar/tau/classes, explicit feasibility, and the unchanged BVLS-02 decision. Do not require runtime production of offline exact-reference diagnostics."
+    },
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs::m1_trust_region_refinement_scratch_never_reaches_owner_or_physical_hooks",
+      "finding": "Summary counters and a live_state_unchanged boolean do not establish scratch custody. There are no hook argument logs or state snapshots and no real negative final-feasibility, radius, or active-value inputs exercising typed refusal.",
+      "required_fix": "Observe the actual shared seam: prove the retained p1 box violation, Dot2-only scratch consumption, empty hook argument logs, exact hook counters, bit-identical before/after state, and concrete final-box, radius, and active-mutation cases that return the exact typed refusal with no step, publication, or fallback."
+    },
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs::m1_trust_region_refinement_eligibility_preserves_bvls02_for_ineligible_faces",
+      "finding": "One aggregate helper returns eligibility and budget booleans for every case. The control supplies no distinct raw operands or observable actions, work counts, or budget states, so a fixture factory satisfies it.",
+      "required_fix": "Drive separate concrete cases through the actual decision seam for positive and negative zero eligibility, nonzero lambda, radius-active, initially box-infeasible, and refinement refusal. Assert unchanged BVLS-02 outputs for ineligible cases, exactly two corrections for eligible cases, no fallback or third correction, exact denied attempted work before entry, and before/after nested budget custody."
+    }
+  ],
+  "residual_risk": "A test-only adapter may parse retained JSON, but numerical decisions, factor application, guards, work accounting, state custody, and BVLS-02 continuation must be exercised by the same shared implementation used by the controller; a parallel test algorithm would preserve the fixture-factory risk.",
+  "missing_evidence": [
+    "A corrected, immutable expected-red controls freeze",
+    "Parent-owned compile receipt for that exact corrected freeze",
+    "Subsequent body review and green receipt; neither is implied by expected-red approval"
+  ],
+  "workspace_boundary": "The live source changed after controls01 was frozen. Those later unpinned edits were intentionally excluded from this disposition and require a new exact freeze."
+}

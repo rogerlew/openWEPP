@@ -1,0 +1,105 @@
+{
+  "artifact": "refinement-correctness-kkt-upward-accounting01",
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static; retained parent-run receipt inspected; no Rust, Python, candidate, physical, or target execution by reviewer",
+  "scope": "BVLS03 whole-solve ordered-KKT and upward-enclosure accounting tranche",
+  "reviewed_source": {
+    "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-api-whole-ledger-frozen-864f11f7.rs",
+    "sha256": "864f11f7eb1b3ac3868c22ca7ebb95bbee10b03f893f7111535f56bea4cbbfae",
+    "moving_source_limit": "This verdict binds the preserved source copy, not later live Stage1 edits."
+  },
+  "authority": {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "section": "COLD-CANOPY-M1-TR-SVD-BVLS-03 fixed-face compensated-refinement amendment",
+    "requirements": [
+      "R(m)=12306+88*m^2+138*m; R(20)=50266",
+      "reused upward enclosure is bounded by 39816 operations",
+      "ordered KKT vector is exactly 1827 operations",
+      "three 21-coordinate ordered norms cost 129 operations",
+      "K(m) is an admission bound; every actually executed operation and guard, including partial refusal work, is incremented before work"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "status": "blocking",
+      "location": "frozen source lines 2403-2411 and 2655-2840",
+      "finding": "Upward-enclosure accounting conflates an operation with one guard, omits operand and result admissions (including zero-shortcut operand guards), and charges next_up only after it executes. A next_up refusal therefore loses partial work, and successful/refused guard totals are not the actual guarded events required by BVLS03.",
+      "required_correction": "Keep the accepted arithmetic and refusal policy unchanged. Increment an operation before each multiply/add/next_up, and increment one event before each semantic source/result admission regardless of how many finite/normal/underflow predicates that admission evaluates. Account every currently executed outer upward_operand admission as well as helper input/result admissions unless the duplicate call is removed with separately reviewed equivalence. Do not count each predicate as a separate event."
+    },
+    {
+      "severity": "high",
+      "status": "blocking",
+      "location": "frozen source lines 6682-6684",
+      "finding": "The retained control asserts the 39816 authority bound as executed enclosure work. Debug01 observed 6654 for case 0 and stopped before case 1. The bound is not an executed-cost oracle.",
+      "required_correction": "Assert the independently reconstructed executed enclosure counts 6654 and 6522, retain 39816 only for dimension admission, and assert scalar ledger totals 58876 and 58744 respectively."
+    },
+    {
+      "severity": "medium",
+      "status": "blocking",
+      "location": "frozen source lines 2494-2550 and 2847-2925",
+      "finding": "The ordered KKT arithmetic is correctly charged before each of its 1827 operations with three grouped operand/result admissions per operation, but actual guards outside those helpers are omitted: initial lambda admission, repeated h admission, gamma validation, and any executed release-ratio result admission.",
+      "required_correction": "Charge each actual admission at its existing guard site without adding arithmetic to the fixed K categories. Gamma construction and release-ratio arithmetic remain existing BVLS02 whole-solve work outside K; this review does not claim a complete kernel instruction count."
+    }
+  ],
+  "independent_executed_cost_reconstruction": {
+    "inputs": [
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-observed-capture.json",
+        "sha256": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-observed-capture.json",
+        "sha256": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-results.json",
+        "sha256": "fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b"
+      }
+    ],
+    "method": "Static nonzero-pattern count of the frozen cbar_and_tau upward_mul/upward_add call graph. For row r, n_r counts nonzero A[r,j] with nonzero p2[j]. B=sum_r(4*n_r+2*[n_r>0]). For coordinate i, q_i counts rows with nonzero A[r,i] and nonzero row_scale. Executed enclosure operations are 21*B + 4*sum_i(q_i) + 2*count_i(q_i>0); lambda is signed zero in both retained faces.",
+    "case_0_ordinary_positive": {
+      "n_by_row": [0, 8, 7, 3, 8, 0, 0, 8, 7, 4, 8, 1, 7, 6, 1, 0, 0, 0, 0, 0, 1],
+      "q_by_coordinate": [0, 6, 5, 9, 1, 2, 0, 6, 5, 9, 1, 2, 10, 7, 7, 0, 0, 0, 0, 0, 1],
+      "B": 302,
+      "components": {
+        "repeated_inner_and_row_scale": 6342,
+        "row_term_and_cbar": 284,
+        "tau": 28
+      },
+      "executed_enclosure_operations": 6654,
+      "refinement_scalar_operations": 58876
+    },
+    "case_1_historical_near_root": {
+      "n_by_row": [0, 8, 7, 3, 8, 0, 0, 8, 7, 4, 8, 1, 7, 6, 1, 0, 0, 0, 0, 0, 0],
+      "q_by_coordinate": [0, 6, 5, 9, 1, 2, 0, 6, 5, 9, 1, 2, 10, 7, 7, 0, 0, 0, 0, 0, 0],
+      "B": 296,
+      "components": {
+        "repeated_inner_and_row_scale": 6216,
+        "row_term_and_cbar": 280,
+        "tau": 26
+      },
+      "executed_enclosure_operations": 6522,
+      "refinement_scalar_operations": 58744
+    },
+    "scalar_total_formula": "50266 correction + 129 norms + 1827 ordered KKT + actual enclosure",
+    "bound_check": "Both executed enclosure counts are below 39816; both scalar totals are below K(20)=92038."
+  },
+  "accepted_portions": [
+    "The real kkt_transition uses tracked accounting directly rather than the untracked test wrapper.",
+    "Each of the 1827 ordered KKT vector operations is incremented before arithmetic and its operand/result predicates are grouped as three admissions per operation.",
+    "FaceSolution.refined begins false and changes to true only after p2 passes final box, active-bit, finite/norm, and radius admission and is copied into the solution step. Ineligible-face KKT/enclosure therefore remains whole-work-only; admitted refined-face work also enters the refinement ledger."
+  ],
+  "inspected_execution_evidence": {
+    "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-accounting-debug01.json",
+    "sha256": "c47adf9d46859e322e52c8fc989a1a1d9873a198dfce3750f20f1af933fd3e9f",
+    "source_binding": "source receipt binds m1_trust_region_stage1.rs to 864f11f7eb1b3ac3868c22ca7ebb95bbee10b03f893f7111535f56bea4cbbfae; receipt reports source_unchanged=true",
+    "result": "exit 100; 5 of 6 selected tests passed; retained control failed with observed 6654 versus stale expected 39816",
+    "classification": "supporting failure evidence only; not green validation and not executed by this reviewer"
+  },
+  "residual_risk_and_missing_tests": [
+    "A frozen post-fix source and parent-run controls are still required to prove operand/result guard grouping, charge-before-next_up on partial refusal, both exact retained costs, and unchanged KKT/cbar/tau bits.",
+    "This review does not approve controller propagation, seam/refusal metadata, other ledger categories, physical execution, or target work."
+  ],
+  "verdict": "BLOCKED pending the three concrete accounting/control corrections; exact retained executed-cost oracle approved prospectively."
+}

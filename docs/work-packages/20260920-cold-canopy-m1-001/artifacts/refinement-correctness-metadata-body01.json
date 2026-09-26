@@ -1,0 +1,49 @@
+{
+  "artifact": "refinement-correctness-metadata-body01",
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static review of frozen source; no compilation, test, candidate, numerical, or physical execution by reviewer",
+  "reviewed_source": {
+    "stage1_sha256": "f44479caa38e76f1630a551675a0da9dc91ef539caeb56999d11dd39052e4e99",
+    "lib_sha256": "ef6850425e91b82150db17d587c3dc8807fe976867ee68594ea154e3b82692ac"
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6905",
+      "title": "Second-correction Dot2 discards the actual guarded operation and term",
+      "evidence": "m1_trust_region_refinement_dot2_for_test maps every primitive refusal to ResidualSourceTerm with term and coordinate None. refinement_second_residual adds only the row. SplitterProduct, SplitOutput, EftRemainder, TwoSumResult, and TwoSumRemainder are declared but never emitted, and a guarded source weight is indistinguishable from a source term.",
+      "impact": "Typed refusal metadata can identify the wrong guard stage and cannot identify the failing augmented term/coordinate, so it does not provide the exact provenance required by the accepted plan and BVLS03 guarded operation order.",
+      "required_correction": "Carry a typed site containing guard stage, augmented term, and applicable coordinate from each source admission and exact primitive operation. refinement_second_residual may then attach the row. Derive no site from the reason string. Add discriminating controls for source weight and internal splitter/EFT/TwoSum stages."
+    },
+    {
+      "severity": "MEDIUM",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7498",
+      "title": "Radius controls do not bind the reduced face radius",
+      "evidence": "No control reads M1TrustRegionRefinementFailureMetadata.reduced_face_radius. original_trust_radius is compared to the captured operation radius; in the retained control both the capture initial radius and operation radius have identical bits, so the two source roles are not discriminated.",
+      "impact": "A swapped, copied, or stale reduced-radius field can pass the current controls.",
+      "required_correction": "Assert original_trust_radius against the input/capture initial radius and reduced_face_radius against the actual FaceSolution/operation radius. Use a discriminating construction if available; otherwise retain the distinct source assertions and static binding."
+    },
+    {
+      "severity": "MEDIUM",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7164",
+      "title": "The real partial refinement refusal does not verify its canonical boxed work record",
+      "evidence": "The p0-subnormal control checks reason, position, stage, row, term, coordinate, and scratch status, but does not inspect refusal.work. Static reconstruction for the retained m=20 case is 43 scalar and 148 guard events through eligibility, then 26 scalar and 55 guard events through the failing row-0 term-14 source-weight admission: scalar_operations 69, guard_events 203, first_residual_operations 26, attempted_entries 1, denied_entries 0, and zero second-residual/factor-application/coordinate-update operations.",
+      "impact": "The body appears to absorb partial counters before constructing the refusal, but the required partial-error propagation is not protected by a discriminating control.",
+      "required_correction": "Borrow the typed metadata so the same refusal remains available, then assert the canonical boxed work record against the independently derived partial counts and assert that metadata contains no copied totals."
+    }
+  ],
+  "verified_static_properties": [
+    "The ten stable typed reasons are represented and any compatibility reason string is derived from the typed reason.",
+    "The actual FinalBox mutation reports FinalBox, Second, FinalBoxUpper, coordinate 13.",
+    "The actual ScratchRadius mutation reports ScratchRadius, First, RadiusComparison, and no coordinate.",
+    "The actual ActiveValue mutation reports ActiveValue, Second, ActiveEquality, coordinate 5.",
+    "Masks, lambda, original input radius, reduced FaceSolution radius, and scratch-box status are copied from live refinement context in refinement_metadata_refusal.",
+    "The Stage1 refusal owns one boxed M1TrustRegionWorkObservation and the metadata structure contains no duplicate totals; the control adapter forwards the actual boxed record.",
+    "Partial first-residual counters are absorbed before typed refusal construction."
+  ],
+  "custody_limitations": [
+    "Both authors disclosed that no chronological controls-only snapshot was captured before the metadata body. This review does not infer that controls preceded body implementation.",
+    "Parent-run debug/lint commands were in progress during this static review and are not evidence used for this disposition."
+  ],
+  "verdict": "HOLD: exact second-Dot2 provenance and the missing radius/partial-work controls must be corrected and reviewed before physical release."
+}

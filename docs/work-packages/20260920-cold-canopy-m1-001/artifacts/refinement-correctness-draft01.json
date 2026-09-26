@@ -1,0 +1,54 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "role": "independent numerical correctness and authority reviewer",
+  "evidence_class": "Static: exact prospective policy, retained source, and primary evidence inspection; no candidate replay, Python execution, Rust test, physical command, or independent numerical calculation",
+  "reviewed_source": {
+    "authority_path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "authority_sha256": "f639315ebf892d5cb2427935aa83a191b8eeb8c4662e53ef18b1b636b80e896b",
+    "draft_artifact_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls03-authority-draft01.json",
+    "draft_artifact_sha256": "d457c98934e2ef276d962acec8cd4b9f5830459adb751d607f2ab843bfa06d03",
+    "retained_runtime_stage1_sha256": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a",
+    "retained_bvls02_method_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+    "retained_dot2_result_sha256": "fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b",
+    "retained_dot2_certificate_sha256": "3decf52fb3a48fcc1f34a9132334cda6e31746f5d20c0bb830c248ef02c5ade6"
+  },
+  "verdict": "HOLD — do not release BVLS-03 body",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "location": "numerical-methods.md:760-783; detached m1_trust_region_stage1.rs:2672-2766",
+      "finding": "The policy does not operationally define p0 at the real controller seam. The completed face stores free solved values in solution.trace.step while state.p remains the live face-start and active-value carrier until crossing handling overwrites its free coordinates. A body could therefore test or refine the wrong, trivially feasible live vector.",
+      "required_fix": "Define p0 as the full solved face candidate assembled from unchanged active state.p bits and solution.trace.step in free_ids order. Freeze eligibility order and predicates before KKT: completed finite/rank-admitted solve, lambda numeric zero including either signed zero, exact original-box feasibility, exact active-bit preservation, and strict trust-ball interior using an explicitly named existing ordered norm/radius comparison. State that ineligible solved candidates enter unchanged crossing/KKT behavior."
+    },
+    {
+      "severity": "HIGH",
+      "location": "numerical-methods.md:785-810",
+      "finding": "The canonical arithmetic and failure contract is incomplete. 'Retained' groupings and 'frozen EFT-domain checks' neither state the exact TwoSum/Split/TwoProduct parenthesization nor bind an immutable canonical definition. 'Typed refinement refusal' has no kind, stable reason set, stage/coordinate metadata, or precedence relative to existing SVD, optimality, work-cap, and physical owning errors.",
+      "required_fix": "State the exact non-FMA formulas and operation order, and define guard order for operands, splitter products, products, sums, nonzero underflow-to-zero, nonzero subnormals, factor outputs, and coordinate updates. Define the private refusal kind/reasons and their stage/coordinate recording and precedence without erasing existing owning errors. Freeze the exact ordered scratch/final radius checks and final box/active checks."
+    },
+    {
+      "severity": "HIGH",
+      "location": "numerical-methods.md:812-820,824-837",
+      "finding": "Finite work is deferred to implementation instead of frozen before body review. The two retained reference counts do not bound other free dimensions, guard/feasibility work, denied entry, or the owning cap behavior.",
+      "required_fix": "Give dimension-dependent formulas and finite maxima for the ordinary residual, Dot2 arithmetic and guards, both factor applications, both free-coordinate updates, scratch/final checks, and reused BVLS-02 KKT/enclosure. Bind counter categories, cap admission, and increment-before-entry semantics, including refused scratch work. Static reconstruction of the retained factor loop gives 44*m^2+68*m arithmetic operations per factor application and 12306+88*m^2+138*m for both corrections at fixed dimension 21, yielding 50266 for m=20 and 54012 for m=21; the author must verify and complete guard/check bounds."
+    },
+    {
+      "severity": "HIGH",
+      "location": "numerical-methods.md:795-803,824-834",
+      "finding": "The prose prohibition does not provide the adopted enforceable scratch boundary. A plain full coordinate array remains structurally usable as a physical trial or returned step, so an infeasible p1 could leak across the linear-only seam despite the stated intent.",
+      "required_fix": "Require a private scratch type or equally enforceable interface that cannot be converted to M1CoupledColumnTrial or an accepted-step result. Controls must inspect actual arguments, counters, and untouched state at physical evaluation, phase, hydraulics, merit, materialization, receipt, and owner hooks. Permit p1 consumption only by the second Dot2 residual and the same factor application."
+    },
+    {
+      "severity": "MEDIUM",
+      "location": "numerical-methods.md:824-843; bvls03-authority-draft01.json controls C1-C4",
+      "finding": "The release controls omit adopted evidence needed to distinguish a compliant Rust port from an optimizer, recorder, or scope-restoration drift.",
+      "required_fix": "Require compiled release arithmetic to demonstrate non-FMA primitive equivalence against independent retained values; explicit error/scope restoration and owner-cap accounting; preservation of unaffected analytic controls and accepted materializer custody; and exact post-body source/manifest review before the sole result-bearing physical launch."
+    }
+  ],
+  "custody_disposition": "The disclosed absence of a pre-edit live method hash is a bounded custody defect, not a waiver. Truthful reverse-diff reconstruction of the pinned BVLS-02 method plus the parent's fresh unchanged 764-entry detached-runtime verification can establish the starting identity if retained explicitly; it does not resolve any substantive finding above.",
+  "residual_risk_and_missing_tests": [
+    "No body exists, so typed reason reachability, scratch non-publication, counter monotonicity, exact factor reuse, and unchanged crossing/KKT behavior are unverified.",
+    "The retained two-face results support the proposed fixed-face policy only; they do not establish general boundary-sign recovery, nonlinear convergence, or physical acceptance.",
+    "Same-reviewer verification is required on the exact corrected policy before body release."
+  ]
+}

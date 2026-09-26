@@ -1,0 +1,40 @@
+{
+  "schema": "openwepp.refinement-correctness.c4-outcome-adjudication.v1",
+  "evidence_class": "Static: frozen source and parent-supplied debug result inspection; reviewer performed no build, test, candidate replay, Python numerical execution, physical run, or target run",
+  "reviewer": "/root/refinement_correctness",
+  "scope": "C4 eligibility control adapter only",
+  "disposition": "BLOCKED_PENDING_CONTROL_ADAPTER_FIX",
+  "source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "sha256": "0ca5ea6bf8a3ed0f6ed904f329de9d0dbd2a02ca8b41217f1d29fb7e2ff461d3",
+    "frozen_by_parent": true
+  },
+  "parent_supplied_run": {
+    "name": "C1-C4debug01",
+    "tests_run": 6,
+    "tests_passed": 5,
+    "tests_failed": 1,
+    "failure": "C4 baseline helper expected Ok but the actual unchanged-02 path produced optimality_free_stationarity before the signed-zero probe"
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "paths": [
+        "m1_trust_region_stage1.rs:3777-3819",
+        "m1_trust_region_stage1.rs:3821-3893",
+        "m1_trust_region_stage1.rs:6535-6563"
+      ],
+      "finding": "Both C4 helpers copy solution.step directly into state.p and call kkt_transition. They skip activate_first_crossing, so the outside-box ineligible probe cannot exercise the ordinary BVLS-02 crossing-before-KKT behavior. The baseline exposes only final masks, and the test incorrectly compares both observed before and after masks to that same final value. The helper also promotes an ordinary typed BVLS-02 refusal to adapter failure, making an irrelevant eligible-probe baseline panic.",
+      "required_correction": [
+        "Use one test-only outcome routine for baseline and observed paths: snapshot masks; call activate_first_crossing; return a crossing outcome immediately when it activates; otherwise call kkt_transition.",
+        "Represent crossing, KKT return, KKT release, and typed refusal as comparable outcome data. Retain refusal kind, optimality reason, coordinate, work, and before/after lower and upper masks. Keep helper Err only for capture/decode construction failures.",
+        "Compare before to before and after to after for ineligible probes. The outside-box case must show the actual crossing mutation before any KKT.",
+        "Construct and compare a same-probe unchanged-02 baseline only for probes expected to be ineligible. Eligible signed-zero probes still require exactly two corrections/action=refine, but their later unchanged-02 return or typed refusal is outcome data and is not a baseline obligation."
+      ]
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "A corrected frozen source and parent-run C4 result require same-reviewer verification.",
+    "The separate whole-work accounting blockers remain governed by refinement-correctness-whole-work-accounting01.json."
+  ]
+}

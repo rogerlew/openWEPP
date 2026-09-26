@@ -1,5 +1,590 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+
+## Fixed-face compensated runtime refinement — adopted 2026-09-26
+
+**CUTOFF HOLD / INCOMPLETE; M1 and broader qualification HOLD.** Owner adopted
+`/tmp/openwepp_cold_canopy_m1_fixed_face_refinement_authorization.md` at
+`9fbc5b317f493121017325eab1e537167cb95f2e`. Historical prototype disposition stays
+**numerical two-case PASS; execution-cadence FAIL; clean prototype acceptance HOLD**.
+Its original authorized result and independent certificate are disclosed design
+evidence; neither old candidate nor unauthorized duplicate will be replayed.
+
+**Terminal outcome (2026-09-26, command cutoff05:30Z):** BVLS-03 authority
+was independently accepted and the detached implementation reached passing
+retained-face, scratch, eligibility and whole-controller controls. The final
+source is **UNVALIDATED**, not accepted: a last shared-helper change accidentally
+called itself and failed compilation. Parent corrected only that callee after all
+commands ended, preserving the failed cut; the recorder rejected both proposed
+post-fix batches before execution because their full bounds no longer fit.
+No numerical or validation command was launched after the cutoff. No physical
+ordinary-positive or target arm was executed. This is a bounded implementation
+stop, not a source-conforming numerical negative or a scientific impossibility.
+
+| Evidence / exact scope | Terminal disposition |
+| --- | --- |
+| Prospective BVLS-03 method and finite work policy | Distinct correctness/QA PASS; experimental authority only |
+| Last passing Rust cut, Stage1 `bddfdd000d356d72cf73fe9d86b77d22cedc4513f831341c67e9b5ee04a0ff13` | [Debug](artifacts/refinement-terminal-03-debug.json) and [release](artifacts/refinement-terminal-03-release.json):9/9 PASS;358 skipped. These results do not transfer to final source. |
+| Same prior cut default build / feature inventory / formatting | PASS; [doctests](artifacts/refinement-terminal-03-doc.json) compiled with0 tests, not behavioral evidence |
+| Last compiled strict lint | FAIL:238 inherited blocks match,64 introduced,0 removed; [comparison](artifacts/refinement-terminal-03-lint-comparison.json) |
+| Failed shared-helper cut `095792b6…` | Debug/release/inventory compileFAIL E0308; no tests. Lint inventory truncated:95 inherited matches,1 type error,143 not reached, never143 fixes. |
+| Final Stage1 `32f0d14950e22ede0b446326b9b185ce22905c99035a30acde512d1281dae9da` | Static one-callee repair only; debug/release/lint/default/inventory/fmt/doc NOT RUN on these bytes. [12 pre-execution rejections](artifacts/refinement-final-command-rejections.json). |
+| Unchanged original60, coordinate20 +1e-4 K ordinary-positive | NOT RUN; readiness unmet. No timing, materializer identity or independent accepted-output reservoir closure result. |
+| Reserved target arms and conditional continuation | All UNUSED / NOT RELEASED; no physical/full-feature/private-harness acceptance |
+
+The implemented branch remains rank-admitted, finite, exactly lambda-zero,
+original-box feasible and strictly original-trust-ball interior **before** the
+unchanged BVLS02 crossing/optimality decision. It uses exactly two fixed-factor
+corrections; only the second residual uses frozen non-FMA Dot2. Intermediate
+`p1` is private linear scratch: inactive-box infeasibility may reach only the
+second correction; active bits, domain and radius stay guarded. Final `p2`
+requires original feasibility and unchanged all-coordinate BVLS02 checks. No
+fallback, clipping, third correction, numerical retuning or relaxed physical
+predicate was introduced.
+
+Cost evidence is arithmetic/guard accounting, not a speed claim. Both20-free
+retained faces have50,266 correction arithmetic operations, including11,403
+Dot2 operations; norms129 and KKT1,827 are separate categories. Actual enclosure
+operations are6,654/6,522, versus39,816 as a **bound**. Total refinement scalar
+work is58,876/58,744. Whole-KKT/enclosure and refinement ledgers overlap and must
+not be added as a unique grand total. Immediate per-solve accumulation covers
+success and typed failures, including predictor/reassembled solves; same-reviewer
+[controller accounting PASS](artifacts/refinement-correctness-controller-body-fix01.json)
+is retained. Release command82.806591s on the last passing cut includes build and
+tests; it is **not** physical-controller entry-to-return CPU/wall timing.
+
+Final detached source custody:764 entries, tree
+`bf93e4220755ac32da348fec2cf640ba7e73eb57784922013a6658e5879128f4`.
+[Exact recovery](artifacts/refinement-terminal-recovery.json) reconstructs all
+entries from observer `85b8314e…` plus the
+[terminal patch](artifacts/refinement-terminal-from-observer.patch), and verifies
+every byte in the [source archive](artifacts/refinement-terminal-source.tar.gz).
+The archive covers the detached source snapshot; external toolchain/input/build
+supports remain bound by command support records. No final executable was built.
+The active runtime and fresh recovery copy remain under
+`/home/roger/openwepp-experiments/`; main Rust and both unrelated dirty files
+retain their original bytes. Main publication is documentation/evidence only.
+
+Independent final disposition: correctness returns staticPASS with no remaining
+source blocker; QA verifies containment and exact recovery but retains incomplete
+execution/staging custody. Their
+[correctness](artifacts/refinement-correctness-terminal.json) and
+[QA cutoff](artifacts/refinement-qa-final-cutoff.json) verdicts distinguish static
+repair from absent execution. Representative source/weight/primary/splitter,
+SplitOutput, TwoSumResult and final accumulation controls exist; EftRemainder,
+TwoSumRemainder and per-term accumulation remain static-only coverage, not proven
+unreachable. Both earlier metadata controls-only snapshot omissions remain
+explicit; the later-stage prebody snapshot does not retroactively cure them.
+Historical prototype **numerical two-case PASS / execution-cadence FAIL / clean
+prototype acceptance HOLD** remains unchanged. No old Python candidate replay.
+
+Remaining acceptance work requires further owner allowance: verify the final
+source in debug/release, resolve all introduced lint without suppressions,
+complete the supported analytic KKT-oracle change and physical timing/closure
+instrumentation, then obtain source/manifest readiness reviews before the single
+unchanged ordinary-positive. Its valid numerical negative must still stop policy
+search. Existing18-symbol/eight-interface, full09/A1/strict-lint, material/BGC,
+parent/late-rejection, cycles/restart and scale HOLDs remain. The original fixed
+clock and closing reserve are not renewed by this handoff. Final [ledger](artifacts/refinement-final-ledger.json)
+charges the original14400-second allowance, including conservative closing time
+through06:00Z, for cumulative364933.959294seconds and zero remaining charged
+allowance. Actual elapsed at ledger creation is separately recorded; this does
+not claim four observed hours had already elapsed. No refunds or clock reset.
+
+Publication checks: maintained documentation/recorder diff hygiene passes;
+raw evidence retains its literal patch-context/log whitespace
+([hygiene record](artifacts/refinement-publication-hygiene.json)). Publication is
+scoped to reviewed authority and incomplete experiment evidence; no main Rust
+change or M1 acceptance. [Publication receipt](artifacts/refinement-publication.json)
+distinguishes local commit and verified remote availability.
+
+
+[Start custody](artifacts/refinement-start-custody.json) verifies the unchanged
+764-entry detached runtime, Stage1 and retained result/certificate. Runtime is
+`/home/roger/openwepp-experiments/cold-canopy-m1-20260920`; no reconstruction is
+needed. Carry **350533.959294 s**, new allowance **14400 s**, fixed ceiling
+**364933.959294 s**. Conservative first-reading anchor **02:00:00Z** gives hard
+deadline **06:00:00Z**, command cutoff **05:30:00Z**, all on 2026-09-26, reserving
+1800 s for independent disposition/preservation/publication. No greater later
+charge was found; no old remainder is stacked, no wait deducted or clock reset.
+Every command must fit its full bound plus reserve; physical bounds remain180 s
+and the existing exact900 s Critical command is only conditionally applicable.
+
+Intent: prospectively review canonical experiment-only BVLS-03; write controls
+before corresponding body; implement the fixed two-correction treatment in the
+real detached controller; execute the unchanged ordinary-positive once after
+source/manifest reviews and readiness. Eligibility is finite rank-admitted,
+exact lambda-zero, original box-feasible and strictly trust-ball-interior p0,
+before optimality/release. Correction1 uses existing ordered residual/factors;
+correction2 alone uses the frozen non-FMA augmented Dot2 residual and identical
+factor application. Active bits/masks/factors remain fixed. Internal p1 may
+violate inactive box bounds but cannot reach physical/owner/publication hooks;
+it must retain radius, finite/EFT domain and active values. Final p2 needs exact
+original feasibility and unchanged all-coordinate BVLS-02 before return/release.
+No fallback, clipping, extra correction or post-negative policy search.
+
+Ownership: `/root/refinement_implementer` is sole source/authority writer;
+`/root/refinement_correctness` independently reviews numerical correctness;
+a distinct QA reviewer will review policy, controls, custody and accounting.
+Parent owns this record, command dispatch, budget, integration and publication.
+No nested agents; at most two concurrent children. Author may draft authority
+and tests but body waits for both prospective assessments. Parent dispatches
+new Rust result-bearing tests and named physical controls. Correctness may
+independently reconstruct specifically assigned operands; QA reads/hashes only,
+with no candidate execution. No further old Python prototype execution.
+
+Permitted writes: canonical experimental numerical-method amendment and needed
+cross-reference; detached Stage1 and private control/integration surfaces;
+necessary existing recorder updates; this record and `refinement-*` evidence
+and exact recovery patches. Main Rust, unrelated dirty/staged work, prior
+source/results, physical predicates and target custody remain untouched.
+
+Selected requirements: release primitive equivalence/guard/signed-zero controls;
+both complete retained-face bit/feasibility/BVLS02 comparisons; actual scratch
+isolation, final refusal, eligibility and no-fallback controls; complete work,
+error/scope restoration and unchanged analytic controls; exact original60 plus
+coordinate20 +1e-4 K ordinary accepted-update control with independent closure,
+identity and entry-to-return release CPU/wall timing separated from setup/build.
+Affected format, default/feature reachability, A0/A1/A3 and strict-lint evidence
+remain binding. Prospectively retain same-command no-new-relevant-diagnostics
+only if actual test-only noncritical reachability remains proven; all238 inherited
+diagnostics remain disclosed FAIL. Unknown impact triggers conservative escalation.
+No assurance or public output is activated by this private experiment.
+
+After positive and assigned requirements, continue the existing eight interface
+producer groups, full-feature/private harness and only conditionally released
+single prefix/baseline/treatment pair within remaining allowance. All target slots
+are UNUSED / NOT RELEASED. Existing full09/A1/strict-lint, material/BGC,
+parent/late-rejection, cycles/restart,18-symbol and scale HOLDs remain.
+A source-conforming numerical negative, exhausted budget/run allowance, owner
+stop, uncontained integrity loss, indispensable capacity/source/review unavailable
+after bounded recovery, necessary out-of-envelope change or completed bounded
+disposition stops execution. Two unsuccessful corrections or60 charged minutes
+require supported internal reassessment; they do not renew time or scope.
+
+
+
+Static review draft01: correctness returns HOLD with five concrete design gaps:
+operational full-face p0 assembly, exact EFT/guard/error order, complete finite
+work bounds, enforceable private scratch and observed hook controls, and compiled
+release/scope-restoration/source-review evidence. Parent accepts these; sole writer
+revises authority before body. QA additionally requests concrete command selection.
+[Correctness findings](artifacts/refinement-correctness-draft01.json) bind draft01.
+The author omitted the required pre-edit live method hash; this is disclosed,
+not claimed performed. [Bounded reconstruction](artifacts/refinement-method-custody-reconstruction.json)
+removes exactly the inserted96 lines in memory and reproduces every pinned BVLS02
+byte and hash. Runtime was separately verified before mutation. No source loss or
+numerical execution occurred. [Recorder controls](artifacts/refinement-recorder-deadline-controls.json)
+pass five direct bound cases after a deadline-only change; no command launched.
+
+Prospective direct validation commands (all in the detached runtime; parent
+records exact argv/source/input/environment through existing `run_recorded.py`):
+common prefix `nix develop /workdir/openWEPP --command env
+CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-target CARGO_BUILD_JOBS=2`.
+Feature pair `m1-trust-region-analytic-stage,m1-trust-region-physical-stage`.
+
+| Requirement | Command after prefix | Full bound / execution allocation |
+| --- | --- | --- |
+| Format | `cargo fmt --all -- --check` |180 s; no physical execution |
+| Default reachability | `cargo check -p openwepp-land-surface-energy --lib` |180 s; compile only |
+| Feature compile/inventory | `cargo nextest list -p openwepp-land-surface-energy --lib --features <pair> --message-format json` |180 s; no test execution |
+| New C1–C4 controls | `cargo nextest run -p openwepp-land-surface-energy --lib --features <pair> -E 'test(m1_trust_region_refinement_)' --no-fail-fast --success-output immediate --failure-output immediate` |180 s per frozen edit cut; release counterpart adds `--release`; concrete test membership checked before launch |
+| Unaffected analytic and custody controls | retained `finite-precision-body13-selected-controls.json` exact argv with reviewed method-specific replacements declared before run |180 s physical-classified; excludes separately assigned ordinary-positive and historical physical negatives |
+| Required physical positive | retained `finite-precision-body13-ordinary-positive.json` exact test selector with `--release` |180 s; one planned terminal run after both source/manifest reviews; setup/build separated |
+| Strict lint | exact `finite-precision-body13-lint.json` argv, including `CARGO_TARGET_DIR=target/physical-lint` |180 s; compare actual source/diagnostic blocks to retained238, not counts alone |
+| Affected doctests | `cargo test -p openwepp-land-surface-energy --doc --features <pair>` |180 s; report empty inventory honestly |
+| Documentation / source checks | scoped `git diff --check`, JSON/AST/link checks, private cfg reachability, changed-source placeholder scan |180 s or less; direct checks |
+
+The Stage1 module is unconditionally `cfg(test)` at detached lib.rs:133–134;
+normal feature-enabled builds cannot reach it. Intended changes preserve that
+boundary, physical equations/reservoir operand lineage and all physical assertions.
+A0 closure and A1 invariants are exercised by named controls and independent
+reconstruction; no A3 constitutive formula/suite/cohort is changed. Static exact
+terminal diff rechecks these dependencies. Cargo deny is not selected while
+all manifests/lockfiles/toolchain/resolution inputs remain identical; any such
+change reopens dependency checks. Same toolchain/command inheritance is required
+for the238 diagnostics; new or ambiguous findings block and are corrected.
+
+The exact900 s Critical command in `run_recorded.py` is **NOT SELECTED** under
+this proven test-only scope. Its existing applicability is retained if edits
+reach production/public semantics, global feature/dependency/runner behavior,
+conservation operand lineage, required-case weakening or another Critical
+invariant under testing strategy section8. Such a trigger must be classified
+before launch, source reviewed and full900 s fit before05:30Z (latest05:15Z);
+it is not permission for another required-positive or target replay. The05:30Z
+cutoff is the command-completion cutoff before reserve: a180 s command must
+start by05:27Z, and the900 s command by05:15Z. Each uses its full bound. Conditional
+interface/full-feature continuation receives its concrete commands/reviews before
+entry if positive prerequisites pass; it is not silently covered by local tests.
+All historical broader obligations retain their existing HOLDs.
+
+
+
+Same QA `/root/refinement_qa` verifies its draft01 fixes: command matrix,
+explicit release controls, scope/owner accounting and corrected bound/reserve
+cadence **PASS** on draft02 method `6da7018a…4546e`, plan `be5f5230…6888cf`.
+This does not supply numerical approval. Same correctness is checking exact
+guard order and complete work bounds; runtime/body remains untouched pending
+that review. [Retained dependency check](artifacts/refinement-retained-dependency-check.json)
+verifies original author/certificate dependency bytes without a calculator replay.
+
+
+Internal reassessment **CONTINUE** after two reviewed authority drafts: no Rust
+or numerical result exists; remaining corrections are demonstrated specification
+omissions, not a new solver choice. Draft02 correctness retains HOLD for primary
+product-before-Split guard precedence, valid additive cancellation, explicit p1
+radius comparison, omitted1827 KKT plus129 norm operations, auditable guard
+bounds, and feasible controls-before-corresponding-body staging. Same author
+owns draft03, same reviewers verify affected changes. No budget/run reset.
+
+
+Prospective policy **PASS**: independent correctness `/root/refinement_correctness`
+[verifies all findings](artifacts/refinement-correctness-draft04.json) on exact
+method `2db1f366ef1cc8145d44ac9d90eed8c1ac2ac871ac8d503946c8c24bdc174c71`.
+Distinct QA `/root/refinement_qa` returns: “Static QA: PASS for draft04. The
+... wording now unambiguously permits parent-dispatched named expected-red/green
+Rust controls at each stage, consumes no physical/target slot, and keeps
+physical/target execution gated on all stages plus source/manifest review.”
+These reviews approve prospective policy only; neither reviewed an implementation
+or ran a candidate. Retained rejected drafts and [final wording changes](artifacts/refinement-authority-draft04.json)
+preserve the source-specific correction history.
+
+Parent releases **C1 control authoring only**, then a named parent-dispatched
+expected-red Rust command before primitive body. After body, compiled release
+C1 and independent review precede C2–C4 control authoring/expected-red, then
+controller body/integration and source reviews. Physical/target remains unreleased.
+Writer may update proposed→accepted status without altering reviewed formulas.
+
+
+Ran: parent-dispatched [C1 expected-red](artifacts/refinement-c1-red01.json)
+returns101 after10.8035 s at the control-only source. The sole compilation error
+is the intentionally absent shared Dot2 seam; zero tests execute. Both runtime
+and observer source remain unchanged during the command. A new unused-variable
+warning is assigned for removal, with no suppression. Full observer-relative
+patch and command/support identities are retained by the existing recorder.
+Parent releases **primitive body only**; controller integration remains gated on
+compiled-release C1 evidence and independent review.
+
+
+Ran: [C1 release01](artifacts/refinement-c1-release01.json) FAILS at compilation
+after60.5886 s, zero executed tests: new guard-count assertion comparesu16 tou64.
+Frozen source and observer remain unchanged; the full failed cut is preserved.
+Independent C1 review finds scalar grouping/domain/retained operands conforming
+but requires exact refusal counter tuples, replacing nondiscriminating bounds.
+Parent assigns only the explicit widening and those strengthened test assertions;
+no numerical policy/body retuning. The earlier signed-zero test expectation was
+corrected statically before this run: leading product-0, final computed Dot2+0,
+matching retained independent evidence. No physical slot is consumed.
+
+
+Ran: [C1 compiled release02](artifacts/refinement-c1-release02.json) **PASS**:
+3 tests run/3 pass/358 skipped, including every42 retained residual row and
+exact arithmetic/guard/signed-zero/refusal counts. Total command/build88.4735 s;
+actual test summary0.035 s, not a physical timing or speedup. Source tree
+`88c59a5a7268c01e731f10ef089c448e0de5c4da078b8e09647702c58f5d5987`, source/pins/
+links unchanged. [Executable inventory](artifacts/refinement-c1-release02-binaries.json)
+records the release cache immediately after the run. Same correctness verifies
+fixes before C2–C4 release. No physical or target execution occurred.
+
+
+Same correctness [C1 fix verification](artifacts/refinement-correctness-c1-body03.json)
+**PASS**, binding actual release02. Parent releases C2–C4 expected-red control
+authoring only: both retained face/factor/correction/final decisions, scratch
+isolation, final refusals, eligibility, complete work/error/scope restoration.
+Each corresponding body remains blocked until its authored controls and red
+cut are preserved. This checkpoint is not runtime or physical acceptance.
+
+
+Ran: [C2–C4 expected-red01](artifacts/refinement-c2-c4-red01.json) exits101 after
+14.5666 s with the three intentionally absent shared-seam imports; zero tests
+execute, source/observer unchanged. Before body release, parent flags that
+expected JSON must never enter calculation helpers and that asserted booleans
+cannot substitute for actual numeric/state/hook observations. Same correctness
+reviews control discrimination; sole writer strengthens controls first. The
+control-only failed cut remains preserved. No controller body/physical release.
+
+
+Ran: [C2–C4 red02](artifacts/refinement-c2-c4-red02.json) exits101 after14.7142 s
+at absent seam/type imports, zero tests, frozen source/observer unchanged.
+Same correctness accepts repaired oracle separation/schema/vector/factor claims,
+but retains three control blockers: actual mutated operands and exact refusal
+reasons; nonzero denied-entry evidence with explicit capacity and zero executed
+work; unchanged ineligible02 outcome/mask/work and refused-face no-fallback.
+Internal reassessment **CONTINUE**: these are concrete in-envelope control gaps,
+not permission to alter math. Writer owns control03; body remains gated.
+Denied entry counts remain distinct from actual arithmetic, which must stay zero
+when no correction operation was entered. Active masks need explicit custody
+alongside already compared active values. No time/run allowance resets.
+
+
+Ran: [C2–C4 red03](artifacts/refinement-c2-c4-red03.json) exits101 after14.4161 s
+on absent shared APIs; zero tests/source unchanged. Same reviewer narrows
+remaining control fixes to a finite original scaled-box violation (coordinate11
+has no finite upper bound), explicit eligible-path mask custody, and zero
+executed scalar/guard work on denied entry. Writer retains control04 source
+before body; another identical absent-API build is not selected merely for
+strengthened assertions. The exact control cut plus existing expected-red
+absence evidence remains reviewable. These findings remain in attributable
+[controls03 review](artifacts/refinement-correctness-c2-c4-controls03.json).
+
+
+Same correctness [controls05 fix verification](artifacts/refinement-correctness-c2-c4-controls05.json)
+**PASS_BEFORE_BODY**, source `5095ca587c8129360e3fb328a625bd0a2b1b52ba2f788cfdfd2da7193d2fc9e8`.
+Parent releases the real shared Stage1/controller integration under accepted
+BVLS03: no parallel calculator, unchanged factor application, every eligible
+face receives exactly two corrections, private scratch never escapes, complete
+work/refusal/owner-scope accounting and unchanged final02/nonlinear gates.
+Writer has a30-minute progress checkpoint; same absolute allowance applies.
+Parent retains all compile/test dispatch. Physical remains gated on green
+controls plus independent source/manifest reviews. Prior red03 is reused only
+for absent-API expected-red evidence; control04/05 strengthen assertions and
+repair a local decoder without any body addition before this release.
+
+
+At the60-charged-minute reassessment, **CONTINUE** within the same allowance:
+reviewed method and compiled-release C1 are accepted; real face-entry integration,
+retained factor application, ordered/compensated residuals, updates and norms
+are implemented in the detached source. Cap admission, whole-solve counter
+propagation, C2–C4 bindings and green evidence remain. Supported next action is
+these concrete implementation tranches with the same writer; no source-conforming
+negative or out-of-envelope requirement exists. [Fixed-anchor ledger](artifacts/refinement-ledger-checkpoint01.json)
+charges all concurrent work/waits once; deadline06:00Z and reserve1800 s unchanged.
+Current core recovery is [observer-relative working patch](artifacts/refinement-body-working01-from-observer.patch)
+with [source inventory](artifacts/refinement-body-working01-source.json);
+active later edits remain in the durable detached runtime pending freeze.
+
+Static working-body review finds implementation deviations before any body run:
+finite subnormal p0 could incorrectly bypass refinement through an EFT guard in
+eligibility; refinement/optimality typed kinds were swapped; a nonfinite p1 norm
+was mislabeled subnormal. Parent assigns correction to the same writer and
+same reviewer verification. Core two-residual/factor/scratch structure otherwise
+looks conforming, but this is not terminal approval. The retained20-free C4
+reservation is prospectively corrected to actual K=92,038 and G=276,367, with
+one-less remaining capacities92,037/276,366; caller-provided expected counts
+cannot manufacture denial. Prior controls and working cuts remain evidence.
+**CONTINUE** for these demonstrated implementation/control deviations under the
+same deadline; no physical run, numerical negative or method retuning occurred.
+
+Supported ownership reassessment **REASSIGN / CONTINUE**: the initial writer
+repeatedly ended explicit API assignments with partial changes, finally reporting
+all C2–C4 APIs still absent without a concrete blocker. It is completed/idle and
+has no further write assignment. `/root/refinement_api_implementer` now owns the
+single detached source-writer role for real shared API bindings; existing
+correctness/QA reviewers retain independence. Source852de1a6…bd2 is preserved,
+and [same-reviewer fix verification](artifacts/refinement-correctness-body-working01-fix.json)
+passes all four identified core/control corrections. No build/physical run or
+allowance reset accompanies reassignment; full accounting/API review remains.
+
+Parent assigns `refinement-body-compile01`, the selected C1–C4 debug nextest
+command, bound180 s, on frozen partial API cut623d70f6…e3e. C3/C4 imports
+remain absent: expected compile failure/zero tests diagnoses real new body typing
+before further adapters. No physical run is assigned; source stays frozen.
+
+Ran: [partial body compile01](artifacts/refinement-body-compile01.json) exits101
+in14.7646 s, zero tests, source/observer unchanged. Besides still-absent APIs,
+compiler identifies mutable-ledger reference and mask comparison type errors;
+writer corrects them. No result-bearing physical execution occurs. Static API
+review additionally requires actual per-application factor identities and
+checkpoint masks, stable classification names, scaled scratch-box operands,
+and real before/after hook/scope observations instead of literal zeros. C4
+controls are prospectively corrected to pair each mutated lambda/radius/p0 with
+its own unchanged02 operand-identical baseline; one original baseline cannot
+validate multiple different operands. These are implementation/control fixes,
+not a policy amendment. C2/C3/C4 and whole-work readiness remain unaccepted.
+
+[Independent inherited KKT oracle adjudication](artifacts/refinement-correctness-selected-kkt-oracle.json)
+authorizes only the lower-case release order[0,1] and second-h[0,-2,2,6,0],
+consistent with02 normalized-violation ties; original01 largest-|h| ordering is
+superseded. Upper case/finals/masks and all physical success assertions remain.
+[Static QA planning](artifacts/refinement-qa-body-planning.json) confirms current
+test-only reachability and unchanged manifests; exact terminal review remains.
+
+Parent assigns `refinement-c1-c2-debug01`, bound180 s, on frozen source
+2e9e3ecb…d2fd: only primitive and both retained-face C1/C2 tests selected.
+C3/C4 controls remain unaccepted/unselected while observation repairs continue.
+This is a non-physical algebraic control execution, not terminal physical release.
+
+Ran: [C1/C2 debug01](artifacts/refinement-c1-c2-debug01.json) exits101 after
+14.9057 s, zero tests, unchanged source/observer. Five concrete typing errors
+remain (optional mutation replacement, two integer conversions, two moved
+snapshots). **CONTINUE** after the two compile-diagnosis cuts: same writer
+receives these exact mechanical fixes, then same focused C1/C2 command. No
+numerical result or policy change exists; absolute allowance remains unchanged.
+
+Ran: C1/C2 debug02/03 retain compile failures, zero tests. Parent made an
+exact two-line coordinating fix while sole writer was idle: remove the misplaced
+ObservationScope flatten and add the missing MutationScope flatten. [Debug04](artifacts/refinement-c1-c2-debug04.json)
+then **PASS4/4**,360 skipped,11.0049 s total,0.160 s test interval, source unchanged.
+Both retained faces match all C2 bit/final-decision controls; this is debug evidence.
+Parent selects same C1/C2 filter with `--release`, bound180 s, on identical source
+89ed9ac0…8aa. Eight new compiler warning groups remain to correct; C3/C4, actual
+whole-work/hook/scope evidence and physical readiness remain unaccepted. All
+failed source cuts are preserved. No policy retuning or physical execution.
+
+Ran: [C1/C2 release01](artifacts/refinement-c1-c2-release01.json) **PASS4/4**,
+360 skipped,90.528356 s command including compilation and0.035 s tests. Frozen
+Stage1 remains89ed9ac0…8aa; source/observer/pins unchanged. [Independent C2 fix
+verification](artifacts/refinement-correctness-c2-core-debug04.json) PASS covers
+actual factor/mask/class/scaled-bound observations, both retained bit vectors,
+and final02 decisions; it explicitly excludes C3 and physical readiness.
+
+[Independent C3 observability adjudication](artifacts/refinement-correctness-c3-observability-design.json)
+prospectively replaces fabricated receipt counters with full materialization
+activity and full optional owner-binding equality; publication occurs only in
+that materializer. Direct test-only counters are required at canonical phase
+selection and frozen merit entry because trial counts do not observe every
+phase path. Complete activity snapshots and actual None owner state must be
+retained, without substituting live-step bits. Same writer implements these
+bounded observation changes; same reviewer verifies them. No extra physics call
+or production activation is authorized. Whole-work accounting remains open.
+
+Parent assigns `refinement-c1-c4-debug01`, selected full C1–C4 prefix,
+bound180 s, frozen0ca5ea6b…1d3. This diagnoses integrated observation controls;
+whole-work KKT/enclosure/partial-error accounting gaps remain separately open,
+so even green controls do not release physical execution. No physical calls.
+
+Ran: C1/C4 debug01 PASS5/6, failing C4 because its baseline adapter required
+known02 stationarity refusal to be success. [C4 adjudication](artifacts/refinement-correctness-c4-outcome-adjudication.json)
+requires one shared crossing-before-KKT comparison and typed refusal as outcome
+data, with distinct before/after masks. Debug02 retains a compile failure from
+an accidental C2 propagation removal; corrected before debug03. [Debug03](artifacts/refinement-c1-c4-debug03.json)
+PASS5/6 including C4; C3 asserts the wrong budget scope (ambientNone rather than
+recorded nonzero nestedSome), now assigned correction. These are demonstrated
+observation/control defects, not a source-conforming numerical negative.
+
+[Whole-work audit](artifacts/refinement-correctness-whole-work-accounting01.json)
+retains blocking omissions: actual per-face KKT/enclosure and guard work,
+partial failed category charges, owning-error propagation, cumulative controller
+failure totals and physical observation. Formula bounds alone are not accepted
+as executed totals. [C3 fix review](artifacts/refinement-correctness-c3-fixreview01.json)
+requires actual full snapshots and rejects remaining factory assertions. Same
+writer/reviewer remain assigned; policy and fixed allowance unchanged.
+
+[QA counter/cfg audit](artifacts/refinement-qa-counter-cfg.json) observes only
+test-gated counters and unchanged manifests, with no current Critical/dependency
+trigger. Parent adds the explicit default-libtest compile/inventory command
+`cargo nextest list -p openwepp-land-surface-energy --lib --message-format json`
+after the existing Nix/target prefix, bound180 s, no test execution, alongside
+the feature-pair inventory. It checks cfg(test) joins that `cargo check --lib`
+cannot compile. Exact terminal source and diagnostic review remain mandatory.
+
+At the next60-minute reassessment, **CONTINUE** on concrete in-envelope fixes,
+not another method: C1/C2 released PASS and independent C2 review stand; source
+review still rejects incomplete C3/C4 assertions despite debug04 PASS6/6.
+Same writer completes explicit observation/crossing/cap controls and actual
+whole-work/error accounting, then required validation/reviews and the unchanged
+physical control if ready. [Checkpoint02](artifacts/refinement-ledger-checkpoint02.json)
+charges all elapsed concurrency/waits once against the original02:00Z anchor.
+Hard deadline06:00Z, command-completion cutoff05:30Z and1800 s reserve remain.
+No numerical negative, scope expansion, allowance reset or physical run occurred.
+
+
+
+Parent assignment at04:13Z: `refinement-accounting-controls-red01` runs the C1–C4 debug selector on frozen Stage1 bc8af8a73dcf15553fbb6a9e9476029c18fc4f5e9d27f7894deae87f96b2f497. New actual-cost assertions precede accounting body; absent whole-KKT/enclosure fields should compile-fail. No physical execution. Bound180s fits05:30Z cutoff.
+
+Ran: expected-red receipt exits101 after11.054747s with exactly the two missing actual KKT/enclosure ledger fields; source and observer unchanged. Body accounting is now assigned to the replacement sole writer. Same QA statically approves seven cfg repairs and source-copy custody; successful default-list02 is bound to7da92cc1, not the later controls cut, and final exact-source validation remains required. Two C3-only imports need matching feature gates.
+
+
+Parent assignment04:17Z: `refinement-accounting-debug01` executes C1–C4 debug controls on frozen Stage1 a7fd31f39ba02b782c2ca3f51af159c56cef088bd1eb3e558894172e815db413, checking actual retained-face arithmetic categories and KKT/enclosure counters. Bound180s, no physical execution. Remaining seam/error/controller work is not claimed complete.
+
+Ran: accounting-debug01 exits100, five of six controls pass. C2 exposes an incorrect new cost assertion:39,816 is the enclosure worst-case bound, while zero-operand shortcuts execute6,654 operations for its first retained face. Same correctness is assigned independent actual-count reconstruction before oracle correction; formulas are not substituted for executed work. Custody correction: assignment named a7fd, but author guard-grouping edit completed before recorder snapshot; actual support/source/receipt bind864f11f7 and verify source unchanged throughout18.385248s. No during-run edit occurred.
+
+Same correctness independently reconstructs actual enclosure operations6,654/6,522 and total refinement scalar work58,876/58,744 on the two retained faces; [review/count derivation](artifacts/refinement-correctness-kkt-upward-accounting01.json) retains accounting blockers for uncharged operands/zero shortcuts and late next-up charges. The39,816 value remains only the finite admission bound. Gamma/control-ratio arithmetic is existing BVLS02 work outside this defined cap category, not an instruction-count claim. [Propagation plan](artifacts/refinement-correctness-accounting-propagation-plan.json) identifies predictor/reassembled solves omitted by successful-trace summation; parent and reviewer approve immediate per-solve accumulation plus a non-fallible evaluator observation hook on both success and failure, preserving the original Result/error types. C4 typed-kind fix is independently PASS.
+
+Parent assignment04:26Z: frozen6ca737661f9a1ff65d910a990789bf42cbe225b68192cd483da2d51a23b0b1e7 receives `refinement-accounting-debug02` C1–C4 controls and `refinement-lint01` exact retained strict-lint argv, independently concurrent with distinct build directories. Each bound180s; no physical execution. This is an intermediate diagnostic cut; remaining seam/reservation/controller/metadata blockers remain. Author stays frozen until both complete.
+
+Parent assignment04:30Z: `refinement-accounting-debug03` and `refinement-lint02` repeat their exact selected scopes on frozen5b59aa0a593b86ca69315ea97ceb497e12941cd7ab05c9a53ad1adc658daba6e after E0502 and reviewed guard/reservation corrections. Prior compile failures retained; no test ran in debug02. Each180s, no physical execution, source frozen until both end.
+
+Parent assignment04:34Z: `refinement-controller-controls-red01` runs the refinement debug selector on Stage1 940738f77b102d552590b7b21e11e3177210596e7e0f45358f6a848bdfc21119 and stage2 controls f9f95b3c6ff357d6901361b979f417120a3b6ece96d6ba25a440f146c5673514. New analytic controls prospectively require real per-solve accumulation and exactly one terminal observer hook on success, post-solve owner failure, and initialization failure; missing approved work-record/fixture hook should compile-fail before body. Bound180s, no physical execution.
+
+Ran: debug03 executes six controls, four pass; retained scalar and denied-eligibility scalar failures show20 free assignments incorrectly counted as arithmetic. Same correctness identifies p0 assignment/guard split and p2 final-install placement; fixes remain under review. Controller-controls-red01 then exits101 solely on missing prospective observation record/fixture fields, source stable; stronger selected-phase actual rank-deficiency control is required before body. Lint02 comparison correction normalizes numeric suggestion gutter positions as well as source line/column: all238 inherited blocks match,80introduced,0removed. [Corrected comparison](artifacts/refinement-lint02-comparison-corrected.json) supersedes preliminary96/16; [QA attribution](artifacts/refinement-qa-lint02-attribution.json) retains concrete new error-size/unused-field blockers. No source-conforming physical negative or physical execution exists.
+
+Parent assignment04:40Z: `refinement-controller-controls-red02` verifies strengthened prospective controller controls on Stage1 7c20bbd518d582bbc25e903b0ee1731a64831b77778cfd2a47d3f963ce182b13 / stage2 7bafb2030e80e0a3d12c5a585c8c333c0961900439b0abbcb80cd297ca82e268 before body. Actual selected-only zero Jacobian must own RankDeficient and add exactly one factorization/one completed sweep beyond the natural solve; all other accumulated categories unchanged. Bound180s, no physical execution.
+
+[Checkpoint03](artifacts/refinement-ledger-checkpoint03.json): supported CONTINUE after concrete accounting corrections and prospective controller-control approval. The remaining blockers are implementation/observation/lint defects, not a valid numerical negative; physical and target slots remain unused. Fixed05:30Z command-completion cutoff and06:00Z hard deadline are unchanged; no time is refunded.
+
+Parent assignment04:47Z: `refinement-controller-debug01` executes all seven refinement controls and `refinement-lint03` executes exact strict-lint argv on frozen controller-accounting body, Stage1 91cb77df65ec9d9729548a9512d3ed4dc4ef51403dd807fb5ea35d806cb627b6. Whole source manifest binds the six affected files. Each180s, no physical execution, author frozen. [Prospective controller approval](artifacts/refinement-correctness-controller-controls-fix02.json) precedes body; metadata remains separately pending.
+
+Parent assignment04:50Z: `refinement-controller-debug02` and `refinement-lint04` validate frozen Stage1 30b062a2907600b186bc700af16b221aa7fba286fdd40016d833b02d6b1ce75e after the two direct-state initializer fixes and removal of the exact unused bindings. Prior compile-only failures retained. Controller body passes static same-reviewer inspection subject to execution. Each180s; no physical execution. [Exact predecessor recovery](artifacts/refinement-controller-predecessor-recovery.json) restores all764 red02 entries and correct m1_coupled61b5021 hash; author missed live copy and incorrect reconstruction remain disclosed, never claimed exact.
+
+Parent assignment04:57Z: `refinement-metadata-debug01` checks the implemented C3 metadata subset and prior seven controls on Stage1 c47b2cdb572b1e05d3a151e5bd2aac6d50a07cf7064561a5db32d25ea84d37a4. Complete residual/EFT provenance remains unimplemented and is not accepted. Correction: author admits the requested metadata controls-only chronological snapshot was omitted. Controls and body are present in the recorded cut, but their chronological staging is not independently evidenced; no reconstructed cut is claimed as prospectively captured. The broader approved metadata plan remains binding. Bound180s, no physical execution, source frozen.
+
+Internal reassignment at04:59Z: after repeated partial metadata deliveries, `/root/refinement_api_implementer` is relieved and idle; `/root/refinement_metadata_implementer` is sole writer for the remaining bounded metadata tranche. Same role/tier, no nested work or extra allowance. Parent attempts to reengage same QA currently return tool `agent thread limit reached`; bounded capacity recovery remains pending while useful source work continues. Metadata provenance, introduced lint, terminal validation and physical readiness remain HOLD.
+
+The replacement metadata author also confirms it omitted the requested new controls-only snapshot. Its preserved4c47 preedit is not proof of chronological controls-first staging. [Staging deviation](artifacts/refinement-metadata-staging-deviation.json) retains both admissions; no prospective snapshot is reconstructed or claimed. Source remains recoverable, metadata source has not yet been executed, and independent review/physical readiness remain HOLD.
+
+Parent assignment05:06Z: `refinement-metadata-debug02` and `refinement-lint05` check the complete claimed metadata body on frozen Stage1 f44479caa38e76f1630a551675a0da9dc91ef539caeb56999d11dd39052e4e99 / lib ef6850425e91b82150db17d587c3dc8807fe976867ee68594ea154e3b82692ac. Each180s, no physical execution. New p0 subnormal source-site control joins prior C1–C4/controller controls; staging omission remains disclosed and no independent body review is yet available. Source remains frozen throughout.
+
+Ran: metadata-debug02 passes8/8,358 skipped, on f44479ca; source/base/pins/support unchanged. Strict lint05 fails with92 introduced diagnostic blocks and all238 inherited blocks exactly matched. Independent correctness reopens successfully and finds a HIGH source defect despite green tests: second Dot2 failures still use generic stage with missing term/coordinate. Actual primitive-site provenance, discriminating radius assertions and partial-work assertions are assigned as corrections; no physical release. Thread capacity became recoverable after the relieved author consumed queued messages and ended its turn; earlier rejected followups remain disclosed.
+
+Parent terminal-cut assignment (05:16Z): the metadata implementer remains sole
+source writer for actual internal Dot2 stage/term provenance only. After its
+freeze, parent selects one debug and one release run of all
+`test(m1_trust_region_refinement_)` controls, exact prior strict-lint argv,
+default library check, feature inventory, fmt and feature doctests, each with the
+existing 180-second bound and source/support custody. These are nonphysical
+edit-loop verification; no ordinary-positive or target release is implied.
+Commands must start before05:27Z and finish before05:30Z. Source corrections may
+continue only while their full verification bounds fit. Remaining physical timing,
+supported analytic oracle change and introduced lint are readiness blockers.
+At cutoff preserve exact detached source and report unfinished obligations HOLD.
+
+Terminal01 debug/lint on Stage1 `7eeae6f5` both compile-fail: the controller
+boxed Subproblem payload leaves one historical physical-control pattern expecting
+an unboxed refusal. No test executed. Source remained unchanged. Parent assigns
+only the corresponding pattern correction preserving predicates, the final Dot2
+combined-sum no-term metadata correction, and discriminating real primitive
+site assertions. Prior failed cut remains recoverable in terminal01 receipts.
+After freeze, terminal02 repeats debug/lint; if compilation succeeds, release
+and the already assigned nonphysical boundary checks follow within full bounds.
+
+Terminal02 assignment uses Stage1 `6812b5a232ae4b67d0e3b89688244da93e9cfd28a5d7a54cad562d3fed4ea0b4`
+and physical-control source `2c6a48afbc7a3293a86d4e9bbcb4fabaea34e6072b8994ba9f288288d7ec3e9d`.
+Only the boxed error pattern is adapted in that physical control; its predicates
+and fixed values are preserved. Debug/lint run on this frozen cut; the same
+reviewers inspect metadata and custody. Controls-first omission remains disclosed.
+
+Ran terminal02: debug and release each pass8/8 (release command92.439388s,
+not physical-controller timing); default library check, feature inventory and
+fmt pass. Doctests execute zero tests, so this is compilation/empty-inventory
+evidence only. Strict lint fails: all238 inherited blocks match,64introduced,
+0removed ([source-bearing comparison](artifacts/refinement-terminal-02-lint-comparison.json)).
+No warnings are suppressed or waived. Same correctness approves a final bounded
+control addition for actual TwoSumResult, SplitOutput and shared final-combined
+Accumulation(None,None); all other later stages remain static-only if unselected.
+Parent releases source edit05:23Z only after every prior command ends. Author
+must preserve a controls-only snapshot before new helper body. Terminal03 will
+run debug, release, exact lint, defaultcheck, inventory, fmt and doctests on the
+new frozen cut, each180s; no physical run. Every launch must fit before05:30Z.
+
+05:26Z supported final correction: same correctness finds terminal03's final-add
+control duplicates the metadata mapping outside the actual shared helper. Body
+mapping is statically correct, but this test cannot detect a body-site regression.
+Author prepares one helper owning both the real add and typed refusal, with test
+and actual Dot2 sharing it. Source remains immutable until terminal03 release ends.
+For this last nonphysical verification only, parent prospectively selects120-second
+bounds for debug/release/lint/default/inventory/fmt/doc, based on recent92-second
+release completion and substantially shorter remaining checks. The full bound
+must still fit before05:30Z; latest launch05:28Z. Timeout is a retained failure,
+not retry permission. Physical bounds remain180s. No limit or reserve changes.
+If source or command cannot fit, preserve the unresolved blocker instead.
+
+Terminal04 compile-fails on the author's accidental recursive final-helper
+callee. Same correctness identifies the exact defect. All commands have ended;
+parent performs only the one-callee coordinating correction to the existing
+primitive, preserving the failed095792 source. Source author is idle; reviewer
+capacity prevented its reactivation. Final05 selects45-second bounds only for
+known-short debug/lint/default/inventory/fmt/doc; no release build is selected
+because its observed83–92 seconds no longer fits. This is an explicit final-release
+NOT RUN limitation, never reused as terminal releasePASS. All commands must
+still complete before05:30Z. No further source edits after this frozen correction.
+
+The recorder rejected all final05 launches before execution because45seconds
+no longer fit. Preserve their support assignments; no test result exists. Parent
+selects final06 debug/lint/basic checks with20-second hard bounds based on prior
+6.7-second debug and12.6-second lint runs; timeout is finalFAIL, no retry. Release
+remainsNOT RUN. This selection does not move05:30Z or its1800-second reserve.
+
 ## Fixed compensated-residual prototype — adopted 2026-09-26
 
 **NUMERICAL TWO-CASE PASS; EXECUTION-CADENCE FAIL; CLEAN PROTOTYPE ACCEPTANCE HOLD.**

@@ -1,0 +1,66 @@
+{
+  "artifact": "refinement-correctness-kkt-upward-fix01",
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static; parent-run receipts inspected; no reviewer execution",
+  "scope": "First fix review of ordered-KKT/upward accounting",
+  "reviewed_source": {
+    "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-api-seam-admissions-preedit-6ca737661f9a.rs",
+    "sha256": "6ca737661f9a1ff65d910a990789bf42cbe225b68192cd483da2d51a23b0b1e7"
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "status": "blocking",
+      "location": "reviewed source upward_mul_with_accounting and upward_add_with_accounting zero shortcuts",
+      "finding": "Each literal-zero shortcut increments enclosure_admission even though no scalar/upward operation or result validation executes. This contradicts the new exact guard assertions.",
+      "static_count": {
+        "case_0": {
+          "primitive_calls": 19901,
+          "nonzero_primitives": 3327,
+          "zero_shortcuts": 16574,
+          "asserted_guard_events": 65916,
+          "guard_events_from_reviewed_source": 82490
+        },
+        "case_1": {
+          "primitive_calls": 19900,
+          "nonzero_primitives": 3261,
+          "zero_shortcuts": 16639,
+          "asserted_guard_events": 65781,
+          "guard_events_from_reviewed_source": 82420
+        }
+      },
+      "required_correction": "Remove the zero-shortcut result admission. Retain the two helper operand admissions and the separately executed outer upward_operand admissions. The returned literal zero requires no post-operation validation because no operation occurred."
+    },
+    {
+      "severity": "medium",
+      "status": "blocking",
+      "location": "reviewed source whole_kkt_admission and both release-ratio branches",
+      "finding": "A release-ratio result guard increments only the whole-KKT observation. On an eligible refined face it is actual per-face guard work and must also increment the refinement guard ledger governed by G(m).",
+      "required_correction": "Use the ordinary dual-bookkeeping KKT admission at the ratio result guard. Ratio arithmetic remains existing BVLS02 whole-solve work outside K scalar accounting; this correction only retains the actual guard event."
+    }
+  ],
+  "accepted_fixes": [
+    "The 1827 ordered KKT operations remain incremented before arithmetic and preserve three grouped admissions per operation.",
+    "Initial lambda and repeated h admissions are now counted; retained whole-KKT guard oracle 5503 is correct because neither retained face executes a release ratio.",
+    "Upward multiply/add and next_up operations are incremented before execution, preserving partial refusal work.",
+    "Nonzero arithmetic and next_up results are admitted before validation.",
+    "Outer upward_operand calls and helper operand calls enter the upward guard observation; gamma validation is guard-only and does not alter K scalar accounting.",
+    "Exact executed enclosure oracles 6654 and 6522, scalar totals 58876 and 58744, and the 39816 admission-bound comparison are correct."
+  ],
+  "supersession_note": "This record explicitly corrects any earlier reading that a refined-face release-ratio result guard belonged only to the whole-solve observation. It belongs to both whole-solve guard observation and the eligible-face guard ledger; its arithmetic still does not enter K.",
+  "inspected_parent_receipts": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-accounting-debug02.json",
+      "result": "exit 101 at compilation; zero tests ran; source_unchanged=true. E0502 arose in the separate seam-admission delta, so this receipt supplies no numerical KKT/upward result."
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-lint01.json",
+      "result": "failed amid broad pre-existing lint debt plus current incomplete controller/seam work; it is not green evidence for this tranche."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "A frozen second fix cut and parent-run exact retained controls must verify the two corrections and unchanged numerical bits.",
+    "Seam E(m), refusal metadata, and controller propagation remain separate open scopes."
+  ],
+  "verdict": "BLOCKED on two exact accounting defects; all other reviewed KKT/upward fixes are prospectively acceptable."
+}

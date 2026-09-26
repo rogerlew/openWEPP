@@ -1,0 +1,28 @@
+{
+  "evidence_class": "Static: C1 primitive body/source freeze; no test, numerical calculation, physical command, or target execution by author",
+  "runtime_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source": {
+    "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "sha256": "9150dc93af13a74fc9a1ea7e4b5fa6086ab40ce61c022e66ceb48b3c4fe27178",
+    "patch": "artifacts/bvls03-c1-body01-from-runtime-start.patch",
+    "patch_sha256": "bda8a025a82a768bdd7b13a153b257bcc0e12b8e393a2631dad5ed4d31475d6d"
+  },
+  "scope": "test-scoped non-FMA Dot2 primitive and C1 controls only; no controller/refinement integration, factor reuse, physical evaluator, materialization, or main-worktree edit",
+  "primitive": {
+    "term_count": 22,
+    "order": "source guard, primary product, Split, EFT remainder, TwoSum, q+r, s+(q+r), final p+s",
+    "counters": "actual arithmetic/guard/signed-zero/exceptional-guard counters",
+    "typed_reasons": [
+      "refinement_nonfinite_operand",
+      "refinement_splitter_overflow",
+      "refinement_underflow_to_zero",
+      "refinement_subnormal_intermediate"
+    ],
+    "control_coverage": "all 42 retained rows plus signed-zero leading-product/final-result distinction and real NaN, infinity, input-subnormal, product-subnormal, splitter-overflow, product-overflow, and underflow inputs"
+  },
+  "parent_release_commands": [
+    "cargo nextest run -p openwepp-land-surface-energy m1_trust_region_refinement_dot2_",
+    "cargo test --release -p openwepp-land-surface-energy m1_trust_region_refinement_dot2_"
+  ],
+  "expected_green": "C1 tests compile and pass only after parent releases this exact frozen body; the release command is the compiled non-FMA arithmetic evidence."
+}

@@ -1,0 +1,46 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0599]: no method named `flatten` found for enum `std::option::Option<RefinementObservationTrace>` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:306:14
+    |
+298 |           let prior = REFINEMENT_OBSERVATION
+    |  _____________________-
+299 | |             .try_with(|slot| {
+300 | |                 slot.try_borrow_mut()
+301 | |                     .ok()
+...   |
+305 | |             .flatten()
+306 | |             .flatten();
+    | |             -^^^^^^^ `std::option::Option<RefinementObservationTrace>` is not an iterator
+    | |_____________|
+    |
+    |
+help: call `.into_iter()` first
+    |
+306 |             .into_iter().flatten();
+    |              ++++++++++++
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3463:14
+     |
+3463 |         Self(prior)
+     |         ---- ^^^^^ expected `Option<RefinementRawCandidateMutation>`, found `Option<Option<...>>`
+     |         |
+     |         arguments to this function are incorrect
+     |
+     = note: expected enum `std::option::Option<RefinementRawCandidateMutation>`
+                found enum `std::option::Option<std::option::Option<RefinementRawCandidateMutation>>`
+note: tuple struct defined here
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3450:8
+     |
+3450 | struct RefinementMutationScope(Option<RefinementRawCandidateMutation>);
+     |        ^^^^^^^^^^^^^^^^^^^^^^^
+help: consider using `Option::expect` to unwrap the `std::option::Option<std::option::Option<RefinementRawCandidateMutation>>` value, panicking if the value is an `Option::None`
+     |
+3463 |         Self(prior.expect("REASON"))
+     |                   +++++++++++++++++
+
+Some errors have detailed explanations: E0308, E0599.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

@@ -1,0 +1,73 @@
+{
+  "evidence_class": "Static: revision of prospective authority/control design from accepted correctness findings; no Rust body, runtime mutation, numerical calculation, physical command, or target execution",
+  "status": "PROPOSED — corrected draft awaiting correctness fix verification and independent QA review; no body release",
+  "method_id": "COLD-CANOPY-M1-TR-SVD-BVLS-03",
+  "supersedes_draft": {
+    "authority_sha256": "f639315ebf892d5cb2427935aa83a191b8eeb8c4662e53ef18b1b636b80e896b",
+    "plan_sha256": "d457c98934e2ef276d962acec8cd4b9f5830459adb751d607f2ab843bfa06d03",
+    "preserved_exact_patch": "artifacts/bvls03-authority-draft01-from-base.patch",
+    "preserved_exact_patch_sha256": "7b5468a192e1775fb9946137b8b98148fd8f386f55669e42241f45585dfece30"
+  },
+  "corrected_authority": {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "sha256": "6da7018ad6bb0dadb6cc74bad77754a7942dcade87d73aa8fb2678e18ac4546e",
+    "p0_controller_seam": "Assemble p0 from unchanged active state.p bits plus solution.trace.step in solution.free_ids order. Before crossing/KKT require lambda == 0.0 including signed zero, exact original-box feasibility, exact active-bit preservation, and finite ordered lambda_norm(p0) < input.initial_radius.",
+    "arithmetic_and_refusal": "The amendment now states exact TwoSum/Split/TwoProduct/Dot2 groupings, ordered guards, RefinementScratch, TrustRegionRefinementIndeterminate reason tokens, metadata, and preservation of pre-refinement owning errors.",
+    "work": "R(m)=12306+88*m^2+138*m; K(m)=R(m)+39816; G_r(m)=3*R(m)+252+12*m; G_k=119700. At m=21: 54012 correction arithmetic, 93828 scalar/upward operations, 162540 correction guards, 282240 combined guards per eligible face; 43-face caps are 4034604 scalar/upward and 12136320 guards."
+  },
+  "controls_before_body": [
+    {
+      "stage": "C1",
+      "filter": "m1_trust_region_refinement_dot2_",
+      "scope": "Shared primitive and release-compiled arithmetic.",
+      "assertions": "Independent retained operands establish exact frozen non-FMA outputs and signed zeros; overflow, underflow-to-zero, subnormal, nonfinite, factor-output, and update guards retain typed reasons."
+    },
+    {
+      "stage": "C2",
+      "filter": "m1_trust_region_refinement_retained_face_",
+      "scope": "Actual controller/factor seam using both retained faces.",
+      "assertions": "p0 assembly, factor output, p1, Dot2 r1, p2, active bits, final feasibility, and unchanged BVLS-02 decision are compared with independently supported retained values."
+    },
+    {
+      "stage": "C3",
+      "filter": "m1_trust_region_refinement_scratch_",
+      "scope": "RefinementScratch interface and observed hooks.",
+      "assertions": "An inactive-box-infeasible p1 reaches only second residual/factor application. Physical evaluation, phase, hydraulics, merit, materializer, receipt, and owner counters/arguments remain untouched; final box/radius/active failures return no step."
+    },
+    {
+      "stage": "C4",
+      "filter": "m1_trust_region_refinement_(eligibility|work|restores_nested_budget_scope|ineligible_face_retains_bvls02_crossing)",
+      "scope": "Eligibility partition, monotonic work/cap admission, error scope, and historical-method boundary.",
+      "assertions": "Eligible lambda-zero interior faces refine; nonzero lambda, radius-active, and initially box-infeasible faces retain BVLS-02; no third correction or refinement-refusal fallback exists; denied work is charged before entry; nested budget scope restores exact prior state."
+    }
+  ],
+  "historical_control_handling": {
+    "preserve": [
+      "m1_trust_region_physical_adapter_run_restores_nested_prior_budget_scope",
+      "m1_trust_region_physical_adapter_ordinary_perturbation_refuses_face_pivot_before_materialization"
+    ],
+    "reason": "The first exercises a successful existing controller run rather than refinement refusal restoration. The second asserts the historical BVLS-02 FacePivotLimit and cannot be transformed into a passing BVLS-03 negative oracle.",
+    "replacement": [
+      "m1_trust_region_refinement_restores_nested_budget_scope_on_refusal",
+      "m1_trust_region_refinement_ineligible_face_retains_bvls02_crossing"
+    ],
+    "unchanged_physical_positive": "m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization"
+  },
+  "minimal_detached_write_surfaces": [
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+    "crates/openwepp-land-surface-energy/src/lib.rs (cfg(test) seam only)",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+  ],
+  "source_and_execution_boundary": {
+    "main_rust": "untouched",
+    "runtime": "byte-verified before mutation; no mutation during this authority revision",
+    "post_body_pre_physical": "Exact source/manifest review, release build identity, compiled release primitive control, error/scope restoration, owner-cap accounting, unaffected analytic controls, and materializer custody are mandatory.",
+    "physical_observation": "The later sole required physical control may wrap its existing one observed_result call with release-mode wall/process CPU clocks without another physics invocation."
+  },
+  "remaining_acceptance": [
+    "Same correctness reviewer verifies all five accepted findings on this exact draft.",
+    "Independent QA review identifies and verifies any distinct evidence/cadence finding.",
+    "Parent approves the combined draft before C1–C4 body controls or detached source mutation."
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "as_of_utc": "2026-09-26T03:59:47.200629+00:00",
+  "first_reading_anchor_utc": "2026-09-26T02:00:00+00:00",
+  "hard_deadline_utc": "2026-09-26T06:00:00+00:00",
+  "command_completion_cutoff_utc": "2026-09-26T05:30:00+00:00",
+  "carry_seconds": 350533.959294,
+  "elapsed_all_concurrent_work_and_waits_once_seconds": 7187.200629,
+  "charged_total_seconds": 357721.159923,
+  "ceiling_seconds": 364933.959294,
+  "remaining_to_hard_deadline_seconds": 7212.799371,
+  "reserve_seconds": 1800,
+  "remaining_before_reserve_seconds": 5412.799371,
+  "decision": "CONTINUE",
+  "basis": "Released C1/C2 PASS and independent C2 approval; real C3/C4 corrections supported by source-specific findings; complete work accounting still open. No source-conforming numerical negative, out-of-envelope physics requirement or missing review/source capacity. Same fixed deadline and reserve, no refund/reset.",
+  "next_bounded_work": [
+    "finish strict C3/C4 and minimal cfg fixes",
+    "actual whole-face/whole-controller operation and refusal accounting",
+    "applicable validation and same independent reviewers",
+    "one unchanged required physical-positive only after readiness"
+  ]
+}

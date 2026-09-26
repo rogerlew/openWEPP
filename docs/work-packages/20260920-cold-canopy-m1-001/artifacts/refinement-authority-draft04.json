@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Static: parent small coordinating correction with sole implementer idle; no execution",
+  "authority_sha256": "2db1f366ef1cc8145d44ac9d90eed8c1ac2ac871ac8d503946c8c24bdc174c71",
+  "changes": [
+    "Label39816 enclosure only,1827 KKT separate unchanged",
+    "Explicit parent-dispatched expected-red/green Rust controls allowed at corresponding stage; physical/target wait all stages"
+  ],
+  "prior_authority_sha256": "2e60b5c0257d54f3cf74dc0a2d172844c8f16a996986502e510f2e6d987c5c98",
+  "prior_exact_patch": "refinement-authority-draft03-from-base.patch"
+}

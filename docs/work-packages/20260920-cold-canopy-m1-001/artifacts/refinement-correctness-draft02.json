@@ -1,0 +1,46 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "role": "same independent numerical correctness and authority reviewer",
+  "evidence_class": "Static: exact corrected prospective policy, retained source seam, and accepted evidence inspection; no candidate replay, Python execution, Rust test, physical command, or independent numerical calculation",
+  "reviewed_source": {
+    "authority_path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "authority_sha256": "6da7018ad6bb0dadb6cc74bad77754a7942dcade87d73aa8fb2678e18ac4546e",
+    "draft_artifact_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls03-authority-draft02.json",
+    "draft_artifact_sha256": "be5f5230a1d69d01f2684636f3052966845d8101cdeba6a8900949a54c6888cf",
+    "rejected_draft01_patch_sha256": "7b5468a192e1775fb9946137b8b98148fd8f386f55669e42241f45585dfece30",
+    "retained_dependency_check_sha256": "71611eb6c2d8d9832b86703b79b178c3b7c8ca1d363b5b1c550672a0effcce28"
+  },
+  "verdict": "HOLD — do not release BVLS-03 body",
+  "verified_draft01_fixes": [
+    "p0 is operationally assembled from live active bits and the solved free vector before eligibility, crossing, or KKT; lambda numeric zero includes either signed zero.",
+    "Exact TwoSum, Split, TwoProduct, and Dot2 formulas are now stated, subject to the remaining guard-order finding.",
+    "A private TrustRegionRefinementIndeterminate taxonomy, stable reasons, metadata, and pre-refinement owning-error preservation are specified.",
+    "RefinementScratch is structurally excluded from physical trials, accepted results, and live face state, with actual-hook isolation controls.",
+    "Compiled-release, source/manifest, scope restoration, owner-cap, analytic-control, and materializer-custody obligations are present, subject to corrected staging."
+  ],
+  "findings": [
+    {
+      "severity": "HIGH",
+      "location": "numerical-methods.md:789-810",
+      "finding": "The guard policy contradicts the frozen arithmetic. The stated TwoProduct evaluates x=a*b before Split, while the guard order places splitter work before the primary product. It also calls any nonzero addend producing zero an underflow, which rejects valid exact cancellation admitted by the retained TwoSum/update arithmetic and can change signed-zero behavior.",
+      "required_fix": "Preserve primary-product then Split execution/guard precedence. Refuse zero results as underflow only for a multiplication with two nonzero operands; permit additive exact cancellation to signed zero while still refusing nonfinite or nonzero subnormal results. State the scratch norm predicate explicitly as ordered lambda_norm(p1) <= input.initial_radius."
+    },
+    {
+      "severity": "HIGH",
+      "location": "numerical-methods.md:845-866",
+      "finding": "The finite work admission is undercounted. K(m)=R(m)+39816 omits the retained 1827-operation ordered KKT vector calculation and three newly required 43-operation full-vector lambda_norm calculations for p0, p1, and p2. The combined guard and 43-face caps inherit that omission, and the 252+12*m extra-event bound is not derived.",
+      "required_fix": "Include or explicitly separately cap every KKT and norm operation. On the stated model the per-face scalar/upward maximum is at least R(m)+39816+1827+129, or 95784 at m=21, before checking for other added arithmetic; the corresponding 43-face scalar maximum is at least 4118712. Recompute guard maxima from an auditable event breakdown and retain increment-before-operation/refused-scratch accounting."
+    },
+    {
+      "severity": "HIGH",
+      "location": "numerical-methods.md:868-925",
+      "finding": "The release sentence requires compiled shared-implementation controls before any BVLS-03 body exists. That is impossible and conflicts with the adopted smaller controls-before-corresponding-body stages.",
+      "required_fix": "Specify the executable sequence: reviewed authority; expected-red C1 before primitive body; shared primitive implementation then compiled-release C1 execution/review; expected-red C2-C4 before corresponding controller/refinement body; controller body then C2-C4 execution/review; exact source/manifest review; sole physical launch."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "No BVLS-03 Rust body or controls exist, so reason reachability, scratch isolation, exact factor reuse, work counters, and unchanged ineligible crossing/KKT behavior remain unverified.",
+    "The retained two-face evidence remains fixed-face numerical design evidence only; it does not establish nonlinear or physical success.",
+    "Same-reviewer verification of these three corrections is required before body release."
+  ]
+}

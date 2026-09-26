@@ -1,0 +1,44 @@
+{
+  "artifact": "refinement-correctness-terminal",
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static final-source correctness review plus read-only receipt inspection; no execution by reviewer",
+  "final_reviewed_source": {
+    "stage1_sha256": "32f0d14950e22ede0b446326b9b185ce22905c99035a30acde512d1281dae9da",
+    "stage1_preedit_sha256": "095792b63908f6eaf4061d684fce883e53f53d5438b02e0ca7b74c9ec763dd77",
+    "stage1_preedit_copy": "refinement-final-add-preedit-095792b63908.rs",
+    "controller_sha256": "27a508152f81525615cb3e286023eeb81daa4227cc7f781e8ea8e4d7e95a1d4f",
+    "lib_sha256": "ef6850425e91b82150db17d587c3dc8807fe976867ee68594ea154e3b82692ac",
+    "m1_coupled_tests_sha256": "2c6a48afbc7a3293a86d4e9bbcb4fabaea34e6072b8994ba9f288288d7ec3e9d"
+  },
+  "findings": [],
+  "verified_static_properties": [
+    "The final one-callee correction makes refinement_dot2_final_add call refinement_dot2_add exactly once and then map the actual primitive failure to Accumulation with term and coordinate None.",
+    "The complete Dot2 body and its direct representative control call the same final-add helper, so the control no longer duplicates or manufactures the metadata mapping.",
+    "Source-term, source-weight, primary-product, splitter-product, split-output, EFT-remainder, TwoSum-result, TwoSum-remainder, per-term accumulation, and final accumulation sites carry typed stages; augmented term and coordinate are attached where applicable and the outer second-residual loop attaches the row.",
+    "The representative controls exercise real shared SourceTerm, SourceWeight, PrimaryProduct, SplitterProduct, SplitOutput, TwoSumResult, and final Accumulation paths. Final accumulation asserts term and coordinate None.",
+    "The actual FinalBox, ScratchRadius, and ActiveValue C3 mutations retain their reviewed reason, correction position, stage, coordinate, masks, lambda, radii, scratch-box status, unchanged-state, hook, and restored-budget assertions.",
+    "Original trust radius is bound to the captured input initial radius and reduced face radius is bound to the actual operation/FaceSolution radius.",
+    "The p0-subnormal partial refusal asserts the canonical boxed work record: 69 scalar operations, 203 guard events, 26 first-residual operations, one attempted entry, zero denied entries, and zero second-residual, factor-application, and coordinate-update operations.",
+    "The controller boxes the existing Stage1 refusal only after absorbing its canonical boxed work record and returns the same typed error owner. The corrected m1_coupled test consumer dereferences that box without weakening its predicates.",
+    "The ten stable refinement reasons are typed. Compatibility text is derived from the typed reason, and metadata contains no duplicated work totals."
+  ],
+  "residual_static_risk": [
+    "EftRemainder, TwoSumRemainder, and per-term Accumulation metadata mappings are statically inspected but have no dedicated discriminating execution control. They are unselected/untested paths, not proved unreachable paths and not universal guard-stage coverage.",
+    "The retained control has equal original and reduced radius bits. Distinct source expressions are now asserted, but the retained numeric case does not distinguish swapped equal-valued fields.",
+    "The main metadata controls and body lacked a chronological controls-only snapshot. The later-stage controls have an authentic pre-body snapshot at refinement-dot2-later-controls-prebody.rs SHA-256 7ddab4e77c0cbc8eee34123217f6a7d63e8bfb7162bf329a3be3b32321e044aa; that does not retroactively establish chronology for the earlier metadata tranche."
+  ],
+  "validation_evidence_and_limits": {
+    "last_passing_nonfinal_cut": "The bddfdd000d356d72cf73fe9d86b77d22cedc4513f831341c67e9b5ee04a0ff cut passed the recorded terminal03 debug and release selections, 9/9 each. Those results do not transfer to the final 32f0d149 exact source.",
+    "rejected_intermediate": "The 095792b63908f6eaf4061d684fce883e53f53d5438b02e0ca7b74c9ec763dd77 cut failed terminal04 debug and release compilation before tests because refinement_dot2_final_add called itself with the wrong error type. It is preserved as refinement-final-add-preedit-095792b63908.rs.",
+    "final_source": "The final05 and final06 recorder launches were rejected before execution because their full declared bounds did not fit before the command cutoff. Support records exist, but there are no receipts and no compile, test, lint, release, default, inventory, format, or documentation result for the final 32f0d149 source.",
+    "lint": "The prior exact lint classification retained 64 introduced diagnostics and 238 matched diagnostics. The final source has no exact lint receipt.",
+    "physical": "No physical or target execution is covered by this review."
+  },
+  "remaining_package_blockers": [
+    "Run and retain exact-source debug and release controls for 32f0d149, plus the applicable final default, inventory, format, documentation, and requirements checks.",
+    "Resolve or disposition the 64 introduced lint diagnostics on an exact frozen source and retain its receipt.",
+    "Complete the separately authorized physical original60/coordinate-20 control, whole-solve work and closure evidence, and the package timing/oracle/final-release obligations."
+  ],
+  "source_correctness_verdict": "STATIC_PASS_NO_REMAINING_SOURCE_BLOCKER",
+  "package_disposition": "HOLD: final exact source is unvalidated and physical, lint, timing/oracle, and terminal release requirements remain incomplete."
+}

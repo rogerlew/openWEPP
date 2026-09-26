@@ -1,0 +1,93 @@
+{
+  "schema": "openwepp.refinement-correctness.c3-c4-debug04-fixreview.v1",
+  "evidence_class": "Static: frozen-source and parent-run receipt inspection; reviewer performed no build, test, candidate replay, numerical execution, physical run, or target run",
+  "reviewer": "/root/refinement_correctness",
+  "scope": "C3/C4 fixes only; whole-work accounting remains separately blocked and was not re-audited",
+  "disposition": "BLOCKED_PENDING_C3_C4_CONTROL_CORRECTIONS",
+  "source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "sha256": "dfd64eba787e6c9d334ff91f7dbccd7e0dbab0f55fbb4f90a23186ff2ba359bd",
+    "stable_during_review": true
+  },
+  "parent_supplied_debug04": {
+    "receipt": "refinement-c1-c4-debug04.json",
+    "receipt_sha256": "fa4731d968266e0e57b417829aa339d95bd740d65686af5f8f602cb45b0b259e",
+    "exit_code": 0,
+    "elapsed_seconds": 13.459407404996455,
+    "tests_run": 6,
+    "tests_passed": 6,
+    "tests_skipped": 358,
+    "test_runtime_seconds": 0.163,
+    "source_unchanged": true,
+    "observer_base_unchanged": true,
+    "pinned_files_unchanged": true
+  },
+  "verified_fixes": [
+    "The refinement wrapper records live state before and after the inner result, including Err.",
+    "The raw retained-face helper now takes the Err observation trace before returning.",
+    "Actual nested physical-budget snapshots are attached on both Ok and Err, and the positive C3 test requires a nondefault Some snapshot with before/after equality.",
+    "The exact accepted-owner binding remains an Option in the real global snapshot; direct phase-selection and frozen-merit counters remain connected to their actual entry points.",
+    "A shared C4 outcome function now contains activate_first_crossing before KKT and distinguishes crossing, KKT return/transition, and refusal labels."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "C4-REAL-CROSSING",
+      "paths": [
+        "m1_trust_region_stage1.rs:3849-3876",
+        "m1_trust_region_stage1.rs:3880-3936"
+      ],
+      "finding": "Both callers copy solution.trace.step into state.p before invoking the shared outcome function. activate_first_crossing therefore receives previous_p equal to the candidate. The outside-box probe does not exercise the ordinary face-start-to-candidate crossing and can instead refuse on its zero denominator.",
+      "required_correction": "Remove both pre-copy loops. Pass the unchanged face-start state directly to refinement_bvls02_face_outcome; activate_first_crossing owns candidate installation and crossing interpolation. Explicitly assert that the outside-box probe produces crossing before KKT and changes the expected active mask/coordinate."
+    },
+    {
+      "severity": "high",
+      "id": "C4-TYPED-OUTCOME",
+      "paths": [
+        "m1_trust_region_stage1.rs:3741-3807",
+        "m1_trust_region_stage1.rs:3811-3826",
+        "m1_trust_region_stage1.rs:6581-6609"
+      ],
+      "finding": "The outcome lacks the typed refusal kind and crossing-selected coordinate/action. Existing reason and coordinate fields are dropped when constructing RefinementEligibilityObservation and are never asserted. The test compares only label, masks, and work, so the added typed fields do not constrain behavior.",
+      "required_correction": "Carry one complete comparable outcome through the observation: action/disposition, typed refusal kind, reason, coordinate, actual work, and before/after masks. Compare the complete baseline and observed outcome for each ineligible probe. Build/compare no BVLS-02 baseline obligation for eligible signed-zero probes."
+    },
+    {
+      "severity": "high",
+      "id": "C4-CAP-COUNTERS",
+      "paths": [
+        "m1_trust_region_stage1.rs:3211-3300",
+        "m1_trust_region_stage1.rs:3341-3382",
+        "m1_trust_region_stage1.rs:6616-6644"
+      ],
+      "finding": "The one-less-cap test asserts denied_entry_executed_scalar_operations and denied_entry_executed_guard_events as zero, but those fields are never populated after their factory-zero initialization. corrections and factor_applications are likewise assigned literal zero. The nested_budget equality still compares legacy copied scalar values rather than the attached physical budget snapshots.",
+      "required_correction": "Populate denial body-entry/executed-work and correction/factor observations from an actual ledger or trace boundary and assert them. Retain actual attempted, denied, dimension-derived required work, and eligibility deltas. Replace the legacy nested_budget assertion with budget_before/budget_after both Some, equal, and nondefault."
+    },
+    {
+      "severity": "high",
+      "id": "C3-TRACE-DISCRIMINATION",
+      "paths": [
+        "m1_trust_region_stage1.rs:3347-3382",
+        "m1_trust_region_stage1.rs:3406-3408",
+        "m1_trust_region_stage1.rs:6567-6577"
+      ],
+      "finding": "Err trace extraction remains optional and each live-state endpoint falls back to state.p. If the error trace or either endpoint disappears, the negative equality still passes with copied equal state. Positive observation assembly has the same fallback weakness.",
+      "required_correction": "Require the observation trace and both live-state endpoints in the test adapter. Store/assert actual Some values without state.p fallback, on both positive and negative paths."
+    },
+    {
+      "severity": "medium",
+      "id": "C3-FULL-GLOBAL",
+      "paths": [
+        "m1_trust_region_stage1.rs:3566-3600",
+        "m1_trust_region_stage1.rs:6482-6518",
+        "m1_trust_region_stage1.rs:6567-6577"
+      ],
+      "finding": "The positive test compares selected global fields instead of the complete global snapshot, leaving its separate work and ambient-budget fields unasserted. The negative test compares Option snapshots but does not require either side to be Some, so None==None would pass. Negative budget equality also lacks the positive test's nondefault check.",
+      "required_correction": "For the positive path, assert complete global_before==global_after. For every negative, require both global snapshots Some and compare their unwrapped values; require the attached budget snapshot Some, equal, and nondefault."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "The passing debug04 result demonstrates compilation and current assertions only; the listed tautologies and bypass prevent C3/C4 acceptance.",
+    "Typed-refusal work remains dependent on the separate whole-work accounting repair; do not fabricate zero for a partially executed KKT/enclosure refusal.",
+    "No physical-source or target execution is approved."
+  ]
+}

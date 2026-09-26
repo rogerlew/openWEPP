@@ -1,0 +1,42 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0609]: no field `values` on type `Result<KktTransitionOutcome, M1TrustRegionSubproblemRefusal>`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3383:34
+     |
+3383 |     let bvls02_pass = transition.values.is_some();
+     |                                  ^^^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+3383 |     let bvls02_pass = transition.unwrap().values.is_some();
+     |                                  +++++++++
+
+error[E0609]: no field `observation` on type `Result<KktTransitionOutcome, M1TrustRegionSubproblemRefusal>`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3384:33
+     |
+3384 |     let optimality = transition.observation;
+     |                                 ^^^^^^^^^^^ unknown field
+     |
+help: one of the expressions' fields has a field of the same name
+     |
+3384 |     let optimality = transition.unwrap().observation;
+     |                                 +++++++++
+
+warning: unused variable: `lower_before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3890:9
+     |
+3890 |     let lower_before = state.lower_active.to_vec();
+     |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_lower_before`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `upper_before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3891:9
+     |
+3891 |     let upper_before = state.upper_active.to_vec();
+     |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_upper_before`
+
+For more information about this error, try `rustc --explain E0609`.
+warning: `openwepp-land-surface-energy` (lib test) generated 2 warnings
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors; 2 warnings emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

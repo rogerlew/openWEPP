@@ -1,0 +1,65 @@
+{
+  "artifact": "refinement-correctness-controller-controls01",
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static prospective control review; parent expected-red receipt inspected; no reviewer execution",
+  "scope": "BVLS03 controller whole-work aggregation and observation-hook expected-red controls, plus same-reviewer seam fix check",
+  "reviewed_sources": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-api-controls-review-preedit-stage1-940738f77b10.rs",
+      "sha256": "940738f77b102d552590b7b21e11e3177210596e7e0f45358f6a848bdfc21119"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-api-controls-review-preedit-stage2-f9f95b3c6ff3.rs",
+      "sha256": "f9f95b3c6ff357d6901361b979f417120a3b6ece96d6ba25a440f146c5673514"
+    }
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "status": "blocking before controller body",
+      "location": "m1_trust_region_refinement_controller_accounting_observes_all_solves_and_errors",
+      "finding": "The proposed WorkObservation can pass with only stage1_calls and entered_svd_factorizations, leaving the required whole-work categories untested.",
+      "required_correction": "Define and assert the complete approved snapshot: stage1 calls, entered SVD factorizations, seed-excluded completed Jacobi sweeps, completed face pivots, whole KKT operations/guards, upward-enclosure operations/guards, refinement scalar/guard work, and refinement attempted/denied entries. Keep categories separate; do not publish an overlapping grand total."
+    },
+    {
+      "severity": "high",
+      "status": "blocking before controller body",
+      "location": "PhaseChanged and PhaseFinalSelectionError branches",
+      "finding": "The control checks only two counters, so an error path could retain call count while discarding all substantive first/second-solve work.",
+      "required_correction": "Assert full snapshot equality between PhaseChanged and PhaseFinalSelectionError: they execute identical predictor and reassembled Stage1 solves before the latter fails at the third phase selection. Assert nonzero discriminating categories as well as calls/factorizations."
+    },
+    {
+      "severity": "high",
+      "status": "blocking before controller body",
+      "location": "missing partial Stage1 failure branch",
+      "finding": "PhaseFinalSelectionError proves preservation of prior successful work but not partial work from a failed Stage1 solve.",
+      "required_correction": "Add a PhaseChanged variant whose selected-phase Jacobian is the zero matrix. Assert the second solve returns the unchanged typed Subproblem(RankDeficient), hook once, calls2/factorizations2/sweeps2, and the same KKT/enclosure/refinement/pivot categories as an actual PhaseUnchanged one-solve baseline. The zero second factorization contributes exactly one seed-excluded Jacobi sweep and no KKT/enclosure/refinement/pivot work."
+    },
+    {
+      "severity": "medium",
+      "status": "blocking before controller body",
+      "location": "ExactRoot branch",
+      "finding": "Only hook vector length is asserted; the hook could receive a default or last-proposal snapshot.",
+      "required_correction": "Retain the returned run and compare the full hook snapshot with all corresponding legacy run aggregates, plus the expected Stage1 call/proposal relationship and nonzero factor/sweep work. Keep exactly one hook invocation for the whole run. Initialization failure default-once is otherwise adequate."
+    },
+    {
+      "severity": "high",
+      "status": "blocking seam fix",
+      "location": "Stage1 p2 second coordinate-update loop",
+      "finding": "The added p2 seam guard executes before each second correction update, so a failed update is charged final-p2 work before the final vector exists.",
+      "required_correction": "Move the m guard/equality admissions to the final ordered solution.trace.step installation after p2 box, active, norm, and radius admission."
+    }
+  ],
+  "accepted_controls_and_fixes": [
+    "PhaseChanged and PhaseFinalSelectionError each reach two Stage1 solves in the existing controller call graph.",
+    "Initialization evaluation failure occurs before state construction and should invoke the final hook once with the default snapshot.",
+    "ExactRoot is an appropriate successful run-level case for proving that internal transitions do not invoke the final hook repeatedly.",
+    "The p0 scalar-to-two-guard correction matches p0 assembly/equality semantics and restores K scalar accounting."
+  ],
+  "expected_red_evidence": {
+    "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-controller-controls-red01.json",
+    "result": "exit101 at compilation after 11.003925 seconds; missing WorkObservation type and nine missing fixture-field references; source unchanged; no tests ran",
+    "classification": "valid expected-red API absence only; not controller-body evidence"
+  },
+  "verdict": "NO-GO for controller body until the four control gaps and p2 seam placement are corrected."
+}

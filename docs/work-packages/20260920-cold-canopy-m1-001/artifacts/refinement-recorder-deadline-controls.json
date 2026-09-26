@@ -1,0 +1,43 @@
+{
+  "evidence_class": "Ran: five direct bound controls; no command/physical launch",
+  "recorder_sha256": "fbf5224227eaecab388baccec1a32652b469f64390dee9c69ec2a242c3c3951b",
+  "deadline_utc": "2026-09-26T06:00:00+00:00",
+  "cases": [
+    {
+      "bound": 180,
+      "remaining_after_reserve": 180,
+      "physical": true,
+      "admitted": true,
+      "reason": null
+    },
+    {
+      "bound": 180,
+      "remaining_after_reserve": 179.999,
+      "physical": true,
+      "admitted": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "bound": 181,
+      "remaining_after_reserve": 1000,
+      "physical": true,
+      "admitted": false,
+      "reason": "Physical command declared bound exceeds 180 seconds"
+    },
+    {
+      "bound": 180,
+      "remaining_after_reserve": -1,
+      "physical": true,
+      "admitted": false,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "bound": 10,
+      "remaining_after_reserve": 10,
+      "physical": false,
+      "admitted": true,
+      "reason": null
+    }
+  ],
+  "change": "Only authorized hard deadline; semantics/caps unchanged"
+}

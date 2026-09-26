@@ -1,0 +1,33 @@
+{
+  "evidence_class": "Static: current detached-source reachability, manifest, package-plan, and custody inspection; no compile, test, candidate replay, numerical calculation, or physical command",
+  "reviewer": "/root/refinement_qa",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "scope": "Current test-only reachability and prospective validation-plan applicability during API/control authoring",
+  "current_source_files_sha256": {
+    "crates/openwepp-land-surface-energy/src/lib.rs": "469ff7f7e84553d2adfc6606b60c316142cefbb0a5548f3db91d4bfea0088a39",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "0edca20147729ef1b3e1b5ce714ba697c6403b1fee77fbcaefad151c39840ed8",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "f884366db7bc75f044004eaa6b6518da9758d138f28a81d35b355b533ecdba61",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs": "71909479292b9470f8f6b13449709fddd570de32ecf45548ad0f249ad7b4c5bf",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "b9f5fa46ba58b255c18cd316a4c886ba40526fe51a6ced2d80d3ca747400946e"
+  },
+  "manifest_custody": {
+    "Cargo.toml": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+    "Cargo.lock": "8251b64a248cd65f2be01962cdc64c44c4b486ac253a00875dfae55c105d5534",
+    "crates/openwepp-land-surface-energy/Cargo.toml": "efcb09d71cca3a756538ef5700ed73550068df680d5b3aab9ec0983dce662e8f",
+    "comparison": "These detached manifest bytes equal the corresponding entries in refinement-body-working01-source.json."
+  },
+  "reachability": {
+    "finding": "Current controller and controller-interface modules are cfg(all(test, any(m1 trust-region stage feature))); Stage1 and m1_coupled_tests are cfg(test). The BVLS-03 symbols inspected are consequently unavailable to normal production or feature-enabled non-test builds.",
+    "critical_trigger": "NOT OBSERVED in the inspected detached source. No manifest, lockfile, toolchain, runner, production selector, public API, physical predicate, or target-custody change was observed."
+  },
+  "validation_plan": {
+    "status": "APPLICABLE",
+    "required_before_physical": [
+      "Current-source format, default reachability, feature inventory, C1-C4 debug and release controls, retained analytic/custody controls, strict 238-block Clippy attribution, doctests, documentation/source scans, and terminal reachability diff.",
+      "Cargo deny if any manifest, lockfile, toolchain, or resolution input changes.",
+      "Exact source/manifest review, release build identity, and both independent reviews before the sole unchanged physical-positive control."
+    ],
+    "cadence": "Fixed deadline 06:00Z, completion cutoff 05:30Z, and 1800-second reserve remain applicable; a 180-second command must start by 05:27Z and the unselected conditional 900-second Critical command by 05:15Z."
+  },
+  "limitation": "The detached source is actively changing during implementation and is not a terminal review cut. These file hashes establish only this read-time observation; final body/custody review must rehash the exact frozen source, manifests, command inputs, and generated receipts."
+}

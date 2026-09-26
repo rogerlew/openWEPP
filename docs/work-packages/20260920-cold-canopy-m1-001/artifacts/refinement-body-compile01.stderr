@@ -1,0 +1,290 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0432]: unresolved imports `super::RefinementEligibilityProbe`, `super::m1_trust_region_bvls02_outcome_for_test`, `super::m1_trust_region_refinement_eligibility_for_test`, `super::m1_trust_region_refinement_scratch_hooks_for_test`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5689:9
+     |
+5689 |         RefinementEligibilityProbe, RefinementRawCandidateMutation, RefinementWorkReservation,
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ no `RefinementEligibilityProbe` in `m1_trust_region_stage1`
+5690 |         m1_trust_region_bvls02_outcome_for_test, m1_trust_region_refinement_eligibility_for_test,
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_refinement_eligibility_for_test` in `m1_trust_region_stage1`
+     |         |
+     |         no `m1_trust_region_bvls02_outcome_for_test` in `m1_trust_region_stage1`
+5691 |         m1_trust_region_refinement_retained_face_for_test,
+5692 |         m1_trust_region_refinement_scratch_hooks_for_test,
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_refinement_scratch_hooks_for_test` in `m1_trust_region_stage1`
+     |
+help: a similar name exists in the module
+     |
+5690 -         m1_trust_region_bvls02_outcome_for_test, m1_trust_region_refinement_eligibility_for_test,
+5690 +         m1_trust_region_solve_subproblem_for_test, m1_trust_region_refinement_eligibility_for_test,
+     |
+help: a similar name exists in the module
+     |
+5690 -         m1_trust_region_bvls02_outcome_for_test, m1_trust_region_refinement_eligibility_for_test,
+5690 +         m1_trust_region_bvls02_outcome_for_test, m1_trust_region_refinement_dot2_for_test,
+     |
+help: a similar name exists in the module
+     |
+5692 -         m1_trust_region_refinement_scratch_hooks_for_test,
+5692 +         m1_trust_region_refinement_retained_face_for_test,
+     |
+
+error[E0277]: can't compare `[bool; 21]` with `Vec<bool>`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5833:13
+     |
+5833 | /             assert_eq!(
+5834 | |                 observed.lower_mask_p0,
+5835 | |                 mask(&capture["operations"][1]["lower_before"])
+5836 | |             );
+     | |_____________^ no implementation for `[bool; 21] == Vec<bool>`
+     |
+     = help: the trait `PartialEq<Vec<bool>>` is not implemented for `[bool; 21]`
+
+error[E0277]: can't compare `[bool; 21]` with `Vec<bool>`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5837:13
+     |
+5837 | /             assert_eq!(
+5838 | |                 observed.upper_mask_p0,
+5839 | |                 mask(&capture["operations"][1]["upper_before"])
+5840 | |             );
+     | |_____________^ no implementation for `[bool; 21] == Vec<bool>`
+     |
+     = help: the trait `PartialEq<Vec<bool>>` is not implemented for `[bool; 21]`
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3512:41
+     |
+3512 |     let p0_norm = lambda_norm(&p0, Some(&mut state.refinement_work))
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0594]: cannot assign to `state.refinement_work.attempted_entries`, which is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3518:5
+     |
+3518 |     state.refinement_work.attempted_entries += 1;
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be written to
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0594]: cannot assign to `state.refinement_work.denied_entries`, which is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3527:9
+     |
+3527 |         state.refinement_work.denied_entries += 1;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be written to
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3544:13
+     |
+3544 |             state.refinement_work.absorb_dot2(counters);
+     |             ^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0594]: cannot assign to `state.refinement_work.first_residual_operations`, which is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3545:13
+     |
+3545 |             state.refinement_work.first_residual_operations += u64::from(counters.arithmetic);
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be written to
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3549:13
+     |
+3549 |             state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |             ^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3563:60
+     |
+3563 |     let delta0 = lambda_step(factor, &residual0, 0.0, Some(&mut state.refinement_work))
+     |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0594]: cannot assign to `state.refinement_work.factor_application_operations`, which is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3570:5
+     |
+3570 | /     state.refinement_work.factor_application_operations +=
+3571 | |         state.refinement_work.scalar_operations - factor_before;
+     | |_______________________________________________________________^ `state` is a `&` reference, so it cannot be written to
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3586:9
+     |
+3586 |         state.refinement_work.scalar();
+     |         ^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3587:9
+     |
+3587 |         state.refinement_work.guard();
+     |         ^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0594]: cannot assign to `state.refinement_work.coordinate_update_operations`, which is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3588:9
+     |
+3588 |         state.refinement_work.coordinate_update_operations += 1;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be written to
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3609:49
+     |
+3609 |     let p1_norm = lambda_norm(&scratch.p1, Some(&mut state.refinement_work))
+     |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3620:13
+     |
+3620 |             state.refinement_work.absorb_dot2(counters);
+     |             ^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0594]: cannot assign to `state.refinement_work.second_dot2_operations`, which is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3621:13
+     |
+3621 |             state.refinement_work.second_dot2_operations += u64::from(counters.arithmetic);
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be written to
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3625:13
+     |
+3625 |             state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |             ^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3641:60
+     |
+3641 |     let delta1 = lambda_step(factor, &residual1, 0.0, Some(&mut state.refinement_work))
+     |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0594]: cannot assign to `state.refinement_work.factor_application_operations`, which is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3648:5
+     |
+3648 | /     state.refinement_work.factor_application_operations +=
+3649 | |         state.refinement_work.scalar_operations - factor_before;
+     | |_______________________________________________________________^ `state` is a `&` reference, so it cannot be written to
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3664:9
+     |
+3664 |         state.refinement_work.scalar();
+     |         ^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3665:9
+     |
+3665 |         state.refinement_work.guard();
+     |         ^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0594]: cannot assign to `state.refinement_work.coordinate_update_operations`, which is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3666:9
+     |
+3666 |         state.refinement_work.coordinate_update_operations += 1;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be written to
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+error[E0596]: cannot borrow `state.refinement_work` as mutable, as it is behind a `&` reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3689:41
+     |
+3689 |     let p2_norm = lambda_norm(&p2, Some(&mut state.refinement_work))
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^ `state` is a `&` reference, so it cannot be borrowed as mutable
+     |
+help: consider changing this to be a mutable reference
+     |
+3498 |     state: &mut SubproblemState,
+     |             +++
+
+Some errors have detailed explanations: E0277, E0432, E0594, E0596.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 24 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

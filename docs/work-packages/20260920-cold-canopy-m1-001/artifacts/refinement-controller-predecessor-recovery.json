@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: fresh observer copy plus recorded red02 patch, full inventory/hash verification",
+  "recorded_utc": "2026-09-26T04:49:46.727855+00:00",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-controller-predecessor-20260926",
+  "patch": "refinement-controller-controls-red02-from-observer-cut02.patch",
+  "patch_sha256": "877cba4567a88523bdf3ff8332804de7a942edd944c5ec19fbdf1849f247f7c8",
+  "source_receipt": "refinement-controller-controls-red02-source.json",
+  "all_entry_hashes_equal": true,
+  "entry_count": 764,
+  "m1_coupled_exact_predecessor": "61b5021dae597d70bea69262fb269f61c82694a085d46f213f4df45a1b13e715",
+  "expected_m1_coupled_predecessor": "61b5021dae597d70bea69262fb269f61c82694a085d46f213f4df45a1b13e715",
+  "exact_preedit_artifact": "refinement-controller-m1-coupled-exact-preedit.rs",
+  "custody_deviation": "Author did not capture live pre-edit file; its labeled reconstructed preedit was not exact. This verified reconstruction, not that file, recovers the predecessor. Prior failed reconstruction retained."
+}

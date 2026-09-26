@@ -1,0 +1,68 @@
+{
+  "schema": "openwepp.refinement-correctness.accounting-propagation-plan.v1",
+  "evidence_class": "Static: retained C4 cut plus current controller/interface/lib/physical-adapter source inspection; no build, test, candidate replay, numerical execution, physical run, target run, or source edit",
+  "reviewer": "/root/refinement_correctness",
+  "scope": "C4 typed-kind verification, minimal controller success/failure accounting propagation, refinement-refusal metadata, and guard-event grouping",
+  "c4_kind_fix": {
+    "disposition": "PASS",
+    "source": "refinement-api-whole-ledger-preedit-bc8af8a73dcf.rs",
+    "sha256": "bc8af8a73dcf15553fbb6a9e9476029c18fc4f5e9d27f7894deae87f96b2f497",
+    "evidence": "RefinementBvls02Outcome includes kind: Option<M1TrustRegionRefusalKind>; crossing and success set None; both refusal arms set Some(refusal.kind); the ineligible control compares the complete outcome structure."
+  },
+  "controller_sources": [
+    {
+      "path": "m1_trust_region_controller.rs",
+      "sha256": "f884366db7bc75f044004eaa6b6518da9758d138f28a81d35b355b533ecdba61"
+    },
+    {
+      "path": "m1_trust_region_controller_interface.rs",
+      "sha256": "71909479292b9470f8f6b13449709fddd570de32ecf45548ad0f249ad7b4c5bf"
+    },
+    {
+      "path": "lib.rs",
+      "sha256": "469ff7f7e84553d2adfc6606b60c316142cefbb0a5548f3db91d4bfea0088a39"
+    },
+    {
+      "path": "solver_covered_evaluation/m1_coupled.rs",
+      "sha256": "61b5021dae597d70bea69262fb269f61c82694a085d46f213f4df45a1b13e715"
+    }
+  ],
+  "controller_findings": [
+    "ControllerRun sums only successful proposal_trace observations. A failing transition returns through ?, losing all earlier successful proposal accounting from the returned value.",
+    "A successful Stage1 solve can be followed by phase, evaluator, hydraulic, merit, materialization, or numerical failure before a transition is pushed; its accounting is then lost.",
+    "phase_model can execute both a predictor subproblem and a reassembled subproblem. The returned transition retains only the final model observation, so proposal_trace also undercounts successful runs.",
+    "The physical adapter installs controller_run only on success and its run observation omits all refinement and whole-KKT/enclosure counters."
+  ],
+  "minimal_controller_augmentation": [
+    "Add one shared accounting value to FoundationState. It contains the refinement-cap counters and the distinct whole-solve KKT/enclosure counters; do not derive a unique total by adding overlapping domains.",
+    "Make solve_proposal/proposal_model mutable. Immediately after solve_subproblem returns, absorb an Ok observation or Err refusal into FoundationState accounting before any predicted-reduction, phase, evaluator, or materialization work. This records predictor and reassembled solves independently.",
+    "On Stage1 Err, absorb the partial refusal accounting and return the unchanged M1TrustRegionControllerError::Subproblem owner. On Stage1 Ok, absorb accounting before continuing and retain the ordinary observation for behavior.",
+    "At controller entry boundaries, wrap failure as { source: M1TrustRegionControllerError<E>, accounting }. The source enum remains unchanged and inspectable. Initialization failures carry zero accounting; transition, post-update, and reassembly failures carry the current FoundationState accounting. Apply the same rule to the single-transition test seam.",
+    "On success, populate M1TrustRegionControllerRun from FoundationState accounting rather than proposal_trace sums. Keep proposal_trace as behavioral trace only; do not fabricate a failed transition.",
+    "Augment the existing physical adapter observation with the same accounting value. Explicitly match controller Ok/Err, store accounting on both paths, and return the unchanged source inside the failure wrapper. Preserve the existing final budget snapshot behavior."
+  ],
+  "refinement_refusal_metadata_gap": {
+    "current_gap": "M1TrustRegionSubproblemRefusal has generic kind, overloaded optimality reason/coordinate/radius/lambda, and four refinement totals. refinement_refusal sets only optimality_reason. It cannot identify correction position, guarded primitive stage, exact coordinate context, masks, face radii, or rejected p1 box status.",
+    "minimal_record": [
+      "Add optional typed refinement metadata only for TrustRegionRefinementIndeterminate; all non-refinement refusals keep None and their current owner kind.",
+      "Retain the stable refinement reason without reusing an optimality-only label.",
+      "Record correction_position as Option<1|2>; use None for eligibility work before correction 1.",
+      "Record a guarded-stage enum: source operand, primary product, splitter product, split output, EFT remainder, TwoSum result, TwoSum remainder, accumulation, factor output, coordinate update, active value, box check, or radius check.",
+      "Record coordinate when applicable and residual row/term indices for residual/Dot2 failures so the actual guard site is attributable.",
+      "Record original lower/upper active masks, lambda, input trust radius, reduced face radius when distinct, and p1 scratch-box-feasible as Option<bool> once p1 exists.",
+      "Attach the same shared accounting snapshot. Construct metadata at the actual guard site and propagate it; do not infer stage or coordinate later from the stable reason string."
+    ]
+  },
+  "guard_event_grouping": {
+    "verdict": "One event per semantic operand/result admission, not one per boolean predicate.",
+    "rules": [
+      "A binary operation has at most three guard events: left operand admission, right operand admission, and rounded-result admission.",
+      "Finite, zero-underflow, and subnormal tests within one result admission are alternative classifications of that one event.",
+      "A unary operation has at most operand and result admissions. A source reused by a later operation is admitted again for that later operation.",
+      "Dot2 exceptional_guards is a diagnostic subset/tag of a guard already present in total guards; it is not added again.",
+      "p0/p1/p2 seam events follow the fixed E(m) semantic checks; individual boolean clauses do not create extra events."
+    ],
+    "reason": "This preserves the accepted G(m)=3*K(m)+E(m) bound while still counting every guarded source/result stage."
+  },
+  "residual_review_obligation": "Review the frozen implementation for immediate absorption of every Stage1 result, predictor plus reassembled solve coverage, prior-plus-current failure totals, exact owner preservation, physical observation on Err, and full typed refinement metadata."
+}

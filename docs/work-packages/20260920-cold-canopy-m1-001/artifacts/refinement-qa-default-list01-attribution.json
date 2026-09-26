@@ -1,0 +1,64 @@
+{
+  "evidence_class": "Static: inspected supplied default-libtest receipt, stderr, preserved patches, and the failed-run source receipt; reviewer ran no command",
+  "reviewer": "/root/refinement_qa",
+  "scope": "Attribution and minimal cfg repair for refinement-default-list01 only; no production, authority-suite, manifest, or numerical behavior review.",
+  "failed_control": {
+    "receipt": "refinement-default-list01.json",
+    "receipt_sha256": "b34e256c25a9ddf6bf113291827c2f51043e13f36288966c69158897f3aecc7d",
+    "stderr": "refinement-default-list01.stderr",
+    "stderr_sha256": "3b337632cc8db09f6e0fce29633bcb64b22d2a4221b4931d9329bdf6c00d02dc",
+    "source_tree_sha256": "3fc9988fcd35b58e8344711e5d5b920d3a753a62c221abb13a4aa281de8ad084",
+    "exit_code": 101,
+    "tests_executed": 0,
+    "physical": false,
+    "source_unchanged": true,
+    "failed_source_sha256": {
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "dfd64eba787e6c9d334ff91f7dbccd7e0dbab0f55fbb4f90a23186ff2ba359bd",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs": "4748964039c80f0037d61b0018241e83bbc3185a13db5e259b08e71f242b18f9"
+    }
+  },
+  "historical_evidence": {
+    "finite_precision_body13_patch": {
+      "path": "finite-precision-body13-ordinary-positive-from-observer-cut02.patch",
+      "sha256": "0c29089a81c2e18c3fe4100282c396780eec8e51f1485be8109eb82e96fb0786",
+      "finding": "The patch has the same un-gated populated_face_pivot_capture_for_test at patch line 19647 although its physical capture return types and adjacent helper are feature gated."
+    },
+    "preserved_c1_red_patch": {
+      "path": "refinement-c1-red01-from-observer-cut02.patch",
+      "sha256": "7da1c28b921ac42210abcc93156dab5f176b6df15bf543d3fddae59e112e0aca",
+      "finding": "The five expected-red capture tests appear with #[test] only at patch lines 22877, 22920, 22981, 23029, and 23090 while calling physical-feature-gated capture helpers."
+    }
+  },
+  "attribution": [
+    {
+      "class": "preexisting",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:897",
+      "item": "populated_face_pivot_capture_for_test",
+      "evidence": "Default list cannot resolve M1FacePivotCapture and its associated physical-only types. The same cfg mismatch is in the preserved finite-precision body13 patch."
+    },
+    {
+      "class": "preexisting",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5564-5807",
+      "items": [
+        "expected_red_successful_return_capture_has_complete_02_operands",
+        "expected_red_capture_retains_ordered_return_records_across_real_subproblems",
+        "expected_red_nonfinite_transition_capture_records_typed_refusal_without_mutation",
+        "expected_red_enclosure_transition_capture_records_typed_refusal_without_fake_arrays",
+        "expected_red_free_stationarity_capture_retains_real_face_metadata"
+      ],
+      "evidence": "Each calls m1_face_pivot_capture_begin_for_test and/or m1_face_pivot_capture_take_for_test, both cfg(all(test, feature = m1-trust-region-physical-stage)); the preserved C1 red patch contains the same un-gated test declarations."
+    },
+    {
+      "class": "new_bvls03",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6482",
+      "item": "m1_trust_region_refinement_scratch_never_reaches_owner_or_physical_hooks",
+      "evidence": "The test reads global_before/global_after and budget_before/budget_after, which are correctly cfg(feature = m1-trust-region-physical-stage) fields; its default build also cannot resolve M1PhysicalBudgetSnapshot."
+    }
+  ],
+  "minimal_supported_repair": {
+    "outer_helper": "Add #[cfg(all(test, feature = \"m1-trust-region-physical-stage\"))] to populated_face_pivot_capture_for_test.",
+    "test_items": "Add #[cfg(feature = \"m1-trust-region-physical-stage\")] immediately before #[test] on the five named preserved C1 capture tests and the named new C3 scratch test. Their enclosing modules already compile only under cfg(test).",
+    "preservation": "Retain all six tests in the physical-feature inventory. Do not gate C2/C4 retained-face, eligibility, or work controls; do not modify production code, manifests, or authority suites."
+  },
+  "verdict": "The seven cfg gates are necessary and sufficient by static error-to-item attribution for default-feature libtest consistency. A replacement default-list receipt is still required to verify compilation."
+}

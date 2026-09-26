@@ -1,0 +1,199 @@
+diff --git a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md
+index 9938af205..299dd7654 100644
+--- a/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md
++++ b/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md
+@@ -746,6 +746,194 @@ change. After the reviewed 02 body, run the unchanged original60 plus
+ coordinate-20 `+1e-4 K` non-target ordinary-positive control before any
+ full-feature or target work; all source/input/counter custody remains required.
+ 
++### COLD-CANOPY-M1-TR-SVD-BVLS-03 fixed-face compensated-refinement amendment
++
++**Status: PROPOSED / experimental authority awaiting two independent reviews.**
++This amendment is prospective and does not authorize a runtime body, a
++physical command, a target arm, or a change to the historical `01` or `02`
++source, result, review, or disposition. `01` and `02` remain history. It is one
++composite method selected before body work, not an attempt under `02` followed
++by an accuracy rescue. The accepted two-face offline observations are fixed-face
++design evidence only; they are neither nonlinear solves nor custody for a
++physical input.
++
++The only eligible branch is a completed rank-admitted `02` face solution. Form
++its full `p0` at the controller seam by copying the unchanged active-coordinate
++bits from the live face `state.p`, then placing `solution.trace.step[slot]` at
++each `solution.free_ids[slot]` in that order; the live `state.p` remains the
++face-start carrier until this construction. Before crossing or `02` KKT/release,
++require that `lambda == 0.0` (either signed zero), the assembled `p0` is exactly
++original-box feasible, every assembled active bit equals its original `state.p`
++bit, and the existing ordered `lambda_norm(p0)` (ascending coordinate squares,
++ascending accumulation from zero, then square root) is finite and strictly less
++than `input.initial_radius`. A nonzero-lambda, radius-active, initially
++box-infeasible, rank-refused, or otherwise ineligible solved candidate enters
++the unchanged `02` crossing/KKT behavior. Eligibility cannot depend on a
++fixture, coordinate index, observed bit pattern, iteration count,
++`TrustRegionOptimalityIndeterminate`, or `TrustRegionFacePivotLimit`.
++
++For an eligible face, retain `A`, `f`, the free-column factorization and its
++operation order, scale, active values, masks, multiplier, and radius. Perform
++exactly these two correction positions before the unchanged `02` optimality and
++active-release decision:
++
++1. Form `r0 = fl(f + A*p0)` with the existing ordered binary64 residual
++   arithmetic. Reuse the existing zero-lambda factor application to form
++   `delta0_free = -B^+ r0`, then update only the free coordinates in their
++   original order to obtain private scratch `p1`.
++2. Form each `r1_i` as `Dot2([f_i,A_i0,...,A_i20], [1,p1_0,...,p1_20])` in that
++   exact order. Reuse the same factor application to form
++   `delta1_free = -B^+ r1`, then update the same free coordinates in the same
++   order to obtain `p2`.
++
++`Dot2` is the retained non-FMA Ogita--Rump--Oishi binary64 operation sequence.
++Every displayed operation is one binary64 rounding in the stated parentheses:
++`TwoSum(a,b)`: `x=a+b; z=x-a; y=(a-(x-z))+(b-z)`;
++`Split(a)`: `c=(2^27+1)*a; abig=c-a; hi=c-abig; lo=a-hi`; and
++`TwoProduct(a,b)`: `x=a*b; (ah,al)=Split(a); (bh,bl)=Split(b);
++y=al*bl-(((x-ah*bh)-al*bh)-ah*bl)`. `Dot2` initializes `(p,s)` from
++`TwoProduct` of term zero, then for each following term in the fixed 22-term
++row order performs `(h,r)=TwoProduct(x_i,y_i); (p,q)=TwoSum(p,h);
++s=s+(q+r)`, returning `p+s`. No FMA, reassociation, fast-math, sorting,
++compensated built-in sum, BLAS reduction, exact-arithmetic runtime path,
++refactorization, third correction, changed active set, or precision ladder is
++permitted. `f` is part of the augmented second residual dot product. The
++amendment makes no universal correct-rounding claim for Dot2.
++
++At each correction, guard in this retained primitive order: source operands;
++primary product; splitter product and Split outputs; EFT remainder; every
++TwoSum result and remainder; accumulation; factor-application output; and
++free-coordinate update. Each must be finite and normal or signed zero. Only a
++nonzero multiplication whose rounded product is zero is an underflow refusal;
++an additive cancellation, including a signed-zero result, remains admitted.
++A nonzero subnormal at any guarded stage is a subnormal refusal. Check the
++assembled scratch/final vector's active bits and finite coordinates in ascending
++coordinate order, and check its norm with the same ordered `lambda_norm` before
++its corresponding radius comparison.
++No guard may replace an existing SVD, ball, work-cap, KKT, physical, or owner
++error: errors that occur before refinement retain their owning kind and
++precedence.
++
++`p1` is an unpublishable private `RefinementScratch` value, not a coordinate
++array convertible to `M1CoupledColumnTrial`, an accepted-step result, or a
++live face state. It may violate an inactive free box bound between correction
++positions 1 and 2, but must retain exact active bits, pass the guarded EFT
++domain, and satisfy finite ordered `lambda_norm(p1) <= input.initial_radius`.
++Only its second Dot2 residual and the same factor application may consume it. No physical evaluator,
++phase selector, hydraulic solve, nonlinear merit/acceptance, materializer,
++owner publication, resource receipt, or active-set crossing may receive it.
++Its rejected box status is retained in the diagnostic record.
++
++The private typed refusal is `TrustRegionRefinementIndeterminate`, with exactly
++one stable reason: `refinement_nonfinite_operand`,
++`refinement_splitter_overflow`, `refinement_underflow_to_zero`,
++`refinement_subnormal_intermediate`, `refinement_factor_output`,
++`refinement_coordinate_update`, `refinement_active_value`,
++`refinement_scratch_radius`, `refinement_final_box`, or
++`refinement_final_radius`. It records correction position, guarded stage, and
++coordinate when applicable, plus masks, `lambda`, original face radius, ordered
++work counters, and rejected scratch box status. A refinement-originated failure
++returns this kind without crossing, KKT, evaluation, materialization, or state
++mutation; pre-refinement owning errors retain their original kinds.
++
++Before `p2` enters unchanged `02` KKT/release logic, require in ascending order
++exact original-box feasibility, exact active-value preservation, and finite
++ordered `lambda_norm(p2) <= input.initial_radius`, then all existing
++Gamma87/Cbar/tau checks. Final infeasibility or an EFT-domain failure returns the
++typed refinement refusal: do not clip, normalize zero, return `p0`, or perform
++another correction. An ordinary release selected by unchanged all-coordinate
++`02` logic remains an outer face transition subject to its existing pivot cap.
++
++The refined branch adds no SVD, evaluator, hydraulic block, nonlinear proposal,
++or materialization. For `m` free coordinates, `1 <= m <= 21`, its ordinary
++first residual costs exactly `21*43=903` arithmetic operations; its second
++22-term Dot2 residual costs exactly `21*543=11,403`; one retained factor
++application costs `44*m^2+68*m`; and each free update costs `m`. Thus its two
++corrections cost exactly `R(m)=12,306+88*m^2+138*m` arithmetic operations before
++acceptance assessment: `R(20)=50,266` and `R(21)=54,012`. Reused `02` KKT and
++enclosure work remains separately bounded by 39,816 operations. The reused
++ordered KKT vector is 1,827 operations, and the three full 21-coordinate
++`lambda_norm` calculations for `p0`, `p1`, and `p2` are `3*43=129` operations.
++Thus `K(m)=R(m)+39,816+1,827+129 <= 95,784` scalar/upward operations per
++eligible face.
++
++Each scalar/upward operation admits at most three input/result guard events. The
++additional seam events are auditable: p0 assembly/equality/box/radius checks are
++`85+m`; p1 active/finite/rejected-box/radius checks are `43+m`; and p2
++active/finite/box/radius checks are `85`, for `E(m)=213+2*m`. Therefore the
++complete per-face guard bound is `G(m)=3*K(m)+E(m) <= 287,607`. Before refinement
++entry, admit the face only if monotonic refinement counters have capacity for
++`K(m)` scalar/upward operations and `G(m)` guards. At the existing maximum 43
++faces per proposal, caps are 4,118,712 scalar/upward operations and 12,367,101
++guard events. Increment each category before its operation or guard, including
++denied entry and scratch/refusal work; cap exhaustion retains the owning work-cap
++refusal and performs no partial refinement. These are operation bounds, never
++instruction counts or timings.
++
++#### Contract-derived 03 controls and release conditions
++
++The controls have small required stages: after review of this authority, author
++expected-red C1 tests before primitive body; then author primitive body; then
++compiled-release C1 equivalence and its independent review; then author
++expected-red C2--C4 tests before each corresponding controller/body seam; then
++reviewed body, green controls, and body review. No result-bearing execution is
++allowed before all stages. Compiled release arithmetic and controls using the
++shared implementation must establish retained primitive equivalence and
++signed-zero preservation against independent retained values, with explicit
++overflow/underflow/subnormal/nonfinite refusal;
++both retained faces' factor output, both corrections, active bits, final
++feasibility, and unchanged `02` decision; scratch isolation from physical and
++owner hooks; final-infeasible, radius-violating, and active-value-mutating
++refusals with untouched materialization state; and eligibility discrimination
++for lambda-zero interior, nonzero-lambda, radius-active, and initially
++box-infeasible faces. Controls must show no fallback from a refinement refusal
++to `02` and no third correction. They inspect actual arguments, counters, and
++untouched state at physical evaluation, phase, hydraulic, merit, materializer,
++receipt, and owner hooks; restore error scope and owner-cap accounting; preserve
++unaffected analytic controls and accepted materializer custody; and conduct an
++exact post-body source/manifest review before the sole result-bearing physical
++launch. Expected values use independently supported operands, not canned errors
++or a duplicate candidate arithmetic path.
++
++The inherited `m1_trust_region_physical_adapter_run_restores_nested_prior_budget_scope`
++assertion demonstrates a successful existing controller run, and the inherited
++`m1_trust_region_physical_adapter_ordinary_perturbation_refuses_face_pivot_before_materialization`
++assertion fixes the historical `02` FacePivotLimit result. Neither is a BVLS-03
++oracle: the first does not exercise refinement failure restoration and the
++second cannot be rewritten as a passing negative or used to predict a revised
++method result. Preserve both source/history assertions. Add instead the
++nonphysical shared-controller controls
++`m1_trust_region_refinement_restores_nested_budget_scope_on_refusal` and
++`m1_trust_region_refinement_ineligible_face_retains_bvls02_crossing`: the first
++seeds an outer budget, drives a reviewed refinement refusal, observes the exact
++prior snapshot after return, and proves no physical/materialization hook; the
++second uses an ineligible retained-face seam and proves the unchanged crossing
++or owning `02` refusal. The required
++`m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization`
++remains the sole unchanged physical-positive assertion and is never weakened.
++
++The C1--C4 body-control filters are respectively
++`m1_trust_region_refinement_dot2_`,
++`m1_trust_region_refinement_retained_face_`,
++`m1_trust_region_refinement_scratch_`, and
++`m1_trust_region_refinement_(eligibility|work|restores_nested_budget_scope|ineligible_face_retains_bvls02_crossing)`.
++Their minimal detached write surfaces are `m1_trust_region_stage1.rs` for the
++private arithmetic/refinement seam, `m1_trust_region_controller.rs` only for
++refinement refusal propagation/capture, `lib.rs` only for cfg(test) seams, and
++`m1_coupled_tests.rs` for real-controller hook and scope controls. No production
++or main-worktree surface is authorized. The later single physical control wraps
++its existing one `observed_result` call with release-mode monotonic wall and
++available process-CPU clocks only; it adds no physics invocation.
++
++Two independent reviews of this exact policy, control design, source scope, and
++work accounting are required before body release. After reviewed body controls,
++the sole permitted physical measurement is the unchanged original60,
++coordinate-20 `+1e-4 K` ordinary-positive control. It must establish an actual
++ordinary accepted update, subsequent admissible witness/root,
++materializer/input/accepted-coordinate identity, independent reservoir closure,
++and whole-solve work. A source-conforming refusal is a negative disposition,
++not authority to retune this method or retry into success.
++
+ ### Contract-derived experiment controls
+ 
+ Independent expected values, never the candidate helper, must cover: an

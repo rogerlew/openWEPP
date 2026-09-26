@@ -1,0 +1,60 @@
+{
+  "schema": "openwepp.refinement-correctness.c2-core-debug04.v1",
+  "evidence_class": "Static: reviewer source and retained-evidence inspection; Ran evidence is parent-supplied debug04 receipt only; reviewer performed no build, test, candidate replay, or numerical execution",
+  "reviewer": "/root/refinement_correctness",
+  "scope": "C2 retained-face core and controls only; excludes incomplete C3 observability and physical/target approval",
+  "disposition": "PASS_NO_C2_BLOCKER",
+  "source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "sha256": "89ed9ac0c11057766cf25436bafd88459f4c4ef610b6f2072ecca21c871df8aa",
+    "stable_at_close": true
+  },
+  "verified": [
+    "Optimality classes use an explicit stable mapping: fixed, release_lower, retain_lower, release_upper, retain_upper, free_pass, free_refuse.",
+    "The actual retained factor pointer is recorded, and its identity is pushed immediately after each of the two shared lambda_step applications; no new factorization is introduced.",
+    "Lower and upper active masks are captured from the actual shared state at p0, p1, p2, and exit.",
+    "The scratch p1 free-coordinate box observation compares against PreparedSubproblem scaled_lower and scaled_upper.",
+    "The C2 control uses both retained captures and checks p0 from the captured original operation; both correction bit vectors; every Dot2 residual row; h, cbar, tau, and class; box and ball feasibility; factor reuse; masks; exactly two corrections; and the unchanged BVLS02 decision.",
+    "The retained expected values are read from dot2-results.json rather than recreated in the Rust test. That retained result embeds the exact face-accuracy author-result and independent correctness-certificate hashes, and refinement-retained-dependency-check.json binds the retained bytes."
+  ],
+  "retained_dependencies": {
+    "dot2-results.json": "fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b",
+    "face-accuracy-author-results.json": "73af08c872dc7b69406d46edd73027b2e2d942beae713bf03930425d6d641320",
+    "face-accuracy-correctness.json": "3740e7329974317cfa39483d6547aa6d7794912da9a0d6d4568d4dd285d2192d",
+    "finite-precision-observed-capture.json": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+    "face-pivot-observed-capture.json": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c"
+  },
+  "parent_supplied_debug04": {
+    "receipt": "refinement-c1-c2-debug04.json",
+    "exit_code": 0,
+    "elapsed_seconds": 11.004928743001074,
+    "tests_run": 4,
+    "tests_passed": 4,
+    "tests_skipped": 360,
+    "test_runtime_seconds": 0.160,
+    "pinned_source_sha256": "89ed9ac0c11057766cf25436bafd88459f4c4ef610b6f2072ecca21c871df8aa",
+    "source_unchanged": true
+  },
+  "parent_supplied_release01": {
+    "receipt": "refinement-c1-c2-release01.json",
+    "receipt_sha256": "31a5981eaad78f75c4432ff3a9109548a31db122f0383af0cc169c319000d9e9",
+    "profile": "release",
+    "exit_code": 0,
+    "elapsed_seconds": 90.52835619216785,
+    "tests_run": 4,
+    "tests_passed": 4,
+    "tests_skipped": 360,
+    "test_runtime_seconds": 0.035,
+    "pinned_source_sha256": "89ed9ac0c11057766cf25436bafd88459f4c4ef610b6f2072ecca21c871df8aa",
+    "source_unchanged": true,
+    "observer_base_unchanged": true,
+    "pinned_files_unchanged": true,
+    "timed_out": false,
+    "stdout_sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244",
+    "stderr_sha256": "4fe5c96a746414594dc87acb0feae93efab50fdc9bff8c9cd950dc47c11d3900"
+  },
+  "residual_risk_and_missing_evidence": [
+    "C3 actual activity, phase, merit, owner-binding custody, and RAII restoration remain explicitly unapproved and require the previously assigned final review.",
+    "This is not physical-source, target-result, full-package, or closure approval."
+  ]
+}

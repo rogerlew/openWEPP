@@ -1,0 +1,41 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static: frozen expected-red C2-C4 control-design review; no Rust, Python, candidate, physical, or target execution by reviewer",
+  "disposition": "BLOCKED_BEFORE_BODY",
+  "reviewed_cut": {
+    "runtime_source_sha256": "2e345ed872a8ea54dde72e2ffad9bfa3c0d120230adfbf4b0726fca0718c85f4",
+    "patch_path": "artifacts/bvls03-c2-c4-controls03-raw-probes.patch",
+    "patch_sha256": "6eb703ae6f7b1428483fdd95f9372a23dc4b4f9a7567a70ffb0b1e19367099cc"
+  },
+  "resolved_from_controls02": [
+    "Negative probes carry coordinate, value, bounds and radius and assert exact reason, no step, no BVLS-02 fallback, empty hooks and unchanged state snapshots.",
+    "Ineligible probes compare the unchanged BVLS-02 outcome, masks and work against a retained baseline.",
+    "A one-less-than-required reservation asserts exact maximum K/G requirements, attempted and denied entry increments, no corrections, Dot2 calls or factor applications, and restored nested scope."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4767-4788",
+      "finding": "The FinalBox probe uses captured free coordinate 11, whose upper bound is positive infinity. `upper + 1.0` therefore remains positive infinity and exercises the nonfinite-domain guard rather than a finite final-box violation.",
+      "required_fix": "Use a captured free coordinate with a finite bound and a finite binary64 value strictly outside that bound; retain the exact final-box typed reason."
+    },
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4721-4746",
+      "finding": "Eligible retained controls assert all p-vector bits but do not observe lower/upper active masks at p0, p1, p2 and exit. Active values are controlled, but fixed-mask custody is not.",
+      "required_fix": "Expose and assert identical lower/upper masks at p0, p1, p2 and final BVLS-02 entry/exit for both retained faces."
+    },
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4846-4864",
+      "finding": "The one-less reservation proves zero corrections, Dot2 operations and factor applications but does not observe total executed scalar-operation and guard-event counters. Other arithmetic could execute while the declared fields remain zero.",
+      "required_fix": "Assert executed scalar operations equal zero and executed guard events equal zero, while preserving exact K/G requirements, attempted-entry plus one, denied-entry plus one, and restored nested scope."
+    }
+  ],
+  "residual_risk": "Body review must prove the test adapters decode operands and observe the shared production implementation without selector short-circuits, parallel numerical logic, or fabricated identity/counter fields.",
+  "missing_evidence": [
+    "Corrected immutable expected-red controls cut",
+    "Parent-owned expected-red compile receipt for the corrected cut",
+    "Body source review and green receipt after implementation"
+  ]
+}

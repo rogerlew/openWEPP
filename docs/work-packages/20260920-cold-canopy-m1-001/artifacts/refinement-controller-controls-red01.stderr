@@ -1,0 +1,105 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find `M1TrustRegionWorkObservation` in `crate`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1747:16
+     |
+1747 |         crate::M1TrustRegionWorkObservation::default()
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWorkObservation` in the crate root
+     |
+help: a struct with a similar name exists
+     |
+1747 -         crate::M1TrustRegionWorkObservation::default()
+1747 +         crate::M1TrustRegionBallObservation::default()
+     |
+
+error[E0609]: no field `accounting_observations` on type `Fixture`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1715:24
+     |
+1715 |     assert_eq!(changed.accounting_observations.len(), 1);
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `kind`, `base`, `scale`, `lower`, `upper` ... and 11 others
+
+error[E0609]: no field `accounting_observations` on type `Fixture`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1716:24
+     |
+1716 |     assert_eq!(changed.accounting_observations[0].stage1_calls, 2);
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `kind`, `base`, `scale`, `lower`, `upper` ... and 11 others
+
+error[E0609]: no field `accounting_observations` on type `Fixture`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1718:17
+     |
+1718 |         changed.accounting_observations[0].entered_svd_factorizations,
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `kind`, `base`, `scale`, `lower`, `upper` ... and 11 others
+
+error[E0609]: no field `accounting_observations` on type `Fixture`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1729:24
+     |
+1729 |     assert_eq!(partial.accounting_observations.len(), 1);
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `kind`, `base`, `scale`, `lower`, `upper` ... and 11 others
+
+error[E0609]: no field `accounting_observations` on type `Fixture`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1730:24
+     |
+1730 |     assert_eq!(partial.accounting_observations[0].stage1_calls, 2);
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `kind`, `base`, `scale`, `lower`, `upper` ... and 11 others
+
+error[E0609]: no field `accounting_observations` on type `Fixture`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1732:17
+     |
+1732 |         partial.accounting_observations[0].entered_svd_factorizations,
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `kind`, `base`, `scale`, `lower`, `upper` ... and 11 others
+
+error[E0609]: no field `accounting_observations` on type `Fixture`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1744:24
+     |
+1744 |     assert_eq!(initial.accounting_observations.len(), 1);
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `kind`, `base`, `scale`, `lower`, `upper` ... and 11 others
+
+error[E0609]: no field `accounting_observations` on type `Fixture`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1746:17
+     |
+1746 |         initial.accounting_observations[0],
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `kind`, `base`, `scale`, `lower`, `upper` ... and 11 others
+
+error[E0609]: no field `accounting_observations` on type `Fixture`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1753:20
+     |
+1753 |     assert_eq!(run.accounting_observations.len(), 1);
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `kind`, `base`, `scale`, `lower`, `upper` ... and 11 others
+
+warning: unused variable: `lower_before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4102:9
+     |
+4102 |     let lower_before = state.lower_active.to_vec();
+     |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_lower_before`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `upper_before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4103:9
+     |
+4103 |     let upper_before = state.upper_active.to_vec();
+     |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_upper_before`
+
+Some errors have detailed explanations: E0433, E0609.
+For more information about an error, try `rustc --explain E0433`.
+warning: `openwepp-land-surface-energy` (lib test) generated 2 warnings
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 10 previous errors; 2 warnings emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

@@ -1,0 +1,50 @@
+{
+  "evidence_class": "Static: inspected final cutoff source, preserved pre-edit, and terminal04 receipts; reviewer ran no command",
+  "reviewer": "/root/refinement_qa",
+  "final_source": {
+    "stage1_sha256": "32f0d14950e22ede0b446326b9b185ce22905c99035a30acde512d1281dae9da",
+    "preedit_artifact": "refinement-final-add-preedit-095792b63908.rs",
+    "preedit_sha256": "095792b63908f6eaf4061d684fce883e53f53d5438b02e0ca7b74c9ec763dd77",
+    "change": "The former mis-typed callee at the terminal04 E0308 site is now a direct map_err from RefinementDot2Refusal, rather than passing that object to the Reason-taking constructor."
+  },
+  "cutoff": {
+    "final05_final06": "Recorder launches rejected before execution by full-bound/reserve check; support records are not command receipts.",
+    "final_source_validation": "UNVALIDATED: no final debug, release, inventory, lint, format, default, or doc receipt binds stage1 32f0d149.",
+    "latest_bound_evidence": "terminal04 receipts bind prior stage1 095792 and show debug/inventory/release compile failure and lint failure; prior bddf 9/9 debug/release is not final-source evidence."
+  },
+  "holds": [
+    "No final release or debug compilation credit.",
+    "Last lint reconciliation remains the earlier 238 baseline with 64 introduced blocks; it does not validate the final source.",
+    "Metadata is static-only; earlier controls-only staging omissions remain disclosed.",
+    "No physical or target execution occurred or is evidenced."
+  ],
+  "verdict": "CUTOFF HOLD / INCOMPLETE. The narrow final source repair is statically intelligible but has no post-edit execution evidence. It cannot be marked PASS or used to release physical work.",
+  "closing_recovery": {
+    "artifact": "refinement-terminal-recovery.json",
+    "source_tree_sha256": "bf93e4220755ac32da348fec2cf640ba7e73eb57784922013a6658e5879128f4",
+    "all_764_entry_bytes_equal": true,
+    "archive_sha256": "fb0ef89462e851ac596f0d3af66d1a16796ee5e49d01516cd7c9749a5ee633eb",
+    "archive_scope": "764 source entries only; not a self-contained toolchain archive",
+    "verdict": "PASS for recoverable source custody only; it does not supply post-edit validation."
+  },
+  "closing_command_rejections": {
+    "artifact": "refinement-final-command-rejections.json",
+    "unlaunched_attempts": 12,
+    "verdict": "No receipt or validation claim may be derived from rejected launches."
+  },
+  "lint_evidence": {
+    "lint03": "238 matched, 64 new, 0 removed",
+    "lint04": "compile truncated: 95 matched, 1 type error, 143 not reached",
+    "verdict": "No removed-fix or final-lint-pass claim is supported."
+  },
+  "closing_verdict": "CUTOFF HOLD / INCOMPLETE: recovery custody is proven, but final source remains unvalidated and no physical/target work ran.",
+  "ledger_package_closing_audit": {
+    "ledger": "refinement-final-ledger.json",
+    "ledger_sha256": "b5f5f939d0a9423974335f54038bf7e3b1af7b3a7f2e037e76aa90fcf52f1070",
+    "arithmetic": "12779.687716 actual + 1620.312284 conservative closing = 14400.000000 new charge; 350533.959294 carry + 14400.000000 = 364933.959294 cumulative/ceiling.",
+    "time_check": "02:00:00Z to 05:32:59.687716Z is 12779.687716 seconds. The conservative closing charge reaches 06:00Z and is explicitly not claimed observed elapsed.",
+    "package_claims": "Top package correctly reports CUTOFF HOLD/INCOMPLETE, final 32f source UNVALIDATED, prior bddf debug/release 9/9 non-transferable, lint03 238 matched/64 introduced, no physical run, and exact 764-entry recovery.",
+    "publication_scope": "Records numerical-methods, package, recorder and BVLS03/refinement artifacts only; main Rust is described as preserved/unpublished.",
+    "verdict": "PASS for truthful cutoff accounting and package disclosure; package remains incomplete and no validation/physical credit is added."
+  }
+}

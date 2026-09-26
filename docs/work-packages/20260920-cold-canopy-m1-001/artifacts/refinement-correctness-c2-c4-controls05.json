@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static: frozen expected-red C2-C4 control-design review; no Rust, Python, candidate, physical, or target execution by reviewer",
+  "disposition": "PASS_BEFORE_BODY",
+  "reviewed_cut": {
+    "runtime_source_sha256": "5095ca587c8129360e3fb328a625bd0a2b1b52ba2f788cfdfd2da7193d2fc9e8",
+    "patch_path": "artifacts/bvls03-c2-c4-controls05-local-mask.patch",
+    "patch_sha256": "5921f8e75d326f85109bd91254454057a187ab16d7df2c3f599438ea96ec43d4"
+  },
+  "verified_fix": "The C2-C4 expected-red module now defines its own JSON boolean-mask decoder in scope; the p0/p1/p2/exit mask assertions no longer depend on an inaccessible sibling-module helper.",
+  "accepted_control_design": [
+    "Expected results remain assertion-side and candidate adapters receive retained captures or concrete raw probes only.",
+    "Both retained faces bind p0, both correction vectors and positions, all Dot2 residual bits, final h/Cbar/tau/classes and feasibility, stable factor identity, exactly two factor applications, no refactorization and fixed masks.",
+    "Scratch controls bind the observed p1 box violation, Dot2-only consumption, empty physical/owner hook logs and unchanged state snapshots.",
+    "Finite final-box, zero-radius scratch and active-value mutations require exact typed reasons, no returned step, no BVLS-02 fallback and no publication/materialization.",
+    "Positive and negative zero are eligible; nonzero lambda, exact trust-radius activity and initial box infeasibility retain the unchanged BVLS-02 outcome, masks and work.",
+    "The one-less reservation binds exact maximum K/G, attempted and denied entry increments, zero refinement-interval scalar/guard execution, zero corrections/Dot2/factor applications, separately observed pre-admission eligibility work and restored nested scope."
+  ],
+  "residual_risk": "Implementation review must verify that every adapter decodes operands and observes the actual shared controller/refinement implementation. It must reject parallel numerical logic, selector short-circuits, fixture-copied outputs, fabricated factor identities/counters, and double counting or omission of the pre-admission eligibility norm within total K/G.",
+  "missing_evidence": [
+    "Reviewed C2-C4 implementation body",
+    "Parent-owned compiled-release green receipt for the exact reviewed body",
+    "Later physical and target evidence required by package authority"
+  ],
+  "approval": "No numerical-correctness blocker remains in the tests-before-body control declaration. Body implementation may proceed under the accepted authority and staged review."
+}

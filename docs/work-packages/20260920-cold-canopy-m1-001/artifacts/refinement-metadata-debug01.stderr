@@ -1,0 +1,104 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find type `M1TrustRegionRefinementReason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7119:49
+     |
+7119 |                     assert_eq!(metadata.reason, M1TrustRegionRefinementReason::FinalBox);
+     |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementReason`
+     |
+help: consider importing this enum
+     |
+6829 +     use crate::M1TrustRegionRefinementReason;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionCorrectionPosition` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7122:30
+     |
+7122 |                         Some(M1TrustRegionCorrectionPosition::Second)
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionCorrectionPosition`
+     |
+help: consider importing this enum
+     |
+6829 +     use crate::M1TrustRegionCorrectionPosition;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7126:25
+     |
+7126 |                         M1TrustRegionRefinementGuardStage::FinalBoxUpper
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+     |
+help: consider importing this enum
+     |
+6829 +     use crate::M1TrustRegionRefinementGuardStage;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementReason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7133:25
+     |
+7133 |                         M1TrustRegionRefinementReason::ScratchRadius
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementReason`
+     |
+help: consider importing this enum
+     |
+6829 +     use crate::M1TrustRegionRefinementReason;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionCorrectionPosition` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7137:30
+     |
+7137 |                         Some(M1TrustRegionCorrectionPosition::First)
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionCorrectionPosition`
+     |
+help: consider importing this enum
+     |
+6829 +     use crate::M1TrustRegionCorrectionPosition;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7141:25
+     |
+7141 |                         M1TrustRegionRefinementGuardStage::RadiusComparison
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+     |
+help: consider importing this enum
+     |
+6829 +     use crate::M1TrustRegionRefinementGuardStage;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementReason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7146:49
+     |
+7146 |                     assert_eq!(metadata.reason, M1TrustRegionRefinementReason::ActiveValue);
+     |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementReason`
+     |
+help: consider importing this enum
+     |
+6829 +     use crate::M1TrustRegionRefinementReason;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionCorrectionPosition` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7149:30
+     |
+7149 |                         Some(M1TrustRegionCorrectionPosition::Second)
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionCorrectionPosition`
+     |
+help: consider importing this enum
+     |
+6829 +     use crate::M1TrustRegionCorrectionPosition;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7153:25
+     |
+7153 |                         M1TrustRegionRefinementGuardStage::ActiveEquality
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+     |
+help: consider importing this enum
+     |
+6829 +     use crate::M1TrustRegionRefinementGuardStage;
+     |
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 9 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

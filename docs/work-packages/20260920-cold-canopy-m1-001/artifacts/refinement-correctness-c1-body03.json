@@ -1,0 +1,39 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "role": "same independent numerical correctness reviewer for BVLS-03 C1",
+  "evidence_class": "Static source/control fix verification plus inspection of parent-run compiled-release evidence; reviewer ran no candidate, Python, Rust, physical, or target command",
+  "reviewed_source": {
+    "stage1_path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "stage1_sha256": "6cca4b8500c101f4a697d464a1db37c57ae201c409b413bc6499536ca049fdc4",
+    "fix_patch_sha256": "87588275f8823cd807dd8c7efc181e4a5d2dd8597a223a8573420bc473c51912",
+    "freeze_sha256": "7e9b2d17185d0dbc43d46ca3302f608b0d0598401b34896ab28530dd75cf7dae",
+    "authority_sha256": "90dd07cc4f7f6a8fc6cc29882759b608b78e254131f37277f3ee519e5cf70b46",
+    "retained_result_sha256": "fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b",
+    "independent_certificate_sha256": "3decf52fb3a48fcc1f34a9132334cda6e31746f5d20c0bb830c248ef02c5ade6"
+  },
+  "verdict": "PASS — C1 shared primitive and controls are approved for progression to parent-released expected-red C2-C4 authoring",
+  "fix_verification": [
+    "The retained guard count comparison now losslessly widens observed u16 to u64; it changes no primitive arithmetic or expected value.",
+    "All seven deterministic refusal cases assert exact arithmetic, guard, exceptional-guard, and signed-zero tuples, closing the counter-retention finding.",
+    "The accepted authority metadata binds the prior independent reviews and limits authorization to parent-released corresponding expected-red/green stages."
+  ],
+  "compiled_release_evidence": {
+    "receipt_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-c1-release02.json",
+    "receipt_sha256": "d9bebe757dc6a44faa66be9baa8dfa8087e1a62912df4560b00b7307091643ae",
+    "stderr_sha256": "0bfa15e3e426d7edbf6d8f62565e025ae20da41514d0622d8384096a602bc057",
+    "stdout_sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244",
+    "result": "Ran by parent: release compilation and 3 selected C1 tests PASS; 358 skipped; selected-test time 0.035 s; command elapsed 88.47345933597535 s; source, observer base, pinned files, and support links unchanged",
+    "coverage": [
+      "One selected test iterates all 42 retained rows and checks independently supported result bits, 543 arithmetic operations, retained guard counts, and zero exceptional guards.",
+      "One selected test verifies initial negative-zero product bits, final positive-zero result bits, and admitted signed-zero accounting.",
+      "One selected test verifies nonfinite input, subnormal input/intermediate, splitter overflow, primary-product nonfinite, and multiplication underflow reasons with exact retained counter tuples."
+    ]
+  },
+  "findings": [],
+  "residual_risk_and_missing_tests": [
+    "C1 remains test-scoped and has no controller, factor reuse, p0/p1/p2, scratch, KKT, work-cap, physical, owner, or materialization connection.",
+    "C2-C4 must use this exact shared primitive and independently supported operands; they must verify correction positions, eligibility, isolation, typed integration, work accounting, and no fallback or third correction.",
+    "This C1 PASS does not release a physical command, target arm, nonlinear-success claim, or production readiness."
+  ],
+  "approval": "No C1 numerical-correctness blocker remains on the exact reviewed source and compiled-release evidence."
+}

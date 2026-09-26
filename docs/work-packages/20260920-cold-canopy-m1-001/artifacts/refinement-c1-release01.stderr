@@ -1,0 +1,75 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling autocfg v1.5.1
+   Compiling serde_core v1.0.228
+   Compiling typenum v1.20.0
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.117
+   Compiling serde v1.0.228
+   Compiling zmij v1.0.21
+   Compiling serde_derive v1.0.228
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling syn v3.0.3
+   Compiling serde_json v1.0.150
+   Compiling thiserror v2.0.20
+   Compiling thiserror-impl v2.0.20
+   Compiling num-integer v0.1.46
+   Compiling digest v0.10.7
+   Compiling cfg-if v1.0.4
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.0
+   Compiling cpufeatures v0.2.17
+   Compiling sha2 v0.10.9
+   Compiling num-bigint v0.4.6
+   Compiling openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-sim-contract)
+   Compiling base64 v0.22.1
+   Compiling openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-unit-boundary)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-kernel-contract)
+   Compiling openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-coupled-time)
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4608:17
+     |
+4608 |                 assert_eq!(observed.guards, expected_guards, "case {case}, row {row}");
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `u16`, found `u64`
+
+error[E0277]: can't compare `u16` with `u64`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4608:17
+     |
+4608 |                 assert_eq!(observed.guards, expected_guards, "case {case}, row {row}");
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no implementation for `u16 == u64`
+     |
+     = help: the trait `PartialEq<u64>` is not implemented for `u16`
+help: the following other types implement trait `PartialEq<Rhs>`
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/cmp.rs:1876:12
+     |
+     = note: `u16` implements `PartialEq`
+    ::: /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/cmp.rs:1900:5
+     |
+     = note: in this macro invocation
+     |
+    ::: /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.150/src/value/partial_eq.rs:76:13
+     |
+  76 |               impl PartialEq<Value> for $ty {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `u16` implements `PartialEq<Value>`
+...
+  97 | / partialeq_numeric! {
+  98 | |     eq_i64[i8 i16 i32 i64 isize]
+  99 | |     eq_u64[u8 u16 u32 u64 usize]
+ 100 | |     eq_f32[f32]
+ 101 | |     eq_f64[f64]
+ 102 | |     eq_bool[bool]
+ 103 | | }
+     | |_- in this macro invocation
+     = note: this error originates in the macro `assert_eq` which comes from the expansion of the macro `partialeq_numeric` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+Some errors have detailed explanations: E0277, E0308.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage --release` exited with code 101

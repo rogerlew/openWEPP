@@ -1,0 +1,26 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0432]: unresolved import `super::m1_trust_region_refinement_dot2_for_test`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4327:9
+     |
+4327 |     use super::m1_trust_region_refinement_dot2_for_test;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_refinement_dot2_for_test` in `m1_trust_region_stage1`
+     |
+help: a similar name exists in the module
+     |
+4327 -     use super::m1_trust_region_refinement_dot2_for_test;
+4327 +     use super::m1_trust_region_frozen_merit_for_test;
+     |
+
+warning: unused variable: `operation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4349:13
+     |
+4349 |         let operation = &capture["operations"][1];
+     |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_operation`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0432`.
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error; 1 warning emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

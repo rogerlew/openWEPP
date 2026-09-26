@@ -1,0 +1,61 @@
+{
+  "evidence_class": "Static: inspected frozen detached source and supplied recorded list receipts/stderr; reviewer ran no command, replay, or numerical calculation",
+  "reviewer": "/root/refinement_qa",
+  "scope": "Seven cfg-gate repair, default-feature list receipt attribution, test reachability, and misplaced-artifact custody only.",
+  "frozen_source": {
+    "root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "bc8af8a73dcf15553fbb6a9e9476029c18fc4f5e9d27f7894deae87f96b2f497",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs": "4748964039c80f0037d61b0018241e83bbc3185a13db5e259b08e71f242b18f9",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "61b5021dae597d70bea69262fb269f61c82694a085d46f213f4df45a1b13e715",
+    "manifests_unchanged": {
+      "Cargo.toml": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+      "Cargo.lock": "8251b64a248cd65f2be01962cdc64c44c4b486ac253a00875dfae55c105d5534",
+      "crates/openwepp-land-surface-energy/Cargo.toml": "efcb09d71cca3a756538ef5700ed73550068df680d5b3aab9ec0983dce662e8f"
+    }
+  },
+  "receipt_comparison": {
+    "list01": {
+      "receipt_sha256": "b34e256c25a9ddf6bf113291827c2f51043e13f36288966c69158897f3aecc7d",
+      "stderr_sha256": "3b337632cc8db09f6e0fce29633bcb64b22d2a4221b4931d9329bdf6c00d02dc",
+      "exit_code": 101,
+      "source_tree_sha256": "3fc9988fcd35b58e8344711e5d5b920d3a753a62c221abb13a4aa281de8ad084"
+    },
+    "list02": {
+      "receipt_sha256": "4741de489a8bd0999e3322202a07fddf25bb49ab76580fce7270a1314c9e51d6",
+      "stderr_sha256": "ee02f867cbd83628412bb1bada2f400ae18d7e063cfee2727a550c4a4704f11e",
+      "exit_code": 0,
+      "elapsed_seconds": 9.70369644695894,
+      "physical": false,
+      "source_unchanged_during_command": true,
+      "recorded_stage1_sha256": "7da92cc19b336d77abd971eae5b4f5bc297f95b535a10b2bcad794b0342df6af",
+      "finding": "The successful receipt is valid evidence for its recorded source but is not exact-frozen-cut evidence for bc8af8a7...2f497."
+    }
+  },
+  "seven_gate_static_verification": {
+    "helper": "stage1:899 gates populated_face_pivot_capture_for_test with cfg(all(test, feature = m1-trust-region-physical-stage)).",
+    "preserved_c1_capture_tests": "stage1:5606, 5650, 5712, 5761, and 5823 gate all five named capture-consumer tests with cfg(feature = m1-trust-region-physical-stage).",
+    "new_c3_test": "stage1:6543 gates m1_trust_region_refinement_scratch_never_reaches_owner_or_physical_hooks with cfg(feature = m1-trust-region-physical-stage).",
+    "default_controls_retained": "C1 dot2 controls at 6252/6275/6293, C2 retained-face control at 6430, and C4 eligibility/work/refusal control at 6648 remain ordinary #[test] controls.",
+    "production_boundary": "The repaired items are test-only; no manifest, public API, production path, or physical predicate changed in this repair."
+  },
+  "feature_inventory": "package.md retains required feature pair m1-trust-region-analytic-stage,m1-trust-region-physical-stage and the feature inventory command. The C3 and C1 physical capture controls remain selected under that pair.",
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "location": "refinement-default-list02 source receipt versus frozen Stage1",
+      "finding": "Recorded successful list02 Stage1 hash 7da92cc1...df6af differs from frozen Stage1 bc8af8a7...2f497; a later exact-source list receipt is required before terminally claiming default libtest compilation for the frozen cut."
+    },
+    {
+      "severity": "MEDIUM",
+      "location": "m1_trust_region_stage1.rs:6342",
+      "finding": "list02 stderr records new unused-import warnings for RefinementRawCandidateMutation and m1_trust_region_refinement_scratch_hooks_for_test after C3 became feature-gated. Required clippy -D warnings will require cfg-gating or splitting these two imports with C3; retain the C2/C4 imports."
+    }
+  ],
+  "custody": {
+    "artifact": "refinement-api-c4-outcome-preedit-576bb3c19cf2.rs",
+    "package_artifact_sha256": "576bb3c19cf270d81360206d45c6c8ba30bfd88367db917722f9504e2ec10dc8",
+    "detached_duplicate": "absent at review time",
+    "verdict": "The exact named copy is present in the main package artifact directory and the verified misplaced detached duplicate is absent; this move does not alter source, manifest, or validation scope."
+  },
+  "verdict": "Seven requested gates are statically correct and preserve required control reachability. HOLD terminal default-list credit for the frozen cut until the exact-source receipt exists; clear the two new import warnings before strict lint."
+}

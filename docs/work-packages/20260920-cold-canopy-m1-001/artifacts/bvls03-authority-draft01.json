@@ -1,0 +1,105 @@
+{
+  "evidence_class": "Static: prospective authority and implementation-control design; no Rust, detached-runtime mutation, numerical calculation, physical solve, or target execution",
+  "status": "PROPOSED — two distinct independent reviews required before BVLS-03 body release",
+  "method_id": "COLD-CANOPY-M1-TR-SVD-BVLS-03",
+  "authority": {
+    "canonical_path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "predecessor": "COLD-CANOPY-M1-TR-SVD-BVLS-02",
+    "history_preserved": ["BVLS-01", "BVLS-02", "M1-DOT2-RESIDUAL-PROTOTYPE-01"],
+    "proposal_only": true,
+    "prohibited_before_review": [
+      "Rust body edits",
+      "detached-runtime mutation",
+      "physical or target execution",
+      "old Python candidate replay",
+      "policy retuning or numerical fallback"
+    ]
+  },
+  "source_identity": {
+    "main_commit": "9fbc5b317f493121017325eab1e537167cb95f2e",
+    "amended_numerical_methods_sha256": "f639315ebf892d5cb2427935aa83a191b8eeb8c4662e53ef18b1b636b80e896b",
+    "pre_edit_live_numerical_methods_sha256_verified": false,
+    "pre_edit_custody_limitation": "The author inspected the predecessor text and retained BVLS-02 identity but did not hash the live numerical-methods.md before editing. The retained predecessor hash is not asserted as a live pre-edit byte check.",
+    "runtime_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "runtime_expected_entries": 764,
+    "runtime_expected_tree_sha256": "d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884",
+    "stage1_expected_sha256": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a",
+    "bvls02_method_expected_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23",
+    "required_before_runtime_mutation": "Parent byte-verifies the detached runtime and validates the recovery state; do not overlay the complete observer patch on an already patched tree."
+  },
+  "fixed_method": {
+    "eligibility": "Before BVLS-02 KKT release/return: completed rank-admitted face; lambda exactly zero; p0 exactly box feasible and strictly inside the original trust ball; original active values intact.",
+    "ineligible_behavior": "Nonzero-lambda, radius-active, initially box-infeasible, rank-refused, or other ineligible faces retain BVLS-02 unchanged.",
+    "corrections": [
+      "r0 = existing ordered binary64 fl(f + A*p0); delta0_free = -B^+ r0; update original-order free coordinates to private p1.",
+      "r1_i = Dot2([f_i,A_i0,...,A_i20], [1,p1_0,...,p1_20]); delta1_free = -B^+ r1; update the same free coordinates to p2."
+    ],
+    "frozen_limits": [
+      "exactly two corrections",
+      "same factor reuse; no refactorization",
+      "no changed active set within refinement",
+      "no FMA, reassociation, sorting, BLAS, fast-math, Decimal/Fraction, or precision ladder",
+      "no clipping, normalization, p0 rescue, or fallback from a refinement refusal"
+    ],
+    "scratch_boundary": "p1 may be inactive-box-infeasible only as finite, trust-ball-conforming private linear scratch between corrections. It cannot reach physical evaluation, phase selection, hydraulic solve, merit/acceptance, materialization, owner publication, receipt update, or active-set crossing.",
+    "final_gate": "p2 must preserve exact active bits and satisfy exact original box/radius feasibility before unchanged BVLS-02 Gamma87/Cbar/tau and release logic. Otherwise return a typed refinement refusal."
+  },
+  "controls_before_body": [
+    {
+      "stage": "C1 primitive and operation boundary",
+      "scope": "Shared implementation only; no controller body.",
+      "proof": "Retained non-FMA Dot2 primitive equivalence, signed-zero preservation, and explicit splitter overflow/underflow/subnormal/nonfinite refusal under independent retained operands."
+    },
+    {
+      "stage": "C2 retained-face integration",
+      "scope": "Shared factor/reuse integration with both retained fixed faces.",
+      "proof": "Original factor output, p1, Dot2 r1, p2, active bits, final feasibility, and unchanged BVLS-02 decision agree with the authorized result and independent certificate."
+    },
+    {
+      "stage": "C3 scratch and refusal isolation",
+      "scope": "Controller seam observers; no physical execution.",
+      "proof": "An infeasible p1 reaches only correction 2; physical/owner hooks remain unentered. Final infeasibility, radius violation, or active-value mutation returns no step and does not materialize."
+    },
+    {
+      "stage": "C4 eligibility and work custody",
+      "scope": "Eligibility partition and recorder state.",
+      "proof": "Lambda-zero interior is refined; nonzero lambda, radius-active, and initially box-infeasible faces remain BVLS-02. No third correction or refusal-to-02 fallback. Actual operation and denied-work counters are retained per face and whole solve."
+    }
+  ],
+  "work_accounting": {
+    "reference_20_free_faces": {
+      "dot2_arithmetic_operations_per_residual": 11403,
+      "two_corrections_pre_acceptance_arithmetic_operations": 50266,
+      "meaning": "Reference arithmetic counts only; neither instruction counts nor timings."
+    },
+    "runtime_recording": [
+      "separate residual, correction, guard, factor-application, KKT/enclosure, outer-iteration, scratch, and refusal work",
+      "increment denied work before entry",
+      "derive non-20-free-dimensional counts from actual dimensions and bounded factorization limits",
+      "do not expose prototype/exact-arithmetic diagnostics in the runtime kernel"
+    ],
+    "physical_measurement_after_readiness": "One release-mode original60 ordinary-positive entry-to-return CPU/wall observation with setup/build/observation separated and no observation-added physics calls."
+  },
+  "execution_envelope": {
+    "carry_seconds": "350533.959294",
+    "new_authorized_seconds": "14400",
+    "fixed_ceiling_seconds": "364933.959294",
+    "proposed_anchor_utc": "2026-09-26T02:00:00Z",
+    "launch_cutoff_utc": "2026-09-26T05:30:00Z",
+    "hard_deadline_utc": "2026-09-26T06:00:00Z",
+    "protected_reserve_seconds": 1800,
+    "ledger_condition": "Parent verifies dot2-final-ledger.json and any later greater receipt before anchoring; greater consumption reduces available balance. Concurrent elapsed work charges once without re-anchoring."
+  },
+  "required_reviews_before_body_release": [
+    "Numerical correctness review of eligibility, exact operation order, scratch lifecycle, final gates, and retained-face control operands.",
+    "QA/evidence review of source boundaries, control discrimination, recorder/work accounting, runtime custody, cadence, and command allocation."
+  ],
+  "post_body_physical_acceptance": "The unchanged m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization control uses original60 and coordinate-20 +1e-4 K. It requires an ordinary accepted update, admissible witness/root, materializer/input/accepted-coordinate identity, independent reservoir closure, and whole-solve work. A source-conforming refusal is a negative disposition and does not release retuning or retries.",
+  "remaining_acceptance": [
+    "Parent runtime byte verification and ledger reconciliation.",
+    "Two independent reviews and same-reviewer fixes, if any.",
+    "Reviewed controls C1–C4 before body release.",
+    "Body implementation and focused controls only after release.",
+    "Assigned physical command and downstream qualification remain separately gated."
+  ]
+}

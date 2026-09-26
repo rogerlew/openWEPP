@@ -1,0 +1,43 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static: frozen expected-red C2-C4 control-design review; no Rust, Python, candidate, physical, or target execution by reviewer",
+  "disposition": "BLOCKED_BEFORE_BODY",
+  "reviewed_cut": {
+    "runtime_source_sha256": "d17b4c5f55c6349d131fe9ee08b01ca49830a7802c3429b9a4eef69c888d24ca",
+    "patch_path": "artifacts/bvls03-c2-c4-controls02-correctness.patch",
+    "patch_sha256": "a21cfa965092dbe49e9f26c1bb6270e6bf4ed23c0a7b039fa5a97b3b514a3a3f"
+  },
+  "resolved_from_controls01": [
+    "Expected result JSON remains assertion-side; candidate helpers receive retained capture/raw probes only.",
+    "Expected assessment keys match retained JSON.",
+    "Retained controls assert p0, delta0, p1, Dot2 residuals, delta1, p2, h, Cbar, tau, classifications and final feasibility.",
+    "Factor observations require zero added factorizations, exactly two applications and stable factor identity.",
+    "Scratch controls include empty hook logs and bit-identical owner/live-state snapshots."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4761-4775",
+      "finding": "Negative controls still pass an enum selector and only require the refusal to echo that selector. They neither provide a concrete mutated numerical operand nor assert the exact typed numerical refusal, so a branch on the enum can satisfy the test without exercising final-box, scratch-radius, or active-value guards.",
+      "required_fix": "Construct each violating coordinate/value/bound in test-side typed raw input, call the shared seam, and assert the exact typed reason, no returned step or BVLS-02 fallback, all prohibited hook counters/logs, and unchanged snapshots."
+    },
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4780-4794",
+      "finding": "The work equation is true when denied_work is zero and supplies no insufficient cap, exact required charge, entry count, or denial action. It therefore does not prove that denied work is charged before refinement entry.",
+      "required_fix": "Add a dedicated insufficient-budget raw probe with the exact nonzero K/G reservation requirement, an attempted-entry and denied-entry counter increment before admission, zero executed correction/Dot2/factor arithmetic, an explicit denial result, and restored nested-budget snapshot. Do not record denied planned arithmetic as executed work."
+    },
+    {
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4718-4742 and 4780-4794",
+      "finding": "Ineligible controls assert only an action string and do not compare the unchanged BVLS-02 result, masks, or work. There is no refused-corrected-face no-fallback observation. Full p-vector bits establish active values but do not establish that active masks remain unchanged across both correction positions.",
+      "required_fix": "Observe active masks at p0, p1, p2 and exit; compare each ineligible probe with the unchanged BVLS-02 result/masks/work; and add a corrected-face refusal case with zero fallback calls and no third correction."
+    }
+  ],
+  "residual_risk": "The eventual body review must verify that the test adapters only decode fixtures and observe the actual shared controller/refinement implementation; no parallel solver, report framework, fixture-derived candidate values, or selector-short-circuit is acceptable.",
+  "missing_evidence": [
+    "Corrected immutable expected-red control cut addressing all three findings",
+    "Parent-owned expected-red compile receipt for that exact cut",
+    "Body source review and green receipt after implementation"
+  ]
+}

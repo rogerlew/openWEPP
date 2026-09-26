@@ -1,0 +1,27 @@
+{
+  "evidence_class": "Static: detached-source cfg/reachability and manifest inspection; no compile, test, candidate replay, numerical calculation, or physical command",
+  "reviewer": "/root/refinement_qa",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source_sha256": {
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "a8512aba94b12209f98d54b306c0a39fd01f0efaf72cf98122776208d24da19f",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "61b5021dae597d70bea69262fb269f61c82694a085d46f213f4df45a1b13e715"
+  },
+  "manifest_sha256": {
+    "Cargo.toml": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+    "Cargo.lock": "8251b64a248cd65f2be01962cdc64c44c4b486ac253a00875dfae55c105d5534",
+    "crates/openwepp-land-surface-energy/Cargo.toml": "efcb09d71cca3a756538ef5700ed73550068df680d5b3aab9ec0983dce662e8f"
+  },
+  "reachability": {
+    "phase_join_counter": "M1_REFINEMENT_PHASE_JOIN_SELECTIONS, its test accessor, and increment at phase_join_selections are all cfg(test).",
+    "merit_counter": "REFINEMENT_FROZEN_WEIGHTED_MERIT_ENTRIES, its accessor, and increment at frozen_weighted_merit are cfg(test).",
+    "physical_helpers": "The additional physical-only helper/capture paths remain cfg(all(test, feature = m1-trust-region-physical-stage)).",
+    "verdict": "No production semantic, cap, public API, manifest, lockfile, toolchain, runner, or physical-predicate change is statically observed; no Critical trigger or cargo-deny trigger is observed."
+  },
+  "validation_finding": {
+    "severity": "MEDIUM",
+    "location": "package.md prospective validation matrix",
+    "finding": "The matrix has default cargo check and feature-enabled nextest list, but no explicit default-feature libtest compilation command for the new cfg(test) counters in a normal production module.",
+    "required_fix": "Before terminal body disposition, add and run a bounded default-feature cargo nextest list -p openwepp-land-surface-energy --lib --message-format json (or equivalent no-run libtest compile), retaining its exact source/build identity. The existing feature-pair inventory remains required."
+  },
+  "limitation": "Static cfg inspection cannot establish compilation. The detached source is moving and this is not a terminal source/custody review."
+}

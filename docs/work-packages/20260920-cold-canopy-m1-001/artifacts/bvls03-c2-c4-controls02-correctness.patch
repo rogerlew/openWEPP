@@ -1,0 +1,483 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -4318,3 +4318,480 @@
+     }
+ }
+ 
++// COLD-CANOPY-M1-TR-SVD-BVLS-03 C1 is a test-scoped, non-FMA ORO primitive.
++// It has no controller, factor, physical, or materialization connection.
++#[cfg(test)]
++const REFINEMENT_DOT2_SPLITTER: f64 = 134_217_729.0;
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++enum RefinementDot2Reason {
++    NonfiniteOperand,
++    SplitterOverflow,
++    UnderflowToZero,
++    SubnormalIntermediate,
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++struct RefinementDot2Refusal {
++    reason: RefinementDot2Reason,
++    arithmetic: u16,
++    guards: u16,
++    exceptional_guards: u16,
++    signed_zero_values: u16,
++}
++
++#[cfg(test)]
++impl RefinementDot2Refusal {
++    fn reason(self) -> &'static str {
++        match self.reason {
++            RefinementDot2Reason::NonfiniteOperand => "refinement_nonfinite_operand",
++            RefinementDot2Reason::SplitterOverflow => "refinement_splitter_overflow",
++            RefinementDot2Reason::UnderflowToZero => "refinement_underflow_to_zero",
++            RefinementDot2Reason::SubnormalIntermediate => "refinement_subnormal_intermediate",
++        }
++    }
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, PartialEq)]
++struct RefinementDot2Observation {
++    value: f64,
++    initial_product_bits: u64,
++    arithmetic: u16,
++    guards: u16,
++    exceptional_guards: u16,
++    signed_zero_values: u16,
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Default)]
++struct RefinementDot2Counters {
++    arithmetic: u16,
++    guards: u16,
++    exceptional_guards: u16,
++    signed_zero_values: u16,
++}
++
++#[cfg(test)]
++fn refinement_dot2_guard(
++    value: f64,
++    counters: &mut RefinementDot2Counters,
++) -> Result<f64, RefinementDot2Reason> {
++    counters.guards += 1;
++    if value == 0.0 {
++        counters.signed_zero_values += 1;
++    }
++    if !value.is_finite() {
++        counters.exceptional_guards += 1;
++        return Err(RefinementDot2Reason::NonfiniteOperand);
++    }
++    if value != 0.0 && value.abs() < f64::MIN_POSITIVE {
++        counters.exceptional_guards += 1;
++        return Err(RefinementDot2Reason::SubnormalIntermediate);
++    }
++    Ok(value)
++}
++
++#[cfg(test)]
++fn refinement_dot2_mul(
++    left: f64,
++    right: f64,
++    counters: &mut RefinementDot2Counters,
++) -> Result<f64, RefinementDot2Reason> {
++    let value = left * right;
++    counters.arithmetic += 1;
++    refinement_dot2_guard(value, counters)?;
++    if left != 0.0 && right != 0.0 && value == 0.0 {
++        counters.exceptional_guards += 1;
++        return Err(RefinementDot2Reason::UnderflowToZero);
++    }
++    Ok(value)
++}
++
++#[cfg(test)]
++fn refinement_dot2_add(
++    left: f64,
++    right: f64,
++    counters: &mut RefinementDot2Counters,
++) -> Result<f64, RefinementDot2Reason> {
++    let value = left + right;
++    counters.arithmetic += 1;
++    refinement_dot2_guard(value, counters)
++}
++
++#[cfg(test)]
++fn refinement_dot2_sub(
++    left: f64,
++    right: f64,
++    counters: &mut RefinementDot2Counters,
++) -> Result<f64, RefinementDot2Reason> {
++    let value = left - right;
++    counters.arithmetic += 1;
++    refinement_dot2_guard(value, counters)
++}
++
++#[cfg(test)]
++fn refinement_dot2_split(
++    value: f64,
++    counters: &mut RefinementDot2Counters,
++) -> Result<(f64, f64), RefinementDot2Reason> {
++    let c = match refinement_dot2_mul(REFINEMENT_DOT2_SPLITTER, value, counters) {
++        Err(RefinementDot2Reason::NonfiniteOperand) => {
++            // `value` was admitted at primitive entry and the splitter is finite,
++            // so this exact failed multiplication is the splitter overflow.
++            return Err(RefinementDot2Reason::SplitterOverflow);
++        }
++        Err(error) => return Err(error),
++        Ok(value) => value,
++    };
++    let abig = refinement_dot2_sub(c, value, counters)?;
++    let high = refinement_dot2_sub(c, abig, counters)?;
++    let low = refinement_dot2_sub(value, high, counters)?;
++    Ok((high, low))
++}
++
++#[cfg(test)]
++fn refinement_dot2_two_product(
++    left: f64,
++    right: f64,
++    counters: &mut RefinementDot2Counters,
++) -> Result<(f64, f64), RefinementDot2Reason> {
++    // Preserve the frozen primary-product-before-Split order.
++    let product = refinement_dot2_mul(left, right, counters)?;
++    let (left_high, left_low) = refinement_dot2_split(left, counters)?;
++    let (right_high, right_low) = refinement_dot2_split(right, counters)?;
++    let left_high_right_high = refinement_dot2_mul(left_high, right_high, counters)?;
++    let remainder = refinement_dot2_sub(product, left_high_right_high, counters)?;
++    let left_low_right_high = refinement_dot2_mul(left_low, right_high, counters)?;
++    let remainder = refinement_dot2_sub(remainder, left_low_right_high, counters)?;
++    let left_high_right_low = refinement_dot2_mul(left_high, right_low, counters)?;
++    let remainder = refinement_dot2_sub(remainder, left_high_right_low, counters)?;
++    let left_low_right_low = refinement_dot2_mul(left_low, right_low, counters)?;
++    let error = refinement_dot2_sub(left_low_right_low, remainder, counters)?;
++    Ok((product, error))
++}
++
++#[cfg(test)]
++fn refinement_dot2_two_sum(
++    left: f64,
++    right: f64,
++    counters: &mut RefinementDot2Counters,
++) -> Result<(f64, f64), RefinementDot2Reason> {
++    let x = refinement_dot2_add(left, right, counters)?;
++    let z = refinement_dot2_sub(x, left, counters)?;
++    let x_minus_z = refinement_dot2_sub(x, z, counters)?;
++    let left_error = refinement_dot2_sub(left, x_minus_z, counters)?;
++    let right_error = refinement_dot2_sub(right, z, counters)?;
++    let error = refinement_dot2_add(left_error, right_error, counters)?;
++    Ok((x, error))
++}
++
++#[cfg(test)]
++fn m1_trust_region_refinement_dot2_for_test(
++    terms: [f64; 22],
++    weights: [f64; 22],
++) -> Result<RefinementDot2Observation, RefinementDot2Refusal> {
++    let mut counters = RefinementDot2Counters::default();
++    let result = (|| -> Result<RefinementDot2Observation, RefinementDot2Reason> {
++        for value in terms {
++            refinement_dot2_guard(value, &mut counters)?;
++        }
++        for value in weights {
++            refinement_dot2_guard(value, &mut counters)?;
++        }
++        let (mut p, mut s) = refinement_dot2_two_product(terms[0], weights[0], &mut counters)?;
++        let initial_product_bits = p.to_bits();
++        for index in 1..terms.len() {
++            let (h, r) = refinement_dot2_two_product(terms[index], weights[index], &mut counters)?;
++            let (next_p, q) = refinement_dot2_two_sum(p, h, &mut counters)?;
++            p = next_p;
++            let q_plus_r = refinement_dot2_add(q, r, &mut counters)?;
++            s = refinement_dot2_add(s, q_plus_r, &mut counters)?;
++        }
++        let value = refinement_dot2_add(p, s, &mut counters)?;
++        Ok(RefinementDot2Observation {
++            value,
++            initial_product_bits,
++            arithmetic: counters.arithmetic,
++            guards: counters.guards,
++            exceptional_guards: counters.exceptional_guards,
++            signed_zero_values: counters.signed_zero_values,
++        })
++    })();
++    result.map_err(|reason| RefinementDot2Refusal {
++        reason,
++        arithmetic: counters.arithmetic,
++        guards: counters.guards,
++        exceptional_guards: counters.exceptional_guards,
++        signed_zero_values: counters.signed_zero_values,
++    })
++}
++
++// These controls load independent retained operands/results; they do not
++// manufacture a candidate result or invoke a physical controller path.
++#[cfg(test)]
++mod bvls03_c1_expected_red_controls {
++    use super::m1_trust_region_refinement_dot2_for_test;
++    use serde_json::Value;
++
++    const RETAINED_CAPTURE: &str = include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-observed-capture.json"
++    ));
++    const RETAINED_RESULTS: &str = include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-results.json"
++    ));
++    const RETAINED_HISTORICAL_CAPTURE: &str = include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-observed-capture.json"
++    ));
++
++    fn bit(value: &Value) -> f64 {
++        f64::from_bits(
++            u64::from_str_radix(value.as_str().expect("binary64 hex"), 16)
++                .expect("valid binary64 bits"),
++        )
++    }
++
++    fn retained_row(case: usize, row: usize) -> ([f64; 22], [f64; 22], u64, u64) {
++        let capture: Value = serde_json::from_str(if case == 0 {
++            RETAINED_CAPTURE
++        } else {
++            RETAINED_HISTORICAL_CAPTURE
++        })
++        .expect("retained capture");
++        let results: Value = serde_json::from_str(RETAINED_RESULTS).expect("independent results");
++        let p = results["cases"][case]["first_correction"]["p_bits"]
++            .as_array()
++            .expect("retained first correction");
++        let matrix = capture["weighted_matrix"].as_array().expect("weighted matrix");
++        let residual = capture["weighted_residual"].as_array().expect("weighted residual");
++        let terms = std::array::from_fn(|index| {
++            if index == 0 {
++                bit(&residual[row])
++            } else {
++                bit(&matrix[row][index - 1])
++            }
++        });
++        let weights = std::array::from_fn(|index| {
++            if index == 0 {
++                1.0
++            } else {
++                bit(&p[index - 1])
++            }
++        });
++        let expected = u64::from_str_radix(
++            results["cases"][case]["dot2_rows"][row]["bits"]
++                .as_str()
++                .expect("retained Dot2 bits"),
++            16,
++        )
++        .expect("valid retained Dot2 bits");
++        let guards = results["cases"][case]["dot2_rows"][row]["guards"]
++            .as_u64()
++            .expect("retained guard count");
++        (terms, weights, expected, guards)
++    }
++
++    #[test]
++    fn m1_trust_region_refinement_dot2_all_retained_rows_preserve_independent_bits_and_guards() {
++        for case in 0..2 {
++            for row in 0..21 {
++                let (terms, weights, expected_bits, expected_guards) = retained_row(case, row);
++                let observed = m1_trust_region_refinement_dot2_for_test(terms, weights)
++                    .expect("admitted retained row");
++                assert_eq!(observed.value.to_bits(), expected_bits, "case {case}, row {row}");
++                assert_eq!(observed.arithmetic, 543, "case {case}, row {row}");
++                assert_eq!(u64::from(observed.guards), expected_guards, "case {case}, row {row}");
++                assert_eq!(observed.exceptional_guards, 0, "case {case}, row {row}");
++            }
++        }
++    }
++
++    #[test]
++    fn m1_trust_region_refinement_dot2_preserves_negative_zero() {
++        let observed = m1_trust_region_refinement_dot2_for_test(
++            [-0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
++                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
++            [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
++                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
++        )
++        .expect("signed-zero primitive remains admitted");
++        assert_eq!(observed.initial_product_bits, (-0.0_f64).to_bits());
++        assert_eq!(observed.value.to_bits(), 0.0_f64.to_bits());
++        assert!(observed.signed_zero_values > 0);
++    }
++
++    #[test]
++    fn m1_trust_region_refinement_dot2_refuses_guarded_primitive_domains() {
++        for (terms, weights, reason, expected) in [
++            ([f64::NAN; 22], [1.0; 22], "refinement_nonfinite_operand", (0, 1, 1, 0)),
++            ([f64::INFINITY; 22], [1.0; 22], "refinement_nonfinite_operand", (0, 1, 1, 0)),
++            ([f64::from_bits(1); 22], [1.0; 22], "refinement_subnormal_intermediate", (0, 1, 1, 0)),
++            ([f64::MIN_POSITIVE; 22], [0.5; 22], "refinement_subnormal_intermediate", (1, 45, 1, 0)),
++            ([f64::MAX; 22], [1.0; 22], "refinement_splitter_overflow", (2, 46, 1, 0)),
++            ([f64::MAX; 22], [f64::MAX; 22], "refinement_nonfinite_operand", (1, 45, 1, 0)),
++            ([f64::MIN_POSITIVE; 22], [f64::MIN_POSITIVE; 22], "refinement_underflow_to_zero", (1, 45, 1, 1)),
++        ] {
++            let refusal = m1_trust_region_refinement_dot2_for_test(terms, weights)
++                .expect_err("guarded primitive domain must refuse");
++            assert_eq!(refusal.reason(), reason);
++            assert_eq!(
++                (
++                    refusal.arithmetic,
++                    refusal.guards,
++                    refusal.exceptional_guards,
++                    refusal.signed_zero_values,
++                ),
++                expected,
++            );
++        }
++    }
++}
++
++// C2--C4 are expected-red declarations for the next reviewed seam. They bind
++// the retained source operands and independent results directly, rather than a
++// second numerical implementation or manufactured refusal values.
++#[cfg(test)]
++mod bvls03_c2_c4_expected_red_controls {
++    use super::{
++        RefinementEligibilityProbe,
++        RefinementRetainedFaceNegativeInput,
++        m1_trust_region_refinement_eligibility_for_test,
++        m1_trust_region_refinement_retained_face_for_test,
++        m1_trust_region_refinement_scratch_hooks_for_test,
++    };
++    use serde_json::Value;
++
++    const ORDINARY_CAPTURE: &str = include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-observed-capture.json"
++    ));
++    const HISTORICAL_CAPTURE: &str = include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/face-pivot-observed-capture.json"
++    ));
++    const RESULTS: &str = include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-results.json"
++    ));
++
++    fn retained(case: usize) -> (Value, Value) {
++        let capture = serde_json::from_str(if case == 0 {
++            ORDINARY_CAPTURE
++        } else {
++            HISTORICAL_CAPTURE
++        })
++        .expect("retained capture");
++        let results: Value = serde_json::from_str(RESULTS).expect("independent Dot2 results");
++        (capture, results["cases"][case].clone())
++    }
++
++    fn bits(values: &Value) -> Vec<u64> {
++        values
++            .as_array()
++            .expect("bit array")
++            .iter()
++            .map(|value| u64::from_str_radix(value.as_str().expect("binary64 bits"), 16).expect("valid bits"))
++            .collect()
++    }
++
++    fn coordinate_bits(expected: &Value, field: &str) -> Vec<u64> {
++        expected["second_correction"]["assessment"]["coordinates"]
++            .as_array()
++            .expect("assessment coordinates")
++            .iter()
++            .map(|coordinate| {
++                u64::from_str_radix(
++                    coordinate[field].as_str().expect("coordinate bits"),
++                    16,
++                )
++                .expect("valid coordinate bits")
++            })
++            .collect()
++    }
++
++    #[test]
++    fn m1_trust_region_refinement_retained_face_reuses_factor_and_reproduces_all_bits() {
++        for case in 0..2 {
++            let (capture, expected) = retained(case);
++            let observed = m1_trust_region_refinement_retained_face_for_test(&capture)
++                .expect("retained face completes through unchanged BVLS02 decision");
++            assert_eq!(observed.p0_bits, bits(&capture["operations"][1]["p_candidate"]));
++            assert_eq!(observed.delta0_free_bits, bits(&expected["first_correction"]["delta_free_bits"]));
++            assert_eq!(observed.p1_bits, bits(&expected["first_correction"]["p_bits"]));
++            assert_eq!(observed.dot2_residual_bits, expected["dot2_rows"].as_array().expect("rows").iter().map(|row| u64::from_str_radix(row["bits"].as_str().expect("row bits"), 16).expect("valid row bits")).collect::<Vec<_>>());
++            assert_eq!(observed.delta1_free_bits, bits(&expected["second_correction"]["delta_free_bits"]));
++            assert_eq!(observed.p2_bits, bits(&expected["second_correction"]["p_bits"]));
++            assert_eq!(observed.h_bits, coordinate_bits(&expected, "hhat_bits"));
++            assert_eq!(observed.cbar_bits, coordinate_bits(&expected, "cbar_bits"));
++            assert_eq!(observed.tau_bits, coordinate_bits(&expected, "tau_bits"));
++            assert_eq!(observed.classes, expected["second_correction"]["assessment"]["coordinates"].as_array().expect("coordinates").iter().map(|coordinate| coordinate["classification"].as_str().expect("class").to_owned()).collect::<Vec<_>>());
++            assert_eq!(observed.box_feasible, expected["second_correction"]["assessment"]["box_feasible"].as_bool().expect("box feasible"));
++            assert_eq!(observed.ball_feasible, expected["second_correction"]["assessment"]["ball_feasible"].as_bool().expect("ball feasible"));
++            assert_eq!(observed.factorizations_added, 0);
++            assert_eq!(observed.factor_application_count, 2);
++            assert_eq!(observed.factor_identity_before, observed.factor_identity_after);
++            assert_eq!(observed.factor_application_identities, vec![observed.factor_identity_before; 2]);
++            assert_eq!(observed.corrections, 2);
++            assert_eq!(observed.bvls02_pass, expected["second_correction"]["assessment"]["complete_bvls02_and_feasibility_pass"].as_bool().expect("BVLS02 decision"));
++        }
++    }
++
++    #[test]
++    fn m1_trust_region_refinement_scratch_never_reaches_owner_or_physical_hooks() {
++        let (capture, _) = retained(0);
++        let observed = m1_trust_region_refinement_scratch_hooks_for_test(&capture, None)
++            .expect("retained new-face scratch observation");
++        assert!(observed.p1_free_box_violation);
++        assert_eq!(observed.dot2_calls, 21);
++        assert_eq!(observed.physical_evaluator_calls, 0);
++        assert_eq!(observed.phase_calls, 0);
++        assert_eq!(observed.hydraulic_calls, 0);
++        assert_eq!(observed.merit_calls, 0);
++        assert_eq!(observed.materialization_calls, 0);
++        assert_eq!(observed.receipt_updates, 0);
++        assert_eq!(observed.owner_publications, 0);
++        assert!(observed.hook_log.is_empty());
++        assert_eq!(observed.owner_snapshot_before, observed.owner_snapshot_after);
++        assert_eq!(observed.live_state_bits_before, observed.live_state_bits_after);
++        for negative in [
++            RefinementRetainedFaceNegativeInput::FinalBoxInfeasible,
++            RefinementRetainedFaceNegativeInput::ScratchRadiusViolation,
++            RefinementRetainedFaceNegativeInput::ActiveValueMutation,
++        ] {
++            let refusal = m1_trust_region_refinement_scratch_hooks_for_test(&capture, Some(negative))
++                .expect_err("actual mutated retained input must refuse");
++            assert_eq!(refusal.input, negative);
++            assert_eq!(refusal.returned_step, None);
++            assert_eq!(refusal.materialization_calls, 0);
++            assert_eq!(refusal.physical_evaluator_calls, 0);
++            assert!(refusal.hook_log.is_empty());
++            assert_eq!(refusal.owner_snapshot_before, refusal.owner_snapshot_after);
++            assert_eq!(refusal.live_state_bits_before, refusal.live_state_bits_after);
++        }
++    }
++
++    #[test]
++    fn m1_trust_region_refinement_eligibility_uses_raw_face_predicates_and_counts_denied_work() {
++        let (capture, _) = retained(0);
++        let base = RefinementEligibilityProbe::from_captured_face(&capture);
++        for (probe, expected_action) in [
++            (base.with_lambda(0.0), "refine"),
++            (base.with_lambda(-0.0), "refine"),
++            (base.with_lambda(1.0), "bvls02"),
++            (base.with_trust_radius(base.p0_norm()), "bvls02"),
++            (base.with_p0_free_coordinate_outside_box(), "bvls02"),
++        ] {
++            let observed = m1_trust_region_refinement_eligibility_for_test(&capture, probe)
++                .expect("actual raw eligibility probe");
++            assert_eq!(observed.action, expected_action);
++            assert_eq!(observed.maximum_corrections, if expected_action == "refine" { 2 } else { 0 });
++            assert_eq!(observed.attempted_work_after, observed.attempted_work_before + observed.denied_work);
++            assert_eq!(observed.nested_budget_before, observed.nested_budget_after);
++        }
++    }
++}

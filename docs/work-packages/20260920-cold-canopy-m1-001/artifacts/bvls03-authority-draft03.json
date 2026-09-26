@@ -1,0 +1,50 @@
+{
+  "evidence_class": "Static: narrow prospective authority correction from draft02 correctness HOLD; no body/runtime mutation, numerical calculation, physical command, or target execution",
+  "status": "PROPOSED — draft03 requires same-reviewer correctness fix verification and independent QA confirmation before C1 authoring",
+  "method_id": "COLD-CANOPY-M1-TR-SVD-BVLS-03",
+  "supersedes_draft02": {
+    "authority_sha256": "6da7018ad6bb0dadb6cc74bad77754a7942dcade87d73aa8fb2678e18ac4546e",
+    "draft02_evidence_sha256": "be5f5230a1d69d01f2684636f3052966845d8101cdeba6a8900949a54c6888cf",
+    "preserved_exact_patch": "artifacts/bvls03-authority-draft02-from-base.patch",
+    "preserved_exact_patch_sha256": "09a4c492682d91a6523b26e72b2f0069d0e58e327b39c3c7c6b5ef028a5926e3"
+  },
+  "authority": {
+    "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "sha256": "2e60b5c0257d54f3cf74dc0a2d172844c8f16a996986502e510f2e6d987c5c98"
+  },
+  "draft03_corrections": {
+    "primitive_guard_order": "source operands; primary product; splitter product and Split outputs; EFT remainder; TwoSum result/remainder; accumulation; factor output; update. Only nonzero multiplication rounded to zero refuses. Additive cancellation and signed zero remain admitted.",
+    "scratch_radius": "p1 must have finite ordered lambda_norm(p1) <= input.initial_radius before Dot2 correction 2.",
+    "complete_work": {
+      "R_m": "12306 + 88*m^2 + 138*m",
+      "included_reused_work": "39816 enclosure + 1827 ordered KKT + 129 for lambda_norm(p0), lambda_norm(p1), lambda_norm(p2)",
+      "K_m": "R(m) + 41772; at m=21, 95784 scalar/upward operations",
+      "guard_derivation": "Three input/result guards per K(m) operation plus E(m)=213+2*m explicit seam events: p0 85+m, p1 43+m, p2 85.",
+      "G_m": "3*K(m) + E(m); at m=21, 287607 guards",
+      "proposal_caps_43_faces": {
+        "scalar_upward_operations": 4118712,
+        "guard_events": 12367101
+      },
+      "admission": "Counters have capacity before entry and increment before every operation/guard, including denied entry, scratch, and refusal work; cap exhaustion preserves the owning WorkCap refusal."
+    },
+    "stage_order": [
+      "reviewed authority",
+      "expected-red C1 tests before primitive body",
+      "primitive body",
+      "compiled-release C1 equivalence and review",
+      "expected-red C2–C4 before each corresponding controller/body seam",
+      "reviewed body, green controls, and body review",
+      "separate source/manifest and parent release before the sole physical command"
+    ]
+  },
+  "unchanged_boundaries": [
+    "All accepted draft02 p0, typed-refusal, RefinementScratch, scope-restoration, historical-control, and physical-positive rules remain unchanged.",
+    "No main Rust or detached-runtime mutation in this authority stage.",
+    "No new numerical method, time, target, or physical execution authority."
+  ],
+  "remaining_acceptance": [
+    "Same correctness reviewer verifies draft03 against all draft02 findings.",
+    "Independent QA confirms authority/control/cadence scope.",
+    "Parent separately releases only expected-red C1 authoring after both reviews."
+  ]
+}

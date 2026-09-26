@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static: targeted working-source fix verification; no compile, Rust test, Python/candidate replay, physical command, or target execution by reviewer",
+  "disposition": "TARGETED_FINDINGS_FIXED_API_AND_ACCOUNTING_REVIEW_PENDING",
+  "reviewed_stage1_sha256": "852de1a61293eb51c913b21be3733380e767228567cdcc188f21708b20e52bd2",
+  "source_stability": "The stage1 SHA matched before and after this targeted inspection.",
+  "verified_fixes": [
+    {
+      "finding": "Algebraic eligibility and post-entry EFT source guards were conflated.",
+      "verification": "refinement_eligibility_active_admit now checks completed-face finiteness and exact active bits without rejecting finite subnormals. A finite free subnormal proceeds into the admitted refinement, where refinement_first_residual applies the normal-or-zero source guard and returns the typed refinement refusal rather than falling back to BVLS-02."
+    },
+    {
+      "finding": "Refinement and unchanged BVLS-02 optimality refusal kinds were swapped.",
+      "verification": "refinement_refusal now uses TrustRegionRefinementIndeterminate; optimality_state_refusal now retains TrustRegionOptimalityIndeterminate."
+    },
+    {
+      "finding": "A p1 ordered-norm arithmetic failure was mislabeled subnormal.",
+      "verification": "The p1 lambda_norm error maps to refinement_nonfinite_operand, while a finite norm above the trust radius remains refinement_scratch_radius."
+    },
+    {
+      "finding": "The retained m=20 one-less reservation used global m=21 maxima.",
+      "verification": "The control now supplies remaining K/G 92037/276366 and required K(20)/G(20) 92038/276367."
+    }
+  ],
+  "residual_risk": "The reservation adapter is unfinished; frozen-body review must prove it derives m and required K(m)/G(m) from the actual shared face rather than trusting caller-provided expected values. Exact guard-counter retention and counted-once eligibility work also remain open for that review.",
+  "approval": "No blocker remains from the four targeted working01 findings. This is not full body/API approval."
+}

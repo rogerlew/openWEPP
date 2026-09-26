@@ -1,0 +1,25 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3462:14
+     |
+3462 |         Self(prior)
+     |         ---- ^^^^^ expected `Option<RefinementRawCandidateMutation>`, found `Option<Option<...>>`
+     |         |
+     |         arguments to this function are incorrect
+     |
+     = note: expected enum `std::option::Option<RefinementRawCandidateMutation>`
+                found enum `std::option::Option<std::option::Option<RefinementRawCandidateMutation>>`
+note: tuple struct defined here
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3449:8
+     |
+3449 | struct RefinementMutationScope(Option<RefinementRawCandidateMutation>);
+     |        ^^^^^^^^^^^^^^^^^^^^^^^
+help: consider using `Option::expect` to unwrap the `std::option::Option<std::option::Option<RefinementRawCandidateMutation>>` value, panicking if the value is an `Option::None`
+     |
+3462 |         Self(prior.expect("REASON"))
+     |                   +++++++++++++++++
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

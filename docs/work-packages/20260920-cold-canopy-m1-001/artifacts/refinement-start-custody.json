@@ -1,0 +1,28 @@
+{
+  "evidence_class": "Ran: byte custody and closing ledger inspection only; no numerical replay",
+  "base_commit": "9fbc5b317f493121017325eab1e537167cb95f2e",
+  "runtime": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "runtime_tree_sha256": "d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884",
+  "entries": 764,
+  "stage1_sha256": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a",
+  "anchor_utc": "2026-09-26T02:00:00Z",
+  "anchor_basis": "Conservative minute floor before first reading; no reanchoring or wait deductions",
+  "carry_seconds": "350533.959294",
+  "ceiling_seconds": "364933.959294",
+  "available_seconds": 14400,
+  "hard_deadline_utc": "2026-09-26T06:00:00Z",
+  "launch_cutoff_utc": "2026-09-26T05:30:00Z",
+  "reserve_seconds": 1800,
+  "later_greater_receipts": [],
+  "retained_hashes": {
+    "dot2-results.json": "fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b",
+    "dot2-correctness.json": "3decf52fb3a48fcc1f34a9132334cda6e31746f5d20c0bb830c248ef02c5ade6",
+    "dot2-final-ledger.json": "bb3fa00c948850df64a917ffb831370979c6588d98ac2ce4b2845f2d80e66d5d",
+    "dot2-publication.json": "21bea474affe2cc3100e97feaf5152d66f374dec3c07f33b68282c31d21718ed"
+  },
+  "authorization_sha256": "771a3d605b9817fc62c082bbf338c8b6c67b3ef2879f606d76f030c294153ff4",
+  "unrelated_dirty_sha256": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  }
+}

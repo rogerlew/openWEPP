@@ -1,0 +1,23 @@
+{
+  "evidence_class": "Ran: publication-only staged diff hygiene; no candidate validation",
+  "all_staged_diff_check_exit_code": 2,
+  "diagnostic_counts_by_artifact_suffix": [
+    {
+      "suffix": ".patch",
+      "diagnostic": "trailing whitespace.",
+      "count": 2656
+    },
+    {
+      "suffix": ".stderr",
+      "diagnostic": "trailing whitespace.",
+      "count": 113
+    },
+    {
+      "suffix": ".stdout",
+      "diagnostic": "new blank line at EOF.",
+      "count": 3
+    }
+  ],
+  "maintained_documents_and_recorder_diff_check_exit_code": 0,
+  "disposition": "Raw retained patches/logs/preedit evidence is byte-preserved; whitespace in artifacts is not rewritten to make a hygiene check pass. This does not waive introduced Rust lint."
+}

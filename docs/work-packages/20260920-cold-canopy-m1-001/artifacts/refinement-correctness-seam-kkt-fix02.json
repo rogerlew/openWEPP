@@ -1,0 +1,50 @@
+{
+  "artifact": "refinement-correctness-seam-kkt-fix02",
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static plus inspection of parent-run receipts; no reviewer execution",
+  "scope": "Combined second KKT/upward fix review and first full E(m) seam fix review",
+  "reviewed_source": {
+    "path_at_review": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "sha256_before_and_after_static_read": "5b59aa0a593b86ca69315ea97ceb497e12941cd7ab05c9a53ad1adc658daba6e",
+    "receipt_binding": "refinement-accounting-debug03-source.json and refinement-lint02-source.json bind the same hash; both receipts report source_unchanged=true",
+    "recoverable_delta": "refinement-accounting-debug03-from-observer-cut02.patch"
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "status": "blocking",
+      "location": "refinement_p0 free-coordinate loop",
+      "finding": "p0 free assignment is charged as one scalar operation per free coordinate. It is a seam assembly/equality obligation, not a rounded scalar operation in K. It both inflates K actuals and supplies only half of the required p0 free seam events.",
+      "evidence": "For m=20, debug03 reports retained scalar 58896 rather than 58876 and eligibility scalar 63 rather than 43.",
+      "required_correction": "Remove the scalar charge. For each free coordinate in retained order, charge one guard for source/assembly and one guard for the post-assignment bit-equality admission; mismatch returns the existing typed refinement factor-output refusal. The p0 seam then totals 42 box + 21 finite + (21-m) active equality + 1 radius + 2m assembly/equality = 85+m."
+    },
+    {
+      "severity": "high",
+      "status": "blocking",
+      "location": "final p2 installation into solution.trace.step",
+      "finding": "The final p2 seam lacks one result/install admission per free coordinate. Its current seam count is 42 box + 21 finite + (21-m) active equality + 1 radius = 85-m, below the fixed p2=85 derivation.",
+      "required_correction": "Charge one guard per free p2 value at the ordered final installation/check. This is guard-only and must not change K scalar accounting."
+    }
+  ],
+  "accepted_fixes": [
+    "KKT/upward: zero shortcuts no longer invent a result admission; release-ratio result admission now dual-books whole work and eligible-face guards; operation-before-next_up and result-before-validation order remains correct.",
+    "KKT/upward: retained expected values 1827 KKT operations, 5503 KKT guards, enclosure 6654/6522, enclosure guards 65916/65781, and scalar totals 58876/58744 are correct.",
+    "Seam: lower and upper comparisons are separately charged in execution order and short-circuit failures retain partial work.",
+    "Seam: finite admission and active-bit equality are separate events; field arguments resolve the prior mutable/immutable state borrow conflict.",
+    "Seam: p1 evaluates only free-coordinate rejected-box bounds and now totals 2m box + 21 finite + (21-m) active equality + 1 radius = 43+m.",
+    "Seam: p0, p1, and p2 radius comparisons are charged.",
+    "Admission: required K/G subtraction uses checked_sub and returns the owning work-cap refusal when prior eligibility exceeds the authorized bound."
+  ],
+  "inspected_parent_execution": {
+    "debug_receipt": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-accounting-debug03.json",
+    "result": "exit 100; 6 selected tests ran, 4 passed and 2 failed. Failures are scalar 58896 vs 58876 and eligibility scalar63 vs43. Source, observer base, pins, and support links unchanged.",
+    "classification": "The run supports the two findings and the preceding KKT/upward assertions, but it is not green validation.",
+    "lint_receipt": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-lint02.json",
+    "lint_classification": "exit101 amid repository lint debt; not a numerical or control result"
+  },
+  "residual_risk_and_missing_tests": [
+    "A stable fix cut and parent-run exact controls must establish scalar 58876/58744, eligibility scalar43, p0 seam 85+m, p1 seam43+m, p2 seam85, and unchanged numerical bits.",
+    "Controller aggregate Jacobi sweeps, controller error propagation, and typed refusal metadata remain later scopes."
+  ],
+  "verdict": "KKT/upward accounting PASS statically; seam/accounting remains BLOCKED on two exact E/K defects."
+}

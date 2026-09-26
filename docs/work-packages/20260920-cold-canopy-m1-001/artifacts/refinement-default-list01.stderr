@@ -1,0 +1,400 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find `M1PhysicalBudgetSnapshot` in `crate`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6517:25
+     |
+6517 |             Some(crate::M1PhysicalBudgetSnapshot::default())
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1PhysicalBudgetSnapshot` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:31:12
+     |
+  29 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+  30 | #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+  31 | pub struct M1PhysicalBudgetSnapshot {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1FacePivotCapture` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:897:47
+    |
+897 | fn populated_face_pivot_capture_for_test() -> M1FacePivotCapture {
+    |                                               ^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `M1FacePivotCapture` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:898:5
+    |
+898 |     M1FacePivotCapture {
+    |     ^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `M1FacePivotSubproblemSummary` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:909:37
+    |
+909 |         completed_subproblems: vec![M1FacePivotSubproblemSummary {
+    |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `M1FacePivotAcceptedInstall` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:916:33
+    |
+916 |         accepted_installs: vec![M1FacePivotAcceptedInstall {
+    |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `M1FacePivotPostUpdateAdmission` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:932:38
+    |
+932 |         post_update_admissions: vec![M1FacePivotPostUpdateAdmission {
+    |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `M1FacePivotCaptureRefusal` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:958:23
+    |
+958 |         refusal: Some(M1FacePivotCaptureRefusal {
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `m1_face_pivot_capture_begin_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5566:29
+     |
+5566 |         let _scope = super::m1_face_pivot_capture_begin_for_test();
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:348:15
+     |
+ 347 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+ 348 | pub(crate) fn m1_face_pivot_capture_begin_for_test() -> M1FacePivotCaptureScope {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_take_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5569:30
+     |
+5569 |         let capture = super::m1_face_pivot_capture_take_for_test()
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:376:15
+     |
+ 375 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+ 376 | pub(crate) fn m1_face_pivot_capture_take_for_test() -> Option<M1FacePivotCapture> {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_begin_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5609:29
+     |
+5609 |         let _scope = super::m1_face_pivot_capture_begin_for_test();
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:348:15
+     |
+ 347 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+ 348 | pub(crate) fn m1_face_pivot_capture_begin_for_test() -> M1FacePivotCaptureScope {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_take_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5614:30
+     |
+5614 |         let capture = super::m1_face_pivot_capture_take_for_test()
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:376:15
+     |
+ 375 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+ 376 | pub(crate) fn m1_face_pivot_capture_take_for_test() -> Option<M1FacePivotCapture> {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_begin_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5670:29
+     |
+5670 |         let _scope = super::m1_face_pivot_capture_begin_for_test();
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:348:15
+     |
+ 347 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+ 348 | pub(crate) fn m1_face_pivot_capture_begin_for_test() -> M1FacePivotCaptureScope {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_take_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5694:30
+     |
+5694 |         let capture = super::m1_face_pivot_capture_take_for_test()
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:376:15
+     |
+ 375 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+ 376 | pub(crate) fn m1_face_pivot_capture_take_for_test() -> Option<M1FacePivotCapture> {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_begin_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5718:29
+     |
+5718 |         let _scope = super::m1_face_pivot_capture_begin_for_test();
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:348:15
+     |
+ 347 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+ 348 | pub(crate) fn m1_face_pivot_capture_begin_for_test() -> M1FacePivotCaptureScope {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_take_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5747:30
+     |
+5747 |         let capture = super::m1_face_pivot_capture_take_for_test()
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:376:15
+     |
+ 375 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+ 376 | pub(crate) fn m1_face_pivot_capture_take_for_test() -> Option<M1FacePivotCapture> {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_begin_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5779:29
+     |
+5779 |         let _scope = super::m1_face_pivot_capture_begin_for_test();
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:348:15
+     |
+ 347 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+ 348 | pub(crate) fn m1_face_pivot_capture_begin_for_test() -> M1FacePivotCaptureScope {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_take_for_test` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5807:20
+     |
+5807 |             super::m1_face_pivot_capture_take_for_test().expect("shared free-stationarity capture");
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:376:15
+     |
+ 375 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+ 376 | pub(crate) fn m1_face_pivot_capture_take_for_test() -> Option<M1FacePivotCapture> {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `populated_face_pivot_operation_for_test` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:915:26
+    |
+915 |         operations: vec![populated_face_pivot_operation_for_test()],
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `M1TrustRegionCurrentHydraulics` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:937:34
+    |
+937 |             previous_hydraulics: M1TrustRegionCurrentHydraulics::Complete([1.0; 8]),
+    |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionCurrentHydraulics`
+
+error[E0433]: cannot find type `M1TrustRegionCurrentHydraulics` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:944:33
+    |
+944 |             current_hydraulics: M1TrustRegionCurrentHydraulics::Complete([2.0; 8]),
+    |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionCurrentHydraulics`
+
+error[E0609]: no field `global_before` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6492:22
+     |
+6492 |             observed.global_before.activity,
+     |                      ^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `global_after` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6493:22
+     |
+6493 |             observed.global_after.activity
+     |                      ^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `global_before` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6496:22
+     |
+6496 |             observed.global_before.accepted_binding,
+     |                      ^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `global_after` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6497:22
+     |
+6497 |             observed.global_after.accepted_binding
+     |                      ^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `global_after` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6500:22
+     |
+6500 |             observed.global_after.phase_join_selections
+     |                      ^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `global_before` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6501:28
+     |
+6501 |                 - observed.global_before.phase_join_selections,
+     |                            ^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `global_after` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6505:22
+     |
+6505 |             observed.global_after.frozen_weighted_merit_entries
+     |                      ^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `global_before` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6506:28
+     |
+6506 |                 - observed.global_before.frozen_weighted_merit_entries,
+     |                            ^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `budget_before` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6513:26
+     |
+6513 |         assert!(observed.budget_before.is_some());
+     |                          ^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `budget_before` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6514:29
+     |
+6514 |         assert_eq!(observed.budget_before, observed.budget_after);
+     |                             ^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `budget_after` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6514:53
+     |
+6514 |         assert_eq!(observed.budget_before, observed.budget_after);
+     |                                                     ^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `budget_before` on type `RefinementScratchHooksObservation`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6516:22
+     |
+6516 |             observed.budget_before,
+     |                      ^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `p1_free_box_violation`, `physical_evaluator_calls`, `hydraulic_calls`, `materialization_calls`, `live_state_bits_before`, `live_state_bits_after`
+
+error[E0609]: no field `budget_before` on type `RefinementObservationRefusal`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6575:29
+     |
+6575 |             assert!(refusal.budget_before.is_some());
+     |                             ^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `reason`, `returned_step`, `bvls02_fallback_calls`, `materialization_calls`, `physical_evaluator_calls` ... and 20 others
+
+error[E0609]: no field `budget_before` on type `RefinementObservationRefusal`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6576:32
+     |
+6576 |             assert_eq!(refusal.budget_before, refusal.budget_after);
+     |                                ^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `reason`, `returned_step`, `bvls02_fallback_calls`, `materialization_calls`, `physical_evaluator_calls` ... and 20 others
+
+error[E0609]: no field `budget_after` on type `RefinementObservationRefusal`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6576:55
+     |
+6576 |             assert_eq!(refusal.budget_before, refusal.budget_after);
+     |                                                       ^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `reason`, `returned_step`, `bvls02_fallback_calls`, `materialization_calls`, `physical_evaluator_calls` ... and 20 others
+
+error[E0609]: no field `global_before` on type `RefinementObservationRefusal`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6577:32
+     |
+6577 |             assert_eq!(refusal.global_before, refusal.global_after);
+     |                                ^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `reason`, `returned_step`, `bvls02_fallback_calls`, `materialization_calls`, `physical_evaluator_calls` ... and 20 others
+
+error[E0609]: no field `global_after` on type `RefinementObservationRefusal`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6577:55
+     |
+6577 |             assert_eq!(refusal.global_before, refusal.global_after);
+     |                                                       ^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `reason`, `returned_step`, `bvls02_fallback_calls`, `materialization_calls`, `physical_evaluator_calls` ... and 20 others
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2324:5
+     |
+2324 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3633:13
+     |
+3633 |         Err(mut refusal) => {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3624:9
+     |
+3624 |     let before = initial_state.p.map(f64::to_bits);
+     |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_before`
+
+warning: unused variable: `lower_before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3904:9
+     |
+3904 |     let lower_before = state.lower_active.to_vec();
+     |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_lower_before`
+
+warning: unused variable: `upper_before`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3905:9
+     |
+3905 |     let upper_before = state.upper_active.to_vec();
+     |         ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_upper_before`
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4575:5
+     |
+4575 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: unused variable: `prepared`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4576:5
+     |
+4576 |     prepared: &PreparedSubproblem,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_prepared`
+
+Some errors have detailed explanations: E0422, E0425, E0433, E0609.
+For more information about an error, try `rustc --explain E0422`.
+warning: `openwepp-land-surface-energy` (lib test) generated 7 warnings
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 37 previous errors; 7 warnings emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib` exited with code 101

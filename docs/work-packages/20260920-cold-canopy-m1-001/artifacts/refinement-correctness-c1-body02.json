@@ -1,0 +1,46 @@
+{
+  "reviewer": "/root/refinement_correctness",
+  "role": "independent numerical correctness reviewer for BVLS-03 C1",
+  "evidence_class": "Static source/control review plus inspection of parent-run compiled-release evidence; reviewer ran no candidate, Python, Rust, physical, or target command",
+  "reviewed_source": {
+    "stage1_path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "stage1_sha256": "539c91b660d48c0ec2e05e77cd4c20ba5157585e51972a407bba26d9e1d292ce",
+    "patch_sha256": "124fd4add546806eabbe624dc59d28cae2069bd51be585cd6e836c8b62580b25",
+    "freeze_sha256": "c4706f4984ac28e4d90c979178a2c26c013d2cc52728314bc2d60e7810678fb0",
+    "authority_sha256": "2db1f366ef1cc8145d44ac9d90eed8c1ac2ac871ac8d503946c8c24bdc174c71",
+    "retained_result_sha256": "fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b",
+    "independent_certificate_sha256": "3decf52fb3a48fcc1f34a9132334cda6e31746f5d20c0bb830c248ef02c5ade6"
+  },
+  "verdict": "HOLD — C1 does not yet compile and refusal-counter retention is not discriminating",
+  "verified_source_properties": [
+    "The scalar Rust statements preserve the frozen primary-product-before-Split, Split, TwoProduct, TwoSum, and Dot2 parenthesization and fixed 22-term order without mul_add, reduction, sorting, or reassociation in source.",
+    "Inputs and every arithmetic result reject nonfinite and nonzero subnormal values; only a multiplication of two nonzero operands rounded to zero reports refinement_underflow_to_zero; additive cancellation and signed zero remain admitted.",
+    "The splitter maps the already-counted failed finite splitter multiplication to refinement_splitter_overflow without recomputing it.",
+    "The retained-row control uses both authenticated captures, the first-correction vector, all 42 expected output bits, 543 arithmetic operations per row, and retained guard counts. The author-result bits are independently supported by the bound independent certificate.",
+    "The signed-zero control distinguishes an initial negative-zero product from the final positive-zero Dot2 result."
+  ],
+  "findings": [
+    {
+      "severity": "HIGH",
+      "location": "m1_trust_region_stage1.rs:4608; refinement-c1-release01",
+      "finding": "The parent-dispatched release build fails because observed.guards is u16 and expected_guards is u64. Zero tests execute, so compiled-release bit identity, non-contraction, signed-zero behavior, reasons, and counters are not established.",
+      "required_fix": "Use an explicit checked or lossless widening for the comparison, preserve the failed receipt, freeze the corrected source, and execute the authorized compiled-release C1 command once on that corrected cut."
+    },
+    {
+      "severity": "HIGH",
+      "location": "m1_trust_region_stage1.rs:4628-4646",
+      "finding": "The guarded-domain control does not prove failure-counter retention. Broad inequalities would pass if refusal counters were reset or largely fabricated, despite later work-cap accounting depending on exact completed work.",
+      "required_fix": "Assert the exact deterministic tuple (arithmetic, guards, exceptional_guards, signed_zero_values) for each case. Static source order gives NaN (0,1,1,0), infinity (0,1,1,0), source subnormal (0,1,1,0), MIN_POSITIVE times 0.5 (1,45,1,0), MAX times 1 splitter overflow (2,46,1,0), MAX times MAX (1,45,1,0), and MIN_POSITIVE squared (1,45,1,1)."
+    }
+  ],
+  "parent_run_evidence": {
+    "receipt_sha256": "bf23a54ecec1e41332e7ed11f340e9c8283550e45a3f84bb6c24a4106e59d0f8",
+    "stderr_sha256": "9ff77b7f6e9091c9c96c8262e9346567ffc9493636212c73f051adee3d0d091a",
+    "stdout_sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244",
+    "result": "FAIL at compilation with two type-mismatch diagnostics; zero tests executed; source and pinned inputs unchanged"
+  },
+  "residual_risk_and_missing_tests": [
+    "Compiler contraction and release-mode exact bits remain untested because release01 did not compile.",
+    "C1 has no controller, factor reuse, scratch, final feasibility, KKT, work-cap, physical, or materialization integration; those remain C2-C4 obligations."
+  ]
+}

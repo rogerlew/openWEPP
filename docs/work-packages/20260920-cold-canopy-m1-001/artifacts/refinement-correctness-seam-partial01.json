@@ -1,0 +1,54 @@
+{
+  "artifact": "refinement-correctness-seam-partial01",
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static; no compilation, Rust/Python test, candidate replay, physical run, or target run by reviewer",
+  "scope": "BVLS03 p0/p1/p2 seam guards, admission subtraction, and partial-work category retention",
+  "reviewed_delta": {
+    "base": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-api-seam-partial-preedit-864f11f7eb1b.rs",
+      "sha256": "864f11f7eb1b3ac3868c22ca7ebb95bbee10b03f893f7111535f56bea4cbbfae"
+    },
+    "reviewed": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-api-kkt-actual-preedit-87bdd1e9ce69.rs",
+      "sha256": "87bdd1e9ce69b842983ec6574426905459f3d442103b0bc0119e0a3a0b80d027"
+    },
+    "moving_source_limit": "The live Stage1 source was changing in a separate tranche; this review binds only the two preserved copies."
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "status": "blocking",
+      "location": "reviewed source lines 4314-4317",
+      "finding": "saturating_sub silently converts an eligibility delta greater than the authorized K/G bound into zero remaining reservation. This could admit a face whose later work is no longer covered by the finite cap proof.",
+      "required_correction": "Use checked subtraction. If the already-executed eligibility delta exceeds the per-face scalar or guard bound, return the owning typed work-cap/accounting refusal before correction work."
+    },
+    {
+      "severity": "high",
+      "status": "blocking",
+      "location": "reviewed source lines 4113-4175 and 4292-4300, 4406-4439, 4510 onward",
+      "finding": "The fixed E(m) seam guards remain incomplete. The box helper charges one event for two separately evaluated lower/upper comparisons; active admission does not charge the separately executed active-value bit equality; p0 free assembly/equality and all p0/p1/p2 radius comparisons remain uncharged.",
+      "required_correction": "Increment each fixed semantic seam event immediately before it executes and retain short-circuit partial counts. Keep predicates within one source/result admission grouped as one event. Bind the successful-path totals to p0=85+m, p1=43+m, and p2=85 without changing eligibility or refusal precedence."
+    },
+    {
+      "severity": "medium",
+      "status": "blocking pending derivation match",
+      "location": "reviewed source lines 4127-4141 and 4406-4408",
+      "finding": "p1 rejected-box observation currently reuses the all-21-coordinate box helper. The authority permits an inactive free-coordinate box violation and fixes the p1 seam bound as 43+m; the checked coordinate set and lower/upper event count must match that derivation.",
+      "required_correction": "Use or explicitly demonstrate the authority-derived free-coordinate p1 rejected-box check while preserving full original-box checks for p0 and p2."
+    }
+  ],
+  "accepted_changes": [
+    "The Stage1 module is itself compiled only under cfg(test), so the cfg(test) eligibility snapshots are present whenever this module compiles; they are not a production compile defect.",
+    "Both residual refusal arms absorb partial Dot2 counters and now retain their partial arithmetic in first_residual_operations/second_dot2_operations.",
+    "Both factor applications snapshot the scalar ledger before lambda_step and assign their category delta before mapping an error, preserving partial failure work.",
+    "Both factor-output validation loops absorb counters on success and at the first refusal.",
+    "Coordinate updates absorb the helper's exact arithmetic/guard counters and retain partial failure work rather than substituting a manual success-only charge.",
+    "p1 box feasibility is computed from the actual private scratch vector and carried into the observation rather than inferred from p2 or a canned flag.",
+    "SVD no-convergence now uses state_refusal, retaining prior monotonic ledger work."
+  ],
+  "residual_risk_and_missing_tests": [
+    "A stable fix cut must prove exact successful E(m) totals, short-circuit refusal counts, and checked admission subtraction.",
+    "Refusal metadata fields and controller propagation are separate open review scopes."
+  ],
+  "verdict": "BLOCKED on three concrete seam/admission defects; accepted partial-work retention changes may be retained."
+}

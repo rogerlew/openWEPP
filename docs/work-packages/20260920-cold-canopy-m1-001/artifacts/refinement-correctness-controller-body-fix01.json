@@ -1,0 +1,33 @@
+{
+  "artifact": "refinement-correctness-controller-body-fix01",
+  "reviewer": "/root/refinement_correctness",
+  "evidence_class": "Static fix verification plus read-only inspection of parent-run receipt; no execution by reviewer",
+  "supersedes_conditional_verdict_in": "refinement-correctness-controller-body01.json",
+  "reviewed_source": {
+    "tree_sha256": "76db774aa7fbbf32fb236dbcf8e9079d53daf6a3c95ab7db6695f8856362648d",
+    "stage1_sha256": "30b062a2907600b186bc700af16b221aa7fba286fdd40016d833b02d6b1ce75e",
+    "lib_sha256": "db360883d6580b1b61c3414f906980ea5b7881db78f63b6dadf230580a82a436",
+    "controller_sha256": "4e3273b8ed8b67c6c5ff6cc8106e2b09a9ebfb9de2462ddeb4e2c2a419ff867f",
+    "interface_sha256": "13961a4b1824a5a1006dcdb2491ab225fd15c43d36af669c8f9ab3a106f43046",
+    "controls_sha256": "127c07049696c9de16b9fb8004dea03eb822f463bfd95eddaa180830ab5a177f",
+    "physical_adapter_sha256": "5cb766c2f92981109ea6c90777763c1d15f6696f2ba3ccc86c997b495d451948"
+  },
+  "fix_verification": "The only substantive difference from the reviewed 91cb Stage1 cut adds zero total_jacobi_sweeps initializers to the two direct test-state literals; removal of two unused local vectors has no arithmetic or observation effect. The known compile block is closed without changing the reviewed controller accounting path.",
+  "parent_run_receipt": {
+    "path": "refinement-controller-debug02.json",
+    "sha256": "986de1fcaad3c7b0547b722b5cccfc10414528f9589880254e1e00a7584e9c99",
+    "source_receipt_sha256": "4774abefe105a4ce1e120e5703a9752847761cb8656c641dc3f2e12a97c6bdf2",
+    "exit_code": 0,
+    "elapsed_seconds": 21.308264933992177,
+    "result": "7 tests run, 7 passed, 358 skipped",
+    "source_unchanged": true,
+    "observer_base_unchanged": true,
+    "support_links_unchanged": true,
+    "pinned_files_unchanged": true,
+    "automatic_retries": 0,
+    "timed_out": false
+  },
+  "findings": [],
+  "residual_risk": "This receipt covers the selected BVLS03 refinement/controller controls. Metadata provenance is a separate pending tranche and is not included in this disposition.",
+  "verdict": "PASS: the controller accounting body, error propagation, once-per-boundary observation hook, seed-excluded Jacobi aggregation, and physical adapter observation are accepted for the reviewed frozen source."
+}
