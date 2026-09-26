@@ -1,0 +1,55 @@
+{
+  "schema": "cold-canopy-m1-dot2-qa-review/v1",
+  "reviewer": "/root/accuracy_qa (new independent session)",
+  "independence": "Distinct from /root/dot2_author and /root/accuracy_correctness. This reviewer does not claim continuity with an unavailable historical /root/accuracy_qa session.",
+  "review_scope": "QA/evidence, custody, frozen-protocol, acceptance-reporting, cost-accounting, and scoped-diff review of M1-DOT2-RESIDUAL-PROTOTYPE-01. No Rust, engine, physics, canonical-authority, or numerical-candidate source change was made.",
+  "evidence_class": {
+    "static": [
+      "Read the adopted authorization, package prototype section through the next retained-audit heading, root/package instructions, and review procedure.",
+      "Inspected protocol, start custody, pre-run review/release, primitive controls, calculator, result, execution receipt, accepted audit receipts/captures, and final scoped diff.",
+      "Verified authorization SHA-256 b2bcfefd60ec347be36f5c1c886b0b73b20c5a988f855c87f25493baab37f441; base 9f7230eca9de4889d6eaf92b548742b2bff26b19; both capture hashes; and result dependency hashes against current bytes."
+    ],
+    "ran": [
+      "AST parsing of dot2 primitive/prototype/preflight sources.",
+      "One bounded frozen replay to /tmp/dot2-qa-replay.json after the recorded independent pre-run release; byte-identical to preserved dot2-results.json (SHA-256 fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b). No repository result was overwritten.",
+      "Arithmetic reconciliation: 21*543=11403, 21*(543,587,741,87)=(11403,12327,15561,1827), and 903 + 2*18960 + 2*20 + 11403 = 50266."
+    ],
+    "not_run": [
+      "No independent numerical reconstruction; that is covered by dot2-correctness.json.",
+      "No Rust build/test, engine, physical evaluator, or full campaign."
+    ]
+  },
+  "custody": {
+    "base_commit": "9f7230eca9de4889d6eaf92b548742b2bff26b19",
+    "branch": "main",
+    "anchor_utc": "2026-09-26T00:28:00Z",
+    "carry_seconds": "349333.959294",
+    "ceiling_seconds": "353893.959294",
+    "calculation_cutoff_utc": "2026-09-26T01:14:00Z",
+    "hard_deadline_utc": "2026-09-26T01:44:00Z",
+    "reserve_seconds": 1800,
+    "prior_ledger_check": "face-accuracy-final-ledger.json carries 347833.959294 seconds at its prior anchor; dot2-start-custody.json conservatively retains the authorized 349333.959294-second carry with no refund.",
+    "captures": {
+      "ordinary_positive": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+      "historical_near_root": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c"
+    }
+  },
+  "findings": [],
+  "final_correctness_binding": {
+    "review_source_sha256": "2f098ceb2b7ec4e3b6b94d6aae216f8d9d65fcc8cecc7285daac6dea59557549",
+    "review_result_sha256": "3decf52fb3a48fcc1f34a9132334cda6e31746f5d20c0bb830c248ef02c5ade6",
+    "author_result_sha256": "fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b",
+    "verification": "PASS: final correctness JSON names the current final correctness-source hash and the preserved author-result hash. The post-result correctness-source metadata update did not alter dot2-results.json or its cost/acceptance payload."
+  },
+  "non_blocking_follow_ups": [
+    "The result supports only the stated two retained lambda=0 interior-ball fixed faces, with ordinary correction 1 followed by Dot2 correction 2. It does not support activation of revision 03, nonzero lambda, other faces, general boundary-sign recovery, nonlinear behavior, runtime timing, or watershed claims."
+  ],
+  "checks": {
+    "protocol_and_branch_separation": "PASS: frozen 22-term f-inclusive Dot2 input/order, ordinary correction 1 then exactly Dot2 correction 2, factor reuse, active preservation, no third correction, and separate Decimal/Fraction diagnostics are present. The result retains the rejected new-face ordinary-correction-1 p11 failure and both original-step failures in the package comparison.",
+    "result_and_receipt_identity": "PASS: the frozen replay made before the later correctness-review metadata update is byte-identical to the preserved author result. Final dot2-correctness.json binds its current source hash 2f098ceb2b7ec4e3b6b94d6aae216f8d9d65fcc8cecc7285daac6dea59557549 to that unchanged author-result hash and independently reports matching bits and complete unchanged acceptance for both cases.",
+    "cost_and_guard_accounting": "PASS: per residual vector 11403 arithmetic, 12327 guards, 15561 admission/underflow predicate branches, 0 exceptional branches, and 1827 offline EFT identity checks; each factor-reuse application is 18960 and the pre-assessment correction total is 50266. Diagnostic EFT/exact work and enclosure upper bound are not represented as runtime cost or speedup evidence.",
+    "acceptance_reporting": "PASS: both final assessments report all-coordinate unchanged BVLS-02/feasibility, normal-or-zero KKT/enclosure intermediates, and active-value/bound equality. The report explicitly states Dot2 is not generally exactly/correctly rounded (17/21 and 14/21 exact-rounding matches).",
+    "scope_and_diff": "PASS: relative to the pinned audit, the prototype scope is the package addition and dot2 artifacts. No Rust/authority edits were made by this review; unrelated dirty work remains outside this disposition."
+  },
+  "verdict": "PASS: QA/evidence review finds no blocker. The preserved two-case result, its custody, finite primitive controls, frozen replay, exact diagnostic separation, failure preservation, and stated cost/limit claims are adequate for the bounded prototype disposition."
+}

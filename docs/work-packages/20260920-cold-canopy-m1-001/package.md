@@ -1,5 +1,212 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Fixed compensated-residual prototype — adopted 2026-09-26
+
+**NUMERICAL TWO-CASE PASS; EXECUTION-CADENCE FAIL; CLEAN PROTOTYPE ACCEPTANCE HOLD.**
+Work stopped after independent numerical validation and disclosure of an extra
+QA replay outside its assigned scope. Owner adopted `/tmp/openwepp_cold_canopy_m1_compensated_residual_prototype_authorization.md`.
+Pinned completed audit: `9f7230eca9de4889d6eaf92b548742b2bff26b19`.
+This is a standalone two-case numerical prototype, not BVLS-03 or runtime work.
+Permitted writes: this record and new `artifacts/dot2-*` Python calculators,
+controls, raw outputs, attributable reviews and ledger/publication receipts.
+Prior files, exact-reference certificates, BVLS-02 bounded negative, unrelated
+dirty work and all physical failures remain preserved. All target slots remain
+UNUSED / NOT RELEASED. No Rust build/test or physical execution is authorized.
+
+[Initial custody](artifacts/dot2-start-custody.json) verifies the closing ledger
+and accepted audit identities. Carry is **349333.959294 s**, fixed ceiling
+**353893.959294 s**. Conservative first-reading anchor **2026-09-26T00:28:00Z**
+fixes calculation cutoff **01:14:00Z** and hard deadline **01:44:00Z**, with
+**1800 s** protected for independent disposition, preservation and publication.
+All elapsed concurrent work counts once; no historical charge is refunded.
+Every standalone command is bounded at 300 s or less and must fit its full
+bound plus the reserve. Two unsuccessful implementation corrections or 60
+charged minutes trigger internal reassessment without new time. Completed
+prototype disposition, time/owner limit, uncontained integrity failure,
+indispensable missing source/review capacity after bounded recovery, or an
+out-of-scope requirement stops this execution.
+
+Premeasurement protocol: **M1-DOT2-RESIDUAL-PROTOTYPE-01** uses only non-FMA
+Ogita–Rump–Oishi (2005) Algorithms 3.1–3.3 and 5.3/5.4, splitter `2^27+1`.
+For each row the fixed 22 terms are `[f_i,A_i0,...,A_i20]` and
+`[1.0,p_0,...,p_20]`, in that order. TwoSum is `x=a+b; z=x-a;
+y=(a-(x-z))+(b-z)`. Split is `c=splitter*a; abig=c-a; hi=c-abig;
+lo=a-hi`. TwoProduct is `x=a*b; (ah,al)=Split(a); (bh,bl)=Split(b);
+y=al*bl-(((x-ah*bh)-al*bh)-ah*bl)`. Dot2 initializes `(p,s)` with
+TwoProduct of term 0, then computes `(h,r)=TwoProduct(x_i,y_i)`,
+`(p,q)=TwoSum(p,h)`, `s=s+(q+r)` for each subsequent term, and returns
+`p+s`. Each scalar operation rounds to binary64, with no reassociation, sorting,
+FMA, sum/fsum, BLAS, Decimal or Fraction in the candidate path. Guard failures
+are explicit prototype limitations; signed zeros are preserved. Independent
+exact arithmetic is restricted to controls/oracles and reporting.
+
+Use operation 1 from each retained capture and the accepted factor replay.
+Reproduce ordinary correction 1 and match every delta/p bit; change only the
+second residual to the fixed Dot2 evaluation, reuse the same factors, and update
+only free coordinates in original order. Exactly two correction positions per
+case; no refactorization inside corrections or third correction. The new-face
+infeasible correction-1 point remains REJECTED and is offline linear scratch.
+Masks, active values, A/f, scales, boxes, lambda=0, radius=1 and unchanged guarded
+BVLS-02 h/Cbar/tau predicates are frozen. No clipping, bound exemptions or tau
+changes. Compare every residual row with exact arithmetic and the historical
+second residual at the identical first-correction vector; assess all 21
+coordinates, original feasibility and exact active bits after correction 2.
+A valid negative is a completed numerical result, not permission to tune.
+
+Selected checks: primitive positive/negative and exact EFT identity controls;
+independent pre-run protocol/primitive inspection; one result-bearing two-case
+run and an explicitly allowed independent reconstruction; exact input/factor/
+first-correction identity; residual signed errors, ULP/rounding correspondence;
+all-coordinate BVLS-02 and box/ball checks; explicit arithmetic/guard/branch
+counts and intermediate ranges; Python syntax/JSON/evidence links and terminal
+scoped diff/custody. Production checks are inapplicable to this isolated offline
+change and remain outside authorization. Dot2's 543 operations per row/11403
+per residual vector are an unguarded arithmetic reference, not a speedup claim.
+
+Execution: `/root/dot2_author` owns the new author calculator. Historical
+`/root/accuracy_correctness` and `/root/accuracy_qa` sessions were unavailable in
+the exposed agent tree; a new `/root/accuracy_correctness` is assigned independent
+numerical review, and distinct new `/root/accuracy_qa` reviewed evidence after the author finished. Neither
+reviewer authors the candidate. Parent owns this record and publication. The
+result-bearing run waits for independent primitive/protocol inspection.
+
+
+Pre-run review found and retained a non-runnable import cut plus incomplete
+assessment/error/cost plumbing. The author corrected the loader and diagnostic
+reporting without evaluating either retained candidate. Independent review then
+required explicit active-bit/bound equality in complete acceptance. Internal
+reassessment: **CONTINUE** only these concrete implementation/recording fixes
+and same-reviewer verification within the original deadline. There is no
+numerical negative yet and no algorithm, precision, tolerance or allowance change.
+The rejected source and observed import failure remain in
+[pre-run evidence](artifacts/dot2-pre-run-rejected-01.json).
+
+Ran: [independent pre-run review](artifacts/dot2-correctness-prerun.json) clears
+the corrected frozen protocol/primitive/calculator with no unresolved findings.
+Parent verified those exact hashes and [released](artifacts/dot2-run-release.json)
+the single two-case execution; the full 300-second bound fits before cutoff.
+
+
+Ran: the single [author result](artifacts/dot2-results.json), using the
+[calculator](artifacts/dot2-prototype.py) and [primitive](artifacts/dot2-primitive.py),
+passes complete BVLS-02 and original box/ball feasibility on both
+faces. The [independent reconstruction](artifacts/dot2-correctness.json) reproduces every
+residual, correction and assessment bit; QA verifies evidence/cost but records the execution deviation below. This table uses
+maximum free-coordinate computed `abs(h_hat)/tau` (exact-zero scales pass exact
+zero) and Euclidean error against the exact minimizer, not the rounded reference.
+
+| Case / step | Max free ratio | Complete acceptance / feasibility | Exact-reference L2 error |
+| --- | ---: | --- | ---: |
+| New face: original | 215.682135 | FAIL stationarity; box/ball PASS | 7.43322e-21 |
+| New face: ordinary correction 1 | 0.00773747 | REJECTED: box FAIL at 11 | 6.11931e-21 |
+| New face: Dot2 correction 2 | 0.00773747 | PASS all 21 coordinates, active values, box/ball | 6.11931e-21 |
+| Historical face: original | 355.251694 | FAIL free 11 and active 5; box/ball PASS | 5.51455e-27 |
+| Historical face: ordinary correction 1 | 0.00575826 | PASS | 1.47497e-29 |
+| Historical face: Dot2 correction 2 | 0.00575826 | PASS all 21 coordinates, active values, box/ball | 1.67964e-30 |
+
+New-face p11 moves from the rejected `-1.3775324423698682e-40` to
+`+5.662861668163936e-41` (bits `3793bb7100000000`), above its exact zero lower
+bound; the exact minimizer coordinate is zero. Historical p11 is
+`-2.144351230939027e-25` (bits `bad0975340000000`), equal to its original scaled
+lower bound. No coordinate is clipped or assigned a structural zero. Both retain
+active coordinate 5 bit-for-bit; no other box violation or stationarity refusal
+is reported. The first correction's every delta/p bit matches the accepted audit.
+The historical second residual, recreated at the same first-correction vector,
+reproduces the accepted diagnostic correction delta/p bits.
+
+Dot2 is not exact or correctly rounded in general: it matches the once-rounded
+exact residual on **17/21 new-face** rows and **14/21 historical** rows. Largest
+absolute residual errors are **1.61400884498e-38** and **2.95778352381e-38**;
+maximum distances from exact rounding are **3** and **17** representable steps.
+All 42 row values, signed Fraction errors, historical 200-digit residual bits,
+exact reference values and ULP correspondences are retained in the raw result.
+Independent exact arithmetic establishes zero residual rows
+`[0,5,6,15,16,17,18,19]` (new) and `[0,5,6,11,15,16,17,18,19,20]`
+(historical); both Dot2 and the historical residual return computed `+0` there.
+These zeros come from the arithmetic, not coordinate labels.
+This separates residual evaluation error from the original step-accuracy failure.
+The positive new-face result does not establish general boundary-sign recovery.
+
+Actual Dot2 residual arithmetic is **11,403** operations per case (543 per row),
+with **12,327** value guards, **15,561** counted admission/underflow predicate
+branches and **zero** exceptional branches. These counts exclude diagnostic
+range bookkeeping, tracing and exact identity verification, and are not processor
+instruction counts. The **1,827 exact EFT checks** per case are offline diagnostics
+outside the candidate path. No exact arithmetic is proposed as runtime work.
+All admitted operands/intermediates are normal or computed signed zero; nonzero
+absolute ranges are **8.15663e-56 to 2.67517e17** (new) and
+**1.05285e-48 to 2.67517e17** (historical), including splitter intermediates.
+
+Cost partitions: first ordinary residual **903** arithmetic operations; each
+unchanged factor-reuse application **18,960**; each free update **20**; unchanged
+KKT evaluation **1,827**, with enclosure **39,816 upper-bound operations**, not
+an actual enclosure measurement. There is one offline factor reconstruction per
+case (**7 sweeps / 319 rotations**) and none within either correction. Compared
+with an ordinary second residual, Dot2 adds **10,500** arithmetic operations plus
+its guards; the two residuals, two factor applications and two updates together
+cost **50,266** arithmetic operations before acceptance assessments. Additional
+offline exact diagnostics and the historical second-step identity replay are
+not candidate corrections or proposed runtime costs. No Python timing is a
+production speedup or watershed claim.
+
+Prospective technical direction from the valid numerical evidence (clean
+prototype acceptance remains HOLD for cadence): the smallest
+supported amendment would specify this one fixed two-correction policy for the
+same lambda=0 interior-ball fixed-face setting, reusing the same factors and
+retaining every current final BVLS-02/feasibility guard. It must separately define
+whether and how an infeasible first-correction vector may exist as internal
+linear scratch, with no materialization or physical evaluation. Nonzero lambda,
+changing faces, general boundary signs and nonlinear success are unestablished.
+This prototype changes the residual algorithm despite binary64 elementary
+operations. It does not adopt or activate revision 03. The reference algorithm
+is [Ogita, Rump and Oishi (2005)](https://www.tuhh.de/ti3/paper/rump/OgRuOi05.pdf);
+its error estimate is not a correct-rounding guarantee.
+
+
+Terminal independent disposition: `/root/accuracy_correctness` independently
+implemented [reconstruction](artifacts/dot2-correctness.py), confirmed every
+residual bit/exact error/ULP distance, both correction delta/p vectors and all
+final p/h/Cbar/tau/class/feasibility values, with no numerical finding. The
+[QA review](artifacts/dot2-qa-terminal-01.json) confirms custody, cost partitions
+and limited claims, but records its own **blocking execution-scope deviation**.
+
+The declared sequence allowed one author two-case execution plus independent
+reconstruction. Despite a direct parent instruction not to rerun the candidate,
+QA additionally executed the same author calculator to `/tmp/dot2-qa-replay.json`.
+That output is byte-identical to the preserved author result; it changes no
+algorithm, input, source, residual strategy, correction position or predicate.
+Nevertheless it is a third two-case calculation outside the selected sequence,
+not authorized verification. Its initial unqualified PASS claim is preserved in
+[initial QA claim](artifacts/dot2-qa-initial-claim-preserved.json); the same QA
+reviewer acknowledges the blocker in its corrected review. Parent immediately
+prohibited further calculations. Same correctness confirms the released first
+result and independent reconstruction remain numerically valid, and no further
+validation is needed to establish that bounded numerical observation.
+
+There is no retrospective waiver: **numerical PASS, execution-cadence FAIL,
+clean prototype acceptance HOLD**. The violated cadence cannot be repaired by
+another run. Preserve and publish the result/deviation, then return to the owner.
+No runtime amendment, revision 03, target release or physics run follows. All
+old numerical/physical failures, exact certificates and broader HOLDs remain.
+The extra QA work is included in the single elapsed-time charge; no time is added.
+
+The [closing ledger](artifacts/dot2-final-ledger.json) conservatively charges
+through **2026-09-26T00:48:00Z**: **1200 new seconds**, cumulative
+**350533.959294 s**, leaving **3360 s** below the unchanged ceiling. Earlier
+completion does not refund this charge. If preservation/publication passes the
+charged-through timestamp, a greater closing charge must be recorded. Publication
+is evidence preservation of a disclosed HOLD, not clean experiment acceptance.
+
+
+Ran: [terminal scoped checks](artifacts/dot2-terminal-checks.json) pass source/
+output/dependency identity, syntax, JSON, local links, rejected-source recovery,
+and preservation of unrelated dirty files and prior tracked evidence/authority.
+Same-reviewer [correctness disposition](artifacts/dot2-correctness-terminal.json)
+and [QA disposition](artifacts/dot2-qa-terminal-02.json) verify truthful HOLD,
+not clean acceptance. No numerical source/output changed after their substantive
+review. Only these terminal-check/review/publication links and custody metadata
+are added at sealing. Scoped publication to main preserves the disclosed result.
+
 ## Retained face-solve accuracy audit — adopted 2026-09-25
 
 **COMPLETE: independently checked offline numerical audit.** The failure

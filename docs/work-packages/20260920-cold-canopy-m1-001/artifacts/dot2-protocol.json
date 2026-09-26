@@ -1,0 +1,62 @@
+{
+  "schema": "cold-canopy-m1-dot2-residual-prototype-protocol/v1",
+  "candidate": "M1-DOT2-RESIDUAL-PROTOTYPE-01",
+  "status": "FROZEN_PRE_RUN_PENDING_INDEPENDENT_REVIEW",
+  "scope": "Offline two-case retained-face residual experiment only. No Rust, runtime, package record, authority, factorization, active-set, tolerance, or physical-model change.",
+  "source_identity": {
+    "base_commit": "9f7230eca9de4889d6eaf92b548742b2bff26b19",
+    "runtime_tree_sha256": "d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884",
+    "stage1_sha256": "9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a",
+    "bvls02_method_sha256": "7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23"
+  },
+  "inputs": {
+    "ordinary_positive": {
+      "capture": "finite-precision-observed-capture.json",
+      "sha256": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+      "operation": 1
+    },
+    "historical_near_root": {
+      "capture": "face-pivot-observed-capture.json",
+      "sha256": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c",
+      "operation": 1
+    },
+    "accepted_audit": {
+      "plan": "face-accuracy-author-plan.json",
+      "author": "face-accuracy-author.py",
+      "results": "face-accuracy-author-results.json",
+      "correctness": "face-accuracy-correctness.py",
+      "correctness_certificate": "face-accuracy-correctness.json",
+      "factor_replay": "face-pivot-correctness-reconstruct.py",
+      "guarded_bvls_oracle": "finite-precision-correctness-oracle-retained-face.py"
+    }
+  },
+  "candidate_path": {
+    "arithmetic": "IEEE-754 binary64 scalar operations only; no FMA, sum, math.fsum, BLAS, Decimal, Fraction, sort, reassociation, or precision selection.",
+    "splitter": "0x1.0000002p+27 (2^27 + 1)",
+    "row_input": "x=[f_i,A_i0,A_i1,...,A_i20]; y=[1.0,p_0,p_1,...,p_20] in this order for every i=0..20.",
+    "grouping": "[p,s]=TwoProduct(x0,y0); for i=1..21: [h,r]=TwoProduct(xi,yi); [p,q]=TwoSum(p,h); s=fl(s+fl(q+r)); result=fl(p+s). This is ORO (2005) Algorithm 5.3 / equivalent 5.4 grouping.",
+    "residual_position": "Run the accepted ordinary ordered-binary64 correction 1 first and require all its delta and p bits to equal the accepted audit. At that p only, form each second residual row with Dot2; apply the same accepted factor-reuse lambda_step once, updating free coordinates in ascending recorded free-id order. Active coordinates remain byte-for-byte unchanged.",
+    "fixed_positions": [
+      "ordinary_binary64_residual_correction_1",
+      "dot2_residual_correction_2"
+    ],
+    "prohibited_after_result": "No extra correction, residual algorithm, factorization, face, lambda, clipping, normalization, post-result constant search, or altered predicate. A numerical failure stops the prototype."
+  },
+  "primitive_controls": {
+    "admission": "Every input and every recorded intermediate must be finite and either normal or signed zero. Any nonzero subnormal, nonfinite value, splitter overflow, nonzero-product underflow, or failed error-free identity is PROTOTYPE_LIMITATION.",
+    "exact_identity_controls_outside_candidate": "For every TwoSum verify Fraction(a)+Fraction(b)==Fraction(x)+Fraction(y); for Split verify Fraction(a)==Fraction(hi)+Fraction(lo); for admitted TwoProduct verify Fraction(a)*Fraction(b)==Fraction(product)+Fraction(error). These controls are diagnostics only and never feed candidate arithmetic.",
+    "range_and_cost": "Record operand/intermediate signed-bit extrema and actual arithmetic, guard, branch, exceptional-branch, primitive-call and identity-control counts. The paper reference is 25*n-7=543 arithmetic operations per 22-term row and 11403 across 21 rows before guards."
+  },
+  "required_result_assessments": {
+    "residual": "For each of 21 rows at correction-1 p, retain Dot2 bits, recreated historical Decimal-200-rounded residual bits, exact Fraction residual, signed errors, and correctly rounded exact-reference bit/ULP correspondence where defined.",
+    "second_correction": "Report factor-reuse delta bits, final p bits, active preservation, unchanged guarded BVLS-02 h/Cbar/tau/classes, all original scaled box bounds, radius-1 ball, and exact-reference p error for every coordinate.",
+    "cost": "Report residual formation, reused factor corrections, free-coordinate updates, unchanged KKT/enclosure assessment, and one-time reconstruction separately. Do not claim timing or runtime speedup."
+  },
+  "pre_run_checks": [
+    "Python AST compilation of dot2 source",
+    "protocol JSON syntax",
+    "static source guard that candidate functions contain neither Decimal nor Fraction nor math.fsum nor sum nor fma",
+    "independent review of grouping, guard treatment, accepted-audit bit controls, and result schema before the two-case calculation"
+  ],
+  "release_rule": "The author must not execute the result-bearing two-case prototype until Astra records explicit release after independent pre-run review."
+}

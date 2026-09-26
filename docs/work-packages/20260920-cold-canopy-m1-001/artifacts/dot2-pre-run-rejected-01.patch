@@ -1,0 +1,221 @@
+diff --git a/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-prototype.py b/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-prototype.py
+new file mode 100644
+index 000000000..de4107edb
+--- /dev/null
++++ b/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-prototype.py
+@@ -0,0 +1,215 @@
++#!/usr/bin/env python3
++"""Frozen, release-gated calculator for M1-DOT2-RESIDUAL-PROTOTYPE-01.
++
++This file intentionally refuses to run the retained cases without an explicit
++release token.  It is evidence code only and never invokes Rust or physics.
++"""
++from __future__ import annotations
++
++import argparse
++import hashlib
++import json
++import runpy
++import struct
++from decimal import Decimal, localcontext
++from fractions import Fraction
++from pathlib import Path
++
++from dot2_primitive import PrototypeLimitation, bits, dot2, verify_identities
++
++N = 21
++HERE = Path(__file__).resolve().parent
++RELEASE_TOKEN = "ASTRA_RELEASE_M1_DOT2_RESIDUAL_PROTOTYPE_01"
++CASES = (
++    ("ordinary_positive", "finite-precision-observed-capture.json", "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642"),
++    ("historical_near_root", "face-pivot-observed-capture.json", "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c"),
++)
++
++
++def sha(path: Path) -> str:
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def decode(value: str) -> float:
++    return struct.unpack(">d", bytes.fromhex(value))[0]
++
++
++def vector(values: list[str]) -> list[float]:
++    return [decode(value) for value in values]
++
++
++def serial_residual(a: list[list[float]], f: list[float], p: list[float]) -> list[float]:
++    out = []
++    for row in range(N):
++        total = 0.0
++        for col in range(N):
++            total = total + a[row][col] * p[col]
++        out.append(f[row] + total)
++    return out
++
++
++def decimal200_residual(a: list[list[float]], f: list[float], p: list[float]) -> list[float]:
++    with localcontext() as context:
++        context.prec = 200
++        out = []
++        for row in range(N):
++            total = Decimal.from_float(f[row])
++            for col in range(N):
++                total += Decimal.from_float(a[row][col]) * Decimal.from_float(p[col])
++            out.append(float(total))
++    return out
++
++
++def exact_residual(a: list[list[float]], f: list[float], p: list[float]) -> list[Fraction]:
++    return [
++        Fraction.from_float(f[row]) + sum(Fraction.from_float(a[row][col]) * Fraction.from_float(p[col]) for col in range(N))
++        for row in range(N)
++    ]
++
++
++def ulp_correspondence(value: float, exact: Fraction) -> dict[str, object]:
++    rounded = float(exact)
++    return {
++        "exact_rounded_bits": bits(rounded),
++        "matches_exact_rounding": bits(value) == bits(rounded),
++        "signed_error_fraction": str(Fraction.from_float(value) - exact),
++    }
++
++
++def accepted_case(name: str, author_results: dict) -> dict:
++    for case in author_results["cases"]:
++        if case["case"] == name:
++            return case
++    raise ValueError(f"accepted audit missing case {name}")
++
++
++def certificate_case(name: str, correctness: dict) -> dict:
++    for case in correctness["cases"]:
++        if case["case"] == name:
++            return case
++    raise ValueError(f"accepted correctness certificate missing case {name}")
++
++
++def assert_first_correction(case: dict, current: list[float], delta: list[float]) -> None:
++    accepted = case["corrections"][0]
++    if [bits(value) for value in delta] != accepted["delta_free_bits"]:
++        raise PrototypeLimitation("ordinary correction-1 delta bits differ from accepted audit")
++    actual = [bits(value) for value in current]
++    accepted_p = [row["p_bits"] for row in accepted["assessment"]["coordinates"]]
++    if actual != accepted_p:
++        raise PrototypeLimitation("ordinary correction-1 p bits differ from accepted audit")
++
++
++def residual_dot2(a: list[list[float]], f: list[float], p: list[float]):
++    rows = []
++    values = []
++    for row in range(N):
++        result = dot2([f[row], *a[row]], [1.0, *p])
++        verify_identities(result)
++        values.append(result.value)
++        rows.append({
++            "row": row,
++            "bits": bits(result.value),
++            "arithmetic": result.counters.arithmetic,
++            "guards": result.counters.guards,
++            "branches": result.counters.branches,
++            "exceptional_branches": result.counters.exceptional_branches,
++            "identity_checks": result.counters.identity_checks,
++            "range": {
++                "minimum_nonzero_abs": repr(result.ranges.minimum_nonzero_abs),
++                "maximum_abs": repr(result.ranges.maximum_abs),
++                "values": result.ranges.values,
++            },
++        })
++    return values, rows
++
++
++def run() -> dict:
++    protocol = json.loads((HERE / "dot2-protocol.json").read_text())
++    if protocol["status"] != "FROZEN_PRE_RUN_PENDING_INDEPENDENT_REVIEW":
++        raise PrototypeLimitation("protocol status no longer admits this frozen run")
++    author_results = json.loads((HERE / "face-accuracy-author-results.json").read_text())
++    correctness = json.loads((HERE / "face-accuracy-correctness.json").read_text())
++    replay = runpy.run_path(str(HERE / "face-pivot-correctness-reconstruct.py"))
++    oracle = runpy.run_path(str(HERE / "finite-precision-correctness-oracle-retained-face.py"))
++    cases = []
++    for name, capture_name, expected_sha in CASES:
++        capture_path = HERE / capture_name
++        if sha(capture_path) != expected_sha:
++            raise PrototypeLimitation(f"capture custody mismatch for {name}")
++        capture = json.loads(capture_path.read_text())
++        op = capture["operations"][1]
++        a, f, initial = [vector(row) for row in capture["weighted_matrix"]], vector(capture["weighted_residual"]), vector(op["p_candidate"])
++        freeids = [index for index, free in enumerate(op["free_before"]) if free]
++        active = [index for index in range(N) if index not in freeids]
++        face_a = [[row[index] for index in freeids] for row in a]
++        face_r = [f[row] + sum(a[row][index] * initial[index] for index in active) for row in range(N)]
++        factor = replay["jacobi_factor"](face_a, freeids, 0)
++        replayed_candidate = replay["lambda_step"](factor, face_r, decode(op["lambda"]))
++        if [bits(value) for value in replayed_candidate] != [op["p_candidate"][index] for index in freeids]:
++            raise PrototypeLimitation("factor replay candidate mismatch")
++        first_residual = serial_residual(a, f, initial)
++        first_delta = replay["lambda_step"](factor, first_residual, decode(op["lambda"]))
++        first_p = initial[:]
++        for index, value in zip(freeids, first_delta, strict=True):
++            first_p[index] = first_p[index] + value
++        accepted = accepted_case(name, author_results)
++        certified = certificate_case(name, correctness)
++        assert_first_correction(accepted, first_p, first_delta)
++        dot2_values, dot2_rows = residual_dot2(a, f, first_p)
++        historical = decimal200_residual(a, f, first_p)
++        exact = exact_residual(a, f, first_p)
++        for row in range(N):
++            dot2_rows[row]["historical_decimal200_bits"] = bits(historical[row])
++            dot2_rows[row]["exact_fraction"] = str(exact[row])
++            dot2_rows[row]["dot2"] = ulp_correspondence(dot2_values[row], exact[row])
++            dot2_rows[row]["historical_decimal200"] = ulp_correspondence(historical[row], exact[row])
++        second_delta = replay["lambda_step"](factor, dot2_values, decode(op["lambda"]))
++        final_p = first_p[:]
++        for index, value in zip(freeids, second_delta, strict=True):
++            final_p[index] = final_p[index] + value
++        # The guarded frozen assessment is deliberately delegated to the accepted
++        # audit oracle; this prototype does not redefine its BVLS-02 predicate.
++        assessment = oracle["assess_binary64"](capture, op, a, f, final_p, decode(op["lambda"]))
++        exact_reference = [decode(value) for value in certified["once_rounded_exact_reference_bits"]]
++        exact_reference_error = [
++            str(Fraction.from_float(final_p[index]) - Fraction.from_float(exact_reference[index]))
++            for index in range(N)
++        ]
++        cases.append({
++            "case": name,
++            "capture_sha256": expected_sha,
++            "first_correction": {"delta_free_bits": [bits(value) for value in first_delta], "p_bits": [bits(value) for value in first_p]},
++            "dot2_rows": dot2_rows,
++            "second_correction": {"delta_free_bits": [bits(value) for value in second_delta], "p_bits": [bits(value) for value in final_p], "assessment": assessment},
++            "exact_reference": {
++                "source": "face-accuracy-correctness.json once_rounded_exact_reference",
++                "p_bits": certified["once_rounded_exact_reference_bits"],
++                "accepted_unchanged_assessment": certified["once_rounded_exact_reference"],
++                "final_p_error_fraction_per_coordinate": exact_reference_error,
++            },
++        })
++    dependencies = {
++        name: sha(HERE / name)
++        for name in (
++            "face-accuracy-author-results.json",
++            "face-accuracy-correctness.json",
++            "face-pivot-correctness-reconstruct.py",
++            "finite-precision-correctness-oracle-retained-face.py",
++        )
++    }
++    return {"candidate": protocol["candidate"], "protocol_sha256": sha(HERE / "dot2-protocol.json"), "source_sha256": sha(Path(__file__)), "dependencies": dependencies, "cases": cases}
++
++
++def main() -> None:
++    parser = argparse.ArgumentParser()
++    parser.add_argument("--release-token", required=True)
++    parser.add_argument("--output", type=Path, default=HERE / "dot2-results.json")
++    args = parser.parse_args()
++    if args.release_token != RELEASE_TOKEN:
++        raise SystemExit("result-bearing execution refused: explicit Astra release token required")
++    args.output.write_text(json.dumps(run(), indent=2, sort_keys=True) + "\n")
++
++
++if __name__ == "__main__":
++    main()

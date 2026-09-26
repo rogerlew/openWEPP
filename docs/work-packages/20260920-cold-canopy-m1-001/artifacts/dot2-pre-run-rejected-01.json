@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Ran: non-result-bearing harness import control only",
+  "status": "REJECTED_PRE_RUN_SOURCE",
+  "source": "dot2-prototype.py",
+  "source_sha256": "0211b95fe37f4709dcdabb636429d28917fb2ef3846c134cfd86873956353438",
+  "recoverable_patch": "dot2-pre-run-rejected-01.patch",
+  "command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-prototype.py --help",
+  "exit": 1,
+  "first_failure": "ModuleNotFoundError: dot2_primitive; the frozen source file is named dot2-primitive.py",
+  "disposition": "Implementation/reporting defect found before any retained-case calculation. Preserve this patch and replace the loader without changing the frozen numerical candidate."
+}

@@ -1,0 +1,35 @@
+{
+  "evidence_class": "Ran: root AST/JSON/local-link/source-output/dependency/unrelated-dirty and scoped-diff checks only; no numerical rerun",
+  "recorded_utc": "2026-09-26T00:43:12.723684+00:00",
+  "base_commit": "9f7230eca9de4889d6eaf92b548742b2bff26b19",
+  "branch": "main",
+  "python_ast_files": [
+    "dot2-correctness.py",
+    "dot2-preflight.py",
+    "dot2-primitive.py",
+    "dot2-primitive-controls.py",
+    "dot2-prototype.py"
+  ],
+  "json_count_at_check": 14,
+  "local_links_count": 12,
+  "source_output_bindings": "PASS",
+  "accepted_prior_dependency_hashes": "PASS",
+  "unrelated_dirty_hashes": "PASS",
+  "prior_tracked_artifacts_and_authority_unchanged": true,
+  "rejected_pre_run_source_exact_patch_recovery": "PASS",
+  "tracked_diff_paths": [
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs",
+    "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+    "tests/integration/advisory_linter_authority_contract.rs"
+  ],
+  "index_initially_empty": true,
+  "duplicate_qa_output_equals_preserved_author_output": true,
+  "scope_checks": "PASS; does not waive recorded execution-cadence FAIL",
+  "not_run": [
+    "Rust build/test",
+    "physical evaluator",
+    "runtime reconstruction",
+    "new candidate execution"
+  ],
+  "disposition": "numerical PASS; execution-cadence FAIL; clean prototype acceptance HOLD"
+}

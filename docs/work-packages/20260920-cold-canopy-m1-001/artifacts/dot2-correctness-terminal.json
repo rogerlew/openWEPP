@@ -1,0 +1,58 @@
+{
+  "schema": "cold-canopy-m1-dot2-correctness-terminal-review/v1",
+  "reviewer": "/root/accuracy_correctness (new independent session)",
+  "scope": "Terminal claim and same-reviewer fix verification for the Fixed compensated-residual prototype section only; all historical package sections excluded.",
+  "evidence_class": {
+    "static": [
+      "Reviewed the terminal package section, final ledger, corrected QA review, preserved initial QA claim, author result, and final independent correctness certificate.",
+      "Bound the reviewed terminal section and package bytes by SHA-256."
+    ],
+    "ran_previously_and_reused": [
+      "Independent non-FMA ORO EFT/Dot2 reconstruction for every retained operand.",
+      "Exact-Fraction and Decimal-200 residual comparison for every row.",
+      "Accepted-factor replay of both corrections and independent all-coordinate BVLS-02/enclosure/box/ball reconstruction."
+    ],
+    "not_run": [
+      "No additional candidate, calculator, Rust, engine, or physics execution after the cadence violation was found."
+    ]
+  },
+  "identity": {
+    "package_sha256": "3287657da80dbb0db8ee70de65e4c83dc427dba67cc46e0661c17b1dc2f3db29",
+    "reviewed_prototype_section_sha256": "a4a56ba12e20c9a7d19198380c090090b65a732847db73dd765e98aaa1346872",
+    "author_result_sha256": "fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b",
+    "correctness_source_sha256": "2f098ceb2b7ec4e3b6b94d6aae216f8d9d65fcc8cecc7285daac6dea59557549",
+    "correctness_result_sha256": "3decf52fb3a48fcc1f34a9132334cda6e31746f5d20c0bb830c248ef02c5ade6",
+    "qa_terminal_sha256": "f6deea99d07bd75172d5f62f9634781683ba619ce1ff6f2524d9274a4c134373",
+    "qa_initial_claim_sha256": "ddd1f824c89c775388a808680000cbd34e48804a1e9f84f320f03b1af09dcc31",
+    "final_ledger_sha256": "bb3fa00c948850df64a917ffb831370979c6588d98ac2ce4b2845f2d80e66d5d"
+  },
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "location": "artifacts/dot2-qa-terminal-01.json and terminal package disposition",
+      "finding": "QA executed the author calculator after the sole authorized author run and the separately allowed independent reconstruction. The byte-identical replay is an unauthorized third two-case calculation and violates the frozen execution cadence.",
+      "verification": "CORRECTLY DISPOSITIONED, NOT WAIVED: the replay and initial QA PASS are preserved; corrected QA blocks; the package says numerical PASS / cadence FAIL / clean acceptance HOLD; further runs and runtime amendment are prohibited; elapsed time is charged. The violation cannot be repaired retrospectively."
+    }
+  ],
+  "numerical_claim_review": {
+    "result": "PASS: all author residual bits, exact signed errors, ULP distances, correction delta/p vectors, and final p/h/Cbar/tau/class values reproduce independently.",
+    "acceptance": "PASS for the bounded numerical observation: both final vectors satisfy unchanged all-coordinate BVLS-02, normal-domain, active-value/bound, original box, and radius feasibility.",
+    "negative_result": "PASS: the record states that Dot2 is correctly rounded on only 17/21 and 14/21 rows, with maximum distances 3 and 17 ULP and maximum absolute errors 1.6140088449766955e-38 and 2.957783523808077e-38.",
+    "exact_zeros": "PASS: exact arithmetic, rather than labels, establishes zero rows [0,5,6,15,16,17,18,19] and [0,5,6,11,15,16,17,18,19,20]; both evaluated residuals return computed +0 bits there.",
+    "cost": "PASS: 11403 Dot2 arithmetic, 12327 guards, 15561 counted admission/underflow predicate branches, 0 exceptional branches and 1827 offline EFT checks per case; 50266 pre-assessment correction arithmetic and all partitions are correctly qualified.",
+    "direction": "PASS: technical direction is expressly limited to the two lambda=0 interior-ball fixed faces and requires a future internal-scratch policy; no revision 03, runtime, physical, nonlinear or general sign claim follows."
+  },
+  "fix_verification": {
+    "pre_run_defects": "PASS: loader, accepted assessment, historical grouping/replay, ULP/error reporting, guard controls, dependency receipts, branch labels, and active preservation were corrected and rechecked before the released author run.",
+    "cadence_disclosure": "PASS as a terminal HOLD disposition: the later scope violation is fully disclosed and preserved, not rewritten into acceptance."
+  },
+  "residual_risk": [
+    "The execution-cadence blocker prevents clean prototype acceptance even though the first released result and independent reconstruction remain numerically valid.",
+    "Two fixed lambda=0 faces do not establish other faces, nonzero lambda, arbitrary conditioning, boundary-sign recovery, nonlinear acceptance, physical behavior, or runtime integration.",
+    "Dot2 is neither exact nor correctly rounded on all retained rows."
+  ],
+  "missing_tests": [
+    "No further numerical run is needed or permitted for this stopped package. A future runtime amendment requires separate owner authorization, an explicit infeasible-scratch policy, and its own production validation."
+  ],
+  "verdict": "Numerical claims PASS with no numerical finding. Clean prototype acceptance remains BLOCKED by the correctly disclosed execution-cadence violation. Terminal HOLD/preservation disposition is accurate; no further calculation is authorized or needed."
+}

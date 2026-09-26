@@ -1,0 +1,44 @@
+{
+  "schema": "cold-canopy-m1-dot2-correctness-prerun/v1",
+  "reviewer": "/root/accuracy_correctness (new independent session)",
+  "evidence_class": {
+    "static": [
+      "Inspected the frozen protocol, non-FMA ORO Algorithms 3.1-3.3 and 5.3/5.4 grouping, residual-only change, accepted factor/first-correction gates, guarded BVLS-02 assessment, result schema, and cost partition.",
+      "Read the primary Ogita-Rump-Oishi paper and checked its IEEE-754, overflow, underflow, n*eps, EFT, and 25*n-7 hypotheses against the conservative prototype admission policy."
+    ],
+    "ran": [
+      "Non-result-bearing --help import check.",
+      "Frozen AST/preflight check with independent 25*22-7 = 543 arithmetic count.",
+      "Synthetic admitted EFT identities and NaN, positive/negative infinity, subnormal input, splitter overflow, nonzero-product underflow, and signed-zero controls."
+    ],
+    "not_run": [
+      "Either retained result-bearing case.",
+      "Rust, engine, physics, or physical evaluator execution."
+    ]
+  },
+  "reviewed_identity": {
+    "protocol_sha256": "5ae0c4a20d06e7b2f0f6bbbf2979604cfc0b3031b4a89360e1652b4e475d8808",
+    "primitive_sha256": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0",
+    "prototype_sha256": "c334e1d917052b25f867f78a980ecfc3b2c0850a1fc77dc1c136278b2ad02c22",
+    "preflight_sha256": "ac50125840203b3c61865b55ea873cfbde9570fc9b5fc88dfcc0c94c617c3f9f",
+    "primitive_controls_source_sha256": "2b0ed69410e94266e10b71aadc7ea803614f14add367c53dd7c34e542b4b51a5",
+    "primitive_controls_result_sha256": "f70d17999b40c1ef3591fe8e0e6bcc46531b430ae52bce5d3cbdb3a8277700d7",
+    "paper_pdf_sha256": "56e897ffce0a843ea531769d50b8466241ae4f01094b0ddf83d8fff74255cfcc"
+  },
+  "algorithm_checks": {
+    "row_terms": "PASS: x=[f_i,A_i0,...,A_i20], y=[1,p0,...,p20], original order.",
+    "grouping": "PASS: initial TwoProduct; then TwoProduct, TwoSum, q+r, s+(q+r); final p+s, with each operation binary64 and no FMA/reassociation.",
+    "eft_hypotheses": "PASS for admitted execution: all inputs/intermediates must be finite normal or signed zero; every non-FMA TwoProduct multiplication is guarded; splitter overflow and nonzero-product underflow refuse; exact Fraction identities are checked outside the candidate path on all admitted retained operands.",
+    "oro_bound_scope": "PASS: n=22 gives n*eps<1. The paper permits bounded underflow, while this prototype conservatively refuses it and therefore relies on exact EFT identities only after admission. No exact-rounding guarantee is claimed.",
+    "precise_change": "PASS: correction 1 replays accepted ordered-binary64 residual/factors and bit-gates delta/p; only correction-2 residual formation changes to Dot2; masks, factors, update order, lambda, radius, bounds, and BVLS-02 predicate remain fixed.",
+    "complete_acceptance": "PASS: complete BVLS-02/box/ball, normal-domain guard, active-value preservation, and active-bound equality are conjoined.",
+    "cost": "PASS pre-run: 543 arithmetic operations per 22-term row and 11403 per 21-row residual; guards, predicate branches, exceptional branches, identities, factor applications, updates, assessment, and factor reconstruction remain separately reported."
+  },
+  "resolved_findings": [
+    "The initial dash/underscore import failure was preserved as dot2-pre-run-rejected-01 and replaced with an explicit file loader.",
+    "The accepted guarded assessment helper was corrected, and normal-domain status now enters complete acceptance.",
+    "Historical Decimal-200 grouping, actual ULP distance, true exact-minimizer error, dependency receipt checks, executable primitive controls, branch accounting, and active preservation acceptance were added before measurement."
+  ],
+  "findings": [],
+  "verdict": "PRE-RUN RELEASE for exactly one result-bearing two-case execution at the reviewed hashes. Any source/protocol/primitive change, extra case/correction, or predicate change voids this release and requires re-review."
+}

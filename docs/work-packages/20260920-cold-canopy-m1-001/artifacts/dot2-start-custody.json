@@ -1,0 +1,37 @@
+{
+  "evidence_class": "Ran: prior closing ledger, pinned HEAD, accepted audit dependency and capture identity checks; no candidate calculation",
+  "base_commit": "9f7230eca9de4889d6eaf92b548742b2bff26b19",
+  "branch": "main",
+  "anchor_utc": "2026-09-26T00:28:00Z",
+  "anchor_basis": "Conservative minute floor preceding initial authorization reading; includes all resumed reading and work, never reanchored.",
+  "carry_seconds": "349333.959294",
+  "ceiling_seconds": "353893.959294",
+  "remaining_at_anchor_seconds": 4560,
+  "reserve_seconds": 1800,
+  "calculation_cutoff_utc": "2026-09-26T01:14:00Z",
+  "hard_deadline_utc": "2026-09-26T01:44:00Z",
+  "closing_receipt_check": "face-accuracy-final-ledger.json plus publication and package closing receipt inspected; no greater closing charge found; conservative prior charge retained",
+  "authorization_sha256": "b2bcfefd60ec347be36f5c1c886b0b73b20c5a988f855c87f25493baab37f441",
+  "accepted_audit_hashes": {
+    "correctness_source_sha256": "7d1ee0a07e0959dcc5aacc7ba1a6963c3e9e03da1ba13ca5cce34c302cc8e4aa",
+    "correctness_result_sha256": "3740e7329974317cfa39483d6547aa6d7794912da9a0d6d4568d4dd285d2192d",
+    "author_source_sha256": "0a3f16b05a9e94385fba79f81f88d1832085be36f1713a8795b630aa450a25d1",
+    "author_result_sha256": "73af08c872dc7b69406d46edd73027b2e2d942beae713bf03930425d6d641320",
+    "note": "The prefinal correctness-result hash bound by QA terminal-02 is superseded only by the final receipt above; author source/result identity is unchanged."
+  },
+  "unrelated_dirty_sha256": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  },
+  "accepted_dependency_receipt_verified": {
+    "face-accuracy-author-plan.json": "a7bfe3ffb40f33a2708f9b16988c5c295b979ed101598dd00eb323b5bd2cbc9a",
+    "face-accuracy-author-results.json": "73af08c872dc7b69406d46edd73027b2e2d942beae713bf03930425d6d641320",
+    "face-accuracy-author.py": "0a3f16b05a9e94385fba79f81f88d1832085be36f1713a8795b630aa450a25d1",
+    "face-pivot-observed-capture.json": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c",
+    "finite-precision-observed-capture.json": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+    "finite-precision-correctness-oracle-retained-face.py": "1d0522d70802d979aff0d166a810dd6647ea17d52da339da0c367c171b977eb6",
+    "face-pivot-correctness-reconstruct.py": "c3a473f117eeecdb1b40270b1f3e48900635490e31e0ed1569dbc9865162bc3f",
+    "face-accuracy-correctness.py": "7d1ee0a07e0959dcc5aacc7ba1a6963c3e9e03da1ba13ca5cce34c302cc8e4aa"
+  },
+  "frozen_runtime_identity_reused_from": "face-accuracy-qa-custody-01.json: runtime tree764 entries d47b4697300291c3534101dddb863e38d752875f8d20d52c549639279fba9884; Stage1 9f16963761ea9e399c8f9cb42eccd536622916088599aed7bfb0f8a77aa6603a; method7c596afda1331e50c9a33424e82b411d5ec7b40991f0cbcf8a034865dbddfe23; no reconstruction needed for frozen arrays"
+}

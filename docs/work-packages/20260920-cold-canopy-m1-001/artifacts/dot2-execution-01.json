@@ -1,0 +1,39 @@
+{
+  "evidence_class": "Ran: one released frozen two-case offline prototype execution; no Rust, engine, physics, or extra correction",
+  "command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-prototype.py --release-token ASTRA_RELEASE_M1_DOT2_RESIDUAL_PROTOTYPE_01 --output docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-results.json",
+  "exit": 0,
+  "command_start_utc": "UNOBSERVED: the terminal execution interface returned no wall-clock start timestamp",
+  "output_birth_utc": "2026-09-26T00:36:28.256861708Z",
+  "output_mtime_utc": "2026-09-26T00:36:28.257691156Z",
+  "command_elapsed_seconds_reported_by_terminal": 0.2,
+  "release": "dot2-run-release.json at 2026-09-26T00:36:13.641848Z",
+  "protocol_sha256": "5ae0c4a20d06e7b2f0f6bbbf2979604cfc0b3031b4a89360e1652b4e475d8808",
+  "primitive_sha256": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0",
+  "prototype_sha256": "c334e1d917052b25f867f78a980ecfc3b2c0850a1fc77dc1c136278b2ad02c22",
+  "results": "dot2-results.json",
+  "results_sha256": "fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b",
+  "selected_cases": 2,
+  "extra_cases_or_corrections": 0,
+  "first_relevant_failure": null,
+  "per_case_range_and_cost": {
+    "ordinary_positive": {
+      "minimum_nonzero_abs_hex": "0x1.0000000000000p-183",
+      "maximum_abs_hex": "0x1.db34cd255347bp+57",
+      "dot2_arithmetic": 11403,
+      "dot2_guards": 12327,
+      "dot2_branches": 15561,
+      "dot2_exceptional_branches": 0,
+      "dot2_identity_checks": 1827
+    },
+    "historical_near_root": {
+      "minimum_nonzero_abs_hex": "0x1.89eb010000000p-160",
+      "maximum_abs_hex": "0x1.db34cd23819e7p+57",
+      "dot2_arithmetic": 11403,
+      "dot2_guards": 12327,
+      "dot2_branches": 15561,
+      "dot2_exceptional_branches": 0,
+      "dot2_identity_checks": 1827
+    }
+  },
+  "postrun_source_check": "git diff --check -- artifacts/dot2-* passed"
+}

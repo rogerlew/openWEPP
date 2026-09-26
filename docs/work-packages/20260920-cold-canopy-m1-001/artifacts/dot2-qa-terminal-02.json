@@ -1,0 +1,44 @@
+{
+  "schema": "cold-canopy-m1-dot2-qa-final-disposition/v1",
+  "reviewer": "/root/accuracy_qa (same independent QA session)",
+  "review_scope": "Static final disposition and ledger check only. No numerical execution, calculator rerun, Rust, engine, physics, authority, or source edit.",
+  "evidence_class": {
+    "static": [
+      "Read the final package prototype section, dot2-final-ledger.json, preserved initial QA claim, corrected QA review, and final correctness binding.",
+      "Verified current hashes: dot2-results.json fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b; dot2-correctness.py 2f098ceb2b7ec4e3b6b94d6aae216f8d9d65fcc8cecc7285daac6dea59557549; dot2-correctness.json 3decf52fb3a48fcc1f34a9132334cda6e31746f5d20c0bb830c248ef02c5ade6; corrected QA terminal-01 f6deea99d07bd75172d5f62f9634781683ba619ce1ff6f2524d9274a4c134373.",
+      "Ran git diff --check for the package path successfully."
+    ],
+    "ran": [],
+    "not_run": [
+      "No candidate calculation or replay.",
+      "No numerical reconstruction or campaign."
+    ]
+  },
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "location": "artifacts/dot2-qa-terminal-01.json and package terminal disposition",
+      "finding": "The QA duplicate result-bearing replay remains an execution-cadence violation. Its output equality does not cure the unauthorized extra execution.",
+      "status": "PRESERVED AND UNWAIVED"
+    }
+  ],
+  "ledger_check": {
+    "status": "PASS",
+    "anchor_utc": "2026-09-26T00:28:00Z",
+    "conservatively_charged_through_utc": "2026-09-26T00:48:00Z",
+    "new_charged_seconds": "1200",
+    "cumulative_charged_seconds": "350533.959294",
+    "fixed_ceiling_seconds": "353893.959294",
+    "remaining_under_fixed_ceiling_seconds": "3360",
+    "reserve_seconds": 1800,
+    "assessment": "The ledger includes the duplicate QA replay and states no refund. Its disposition is stopped with numerical two-case PASS, execution-cadence FAIL, and clean prototype acceptance HOLD."
+  },
+  "preservation_check": {
+    "status": "PASS",
+    "initial_claim": "dot2-qa-initial-claim-preserved.json preserves the original unqualified PASS claim.",
+    "corrected_claim": "dot2-qa-terminal-01.json records the blocker and prohibits further candidate runs.",
+    "package_disposition": "The package explicitly preserves both records, calls the extra replay unauthorized, charges it, declines a retrospective waiver, and makes no runtime/revision-03/target-release claim.",
+    "source_output": "The durable author result remains fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b; final correctness source/result bind it without altering its numerical/cost payload."
+  },
+  "verdict": "STATIC PASS for truthful blocker preservation, source/output identity, and conservative ledger accounting. CLEAN PROTOTYPE ACCEPTANCE REMAINS HOLD because execution cadence failed. No further candidate runs are authorized or required."
+}

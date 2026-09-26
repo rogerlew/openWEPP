@@ -1,0 +1,42 @@
+{
+  "evidence_class": "Ran: synthetic primitive admission/identity controls only; no retained capture loaded or candidate case evaluated",
+  "negative_controls": [
+    {
+      "control": "nan_input",
+      "message": "x[0]: nonfinite or nonzero subnormal (7ff8000000000000)"
+    },
+    {
+      "control": "positive_infinity_input",
+      "message": "x[0]: nonfinite or nonzero subnormal (7ff0000000000000)"
+    },
+    {
+      "control": "negative_infinity_input",
+      "message": "x[0]: nonfinite or nonzero subnormal (fff0000000000000)"
+    },
+    {
+      "control": "nonzero_subnormal_input",
+      "message": "x[0]: nonfinite or nonzero subnormal (0000000000000001)"
+    },
+    {
+      "control": "splitter_overflow",
+      "message": "splitter overflow"
+    },
+    {
+      "control": "nonzero_product_underflow",
+      "message": "two_product.product: nonzero-product underflow"
+    }
+  ],
+  "positive_admitted_identity_controls": {
+    "arithmetic": 68,
+    "branches": 95,
+    "exceptional_branches": 0,
+    "guards": 74,
+    "identity_checks": 11
+  },
+  "signed_zero": {
+    "dot2_result_bits": "0000000000000000",
+    "interpretation": "The primitive retains raw binary64 signed-zero bits; it performs no normalization. The final Algorithm-5.3 addition's computed sign is separately recorded.",
+    "recorded_signed_zero_values": 16,
+    "two_product_leading_bits": "8000000000000000"
+  }
+}

@@ -1,0 +1,1545 @@
+{
+  "cases": [
+    {
+      "case": "ordinary_positive",
+      "factor_replay": {
+        "candidate_bits_match": true,
+        "rotations": 319,
+        "sweeps": 7
+      },
+      "first_correction": {
+        "accepted_delta_bits_match": true,
+        "accepted_p_bits_match": true
+      },
+      "residual_rows": [
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 0
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "3b4eeeff4ef34f0b",
+            "correctly_rounded_bits": "3b4eeeff4ef34f0b",
+            "exact_fraction": "313703802455328273336963338812035/6129982163463555433433388108601236734474956488734408704",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-3960981986949763/6129982163463555433433388108601236734474956488734408704",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "3b4eeeff4ef34f0b",
+            "correctly_rounded_bits": "3b4eeeff4ef34f0b",
+            "exact_fraction": "313703802455328273336963338812035/6129982163463555433433388108601236734474956488734408704",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-3960981986949763/6129982163463555433433388108601236734474956488734408704",
+            "signed_ulp_distance": 0
+          },
+          "row": 1
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bb18deea3b36582e",
+            "correctly_rounded_bits": "bb18deea3b36582f",
+            "exact_fraction": "-252219486820681404044588497432487/49039857307708443467467104868809893875799651909875269632",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "32378350136913831/49039857307708443467467104868809893875799651909875269632",
+            "signed_ulp_distance": 1
+          },
+          "historical_decimal200": {
+            "bits": "bb18deea3b36582f",
+            "correctly_rounded_bits": "bb18deea3b36582f",
+            "exact_fraction": "-252219486820681404044588497432487/49039857307708443467467104868809893875799651909875269632",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-3650446882050137/49039857307708443467467104868809893875799651909875269632",
+            "signed_ulp_distance": 0
+          },
+          "row": 2
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bac0cdbcf9ab5f4e",
+            "correctly_rounded_bits": "bac0cdbcf9ab5f4e",
+            "exact_fraction": "-9459622307348125/87112285931760246646623899502532662132736",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "1/87112285931760246646623899502532662132736",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "bac0cdbcf9ab5f4e",
+            "correctly_rounded_bits": "bac0cdbcf9ab5f4e",
+            "exact_fraction": "-9459622307348125/87112285931760246646623899502532662132736",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "1/87112285931760246646623899502532662132736",
+            "signed_ulp_distance": 0
+          },
+          "row": 3
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "3b7fd41b2b616a79",
+            "correctly_rounded_bits": "3b7fd41b2b616a79",
+            "exact_fraction": "1291118953410669752795650068066165/3064991081731777716716694054300618367237478244367204352",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-22521342915522421/3064991081731777716716694054300618367237478244367204352",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "3b7fd41b2b616a79",
+            "correctly_rounded_bits": "3b7fd41b2b616a79",
+            "exact_fraction": "1291118953410669752795650068066165/3064991081731777716716694054300618367237478244367204352",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-22521342915522421/3064991081731777716716694054300618367237478244367204352",
+            "signed_ulp_distance": 0
+          },
+          "row": 4
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 5
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 6
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bb5917984fee19f0",
+            "correctly_rounded_bits": "bb5917984fee19f0",
+            "exact_fraction": "-1017859252360308201733040458137951/12259964326927110866866776217202473468949912977468817408",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-37700701869604513/12259964326927110866866776217202473468949912977468817408",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "bb5917984fee19f0",
+            "correctly_rounded_bits": "bb5917984fee19f0",
+            "exact_fraction": "-1017859252360308201733040458137951/12259964326927110866866776217202473468949912977468817408",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-37700701869604513/12259964326927110866866776217202473468949912977468817408",
+            "signed_ulp_distance": 0
+          },
+          "row": 7
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "3b12894ff416683c",
+            "correctly_rounded_bits": "3b12894ff416683e",
+            "exact_fraction": "93990593882418780756877237469203/24519928653854221733733552434404946937899825954937634816",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "-30363438688944147/24519928653854221733733552434404946937899825954937634816",
+            "signed_ulp_distance": -2
+          },
+          "historical_decimal200": {
+            "bits": "3b12894ff416683e",
+            "correctly_rounded_bits": "3b12894ff416683e",
+            "exact_fraction": "93990593882418780756877237469203/24519928653854221733733552434404946937899825954937634816",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "5665358330019821/24519928653854221733733552434404946937899825954937634816",
+            "signed_ulp_distance": 0
+          },
+          "row": 8
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "3ad2f574f587a84c",
+            "correctly_rounded_bits": "3ad2f574f587a84b",
+            "exact_fraction": "716243814249176292633971/2923003274661805836407369665432566039311865085952",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "83907213/2923003274661805836407369665432566039311865085952",
+            "signed_ulp_distance": 1
+          },
+          "historical_decimal200": {
+            "bits": "3ad2f574f587a84b",
+            "correctly_rounded_bits": "3ad2f574f587a84b",
+            "exact_fraction": "716243814249176292633971/2923003274661805836407369665432566039311865085952",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-50310515/2923003274661805836407369665432566039311865085952",
+            "signed_ulp_distance": 0
+          },
+          "row": 9
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "3b7239de92bb88d7",
+            "correctly_rounded_bits": "3b7239de92bb88d7",
+            "exact_fraction": "369668261189999938621063877491077/1532495540865888858358347027150309183618739122183602176",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-19532698632190341/1532495540865888858358347027150309183618739122183602176",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "3b7239de92bb88d7",
+            "correctly_rounded_bits": "3b7239de92bb88d7",
+            "exact_fraction": "369668261189999938621063877491077/1532495540865888858358347027150309183618739122183602176",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-19532698632190341/1532495540865888858358347027150309183618739122183602176",
+            "signed_ulp_distance": 0
+          },
+          "row": 10
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "b8db774000000000",
+            "correctly_rounded_bits": "b8db774000000000",
+            "exact_fraction": "-28125/340282366920938463463374607431768211456",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "b8db774000000000",
+            "correctly_rounded_bits": "b8db774000000000",
+            "exact_fraction": "-28125/340282366920938463463374607431768211456",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 11
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bb42e63a7dd47af0",
+            "correctly_rounded_bits": "bb42e63a7dd47af3",
+            "exact_fraction": "-1361840249436304063/43556142965880123323311949751266331066368",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "703/43556142965880123323311949751266331066368",
+            "signed_ulp_distance": 3
+          },
+          "historical_decimal200": {
+            "bits": "bb42e63a7dd47af3",
+            "correctly_rounded_bits": "bb42e63a7dd47af3",
+            "exact_fraction": "-1361840249436304063/43556142965880123323311949751266331066368",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-65/43556142965880123323311949751266331066368",
+            "signed_ulp_distance": 0
+          },
+          "row": 12
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "3ae1e3e0fb17c426",
+            "correctly_rounded_bits": "3ae1e3e0fb17c426",
+            "exact_fraction": "20625940598371802627/44601490397061246283071436545296723011960832",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "509/44601490397061246283071436545296723011960832",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "3ae1e3e0fb17c426",
+            "correctly_rounded_bits": "3ae1e3e0fb17c426",
+            "exact_fraction": "20625940598371802627/44601490397061246283071436545296723011960832",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "509/44601490397061246283071436545296723011960832",
+            "signed_ulp_distance": 0
+          },
+          "row": 13
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "38665a0bbfe7e6ea",
+            "correctly_rounded_bits": "38665a0bbfe7e6ea",
+            "exact_fraction": "12582911996841429/23945242826029513411849172299223580994042798784118784",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-1/23945242826029513411849172299223580994042798784118784",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "38665a0bbfe7e6ea",
+            "correctly_rounded_bits": "38665a0bbfe7e6ea",
+            "exact_fraction": "12582911996841429/23945242826029513411849172299223580994042798784118784",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-1/23945242826029513411849172299223580994042798784118784",
+            "signed_ulp_distance": 0
+          },
+          "row": 14
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 15
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 16
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 17
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 18
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 19
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bd9ae9ba864291ec",
+            "correctly_rounded_bits": "bd9ae9ba864291ec",
+            "exact_fraction": "-1893834180043899/309485009821345068724781056",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "bd9ae9ba864291ec",
+            "correctly_rounded_bits": "bd9ae9ba864291ec",
+            "exact_fraction": "-1893834180043899/309485009821345068724781056",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 20
+        }
+      ],
+      "residual_summary": {
+        "all_author_bits_errors_ulps_match": true,
+        "dot2_correctly_rounded_rows": 17,
+        "dot2_max_abs_signed_error_decimal": "1.6140088449766955e-38",
+        "dot2_max_abs_ulp_distance": 3,
+        "dot2_non_correctly_rounded_rows": [
+          2,
+          8,
+          9,
+          12
+        ],
+        "exact_zero_row_returned_bits": [
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 0
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 5
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 6
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 15
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 16
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 17
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 18
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 19
+          }
+        ],
+        "exact_zero_rows_from_fraction_arithmetic": [
+          0,
+          5,
+          6,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "historical_correctly_rounded_rows": 21
+      },
+      "second_correction": {
+        "all_p_h_cbar_tau_class_bits_match": true,
+        "assessment": {
+          "active_values_equal_declared_bounds": true,
+          "active_values_preserved": true,
+          "ball_feasible": true,
+          "box_feasible": true,
+          "box_violations": [],
+          "bvls02_pass": true,
+          "complete_acceptance": true,
+          "coordinates": [
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 0,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "406b05f9e190f18e",
+              "classification": "free_pass",
+              "coordinate": 1,
+              "hhat_bits": "bd032f33db83f867",
+              "p_bits": "bd0c095f3d52801d",
+              "tau_bits": "3d825e0fd7508462"
+            },
+            {
+              "cbar_bits": "4046d8833f29ad91",
+              "classification": "free_pass",
+              "coordinate": 2,
+              "hhat_bits": "bce1c876e39a7b3b",
+              "p_bits": "bd01e3ca1e6e9e60",
+              "tau_bits": "3d5f0e5269dca848"
+            },
+            {
+              "cbar_bits": "40d0b143c683e460",
+              "classification": "free_pass",
+              "coordinate": 3,
+              "hhat_bits": "3d6d7e98fbeb8ab8",
+              "p_bits": "bc8f140de3c762f7",
+              "tau_bits": "3de6b0f821db4ab2"
+            },
+            {
+              "cbar_bits": "40c0a0f0af4acc11",
+              "classification": "free_pass",
+              "coordinate": 4,
+              "hhat_bits": "3d5dcd65001a13b8",
+              "p_bits": "3cec1d743abe35ca",
+              "tau_bits": "3dd69ac72e49ada6"
+            },
+            {
+              "cbar_bits": "3fa18a4452b2650b",
+              "classification": "retain_lower",
+              "coordinate": 5,
+              "hhat_bits": "3c303a07800e4b3f",
+              "p_bits": "0000000000000000",
+              "tau_bits": "3cb7d7f4e06a819e"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 6,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "406cd13e5f391ab7",
+              "classification": "free_pass",
+              "coordinate": 7,
+              "hhat_bits": "bd0ca0e3ac547b59",
+              "p_bits": "3d20f6cb2da66fd9",
+              "tau_bits": "3d83963864b8d05f"
+            },
+            {
+              "cbar_bits": "404854e2c5931d3a",
+              "classification": "free_pass",
+              "coordinate": 8,
+              "hhat_bits": "bce4b17d6e4a6062",
+              "p_bits": "bd13a7b8aadb45d8",
+              "tau_bits": "3d6089b22249fe0c"
+            },
+            {
+              "cbar_bits": "40ce02539c06a8c4",
+              "classification": "free_pass",
+              "coordinate": 9,
+              "hhat_bits": "3d65aed4019b6591",
+              "p_bits": "bc890c078ec5011b",
+              "tau_bits": "3de46594d40c86ee"
+            },
+            {
+              "cbar_bits": "40be57e866b4cb41",
+              "classification": "free_pass",
+              "coordinate": 10,
+              "hhat_bits": "3d565a0bc0138eca",
+              "p_bits": "3ce7ecfd6a2d6552",
+              "tau_bits": "3dd49fbff5cee260"
+            },
+            {
+              "cbar_bits": "3f92e3b62b4ecf0b",
+              "classification": "free_pass",
+              "coordinate": 11,
+              "hhat_bits": "bc396e6aaaaac574",
+              "p_bits": "3793bb7100000000",
+              "tau_bits": "3ca9ad8ba2df21bb"
+            },
+            {
+              "cbar_bits": "40b359dae67e687b",
+              "classification": "free_pass",
+              "coordinate": 12,
+              "hhat_bits": "bd4988ad523d34ed",
+              "p_bits": "3d0f16eeb3a3ae68",
+              "tau_bits": "3dca4e259153d651"
+            },
+            {
+              "cbar_bits": "40c484d84607fbd0",
+              "classification": "free_pass",
+              "coordinate": 13,
+              "hhat_bits": "bd60d5a722a03ebe",
+              "p_bits": "bcb2157c2a946e0e",
+              "tau_bits": "3ddbe495ff32da9d"
+            },
+            {
+              "cbar_bits": "4070e53a414887e4",
+              "classification": "free_pass",
+              "coordinate": 14,
+              "hhat_bits": "bd098f383a96976c",
+              "p_bits": "365290b338200000",
+              "tau_bits": "3d86f79b30be98fa"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 15,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 16,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 17,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 18,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 19,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "42e6bcc41e5ef8fb",
+              "classification": "free_pass",
+              "coordinate": 20,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "bf1a36e2eb1c432d",
+              "tau_bits": "3ffee89a99491acb"
+            }
+          ],
+          "norm": "0.0001",
+          "objective": "1.6859414913143317e-43",
+          "residual_inf": "4.235164736271502e-22"
+        },
+        "author_acceptance_agrees": true,
+        "delta_bits_match": true,
+        "p_bits_match": true
+      }
+    },
+    {
+      "case": "historical_near_root",
+      "factor_replay": {
+        "candidate_bits_match": true,
+        "rotations": 319,
+        "sweeps": 7
+      },
+      "first_correction": {
+        "accepted_delta_bits_match": true,
+        "accepted_p_bits_match": true
+      },
+      "residual_rows": [
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 0
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bb2b553dbe25400d",
+            "correctly_rounded_bits": "bb2b553dbe25400e",
+            "exact_fraction": "-138594640392430385752002849889393/12259964326927110866866776217202473468949912977468817408",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "13950408048991345/12259964326927110866866776217202473468949912977468817408",
+            "signed_ulp_distance": 1
+          },
+          "historical_decimal200": {
+            "bits": "bb2b553dbe25400e",
+            "correctly_rounded_bits": "bb2b553dbe25400e",
+            "exact_fraction": "-138594640392430385752002849889393/12259964326927110866866776217202473468949912977468817408",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-4063990460490639/12259964326927110866866776217202473468949912977468817408",
+            "signed_ulp_distance": 0
+          },
+          "row": 1
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bb165856765627c8",
+            "correctly_rounded_bits": "bb165856765627c7",
+            "exact_fraction": "-113302962088135163492648001391361/24519928653854221733733552434404946937899825954937634816",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "-14832776020833535/24519928653854221733733552434404946937899825954937634816",
+            "signed_ulp_distance": -1
+          },
+          "historical_decimal200": {
+            "bits": "bb165856765627c7",
+            "correctly_rounded_bits": "bb165856765627c7",
+            "exact_fraction": "-113302962088135163492648001391361/24519928653854221733733552434404946937899825954937634816",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "3181622488648449/24519928653854221733733552434404946937899825954937634816",
+            "signed_ulp_distance": 0
+          },
+          "row": 2
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bad7affa1370fa11",
+            "correctly_rounded_bits": "bad7affa1370fa11",
+            "exact_fraction": "-106678609075216657/348449143727040986586495598010130648530944",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "1/348449143727040986586495598010130648530944",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "bad7affa1370fa11",
+            "correctly_rounded_bits": "bad7affa1370fa11",
+            "exact_fraction": "-106678609075216657/348449143727040986586495598010130648530944",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "1/348449143727040986586495598010130648530944",
+            "signed_ulp_distance": 0
+          },
+          "row": 3
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bb4f4e8a5c82de50",
+            "correctly_rounded_bits": "bb4f4e8a5c82de4c",
+            "exact_fraction": "-39686082197490842141464392279525/766247770432944429179173513575154591809369561091801088",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "-16371346216671771/766247770432944429179173513575154591809369561091801088",
+            "signed_ulp_distance": -4
+          },
+          "historical_decimal200": {
+            "bits": "bb4f4e8a5c82de4c",
+            "correctly_rounded_bits": "bb4f4e8a5c82de4c",
+            "exact_fraction": "-39686082197490842141464392279525/766247770432944429179173513575154591809369561091801088",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "1643052292810213/766247770432944429179173513575154591809369561091801088",
+            "signed_ulp_distance": 0
+          },
+          "row": 4
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 5
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 6
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "3b280869690f855a",
+            "correctly_rounded_bits": "3b280869690f855c",
+            "exact_fraction": "15232633710134125695712130056251/1532495540865888858358347027150309183618739122183602176",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "-3663459839721531/1532495540865888858358347027150309183618739122183602176",
+            "signed_ulp_distance": -2
+          },
+          "historical_decimal200": {
+            "bits": "3b280869690f855c",
+            "correctly_rounded_bits": "3b280869690f855c",
+            "exact_fraction": "15232633710134125695712130056251/1532495540865888858358347027150309183618739122183602176",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "840139787648965/1532495540865888858358347027150309183618739122183602176",
+            "signed_ulp_distance": 0
+          },
+          "row": 7
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bb1fc0be76437959",
+            "correctly_rounded_bits": "bb1fc0be76437958",
+            "exact_fraction": "-40251590627480639503451264182961/6129982163463555433433388108601236734474956488734408704",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "-6094091236611407/6129982163463555433433388108601236734474956488734408704",
+            "signed_ulp_distance": -1
+          },
+          "historical_decimal200": {
+            "bits": "bb1fc0be76437958",
+            "correctly_rounded_bits": "bb1fc0be76437958",
+            "exact_fraction": "-40251590627480639503451264182961/6129982163463555433433388108601236734474956488734408704",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-1590491609240911/6129982163463555433433388108601236734474956488734408704",
+            "signed_ulp_distance": 0
+          },
+          "row": 8
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "bad5e2a3769ae5f6",
+            "correctly_rounded_bits": "bad5e2a3769ae5f6",
+            "exact_fraction": "-49281329666666419/174224571863520493293247799005065324265472",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "3/174224571863520493293247799005065324265472",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "bad5e2a3769ae5f6",
+            "correctly_rounded_bits": "bad5e2a3769ae5f6",
+            "exact_fraction": "-49281329666666419/174224571863520493293247799005065324265472",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "3/174224571863520493293247799005065324265472",
+            "signed_ulp_distance": 0
+          },
+          "row": 9
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "3b68075f4a3fca08",
+            "correctly_rounded_bits": "3b68075f4a3fca09",
+            "exact_fraction": "7615029975983119025659486311505/47890485652059026823698344598447161988085597568237568",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "-1416496894088273/47890485652059026823698344598447161988085597568237568",
+            "signed_ulp_distance": -1
+          },
+          "historical_decimal200": {
+            "bits": "3b68075f4a3fca09",
+            "correctly_rounded_bits": "3b68075f4a3fca09",
+            "exact_fraction": "7615029975983119025659486311505/47890485652059026823698344598447161988085597568237568",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "-290596987245649/47890485652059026823698344598447161988085597568237568",
+            "signed_ulp_distance": 0
+          },
+          "row": 10
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 11
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "3b7bb36ba8a05a0d",
+            "correctly_rounded_bits": "3b7bb36ba8a05a0d",
+            "exact_fraction": "7984229727376782259/21778071482940061661655974875633165533184",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "77/21778071482940061661655974875633165533184",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "3b7bb36ba8a05a0d",
+            "correctly_rounded_bits": "3b7bb36ba8a05a0d",
+            "exact_fraction": "7984229727376782259/21778071482940061661655974875633165533184",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "77/21778071482940061661655974875633165533184",
+            "signed_ulp_distance": 0
+          },
+          "row": 12
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "ba892c04a17e2640",
+            "correctly_rounded_bits": "ba892c04a17e2651",
+            "exact_fraction": "-226728730197019181/22300745198530623141535718272648361505980416",
+            "matches_correct_rounding": false,
+            "signed_error_fraction": "557/22300745198530623141535718272648361505980416",
+            "signed_ulp_distance": 17
+          },
+          "historical_decimal200": {
+            "bits": "ba892c04a17e2651",
+            "correctly_rounded_bits": "ba892c04a17e2651",
+            "exact_fraction": "-226728730197019181/22300745198530623141535718272648361505980416",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "13/22300745198530623141535718272648361505980416",
+            "signed_ulp_distance": 0
+          },
+          "row": 13
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "b86dcd64ffdfde8e",
+            "correctly_rounded_bits": "b86dcd64ffdfde8e",
+            "exact_fraction": "-4194303998947143/5986310706507378352962293074805895248510699696029696",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "b86dcd64ffdfde8e",
+            "correctly_rounded_bits": "b86dcd64ffdfde8e",
+            "exact_fraction": "-4194303998947143/5986310706507378352962293074805895248510699696029696",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 14
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 15
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 16
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 17
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 18
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 19
+        },
+        {
+          "author_dot2_bits_match": true,
+          "author_dot2_error_and_ulp_match": true,
+          "author_exact_fraction_match": true,
+          "author_historical_bits_match": true,
+          "dot2": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "historical_decimal200": {
+            "bits": "0000000000000000",
+            "correctly_rounded_bits": "0000000000000000",
+            "exact_fraction": "0",
+            "matches_correct_rounding": true,
+            "signed_error_fraction": "0",
+            "signed_ulp_distance": 0
+          },
+          "row": 20
+        }
+      ],
+      "residual_summary": {
+        "all_author_bits_errors_ulps_match": true,
+        "dot2_correctly_rounded_rows": 14,
+        "dot2_max_abs_signed_error_decimal": "2.957783523808077e-38",
+        "dot2_max_abs_ulp_distance": 17,
+        "dot2_non_correctly_rounded_rows": [
+          1,
+          2,
+          4,
+          7,
+          8,
+          10,
+          13
+        ],
+        "exact_zero_row_returned_bits": [
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 0
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 5
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 6
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 11
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 15
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 16
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 17
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 18
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 19
+          },
+          {
+            "dot2_bits": "0000000000000000",
+            "historical_decimal200_bits": "0000000000000000",
+            "row": 20
+          }
+        ],
+        "exact_zero_rows_from_fraction_arithmetic": [
+          0,
+          5,
+          6,
+          11,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "historical_correctly_rounded_rows": 21
+      },
+      "second_correction": {
+        "all_p_h_cbar_tau_class_bits_match": true,
+        "assessment": {
+          "active_values_equal_declared_bounds": true,
+          "active_values_preserved": true,
+          "ball_feasible": true,
+          "box_feasible": true,
+          "box_violations": [],
+          "bvls02_pass": true,
+          "complete_acceptance": true,
+          "coordinates": [
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 0,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "4070d7d2f42f07de",
+              "classification": "free_pass",
+              "coordinate": 1,
+              "hhat_bits": "bd079ff9ebf771e0",
+              "p_bits": "bd117a3f39b0d7eb",
+              "tau_bits": "3d86e562c3efeef2"
+            },
+            {
+              "cbar_bits": "404d1f35e4cb57f7",
+              "classification": "free_pass",
+              "coordinate": 2,
+              "hhat_bits": "bce04b9d5ad594fd",
+              "p_bits": "bd0b0f1362babc54",
+              "tau_bits": "3d63cb36a1823601"
+            },
+            {
+              "cbar_bits": "40cfe65f3a4f64bb",
+              "classification": "free_pass",
+              "coordinate": 3,
+              "hhat_bits": "bd6de9c9058825cd",
+              "p_bits": "bc8cdd50910dc5a6",
+              "tau_bits": "3de5ae94b9a1f6b4"
+            },
+            {
+              "cbar_bits": "40bfb2941d68fe25",
+              "classification": "free_pass",
+              "coordinate": 4,
+              "hhat_bits": "bd5dcd65001a13b8",
+              "p_bits": "bcc655de26d82cc2",
+              "tau_bits": "3dd58b60abfd5cfa"
+            },
+            {
+              "cbar_bits": "3fa2bc8fc138e660",
+              "classification": "retain_lower",
+              "coordinate": 5,
+              "hhat_bits": "bc303a0780104486",
+              "p_bits": "0000000000000000",
+              "tau_bits": "3cb978536aa95972"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 6,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "407130cca65024bf",
+              "classification": "free_pass",
+              "coordinate": 7,
+              "hhat_bits": "bd0bcde7a94064c6",
+              "p_bits": "bd208f3d8e334d3b",
+              "tau_bits": "3d875e563214f235"
+            },
+            {
+              "cbar_bits": "404a76ffffe7eb51",
+              "classification": "free_pass",
+              "coordinate": 8,
+              "hhat_bits": "bcb6c29a1b265418",
+              "p_bits": "bd157a9039b49905",
+              "tau_bits": "3d61fce1ffefa224"
+            },
+            {
+              "cbar_bits": "40d2851e80a8d1de",
+              "classification": "free_pass",
+              "coordinate": 9,
+              "hhat_bits": "bce4a6d0a094341d",
+              "p_bits": "bc91762c29958b0b",
+              "tau_bits": "3de92cf576e57d90"
+            },
+            {
+              "cbar_bits": "40c2bdb4e02835df",
+              "classification": "free_pass",
+              "coordinate": 10,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "bcd8cce9862b54ec",
+              "tau_bits": "3dd979e1e0b6a982"
+            },
+            {
+              "cbar_bits": "3f9961d4c3c3dcb0",
+              "classification": "free_pass",
+              "coordinate": 11,
+              "hhat_bits": "3c396e6aaaac62f0",
+              "p_bits": "bad0975340000000",
+              "tau_bits": "3cb1407e9d0f2030"
+            },
+            {
+              "cbar_bits": "40b573c4263891bd",
+              "classification": "free_pass",
+              "coordinate": 12,
+              "hhat_bits": "3d474edbb3de5a26",
+              "p_bits": "3d0b069328a314a4",
+              "tau_bits": "3dcd295ea3f4e66e"
+            },
+            {
+              "cbar_bits": "40c64d6408a163c1",
+              "classification": "free_pass",
+              "coordinate": 13,
+              "hhat_bits": "3d53533279385d4a",
+              "p_bits": "bc950c932963a9aa",
+              "tau_bits": "3dde5133fbbb63ef"
+            },
+            {
+              "cbar_bits": "4073990ba0869026",
+              "classification": "free_pass",
+              "coordinate": 14,
+              "hhat_bits": "3cf1d72c6062387f",
+              "p_bits": "b67ca104f9e00000",
+              "tau_bits": "3d8aa40bce36ec3e"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 15,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 16,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 17,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 18,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 19,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            },
+            {
+              "cbar_bits": "0000000000000000",
+              "classification": "free_pass",
+              "coordinate": 20,
+              "hhat_bits": "0000000000000000",
+              "p_bits": "0000000000000000",
+              "tau_bits": "0000000000000000"
+            }
+          ],
+          "norm": "4.196321939666259e-14",
+          "objective": "2.017871499197151e-43",
+          "residual_inf": "4.235164736271502e-22"
+        },
+        "author_acceptance_agrees": true,
+        "delta_bits_match": true,
+        "p_bits_match": true
+      }
+    }
+  ],
+  "dependencies": {
+    "accepted_accuracy_results_sha256": "73af08c872dc7b69406d46edd73027b2e2d942beae713bf03930425d6d641320",
+    "accepted_factor_replay_sha256": "c3a473f117eeecdb1b40270b1f3e48900635490e31e0ed1569dbc9865162bc3f",
+    "author_results_sha256": "fd58b06dd50b2312e791f04ba8a906a09d5ffdf863fb261e80c7b1d28957f32b",
+    "historical_capture_sha256": "57c26d5b9215f9e22cacf2958afb60891acc54c46c540e3dcf0e748dff585a8c",
+    "ordinary_capture_sha256": "ec92859cf5d80eb7640e3d01861dc30f61288b49949b5977fb15f192ccf1a642",
+    "review_source_sha256": "2f098ceb2b7ec4e3b6b94d6aae216f8d9d65fcc8cecc7285daac6dea59557549"
+  },
+  "evidence_class": "Ran: independent ORO EFT/Dot2, exact-Fraction residual, Decimal-200 residual, accepted-factor replay, and independent all-coordinate BVLS-02/enclosure/feasibility reconstruction; no Rust or physics",
+  "findings": [],
+  "fix_verification": {
+    "guard_and_acceptance": "PASS: all retained EFT operands/intermediates admit, and complete acceptance includes unchanged BVLS-02, box/ball, normal-domain, active-bit preservation, and active-bound equality.",
+    "pre_run_import_failure": "PASS: rejected source is preserved; reviewed source imports and ran at its released hash.",
+    "reporting": "PASS: historical grouping/replay, exact errors, ULP distances, cost partitions, and dependency identities are present and independently reproduced."
+  },
+  "missing_tests": [
+    "No additional test is missing for the authorized two-case offline prototype. Any runtime amendment would require a separately authorized specification and production validation, including policy for the infeasible first-correction scratch point."
+  ],
+  "residual_risk": [
+    "Dot2 misses correct rounding on 4/21 and 7/21 rows, by as much as 3 and 17 representable steps; this prototype establishes no exact-rounding or general boundary-sign guarantee.",
+    "Only two fixed faces with lambda=0 and interior trust balls were evaluated. Nonzero lambda, face changes, arbitrary conditioning, infeasible internal-scratch policy, nonlinear acceptance, and physical behavior remain unestablished.",
+    "The calculation is offline Python evidence and does not establish Rust/runtime cost, serialization, or integration behavior."
+  ],
+  "reviewer": "/root/accuracy_correctness (new independent session)",
+  "schema": "cold-canopy-m1-dot2-correctness/v1",
+  "verdict": "PASS: both fixed two-case prototype results independently reproduce and satisfy unchanged complete acceptance; Dot2 is not correctly rounded on every row and no general/runtime claim follows."
+}
