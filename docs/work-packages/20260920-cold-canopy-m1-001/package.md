@@ -96,7 +96,7 @@ raw evidence retains its literal patch-context/log whitespace
 ([hygiene record](artifacts/refinement-publication-hygiene.json)). Publication is
 scoped to reviewed authority and incomplete experiment evidence; no main Rust
 change or M1 acceptance. [Publication receipt](artifacts/refinement-publication.json)
-distinguishes local commit and verified remote availability.
+distinguishes local commit and verified remote availability. Evidence commit `6b60eaca4807b1ae9f346b766cbb60878584dc6f` was pushed to `origin/main` and its remote ref verified; the publication receipt is committed separately.
 
 
 [Start custody](artifacts/refinement-start-custody.json) verifies the unchanged

@@ -1,7 +1,16 @@
 {
-  "status": "prepared; commit/push not yet performed",
-  "recorded_utc": "2026-09-26T05:34:51.953588+00:00",
+  "status": "published and remote ref verified",
+  "recorded_utc": "2026-09-26T05:35:20.575728+00:00",
   "authorized_branch": "main",
   "scope": "reviewed experimental authority, package/evidence, recorder deadline, exact detached source recovery only",
-  "disposition": "CUTOFF HOLD / INCOMPLETE; final source unvalidated"
+  "disposition": "CUTOFF HOLD / INCOMPLETE; final source unvalidated",
+  "evidence_commit": "6b60eaca4807b1ae9f346b766cbb60878584dc6f",
+  "push_exit_code": 0,
+  "remote_lookup_exit_code": 0,
+  "remote_main": "6b60eaca4807b1ae9f346b766cbb60878584dc6f",
+  "remote_matches_evidence_commit": true,
+  "archive_git_blob": "cf13964b44e887c9dea7f48e0618de76be77d521",
+  "archive_sha256": "fb0ef89462e851ac596f0d3af66d1a16796ee5e49d01516cd7c9749a5ee633eb",
+  "lfs_filter": "unspecified: archive is a regular Git blob, not an LFS pointer",
+  "receipt_note": "This receipt records the evidence commit. The later receipt commit is pushed and its remote ref verified separately; no self-referential commit hash is fabricated."
 }
