@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Static: exact comparison of executed source-bearing strict-lint diagnostics",
+  "baseline": "finite-precision-body13-lint.stderr",
+  "candidate": "completion-producer-domain-lint02.stderr",
+  "normalization": "Only source line/column and numeric source/suggestion gutters; compiler summaries excluded",
+  "baseline_count": 238,
+  "candidate_count": 242,
+  "matched_count": 238,
+  "introduced": [
+    "error: this function has too many lines (103/100)\n   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:LINE:COL\n    |\nLINE | /     fn transition<E, V>(\nLINE | |         &mut self,\nLINE | |         evaluator: &mut V,\nLINE | |     ) -> Result<\n...   |\nLINE | |     where\nLINE | |         V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,\n    | |___________________________________________________________________________________^\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines",
+    "error: strict comparison of `f32` or `f64`\n    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:LINE:COL\n     |\nLINE |     assert_eq!(transition.radius_before, 1.0);\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp",
+    "error: strict comparison of `f32` or `f64`\n    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:LINE:COL\n     |\nLINE |     assert_eq!(transition.next_radius, 0.25);\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp",
+    "error: strict comparison of `f32` or `f64` arrays\n    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:LINE:COL\n     |\nLINE |     assert_eq!(transition.base_before, transition.base_after);\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#float_cmp"
+  ],
+  "not_matched": []
+}

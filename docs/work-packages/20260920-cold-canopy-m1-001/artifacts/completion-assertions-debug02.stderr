@@ -1,0 +1,39 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find function `refinement_solve_captured_face` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7386:13
+     |
+7386 |             refinement_solve_captured_face(&capture).expect("retained face solves at its radius");
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: consider importing this function
+     |
+7306 +     use crate::m1_trust_region_stage1::refinement_solve_captured_face;
+     |
+
+error[E0433]: cannot find type `RefinementMutationScope` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7393:13
+     |
+7393 |             RefinementMutationScope::install(Some(RefinementRawCandidateMutation::P0Subnormal {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementMutationScope`
+     |
+help: consider importing this struct
+     |
+7306 +     use crate::m1_trust_region_stage1::RefinementMutationScope;
+     |
+
+error[E0425]: cannot find function `refine_face_before_crossing` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7396:23
+     |
+7396 |         let refusal = refine_face_before_crossing(&input, &prepared, &mut state, &mut solution)
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: consider importing this function
+     |
+7306 +     use crate::m1_trust_region_stage1::refine_face_before_crossing;
+     |
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 3 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

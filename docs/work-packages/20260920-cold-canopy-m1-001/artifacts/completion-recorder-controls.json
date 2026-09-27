@@ -1,0 +1,26 @@
+{
+  "recorder_sha256": "d6d012c20e3e5305302f96d0cad7fac58aa2a7f6382c7fdd47933cbeb31b048e",
+  "deadline": "2026-09-27T08:49:00+00:00",
+  "cases": [
+    {
+      "case": "ordinary180",
+      "accepted": true
+    },
+    {
+      "case": "ordinary181",
+      "accepted": false
+    },
+    {
+      "case": "reserve",
+      "accepted": false
+    },
+    {
+      "case": "critical900",
+      "accepted": true
+    },
+    {
+      "case": "wrongcritical",
+      "accepted": false
+    }
+  ]
+}

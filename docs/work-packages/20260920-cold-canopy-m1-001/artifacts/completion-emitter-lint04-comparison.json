@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Static: exact comparison of executed source-bearing strict-lint diagnostics",
+  "baseline": "finite-precision-body13-lint.stderr",
+  "candidate": "completion-emitter-lint04.stderr",
+  "normalization": "Only source line/column and numeric source/suggestion gutters; compiler summaries excluded",
+  "baseline_count": 238,
+  "candidate_count": 241,
+  "matched_count": 237,
+  "introduced": [
+    "error: this function has too many lines (145/100)\n    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:LINE:COL\n     |\nLINE | fn m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls() {\n     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines",
+    "error: this function has too many lines (149/100)\n    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:LINE:COL\n     |\nLINE | fn m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization() {\n     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines",
+    "error: casting `u64` to `f64` may cause a loss of precision (`u64` is 64 bits wide, but `f64`'s mantissa is only 52 bits wide)\n    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:LINE:COL\n     |\nLINE | ...   \"seconds\":match (&cpu_delta_ticks, &cpu_hz) { (Ok(ticks), Ok(hz)) => Ok(*ticks as f64 / *hz as f64), (Err(error), _) | (_, E...\n     |                                                                               ^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_precision_loss",
+    "error: casting `u64` to `f64` may cause a loss of precision (`u64` is 64 bits wide, but `f64`'s mantissa is only 52 bits wide)\n    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:LINE:COL\n     |\nLINE | ...   \"seconds\":match (&cpu_delta_ticks, &cpu_hz) { (Ok(ticks), Ok(hz)) => Ok(*ticks as f64 / *hz as f64), (Err(error), _) | (_, E...\n     |                                                                                               ^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_precision_loss"
+  ],
+  "not_matched": [
+    "error: this function has too many lines (151/100)\n    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:LINE:COL\n     |\nLINE | fn m1_structural_drainage_current_phase_controller_retains_real_tie_work_controls() {\n     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Ran: hashes compared before mutation; no numerical execution",
+  "recorded_utc": "2026-09-27T04:52:52.500020+00:00",
+  "base_commit": "47b04e2b48e8926b7222cecab134461cef9052e0",
+  "first_reading_anchor_utc": "2026-09-27T04:49:00+00:00",
+  "hard_deadline_utc": "2026-09-27T08:49:00+00:00",
+  "command_cutoff_utc": "2026-09-27T08:19:00+00:00",
+  "carry_charged_seconds": "364933.959294",
+  "cumulative_ceiling_seconds": "379333.959294",
+  "later_local_ledger_check": "All local *ledger*.json inspected once; no greater later charge found",
+  "source_tree_sha256": "bf93e4220755ac32da348fec2cf640ba7e73eb57784922013a6658e5879128f4",
+  "entry_count": 764,
+  "all_entry_hashes_equal": true,
+  "archive_sha256": "fb0ef89462e851ac596f0d3af66d1a16796ee5e49d01516cd7c9749a5ee633eb",
+  "unrelated_dirty_sha256": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  }
+}

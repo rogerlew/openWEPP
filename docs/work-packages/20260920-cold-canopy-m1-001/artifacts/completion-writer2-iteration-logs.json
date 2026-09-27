@@ -1,0 +1,44 @@
+[
+  {
+    "log": "completion-writer2-cold-current-lint.stderr",
+    "sha256": "b6ca6673508ee5f6a3ce06306673e062e942223e391bb3ef8c435c6df2464376",
+    "source_binding": "Intermediate source snapshot not supplied; author iteration log only, no final validation credit",
+    "original_mtime": 1790485716.027898
+  },
+  {
+    "log": "completion-writer2-cold-current2.stderr",
+    "sha256": "7ff882fe01abb2a57d033e74657a9122cca46d8437366e711dd51d0c1b9d4180",
+    "source_binding": "Intermediate source snapshot not supplied; author iteration log only, no final validation credit",
+    "original_mtime": 1790485809.4557858
+  },
+  {
+    "log": "completion-writer2-cold-current3.stderr",
+    "sha256": "8c1533ec1fb8349984cff0114c593f685cea4692d174d8c558264a723e7659cd",
+    "source_binding": "Intermediate source snapshot not supplied; author iteration log only, no final validation credit",
+    "original_mtime": 1790485861.7945237
+  },
+  {
+    "log": "completion-writer2-cold-current4.stderr",
+    "sha256": "16130cfd55823cd13fd234e209369707f1c93295bfb140c7f6894a04b943bf20",
+    "source_binding": "Intermediate source snapshot not supplied; author iteration log only, no final validation credit",
+    "original_mtime": 1790485892.4691286
+  },
+  {
+    "log": "completion-writer2-cold-current5.stderr",
+    "sha256": "463e16102f81d5bb841a1af33fbf4bfb3681fedf09bf028c811974169c35e5ce",
+    "source_binding": "Intermediate source snapshot not supplied; author iteration log only, no final validation credit",
+    "original_mtime": 1790485957.3085206
+  },
+  {
+    "log": "completion-writer2-cold-current6.stderr",
+    "sha256": "d950f33f356dd01988de1f275bbd8beeea3fe410026cea94a7d0377fb6d8efc4",
+    "source_binding": "Intermediate source snapshot not supplied; author iteration log only, no final validation credit",
+    "original_mtime": 1790485981.4487836
+  },
+  {
+    "log": "completion-writer2-cold-current7.stderr",
+    "sha256": "aab8f002f8cf25c135d5602d95a727222393e1edb8cdf3eb9b8e1d3a6de250ce",
+    "source_binding": "Intermediate source snapshot not supplied; author iteration log only, no final validation credit",
+    "original_mtime": 1790486030.007324
+  }
+]

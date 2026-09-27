@@ -1,0 +1,28 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `release` profile [optimized] target(s) in 0.03s
+────────────
+ Nextest run ID 8cad88d6-6ba6-4a7c-97e8-69fd782e98a7 with nextest profile: default
+    Starting 1 test across 1 binary (369 tests skipped)
+        FAIL [   0.007s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 369 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'm1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base' (2708387) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:5389:14:
+    real negative drainage candidate must be refused before evaluation: Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionOptimalityIndeterminate, optimality_reason: Some("optimality_free_stationarity"), optimality_coordinate: Some(1), optimality_radius: Some(1.0), optimality_lambda: Some(5962417150275328.0), attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 1, entered_svd_factorizations: 2, raw_residual_max: 7549.28674729901, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 2, completed_face_pivots: 1, total_jacobi_sweeps: 14, refinement_scalar_operations: 0, refinement_guard_events: 0, refinement_attempted_entries: 0, refinement_denied_entries: 0, first_residual_operations: 0, second_dot2_operations: 0, factor_application_operations: 0, coordinate_update_operations: 0, whole_kkt_operations: 1827, whole_kkt_guard_events: 5503, upward_enclosure_operations: 8162, upward_enclosure_guard_events: 67427 }, refinement: None, budget_refusal: None })
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.009s] 1 test run: 0 passed, 1 failed, 369 skipped
+        FAIL [   0.007s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base
+error: test run failed

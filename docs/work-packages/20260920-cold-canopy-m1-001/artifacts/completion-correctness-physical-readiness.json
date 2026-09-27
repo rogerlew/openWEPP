@@ -1,0 +1,69 @@
+{
+  "artifact": "completion-correctness-physical-readiness",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static/read-only review of the parent-executed compatibility receipt, its exact stderr, source receipt, frozen support manifest, selected inventories, and prepared physical manifest. The reviewer ran no compile, test, candidate, solver, compatibility, or physical command.",
+  "findings": [],
+  "compatibility_result": {
+    "artifact": "completion-compatibility01.json",
+    "sha256": "a98211edc423dd6ee33327ad225bf02bee0cf975e1da23146c9fdc5e03174de3",
+    "source_receipt_sha256": "85aa968f574b1d187a61eb39f5563ca92cfc0a288f92788d09d8652eeeafad28",
+    "stderr_sha256": "761d351fc79062b9409125d1216bc4f62997928de3ff40740cf0374873c6cb95",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "binary_sha256": "0d71d772877728c6586319ea3b2e8177d0ac86999e31e5f8b110fb13c43068ab",
+    "support_manifest_sha256": "0bbe8e6432f530ced7c3284599d6efff6f5a70f1e9043e7fb7ac02b4853631f6",
+    "exit_code": 0,
+    "timed_out": false,
+    "automatic_retries": 0,
+    "elapsed_seconds_including_build_and_process": 13.056078922003508,
+    "result": "125 passed, 0 failed, 244 skipped",
+    "custody": {
+      "source_unchanged": true,
+      "observer_base_unchanged": true,
+      "binary_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true
+    }
+  },
+  "named_control_verification": [
+    {
+      "test": "m1_coupled_tests::m1_trust_region_physical_budget_stage1_factorization_cap_reaches_actual_face",
+      "result": "PASS",
+      "stderr_line": 480,
+      "significance": "The actual Stage1 factorization budget owner and typed cap path passed before the physical endpoint dispatch."
+    },
+    {
+      "test": "m1_trust_region_stage1::finite_precision_controls::expected_red_release_ranking_uses_observed_ratio_not_multiplier_magnitude",
+      "result": "PASS",
+      "stderr_line": 472,
+      "significance": "The adjudicated KKT release-ranking behavior passed on the final source and selected debug binary."
+    }
+  ],
+  "endpoint_custody": {
+    "compatibility_selector_excluded_endpoint": true,
+    "exact_endpoint_unused": true,
+    "physical_support_manifest": "completion-physical01-support.json",
+    "physical_support_manifest_sha256": "45add62e1587239870376f21a5cdb9eac4821ae9abf51970e92c317ff73b12e3",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "release_binary": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+    "release_binary_sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8",
+    "selected_count": 1,
+    "selected_test": "m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization",
+    "timeout_seconds": 180,
+    "command_shape": "cargo nextest run --release for the exact-equality one-test selector with analytic and physical features, no fail-fast, and immediate success/failure output",
+    "accepted_static_properties": "The endpoint retains one proposal invocation after the separate original60 setup, immutable protected input custody, coordinate-20 perturbation, accepted/final/materialized witnesses, complete work/budget records, structured failure state, raw closure operands, independent closure reconstruction, and CPU/wall observations."
+  },
+  "pre_dispatch_requirement": {
+    "required": true,
+    "action": "Immediately before execution, recheck completion-selected-inventories.json and completion-physical01-support.json against source tree 538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18, release binary SHA-256 7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8, physical support SHA-256 45add62e1587239870376f21a5cdb9eac4821ae9abf51970e92c317ff73b12e3, and exactly the one selected endpoint.",
+    "failure_disposition": "Any drift revokes this readiness and requires review before execution."
+  },
+  "residual_risk_and_missing_tests": [
+    "The physical endpoint remains unexecuted at this review point. Runtime outcome, closure operands, CPU/wall observation, accepted-update custody, and full-work accounting are not yet verified.",
+    "After the sole physical run, closure requires source/support/binary custody confirmation, parsing the emitted observation, and independent scalar reconstruction from its raw operands."
+  ],
+  "dispatch": {
+    "physical01": "READY_AND_CLEARED_FOR_SINGLE_DISPATCH",
+    "scope": "Exactly one execution of the one selected release endpoint in completion-physical01-support.json after the immediate custody recheck; no retries, compatibility controls, candidate runs, or additional physical tests."
+  },
+  "approval": "NO CORRECTNESS OR CUSTODY BLOCKER TO PHYSICAL01. Compatibility01 passed all 125 selected guards, including the named factorization-cap and KKT controls, without source/support/binary drift. The exact one-test release endpoint is cleared for its sole 180-second dispatch after the immediate recheck."
+}

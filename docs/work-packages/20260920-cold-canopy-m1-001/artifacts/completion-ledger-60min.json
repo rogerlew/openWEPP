@@ -1,0 +1,15 @@
+{
+  "recorded_utc": "2026-09-27T05:49:29.920979+00:00",
+  "first_reading_anchor_utc": "2026-09-27T04:49:00+00:00",
+  "charged_new_seconds": "3629.920979",
+  "cumulative_charged_seconds": "368563.880273",
+  "cumulative_ceiling_seconds": "379333.959294",
+  "remaining_seconds": "10770.079021",
+  "command_cutoff_utc": "2026-09-27T08:19:00+00:00",
+  "hard_deadline_utc": "2026-09-27T08:49:00+00:00",
+  "accounting": "Concurrent elapsed once, no wait deductions/re-anchor/refund",
+  "decision": "CONTINUE",
+  "evidence": "Final repair9/9 debug/release; added metadata and unequal-radius controls11/11 debug/release; complete introduced lint reduced64to8,238inherited exact; source recoverable in each parent receipt. Metadata grouping and complete physical observation remain supported in-scope actions.",
+  "physical_endpoint_runs": 0,
+  "target_slots": "UNUSED / NOT RELEASED"
+}

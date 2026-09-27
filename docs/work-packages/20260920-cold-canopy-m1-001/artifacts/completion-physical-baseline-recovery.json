@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: reconstructed exact executed physical source from pinned observer plus recorded physical01 patch; all764 hashes and archived bytes verified, no numerical replay",
+  "recorded_utc": "2026-09-27T06:41:16.077349+00:00",
+  "source_receipt": "completion-physical01-source.json",
+  "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+  "entry_count": 764,
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-completion-physical-reconstruction-20260927",
+  "patch": "completion-physical01-from-observer-cut02.patch",
+  "patch_sha256": "a32ca58024aa282e2e510524ce052558c33dc866f1325f229aa7d42edf514ffd",
+  "patch_exit": 0,
+  "all_entries_equal": true,
+  "archive": "completion-physical-baseline-source.tar.gz",
+  "archive_sha256": "a05a2e4d1328f8b1bead5f9e4e2cf2cdebff120c13c31afad03934ed2dfdb544",
+  "all_archive_bytes_equal": true,
+  "scope": "Accepted physical baseline source only, external toolchain/input supports remain explicitly bound by physical01 support manifest; not a self-contained toolchain archive."
+}

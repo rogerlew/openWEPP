@@ -1,0 +1,132 @@
+{
+  "artifact": "completion-correctness-dispatch01",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static final-source, source-manifest, support-manifest, command, and selected-inventory assessment plus read-only inspection of parent-executed terminal receipts. The reviewer ran no compile, test, candidate, solver, compatibility, or physical command.",
+  "findings": [],
+  "final_source": {
+    "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "source_entry_count": 764,
+    "reviewed_changed_files": {
+      "crates/openwepp-land-surface-energy/src/lib.rs": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "ae3656611e3e1dc4167aa47ce70485163b3f1a9c174b58342d93549ae52ac6ae",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "f3de57a28df00e7383ed2565c997645b0ae5e4665e783e73dd08e4ecded22e92"
+    },
+    "assessment": "PASS. The exact terminal tree contains the statically accepted Stage1 formatting-only rebind and the fully fixed emitter cut. All terminal receipts, inventories, and both prepared dispatch manifests bind source tree 538250c0. No mutable-source gap remains before compatibility dispatch."
+  },
+  "terminal_validation": {
+    "debug_refinement": {
+      "artifact": "completion-terminal-debug03.json",
+      "sha256": "9a067c1c7aea1376410b61d077530f685621be130b83b64e25083828b5f1144d",
+      "exit_code": 0,
+      "result": "11 passed, 0 failed, 358 skipped"
+    },
+    "release_refinement": {
+      "artifact": "completion-terminal-release01.json",
+      "sha256": "8dd4df66c11101ea4aaa75331d059d4f7a11804c7707b058f89a91c4bf75a826",
+      "exit_code": 0,
+      "result": "11 passed, 0 failed, 358 skipped"
+    },
+    "format": {
+      "artifact": "completion-terminal-fmt04.json",
+      "sha256": "1fc782b2be0e2cc5b384ac0df3ab8e78c9f1c5ee083f8f4da27c1fe27fd27400",
+      "exit_code": 0
+    },
+    "default_check": {
+      "artifact": "completion-terminal-default01.json",
+      "sha256": "0807aa72381fbfb063429953a9968bfa8d2a04f385d4667680c48bf6cccdcaaa",
+      "exit_code": 0
+    },
+    "default_inventory": {
+      "artifact": "completion-terminal-default-list02.json",
+      "sha256": "76dfba0c304860e19fb110fb86e9e82f5f1592e9092ae27fb2a04e0f99752709",
+      "exit_code": 0,
+      "test_count": 289,
+      "selected_count": 283
+    },
+    "combined_inventory": {
+      "artifact": "completion-terminal-inventory01.json",
+      "sha256": "bd74836aba34ec1a1f4a6a07a14c3861fe3236ee195e39d1e4c800d5a12e52f9",
+      "exit_code": 0,
+      "test_count": 369,
+      "selected_count": 363
+    },
+    "documentation": {
+      "artifact": "completion-terminal-doc01.json",
+      "sha256": "9d4d5fbae0fc980d5e73165159b032f3f86a69c434d272985245b4cca11e0054",
+      "exit_code": 0,
+      "result": "0 documentation tests; successful command"
+    },
+    "strict_lint": {
+      "comparison_artifact": "completion-terminal-lint01-comparison.json",
+      "comparison_sha256": "4ec9686eedbfc80edc907048969af7c7f104a1069c50590ca6416b88f8ab9d33",
+      "classification": "238 candidate diagnostics = 238 inherited, 0 introduced, 0 removed",
+      "truthfulness": "The clippy command exits 101 because inherited diagnostics remain. This is an exact classified comparison, not a clean lint pass."
+    }
+  },
+  "manifest_assessment": {
+    "custody_artifact": "completion-terminal-support-custody.json",
+    "custody_sha256": "b55895020db48313af09144e56b4e49771b84f0c20fe3315332edd1075cf5e21",
+    "selected_inventories_artifact": "completion-selected-inventories.json",
+    "selected_inventories_sha256": "de7864e899253acaf108c3b7e7c582004f48967cfdb3f5a76532aadf03b4382e",
+    "compatibility_support": {
+      "artifact": "completion-compatibility01-support.json",
+      "sha256": "0bbe8e6432f530ced7c3284599d6efff6f5a70f1e9043e7fb7ac02b4853631f6",
+      "entry_count": 628,
+      "canonical_support_entries": 627,
+      "selected_binary_entries": 1,
+      "selected_binary_sha256": "0d71d772877728c6586319ea3b2e8177d0ac86999e31e5f8b110fb13c43068ab"
+    },
+    "physical_support": {
+      "artifact": "completion-physical01-support.json",
+      "sha256": "45add62e1587239870376f21a5cdb9eac4821ae9abf51970e92c317ff73b12e3",
+      "entry_count": 628,
+      "canonical_support_entries": 627,
+      "selected_binary_entries": 1,
+      "selected_binary_sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8"
+    },
+    "reconciliation": "PASS. Removing each manifest's one selected binary leaves 627 path/hash entries that are byte-for-byte identical between compatibility and physical manifests. Both bind source tree 538250c0, unchanged support links, and the same canonical external inputs. The prior five-support omission is explicitly corrected; no input byte changed."
+  },
+  "compatibility_selector": {
+    "inventory_artifact": "completion-compatibility-inventory01.json",
+    "inventory_sha256": "d2262ee1b668ad415238437696409a94e70fc3ed8c13ea73eba69635abd0d748",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "selected_count": 125,
+    "unique_selected_count": 125,
+    "required_controls_present": [
+      "m1_coupled_tests::m1_trust_region_physical_budget_stage1_factorization_cap_reaches_actual_face",
+      "m1_trust_region_stage1::finite_precision_controls::expected_red_release_ranking_uses_observed_ratio_not_multiplier_magnitude",
+      "m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_preserves_unequal_original_and_reduced_radius_metadata",
+      "m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_remainder_and_per_term_accumulation_metadata_are_observed"
+    ],
+    "exact_exclusions": [
+      "m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization",
+      "m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_perturbation_refuses_face_pivot_before_materialization",
+      "m1_coupled_tests::m1_trust_region_physical_adapter_run_restores_nested_prior_budget_scope",
+      "m1_coupled_tests::m1_trust_region_physical_adapter_run_captures_and_restores_owned_budget_scope",
+      "m1_coupled_tests::m1_trust_region_physical_adapter_original60_setup_is_separate_from_deferred_proposal"
+    ],
+    "exclusion_verification": "All five excluded tests exist in the combined inventory and none appears in the 125-test compatibility selection. No physical ordinary-update endpoint is consumed by compatibility01.",
+    "assessment": "PASS. The selection retains the physical factorization-cap owner, adjudicated KKT behavior, C1 remainder/per-term metadata, unequal-radius metadata, physical adapter guards, runtime observation guards, Stage2 controls, and controller accounting."
+  },
+  "physical_selector": {
+    "inventory_artifact": "completion-physical-inventory01.json",
+    "inventory_sha256": "3e3247fe88c43ad6e7de7105c797294bf858b230feb4e2180350ef818201a03a",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "selected_count": 1,
+    "selected_test": "m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization",
+    "release_binary_sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8",
+    "assessment": "STRUCTURALLY_READY_CONDITIONAL. The exact-equality selector binds one release endpoint and no compatibility control. Source, support, binary, immutable original60 input construction, perturbation setup, and emitted operand fields match the accepted static review. Dispatch remains conditional on compatibility01 passing without source/support/binary drift."
+  },
+  "residual_risk_and_missing_tests": [
+    "compatibility01 has not yet executed; inventory and manifests establish exact selection and custody only.",
+    "physical01 has not executed and is not dispatched by this artifact. Its runtime outcome, emitted closure operands, CPU/wall observations, accepted-update custody, and exact full-work counts remain unverified.",
+    "Package closure still requires the compatibility receipt, then explicit physical readiness on unchanged custody, the sole physical receipt, and independent reconstruction of the observed closure."
+  ],
+  "dispatch": {
+    "compatibility01": "READY_AND_CLEARED_FOR_DISPATCH",
+    "physical01": "CONDITIONAL_READY_NOT_YET_CLEARED",
+    "physical_condition": "compatibility01 must pass on source tree 538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18 with unchanged compatibility/physical support manifests and selected binary hashes; then request explicit same-reviewer readiness before the one physical endpoint is run."
+  },
+  "approval": "NO CORRECTNESS OR MANIFEST BLOCKER TO COMPATIBILITY01. Execute the exact 125-test compatibility command in completion-compatibility01-support.json. Do not dispatch physical01 until the compatibility result is reviewed and explicit readiness is issued."
+}

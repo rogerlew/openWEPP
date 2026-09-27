@@ -1,0 +1,66 @@
+{
+  "artifact": "completion-correctness-physical-reconstruction",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Ran: independent scalar reconstruction from the raw emitted f64 operand bits. This calculation did not call the Rust solver, candidate, author reconstruction fields, or author closure booleans.",
+  "source_observation": {
+    "path": "artifacts/completion-physical-observation.json",
+    "sha256": "d2a0316cdf1a0daab45509a1c1ebfb879951a0399999dedbea55229c69e8b180"
+  },
+  "arithmetic": {
+    "f64_decode": "big-endian IEEE-754 binary64 from each *_bits integer",
+    "mass": "ending_mass - beginning_mass - dt * (incident_liquid - vapor - drainage)",
+    "enthalpy": "ending_enthalpy - beginning_enthalpy - dt * (non_vapor_heat + incident_liquid * incident_enthalpy - vapor * (2501000 + 1849 * (wet_temperature - 273.15)) - drainage * 4218 * (wet_temperature - 273.15))",
+    "published_match_tolerances": {
+      "mass_kg_m2": 1e-12,
+      "enthalpy_j_m2": 1e-9
+    },
+    "closure_tolerances": {
+      "mass_kg_m2": 1e-9,
+      "enthalpy_j_m2": 1e-6
+    }
+  },
+  "executed_script": "import json, struct\nSOURCE='docs/work-packages/20260920-cold-canopy-m1-001/artifacts/completion-physical-observation.json'\nd=json.load(open(SOURCE))\ndef f(bits): return struct.unpack('>d',int(bits).to_bytes(8,'big'))[0]\ndef bits(value): return int.from_bytes(struct.pack('>d',value),'big')\nrows=[]\nfor index,o in enumerate(d['outcome']['reservoir_operands']):\n    v=lambda name:f(o[name+'_bits'])\n    mass=v('ending_mass_kg_m2')-v('beginning_mass_kg_m2')-v('dt_s')*(v('incident_liquid_kg_m2_s')-v('vapor_kg_m2_s')-v('drainage_kg_m2_s'))\n    temperature=v('wet_temperature_k')\n    enthalpy=v('ending_enthalpy_j_m2')-v('beginning_enthalpy_j_m2')-v('dt_s')*(v('non_vapor_heat_w_m2')+v('incident_liquid_kg_m2_s')*v('incident_enthalpy_j_kg')-v('vapor_kg_m2_s')*(2501000.0+1849.0*(temperature-273.15))-v('drainage_kg_m2_s')*4218.0*(temperature-273.15))\n    published_mass=v('published_mass_residual')\n    published_enthalpy=v('published_enthalpy_residual')\n    rows.append({'index':index,'mass':mass,'mass_bits':bits(mass),'published_mass':published_mass,'published_mass_bits':o['published_mass_residual_bits'],'mass_delta':mass-published_mass,'mass_matches':abs(mass-published_mass)<=1e-12,'mass_closes':abs(mass)<=1e-9,'enthalpy':enthalpy,'enthalpy_bits':bits(enthalpy),'published_enthalpy':published_enthalpy,'published_enthalpy_bits':o['published_enthalpy_residual_bits'],'enthalpy_delta':enthalpy-published_enthalpy,'enthalpy_matches':abs(enthalpy-published_enthalpy)<=1e-9,'enthalpy_closes':abs(enthalpy)<=1e-6,'diagnosed_mass':v('diagnosed_liquid_mass_kg_m2'),'capacity':v('liquid_capacity_kg_m2'),'capacity_valid':v('diagnosed_liquid_mass_kg_m2')>=0.0 and v('diagnosed_liquid_mass_kg_m2')<=v('liquid_capacity_kg_m2')})\nprint(json.dumps(rows,indent=2,sort_keys=True))",
+  "results": [
+    {
+      "index": 0,
+      "independent_mass_kg_m2": 5.421010862427522e-19,
+      "independent_mass_bits": 4333588741437259776,
+      "published_mass_kg_m2": 5.421010862427522e-19,
+      "published_mass_bits": 4333588741437259776,
+      "mass_delta": 0.0,
+      "mass_matches_published": true,
+      "mass_closes": true,
+      "independent_enthalpy_j_m2": 3.637978807091713e-12,
+      "independent_enthalpy_bits": 4436045632959938560,
+      "published_enthalpy_j_m2": 3.637978807091713e-12,
+      "published_enthalpy_bits": 4436045632959938560,
+      "enthalpy_delta": 0.0,
+      "enthalpy_matches_published": true,
+      "enthalpy_closes": true,
+      "diagnosed_mass_kg_m2": 0.0017765489895320789,
+      "capacity_kg_m2": 0.2970000000000001,
+      "capacity_valid": true
+    },
+    {
+      "index": 1,
+      "independent_mass_kg_m2": 6.505213034913027e-19,
+      "independent_mass_bits": 4334714641344102400,
+      "published_mass_kg_m2": 6.505213034913027e-19,
+      "published_mass_bits": 4334714641344102400,
+      "mass_delta": 0.0,
+      "mass_matches_published": true,
+      "mass_closes": true,
+      "independent_enthalpy_j_m2": 4.547473508864641e-12,
+      "independent_enthalpy_bits": 4437171532866781184,
+      "published_enthalpy_j_m2": 4.547473508864641e-12,
+      "published_enthalpy_bits": 4437171532866781184,
+      "enthalpy_delta": 0.0,
+      "enthalpy_matches_published": true,
+      "enthalpy_closes": true,
+      "diagnosed_mass_kg_m2": 0.0020207642026689888,
+      "capacity_kg_m2": 0.2970000000000001,
+      "capacity_valid": true
+    }
+  ],
+  "assessment": "PASS. Both independently reconstructed mass and enthalpy residuals are bit-identical to the published residuals, both close by the canonical physical tolerances, and both diagnosed liquid masses are finite, nonnegative, and below capacity."
+}

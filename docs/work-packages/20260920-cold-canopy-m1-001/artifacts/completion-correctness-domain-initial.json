@@ -1,0 +1,77 @@
+{
+  "artifact": "completion-correctness-domain-initial",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static comparison of the recorded producer-domain lint01 patch against the accepted physical01 patch, plus read-only source inspection. The reviewer ran no compile, test, candidate, solver, or physical command.",
+  "findings": [
+    {
+      "severity": "medium",
+      "status": "blocking_before_final_freeze",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "symbol": "m1_trust_region_controller_domain_refusal_transition_for_test",
+      "finding": "The initial wrapper sets the thread-local mutation flag true, calls the transition, then sets it false. An unwind bypasses the reset, and a nested scope loses its prior state because reset always writes false.",
+      "required_fix": "Use an RAII scope that captures the prior flag and restores that exact value in Drop. The guard must be created before calling the common transition and remain alive through every return or unwind. Add restoration evidence with a subsequent normal transition; retain nested-state semantics."
+    },
+    {
+      "severity": "medium",
+      "status": "blocking_before_final_freeze",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "symbol": "m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base",
+      "finding": "The initial test proves radius shrink, retained base, trial-domain entry, and no candidate evaluation, but it does not yet bind the exact poisoned candidate or every transition field that distinguishes a domain refusal from another shrink path.",
+      "required_fix": "Require stage1_observation.candidate_coordinates[5] to equal -f64::MIN_POSITIVE by bits; exact MeritRejectedAndShrunk disposition; installed=false; actual_reduction/rho/moving_merit/dynamic_max_normalized_residual=None; entered_materializations=0; radius bits 1.0 to 0.25; base-before/base-after bit identity; trial-domain checks=1 and current evaluations=1. Run a retained normal transition after scope drop and require its ordinary candidate is not poisoned."
+    },
+    {
+      "severity": "low",
+      "status": "blocking_for_compiler_clean_freeze",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "finding": "The initial thread-local and mutation branch are gated only by cfg(test), and lint01 records the controller wrapper and physical adapter wrapper as dead code before the test consumer exists. lint02 adds the consumer but records four introduced diagnostics, including transition length and float comparisons.",
+      "required_fix": "Keep the hook, branch, and wrapper private and gated to cfg(all(test, feature = m1-trust-region-physical-stage)); consume them only through the physical test seam. Resolve the recorded lint diagnostics structurally and compare floating-point evidence by bits. Do not add lint allowances."
+    }
+  ],
+  "scientific_control_assessment": {
+    "result": "VALID_CONDITIONAL_ON_FIXES",
+    "detail": "The controller first constructs the real phase model and ProposalModel through the existing Stage1 and selected-phase paths. The test-only seam then changes only observation.candidate_coordinates[5] to finite -f64::MIN_POSITIVE. The existing physical adapter converts those coordinates to M1CoupledColumnTrial, increments the real trial-domain counter, and calls fd_trial_is_admissible, whose canonical condition rejects coordinate 5 when it is below zero. The controller checks this domain result before evaluating the candidate and routes false through the existing trial_domain_refusal transition. This introduces no forced boolean, surrogate physics, clamp, or new numerical policy."
+  },
+  "normal_path_exclusion": {
+    "initial_status": "STATICALLY_SEPARATE_BUT_RESTORATION_INCOMPLETE",
+    "detail": "The mutation read and write are test-only, and a false thread-local flag leaves the ProposalModel unchanged without added floating-point operations. Production builds exclude the branch. Final acceptance still requires RAII restoration, the narrower physical-feature cfg, and a real normal-transition-after-scope assertion."
+  },
+  "arithmetic_and_precedence": {
+    "result": "NO_PRODUCTION_ARITHMETIC_CHANGE_IN_RECORDED_PATCH",
+    "detail": "The patch does not edit Stage1. It inserts the candidate mutation after phase-model construction and before the existing current-max, hydraulics completion, predicted-reduction precedence, and pre-evaluator domain call. On the enabled control, existing predicted-reduction/current-max precedence therefore remains authoritative; the final test must prove this fixture reaches the domain guard rather than an earlier return. On all normal paths the model is unchanged."
+  },
+  "duplication_assessment": "No substantial duplicated Rust logic. The physical adapter function is a thin typed wrapper over the centralized controller transition seam; the domain rule remains owned only by fd_trial_is_admissible.",
+  "primary_evidence": [
+    {
+      "path": "artifacts/completion-physical01-from-observer-cut02.patch",
+      "sha256": "a32ca58024aa282e2e510524ce052558c33dc866f1325f229aa7d42edf514ffd",
+      "role": "accepted immutable physical baseline"
+    },
+    {
+      "path": "artifacts/completion-producer-domain-lint01-from-observer-cut02.patch",
+      "sha256": "d03d6e117810d4643cedbd6fc6b0988dd078d799cf7751db8fb50a2e7d7e8c5d",
+      "role": "reviewed initial domain-control source patch"
+    },
+    {
+      "path": "artifacts/completion-producer-domain-lint01-source.json",
+      "sha256": "0e62003fd4bfda08c288bbcd33b7b506a685512ab495ee36b7174660adb1975d",
+      "role": "exact source manifest for lint01 tree fbfaac58"
+    },
+    {
+      "path": "artifacts/completion-producer-domain-lint01-comparison.json",
+      "sha256": "897420a833a95527849b66f92dd375b2676fc1c03d433cda1bbd7abbea8ddaf4",
+      "role": "failing intermediate classification: 238 inherited plus 3 introduced diagnostics"
+    },
+    {
+      "path": "artifacts/completion-producer-domain-lint02-comparison.json",
+      "sha256": "aa4944cc9c60ab6c1d391bc59fcbae072a32943cb8f92d8838278532e2dc31c4",
+      "role": "later failing intermediate classification after adding the test: 238 inherited plus 4 introduced diagnostics"
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "The reviewed lint01 and lint02 cuts are failing intermediates and are not accepted final source.",
+    "No focused domain-control execution or compiler-clean final receipt has been reviewed.",
+    "The current mutable writer source is outside this artifact; final frozen source and exact patch require same-reviewer review.",
+    "No Stage1 numerical change is authorized or needed for this control."
+  ],
+  "approval": "CONDITIONAL_STATIC_ACCEPTANCE OF THE CONTROL DESIGN ONLY. The finite -MIN_POSITIVE real-candidate control is scientifically discriminating and uses the actual physical adapter domain guard. Final source remains HOLD until RAII restoration, complete transition/candidate assertions, physical-feature-private reachability, normal-path exclusion evidence, and introduced-lint cleanup are verified."
+}

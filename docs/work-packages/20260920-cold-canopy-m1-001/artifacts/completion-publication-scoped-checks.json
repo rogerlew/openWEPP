@@ -1,0 +1,20 @@
+{
+  "evidence_class": "Ran: final publication-scope JSON/link/authored-whitespace/protected-main/index/branch checks; no numerical execution",
+  "recorded_utc": "2026-09-27T07:21:43.688943+00:00",
+  "json_files_parsed": 398,
+  "completion_links_checked": 88,
+  "errors": [],
+  "authored_whitespace_exit": 0,
+  "unrelated_main_hashes_equal": true,
+  "initial_index_empty": true,
+  "branch": "main",
+  "prepublication_head": "47b04e2b48e8926b7222cecab134461cef9052e0",
+  "scoped_files_pattern": [
+    "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/completion-*"
+  ],
+  "terminal_source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+  "numerical_commands_after_terminal_negative": 0,
+  "review_scope": "Both same reviewers approved exact source/evidence preservation; final additions are their attributable disposition and mechanical publication checks."
+}

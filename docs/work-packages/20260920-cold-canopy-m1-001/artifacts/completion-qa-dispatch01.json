@@ -1,0 +1,66 @@
+{
+  "artifact": "completion-qa-dispatch01",
+  "reviewer": "/root/completion_qa",
+  "role": "independent QA/evidence reviewer",
+  "evidence_class": "Static/Ran-record inspection: reviewed final source hashes, parent-executed terminal receipts, actual source-bound inventories, repaired 628-file support manifests and binary hashes, exact lint comparison, and same-reviewer correctness followup02. Reviewer dispatched no command.",
+  "reviewed_source": {
+    "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "stage1_sha256": "f3de57a28df00e7383ed2565c997645b0ae5e4665e783e73dd08e4ecded22e92",
+    "coupled_tests_sha256": "ae3656611e3e1dc4167aa47ce70485163b3f1a9c174b58342d93549ae52ac6ae",
+    "lib_sha256": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c"
+  },
+  "findings": [],
+  "terminal_quality_and_reachability": {
+    "focused_debug": "PASS: completion-terminal-debug03, tree 538250, 11/11 passed and 358 skipped; source/base/pins/links unchanged.",
+    "focused_release": "PASS: completion-terminal-release01, tree 538250, 11/11 passed and 358 skipped; source/base/pins/links unchanged.",
+    "format": "PASS: completion-terminal-fmt04 on tree 538250 with unchanged source/base/pins/links.",
+    "lint": "CLASSIFIED INHERITED ONLY: completion-terminal-lint01 exits 101, while the exact block comparison is 238 baseline = 238 candidate, with zero introduced, removed, or unmatched blocks. This is valid only for the selected private/noncritical inherited-lint policy.",
+    "default_reachability": "PASS: completion-terminal-default01 cargo check and completion-terminal-default-list02 libtest inventory bind tree 538250.",
+    "feature_inventory": "PASS: completion-terminal-inventory01 binds tree 538250 and supports the actual selector inventories.",
+    "doctest": "PASS / EMPTY INVENTORY: completion-terminal-doc01 completed with zero doctests; it is compile/empty-inventory evidence, not behavioral evidence."
+  },
+  "manifest_and_inventory_binding": {
+    "compatibility_support": {
+      "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+      "files": 628,
+      "classification": "physical",
+      "timeout_seconds": 180,
+      "debug_binary_path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-1b46d3e792990fc1",
+      "debug_binary_sha256": "0d71d772877728c6586319ea3b2e8177d0ac86999e31e5f8b110fb13c43068ab"
+    },
+    "physical_support": {
+      "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+      "files": 628,
+      "classification": "physical",
+      "timeout_seconds": 180,
+      "release_binary_path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+      "release_binary_sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8"
+    },
+    "repair_disposition": "PASS: the older 622-file templates were never executed. Both final manifests contain the canonical debug03 627 support inputs plus their actual selected binary pin; support links and selected targets remain identical.",
+    "compatibility_inventory": {
+      "inventory_receipt": "completion-compatibility-inventory01.json",
+      "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+      "selected_count": 125,
+      "disposition": "Actual selected names are retained in completion-selected-inventories.json. The five explicitly excluded endpoint/positive/negative controls are absent from the 125-member compatibility inventory."
+    },
+    "physical_inventory": {
+      "inventory_receipt": "completion-physical-inventory01.json",
+      "selected_count": 1,
+      "selected_test": "m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization",
+      "disposition": "The exact ordinary-positive release endpoint is separately inventoried and remains unused."
+    }
+  },
+  "authority_scope": {
+    "correctness": "completion-correctness-emitter-followup02 gives STATIC_PASS_NO_EMITTER_CONTENT_BLOCKER for the exact coupled/Stage1 hashes. It does not provide runtime evidence.",
+    "quality_policy": "No new diagnostic is attributed to this final cut; the 238 inherited strict-lint blocks remain visible. Manifest/lockfile/toolchain inputs are unchanged, so cargo deny is not newly triggered.",
+    "reuse": "Body12 A0 documentary and local C-023 evidence may be reused only within their unchanged or demonstrably excluded observer-only scope. This dispatch decision makes no broader A0/A1/A3 or release-qualification claim."
+  },
+  "compatibility_dispatch": {
+    "verdict": "CLEAR TO DISPATCH ONE compatibility01 RUN",
+    "scope": "Only the exact prepared compatibility01 command, physical-classified, 180-second bound, on the reviewed tree and debug binary. It may execute its 125 recorded guard/control tests once.",
+    "required_receipt": "Retain actual selected membership/count and source/base/pins/support-links/binary-unchanged fields. Any source, binary, manifest, selected-member, timeout, or support drift cancels this clearance and requires review."
+  },
+  "physical01_condition": "NOT CLEARED BY THIS ARTIFACT. Dispatch the one ordinary-positive physical01 release endpoint only after compatibility01 passes with its required receipt and correctness explicitly approves the completed compatibility/terminal state. Preserve the endpoint's first result and then return structured outcome, timing, CPU provenance, budget/work, materialization/identity, and independent closure evidence for final review.",
+  "verdict": "QA PASS FOR COMPATIBILITY01 DISPATCH ONLY. No package acceptance and no physical01 endpoint clearance."
+}

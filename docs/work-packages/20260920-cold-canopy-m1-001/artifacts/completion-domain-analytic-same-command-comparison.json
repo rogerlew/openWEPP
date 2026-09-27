@@ -1,0 +1,35 @@
+{
+  "evidence_class": "Static: same-command comparison of actual executed source-bearing analytic-only strict-lint diagnostics; not a re-execution of adopted source",
+  "baseline": "completion-domain-analytic-lint01",
+  "candidate": "completion-domain-analytic-lint02",
+  "argv_identical": true,
+  "argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "env",
+    "CARGO_TARGET_DIR=target/physical-lint",
+    "CARGO_BUILD_JOBS=2",
+    "cargo",
+    "clippy",
+    "-p",
+    "openwepp-land-surface-energy",
+    "--all-targets",
+    "--no-deps",
+    "--features",
+    "m1-trust-region-analytic-stage",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "normalization": "Only line/column and numeric source/suggestion gutters; summaries excluded",
+  "baseline_count": 263,
+  "candidate_count": 262,
+  "matched_count": 262,
+  "introduced": [],
+  "removed": [
+    "error: unused imports: `M1TrustRegionCorrectionPosition`, `M1TrustRegionRefinementGuardStage`, and `M1TrustRegionRefinementReason`\n    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n     |\nLINE |         M1TrustRegionCorrectionPosition, M1TrustRegionRefinementGuardStage,\n     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nLINE |         M1TrustRegionRefinementReason,\n     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = note: `-D unused-imports` implied by `-D warnings`\n     = help: to override `-D warnings` add `#[allow(unused_imports)]`"
+  ],
+  "inheritance_scope": "QA static byte classification against adopted bf93 in completion-qa-analytic-diagnostic-inheritance.json; 238 baseline matches plus24 retained analytic-specific inherited blocks; old source not executed here"
+}

@@ -1,0 +1,203 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find type `RefinementRawCandidateMutation` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6665:19
+     |
+6665 |         mutation: RefinementRawCandidateMutation,
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: consider importing this enum
+     |
+5946 +     use crate::m1_trust_region_stage1::RefinementRawCandidateMutation;
+     |
+
+error[E0425]: cannot find function `m1_trust_region_refinement_scratch_hooks_for_test` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6668:23
+     |
+6668 |         let refusal = m1_trust_region_refinement_scratch_hooks_for_test(capture, Some(mutation))
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: consider importing this function
+     |
+5946 +     use crate::m1_trust_region_stage1::m1_trust_region_refinement_scratch_hooks_for_test;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementReason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6677:45
+     |
+6677 |                 assert_eq!(metadata.reason, M1TrustRegionRefinementReason::FinalBox);
+     |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementReason`
+     |
+help: consider importing this enum
+     |
+5946 +     use crate::M1TrustRegionRefinementReason;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionCorrectionPosition` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6680:26
+     |
+6680 |                     Some(M1TrustRegionCorrectionPosition::Second)
+     |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionCorrectionPosition`
+     |
+help: consider importing this enum
+     |
+5946 +     use crate::M1TrustRegionCorrectionPosition;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6684:21
+     |
+6684 |                     M1TrustRegionRefinementGuardStage::FinalBoxUpper
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+     |
+help: consider importing this enum
+     |
+5946 +     use crate::M1TrustRegionRefinementGuardStage;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementReason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6691:21
+     |
+6691 |                     M1TrustRegionRefinementReason::ScratchRadius
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementReason`
+     |
+help: consider importing this enum
+     |
+5946 +     use crate::M1TrustRegionRefinementReason;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionCorrectionPosition` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6695:26
+     |
+6695 |                     Some(M1TrustRegionCorrectionPosition::First)
+     |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionCorrectionPosition`
+     |
+help: consider importing this enum
+     |
+5946 +     use crate::M1TrustRegionCorrectionPosition;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6699:21
+     |
+6699 |                     M1TrustRegionRefinementGuardStage::RadiusComparison
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+     |
+help: consider importing this enum
+     |
+5946 +     use crate::M1TrustRegionRefinementGuardStage;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementReason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6704:45
+     |
+6704 |                 assert_eq!(metadata.reason, M1TrustRegionRefinementReason::ActiveValue);
+     |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementReason`
+     |
+help: consider importing this enum
+     |
+5946 +     use crate::M1TrustRegionRefinementReason;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionCorrectionPosition` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6707:26
+     |
+6707 |                     Some(M1TrustRegionCorrectionPosition::Second)
+     |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionCorrectionPosition`
+     |
+help: consider importing this enum
+     |
+5946 +     use crate::M1TrustRegionCorrectionPosition;
+     |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6711:21
+     |
+6711 |                     M1TrustRegionRefinementGuardStage::ActiveEquality
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+     |
+help: consider importing this enum
+     |
+5946 +     use crate::M1TrustRegionRefinementGuardStage;
+     |
+
+error[E0425]: cannot find function `mask` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6719:13
+     |
+6719 |             mask(&operation["lower_before"])
+     |             ^^^^ not found in this scope
+     |
+note: function `crate::m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::mask` exists but is inaccessible
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7890:5
+     |
+7890 |     fn mask(values: &Value) -> Vec<bool> {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0425]: cannot find function `mask` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6723:13
+     |
+6723 |             mask(&operation["upper_before"])
+     |             ^^^^ not found in this scope
+     |
+note: function `crate::m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::mask` exists but is inaccessible
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7890:5
+     |
+7890 |     fn mask(values: &Value) -> Vec<bool> {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0425]: cannot find function `mask` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6725:44
+     |
+6725 |         assert_eq!(metadata.free.to_vec(), mask(&operation["free_before"]));
+     |                                            ^^^^ not found in this scope
+     |
+note: function `crate::m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::mask` exists but is inaccessible
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7890:5
+     |
+7890 |     fn mask(values: &Value) -> Vec<bool> {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0425]: cannot find type `RefinementRetainedFaceObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7914:20
+     |
+7914 |         observed: &RefinementRetainedFaceObservation,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: consider importing this struct
+     |
+7755 +     use crate::m1_trust_region_stage1::RefinementRetainedFaceObservation;
+     |
+
+error[E0425]: cannot find type `RefinementRetainedFaceObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7981:20
+     |
+7981 |         observed: &RefinementRetainedFaceObservation,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: consider importing this struct
+     |
+7755 +     use crate::m1_trust_region_stage1::RefinementRetainedFaceObservation;
+     |
+
+error[E0425]: cannot find function `assert_scratch_mutation_refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8125:13
+     |
+8125 |             assert_scratch_mutation_refusal(&capture, operation, mutation, reason);
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: function `crate::m1_trust_region_stage1::finite_precision_controls::assert_scratch_mutation_refusal` exists but is inaccessible
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6662:5
+     |
+6662 | /     fn assert_scratch_mutation_refusal(
+6663 | |         capture: &Value,
+6664 | |         operation: &Value,
+6665 | |         mutation: RefinementRawCandidateMutation,
+...    |
+6757 | |         assert_ne!(budget_before, crate::M1PhysicalBudgetSnapshot::default());
+6758 | |     }
+     | |_____^ not accessible
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 17 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

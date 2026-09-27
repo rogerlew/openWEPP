@@ -1,0 +1,65 @@
+{
+  "evidence_class": "Static: independent read-only exact-source comparison and contract review; no candidate, solver, test, or physical command executed",
+  "reviewer": "/root/completion_correctness",
+  "scope": "First real physical trial-domain producer only, plus the shared transition refactor needed to observe post-phase-model custody",
+  "reviewed_source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "semantic_freeze": {
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "bdc4b54e03f2ab6fec686082e6c4e7798f21baf5564c31b7539d32937bc823ae",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "da7952149f8ea6622adb8240e8795e3c8a594b300cc709eee94540e4c4b99f8a",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "2f2b9bcf50fd6af19ecc04bb392bd16d2103c7b4f208a9aadbcfba144b1f9799"
+  },
+  "comparison_baseline": {
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-completion-physical-reconstruction-20260927",
+    "recovery_record": "completion-physical-baseline-recovery.json",
+    "qualification_limit": "The earlier physical qualification remains bound only to this archived baseline and is not inherited by the reviewed downstream source."
+  },
+  "findings": [],
+  "shared_transition_review": {
+    "verdict": "PASS",
+    "details": [
+      "The baseline transition body was factored without changing its branch or arithmetic order. transition now calls transition_model once and then transition_after_model with that exact ProposalModel.",
+      "transition_after_model preserves radius/base capture, dynamic-current maximum, completion of pending current hydraulics, the nonpositive-prediction early refusal, the evaluator-owned pre_evaluator_trial_domain call, and only then candidate entry/merit/governed-step work.",
+      "The only test mutation occurs in transition_model after phase_model has completed predictor solve, physical direction, selected-phase resolution, any selected-Jacobian reassembly, final phase verification, and selected-side probe. It changes only observation.candidate_coordinates[5] to the exact bits of -f64::MIN_POSITIVE.",
+      "With the thread-local flag false, test behavior adds no floating-point operation or guard. In non-test builds the flag, scope, mutation function, and call are removed by cfg; the controller module itself is also private test-feature code."
+    ]
+  },
+  "real_guard_and_refusal_review": {
+    "verdict": "PASS for source construction; runtime outcome pending",
+    "details": [
+      "The mutated candidate flows into the unchanged physical adapter pre_evaluator_trial_domain implementation, which reconstructs M1CoupledColumnTrial and calls fd_trial_is_admissible. The existing coordinate-5 nonnegative domain rule rejects the negative minimum-positive operand.",
+      "The false result reaches the existing trial_domain_refusal path. That path changes witness eligibility as before, multiplies radius by 0.25 exactly once, returns MeritRejectedAndShrunk, retains the base, leaves actual reduction/rho/moving merit/dynamic maximum absent, does not install, and enters no materialization.",
+      "No forced Boolean, canned transition, clamp, fallback, new threshold, new error policy, or Stage1 numerical-body change was found."
+    ]
+  },
+  "custody_and_raii_review": {
+    "verdict": "PASS",
+    "details": [
+      "The helper snapshots raw Jacobian, current dynamic normalizers, and selected phase only after transition_model returns, so the snapshots bind the actual selected phase-model state rather than initialization-only projections.",
+      "Before/after fields expose bitwise raw-Jacobian and normalizer custody and exact selected-phase custody across the domain refusal; the focused test also retains exact input, initial trial, base coordinates, radius 1.0 to 0.25, one initial evaluation, one Jacobian assembly, one domain check, no installation, and zero transition materializations.",
+      "M1TestDomainRefusalCandidateScope stores the prior thread-local value with Cell::replace(true) and restores that exact prior value in Drop. This is nested-state preserving and unwinding-safe by construction. The focused test's subsequent ordinary controller transition is a runtime assertion that the scoped poison does not remain active after the helper returns.",
+      "The same adapter is intentionally reused only for the post-scope non-poison assertion. That second call does not provide fresh-run numerical qualification and the test does not claim it does."
+    ]
+  },
+  "lint_evidence": {
+    "record": "completion-producer-domain-lint10-comparison.json",
+    "baseline_diagnostics": 238,
+    "candidate_diagnostics": 238,
+    "introduced": 0,
+    "removed": 0,
+    "classification": "All diagnostics are inherited under the recorded normalization."
+  },
+  "required_validation": [
+    "Run the focused physical-stage producer test on the final formatted hashes. A pass must satisfy its exact candidate bits, real guard/refusal disposition, radius/base custody, absent merit fields, input/trial custody, work counters, selected-J/normalizer/phase custody, and post-scope ordinary candidate assertion. If phase-model preparation refuses before mutation, preserve that failure as the result; do not tune inputs or numerical policy.",
+    "Because transition was split for every private controller feature, run the nonphysical analytic selector `cargo nextest run -p openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage -E 'test(m1_stage2_)'` on the final source. This exercises the unchanged generic transition path without the physical mutation hook.",
+    "Run the physical compatibility selector required by the package on the new source before granting any new physical qualification. Earlier 125/125 and physical receipts bind source 538250 only.",
+    "Run formatting, default check/list, strict lint comparison, and source inventory on the final formatted cut. Rebind this review if rustfmt changes anything beyond formatting."
+  ],
+  "residual_risk_and_missing_tests": [
+    "The focused producer had not executed when this static review was written, so no runtime producer credit is granted here.",
+    "The focused test verifies ordinary post-scope restoration but does not deliberately panic inside or nest this particular domain-poison scope. The Drop implementation statically preserves both cases; this is a low residual test-coverage gap, not a source blocker.",
+    "The test does not separately assert adapter.materialization_entries or selected_side_probes. Current source order plus transition.entered_materializations == 0, current_evaluations == 1, and successful transition_model return establish the required current behavior; explicit counters would strengthen future regression detection but are not required to execute this bounded control.",
+    "All 18 historical controller-stage interface symbols remain unresolved. There is no definition of m1_trust_region_with_trial_domain_poison_for_test and no controller-stage cfg widening in this cut. This review grants no canonical interface/full-feature closure credit; the historical 18-symbol HOLD remains unchanged."
+  ],
+  "disposition": "NO SOURCE BLOCKER for the focused physical producer and shared-transition refactor on the semantic freeze. Runtime acceptance remains conditional on the named focused, analytic, compatibility, formatting, default, lint, and inventory evidence. Historical interface closure remains HOLD."
+}

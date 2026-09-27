@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Static: exact comparison of executed source-bearing strict-lint diagnostics",
+  "baseline": "finite-precision-body13-lint.stderr",
+  "candidate": "completion-producer-domain-lint01.stderr",
+  "normalization": "Only source line/column and numeric source/suggestion gutters; compiler summaries excluded",
+  "baseline_count": 238,
+  "candidate_count": 241,
+  "matched_count": 238,
+  "introduced": [
+    "error: function `m1_trust_region_controller_domain_refusal_transition_for_test` is never used\n   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:LINE:COL\n    |\nLINE | pub(crate) fn m1_trust_region_controller_domain_refusal_transition_for_test<E, P, Phase, V>(\n    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    |\n    = note: `-D dead-code` implied by `-D warnings`\n    = help: to override `-D warnings` add `#[expect(dead_code)]` or `#[allow(dead_code)]`",
+    "error: function `m1_trust_region_physical_adapter_domain_refusal_for_test` is never used\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:LINE:COL\n     |\nLINE | pub(crate) fn m1_trust_region_physical_adapter_domain_refusal_for_test(\n     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+    "error: this function has too many lines (103/100)\n   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:LINE:COL\n    |\nLINE | /     fn transition<E, V>(\nLINE | |         &mut self,\nLINE | |         evaluator: &mut V,\nLINE | |     ) -> Result<\n...   |\nLINE | |     where\nLINE | |         V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,\n    | |___________________________________________________________________________________^\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines"
+  ],
+  "not_matched": []
+}

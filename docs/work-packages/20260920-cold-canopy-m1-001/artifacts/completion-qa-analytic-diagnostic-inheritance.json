@@ -1,0 +1,70 @@
+{
+  "artifact": "completion-qa-analytic-diagnostic-inheritance",
+  "reviewer": "/root/completion_qa",
+  "evidence_class": "Static/read-only comparison of completion-domain-analytic01 stderr, the strict analytic intermediate receipt, the adopted bf93 terminal-source archive, and accepted physical538250/domain921 source manifests. The reviewer extracted and read archived bytes only; no compile, test, candidate, solver, compatibility, or physical command was run.",
+  "findings": [
+    {
+      "severity": "blocking_until_compared_after_fix",
+      "path": "analytic-only strict lint configuration",
+      "finding": "The cross-feature mechanical comparison has 263 normalized analytic source blocks: 238 match the combined-feature baseline and 25 are configuration-specific unmatched blocks. Its own scope caution correctly says those 25 are not established introduced diagnostics. A post-fix analytic same-command comparison is still required before final disposition."
+    }
+  ],
+  "source_byte_classification": {
+    "adopted_baseline": {
+      "tree_sha256": "bf93e4220755ac32da348fec2cf640ba7e73eb57784922013a6658e5879128f4",
+      "archive": "refinement-terminal-source.tar.gz"
+    },
+    "accepted_physical": {
+      "tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18"
+    },
+    "domain_intermediate": {
+      "tree_sha256": "921de1eb78dc2ad5c199c06bc43e0991d8b2925a8f7016c986b27c5e29969ad3"
+    },
+    "inherited_before_bf93_by_exact_source_bytes": [
+      "m1_trust_region_stage1 test imports of M1TrustRegionCorrectionPosition, M1TrustRegionRefinementGuardStage, and M1TrustRegionRefinementReason",
+      "m1_trust_region_controller::install_candidate current_max parameter",
+      "m1_trust_region_stage1 solution/prepared bindings and test helpers reported as unused under the analytic-only configuration",
+      "M1TrustRegionOptimality*/M1TrustRegionSubproblem* observation fields in lib.rs",
+      "GovernedStep fields and m1_refinement_phase_join_selections_for_test",
+      "m1_trust_region_stage2_controls::m1_trust_region_analytic_work_cap_run_for_test"
+    ],
+    "current_domain_introduced_and_repaired": [
+      "The 921de1 unconditional mutable model binding was domain-introduced and exposed as unused_mut under analytic-only compilation. The current source repair is verified static: it first binds model immutably, then creates a cfg(all(test, feature = m1-trust-region-physical-stage)) mutable shadow only around the test mutation."
+    ],
+    "completion_introduced": [],
+    "classification_limit": "Exact archived bytes establish that all 25 unmatched source constructs, including the three refinement enum imports, predate bf93. This is source-static inheritance, not an executed same-command analytic baseline. The cross-feature comparator must not label them introduced merely because its baseline enables the physical feature."
+  },
+  "receipt_inventory": {
+    "analytic_test_receipt": {
+      "artifact": "completion-domain-analytic01.json",
+      "source_tree_sha256": "921de1eb78dc2ad5c199c06bc43e0991d8b2925a8f7016c986b27c5e29969ad3",
+      "result": "PASS: 49 passed, 290 skipped",
+      "compiler_output": "26 Rust warnings; one is the definite domain unused_mut."
+    },
+    "strict_analytic_intermediate": {
+      "artifact": "completion-domain-analytic-lint01.json",
+      "source_tree_sha256": "da9e5d44861ff2729a7b06b3f095e537144fe0863ad15e87cb294fecfde1108e",
+      "result": "exit 101; 263 normalized source diagnostic blocks (238 matched plus 25 configuration-specific unmatched); raw heading counts include compiler summary text and are not the comparison unit.",
+      "status": "intermediate only; it predates the writer's current corrective edits and cannot clear them."
+    },
+    "strict_physical_feature_reference": {
+      "artifact": "completion-producer-domain-lint10-comparison.json",
+      "result": "238 exact inherited diagnostics, zero introduced, on the analytic-plus-physical command",
+      "scope_limit": "This command retains the physical cfg branch and therefore cannot expose analytic-only cfg-elision diagnostics."
+    }
+  },
+  "current_fix_verification": {
+    "controller_sha256": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e",
+    "stage1_sha256": "c11474b5afa40d93dbccefd1a6cb7fb98c0f51d344a6f93946dd60a3a7fbad4c",
+    "static_result": "PASS: the mutable-shadow scope is limited to the physical test cfg and the refinement enum imports are likewise physically feature-gated. No lint allowance or baseline cleanup was added.",
+    "execution_limit": "completion-domain-analytic-lint02 and completion-domain-combined-lint02 are fresh receipts on their new source tree, but an analytic comparison artifact has not yet been reviewed here."
+  },
+  "required_terminal_evidence": [
+    "Freeze source after the minimal cfg/import correction; no baseline cleanup or lint allowance is a substitute.",
+    "Run strict analytic-only clippy with the same all-targets/no-deps/-D warnings command and compare it against a declared analytic baseline after normalizing only source/suggestion gutters.",
+    "Run the existing strict analytic-plus-physical command and retain its separate exact comparison.",
+    "Any unmatched analytic diagnostic remains a blocker unless shown to have source bytes before bf93 and accepted command-profile inheritance; record the comparison rather than relying on a writer count claim.",
+    "No physical/domain execution or target use follows from this diagnostic classification."
+  ],
+  "qa_pass_statement": "The 49-test analytic selector exposed a real cfg-elision gap that the current source repair addresses structurally. The 25 analytic-only unmatched blocks are source-static inherited before bf93, but their exact command-profile inheritance remains unexecuted; final disposition requires the post-fix analytic comparison."
+}

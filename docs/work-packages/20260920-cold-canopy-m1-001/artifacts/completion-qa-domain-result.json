@@ -1,0 +1,61 @@
+{
+  "artifact": "completion-qa-domain-result",
+  "reviewer": "/root/completion_qa",
+  "role": "secondary QA/evidence reviewer",
+  "evidence_class": "Ran-record/read-only QA of the completed compatibility02 and single domain physical02 receipts, their stderr/resources, source/support records, and immediate custody recheck. The reviewer ran no command.",
+  "findings": [
+    {
+      "severity": "blocking",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:5389",
+      "finding": "The one permitted release domain control did not reach its asserted candidate-domain refusal. It instead returned the typed pre-mutation subproblem refusal TrustRegionOptimalityIndeterminate, reason optimality_free_stationarity, coordinate 1, radius 1.0, lambda 5962417150275328.0. The test assertion therefore panicked and physical02 exited 100. This is evidence of a failed qualification, not authority for a tuning change, retry, or alternate endpoint."
+    }
+  ],
+  "compatibility02": {
+    "receipt": "completion-domain-compatibility02.json",
+    "result": "PASS: 125 passed, 245 skipped; exit 0; 13.200180258601904 seconds; no automatic retry.",
+    "source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+    "custody": "source, pinned files, binary, support links, and observer base all remained unchanged."
+  },
+  "domain_physical02": {
+    "receipt": "completion-domain-physical02.json",
+    "support": "completion-domain-physical02-support.json",
+    "immediate_recheck": "completion-domain-physical-immediate-recheck.json",
+    "result": "FAIL: 0 passed, 1 failed, 369 skipped; exit 100; elapsed 0.6683450280688703 seconds; no timeout and no retry.",
+    "source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+    "selector": "Exactly m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base.",
+    "release_binary_sha256": "ca2d1a579ae8c69ac3c1bb999e475e5ba8de3112b6adee0647628cb8d8ed48b0",
+    "custody": "The immediate prelaunch recheck found the exact one-member inventory and all 628 support-file pins matching; the completed receipt records source, binary, pinned files, support links, and observer base unchanged.",
+    "observed_refusal": {
+      "kind": "TrustRegionOptimalityIndeterminate",
+      "reason": "optimality_free_stationarity",
+      "coordinate": 1,
+      "radius": 1.0,
+      "lambda": 5962417150275328.0,
+      "attempted_subproblems": 1,
+      "completed_jacobi_sweeps": 7,
+      "completed_face_pivots": 1,
+      "entered_svd_factorizations": 2,
+      "refinement_scalar_operations": 0,
+      "refinement_guard_events": 0,
+      "refinement_attempted_entries": 0,
+      "refinement_denied_entries": 0
+    }
+  },
+  "qualification_limits": {
+    "new_domain_control": "NOT QUALIFIED. The one authorized physical observation failed before its required asserted behavior.",
+    "no_follow_on_authorization": [
+      "No retry, replay, tuning, source mutation, alternate selector, or additional physical execution is cleared.",
+      "The prior ordinary-positive PASS on source 538250 remains historically separate and cannot qualify the current domain source.",
+      "All 18 historical references and eight held groups remain HOLD.",
+      "No target slot, canonical-wrapper credit, M1 acceptance, or package acceptance is released."
+    ]
+  },
+  "non_blocking_debt_and_follow_ups": [
+    {
+      "severity": "follow-up-required-before-any-new-proposal",
+      "path": "domain physical qualification",
+      "finding": "Classify the typed optimality refusal and the mismatch with the intended candidate-domain witness using independent correctness/science authority before proposing any change. Preserve this first receipt as the sole result for physical02."
+    }
+  ],
+  "qa_pass_statement": "QA accepts the receipt and custody evidence as complete and accurately bounded. QA does not accept the new domain behavior as qualified."
+}

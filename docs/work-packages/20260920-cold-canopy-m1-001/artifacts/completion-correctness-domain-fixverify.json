@@ -1,0 +1,55 @@
+{
+  "evidence_class": "Static: same-reviewer exact patch/source verification; no candidate, solver, test, or physical command executed",
+  "reviewer": "/root/completion_correctness",
+  "rebinds": {
+    "prior_review": "completion-correctness-domain-source.json",
+    "prior_review_sha256": "5ca46a2413a3ff6822ea1db02432eef76e16dd9433a6a81edfd977ff9b65426a",
+    "prior_controller_sha256": "bdc4b54e03f2ab6fec686082e6c4e7798f21baf5564c31b7539d32937bc823ae",
+    "new_source_receipt": "completion-domain-combined-lint02-source.json",
+    "new_source_receipt_sha256": "f0acff7a59fa40efade8a75566a1a3c29f0595face79a8d33ccee5aa7cb98a46",
+    "new_patch": "completion-domain-combined-lint02-from-observer-cut02.patch",
+    "new_patch_sha256": "fdb8ae0d926a7258108e613b3cb4345451c0f01d67c45b100b1662c11ffed25b"
+  },
+  "frozen_files": {
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "c11474b5afa40d93dbccefd1a6cb7fb98c0f51d344a6f93946dd60a3a7fbad4c",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "da7952149f8ea6622adb8240e8795e3c8a594b300cc709eee94540e4c4b99f8a",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "2f2b9bcf50fd6af19ecc04bb392bd16d2103c7b4f208a9aadbcfba144b1f9799"
+  },
+  "findings": [],
+  "fix_verification": {
+    "controller_binding": {
+      "verdict": "PASS",
+      "finding_closed": "The prior unconditional mutable ProposalModel binding would introduce unused_mut under analytic-only compilation because the only mutation is physical-stage cfg-elided.",
+      "exact_change": "transition_model now binds the phase_model result immutably. Only under cfg(all(test, feature = m1-trust-region-physical-stage)) it shadows that value in a block, makes the moved value mutable, applies the test candidate mutation, and returns it.",
+      "semantic_effect": "phase_model remains called exactly once in all configurations. Analytic/controller configurations receive its result unchanged and execute no new branch or floating-point operation. Physical test configuration applies the same mutation at the same post-phase-model point as the reviewed prior cut. Guard, arithmetic, and refusal order are unchanged."
+    },
+    "stage1_imports": {
+      "verdict": "PASS",
+      "exact_change": "A physical-stage cfg was added to the test-module import group containing M1TrustRegionCorrectionPosition, M1TrustRegionRefinementGuardStage, and M1TrustRegionRefinementReason.",
+      "semantic_effect": "The change controls imports only. No Stage1 function, arithmetic expression, comparison, guard, enum definition, or test body changed. The imports remain available in the physical configuration where their uses compile."
+    },
+    "scope_diff": "The recorded lint10-to-combined-lint02 patch difference contains only the controller immutable/cfg-shadow binding and the Stage1 import cfg. Adapter and focused test bytes are unchanged."
+  },
+  "lint_evidence": {
+    "record": "completion-domain-combined-lint02-comparison.json",
+    "record_sha256": "0882906e42d061af0640bc7e86548583c80ea8742460327c7d67e6666c69957d",
+    "baseline": 238,
+    "candidate": 238,
+    "matched": 238,
+    "introduced": 0,
+    "removed": 0,
+    "verdict": "PASS for the combined analytic+physical feature configuration"
+  },
+  "pending_evidence": [
+    "Independent QA classification of analytic-only lint against the original bf93 inheritance baseline.",
+    "Parent terminal formatting, focused debug/release, analytic m1_stage2 selector, default check/list, and inventories on the final source-manifest cut.",
+    "Distinct final manifest review before any physical dispatch."
+  ],
+  "unchanged_limits": [
+    "No runtime focused-producer acceptance is inferred from this static fix verification.",
+    "The accepted source538250 physical qualification remains separately archived and does not transfer to this downstream source.",
+    "All 18 historical controller-stage missing symbols remain HOLD; this fix receives no canonical interface or full-feature closure credit."
+  ],
+  "disposition": "PASS: the minimal fix closes the source-level analytic unused_mut defect without numerical, guard, error, serialization, or production-reachability drift. Prior focused-producer source acceptance is rebound to these frozen file hashes, conditional on the pending terminal evidence and distinct manifest review."
+}

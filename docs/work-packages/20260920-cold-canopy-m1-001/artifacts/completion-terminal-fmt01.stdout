@@ -1,0 +1,36 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-m1-20260920-addb8c0a2f84
+  scratch: /tmp/openwepp-roger-cold-canopy-m1-20260920-addb8c0a2f84
+  cache:   /workdir/.cache/openwepp
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7366:
+ #[cfg(test)]
+ mod bvls03_c1_expected_red_controls {
+     use super::{
+[32m+        M1TrustRegionRefinementGuardStage, RefinementDot2Counters, RefinementDot2Reason,
+[m         m1_trust_region_refinement_dot2_for_test, refinement_dot2_final_add, refinement_dot2_split,
+[31m-        refinement_dot2_two_sum, M1TrustRegionRefinementGuardStage, RefinementDot2Counters,
+[m[31m-        RefinementDot2Reason,
+[m[32m+        refinement_dot2_two_sum,
+[m     };
+     use serde_json::Value;
+ 
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7654:
+ #[cfg(test)]
+ mod bvls03_c2_c4_expected_red_controls {
+     use super::{
+[32m+        RefinementEligibilityProbe, RefinementRetainedFaceObservation, RefinementWorkReservation,
+[m         m1_trust_region_bvls02_outcome_for_test, m1_trust_region_refinement_eligibility_for_test,
+[31m-        m1_trust_region_refinement_retained_face_for_test, RefinementEligibilityProbe,
+[m[31m-        RefinementRetainedFaceObservation, RefinementWorkReservation,
+[m[32m+        m1_trust_region_refinement_retained_face_for_test,
+[m     };
+     #[cfg(feature = "m1-trust-region-physical-stage")]
+     use super::{
+Diff in /home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7663:
+[32m+        RefinementMutationScope, RefinementRawCandidateMutation,
+[m         m1_trust_region_refinement_scratch_hooks_for_test, refine_face_before_crossing,
+[31m-        refinement_solve_captured_face, RefinementMutationScope, RefinementRawCandidateMutation,
+[m[32m+        refinement_solve_captured_face,
+[m     };
+     use crate::{
+         M1TrustRegionCorrectionPosition, M1TrustRegionRefinementGuardStage,

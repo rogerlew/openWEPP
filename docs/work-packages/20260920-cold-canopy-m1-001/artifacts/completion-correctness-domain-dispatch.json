@@ -1,0 +1,86 @@
+{
+  "evidence_class": "Static: independent read-only final source, receipt, inventory, binary, support-manifest, and dispatch-order review; no test, candidate, solver, or physical command executed by reviewer",
+  "reviewer": "/root/completion_correctness",
+  "source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+  "findings": [
+    {
+      "severity": "high, resolved before dispatch",
+      "finding": "The initially proposed 01 support manifests carried current source identity and intended commands but stale selected-inventory receipts, selected test metadata, and binaries. The physical01 support named the already-spent ordinary-update test and old release binary rather than the new domain producer.",
+      "affected": [
+        "completion-domain-compatibility01-support.json",
+        "completion-domain-physical01-support.json"
+      ],
+      "resolution": "The 01 manifests remain retained as unexecuted rejected evidence and must never be dispatched. Fresh 02 manifests were independently verified against the current inventories and binaries."
+    }
+  ],
+  "accepted_support_manifests": {
+    "compatibility": {
+      "path": "completion-domain-compatibility02-support.json",
+      "sha256": "298c93e01f42ffcf01002c42d6f013c8cd164cfbab43000ac6ee8ef181f89704",
+      "inventory_receipt": "completion-domain-compat-inventory01.json",
+      "inventory_receipt_sha256": "370381f04a97fe39671bd0836831d9270c5e57ae537363c0f25c984dcc907302",
+      "selected_count": 125,
+      "binary_path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-1b46d3e792990fc1",
+      "binary_sha256": "1689a42b5eac54e28231718f48428e16cc5b1f7904c33b0b6638ba0c41fd274c",
+      "timeout_seconds": 180,
+      "configuration": "debug; m1-trust-region-analytic-stage,m1-trust-region-physical-stage"
+    },
+    "domain": {
+      "path": "completion-domain-physical02-support.json",
+      "sha256": "e11bcf27a2b4906502c07d339effddff5262f9c141c63fe2ec39d6e363b41b1d",
+      "inventory_receipt": "completion-domain-inventory01.json",
+      "inventory_receipt_sha256": "57cbee3b2717ebec21c5463c4a589689e8d7ea079f5d1b2d85d76abbaf510408",
+      "selected_count": 1,
+      "selected_test": "m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base",
+      "binary_path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+      "binary_sha256": "ca2d1a579ae8c69ac3c1bb999e475e5ba8de3112b6adee0647628cb8d8ed48b0",
+      "timeout_seconds": 180,
+      "configuration": "release; m1-trust-region-analytic-stage,m1-trust-region-physical-stage"
+    }
+  },
+  "manifest_verification": {
+    "selected_inventories": "completion-domain-selected-inventories.json",
+    "selected_inventories_sha256": "2504848a47f54d54cd24dfc7cbc112d33c9ad26d72ac01da774a15e031b34c5e",
+    "actual_inventory_test_count_each": 370,
+    "support_files_each": 628,
+    "canonical_support_files_each": 627,
+    "selected_binary_files_each": 1,
+    "read_only_hash_recheck": "All 628 listed paths exist and match their recorded SHA-256 in each 02 manifest; each selected binary is present in its manifest and matches its recorded hash.",
+    "links": "All seven support links are symlinks resolving to the recorded targets.",
+    "compatibility_membership": "The current 125 selected tests exactly equal the previously accepted compatibility membership. The current selector additionally excludes the new domain producer and continues to exclude the spent ordinary-update endpoint, ordinary perturbation, owned-budget restoration, nested restoration, and original60 setup cases.",
+    "domain_membership": "The release inventory selects exactly the one new domain producer by exact fully qualified test name; the spent ordinary-update endpoint and all other tests are absent.",
+    "argv_fit": "Each run argv has the same source, package, library, feature pair, selector, build profile, and 180-second class as its source-bound list inventory. Compatibility uses the debug binary; the one-test domain endpoint uses the release binary."
+  },
+  "terminal_evidence_reviewed": {
+    "debug_refinement": "completion-domain-debug02.json: PASS 11/11, 359 skipped",
+    "release_refinement": "completion-domain-release02.json: PASS 11/11, 359 skipped",
+    "analytic_shared_transition": "completion-domain-analytic02.json: PASS 49/49, 290 skipped",
+    "format": "completion-domain-fmt02.json: PASS",
+    "default_check": "completion-domain-default02.json: PASS",
+    "combined_lint": "238 diagnostics, all inherited, zero introduced",
+    "analytic_lint": "262 diagnostics, independently classified against the same-command original inheritance baseline, zero introduced",
+    "common_source_identity": "All named terminal receipts bind source tree 12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c."
+  },
+  "dispatch_order": [
+    {
+      "step": 1,
+      "endpoint": "completion-domain-compatibility02-support.json",
+      "readiness": "READY",
+      "obligation": "Immediately recheck source tree, support manifest, selected inventory, and debug binary identities, then run the exact recorded 125-test compatibility argv once."
+    },
+    {
+      "step": 2,
+      "endpoint": "completion-domain-physical02-support.json",
+      "readiness": "CONDITIONAL READY",
+      "condition": "Compatibility must pass 125/125, after which source tree, support manifest, selected inventory, and release binary identities must be rechecked immediately before dispatch.",
+      "obligation": "Run the exact one-test release argv once. If preparation or phase-model work returns a real typed refusal before the candidate mutation/domain guard, preserve that valid negative result and stop; do not change inputs, seed, guard, arithmetic, or policy to manufacture a domain-refusal pass."
+    }
+  ],
+  "residual_risk_and_limits": [
+    "This review authorizes the ordered dispatches; it does not claim either prospective command ran or passed.",
+    "The accepted source538250 physical timing and closure qualification remains bound to its archived source and old binary; it is not transferred to source12665.",
+    "All 18 historical controller-stage missing interfaces remain explicit HOLDs. A focused producer pass does not define the missing historical symbol and grants no canonical full-feature closure credit.",
+    "The two stale 01 manifests must remain excluded from every dispatch and downstream success claim."
+  ],
+  "disposition": "APPROVE compatibility02 dispatch first. APPROVE physical02 domain dispatch only after compatibility PASS and immediate identity recheck. No open source or manifest blocker remains for that ordered scope."
+}

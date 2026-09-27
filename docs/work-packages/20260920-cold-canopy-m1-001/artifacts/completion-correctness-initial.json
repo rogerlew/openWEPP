@@ -1,0 +1,133 @@
+{
+  "artifact": "completion-correctness-initial",
+  "reviewer": "/root/completion_correctness",
+  "role": "independent numerical correctness reviewer",
+  "evidence_class": "Static: terminal source, canonical BVLS-03 clauses, retained correctness artifacts, lint inventory, and body13 selector inspected. Ran: independent scalar binary64 operand reconstruction only; no Rust candidate, physical control, target arm, or comparator executed.",
+  "reviewed_starting_source": {
+    "stage1_sha256": "32f0d14950e22ede0b446326b9b185ce22905c99035a30acde512d1281dae9da",
+    "controller_sha256": "27a508152f81525615cb3e286023eeb81daa4227cc7f781e8ea8e4d7e95a1d4f",
+    "lib_sha256": "ef6850425e91b82150db17d587c3dc8807fe976867ee68594ea154e3b82692ac",
+    "m1_coupled_tests_sha256": "2c6a48afbc7a3293a86d4e9bbcb4fabaea34e6072b8994ba9f288288d7ec3e9d",
+    "note": "The terminal Stage1 identity is taken from the verified terminal correctness/recovery evidence and was the source inspected for this initial design review. A concurrent writer was active by artifact publication; Stage1 then hashed 4b63c1fec050eacbc671b858187987674e79ad9602d901ead06465ec28ad133a. That in-progress source is outside this initial verdict and requires same-reviewer fix review."
+  },
+  "primary_evidence": {
+    "authority": {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "sha256": "90dd07cc4f7f6a8fc6cc29882759b608b78e254131f37277f3ee519e5cf70b46",
+      "section": "COLD-CANOPY-M1-TR-SVD-BVLS-03 fixed-face compensated-refinement amendment"
+    },
+    "terminal_correctness": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-correctness-terminal.json",
+      "sha256_at_initial_review": "84a2a701c7d8552d3d36fefefba81ea6c2f764c5348f09c733df6a08822b6f17"
+    },
+    "selected_kkt_oracle": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refinement-correctness-selected-kkt-oracle.json",
+      "sha256_at_initial_review": "d847abb787073c62c1c6e314dfb71b24afb6e0c19800bdf9cddc1f2f1ecc27b7"
+    },
+    "retained_selector": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/finite-precision-body13-selected-controls.json",
+      "sha256": "48b4143801e182aa8f0afd2129dbabd51fa6664f6a19f3f115a0547732dde59d"
+    }
+  },
+  "coverage_recommendations": [
+    {
+      "gap": "EftRemainder metadata",
+      "required_real_seam": "Use the complete existing m1_trust_region_refinement_dot2_for_test wrapper so the actual TwoProduct guard and outer term/coordinate mapping execute.",
+      "operands": {
+        "terms_0_bits": "20b0000002000000",
+        "weights_0_bits": "20b0000000000000",
+        "remaining_terms_and_weights": "positive zero"
+      },
+      "independent_derivation": "term0 is 0x1.0000002p-500 and weight0 is 0x1p-500. The finite normal primary product and both splits pass; subtracting the high-high product leaves a nonzero subnormal EFT remainder.",
+      "required_assertions": [
+        "reason is SubnormalIntermediate",
+        "guard_stage is EftRemainder",
+        "term is Some(0)",
+        "coordinate is None",
+        "the actual exceptional-guard counter increments"
+      ]
+    },
+    {
+      "gap": "TwoSumRemainder stage",
+      "required_real_seam": "Call the existing shared refinement_dot2_two_sum helper directly; do not add a duplicate TwoSum or manufacture a site failure.",
+      "operands": {
+        "left_bits": "0020000000000000",
+        "right_bits": "0010000000000001"
+      },
+      "independent_derivation": "left is 2*MIN_POSITIVE and right is nextafter(MIN_POSITIVE,+infinity). The rounded sum is finite normal. The right-error subtraction produces the smallest positive subnormal at the real remainder guard.",
+      "required_assertions": [
+        "reason is SubnormalIntermediate",
+        "guard_stage is TwoSumRemainder",
+        "counters are arithmetic=5, guards=5, exceptional_guards=1, signed_zero_values=1"
+      ],
+      "limit": "This proves the shared helper's stage mapping. It does not prove that every full Dot2 caller can reach this path or that other remainder failures are unreachable."
+    },
+    {
+      "gap": "per-term Accumulation metadata",
+      "required_real_seam": "Use the complete existing m1_trust_region_refinement_dot2_for_test wrapper; the failure must arise from its second per-term accumulation add.",
+      "operands": {
+        "term_0_bits": "2180000000000002",
+        "weight_0_bits": "21d4000000000000",
+        "term_1_bits": "2180000000000002",
+        "weight_1_bits": "21e4000008000000",
+        "remaining_terms_and_weights": "positive zero"
+      },
+      "independent_reconstruction": {
+        "product_0_head_bits": "0364000000000002",
+        "product_0_tail_bits": "0010000000000000",
+        "product_1_head_bits": "0374000000800003",
+        "product_1_tail_bits": "801fffffc0000000",
+        "two_sum_head_bits": "037e000008000004",
+        "two_sum_tail_bits": "0000000000000000",
+        "first_accumulation_bits": "801fffffc0000000",
+        "failing_second_accumulation_bits": "800fffffc0000000",
+        "classification": "The first accumulation remains normal; adding it to the prior compensation produces a nonzero subnormal."
+      },
+      "required_assertions": [
+        "reason is SubnormalIntermediate",
+        "guard_stage is Accumulation",
+        "term is Some(1)",
+        "coordinate is Some(0)",
+        "counters are arithmetic=42, guards=86, exceptional_guards=1, signed_zero_values=49"
+      ]
+    },
+    {
+      "gap": "unequal original/reduced radius custody",
+      "required_real_seam": "Use existing captured-face solve and actual refine_face_before_crossing in the child test module. After solving the retained face with reduced solution.radius=1.0, set only the test input original initial_radius to 2.0, install the existing P0Subnormal mutation, and inspect the actual returned refinement refusal. No production or numerical helper change is required.",
+      "required_assertions": [
+        "pre-dispatch input.initial_radius bits are 4000000000000000",
+        "pre-dispatch solution.radius bits are 3ff0000000000000",
+        "the two source values are unequal",
+        "metadata.original_trust_radius bits are 4000000000000000",
+        "metadata.reduced_face_radius bits are 3ff0000000000000",
+        "existing typed P0-subnormal position/stage/row/term/coordinate and no-fallback assertions remain intact"
+      ],
+      "chronology": "If implementation instead adds or changes any test exposure seam, author and preserve an expected-red controls-only snapshot before that seam body. A direct child-module call to the existing solve/refine seams needs no new numerical body."
+    }
+  ],
+  "coverage_limits": [
+    "These controls are discriminating examples, not universal guard-stage coverage.",
+    "No unselected branch is declared unreachable.",
+    "The operand reconstruction duplicates only explicit scalar binary64 calculations for independent expected values; it does not execute or reproduce the Rust candidate controller.",
+    "The historical controls-before-body omissions remain disclosed and are not retroactively cured by these future controls."
+  ],
+  "quality_and_observation_obligations": [
+    "Consume refinement scalar/guard/attempted/denied counters in assertions or real observations for successful eligible, refused, and denied-entry behavior; dummy reads are unacceptable.",
+    "Preserve actual masks, original/reduced radius sources, scratch-box status, input/seed provenance, no-fallback state, and untouched evaluator/materializer/owner hooks.",
+    "Remove duplicate mutation/test fields only when the canonical actual source remains asserted. Do not remove EftRemainder, TwoSumRemainder, or Accumulation stages now that real discriminating operands exist.",
+    "Keep refinement work and whole-KKT/enclosure accounting visibly overlapping; never sum them into an invented unique total.",
+    "Checked conversions or wider counter types must replace truncating observation casts. Refactors must retain arithmetic order, signed-zero behavior, guard precedence, mutation boundaries, and typed boxed error ownership."
+  ],
+  "selected_controls_disposition": {
+    "recommended_filter": "(test(m1_trust_region_) | test(m1_stage2_) | test(m1_face_pivot_) | test(m1_runtime_observation_) | test(m1_opt_in_diagnostic_observation_) | test(m1_diagnostic_observation_)) & !test(ordinary_update_reassembles_before_root_materialization) & !test(ordinary_perturbation_refuses_face_pivot_before_materialization) & !test(run_restores_nested_prior_budget_scope) & !test(run_captures_and_restores_owned_budget_scope) & !test(original60_setup_is_separate_from_deferred_proposal)",
+    "classification": "Keep physical-classified because remaining selected controls include real physical guard/custody paths. This is a disclosed selection boundary, not a reclassification.",
+    "included_method_specific_fix": "The corrected lower-bound KKT oracle remains selected.",
+    "excluded_positive_obligations": [
+      "m1_trust_region_physical_adapter_run_captures_and_restores_owned_budget_scope",
+      "m1_trust_region_physical_adapter_original60_setup_is_separate_from_deferred_proposal"
+    ],
+    "required_disposition": "Preserve both test bodies and their body13 failures. Record them as required physical-positive HOLD / not rerun on the current source. They need a separately released physical-positive execution after source/manifest readiness and cannot substitute for the sole exact ordinary-update endpoint.",
+    "retained_prior_exclusions": "The ordinary-update endpoint remains reserved; the historical face-pivot negative is not replayed; the nested success remains excluded exactly as in body13."
+  },
+  "initial_verdict": "PASS for the bounded coverage/control design with the stated real-seam operands and acceptance obligations. No source or package acceptance is granted; in-progress fixes, exact-source lint/controls, source/manifest readiness, physical endpoint, and independent closure remain pending."
+}

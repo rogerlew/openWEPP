@@ -1,0 +1,72 @@
+{
+  "artifact": "completion-qa-terminal-preflight",
+  "reviewer": "/root/completion_qa",
+  "role": "independent QA/evidence reviewer",
+  "evidence_class": "Static: inspected frozen source hashes, final source manifests, prepared compatibility/physical support manifests, correctness emitter reviews, terminal debug/lint/fmt receipts, lint diagnostic comparison, authority/acceptance obligations, and repository manifest containment. Ran: read-only hashes and receipt inspection only; no candidate or physical command dispatched.",
+  "frozen_cut": {
+    "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "stage1_sha256": "f3de57a28df00e7383ed2565c997645b0ae5e4665e783e73dd08e4ecded22e92",
+    "coupled_tests_sha256": "ae3656611e3e1dc4167aa47ce70485163b3f1a9c174b58342d93549ae52ac6ae",
+    "lib_sha256": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c",
+    "source_entries": 764,
+    "containment": "Stage1 differs from the prior accepted 85b666 cut only by three import-sort edits. The physical emitter is in m1_coupled_tests; no manifest, lockfile, dependency, toolchain, production-dispatch, or public-schema change is asserted by this preflight."
+  },
+  "findings": [
+    {
+      "severity": "resolved",
+      "id": "QA-TERM-01",
+      "location": "artifacts/completion-correctness-emitter-followup02.json; crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:m1_physical_subproblem_json,m1_physical_outcome_json",
+      "finding": "Corrected after the initial preflight: same-reviewer followup02 statically passes exact coupled SHA ae365661 and Stage1 SHA f3de57. Refinement metadata is structured, failure controller custody includes accepted/installed/materialization/SVD counts, capacity_predicates is the exact nonnegative-and-within-capacity conjunction, and CPU sources are named. This closes the emitter-content finding but does not substitute for final runtime evidence."
+    },
+    {
+      "severity": "blocking",
+      "id": "QA-TERM-02",
+      "location": "completion-physical01-support.json",
+      "finding": "The physical support manifest is prepared but NOT RUN and currently has no release binary path or SHA-256. Add the exact selected release binary identity before final approval, then retain the actual selected inventory and post-run source/pin/link/binary-unchanged receipt."
+    },
+    {
+      "severity": "blocking",
+      "id": "QA-TERM-03",
+      "location": "terminal complete-cut validation",
+      "finding": "Default libtest inventory currently binds stale tree 1a6cfced, not the declared 538250 terminal tree. Required default/feature inventories, default reachability, doctest and scoped source/document checks remain pending on the final source. A0/A1 obligation execution and the explicit C-023 constitutive/source/join-derivative evidence also remain required; no external A3 suite is selected, which is NOT APPLICABLE rather than PASS."
+    }
+  ],
+  "accepted_preflight_evidence": {
+    "terminal_debug03": "PASS: exact 538250 tree; exit 0; source, observer, pins and links unchanged; 11 focused refinement tests passed and 358 skipped. This is nonphysical component/control evidence.",
+    "terminal_fmt04": "PASS: exact 538250 tree; exit 0; source, observer, pins and links unchanged.",
+    "terminal_lint01": "CLASSIFIED FAIL ACCEPTABLE ONLY UNDER THE DOCUMENTED PRIVATE/NONCRITICAL POLICY: exact 538250 tree; exit 101; comparison matches all 238 baseline diagnostic blocks with zero introduced, removed, or unmatched blocks. It does not establish green Clippy, campaign/release closure, or waive missing validation.",
+    "manifest_and_deny": "No manifest/lockfile/dependency/license/source-policy/toolchain-resolution change is evidenced between the frozen helper cut and this preflight; the recorder remains the deadline-only d6d012 update. cargo deny is therefore not newly triggered for this source-only cut. Any change to those inputs before the physical run makes cargo deny mandatory.",
+    "prepared_selectors": "The original 622-file prepared manifests were caught before execution and replaced after an explicit support diff. compatibility01 and physical01 now each carry the exact debug03 627-file list, identical links and selected targets, and exact 538250 source identity; the only intended support difference from the retained refinement-era record is the recorder deadline hash. No source, input, or command result is transferred from the discarded drafts. compatibility01 is physical-classified with a 180-second bound and preserves the explicitly excluded positive/negative obligations. physical01 selects exactly m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization in release mode with a 180-second bound. Neither manifest is execution evidence."
+  },
+  "authority_and_quality_scope": {
+    "A0": "Reuse the accepted Body12 documentary A0 admission only for its unchanged authority/document roots. At final manifest review, show that the observer-only cfg(test) emitter is excluded from that documentary claim; do not manufacture a new broad A0 run absent a changed authority surface.",
+    "A1": "The current affected execution is the source-bound compatibility01 selection followed by the single physical01 release endpoint, with independent closure. terminal debug03 remains only the focused refinement/control subset; no full-workspace regression is introduced by this observer-only continuation.",
+    "A3": "No registered external A3 suite is applicable to the matched surface. The accepted Body12 local C-023 vegetation (9/9) and LSE (30/30) evidence is reusable only if final source/manifest review shows its source, execution/documentation roots, and relevant inputs are identical or the cfg(test) emitter delta is demonstrably excluded. If that exclusion cannot be shown, rerun the affected local C-023 selector only; do not expand to a broad census.",
+    "anti_evasion": "The external-authority anti-evasion pair is required if final scope changes suite posture, cohort fixtures, or required-case bindings. No such change is claimed in this preflight."
+  },
+  "required_before_readiness_clearance": [
+    "Preserve the same-reviewer followup02 resolution with the final full-tree/source manifest; do not claim runtime coverage from its static scope.",
+    "Re-run terminal source-bound formatting, strict-lint attribution, focused debug/release controls, default cargo check, default libtest inventory, combined-feature inventory, affected doctest inventory, and scoped diff/JSON/link/placeholder checks on that new exact cut.",
+    "At final manifest review, apply the testing-strategy reuse rule to Body12 A0 and local C-023 evidence: source, execution/documentation roots, and relevant inputs must be identical or demonstrably excluded. Run only a newly affected local C-023 selector if that proof fails; retain independent closure operands and run cargo deny if any manifest/resolution input changes.",
+    "Bind compatibility01 and physical01 to the exact final source; record actual selected membership before each launch. Keep compatibility positives excluded and preserve their separate obligations.",
+    "Add the release binary SHA-256 to physical01 support, then obtain a final QA source/manifest assessment before the single physical endpoint. After execution, review structured success/failure output, timing, CPU-source provenance, budget restoration, work counters, materialization/identity custody, and independent reservoir closure."
+  ],
+  "non_blocking_debt_or_followups": [
+    {
+      "location": "m1_physical_cpu observation JSON",
+      "note": "Correctness's CPU-source naming advisory remains useful provenance polish after the blocking structured-outcome fields are complete."
+    },
+    {
+      "location": "terminal receipts",
+      "note": "Keep structured selected-test membership and inventory counts in receipt JSON; logs alone should not be the only evidence of selector membership."
+    }
+  ],
+  "followup_manifest_and_emitter_review": {
+    "evidence_class": "Static: inspected exact repaired support-file/target diff, current source hashes, and same-reviewer followup02; no command dispatched.",
+    "manifest_repair": "PASS for preparation custody. Both physical-classified drafts now match debug03's 627 support files, link objects, and selected target files. The older 622-file templates were never executed and are preserved only as a caught preparation gap.",
+    "emitter_fix_verification": "PASS by same-reviewer correctness evidence on the exact ae365661/f3de57 source identities. QA-TERM-01 is resolved.",
+    "verdict": "Physical readiness remains HOLD only on actual final receipts/inventories, exact release binary binding, manifest-final review, and runtime/closure outcome review."
+  },
+  "verdict": "TERMINAL PREFLIGHT HOLD. Source containment, corrected emitter static review, repaired 627-file preparation, and terminal quality/control receipts are credible for tree 538250. Do not dispatch physical01 until final receipt/inventory and release-binary binding are present and this reviewer checks the completed manifest."
+}

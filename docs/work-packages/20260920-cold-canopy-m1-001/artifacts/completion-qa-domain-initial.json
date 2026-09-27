@@ -1,0 +1,46 @@
+{
+  "artifact": "completion-qa-domain-initial",
+  "reviewer": "/root/completion_qa",
+  "evidence_class": "Static/read-only QA of the current writer intermediate producer-domain lint03 receipt/comparison and correctness-domain-initial review. The reviewer ran no compile, test, candidate, solver, compatibility, or physical command.",
+  "findings": [
+    {
+      "severity": "blocking_before_final_freeze",
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "finding": "The current strict feature lint comparison has 238 inherited diagnostics and one introduced too_many_lines diagnostic in transition (101/100). The intermediate source is not compiler-clean and cannot be accepted or dispatched."
+    }
+  ],
+  "non_blocking_debt_and_follow_ups": [
+    {
+      "severity": "follow-up",
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "finding": "The domain seam is test-only and must remain private under cfg(all(test, feature = m1-trust-region-physical-stage)); production/default reachability must stay excluded. Final review must verify RAII restoration of nested thread-local mutation state and a post-scope normal transition."
+    },
+    {
+      "severity": "follow-up",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "finding": "The final domain test must retain bitwise candidate poison, transition disposition/field, radius, retained-base, no-materialization, and real domain-counter assertions. Floating comparisons must use bits, not lint allowances."
+    }
+  ],
+  "current_intermediate": {
+    "lint_receipt": "completion-producer-domain-lint03.json",
+    "source_tree_sha256": "09be36382b5773e77f7e5d2a63ef021c89793b528da85a142f45a12fea48d26e",
+    "exit_code": 101,
+    "comparison": "completion-producer-domain-lint03-comparison.json",
+    "diagnostic_disposition": "238 inherited exact normalized diagnostics plus one introduced too_many_lines diagnostic; introduced diagnostics block under the established policy.",
+    "physical_dispatched": false,
+    "final_source_status": "writer correction in progress; this intermediate is not a freeze or a dispatch authorization."
+  },
+  "required_before_domain_disposition": [
+    "Freeze exact source and support/manifest custody after the structural lint repair.",
+    "Run strict feature lint with the same analytic and physical features; the final comparison must show 238 inherited only and zero introduced or ambiguous diagnostics.",
+    "Run applicable format and default/feature compilation checks on the frozen source.",
+    "Run the focused real physical-domain control in the required debug/release scope only after same-reviewer source/cfg/reachability review; preserve its receipt and do not substitute a forced boolean or a synthetic numerical path.",
+    "Re-review test-only cfg exclusion, RAII restoration, and normal-path-after-scope evidence before any physical/domain receipt is used downstream."
+  ],
+  "remaining_obligations": {
+    "historical_full_feature17": "Unchanged and not satisfied by this intermediate or the three positive-custody tests.",
+    "missing_real_connections": 18,
+    "disposition": "Remain visible. No stub, feature hiding, target execution, or physical dispatch is authorized by this review."
+  },
+  "qa_pass_statement": "The domain-control design remains reviewable, but current lint03 blocks final freeze. No physical/domain command has been dispatched and the target remains unspent."
+}

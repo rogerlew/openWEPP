@@ -1,0 +1,20 @@
+{
+  "evidence_class": "Ran: JSON parsing, adopted-section link existence and new Rust allow-attribute comparison; static scope only, not runtime validation",
+  "recorded_utc": "2026-09-27T06:27:54.634216+00:00",
+  "json_files_parsed": 245,
+  "adopted_section_links_checked": 37,
+  "missing_links": [],
+  "new_rust_allow_attributes": {
+    "crates/openwepp-land-surface-energy/src/lib.rs": {
+      "new_allow_attributes": []
+    },
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": {
+      "new_allow_attributes": []
+    },
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": {
+      "new_allow_attributes": []
+    }
+  },
+  "scoped_git_diff_check_exit": 0,
+  "scope": "Changed package/recorder and authorized completion artifacts; inherited package narrative and unrelated dirty files preserved."
+}

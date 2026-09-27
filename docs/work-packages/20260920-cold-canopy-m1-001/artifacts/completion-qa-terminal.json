@@ -1,0 +1,51 @@
+{
+  "artifact": "completion-qa-terminal",
+  "reviewer": "/root/completion_qa",
+  "role": "secondary QA/evidence reviewer",
+  "evidence_class": "Static/Ran-record inspection of final recovery, archive and patch hashes, terminal scoped checks, final ledger, maintained package summary, and prior accepted QA findings. The reviewer ran no candidate, solver, test, compile, or source-changing command.",
+  "findings": [],
+  "recovery_and_custody": {
+    "receipt": "completion-terminal-recovery.json",
+    "source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+    "entry_count": 764,
+    "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-completion-reconstruction-20260927",
+    "archive": "completion-terminal-source.tar.gz",
+    "archive_sha256": "65e2cbf11ef4492e4cfdd393255812c55aa098d06138194e0104922801900b12",
+    "terminal_patch": "completion-terminal-from-observer.patch",
+    "terminal_patch_sha256": "fdb8ae0d926a7258108e613b3cb4345451c0f01d67c45b100b1662c11ffed25b",
+    "verification": "All reconstructed entry hashes and archive bytes equal the terminal source; the archive contains the detached source/configuration snapshot and is not a self-contained toolchain or input distribution. Runtime source stayed unchanged."
+  },
+  "scope_and_publication": {
+    "receipt": "completion-terminal-scoped-checks.json",
+    "json_parse": "394 JSON records parsed with zero errors.",
+    "artifact_links": "75 completion artifact links checked with none missing.",
+    "terminal_diff": "Exactly five detached terminal entries differ from adopted source: lib.rs, m1_coupled_tests.rs, m1_trust_region_controller.rs, m1_trust_region_stage1.rs, and solver_covered_evaluation/m1_coupled.rs.",
+    "main_protection": "Protected main dirty hashes remained equal. The scoped authored check passed for maintained package prose and the authorized deadline-only recorder change; unrelated main bytes remain outside this publication scope."
+  },
+  "terminal_outcome": {
+    "accepted_prior_evidence": "Current-source debug/release/analytic/default/format and compatibility evidence remains as previously reviewed; strict lint populations are classified inherited-only and are not lint-pass claims.",
+    "governing_negative": "completion-domain-physical02 is the sole new domain endpoint. It failed before candidate mutation with typed TrustRegionOptimalityIndeterminate / optimality_free_stationarity. The current domain producer is not qualified.",
+    "nontransfer": "The separately archived source 538250 ordinary-positive and three positive-custody passes remain historical evidence only; they do not qualify source 12665 or the failed downstream producer.",
+    "holds": "All 18 historical missing references, eight interface groups, private harness, target arms, M1 acceptance, and package acceptance remain HOLD/unused. No canonical-wrapper credit or target slot is released."
+  },
+  "ledger": {
+    "receipt": "completion-final-ledger.json",
+    "carry_charged_seconds": 364933.959294,
+    "new_charged_seconds": 10800.0,
+    "cumulative_charged_seconds": 375733.959294,
+    "cumulative_ceiling_seconds": 379333.959294,
+    "remaining_under_ceiling_seconds": 3600.0,
+    "last_candidate_end_utc": "2026-09-27T07:13:45.713631+00:00",
+    "closing_allocation_after_last_candidate_seconds": 2114.286369,
+    "deadlines": "Original command cutoff 08:19Z and hard deadline 08:49Z remain fixed; no prior reserve is reclaimed and no wait/concurrency deduction is taken.",
+    "disposition": "The remaining 3600 seconds is a mathematical balance only, not resumed authority. The valid terminal negative ends the effort; future work must carry at least the conservative cumulative charge."
+  },
+  "non_blocking_debt_and_follow_ups": [
+    {
+      "severity": "non-blocking",
+      "path": "terminal records",
+      "finding": "The archived evidence deliberately preserves historical failures and classified inherited lint rather than rewriting them into a green gate. Any later work must begin from the exact terminal archive or a separately recorded source cut."
+    }
+  ],
+  "qa_pass_statement": "QA accepts the final evidence preservation, recovery, scoped-publication boundary, and conservative ledger as accurately recorded. This preservation pass does not convert the failed domain qualification or any held acceptance obligation into a pass."
+}

@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Static: exact comparison of executed source-bearing strict-lint diagnostics",
+  "baseline": "finite-precision-body13-lint.stderr",
+  "candidate": "completion-helpers-lint02.stderr",
+  "normalization": "Only source line/column and numeric source/suggestion gutters; compiler summaries excluded",
+  "baseline_count": 238,
+  "candidate_count": 239,
+  "matched_count": 238,
+  "introduced": [
+    "error: this function has too many lines (139/100)\n    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:LINE:COL\n     |\nLINE | fn m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization() {\n     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines"
+  ],
+  "not_matched": []
+}

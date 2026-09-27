@@ -1,0 +1,55 @@
+{
+  "artifact": "completion-qa-positive-custody-readiness",
+  "reviewer": "/root/completion_qa",
+  "evidence_class": "Static/read-only QA of the user-conditioned prepared three-test release manifest and membership inventory, frozen source, selected release binary, completed physical01 receipt, and correctness physical-result/reconstruction reviews. The reviewer ran no compile, test, candidate, solver, compatibility, or physical command.",
+  "findings": [],
+  "non_blocking_debt_and_follow_ups": [
+    {
+      "severity": "non-blocking",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "finding": "The three controls are source-defined original60 component-fixture checks. They qualify unperturbed success, materialization custody, and budget-scope restoration only; they cannot establish target-input behavior or a performance claim."
+    }
+  ],
+  "scope_review": {
+    "requested_continuation": "One release batch containing exactly three held unperturbed-original60 success/budget-custody controls.",
+    "selected_tests": [
+      "m1_coupled_tests::m1_trust_region_physical_adapter_original60_setup_is_separate_from_deferred_proposal",
+      "m1_coupled_tests::m1_trust_region_physical_adapter_run_captures_and_restores_owned_budget_scope",
+      "m1_coupled_tests::m1_trust_region_physical_adapter_run_restores_nested_prior_budget_scope"
+    ],
+    "selected_count": 3,
+    "membership_receipt": "completion-positive-custody-inventory01.json",
+    "membership_status": "The actual inventory reports exit 0 on source tree 538250 and these exact three selectors.",
+    "ordinary_endpoint_exclusion": "The completed perturbed ordinary endpoint m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization is absent from the prepared selector and must not be replayed.",
+    "target_exclusion": "No target arm, prototype, or broader physical selector is present."
+  },
+  "manifest_and_custody": {
+    "support_manifest": "completion-positive-custody01-support.json",
+    "support_manifest_sha256": "01ab051277a22de06457278ea4c1c935af0251eb693e4643664edc01fdc636e5",
+    "manifest_file_count": 628,
+    "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "release_binary": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+    "release_binary_sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8",
+    "command_shape": "One cargo nextest --release --lib batch with analytic and physical features, the exact three equality selectors, no-fail-fast, and immediate success/failure output.",
+    "declared_timeout_seconds": 180,
+    "required_full_validation": false,
+    "pre_dispatch_requirement": "Immediately recheck the source tree, all 628 manifest file hashes, selected inventory membership, and release-binary SHA-256. Any drift revokes this clearance."
+  },
+  "basis_for_continuation": {
+    "physical01": "completion-physical01 passed once on the same source tree and release binary; no retry occurred.",
+    "correctness_physical_result": "completion-correctness-physical-result.json reports PHYSICAL_RESULT_PASS_NO_CORRECTNESS_BLOCKER.",
+    "independent_reconstruction": "completion-correctness-physical-reconstruction.json independently reconstructed both reservoir mass and enthalpy residuals bit-identically from emitted raw operand bits."
+  },
+  "qa_disposition": {
+    "positive_custody01": "READY_AND_CLEARED_FOR_ONE_CONDITIONAL_RELEASE_BATCH",
+    "authorization_boundary": "Exactly one 180-second batch of the three selected controls after the stated immediate custody recheck. No retries, no ordinary endpoint replay, no added selectors, and no target execution are cleared by this artifact.",
+    "not_approved": [
+      "M1 acceptance",
+      "target acceptance",
+      "package acceptance",
+      "a speed or zero-cost claim"
+    ]
+  },
+  "qa_pass_statement": "QA finds no scope, source, manifest, binary, selector-membership, or developer-ergonomics blocker to the narrow user-conditioned three-control release batch."
+}

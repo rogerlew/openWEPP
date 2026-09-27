@@ -1,0 +1,82 @@
+{
+  "artifact": "completion-correctness-observation-preflight",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static read-only preflight. No Rust candidate, physical control, comparator, or target execution.",
+  "scope": "Physical ordinary-positive observation completeness and clarification of removed unused refinement-stage labels. Mutable Stage1 numerical source is explicitly deferred.",
+  "reviewed_source": {
+    "m1_coupled_tests.rs": "d978c9c7755c478570df53b307200d4e0deece685d300f0d659371d0f0d8b7d0",
+    "solver_covered_evaluation/m1_coupled.rs": "5cb766c2f92981109ea6c90777763c1d15f6696f2ba3ccc86c997b495d451948",
+    "m1_trust_region_controller_interface.rs": "13961a4b1824a5a1006dcdb2491ab225fd15c43d36af669c8f9ab3a106f43046",
+    "lib.rs": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c"
+  },
+  "blocking_preflight_finding": {
+    "severity": "high",
+    "location": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:5298",
+    "finding": "The structured M1_BVLS03_PHYSICAL_OBSERVATION is emitted only after observed_result.expect(...). A legitimate source-conforming refusal therefore panics before the structured timing, typed outcome, failure state, and complete work evidence are emitted.",
+    "required_fix": "Construct and emit one structured observation immediately after the single timed observed_result call and before any expect or success-only assertion. The record must branch on the borrowed Result and retain common evidence for both success and failure. Preserve exactly one solver invocation and keep setup/provider preparation/build outside the interval."
+  },
+  "required_common_fields": [
+    "schema/control/method identity identifying the unchanged ordinary-positive BVLS-03 endpoint",
+    "actual protected input identity: stable structured model/support/topology identity and both reservoir occupancy ids with beginning mass/enthalpy bits, or a complete stable input representation; an equality assertion alone is not emitted identity evidence",
+    "canonical original60 setup/root coordinate bits",
+    "actual controller-entry perturbed seed coordinate bits",
+    "perturbation coordinate 20, requested 1e-4 K delta bits, and actual rounded delta bits",
+    "wall seconds for the single solver-entry-to-return interval",
+    "process CPU availability, clock source, before/after ticks, tick frequency, delta ticks and converted seconds, or an explicit concrete acquisition/parse failure",
+    "face-pivot capture and phase-event evidence in the same structured record",
+    "prior outer budget, solve-owned inner budget snapshot, and restored outer budget after return",
+    "adapter counts: current evaluations, raw-Jacobian assemblies, natural phase selections, trial checks, selected-side probes and materialization entries",
+    "runtime counts: complete evaluator, hydraulic, actual hydraulic, trial and materialization entries; predictor and final assemblies; full and reduced dimension count arrays",
+    "every controller_accounting work observation, retaining stage1 calls, SVD entries, face pivots, sweeps, refinement scalar/guard/attempted/denied counters, first residual, second Dot2, factor application, coordinate update, whole-KKT, whole-KKT guards, upward enclosure, and enclosure guards",
+    "a statement in the record that refinement and whole-KKT/enclosure categories overlap and are not summed into a unique total"
+  ],
+  "required_success_fields": [
+    "controller proposals, accepted updates, installed updates, entered materializations and entered SVD factorizations",
+    "final coordinate bits, materialized coordinate bits, and terminal refusal",
+    "explicit accepted ordinary-update evidence: exactly one accepted and installed update, final/root bits differ from controller-entry perturbed seed bits, and the subsequent root was materialized",
+    "captured materializer input equals protected input",
+    "result accepted input is bound to protected input",
+    "captured coordinates, run final coordinates, run materialized coordinates and result accepted coordinates are bit-identical",
+    "accepted result residual bits or equivalent actual root/witness residual evidence",
+    "all reservoir mass/enthalpy operands already listed by the draft record",
+    "independently reconstructed mass and enthalpy residual for each reservoir, delta from each published residual, comparison tolerance and pass/fail",
+    "independent physical closure thresholds and pass/fail for each reservoir",
+    "accepted-capture presence and absence of a diagnostic Jacobian on the accepted materialization"
+  ],
+  "required_failure_fields": [
+    "typed outer controller error class: Own, Subproblem, CoreWorkCap, Numerical or IncompleteScope",
+    "for Own(Coupled), the stable coupled error code and retained typed/debug cause; distinguish Own(IncompleteScope)",
+    "for Subproblem, kind, optimality reason/coordinate/radius/lambda, attempted subproblems, sweeps, pivots, SVD entries, raw-residual maximum, refinement metadata, canonical refusal work and budget refusal",
+    "for Numerical, the retained message; explicit markers for CoreWorkCap and IncompleteScope",
+    "controller/run observation if it exists, including terminal refusal and current/final coordinates",
+    "accepted-capture presence, adapter materialization presence/count and current adapter coordinates",
+    "the same timing, CPU, budget, face/phase, runtime and controller-accounting fields as the success record",
+    "no reservoir closure claim when no accepted materialized result exists"
+  ],
+  "cpu_evidence_finding": {
+    "severity": "medium",
+    "location": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:5274-5328",
+    "finding": "Raw /proc/self/stat strings followed by process_cpu_seconds=null and a note that conversion is unavailable do not provide the available process CPU measurement requested for this Linux execution.",
+    "required_fix": "Parse fields 14 and 15 after the final closing parenthesis of /proc/self/stat, because the comm field may contain spaces or parentheses. Resolve CLK_TCK outside the timed interval, for example with getconf CLK_TCK, and emit before/after ticks, delta ticks, Hz and seconds. If any acquisition or parse step actually fails, emit null numeric fields plus the exact failure; do not label an unfinished parser as environmental unavailability.",
+    "constraint": "Clock preparation remains outside the solver interval and must not invoke the solver, evaluator or materializer."
+  },
+  "closure_evidence_finding": {
+    "severity": "medium",
+    "location": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:5300-5334",
+    "finding": "The draft JSON emits published reservoir operands and residuals, but the independent reconstruction runs later as assertions and its reconstructed values/deltas are absent from the record.",
+    "required_fix": "Compute the independent mass and enthalpy expressions once in the success observation branch, emit reconstructed residuals, published deltas, tolerances and closure booleans, then reuse or independently assert those same operands without another solver/materializer call."
+  },
+  "work_evidence_finding": {
+    "severity": "medium",
+    "location": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:5280-5329",
+    "finding": "The draft structured record omits controller_accounting, solve-owned budget, adapter/runtime counters, predictor/final assemblies and dimension counts. The ad hoc Debug lines are not a stable complete structured work record and are not guaranteed after future assertion changes.",
+    "required_fix": "Serialize the existing observations into explicit JSON fields before outcome assertion. Preserve each controller-accounting record and the overlap relationship instead of producing an invented sum."
+  },
+  "removed_enum_variant_clarification": {
+    "disposition": "no correctness blocker from the three removals on the inspected prior/static call graph",
+    "P0AssemblySource": "This label had no construction site. Actual p0 assembly still copies the live active carrier, installs free trace values in order, counts the copy/equality guards, and maps a dimension or bit-equality failure to FactorOutput/P0AssemblyEquality. Original-box, active-bit, ordered-norm and radius eligibility guards remain separate and precede refinement entry.",
+    "ScratchBoxLower_and_ScratchBoxUpper": "These labels had no construction site. The actual p1 lower/upper comparisons still execute through refinement_box_admit. A p1 inactive-free box violation is contractually admitted, so it is recorded as scratch_box_feasible rather than returned as a lower/upper refusal. Active/finite and radius guards remain enforced. Final p2 box violations still return FinalBoxLower or FinalBoxUpper.",
+    "limit": "This clarification covers removal of redundant unused enum variants only. It does not approve the concurrently mutable Stage1 source or claim universal guard coverage."
+  },
+  "preflight_verdict": "HOLD for physical dispatch until the structured record is emitted on both success and failure, process CPU is actually measured or concretely unavailable, independent closure values are recorded, and complete nested-work observations are included. No numerical-policy change is required."
+}

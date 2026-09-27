@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Static: exact comparison of executed source-bearing strict-lint diagnostics",
+  "baseline": "finite-precision-body13-lint.stderr",
+  "candidate": "completion-producer-domain-lint04.stderr",
+  "normalization": "Only source line/column and numeric source/suggestion gutters; compiler summaries excluded",
+  "baseline_count": 238,
+  "candidate_count": 238,
+  "matched_count": 238,
+  "introduced": [],
+  "not_matched": []
+}

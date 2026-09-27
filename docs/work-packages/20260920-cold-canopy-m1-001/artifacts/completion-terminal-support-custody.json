@@ -1,0 +1,36 @@
+{
+  "evidence_class": "Ran: hash comparisons and static source/support manifest reconciliation; no test or physical execution",
+  "recorded_utc": "2026-09-27T06:25:57.419337+00:00",
+  "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+  "source_entry_count": 764,
+  "source_changes_from_adopted_start": {
+    "crates/openwepp-land-surface-energy/src/lib.rs": {
+      "old": "ef6850425e91b82150db17d587c3dc8807fe976867ee68594ea154e3b82692ac",
+      "new": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c"
+    },
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": {
+      "old": "2c6a48afbc7a3293a86d4e9bbcb4fabaea34e6072b8994ba9f288288d7ec3e9d",
+      "new": "ae3656611e3e1dc4167aa47ce70485163b3f1a9c174b58342d93549ae52ac6ae"
+    },
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": {
+      "old": "32f0d14950e22ede0b446326b9b185ce22905c99035a30acde512d1281dae9da",
+      "new": "f3de57a28df00e7383ed2565c997645b0ae5e4665e783e73dd08e4ecded22e92"
+    }
+  },
+  "external_support_count": 627,
+  "external_support_changes": {
+    "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py": {
+      "old": "fbf5224227eaecab388baccec1a32652b469f64390dee9c69ec2a242c3c3951b",
+      "new": "d6d012c20e3e5305302f96d0cad7fac58aa2a7f6382c7fdd47933cbeb31b048e"
+    }
+  },
+  "support_links_unchanged": true,
+  "selected_link_contents_unchanged": true,
+  "unrelated_main_rust_hashes": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  },
+  "manifest_toolchain_dependencies_unchanged": true,
+  "scope_note": "Physical manifest binary pin will be added after final release selected inventory; comparison covers existing external build/input supports, not dispatch approval.",
+  "preparation_correction": "Older physical-template622 supports omitted5 retained BVLS03 control/operand supports; both unexecuted prepared manifests corrected to canonical627 before review/dispatch. No input bytes changed."
+}

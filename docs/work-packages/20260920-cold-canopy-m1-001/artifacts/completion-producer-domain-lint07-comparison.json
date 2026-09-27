@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Static: exact comparison of executed source-bearing strict-lint diagnostics",
+  "baseline": "finite-precision-body13-lint.stderr",
+  "candidate": "completion-producer-domain-lint07.stderr",
+  "normalization": "Only source line/column and numeric source/suggestion gutters; compiler summaries excluded",
+  "baseline_count": 238,
+  "candidate_count": 239,
+  "matched_count": 237,
+  "introduced": [
+    "error: this argument is passed by value, but not consumed in the function body\n   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:LINE:COL\n    |\nLINE |         model: ProposalModel,\n    |                ^^^^^^^^^^^^^\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value\n    = note: `-D clippy::needless-pass-by-value` implied by `-D warnings`\n    = help: to override `-D warnings` add `#[allow(clippy::needless_pass_by_value)]`\nhelp: consider taking a reference instead\n    |\nLINE |         model: &ProposalModel,\n    |                +",
+    "error: this argument is passed by value, but not consumed in the function body\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:LINE:COL\n     |\nLINE |     metadata: M1DrainageMetadataTestView,\n     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\nhelp: or consider marking this type as `Copy`\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:LINE:COL\n     |\nLINE | pub struct M1DrainageMetadataTestView {\n     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value\nhelp: consider taking a reference instead\n     |\nLINE |     metadata: &M1DrainageMetadataTestView,\n     |               +"
+  ],
+  "not_matched": [
+    "error: this argument is passed by value, but not consumed in the function body\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:LINE:COL\n     |\nLINE |     metadata: M1DrainageMetadataTestView,\n     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\nhelp: or consider marking this type as `Copy`\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:LINE:COL\n     |\nLINE | pub struct M1DrainageMetadataTestView {\n     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value\n     = note: `-D clippy::needless-pass-by-value` implied by `-D warnings`\n     = help: to override `-D warnings` add `#[allow(clippy::needless_pass_by_value)]`\nhelp: consider taking a reference instead\n     |\nLINE |     metadata: &M1DrainageMetadataTestView,\n     |               +"
+  ]
+}

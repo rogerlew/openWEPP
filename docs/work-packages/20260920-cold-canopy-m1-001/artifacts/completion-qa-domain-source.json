@@ -1,0 +1,83 @@
+{
+  "artifact": "completion-qa-domain-source",
+  "reviewer": "/root/completion_qa",
+  "evidence_class": "Static/read-only QA of frozen source tree 921de1, exact source manifests, strict-lint comparison, debug/default/format receipts, and source reachability. The reviewer ran no compile, test, candidate, solver, compatibility, or physical command.",
+  "findings": [
+    {
+      "severity": "blocking_before_final_freeze",
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "finding": "The reviewed 921de1 intermediate uses an unconditional mutable binding whose mutation is compiled only under the physical feature. The combined-feature lint cannot expose the analytic-only unused_mut diagnostic when that branch is present. The writer's minimal cfg-scoped mutable-shadow repair and same-reviewer verification are required before this source can be treated as final."
+    }
+  ],
+  "non_blocking_debt_and_follow_ups": [
+    {
+      "severity": "follow-up",
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "finding": "The domain mutation seam is intentionally test-and-physical-feature gated. Its scope restoration is structurally sound: enter captures the previous thread-local value and Drop restores it through returns or unwinding. The final focused receipt must retain the existing post-scope ordinary-transition assertion."
+    },
+    {
+      "severity": "follow-up",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "finding": "The focused domain assertion suite is not included by the completed refinement-only debug selector. It remains an unexecuted prospective physical-domain control, not a passed result."
+    }
+  ],
+  "frozen_source": {
+    "source_tree_sha256": "921de1eb78dc2ad5c199c06bc43e0991d8b2925a8f7016c986b27c5e29969ad3",
+    "accepted_physical_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "changed_paths_vs_accepted_physical": [
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+    ],
+    "source_manifest": "completion-producer-domain-lint10-source.json",
+    "scope_assessment": "The exact manifest comparison confirms only the three declared detached source files differ. No package manifest/dependency or main-tree source change is evidenced by this source cut."
+  },
+  "static_source_assessment": {
+    "cfg_exclusion": "The thread-local flag, RAII scope, candidate mutation helper, observation type, controller helper, and adapter wrapper are all cfg(all(test, feature = m1-trust-region-physical-stage)). The physical test itself is feature-gated. Production and default builds exclude the mutation branch; no cfg widening was found.",
+    "normal_path": "The mutation is limited to candidate coordinate 5 after the existing phase model is formed. The test checks the poisoned -MIN_POSITIVE candidate reaches the existing trial-domain guard, then calls an ordinary transition after scope drop and requires that candidate not be poisoned.",
+    "test_quality": "The test asserts bitwise poison, radius 1.0 to 0.25, unchanged base bits, refusal disposition, absence of merit/materialization fields, immutable adapter input/trial, domain/current-evaluation/raw-Jacobian counts, unchanged raw-Jacobian and normalizer bits, and selected-phase identity. This is cohesive and uses the real adapter domain path."
+  },
+  "completed_validation": {
+    "strict_lint": {
+      "receipt": "completion-producer-domain-lint10.json",
+      "comparison": "completion-producer-domain-lint10-comparison.json",
+      "command_result": "exit 101 from the established inherited diagnostic population",
+      "disposition": "238 baseline diagnostics exactly matched; zero introduced and zero unmatched. This meets the existing private/noncritical inherited-lint policy and leaves no new lint finding."
+    },
+    "format": {
+      "receipt": "completion-domain-fmt01.json",
+      "result": "PASS",
+      "source_tree_sha256": "921de1eb78dc2ad5c199c06bc43e0991d8b2925a8f7016c986b27c5e29969ad3"
+    },
+    "default_compile": {
+      "receipt": "completion-domain-default01.json",
+      "result": "PASS",
+      "scope": "package lib cargo check"
+    },
+    "debug_refinement": {
+      "receipt": "completion-domain-debug01.json",
+      "result": "PASS: 11 passed, 359 skipped",
+      "scope_limit": "The test(m1_trust_region_refinement_) selector confirms the shared refinement controls but does not execute the new domain-refusal test."
+    },
+    "release_refinement": {
+      "receipt": "completion-domain-release01.json",
+      "status": "RUNNING_OR_UNRECEIPTED_AT_THIS_REVIEW; it is not treated as evidence."
+    }
+  },
+  "required_before_prospective_domain_dispatch": [
+    "Apply only the proposed cfg-scoped mutable-shadow repair, freeze a new exact source/support cut, and have the same reviewers verify it. The 921de1 receipts become intermediate history after that edit.",
+    "Run strict all-targets/no-deps clippy -D warnings with the analytic feature alone and with the analytic-plus-physical feature combination. The analytic-only command is required because it compiles the test code with the physical cfg branch elided; combined-feature lint alone cannot prove that configuration is warning-free.",
+    "Retain the actual analytic-only stage2 receipt as compiler/reachability evidence, but do not use a passing test receipt as a substitute for the two strict lint configurations.",
+    "Obtain and review the completed release refinement receipt on the same tree with unchanged source/support/binary custody.",
+    "Rerun the affected compatibility selection on tree 921de1 because the shared controller transition changed after compatibility125 passed on 538250; do not reuse that old-tree receipt for the changed code.",
+    "Prepare and independently recheck a source-bound manifest that selects only the new domain-refusal endpoint; exclude the ordinary-positive endpoint and every target arm.",
+    "Run no physical/domain command until the above receipts and manifest review are complete."
+  ],
+  "remaining_scope": {
+    "historical_missing_real_connections": 18,
+    "writer17_claim": "Not supported by the frozen source: the 18 historical references remain undefined and no cfg widening creates a hidden substitute connection.",
+    "target": "Unspent and unreleased.",
+    "package_acceptance": "Not granted."
+  },
+  "qa_pass_statement": "The 921de1 source review found the domain seam readable, feature-private, and source-contained under the combined feature set, but it is superseded as a final candidate by the analytic-only cfg warning. Prospective physical-domain execution remains held."
+}

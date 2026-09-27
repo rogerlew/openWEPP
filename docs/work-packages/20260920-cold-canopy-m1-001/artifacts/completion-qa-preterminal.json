@@ -1,0 +1,70 @@
+{
+  "artifact": "completion-qa-preterminal",
+  "reviewer": "/root/completion_qa",
+  "role": "independent QA/evidence reviewer",
+  "evidence_class": "Static: reviewed frozen Stage1/lib source identity, completion-correctness-stage1-refactor.json, helper02 receipt/log/manifest, helper02 strict-lint comparison, prospective compatibility selector, recorder/support identities, and terminal check plan. Ran: read-only hash and receipt inspection; no test, candidate, physical, or source command dispatched.",
+  "reviewed_cut": {
+    "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "stage1_sha256": "85b666eb0b826fd7a9ef3926e70f61acb0ee37153e1b7e8b7e388aee48762937",
+    "helper02_tree_sha256": "46b92d91df591a70fa645d3ad4bb1c13007d2f0b9af869d36fa61ec63cda79d2",
+    "manifest_entries": 764,
+    "support_file_count": 627,
+    "scope_boundary": "Frozen Stage1 and lib only. Mutable m1_coupled_tests physical-observer/emitter work is excluded and requires a later frozen-source/physical-manifest assessment."
+  },
+  "findings": [
+    {
+      "severity": "blocking",
+      "id": "QA-PRETERM-01",
+      "location": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "finding": "The helper02 strict-lint comparison records one introduced diagnostic: physical ordinary-update test too_many_lines (139/100). It is outside frozen Stage1 but remains current package scope. It must be resolved on the physical-observer cut; 238 inherited diagnostics alone are eligible for the established same-command private/noncritical policy."
+    },
+    {
+      "severity": "blocking",
+      "id": "QA-PRETERM-02",
+      "location": "terminal physical source and manifest, not yet frozen",
+      "finding": "No source-bound QA assessment covers the active coupled physical observer. Helper02's 11/11 debug receipt and Stage1 static pass cannot authorize the physical endpoint after the coupled-test source changes. Freeze source, support manifest, selected inventory, and observer/closure evidence before dispatch."
+    }
+  ],
+  "accepted_qa_evidence": {
+    "stage1_static": "PASS within scope. The independent correctness review accepts the mechanical refactor, real unequal-radius custody control, exact C1 metadata seams, and retained test-only assertion coverage. Its one duplicate bvls02_pass assertion is non-blocking maintenance debt.",
+    "helper02_debug": "PASS: completion-helpers-debug02 exited 0 on tree 46b92d91; 11 selected refinement tests passed and 358 were skipped. Receipt reports source, observer base, pins, and support links unchanged. This is focused debug evidence only.",
+    "helper02_lint": "TRUTHFUL FAIL/DISPOSITION: 239 diagnostics equals 238 inherited plus one introduced physical-test length block. The comparison uses diagnostic blocks and normalized only source line/column and numeric gutter locations; it is not a green lint result.",
+    "test_reachability": "Stage1 is cfg(test) in LSE lib.rs and private test helpers are reached through the named libtest selection. cargo check --lib does not compile this cfg(test) surface; default libtest inventory is consequently a required separate reachability gate.",
+    "dependency_and_support_custody": "PASS for frozen helper02 scope. The source manifest has 764 entries and the support record has 627 files. Detached Cargo.toml, Cargo.lock, flake.nix, flake.lock, rust-toolchain.toml, and LSE Cargo.toml match the helper02 manifest; no dependency/manifest/toolchain change is evidenced. The recorder is the documented deadline-only update (d6d012...), so cargo deny is not triggered by this frozen cut. Any later manifest, lockfile, dependency, resolution, or toolchain change makes cargo deny required."
+  },
+  "compatibility_selector_review": {
+    "path": "/tmp/completion-compatibility-argv.json",
+    "classification": "Prospective physical-classified compatibility selection; it is not the ordinary-positive endpoint and does not authorize any physical execution by itself.",
+    "includes": "Named trust-region, stage2, face-pivot, runtime-observation, opt-in diagnostic-observation, and diagnostic-observation test families under the combined analytic/physical feature pair.",
+    "approved_exclusions": [
+      "ordinary_update_reassembles_before_root_materialization",
+      "ordinary_perturbation_refuses_face_pivot_before_materialization",
+      "run_restores_nested_prior_budget_scope",
+      "run_captures_and_restores_owned_budget_scope",
+      "original60_setup_is_separate_from_deferred_proposal"
+    ],
+    "qa_disposition": "The selector is coherent with correctness's approved boundary: the reserved ordinary positive and known physical-positive/negative controls remain excluded, visible, and separately obligated. Before any launch, record the actual selected inventory and confirm that no excluded positive is silently consumed."
+  },
+  "required_terminal_checks": [
+    "Freeze terminal detached source and support/physical manifest; record Stage1, lib, coupled-test, recorder, manifest/lock/toolchain, feature, input, and selector identities.",
+    "cargo fmt --all -- --check.",
+    "cargo check -p openwepp-land-surface-energy --lib for default non-test reachability.",
+    "cargo nextest list -p openwepp-land-surface-energy --lib --message-format json for default libtest cfg(test) reachability, plus the combined-feature JSON inventory.",
+    "Source-bound debug and release C1-C4/whole-controller controls, with actual member count and names retained.",
+    "Exact strict-lint command and source-block comparison; resolve the introduced coupled physical-test length diagnostic and retain the 238 inherited blocks visibly.",
+    "Affected doctest compilation/inventory, scoped diff/JSON/link/placeholder checks, and A0/A1 obligations. No A3 suite change is evidenced; preserve the existing applicable authority evidence.",
+    "Run cargo deny check if, and only if, terminal manifest/lock/dependency/license/source-policy/toolchain-resolution inputs differ from the frozen helper02 identities.",
+    "After distinct QA and correctness frozen-source/manifest approvals, recheck the exact ordinary-positive inventory and run the sole release endpoint with its independent timing, identity, materialization, work-counter, and closure evidence."
+  ],
+  "non_blocking_debt_or_followups": [
+    {
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8045-8052",
+      "note": "One repeated bvls02_pass assertion is harmless but can be removed in a future bounded maintenance cut; do not reopen the frozen Stage1 cut solely for it."
+    },
+    {
+      "location": "future command receipts",
+      "note": "Keep structured selected-test membership alongside log summaries so selector review does not depend on parsing stdout."
+    }
+  ],
+  "verdict": "PRETERMINAL HOLD. Frozen Stage1 has no QA blocker and helper02 evidence is credible within its cut. The introduced coupled physical-test lint finding and active observer's missing frozen source/manifest assessment block terminal/physical acceptance."
+}

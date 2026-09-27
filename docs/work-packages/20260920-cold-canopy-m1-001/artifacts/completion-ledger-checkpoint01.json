@@ -1,0 +1,13 @@
+{
+  "recorded_utc": "2026-09-27T05:10:00.844265+00:00",
+  "first_reading_anchor_utc": "2026-09-27T04:49:00+00:00",
+  "charged_new_seconds": "1260.844265",
+  "cumulative_charged_seconds": "366194.803559",
+  "cumulative_ceiling_seconds": "379333.959294",
+  "remaining_seconds": "13139.155735",
+  "command_cutoff_utc": "2026-09-27T08:19:00+00:00",
+  "hard_deadline_utc": "2026-09-27T08:49:00+00:00",
+  "accounting": "Concurrent wall time counted once; no wait deduction or reserve refund",
+  "physical_endpoint_runs": 0,
+  "target_slots": "UNUSED / NOT RELEASED"
+}

@@ -1,0 +1,84 @@
+{
+  "artifact": "completion-correctness-quality-groups",
+  "reviewer": "/root/completion_correctness",
+  "scope": "Same-reviewer bounded correctness review of the stable boxed-budget-error cause group and the lint11 fixed-index cast, observation-width, and pointer-identity cause group. The concurrently mutable complete Stage1 cut is excluded.",
+  "evidence_class": "Static source-patch review plus inspection of supplied executed receipts. Reviewer ran no source, test, candidate, physical, comparator, or target command.",
+  "primary_evidence": {
+    "stable_error_cut": {
+      "tree_sha256": "1144115ed74de9ea583b11f5c35c35afdbb47bacb2eab5a6553985154a7c7335",
+      "lib_sha256": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c",
+      "stage1_sha256": "7d883b993a0bf54892ce143b8262b282ffeb45d11388cffa5ae56356309056a0",
+      "patch_sha256": "7ada95a7d0cc7c7c327a8e1d43f996cfbccf1b371b332268e5035fbc15012df6"
+    },
+    "debug_receipt": {
+      "path": "completion-quality-debug01.json",
+      "sha256": "0173e10c10b2c71211ddb8b584f2b6ec1e65fdfaaca31ef1fe3a3b46b2002984",
+      "result": "exit 0; 10 selected refinement controls passed; 358 skipped"
+    },
+    "release_receipt": {
+      "path": "completion-quality-release01.json",
+      "sha256": "5719e01cee020fa7a07ac30f3f5fbe9872ad7823bbbe4d946fea4e5405c3cbfe",
+      "result": "exit 0; 10 selected release refinement controls passed; 358 skipped"
+    },
+    "lint11_cut": {
+      "tree_sha256": "323b87c67921a64b3fbe8920ec2853c1eec94661305c7adb5f6b9da2bb0e49a5",
+      "lib_sha256": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c",
+      "stage1_sha256": "488c5418af3f15949c9626d5657066fc07c851b05fbf5676e3e614ec30210799",
+      "patch_sha256": "2929fce3252270d9cc895a0ba2954dda8024008c1409803a3a974057379d14e3",
+      "lint_receipt_sha256": "db173609701935d61841500d52fecf2d80313d32660a011a6c554582a368d3f4",
+      "comparison_sha256": "de6fa51a897397d082941cc456fbb56a0a85980ef45b5c54195e746263efa453",
+      "result": "exit 101; complete comparison reports 238 inherited matches and 20 remaining introduced diagnostics. No reviewed cast, truncation, or ref-as-ptr diagnostic remains. This is not an overall lint pass."
+    }
+  },
+  "findings": [],
+  "accepted_groups": [
+    {
+      "group": "boxed Stage1 physical-budget refusal",
+      "verdict": "STATIC_PASS",
+      "evidence": [
+        "M1TrustRegionSubproblemRefusal retains the existing typed budget_refusal member and changes only its representation from Option<M1PhysicalBudgetRefusal> to Option<Box<M1PhysicalBudgetRefusal>>.",
+        "state_budget_refusal still begins with state_refusal(WorkCap, state, raw_max), so kind, raw residual maximum, attempts, sweeps, pivots, SVD count, canonical boxed work observation, and any other existing refusal fields come from the same state snapshot.",
+        "The exact M1PhysicalBudgetRefusal returned by m1_physical_budget_enter is moved unchanged into Box::new and attached to that refusal. Operation and snapshot are neither reconstructed nor normalized.",
+        "The allocation occurs only inside the Err branch of the Stage1Factorization budget entry. Successful budget entry, state.entered increment, and factorization paths perform no new box allocation.",
+        "Budget refusal still precedes state.entered increment and jacobi_factor, preserving attempted-versus-entered counts and error precedence.",
+        "The existing control pattern dereferences the box and continues to bind the exact Stage1Factorization operation and 47,301 attempted / 47,300 entered snapshot. Debug and release selected cuts compile the updated typed pattern."
+      ]
+    },
+    {
+      "group": "fixed 21/22-element index conversions",
+      "verdict": "STATIC_PASS",
+      "evidence": [
+        "refinement_face_index uses u8::try_from and fails loudly only if its fixed-dimension invariant is violated; it does not truncate.",
+        "Every reviewed face-index call receives a column from 0..21 or a free_ids entry constructed by enumeration of the fixed 21-coordinate face, hence the value is 0..20.",
+        "Dot2 term conversion receives array indices 0..21 from fixed 22-element terms. Its coordinate mapping excludes term zero and converts term-1 in 0..20.",
+        "The conversion changes only metadata representation after the same guard site; it does not move arithmetic, guards, mutation, or error selection."
+      ]
+    },
+    {
+      "group": "u32 observation widening",
+      "verdict": "STATIC_PASS",
+      "evidence": [
+        "RefinementScratchHooksObservation evaluator, hydraulic, and materialization call counts widen from u8 to u32, matching their u32 global counter sources.",
+        "The same monotonic after-before subtraction remains at the same observation boundary; removal of the narrowing cast prevents truncation and introduces no numerical or controller operation.",
+        "Existing zero-call isolation assertions retain their meaning with the wider type."
+      ]
+    },
+    {
+      "group": "factor pointer identity spelling",
+      "verdict": "STATIC_PASS",
+      "evidence": [
+        "std::ptr::from_ref(factor) produces a raw pointer to the same JacobiFactor pointee as the prior `factor as *const JacobiFactor` cast.",
+        "The subsequent usize address conversion and all before/after/application identity comparisons are unchanged.",
+        "The addresses remain observation-only identities; no dereference, ownership transfer, solver arithmetic, or factor-application order changes."
+      ]
+    }
+  ],
+  "error_taxonomy_integrity": "PASS within scope. The owner remains M1TrustRegionControllerError::Subproblem(Box<M1TrustRegionSubproblemRefusal>), the refusal kind remains WorkCap, and the embedded cause remains typed M1PhysicalBudgetRefusal. No generic erasure, message substitution, or unreachable variant is introduced by this group.",
+  "arithmetic_and_guard_order": "No reviewed change alters floating-point arithmetic, guard precedence, signed-zero handling, factor application, mutation boundaries, or work-counter increment order.",
+  "residual_risk_and_missing_tests": [
+    "The supplied debug/release selector runs ten refinement controls but does not execute m1_trust_region_physical_budget_stage1_factorization_cap_reaches_actual_face. The boxed exact-trigger behavior is therefore statically verified and compiled on the frozen cut, but lacks a direct exact-cut execution receipt.",
+    "lint11 is an intentional intermediate failure with 20 introduced diagnostics. Its complete comparison supports closure of the reviewed cast/pointer diagnostics only; it does not support zero-introduced-lint or final-source acceptance.",
+    "The current Stage1 source, observation/helper decomposition, later lint15 mutation-field removal, complete final controls, and source/manifest readiness require terminal same-reviewer review."
+  ],
+  "bounded_verdict": "NO_BLOCKER for the four reviewed stable cause groups. This is not approval of the current mutable source or physical dispatch."
+}

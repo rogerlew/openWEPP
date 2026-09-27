@@ -1,0 +1,106 @@
+{
+  "evidence_class": "Static + inspected Ran preservation evidence: independent terminal claim, changed-scope, recovery, archive, and ledger review; no test, candidate, solver, or physical command executed",
+  "reviewer": "/root/completion_correctness",
+  "findings": [
+    {
+      "severity": "high, terminal package disposition",
+      "finding": "Final source 12665af6 does not qualify the first downstream domain producer: canonical Stage1 stops before the mutation and real domain guard with TrustRegionOptimalityIndeterminate / optimality_free_stationarity.",
+      "status": "Correctly disclosed and preserved as a valid source-conforming negative. It ends the adopted numerical effort; all eight producer/interface groups, the private harness, and 18 historical missing references remain HOLD."
+    },
+    {
+      "severity": "medium, inherited repository quality gate",
+      "finding": "Strict lint remains failing in both combined and analytic-only configurations.",
+      "status": "Correctly reported as 238 and 262 inherited diagnostics respectively, with zero introduced diagnostics on the final source. No strict-lint PASS or baseline cleanup is claimed; the quality HOLD remains explicit."
+    },
+    {
+      "severity": "high, resolved preparation finding",
+      "finding": "The rejected 01 dispatch manifests contained stale inventory/test/binary selections.",
+      "status": "They never executed. Corrected 02 manifests were independently verified before the actual compatibility and domain runs; the package preserves the preparation defect and does not describe label02 as a retry."
+    }
+  ],
+  "terminal_claim_review": {
+    "verdict": "PASS for bounded truthfulness and scope",
+    "package_sha256": "8f9e85e19ae3492fba53717a12f19a44fad9ffc3c71bee2b0b6bdfc5e25fc9c1",
+    "findings": [
+      "The maintained top summary distinguishes the accepted physical source538250 ordinary update and three positive controls from later source12665; timing, closure, work, identity, and materialization claims are not transferred to the later executable.",
+      "The domain02 outcome is accurately stated as the first and only new-domain execution, failing before mutation with its typed cause, coordinate, radius, positive lambda, work, zero refinement, unchanged custody, and no replay/tuning.",
+      "Final source claims are limited to debug/release refinement 11/11, analytic-controller 49/49, compatibility 125/125, format/default PASS, inherited strict-lint populations, and the terminal domain negative. No M1, seasonal, watershed-scale, production, performance, or downstream-interface acceptance is asserted.",
+      "All measured canonical/release target slots and the conditional corrected target-repeat slot are explicitly unused and unreleased.",
+      "The ordinary solver-wall observation is described with its source/binary and CPU resolution limit; the domain command duration is described as runner time rather than solver entry-to-return timing."
+    ]
+  },
+  "changed_scope_review": {
+    "adopted_source_tree_sha256": "bf93e4220755ac32da348fec2cf640ba7e73eb57784922013a6658e5879128f4",
+    "terminal_source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+    "scoped_checks": "completion-terminal-scoped-checks.json",
+    "scoped_checks_sha256": "81f39aeb455cda88e163486d86f13a02c965524bfa9a8f4f29996f132b5d2fc9",
+    "changed_entries": [
+      "crates/openwepp-land-surface-energy/src/lib.rs",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+    ],
+    "assessment": [
+      "Prior same-reviewer source and fix reviews cover these exact private declarations, tests, controller, Stage1, and physical-adapter changes. No production numerical body, public dispatch, dependency manifest, model identity, input, seed, threshold, or external-authority binding changed.",
+      "The controller and Stage1 implementations are reachable only through private test-feature modules; adapter additions and observation hooks are cfg(test, physical-stage). The default build PASS corroborates absence of new production reachability.",
+      "The shared transition extraction centralizes the pre-existing continuation instead of duplicating it. No substantial new mirrored numerical logic was found.",
+      "No Critical target or deny/external-authority trigger was reached. The unchanged broad full-feature census was not rerun; its 18-reference HOLD remains visible rather than inferred away."
+    ],
+    "scoped_checks_results": {
+      "json_files_parsed": 394,
+      "json_errors": 0,
+      "completion_links_checked": 75,
+      "missing_links": 0,
+      "main_dirty_hashes_equal": true
+    }
+  },
+  "recovery_and_preservation": {
+    "record": "completion-terminal-recovery.json",
+    "record_sha256": "739fab100a5790ee4b526a21c750d13e263c20945a7697e486c1fe4a5389be73",
+    "observer_tree_sha256": "85b8314efcd53ccb8111aa97af1f752ed49a99f46b805e754db5a1b2c7059963",
+    "terminal_patch": "completion-terminal-from-observer.patch",
+    "terminal_patch_sha256": "fdb8ae0d926a7258108e613b3cb4345451c0f01d67c45b100b1662c11ffed25b",
+    "patch_exit_code": 0,
+    "entry_count": 764,
+    "independent_hash_check": "All 764 recorded entry hashes match both the current detached source and the fresh reconstruction.",
+    "archive": "completion-terminal-source.tar.gz",
+    "archive_sha256": "65e2cbf11ef4492e4cfdd393255812c55aa098d06138194e0104922801900b12",
+    "archive_all_bytes_equal": true,
+    "archive_scope": "Exact source/configuration preservation only; build/input/toolchain supports remain external and are bound by the command support manifests.",
+    "unrelated_dirty_files": {
+      "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+      "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+    },
+    "unrelated_dirty_assessment": "Both hashes equal start custody, terminal recovery, and current main bytes.",
+    "separate_physical_archive": "completion-physical-baseline-recovery.json remains the sole preserved source for the accepted ordinary physical qualification; it is not replaced by the terminal archive."
+  },
+  "ledger_review": {
+    "record": "completion-final-ledger.json",
+    "record_sha256": "d063bee544ed230e5d6e99f2396fffd03bffeb0606ef21f3132be7ba7b225147",
+    "first_reading_anchor_utc": "2026-09-27T04:49:00Z",
+    "last_candidate_end_utc": "2026-09-27T07:13:45.713631Z",
+    "conservative_closing_timestamp_utc": "2026-09-27T07:49:00Z",
+    "original_command_cutoff_utc": "2026-09-27T08:19:00Z",
+    "original_hard_deadline_utc": "2026-09-27T08:49:00Z",
+    "arithmetic": {
+      "carry_charged_seconds": 364933.959294,
+      "new_allowance_seconds": 14400.0,
+      "ceiling_seconds": 379333.959294,
+      "observed_elapsed_to_last_candidate_seconds": 8685.713631,
+      "closing_allocation_after_last_candidate_seconds": 2114.286369,
+      "new_charged_seconds": 10800.0,
+      "cumulative_charged_seconds": 375733.959294,
+      "remaining_under_ceiling_seconds": 3600.0
+    },
+    "assessment": "The arithmetic is exact: the fixed anchor-to-closing interval is 10800 seconds; observed elapsed plus full closing allocation equals 10800; carry plus charge equals cumulative; ceiling minus cumulative equals 3600. Closing at 07:49 retains 1800 seconds to the unchanged command cutoff and 3600 seconds to the unchanged hard deadline. No wait deduction, concurrency double charge, reserve reclamation, or re-anchoring is present.",
+    "authorization_limit": "The remaining 3600 seconds is not renewed permission. The valid-negative stop ends this effort; any future work must carry at least 375733.959294 seconds and may not reclaim the conservative closing allocation."
+  },
+  "residual_risk_and_retained_holds": [
+    "The first real domain producer, its candidate-domain guard/shrink assertions, the other seven producer/interface groups, the private harness, and all 18 historical missing symbols remain unqualified.",
+    "Full09/A1, strict lint, material/BGC, complete-parent and late-rejection, cycles/restart, and scale gates remain HOLD. Prior A0/A1/A3 reasoning applies only to the bounded test-only changed scope.",
+    "The terminal source intentionally retains a physical-feature test that records the valid pre-mutation negative as a failure; compatibility excludes it and the package does not claim a green full combined-feature suite.",
+    "No current-source physical closure, performance, production, seasonal, or watershed qualification exists."
+  ],
+  "final_verdict": "APPROVE scoped preservation and publication of the maintained package, completion evidence, deadline-only recorder change, and exact detached recovery. NO BLOCKER for that bounded publication. The numerical effort is terminally stopped and M1 remains HOLD; this verdict does not authorize another candidate, a numerical change, or any target execution."
+}

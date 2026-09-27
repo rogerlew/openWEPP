@@ -1,0 +1,119 @@
+{
+  "artifact": "completion-correctness-physical-result",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static/read-only review of the sole parent-executed physical receipt, raw stderr, parsed observation, exact source and support custody, plus the separately preserved independent scalar reconstruction. The reviewer ran no solver, candidate, compatibility, or physical command.",
+  "findings": [
+    {
+      "severity": "low",
+      "status": "recording_label_ambiguity_non_blocking",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "symbol": "m1_physical_outcome_json",
+      "finding": "outcome.materialized is false even though the accepted result was materialized. The field calls adapter.has_materialized_result_for_test() after the proposal helper returns. The helper's finalize path transfers the accepted M1CoupledEvaluation out of adapter.materialized with Option::take(), so false means the internal transfer cache is empty after result extraction; it does not mean materialization was skipped.",
+      "evidence_sufficiency": "No materialization evidence is missing. controller_run.entered_materializations=1, adapter_counts.materialization_entries=1, runtime.materialization_entries=1, solve_budget materialization_attempted=materialization=1, accepted capture is present, and controller-run materialized coordinates equal final coordinates, accepted result coordinates, and captured coordinates bit-for-bit. The passing test also executed the preserved materializer assertions after emitting the observation.",
+      "disposition": "Treat the field as a cache-presence label. A future schema may rename it to materialized_cache_present_after_result_take, but no source change or rerun is required for this package."
+    }
+  ],
+  "physical_receipt": {
+    "artifact": "completion-physical01.json",
+    "sha256": "f39c6888f48f31e1473c31c293e44b3043c52bc0622a23bb35b3c4db2a141171",
+    "stderr_sha256": "6279fcc419f361d00b95e377ac7e421bdb0aa6571e8aba959121fada65eea885",
+    "source_receipt_sha256": "e20f6b08c219f76904ffff341baab8b1e72432b12dcdd4871a5b77d6c3b9822a",
+    "support_manifest_sha256": "45add62e1587239870376f21a5cdb9eac4821ae9abf51970e92c317ff73b12e3",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "release_binary_sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8",
+    "exit_code": 0,
+    "timed_out": false,
+    "automatic_retries": 0,
+    "elapsed_seconds_including_process": 0.6688155368901789,
+    "result": "1 passed, 0 failed, 368 skipped",
+    "execution_count": 1,
+    "selected_test": "m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization",
+    "custody": {
+      "source_unchanged": true,
+      "observer_base_unchanged": true,
+      "binary_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true
+    }
+  },
+  "observation": {
+    "artifact": "completion-physical-observation.json",
+    "sha256": "d2a0316cdf1a0daab45509a1c1ebfb879951a0399999dedbea55229c69e8b180",
+    "schema": "m1-bvls03-physical-observation-v1",
+    "method": "COLD-CANOPY-M1-TR-SVD-BVLS-03",
+    "control": "ordinary-positive-original60-coordinate20",
+    "outcome": "success",
+    "wall_seconds": 0.00189541,
+    "cpu": {
+      "before_ticks": 0,
+      "after_ticks": 0,
+      "delta_ticks": 0,
+      "hz": 100,
+      "interpretation": "The 1.89541 ms measured solver interval is below the 10 ms process-clock tick resolution. Zero observed ticks is a resolution result and is not evidence of zero work; the runtime, adapter, budget, and controller work counters record the performed work."
+    }
+  },
+  "runtime_verification": [
+    {
+      "area": "governed step and accepted root",
+      "result": "PASS",
+      "detail": "The controller records 2 proposals, 1 accepted update, 1 installed update, and no terminal refusal. The requested coordinate-20 perturbation is 0.0001; the represented actual delta is 9.999999997489795e-05, strictly between 1e-8 and 1.0. Setup and entry differ only at coordinate 20. Entry and final coordinates differ at coordinates 4, 7, 10, 11, 13, and 20, proving a real governed update rather than returning the perturbation unchanged."
+    },
+    {
+      "area": "materializer and coordinate custody",
+      "result": "PASS_WITH_LOW_LABEL_ADVISORY",
+      "detail": "entered_materializations, adapter materialization entries, runtime materialization entries, and materialization budget are all exactly 1. Controller final coordinates, controller materialized coordinates, result accepted coordinates, and accepted-capture coordinates are bit-identical. accepted_capture_before_assertion_absent=false confirms the capture was present. The false outcome.materialized cache flag has the Option::take semantics described in the finding and does not contradict these witnesses."
+    },
+    {
+      "area": "input identity and immutable setup",
+      "result": "PASS",
+      "detail": "result_bound_to_protected_input=true, accepted_capture.input_equals_protected=true, and accepted_capture.coordinates_equal_result=true. Because the test passed, the post-emission assertions also confirmed adapter.input equals the protected input and adapter.initial_trial equals the protected trial. No input, source, support, or binary drift occurred."
+    },
+    {
+      "area": "budget restoration and complete work",
+      "result": "PASS",
+      "detail": "Prior and restored budgets are both null. Within the solve, every attempted count equals its entered count: core 84, raw Jacobian 2, hydraulic 10, Stage1 factorization 4, and materialization 1. Runtime complete-evaluator=84, actual-hydraulic=10, and materialization=1 agree with those owner counts; adapter raw-Jacobian assemblies=2 and controller entered SVD factorizations=4 agree as well."
+    },
+    {
+      "area": "controller accounting",
+      "result": "PASS",
+      "detail": "One complete accounting record contains Stage1 calls=2, SVD factorizations=4, face pivots=2, Jacobi sweeps=28, refinement scalar operations=117620, refinement guards=247504, attempted entries=2, denied entries=0, first-residual operations=1806, second-dot2 operations=22806, factor applications=75840, coordinate updates=80, whole-KKT operations/guards=3654/11006, and upward-enclosure operations/guards=13176/131697. No expected category is absent."
+    },
+    {
+      "area": "overlapping work categories",
+      "result": "PASS",
+      "detail": "The observation explicitly states that refinement and whole-KKT/upward-enclosure counters overlap and must not be summed into a unique total. This preserves the accepted accounting semantics and prevents a false aggregate-work claim."
+    },
+    {
+      "area": "positive validity and assertions",
+      "result": "PASS",
+      "detail": "Both capacity predicates are true; both decoded diagnosed liquid masses are positive and below the common 0.2970000000000001 kg/m2 capacity. Wall time is positive. Jacobian absence is true as required for the accepted materialized result. The physical test's PASS means every preserved predicate, closure, identity, work, and materializer assertion following observation emission also passed."
+    }
+  ],
+  "independent_reconstruction": {
+    "artifact": "completion-correctness-physical-reconstruction.json",
+    "result": "PASS",
+    "reservoir_0": {
+      "mass_kg_m2": 5.421010862427522e-19,
+      "mass_bits": 4333588741437259776,
+      "enthalpy_j_m2": 3.637978807091713e-12,
+      "enthalpy_bits": 4436045632959938560,
+      "published_bit_identity": true,
+      "physical_closure": true
+    },
+    "reservoir_1": {
+      "mass_kg_m2": 6.505213034913027e-19,
+      "mass_bits": 4334714641344102400,
+      "enthalpy_j_m2": 4.547473508864641e-12,
+      "enthalpy_bits": 4437171532866781184,
+      "published_bit_identity": true,
+      "physical_closure": true
+    },
+    "detail": "The independent script decoded only raw emitted operand bits, repeated the scalar operations in source order, and compared its outputs afterward. Both mass and enthalpy residuals are bit-identical to the published values; deltas are exactly 0.0. All residual magnitudes are below 1e-9 kg/m2 and 1e-6 J/m2 respectively."
+  },
+  "residual_risk_and_missing_tests": [
+    "CPU process time is only bounded below one 10 ms tick; it is not a precise duration measurement for this short solve. Wall time and exact work counters provide the useful runtime observation.",
+    "outcome.materialized is a post-transfer cache-presence field with an ambiguous name. Stronger independent materializer witnesses are complete, so this does not block acceptance or require a rerun.",
+    "Any downstream requirement/closure package checks remain outside this physical-result artifact."
+  ],
+  "approval": "PHYSICAL_RESULT_PASS_NO_CORRECTNESS_BLOCKER. The sole authorized release endpoint passed once on exact frozen custody. It performed and installed a governed update, entered the materializer once, preserved protected-input identity, emitted complete non-additive work accounting, and independently closes both reservoir mass and enthalpy balances. The false materialized cache flag is a low recording-label ambiguity caused by deliberate Option::take transfer, not missing materialization evidence."
+}

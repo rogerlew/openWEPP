@@ -1,0 +1,67 @@
+{
+  "artifact": "completion-correctness-positive-result",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static/read-only review of the parent-executed three-test positive-custody receipt, exact stderr, source receipt, support manifest, and retained test bodies. The reviewer ran no solver, candidate, inventory, or physical command.",
+  "findings": [],
+  "receipt": {
+    "artifact": "completion-positive-custody01.json",
+    "sha256": "167705c8099fa5fd06e850ba863449e725483f7d26c2e1038ab1ad5fe3eaa77f",
+    "stderr_sha256": "341c58756bc34b0ea400625aa4385cbb12c1daec891308ce66532e995ca48c12",
+    "source_receipt_sha256": "363253eb9b4b2fbeda95150a3e395036172dd417788242a130ac36aab064d521",
+    "support_manifest_sha256": "01ab051277a22de06457278ea4c1c935af0251eb693e4643664edc01fdc636e5",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "release_binary_sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8",
+    "exit_code": 0,
+    "timed_out": false,
+    "automatic_retries": 0,
+    "elapsed_seconds_including_process": 9.545641554053873,
+    "nextest_elapsed_seconds": 0.014,
+    "result": "3 passed, 0 failed, 366 skipped",
+    "custody": {
+      "source_unchanged": true,
+      "observer_base_unchanged": true,
+      "binary_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true
+    }
+  },
+  "selected_results": [
+    {
+      "test": "m1_coupled_tests::m1_trust_region_physical_adapter_original60_setup_is_separate_from_deferred_proposal",
+      "stderr_line": 31,
+      "result": "PASS",
+      "qualified_claim": "The canonical original60 setup closes independently, remains separate from the deferred adapter proposal, preserves accepted bits and input identity, materializes once through the actual controller, captures the accepted binding, retains the exact raw-Jacobian witness, and records the expected evaluator/hydraulic work."
+    },
+    {
+      "test": "m1_coupled_tests::m1_trust_region_physical_adapter_run_captures_and_restores_owned_budget_scope",
+      "stderr_line": 53,
+      "result": "PASS",
+      "qualified_claim": "The unperturbed accepted root closes and remains input-bound; its owned solve budget records exact attempted/entered core, raw-Jacobian, hydraulic, factorization, and materialization work, and the budget scope is absent after completion."
+    },
+    {
+      "test": "m1_coupled_tests::m1_trust_region_physical_adapter_run_restores_nested_prior_budget_scope",
+      "stderr_line": 9,
+      "result": "PASS",
+      "qualified_claim": "The inner accepted root retains its own solve snapshot while the seeded outer budget is restored exactly after the run and cleared when the outer scope drops."
+    }
+  ],
+  "historical_failure_disposition": {
+    "preserved_evidence": "finite-precision-body13-selected-controls remains the historical failing receipt: 116 selected, 113 passed, and 3 failed. The classified physical-positive failures were run_captures_and_restores_owned_budget_scope and original60_setup_is_separate_from_deferred_proposal; the third failure was the preexisting KKT ranking assertion.",
+    "current_disposition": "Both historical physical-positive failures now pass on the current accepted method and exact final source. The KKT ranking assertion separately passed in compatibility01. The prior failures are retained as historical evidence rather than relabeled or deleted.",
+    "assertion_integrity": "The positive test assertions remain the original baseline obligations. The current pass is attributable to the accepted method/source corrections; no assertion weakening, filtering reclassification, compatibility substitution, or ordinary-update replay occurred."
+  },
+  "scope_controls": {
+    "selected_test_count": 3,
+    "ordinary_update_endpoint_included": false,
+    "ordinary_update_endpoint_replayed": false,
+    "ordinary_perturbation_refusal_included": false,
+    "source_or_seed_change_after_readiness": false,
+    "assessment": "PASS. Execution matches the exact reviewed three-test positive scope."
+  },
+  "residual_risk_and_missing_tests": [
+    "These tests are assertion-driven qualifications and do not add a second structured physical observation; the single ordinary-update observation and independent reconstruction remain the accepted measured closure evidence.",
+    "The downstream full-feature inventory still has 18 missing real connections. Those interfaces must remain unresolved until implemented and qualified; this result does not authorize stubs or substitute the three positive tests for interface evidence.",
+    "Downstream real-producer and eight-interface implementation/review are outside this result artifact."
+  ],
+  "approval": "POSITIVE_CUSTODY_RESULT_PASS_NO_CORRECTNESS_BLOCKER. All three required unperturbed-root positives passed once on unchanged final source, supports, seed, and release binary. The two historical physical-positive failures are now resolved by the current method with their assertions intact; nested budget restoration also passes."
+}

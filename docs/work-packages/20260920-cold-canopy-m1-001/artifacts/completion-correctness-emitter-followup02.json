@@ -1,0 +1,95 @@
+{
+  "artifact": "completion-correctness-emitter-followup02",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static same-reviewer verification of the frozen final emitter fix and the previously reviewed Stage1 rustfmt-only cut, plus read-only inspection of parent-executed receipts on the immediately preceding 9100 cut. The reviewer ran no compile, test, candidate, solver, or physical command.",
+  "prior_findings_preserved": [
+    "completion-correctness-emitter.json",
+    "completion-correctness-emitter-followup01.json"
+  ],
+  "reviewed_cut": {
+    "coupled_tests_sha256": "ae3656611e3e1dc4167aa47ce70485163b3f1a9c174b58342d93549ae52ac6ae",
+    "stage1_sha256": "f3de57a28df00e7383ed2565c997645b0ae5e4665e783e73dd08e4ecded22e92",
+    "preceding_compiled_coupled_tests_sha256": "9100a42fb1540bf803b578ddff639f14ff869709ca6ed9912dfd04ff73bc7538",
+    "final_delta_from_preceding_cut": "Only the top-level capacity_predicates expression changes, from diagnosed_mass <= capacity to diagnosed_mass >= 0.0 && diagnosed_mass <= capacity."
+  },
+  "findings": [],
+  "closed_findings": [
+    {
+      "prior_severity": "high",
+      "status": "fixed",
+      "area": "structured refinement refusal metadata",
+      "detail": "m1_physical_subproblem_json now emits every M1TrustRegionRefinementFailureMetadata field as structured JSON: reason, correction_position, guard_stage, row, term, coordinate, lower_active, upper_active, free, lambda bits, original trust-radius bits, reduced face-radius bits, and scratch-box feasibility. The accepted unequal-radius 2.0/1.0 evidence is therefore preserved as independently readable operands rather than Debug text."
+    },
+    {
+      "prior_severity": "high",
+      "status": "fixed",
+      "area": "failure controller custody",
+      "detail": "The failure controller_run record now emits proposals, accepted_updates, installed_updates, entered_materializations, entered_svd_factorizations, final coordinate bits, materialized coordinate bits, and terminal refusal. Together with failure current_coordinates_bits, adapter_materialized, and accepted_capture_present, this provides the required failure-side update/materializer witness."
+    },
+    {
+      "prior_severity": "medium",
+      "status": "fixed",
+      "area": "capacity predicate",
+      "detail": "The top-level capacity_predicates now uses exactly diagnosed_mass >= 0.0 && diagnosed_mass <= capacity. It agrees with each reservoir's diagnosed_mass_valid and with the preserved assertion body; the separate lower and upper booleans remain available for diagnosis."
+    },
+    {
+      "prior_severity": "low",
+      "status": "fixed_in_prior_cut_and_retained",
+      "area": "CPU source provenance",
+      "detail": "The final source retains getconf CLK_TCK and /proc/self/stat fields 14+15 source labels with the previously accepted parsing and error propagation."
+    }
+  ],
+  "static_verification": [
+    {
+      "area": "failure cause, work, budget, and run accounting",
+      "result": "PASS",
+      "detail": "Subproblem scalar fields map directly from the typed refusal; floating operands are emitted as bits. Canonical work uses the complete work serializer. Physical budget refusal emits its operation and complete snapshot. Numerical, CoreWorkCap, outer IncompleteScope, and Own code remain separately discriminated, while typed_error is supplementary. The added serializers only borrow observation state and do not alter error ownership, precedence, controller state, or numerical arithmetic."
+    },
+    {
+      "area": "capacity contract",
+      "result": "PASS",
+      "detail": "All three representations use the same raw diagnosed mass and capacity operands. The combined predicate's comparison order matches the preserved assertion and introduces no canonicalization or policy."
+    },
+    {
+      "area": "common, success, closure, CPU, and single invocation content",
+      "result": "PASS_BY_UNCHANGED_REVIEWED_CONTENT",
+      "detail": "No change reopens the accepted single-invocation timing interval, protected setup and perturbation, common observation fields, success custody, raw closure operands and independent arithmetic, complete work/budget serializers, CPU parser/errors, or extracted assertion body. The helper remains observation-only test code."
+    },
+    {
+      "area": "Stage1 formatting-only rebind",
+      "result": "PASS_NO_REOPENED_NUMERICAL_SCOPE",
+      "detail": "Stage1 remains SHA f3de57a28df00e7383ed2565c997645b0ae5e4665e783e73dd08e4ecded22e92. The exact previously reviewed delta from 85b666 consists only of rustfmt ordering/wrapping in three test-module use groups; the accepted numerical, metadata, unequal-radius, KKT-oracle, and discriminating-control conclusions remain applicable."
+    }
+  ],
+  "recorded_validation": {
+    "emitter_lint10_preceding_9100_cut": {
+      "record_sha256": "63c095197de6fbdd29b12fe049b7bf8a1fdb903d24e4b954f0f2639b5b5626b5",
+      "source_receipt_sha256": "3da4bbf4aa28163ad99dd0eeedad52ce2c15b60a2a3a8f6f8563f576bae11c7c",
+      "comparison_sha256": "4c2df719b71def68661df7e9175684b2c422d54ca4dff65af226d6addb66d724",
+      "classification": "238 total diagnostics = 238 inherited + 0 introduced + 0 removed",
+      "truthfulness": "The strict-lint command exits 101 because inherited diagnostics remain; this is an exact classified comparison, not a clean lint pass."
+    },
+    "terminal_debug02_preceding_9100_cut": {
+      "record_sha256": "eabd547a5c4fae73af21ddd54e26fc3dff87bee106f86789f219ffce6670c6f2",
+      "source_receipt_sha256": "dd60862e30fa11322fbe8c75c7265337687ac7bf7476f1dfdea6160d1836c4ba",
+      "exit_code": 0,
+      "result": "11 passed, 0 failed, 358 skipped",
+      "coverage_limit": "Focused refinement selector; it compiles but does not execute the physical emitter."
+    },
+    "terminal_fmt03_preceding_9100_cut": {
+      "record_sha256": "45895d70643734285d6a9c838fbd69e0159300909f64aae3651ac0e0d18f85a3",
+      "source_receipt_sha256": "a7bc543999b51093a4ec35ee9a130a6a511c9c8f8797f08c5ff59d6503ae7f0b",
+      "exit_code": 0
+    },
+    "final_ae365_cut": {
+      "status": "STATIC_ONLY_AT_REVIEW_TIME",
+      "detail": "The final conjunction-only delta has not yet been covered by a completed command receipt in this artifact. Parent terminal checks are running."
+    }
+  },
+  "residual_risk_and_missing_tests": [
+    "The final ae365 cut still needs completed source-bound terminal receipts; only its one-expression static delta is accepted here.",
+    "The physical endpoint has not yet been executed in the evidence reviewed here. The emitted success/failure branch, observed closure values, CPU/wall observations, and exact physical full-work counts remain runtime-unverified.",
+    "The final physical source manifest and terminal complete-cut review remain required."
+  ],
+  "approval": "STATIC_PASS_NO_EMITTER_CONTENT_BLOCKER for coupled-tests SHA ae3656611e3e1dc4167aa47ce70485163b3f1a9c174b58342d93549ae52ac6ae and Stage1 SHA f3de57a28df00e7383ed2565c997645b0ae5e4665e783e73dd08e4ecded22e92. All three prior emitter content gaps are fixed. Package disposition remains HOLD pending final source-bound checks, the single physical execution, manifest, and closure review."
+}

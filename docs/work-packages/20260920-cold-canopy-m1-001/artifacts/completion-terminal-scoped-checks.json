@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Ran: JSON parse, package artifact links, exact adopted-to-terminal snapshot diff, authored prose/recorder whitespace and unrelated main-byte checks; no numerical execution",
+  "recorded_utc": "2026-09-27T07:16:30.737010+00:00",
+  "json_count": 394,
+  "json_errors": [],
+  "completion_links": 75,
+  "missing_links": [],
+  "authored_package_recorder_diff_check_exit": 0,
+  "terminal_changed_entries": [
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+  ],
+  "main_dirty_hashes_equal": true,
+  "test_only_reachability": "Independent source reviews govern; parent list is not a scientific authority replacement",
+  "scope_note": "Raw retained logs/patches are preserved byte-for-byte; whitespace check covers authored maintained narrative and recorder only."
+}

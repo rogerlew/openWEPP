@@ -1,0 +1,53 @@
+{
+  "artifact": "completion-qa-domain-fixverify",
+  "reviewer": "/root/completion_qa",
+  "evidence_class": "Static/read-only QA of the actual same-command analytic strict-lint comparison, analytic/combined receipts, current frozen source bytes, and completed debug02/fmt02 receipts. The reviewer ran no compile, test, candidate, solver, compatibility, or physical command.",
+  "findings": [],
+  "non_blocking_debt_and_follow_ups": [
+    {
+      "severity": "non-blocking",
+      "path": "analytic-only strict lint configuration",
+      "finding": "The retained 262 diagnostics comprise the 238 combined-feature baseline matches plus 24 analytic-specific blocks with source bytes predating adopted bf93. This is a command-profile-specific inherited population; it must remain visible and is not a baseline-cleanup authorization."
+    }
+  ],
+  "source_binding": {
+    "source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+    "controller_sha256": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e",
+    "stage1_sha256": "c11474b5afa40d93dbccefd1a6cb7fb98c0f51d344a6f93946dd60a3a7fbad4c",
+    "adapter_sha256": "da7952149f8ea6622adb8240e8795e3c8a594b300cc709eee94540e4c4b99f8a",
+    "repair": "transition_model binds model immutably, with a mutable shadow solely inside cfg(all(test, feature = m1-trust-region-physical-stage)); the refinement enum imports have the same physical-feature gate."
+  },
+  "analytic_same_command": {
+    "artifact": "completion-domain-analytic-same-command-comparison.json",
+    "baseline": "completion-domain-analytic-lint01",
+    "candidate": "completion-domain-analytic-lint02",
+    "argv_identical": true,
+    "baseline_blocks": 263,
+    "candidate_blocks": 262,
+    "matched_blocks": 262,
+    "introduced": [],
+    "removed": "The sole removed block is the refinement enum unused-import diagnostic.",
+    "result": "PASS: the analytic cfg-elision quality finding is closed on the exact same command."
+  },
+  "combined_feature_lint": {
+    "artifact": "completion-domain-combined-lint02.json",
+    "source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+    "result": "Receipt is retained on the rebound source. The independent exact combined-feature diagnostic comparison remains the governing evidence for its 238 inherited population."
+  },
+  "completed_related_checks": {
+    "debug02": "completion-domain-debug02.json PASS on source 12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c.",
+    "fmt02": "completion-domain-fmt02.json PASS on source 12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c.",
+    "release02": "Still running or unreceipted at this review; it is not evidence."
+  },
+  "qa_disposition": {
+    "analytic_quality_finding": "CLOSED",
+    "domain_physical": "NOT_DISPATCHED",
+    "remaining_before_domain_physical": [
+      "completed release02 receipt on the rebound source",
+      "affected final-source compatibility review/execution because the shared controller changed",
+      "independently reviewed exact new-domain selector and custody manifest"
+    ],
+    "not_approved": ["ordinary-positive replay", "target execution", "M1 acceptance", "package acceptance"]
+  },
+  "qa_pass_statement": "QA verifies the minimal cfg repair and closes the analytic-only quality finding. No new analytic diagnostic was introduced; release, compatibility, manifest, and domain-physical outcomes remain separate prerequisites."
+}

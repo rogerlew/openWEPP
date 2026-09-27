@@ -1,0 +1,644 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused variable: `current_max`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:436:9
+    |
+436 |         current_max: f64,
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_current_max`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2339:5
+     |
+2339 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: variable does not need to be mutable
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3959:13
+     |
+3959 |         Err(mut refusal) => {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5678:5
+     |
+5678 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: unused variable: `prepared`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5679:5
+     |
+5679 |     prepared: &PreparedSubproblem,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_prepared`
+
+warning: fields `ratio` and `tied_coordinates` are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:366:16
+    |
+363 | pub(crate) struct M1TrustRegionOptimalityReleaseObservation {
+    |                   ----------------------------------------- fields in this struct
+...
+366 |     pub(crate) ratio: Option<f64>,
+    |                ^^^^^
+367 |     pub(crate) tied_coordinates: u8,
+    |                ^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionOptimalityReleaseObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `selected_release` is never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:374:16
+    |
+372 | pub(crate) struct M1TrustRegionOptimalityObservation {
+    |                   ---------------------------------- field in this struct
+373 |     pub(crate) coordinates: Vec<M1TrustRegionOptimalityCoordinateObservation>,
+374 |     pub(crate) selected_release: Option<M1TrustRegionOptimalityReleaseObservation>,
+    |                ^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionOptimalityObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `refinement_scalar_operations`, `refinement_guard_events`, `refinement_attempted_entries`, and `refinement_denied_entries` are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:400:16
+    |
+380 | pub(crate) struct M1TrustRegionSubproblemObservation {
+    |                   ---------------------------------- fields in this struct
+...
+400 |     pub(crate) refinement_scalar_operations: u64,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+401 |     pub(crate) refinement_guard_events: u64,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^
+402 |     pub(crate) refinement_attempted_entries: u16,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+403 |     pub(crate) refinement_denied_entries: u16,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionSubproblemObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: multiple fields are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:499:16
+    |
+498 | pub(crate) struct M1TrustRegionRefinementFailureMetadata {
+    |                   -------------------------------------- fields in this struct
+499 |     pub(crate) reason: M1TrustRegionRefinementReason,
+    |                ^^^^^^
+500 |     pub(crate) correction_position: Option<M1TrustRegionCorrectionPosition>,
+    |                ^^^^^^^^^^^^^^^^^^^
+501 |     pub(crate) guard_stage: M1TrustRegionRefinementGuardStage,
+    |                ^^^^^^^^^^^
+502 |     pub(crate) row: Option<u8>,
+    |                ^^^
+503 |     pub(crate) term: Option<u8>,
+    |                ^^^^
+504 |     pub(crate) coordinate: Option<u8>,
+    |                ^^^^^^^^^^
+505 |     pub(crate) lower_active: [bool; 21],
+    |                ^^^^^^^^^^^^
+506 |     pub(crate) upper_active: [bool; 21],
+    |                ^^^^^^^^^^^^
+507 |     pub(crate) free: [bool; 21],
+    |                ^^^^
+508 |     pub(crate) lambda: f64,
+    |                ^^^^^^
+509 |     pub(crate) original_trust_radius: f64,
+    |                ^^^^^^^^^^^^^^^^^^^^^
+510 |     pub(crate) reduced_face_radius: f64,
+    |                ^^^^^^^^^^^^^^^^^^^
+511 |     pub(crate) scratch_box_feasible: Option<bool>,
+    |                ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionRefinementFailureMetadata` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `optimality_radius` and `optimality_lambda` are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:520:16
+    |
+516 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+    |                   ------------------------------ fields in this struct
+...
+520 |     pub(crate) optimality_radius: Option<Box<f64>>,
+    |                ^^^^^^^^^^^^^^^^^
+521 |     pub(crate) optimality_lambda: Option<Box<f64>>,
+    |                ^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionSubproblemRefusal` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `temperature`, `humidity`, `hydraulic`, `beta`, and `ci` are never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:142:9
+    |
+140 |     Complete {
+    |     -------- fields in this variant
+141 |         pass: bool,
+142 |         temperature: f64,
+    |         ^^^^^^^^^^^
+143 |         humidity: f64,
+    |         ^^^^^^^^
+144 |         hydraulic: f64,
+    |         ^^^^^^^^^
+145 |         beta: f64,
+    |         ^^^^
+146 |         ci: [f64; 4],
+    |         ^^
+    |
+    = note: `GovernedStep` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: function `m1_refinement_phase_join_selections_for_test` is never used
+  --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:23:15
+   |
+23 | pub(crate) fn m1_refinement_phase_join_selections_for_test() -> u32 {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `refinement_frozen_weighted_merit_entries_for_test` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:27:15
+   |
+27 | pub(crate) fn refinement_frozen_weighted_merit_entries_for_test() -> u32 {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variants `P0Subnormal`, `FinalBox`, `ScratchRadius`, and `ActiveValue` are never constructed
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:202:5
+    |
+201 | enum RefinementRawCandidateMutation {
+    |      ------------------------------ variants in this enum
+202 |     P0Subnormal {
+    |     ^^^^^^^^^^^
+...
+205 |     FinalBox {
+    |     ^^^^^^^^
+...
+209 |     ScratchRadius {
+    |     ^^^^^^^^^^^^^
+...
+214 |     ActiveValue {
+    |     ^^^^^^^^^^^
+    |
+    = note: `RefinementRawCandidateMutation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `live_state_bits_entry` and `live_state_bits_exit` are never read
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3343:5
+     |
+3342 | struct RefinementRetainedFaceObservation {
+     |        --------------------------------- fields in this struct
+3343 |     live_state_bits_entry: [u64; 21],
+     |     ^^^^^^^^^^^^^^^^^^^^^
+3344 |     live_state_bits_exit: [u64; 21],
+     |     ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `RefinementRetainedFaceObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: struct `RefinementMutationScope` is never constructed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3845:8
+     |
+3845 | struct RefinementMutationScope(Option<RefinementRawCandidateMutation>);
+     |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `install` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3849:8
+     |
+3848 | impl RefinementMutationScope {
+     | ---------------------------- associated function in this implementation
+3849 |     fn install(mutation: Option<RefinementRawCandidateMutation>) -> Self {
+     |        ^^^^^^^
+
+warning: struct `RefinementScratchHooksObservation` is never constructed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3876:8
+     |
+3876 | struct RefinementScratchHooksObservation {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_refinement_scratch_hooks_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3931:4
+     |
+3931 | fn m1_trust_region_refinement_scratch_hooks_for_test(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `bits` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5976:8
+     |
+5976 |     fn bits(values: [f64; 21]) -> [u64; 21] {
+     |        ^^^^
+
+warning: function `capture_return_input` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5984:8
+     |
+5984 |     fn capture_return_input() -> M1TrustRegionSubproblemInput {
+     |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_nonzero_return_input` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6002:8
+     |
+6002 |     fn capture_nonzero_return_input() -> M1TrustRegionSubproblemInput {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `bit` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7886:8
+     |
+7886 |     fn bit(value: &Value) -> f64 {
+     |        ^^^
+
+warning: function `m1_trust_region_analytic_work_cap_run_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:2807:15
+     |
+2807 | pub(crate) fn m1_trust_region_analytic_work_cap_run_for_test()
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 24 warnings (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 5 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.11s
+────────────
+ Nextest run ID 9b044a23-6400-4ea0-9b7b-c454ab894b1b with nextest profile: default
+    Starting 49 tests across 1 binary (290 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_current_hydraulics_complete_after_selected_probe_before_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_incomplete_evaluation_is_terminal_and_opens_no_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_constrained_stationarity_is_nonterminal_rejection ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1 ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_domain_valid_replacement_terminal_error_cannot_open_third_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_finite_ci_operands_do_not_create_a_governed_threshold ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.05s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_materializes_current_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_initial_raw_and_normalizer_faults_fail_at_weighted_system_guard ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_hydraulic_nan_precedes_incomplete_scope ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_domain_invalid_opens_one_domain_valid_replacement_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_valid_radius_replacement_materializes_original_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_incomplete_full_governed_evaluation_is_terminal_and_opens_no_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_hydraulic_threshold_equality_admits_full_no_update ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.05s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_negative_humidity_excess_never_admits_or_materializes ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.07s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_none_none_wet_operands_preserve_complete_governed_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.13s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_intervening_domain_invalid_does_not_consume_replacement_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.10s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_pending_base_hydraulic_error_masks_no_prediction_and_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_pending_base_left_pending_fails_closed_before_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_pending_candidate_hydraulics_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_post_update_root_materializes_installed_base_before_reassembly ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_candidate_governed_operands_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.15s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_seeded_work_guard_records_actual_pre_entry_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_pending_hydraulics_complete_once_per_base_and_reset_after_nonroot_update ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.05s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_raw_jacobian_and_frozen_merit_are_actual ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.07s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_ordinary_four_radius_cases_use_actual_state ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.13s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_side_error_precedes_pending_current_hydraulics ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_retry_phase_drift_is_terminal_without_third_assembly ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.27s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.08s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_unchanged_predictor_phase_uses_one_assembly_and_final_probe ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_two_governed_temperature_excesses_block_third_small_proposal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.34s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_candidate_raw_and_normalizer_faults_fail_before_materialization ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.32s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.30s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_finite_governed_threshold_operands_gate_full_no_update_admission ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.48s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_post_update_candidate_faults_precede_installation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.31s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_stationarity_exhausts_after_eleven_proposals_and_twenty_two_faces ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.28s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.70s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_root_on_fiftieth_update_precedes_next_jacobian ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.94s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_work_cap_is_fifty_accepted_proposals ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.98s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_fiftieth_root_materializer_error_precedes_cap ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 1.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_and_replacement_candidate_faults_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 3.13s
+
+
+────────────
+     Summary [   3.132s] 49 tests run: 49 passed, 290 skipped

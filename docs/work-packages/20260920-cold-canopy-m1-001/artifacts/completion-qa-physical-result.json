@@ -1,0 +1,75 @@
+{
+  "artifact": "completion-qa-physical-result",
+  "reviewer": "/root/completion_qa",
+  "evidence_class": "Static/read-only QA of the parent-executed physical01 receipt, stderr, immediate custody recheck, frozen 628-file manifest, selected inventory, emitted observation, and frozen source. The reviewer ran no compile, test, candidate, solver, compatibility, or physical command.",
+  "findings": [],
+  "non_blocking_debt_and_follow_ups": [
+    {
+      "severity": "non-blocking",
+      "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "finding": "The observation key outcome.materialized describes cache presence after m1_trust_region_physical_adapter_finalize_run_for_test consumes adapter.materialized with take(). It is therefore false on the successful path even though the run entered one materialization. A later observation schema should name this temporal state explicitly, for example materialized_cache_present_after_finalize, or emit both pre-finalization and post-finalization states. This is an evidence-labeling issue, not a failed materialization."
+    },
+    {
+      "severity": "non-blocking",
+      "path": "completion-physical-observation.json",
+      "finding": "The raw process CPU sample is 0 ticks at 100 Hz. It is below that clock's resolution and supports no zero-cost or speedup claim. Retain only the measured solver wall interval of 0.00189541 seconds for this run."
+    }
+  ],
+  "physical01_receipt": {
+    "artifact": "completion-physical01.json",
+    "sha256": "f39c6888f48f31e1473c31c293e44b3043c52bc0622a23bb35b3c4db2a141171",
+    "result": "PASS: 1 passed, 0 failed, 368 skipped",
+    "exit_code": 0,
+    "timed_out": false,
+    "automatic_retries": 0,
+    "elapsed_seconds_including_process": 0.6688155368901789,
+    "timeout_seconds": 180,
+    "reserve_seconds": 1800,
+    "start_utc": "2026-09-27T06:32:27.865824+00:00",
+    "end_utc": "2026-09-27T06:32:28.539684+00:00",
+    "deadline_utc": "2026-09-27T08:49:00+00:00",
+    "deadline_compliance": "The sole process completed before the fixed deadline and within its 180-second endpoint limit.",
+    "selected_endpoint": "m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization",
+    "selected_inventory": "completion-physical-inventory01.json",
+    "slot_accounting": "The physical inventory selected exactly one endpoint. The immediate pre-dispatch receipt records endpoint_previous_receipt_absent=true; physical01 is its one observed execution, with no retry."
+  },
+  "custody": {
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "release_binary": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+    "release_binary_sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8",
+    "support_manifest": "completion-physical01-support.json",
+    "support_manifest_sha256": "45add62e1587239870376f21a5cdb9eac4821ae9abf51970e92c317ff73b12e3",
+    "manifest_file_count": 628,
+    "source_unchanged": true,
+    "observer_base_unchanged": true,
+    "pinned_files_unchanged": true,
+    "support_links_unchanged": true,
+    "binary_unchanged": true,
+    "immediate_recheck": "completion-physical-immediate-recheck.json records all_manifest_files_match=true immediately before dispatch, with the same tree, release binary, support hash, and one selected endpoint."
+  },
+  "observation_assessment": {
+    "artifact": "completion-physical-observation.json",
+    "sha256": "d2a0316cdf1a0daab45509a1c1ebfb879951a0399999dedbea55229c69e8b180",
+    "control": "ordinary-positive-original60-coordinate20",
+    "outcome": "success",
+    "identity_and_acceptance": "protected input binding is true; accepted capture input equals protected input; accepted capture coordinates equal result coordinates; controller final and materialized coordinate bit arrays equal that same accepted capture; terminal refusal is None.",
+    "materialization_semantics": "controller entered_materializations=1, adapter materialization_entries=1, and solve_budget materialization_attempted/materialization=1/1. The finalizer takes the cached adapter result before m1_physical_outcome_json calls has_materialized_result_for_test, so outcome.materialized=false records post-finalizer cache emptiness rather than failure to materialize.",
+    "controller_and_work": "2 proposals, 1 accepted update, 1 installed update, 4 Stage1 factorizations; full-work accounting is retained. Refinement and whole-KKT/enclosure counters explicitly overlap and are not summed as a fictitious unique total.",
+    "budget": "No outer budget was present before or after (prior_budget/restored_budget null). The solve-owned budget is fully consumed and matched: core 84/84, hydraulic 10/10, materialization 1/1, raw Jacobian 2/2, Stage1 factorization 4/4.",
+    "physical_witnesses": "Both capacity predicates are true; each raw reservoir operand records mass and enthalpy closure and published/reconstructed residual agreement. The test's independent reconstruction assertions passed.",
+    "timing": "solver wall_seconds=0.00189541. CPU delta=0 ticks at 100 Hz, so CPU seconds=0.0 is resolution-limited rather than a performance result."
+  },
+  "qa_disposition": {
+    "physical_execution": "PASS",
+    "downstream_prerequisite": "The QA physical-execution prerequisite is satisfied only for the exact frozen one-endpoint release receipt above. Release it to the next closure step only if the independent correctness closure accepts the same source, binary, manifest, and observation custody without drift.",
+    "not_approved": [
+      "M1 acceptance",
+      "target acceptance",
+      "package acceptance",
+      "a zero-cost or speedup claim",
+      "any additional physical execution"
+    ],
+    "missing_evidence": "Independent correctness closure/reconstruction disposition is delegated and is not supplied by this QA artifact. It remains required before any downstream acceptance decision."
+  },
+  "qa_pass_statement": "QA finds no maintainability, gate-quality, timing, budget, work-accounting, identity, slot, or custody blocker in physical01. The completed single endpoint is a valid narrow prerequisite receipt, subject to the independent correctness closure stated above."
+}

@@ -1,0 +1,111 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.18s
+────────────
+ Nextest run ID 33600dbf-3b53-4f33-ac1f-0ed6c4ec633e with nextest profile: default
+    Starting 11 tests across 1 binary (358 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_remainder_and_per_term_accumulation_metadata_are_observed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_refuses_guarded_primitive_domains ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_later_primitive_stages_are_observed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_preserves_negative_zero ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_p0_subnormal_reports_first_residual_source_weight ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.01s
+
+
+        FAIL [   0.014s] ( 6/11) openwepp-land-surface-energy m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_preserves_unequal_original_and_reduced_radius_metadata
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_preserves_unequal_original_and_reduced_radius_metadata ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_preserves_unequal_original_and_reduced_radius_metadata
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_preserves_unequal_original_and_reduced_radius_metadata' (2562427) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7407:9:
+    assertion `left == right` failed
+      left: 4611686018427387904
+     right: 4607182418800017408
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_scratch_never_reaches_owner_or_physical_hooks ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_retained_face_reuses_factor_and_reproduces_all_bits ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_eligibility_uses_raw_face_predicates_and_counts_denied_work ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_trust_region_refinement_controller_accounting_observes_all_solves_and_errors ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.07s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_all_retained_rows_preserve_independent_bits_and_guards ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 368 filtered out; finished in 0.16s
+
+
+────────────
+     Summary [   0.168s] 11 tests run: 10 passed, 1 failed, 358 skipped
+        FAIL [   0.014s] ( 6/11) openwepp-land-surface-energy m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_preserves_unequal_original_and_reduced_radius_metadata
+error: test run failed

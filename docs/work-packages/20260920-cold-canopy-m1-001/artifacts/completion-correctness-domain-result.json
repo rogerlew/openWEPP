@@ -1,0 +1,82 @@
+{
+  "evidence_class": "Static + inspected Ran evidence: independent source-path and recorded-receipt classification; reviewer executed no test, candidate, solver, or physical command",
+  "reviewer": "/root/completion_correctness",
+  "source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+  "findings": [
+    {
+      "severity": "high, terminal scoped negative",
+      "finding": "The sole focused domain endpoint did not produce a ProposalModel and therefore did not reach the test-only coordinate poison, physical trial-domain guard, or domain-refusal transition. Canonical Stage1 stopped first with typed TrustRegionOptimalityIndeterminate / optimality_free_stationarity at coordinate 1.",
+      "classification": "Source-conforming physical negative, not an implementation or recording deviation in the newly added domain seam.",
+      "consequence": "The real domain producer is not demonstrated, its interface group remains HOLD, and the authorization ends this numerical effort. No seed, input, threshold, guard, solver, or numerical-policy change is permitted to force the intended later branch."
+    }
+  ],
+  "compatibility_result": {
+    "receipt": "completion-domain-compatibility02.json",
+    "receipt_sha256": "76c4fbc9f00f10abaa61a22c8f025c0b5fca584ffec39693851950eac93142b8",
+    "support_manifest": "completion-domain-compatibility02-support.json",
+    "support_manifest_sha256": "298c93e01f42ffcf01002c42d6f013c8cd164cfbab43000ac6ee8ef181f89704",
+    "result": "PASS 125/125; 245 skipped",
+    "exit_code": 0,
+    "elapsed_seconds": 13.200180258601904,
+    "membership": "Exact previously accepted 125-test compatibility membership on current source; the focused domain endpoint and prior spent/excluded physical endpoints were absent.",
+    "binary_sha256": "1689a42b5eac54e28231718f48428e16cc5b1f7904c33b0b6638ba0c41fd274c"
+  },
+  "domain_result": {
+    "receipt": "completion-domain-physical02.json",
+    "receipt_sha256": "4c07e44fd77c94ecf427546368a0422fb442045456447affc0aceaf7840d24de",
+    "support_manifest": "completion-domain-physical02-support.json",
+    "support_manifest_sha256": "e11bcf27a2b4906502c07d339effddff5262f9c141c63fe2ec39d6e363b41b1d",
+    "result": "FAIL 0/1; 369 skipped",
+    "exit_code": 100,
+    "elapsed_seconds": 0.6683450280688703,
+    "selected_test": "m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base",
+    "binary_sha256": "ca2d1a579ae8c69ac3c1bb999e475e5ba8de3112b6adee0647628cb8d8ed48b0",
+    "typed_failure": {
+      "controller_layer": "Subproblem",
+      "kind": "TrustRegionOptimalityIndeterminate",
+      "reason": "optimality_free_stationarity",
+      "coordinate": 1,
+      "radius": 1.0,
+      "lambda": 5962417150275328.0,
+      "attempted_subproblems": 1,
+      "entered_svd_factorizations": 2,
+      "completed_face_pivots": 1,
+      "current_or_max_completed_jacobi_sweeps": 7,
+      "total_jacobi_sweeps": 14,
+      "refinement_attempted_entries": 0,
+      "refinement_scalar_operations": 0,
+      "refinement_metadata": null,
+      "budget_refusal": null
+    }
+  },
+  "independent_classification": {
+    "source_order": "m1_trust_region_controller_domain_refusal_observation_for_test initializes the real adapter, enters the RAII poison scope, then calls transition_model. transition_model must complete phase_model before m1_apply_test_domain_refusal_candidate. The recorded Subproblem error propagates from phase_model through `?`, so the mutation call and transition_after_model were not reached.",
+    "canonical_refusal": "Stage1 assess_optimality emits optimality_free_stationarity only when a free coordinate fails the canonical stationarity enclosure. The KKT transition converts that failure into TrustRegionOptimalityIndeterminate and preserves its coordinate/radius/lambda/work metadata.",
+    "lambda_assessment": "The emitted lambda 5962417150275328 is positive, finite, and normal. It passed the canonical nonnegative-lambda admission and is not an optimality_negative_lambda or nonfinite-operand case.",
+    "work_consistency": "Two SVD factorizations each completed seven Jacobi sweeps, yielding total_jacobi_sweeps 14 while the refusal's completed_jacobi_sweeps field retains the current/maximum sweep count 7. One face pivot and zero refinement entries agree across the typed cause and work ledger.",
+    "seam_assessment": "The failure occurred in actual Stage1 work on the unchanged base before any fabricated or forced result. There is no evidence of a changed arithmetic guard, error precedence defect, counter mismatch, serialization loss, or test-only hook leak.",
+    "control_assessment": "The chosen real base is unable to reach the intended domain branch under the canonical Stage1 method. The failed `.expect` accurately exposes that unmet precondition. Under the authorization's explicit valid-negative rule, this is not permission to replace the base with a tuned seed or bypass Stage1."
+  },
+  "custody": {
+    "source_unchanged": true,
+    "binary_unchanged": true,
+    "support_links_unchanged": true,
+    "post_result_hash_recheck": "Debug binary remains 1689a42b5eac54e28231718f48428e16cc5b1f7904c33b0b6638ba0c41fd274c and release binary remains ca2d1a579ae8c69ac3c1bb999e475e5ba8de3112b6adee0647628cb8d8ed48b0.",
+    "failed_stderr_sha256": "926ee582dc6017fc5996d4482b1203d039f663f60f242562ca195aeeede7c4bb"
+  },
+  "terminal_changed_scope_disposition": {
+    "accepted_archived_baseline": "Source 538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18 retains its separately reviewed ordinary-update physical PASS, independent reservoir closure reconstruction, and three positive custody PASS results. Those claims remain bound to that archived source and old release binary.",
+    "current_source": "Source 12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c retains focused refinement debug/release PASS 11/11, analytic shared-transition PASS 49/49, format/default PASS, combined lint 238 inherited plus zero introduced, analytic lint 262 inherited plus zero introduced, and compatibility PASS 125/125. Its focused domain endpoint is the terminal negative above.",
+    "domain_group": "HOLD: no real domain-refusal producer was reached and no historical interface symbol was closed.",
+    "eight_interface_groups": "All eight downstream real producer/interface groups remain HOLD; this first attempted group supplies no closure credit.",
+    "historical_interfaces": "All 18 historical controller-stage missing-symbol obligations remain explicit HOLDs.",
+    "target_slots": "The measured canonical target prefix, release baseline target, release treatment target, and conditional corrected target-repeat slots remain unused and unreleased.",
+    "physical_scope": "No rerun is allowed for this focused endpoint. No further candidate or numerical edit is justified within the adopted authorization."
+  },
+  "residual_risk_and_missing_tests": [
+    "The candidate mutation, real pre-evaluator domain guard, radius shrink, and retained base/J/normalizer/phase assertions remain unexecuted because canonical preparation stopped earlier.",
+    "The current source has no new physical closure or timing qualification; the accepted physical closure remains attached only to archived source538250.",
+    "Seasonal, watershed-scale, receiver/cycle/restart, material/BGC, complete-parent, late-rejection, and scale acceptance remain outside demonstrated scope or on their prior HOLDs."
+  ],
+  "disposition": "VALID TERMINAL NEGATIVE. Preserve the failed receipt and exact source/binary/support custody. End the numerical/domain effort without tuning or rerun. Retain the separately accepted archived ordinary physical result and all stated downstream, historical-interface, and target-slot HOLDs."
+}

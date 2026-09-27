@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: immediate fresh selected inventory/support/binary checks after compatibility125PASS before first domain producer execution",
+  "recorded_utc": "2026-09-27T07:13:44.337069+00:00",
+  "support_sha256": "e11bcf27a2b4906502c07d339effddff5262f9c141c63fe2ec39d6e363b41b1d",
+  "selected_tests": [
+    "m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base"
+  ],
+  "binary": {
+    "path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+    "sha256": "ca2d1a579ae8c69ac3c1bb999e475e5ba8de3112b6adee0647628cb8d8ed48b0"
+  },
+  "all_628_support_files_match": true,
+  "fresh_inventory_receipt": "completion-domain-inventory02.json",
+  "compatibility_receipt": "completion-domain-compatibility02.json",
+  "correctness": "completion-correctness-domain-dispatch.json",
+  "qa": "completion-qa-domain-dispatch.json"
+}

@@ -1,0 +1,142 @@
+{
+  "artifact": "completion-correctness-stage1-refactor",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static final-source and patch comparison plus read-only inspection of recorded receipts; reviewer ran no compile, test, candidate, physical, or target command",
+  "findings": [
+    {
+      "severity": "low",
+      "status": "advisory_non_blocking",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "lines": [
+        8045,
+        8052
+      ],
+      "finding": "The retained-face test repeats the same bvls02_pass equality assertion twice after extracting the core and accounting assertion helpers.",
+      "correctness_effect": "None. Both assertions use identical operands and execute consecutively without intervening state. This is a small test-maintenance duplicate, not substantial duplicated numerical logic and not a release blocker. Removing it would reopen the frozen Stage1 cut and is not required for correctness."
+    }
+  ],
+  "reviewed_cut": {
+    "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "stage1_sha256": "85b666eb0b826fd7a9ef3926e70f61acb0ee37153e1b7e8b7e388aee48762937",
+    "helper02_source_tree_sha256": "46b92d91df591a70fa645d3ad4bb1c13007d2f0b9af869d36fa61ec63cda79d2",
+    "helper02_coupled_tests_sha256": "a7f53eae8b69f301be66b594feabec4d2f63cd7a7dc10c0f3c87985280c09b51",
+    "helper02_lib_sha256": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c",
+    "scope_limit": "Only frozen Stage1 is approved here. The sole writer's later m1_coupled_tests.rs emitter work is excluded and requires its separate review."
+  },
+  "primary_evidence": [
+    {
+      "path": "artifacts/refinement-terminal-source.tar.gz",
+      "sha256": "fb0ef89462e851ac596f0d3af66d1a16796ee5e49d01516cd7c9749a5ee633eb",
+      "role": "reviewed refinement-terminal source baseline; embedded Stage1 SHA-256 32f0d14950e22ede0b446326b9b185ce22905c99035a30acde512d1281dae9da"
+    },
+    {
+      "path": "artifacts/refinement-correctness-terminal.json",
+      "sha256": "84a2a701c7d8552d3d36fefefba81ea6c2f764c5348f09c733df6a08822b6f17",
+      "role": "accepted terminal refinement correctness scope and residuals"
+    },
+    {
+      "path": "artifacts/refinement-correctness-selected-kkt-oracle.json",
+      "sha256": "d847abb787073c62c1c6e314dfb71b24afb6e0c19800bdf9cddc1f2f1ecc27b7",
+      "role": "accepted exact lower-bound normalized KKT release oracle"
+    },
+    {
+      "path": "artifacts/completion-assertions-release03-from-observer-cut02.patch",
+      "sha256": "8a1b2e7f374b3781c39f0441b7b89364350df6772e58dabaf7d1b360d721de64",
+      "role": "immediate pre-helper comparison cut; Stage1 SHA-256 34ff1e4f1b88ac765a5ed7b0663aa3cf945ee5d808307b35ab74374468f4ba83"
+    },
+    {
+      "path": "artifacts/completion-helpers-debug02-from-observer-cut02.patch",
+      "sha256": "e888e591bef32e28afb143cf19823e4f8273a3fe03d35b02070016ecdbb73633",
+      "role": "final helper-extraction patch containing frozen Stage1"
+    },
+    {
+      "path": "artifacts/completion-helpers-debug02-source.json",
+      "sha256": "85d1ad9e803298a984771df6d0d66e634996914eb11a90bd5ebff1885406e2f6",
+      "role": "exact source manifest for the passing helper02 run"
+    }
+  ],
+  "static_verification": [
+    {
+      "area": "optimality selection arithmetic and exact lower KKT oracle",
+      "result": "PASS",
+      "detail": "OptimalityMasks only groups the same lower_active, upper_active, and initial_free references. select_optimality_release contains the prior sort expression unchanged: None precedes Some, finite ratios sort by descending total_cmp, and exact ties use ascending coordinate. Candidate creation, h/tau division, KKT accounting, free-refusal accumulation, and selected-release construction retain their order. This preserves the accepted lower-bound oracle: the normalized tie selects coordinate 0 then coordinate 1, with second h [0,-2,2,6,0] and unchanged final step/h."
+    },
+    {
+      "area": "refinement arithmetic and guard chronology",
+      "result": "PASS",
+      "detail": "The extracted call chain preserves the original order: signed-zero lambda eligibility; p0 assembly; active and free-box admission; ordered p0 norm and strict radius predicate; attempted-entry reservation; factor lookup; first residual; first factor application; first coordinate updates; test-only position-1 mutation; p1 box, active, norm, and radius guards; second residual; second factor application; second coordinate updates; test-only position-2 mutation; final box and active guards; final norm and radius guards; trace snapshots; final step installation and refined flag. No floating operation, comparison, clamp, guard, or installation moved across another numerical operation."
+    },
+    {
+      "area": "work reservation and counters",
+      "result": "PASS",
+      "detail": "refinement_reserve_work retains attempted_entries increment before both checked_sub operations, scalar-underflow refusal before guard-underflow refusal, the same short-circuit scalar-cap then guard-cap predicate, one denied_entries increment on each refusal, and no counter charge after denial. Eligibility scalar/guard deltas are still captured after eligibility and before reservation. Both factor helpers preserve the before snapshot, lambda_step call, factor-application delta, output guards, and absorb order. Residual, coordinate-update, whole-KKT, and upward-enclosure ledger sources remain unchanged."
+    },
+    {
+      "area": "typed failure contexts and metadata",
+      "result": "PASS",
+      "detail": "RefinementFailureSite groups the existing correction position, guard stage, row, term, coordinate, and scratch-box feasibility without changing any call-site value. Every former refinement_metadata_refusal and refinement_dot2_metadata_refusal argument maps one-for-one. Reason mapping, original trust radius from input.initial_radius, reduced face radius from solution.radius, active/free masks, lambda, and canonical boxed work remain unchanged. Observation helper labels retain refinement_p0_missing, refinement_delta0_missing, refinement_p1_missing, refinement_residual1_missing, refinement_delta1_missing, refinement_observation_missing, refinement_work_cap, and the typed optimality reason fallback."
+    },
+    {
+      "area": "test-only mutation inputs and provenance",
+      "result": "PASS",
+      "detail": "Removed original_lower, original_upper, base, scale, and redundant radius members were never consumed by refinement_mutate; its match arms previously ignored them through '..'. The retained mutation still consumes only coordinate/scaled_value and ScratchRadius.radius at the same positions. Production guards still read canonical prepared bounds, live state, input.initial_radius, and solution.radius. The FinalBox, ScratchRadius, and ActiveValue helper retains reason, correction position, stage, coordinate, lower/upper/free masks, lambda, both radius sources, scratch feasibility, unchanged live state, global snapshot, and restored nondefault budget assertions."
+    },
+    {
+      "area": "unequal radius discriminating control",
+      "result": "PASS",
+      "detail": "The final control first solves the retained capture with input.initial_radius and solution.radius both exactly 1.0, then mutates only input.initial_radius to 2.0, proves the operands unequal, installs the existing P0Subnormal mutation, and invokes refine_face_before_crossing. It requires the same first-correction ResidualSourceWeight refusal at row 0, term 14, coordinate 13 and exact metadata original=2.0/reduced=1.0. This corrects the preserved prior failed construction that changed the radius before solving."
+    },
+    {
+      "area": "observation assembly, masks, and copies",
+      "result": "PASS",
+      "detail": "The success/refusal context helpers move the same trace and refusal fields into the same output fields. Bit collection remains in p0, delta0, p1, residual1, delta1, p2 order and as_ref().iter().map(to_bits) is value-equivalent to consuming into_iter().map(to_bits). Pre-refinement lower/upper copies remain captured before refinement; p0/p1/p2 fallbacks use those copies and exit fallbacks use final state masks. Factor identities, correction count, feasibility booleans, KKT coordinate values/classes, and all work counters are copied from the same sources. The removed p1_box_feasible trace/output field had no assertion consumer; the live local remains passed to every typed refusal and guard."
+    },
+    {
+      "area": "extracted test assertion bodies",
+      "result": "PASS_WITH_LOW_ADVISORY",
+      "detail": "assert_retained_face_observation_core retains every bitwise p0/delta0/p1/residual1/delta1/p2, h/cbar/tau, class, box, and ball assertion. assert_retained_face_observation_accounting retains factor reuse, all masks, two corrections, phase work totals, upward bounds, and case-specific totals. assert_scratch_mutation_refusal retains the entire original typed refusal/state/hook/budget assertion body. One identical bvls02_pass assertion is repeated in the caller; it does not weaken coverage."
+    },
+    {
+      "area": "C1 discriminating metadata controls",
+      "result": "PASS",
+      "detail": "The final source retains real shared-seam controls for EftRemainder with term 0, TwoSumRemainder with its exact (5,5,1,1) counters, and per-term Accumulation with term 1, coordinate 0, and exact (42,86,1,49) counters. SourceTerm, SourceWeight, PrimaryProduct, SplitterProduct, SplitOutput, TwoSumResult, final Accumulation, signed zero, retained rows, and p0 first-residual metadata controls remain present. No universal guard-coverage or unreachability claim is made."
+    },
+    {
+      "area": "error boxing and fixed-size conversions",
+      "result": "PASS_BY_ACCEPTED_STATIC_SCOPE",
+      "detail": "The previously accepted completion-correctness-quality-groups review remains applicable: physical budget refusal boxing preserves exact typed cause/work and allocates only on refusal; prepare_subproblem boxing is unboxed unchanged at solve_subproblem and does not alter success arithmetic or refusal precedence; fixed21 try_from conversions have 0..21/0..20 domains; u32 observation widening removes narrowing; from_ref identities denote the same factor pointee. No changed code reopens those accepted properties."
+    }
+  ],
+  "recorded_validation": {
+    "helper01_rejected_intermediate": {
+      "source_tree_sha256": "68a3dbc05ad711e0387fad35272ca7e6efeaf07aa097e87dffd52cb479845f1c",
+      "stage1_sha256": "2918f77fac4573a73c3270eca56d00096d24ff524145c77cd5a85745cb37a1c1",
+      "record_sha256": "2d145f5631afa3c0c6ecff81cee1534c570afa031a4ba7ba4a8b8a3d064e0d09",
+      "stderr_sha256": "d0ea19bf582e083908adc8b00f2eba083966e0521a788c0ecfa74deacc07c79e",
+      "exit_code": 101,
+      "disposition": "Preserved compile failure with 17 errors. assert_scratch_mutation_refusal was placed in finite_precision_controls, outside the private names and mask helper it uses; RefinementRetainedFaceObservation was also not imported in the C2-C4 module. The correction moved the unchanged helper body into bvls03_c2_c4_expected_red_controls and imported the observation type. This receipt is not passing evidence."
+    },
+    "helper02_debug": {
+      "source_tree_sha256": "46b92d91df591a70fa645d3ad4bb1c13007d2f0b9af869d36fa61ec63cda79d2",
+      "record_sha256": "3512f95937c38d3ecdb7c3a8660713fba923bded92f85fd5c9d9bba6f7c021ae",
+      "stderr_sha256": "6ef29d73b27e3713e83eef06e6009a59c21224773c0be02bb8581997db25c314",
+      "exit_code": 0,
+      "result": "11 passed, 0 failed, 358 skipped",
+      "coverage_limit": "Focused test(m1_trust_region_refinement_) selection only."
+    },
+    "helper02_lint": {
+      "record_sha256": "1efac122e48b390a365cc10c923a605ba59793dd2751ecdfda4dd0d9d121f031",
+      "comparison_sha256": "25211abd18b4e69c92a7a177ad7bf0d55e468ebb35aca230663e50e47166ecc1",
+      "exit_code": 101,
+      "classification": "239 total = 238 inherited + 1 introduced m1_coupled_tests physical-test too_many_lines; frozen Stage1 introduced 0 diagnostics",
+      "truthfulness": "This is a classified failing strict-lint receipt, not a lint pass."
+    }
+  },
+  "residual_risk_and_missing_tests": [
+    "The exact physical budget-cap trigger still lacks its direct runtime receipt; static cause/work preservation is accepted, runtime evidence remains pending.",
+    "The helper02 selector does not execute the coupled KKT variant test. The lower [0,1] release result is supported here by exact static source comparison and the accepted independent oracle, not a new run.",
+    "Physical emitter behavior, physical source manifest, closure reconstruction, and final complete-cut review are outside this Stage1 review and remain required.",
+    "The mutable post-helper02 m1_coupled_tests.rs is not validated or approved by this artifact."
+  ],
+  "approval": "STATIC_PASS_NO_STAGE1_CORRECTNESS_BLOCKER. The frozen Stage1 mechanical refactor preserves numerical arithmetic, comparison and guard order, typed failure context, mutation behavior, work accounting, masks, copies, and the extracted assertions. The low duplicate-assertion advisory does not block acceptance. Package disposition remains HOLD pending the separate physical emitter and terminal closure evidence."
+}

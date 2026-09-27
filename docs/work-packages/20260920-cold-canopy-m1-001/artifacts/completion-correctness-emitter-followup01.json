@@ -1,0 +1,97 @@
+{
+  "artifact": "completion-correctness-emitter-followup01",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static same-reviewer verification of the frozen dba090 emitter fix and the f3de57 Stage1 rustfmt-only cut, plus read-only inspection of parent-executed receipts. The reviewer ran no compile, test, candidate, solver, or physical command.",
+  "supersedes": "No prior finding is erased. This artifact dispositions each finding in completion-correctness-emitter.json against the later frozen cut.",
+  "reviewed_cut": {
+    "coupled_tests_sha256": "dba090864fb661a637eb8cf6fd9318d009b4cbc775db523c0e51343deef75d15",
+    "stage1_sha256": "f3de57a28df00e7383ed2565c997645b0ae5e4665e783e73dd08e4ecded22e92",
+    "scope_limit": "Later source fixes require another same-reviewer disposition. Physical execution and terminal source-manifest acceptance remain outside this artifact."
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "status": "partially_fixed_still_blocking",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "symbols": [
+        "m1_physical_subproblem_json",
+        "m1_physical_outcome_json"
+      ],
+      "fixed": "Subproblem kind, optimality reason/coordinate/radius/lambda, attempted subproblems, sweeps, pivots, SVD calls, raw residual maximum, complete work counters, and physical-budget refusal operation/snapshot are structured. Numerical message, CoreWorkCap, outer IncompleteScope, failure current coordinates, and a controller-run object are structured.",
+      "remaining": [
+        "refinement is still emitted with format!(\"{x:#?}\") and therefore requires parsing Rust Debug text. Emit a JSON object containing every M1TrustRegionRefinementFailureMetadata field: reason, correction_position, guard_stage, row, term, coordinate, lower_active, upper_active, free, lambda_bits, original_trust_radius_bits, reduced_face_radius_bits, and scratch_box_feasible.",
+        "The failure controller_run object still omits accepted_updates, installed_updates, entered_materializations, and entered_svd_factorizations. Emit these existing fields alongside proposals, final/materialized coordinates, and terminal_refusal so failure custody proves the exact update/materializer state."
+      ],
+      "correctness_effect": "The dba090 record cannot yet independently check the exact refinement refusal provenance or all failure-side update/materialization counts without parsing Debug text or consulting un-emitted state."
+    },
+    {
+      "severity": "medium",
+      "status": "partially_fixed_still_blocking",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "symbol": "m1_physical_outcome_json",
+      "fixed": "Each emitted reservoir operand now contains diagnosed_mass_nonnegative, diagnosed_mass_within_capacity, and diagnosed_mass_valid, with diagnosed_mass_valid equal to the exact preserved conjunction.",
+      "remaining": "The top-level capacity_predicates array remains and still computes only diagnosed_liquid_mass_kg_m2 <= liquid_capacity_kg_m2. Change it to the exact conjunction or remove this misleading duplicate so the same record cannot report capacity_predicates=true while diagnosed_mass_valid=false.",
+      "correctness_effect": "The new exact evidence is present, but the retained broader-named field still asserts an incomplete predicate and can contradict it."
+    }
+  ],
+  "closed_findings": [
+    {
+      "severity": "low",
+      "status": "fixed",
+      "area": "CPU source provenance",
+      "detail": "The CPU object now explicitly names getconf CLK_TCK as hz_source and /proc/self/stat fields 14+15 as tick_source. Parsing arithmetic and errors are otherwise unchanged."
+    }
+  ],
+  "additional_static_verification": [
+    {
+      "area": "structured subproblem cause/work/budget",
+      "result": "PARTIAL_PASS",
+      "detail": "All non-refinement scalar fields map directly from M1TrustRegionSubproblemRefusal. Work uses the already-reviewed complete m1_physical_work_json. Budget operation is the enum Debug label and snapshot uses the complete m1_physical_budget_json. No solver arithmetic, error precedence, or typed refusal object is mutated; this is observation-only serialization."
+    },
+    {
+      "area": "success capacity operands",
+      "result": "PARTIAL_PASS",
+      "detail": "The three new per-reservoir predicates read the same diagnosed mass and capacity as the preserved assertion and do not alter numerical behavior. The old incomplete top-level array must still be reconciled."
+    },
+    {
+      "area": "Stage1 formatting-only rebind",
+      "result": "PASS_NO_REOPENED_NUMERICAL_SCOPE",
+      "detail": "The accepted Stage1 review is rebound from SHA 85b666eb0b826fd7a9ef3926e70f61acb0ee37153e1b7e8b7e388aee48762937 to f3de57a28df00e7383ed2565c997645b0ae5e4665e783e73dd08e4ecded22e92. Exact patch comparison shows only rustfmt ordering/wrapping in three test-module use groups at the former lines 7366, 7654, and 7663. No executable expression, arithmetic, guard, assertion, metadata field, or runtime import binding changes."
+    }
+  ],
+  "recorded_validation": {
+    "terminal_debug01": {
+      "record_sha256": "4404690b682a171a768054c265eead8a52a70d34971e89589aa63576d7d3e7ad",
+      "result": "11 passed, 0 failed, 358 skipped",
+      "coverage_limit": "Focused refinement selector; compiles but does not execute the physical emitter."
+    },
+    "emitter_lint09": {
+      "record_sha256": "c44131ce5b3d2b37d06596e49249488ca9a1935c446cd2819f970841d343c151",
+      "source_receipt_sha256": "c47de4b46fe0edb92c463c02981c97c566a7b4d0a25bde6782ef8c2fe874b9d2",
+      "comparison_sha256": "c3923f2febc0a15cd5bae62c12dbfb59a9899892dd003c8043052fc63cc30246",
+      "classification": "238 total diagnostics = 238 inherited + 0 introduced + 0 removed",
+      "truthfulness": "The strict-lint command exits 101 because inherited diagnostics remain; this exact comparison is not a clean lint pass."
+    },
+    "terminal_fmt01_rejected_intermediate": {
+      "record_sha256": "8785524431cf93e680a91b94bfe0556762533eefe88a4dc535ab5d3d97c6f560",
+      "exit_code": 1,
+      "detail": "cargo fmt --check reported only three Stage1 use-group ordering/wrapping chunks. This is preserved failing evidence, not passing evidence."
+    },
+    "terminal_fmt02": {
+      "record_sha256": "0029994f743d9ff2acf578308f8d9c0d4e133fc877a0d19f72ead474595629a6",
+      "source_receipt_sha256": "8a7b2333c13bfe8bf8ebf6420c040f19e13850cbc714c623c18dbccb09c914ee",
+      "exit_code": 0
+    },
+    "terminal_default_list01": {
+      "record_sha256": "d7147569ec30c62f6ab2d8e8c063c550d464d47e26070ed0a169e582abe70a34",
+      "source_receipt_sha256": "d28991ddb8c0e94583031ca7bc424da491ae77aedad0d6587b738e3495e8c303",
+      "exit_code": 0
+    }
+  },
+  "residual_risk_and_missing_tests": [
+    "The high and medium remaining items require same-reviewer verification on a newly frozen coupled-tests cut.",
+    "No physical endpoint was executed by the reviewed commands. Physical success/failure output, closure values, resource observations, and full-work accounting remain runtime-unverified.",
+    "A final physical source manifest and terminal complete-cut review remain required."
+  ],
+  "approval": "HOLD. The dba090 fix closes CPU provenance and adds most structured failure and capacity evidence, but refinement remains Debug text, failure controller-run accounting is incomplete, and the retained top-level capacity_predicates remains semantically incomplete. The f3de57 Stage1 formatting-only cut preserves the previously accepted numerical review."
+}

@@ -1,5 +1,477 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## BVLS-03 completion — adopted 2026-09-27
+
+Owner adopted `/tmp/openwepp_cold_canopy_m1_bvls03_completion_authorization.md`
+by directing execution. **TERMINAL NUMERICAL STOP; bounded physical-positive milestone PASS; M1 remains HOLD.** Base publication is
+`47b04e2b48e8926b7222cecab134461cef9052e0`. The [start custody](artifacts/completion-start-custody.json)
+verifies all 764 detached entries and the preserved archive before mutation;
+no reconstruction is necessary. Prior terminal facts below remain historical.
+
+**Terminal result (2026-09-27):** final source `12665af6…` passes11/11 debug,
+11/11 release,49/49 analytic-controller and125/125 compatibility controls.
+Combined strict lint remains FAIL with238 inherited/zero introduced blocks;
+analytic-only remains FAIL with262 inherited/zero introduced blocks. Format and
+default build PASS. The required unchanged original60 ordinary-positive passed
+once on separately preserved source `538250c0…`:1.895410ms solver wall, CPU
+counter delta0 ticks at10ms resolution (not a zero-cost claim),4 SVD
+factorizations,28 Jacobi sweeps,2 face pivots,
+2 refinement entries,117620 refinement scalar operations and247504 refinement
+guards. Work categories overlap and are not summed into a unique grand total.
+One ordinary update was accepted/installed; independent reservoir closure and
+materializer/input identity PASS. The three unperturbed-root controls also PASS
+on that source. These earlier physical qualifications do not transfer silently
+to the later producer source or executable.
+
+The first downstream real-domain producer ran once on final source and failed
+before candidate mutation: canonical `TrustRegionOptimalityIndeterminate`,
+`optimality_free_stationarity`, coordinate1, radius1, positive lambda
+5962417150275328. No refinement was attempted. Distinct [correctness](artifacts/completion-correctness-domain-result.json)
+and [QA](artifacts/completion-qa-domain-result.json) preserve this result;
+correctness confirms a valid source-conforming terminal negative. **The adopted
+stop condition applies; no tuning or replay.** The candidate-domain guard,
+shrink and downstream assertions were not reached, so the new producer is not
+qualified. All eight interface groups,18 historical missing references, private
+harness and separately gated target arms remain HOLD/unused. This is not M1,
+seasonal, watershed-scale or production acceptance.
+
+Both relevant source cuts are recoverable: [accepted physical source/archive](artifacts/completion-physical-baseline-recovery.json)
+and [terminal source/archive](artifacts/completion-terminal-recovery.json), each
+764 entries verified by fresh observer reconstruction and every archive byte.
+Terminal archive SHA256 is `65e2cbf11ef4492e4cfdd393255812c55aa098d06138194e0104922801900b12`;
+terminal release executable is `ca2d1a57…`, while ordinary-positive used
+`7e36e78f…`. Method remains `COLD-CANOPY-M1-TR-SVD-BVLS-03`; the ordinary-positive
+input remains canonical original60 with coordinate20 +1e-4K. The downstream
+control retains its original `trial()` fixture; it was not replaced with that
+successful root seed. Archives contain source/configuration, not self-contained
+toolchain or input distributions.
+
+The [conservative final ledger](artifacts/completion-final-ledger.json) charges
+10800 new seconds through07:49Z including the full closing allocation after the
+07:13:45.713631Z last candidate endpoint. Cumulative charged375733.959294 seconds,
+ceiling379333.959294;3600 seconds remain mathematically, but the valid-negative
+stop ends this effort. Original08:19/08:49 command/hard deadlines never move;
+no previous reserve is reclaimed, no concurrent double charge or wait deduction.
+Publication scope is this maintained record, `completion-*` evidence and exact
+recovery, plus the deadline-only recorder change on authorized main. Main Rust
+and unrelated work remain unchanged. Final independent preservation review is
+recorded below before publication.
+
+Carry 364933.959294 charged seconds without reclaiming closing reserve. A single
+check found no greater later ledger. New allowance 14400 seconds, cumulative
+ceiling 379333.959294. Conservative first-reading anchor 2026-09-27 04:49:00Z,
+fixed hard deadline 08:49:00Z, command cutoff 08:19:00Z, 1800-second closing reserve.
+Concurrent wall time counts once; no wait deduction or re-anchoring. Every command
+must fit its full bound plus reserve. Physical bounds stay 180 seconds and the
+existing exact 900-second Critical command remains conditional.
+
+Intent and sequencing: first run the existing exact C1–C4/whole-controller
+selection in debug/release on final Stage1 `32f0d149…`, then measure complete lint.
+Correct only demonstrated introduced quality, control and observation defects;
+apply the already-adjudicated lower KKT oracle. Preserve exact arithmetic,
+typed guard precedence, fixed factors, two corrections, work categories and
+physical predicates. Complete real shared-seam metadata/radius controls and the
+single-invocation timing, identity, reservoir-operand and whole-work observation.
+After affected controls and distinct source/manifest assessments, execute once
+the unchanged release original60 coordinate-20 +1e-4 K ordinary-positive. A valid
+source-conforming numerical refusal stops policy search. Conditional downstream
+interfaces/harness and separately reserved target slots require their existing
+prerequisites; no M1/seasonal/scale acceptance follows a local result.
+
+Parent owns commands, recorder, integration, ledger, package and publication.
+`/root/completion_implementer` is sole detached implementation writer;
+`/root/completion_correctness` owns independent correctness and reconstruction;
+a distinct QA reviewer will own evidence/quality assessment. Prior accepted
+scopes are reused; historical reviewer sessions are unavailable in this new
+session, so only changed claims and named gaps reopen. At most two children,
+no nested spawning. Reassess internally after two unsuccessful fixes or 60 minutes.
+
+Write bounds: detached private Stage1/controller/lib/control surfaces, necessary
+recorder deadline, this maintained record and `completion-*` evidence/recovery.
+Main Rust and all unrelated dirty/untracked work remain untouched. No authority
+amendment, new method/dependency/schema/dispatch/input/seed or branch switch.
+Publish scoped reviewed records and exact detached recovery to authorized main.
+
+Validation retains affected debug/release controls, complete format/default/
+feature inventory/lint/docs, touched A0/A1/A3 and source reachability assessment.
+Reuse the established same-command private noncritical inherited-lint policy;
+238 inherited findings remain FAIL, and new/ambiguous diagnostics block. Critical
+triggers keep their existing requirements. Do not repeat unchanged broad failure
+censuses. Existing full09/A1/strict-lint, 18-symbol/eight-interface, material/BGC,
+complete-parent/late-rejection, cycle/restart and scale HOLDs remain visible.
+
+
+
+Ran: preserved final Stage1 `32f0d149…` passes the unchanged nine selected
+controls in [debug](artifacts/completion-initial-debug.json) and
+[release](artifacts/completion-initial-release.json), with 358 skipped in each.
+Both receipts bind the verified terminal tree, unchanged source/base/supports.
+Release command elapsed 84.030648 s includes build and tests, not physical timing.
+Complete [lint](artifacts/completion-initial-lint.json) FAIL measures 302 source
+blocks: [238 inherited matches / 64 introduced / zero removed](artifacts/completion-initial-lint-comparison.json).
+An initial comparison omitted numeric suggestion gutters and is retained as
+incomplete normalization; correcting only those gutters establishes inheritance,
+not fixes. No physical or target slot has run. Writer released for bounded
+quality/observation corrections after these results; no numerical retuning.
+The recorder changed only the adopted fixed deadline; five discriminating
+[bound controls](artifacts/completion-recorder-controls.json) pass.
+
+Ran: new real shared-primitive coverage cut first failed compilation because of
+one missing test import ([debug01](artifacts/completion-coverage-debug01.json),
+[release01](artifacts/completion-coverage-release01.json)); no tests executed.
+After that import-only correction, [debug02](artifacts/completion-coverage-debug02.json)
+and [release02](artifacts/completion-coverage-release02.json) each pass 10/10,
+358 skipped. The source-bound control observes EFT remainder, TwoSum remainder,
+and per-term accumulation metadata against independently derived operands and
+counters. It changes no primitive body; there is no new body chronology claim.
+[Correctness initial assessment](artifacts/completion-correctness-initial.json)
+limits this to discriminating examples, with unequal-radius coverage still due.
+One unsuccessful control-edit cycle is preserved; import correction succeeds.
+
+Prospective compatibility selection retains the prior selector and additionally
+excludes the two known unresolved positives `run_captures_and_restores_owned_budget_scope`
+and `original60_setup_is_separate_from_deferred_proposal`, as assessed by correctness.
+Their original source assertions and body13 FAIL remain required physical-positive
+HOLD, not rerun on current source and not waived. Remaining selected real physical
+guard/custody controls keep physical classification/180-second bounds. The sole
+ordinary-update endpoint remains separately gated; no compatibility selection
+may substitute for or accidentally execute it. This is a disclosed scheduling
+boundary, not deletion or weakening of the tests or their requirements.
+
+Internal reassessment 2026-09-27 05:08Z: reassign implementation to
+`/root/completion_writer2` after the first writer repeatedly returned partial
+single-function work despite an authorized grouped deliverable. This is capacity/
+sequencing management, not new scope or allowance. Old writer is stopped; only
+one writer remains. Preserved partial work includes exact approved lower KKT
+oracle, private redundant observation cleanup and incomplete physical observation.
+[Observation debug01](artifacts/completion-observation-debug01.json) passes 10/10;
+it does not execute physical work. Later author-reported compile-only checks lack
+retained command receipts and receive no terminal validation credit.
+
+Independent [QA initial assessment](artifacts/completion-qa-initial.json) accepts
+starting custody, deadline-only recorder, carried charge and corrected lint
+comparison; it retains radius/lint blockers. Its initial release-missing finding
+was corrected by the same reviewer against existing completed receipts.
+A completed writer occupied a runtime slot; one custody-only wake/interruption
+released it so the same correctness reviewer could resume. No nested route or
+replacement acceptance reviewer was used. Physical observations must be emitted
+before success assertion so a valid refusal retains its timing and failure state;
+process CPU availability requires actual collection, not an unfinished-parser claim.
+
+Internal reassessment 05:15Z — CONTINUE: writer2's intermediate compiler
+failures in `cold-current2/3` are preserved in [iteration logs](artifacts/completion-writer2-iteration-logs.json).
+Those logs lack exact intermediate source snapshots and receive no terminal
+acceptance credit. The subsequent frozen cut passes parent-recorded
+[quality debug01](artifacts/completion-quality-debug01.json), 10/10 controls.
+The supported fix boxes the existing typed physical-budget refusal payload,
+retaining its cause and boxed work; it adds no successful scalar allocation.
+Release and complete lint are being recorded on that same frozen cut. Evidence
+of corrected compilation and passing controls supports continuing remaining
+introduced quality fixes; neither the method nor the allowance changes.
+
+Ran: frozen quality01 [release](artifacts/completion-quality-release01.json)
+passes 10/10 (358 skipped), matching debug01 on the same source.
+Complete [lint01](artifacts/completion-quality-lint01.json) remains FAIL:
+[278 blocks = 238 exact inherited + 40 introduced](artifacts/completion-quality-lint01-comparison.json),
+zero inherited removals. This is 24 fewer introduced blocks than initial64,
+not a strict-lint pass. The same writer continues the remaining casts, helpers,
+real observation consumers, unequal-radius control and complete physical record.
+Correctness [observation preflight](artifacts/completion-correctness-observation-preflight.json)
+retains concrete pre-dispatch blockers; no physical/target command has run.
+
+Ran: assertion group [debug01](artifacts/completion-assertions-debug01.json)
+executes 11 controls, 10 PASS / 1 FAIL: the new radius test mutated capture before
+solving, so both radii were 2.0. This is a demonstrated control-construction error,
+not a physical negative. The direct-seam correction solves at1.0 first, then
+changes only input original radius to2.0. [Debug02](artifacts/completion-assertions-debug02.json)
+and author lint17 fail compilation for three missing imports. The author's
+compiler-clean lint17 report was incorrect; actual E0425/E0433 logs govern.
+Internal reassessment CONTINUE after these two unsuccessful correction cycles:
+import-only repair is concrete and in scope; method and allowance unchanged.
+Correctness independently accepts the corrected construction statically, pending
+execution. All failed source/receipts remain preserved.
+
+[Quality-groups correctness](artifacts/completion-correctness-quality-groups.json)
+accepts the frozen typed-error boxing, fixed-domain index conversion, u32
+observation widening and pointer identity changes; runtime budget-cap evidence
+and terminal source review remain required. Lint16 has248 blocks:238 inherited,
+10 introduced structural diagnostics, with no dead-code diagnostics. Real
+observation assertions consume the preserved counter/mask/refusal evidence.
+
+At 05:39Z the parent reassigned literal extraction to `/root/factor_extract`
+under the narrow-worker route after repeated implementer returns without the
+requested factor-block edits. Writer2 is stopped during this assignment; source
+ownership stays serial. Parent supplied exact contiguous statement boundaries;
+no numerical design or policy changed. [Extraction debug01](artifacts/completion-extraction-debug01.json)
+and [debug02](artifacts/completion-extraction-debug02.json) pass11/11 on their
+respective eligibility/reservation and factor-helper cuts. [Lint02](artifacts/completion-extraction-lint02.json)
+measures238 inherited+9 introduced. Further extraction [debug03](artifacts/completion-extraction-debug03.json)
+and lint03 fail compilation because two helper return signatures were swapped.
+[Truncated comparison](artifacts/completion-extraction-lint03-comparison.json)
+is95 inherited matches+5 compiler diagnostics;143 baseline blocks were not reached,
+not removed or fixed. Two signature-only corrections are under exact-source
+validation. The unchanged source/method and passing prior stages support continued
+bounded correction; physical and target slots remain unused.
+
+60-minute internal reassessment — **CONTINUE**, with no new allowance:
+[charged ledger](artifacts/completion-ledger-60min.json) retains the fixed08:19Z
+command cutoff/08:49Z deadline. Material progress is final repair validation,
+11/11 debug/release controls including the formerly static-only metadata and
+unequal-radius case, and introduced lint64→8 while all238 inherited blocks match.
+The exact source remains recoverable through recorded patches. Remaining metadata
+argument grouping and physical observation have concrete in-scope implementations;
+no numerical policy change is justified or authorized. Physical/target slots unused.
+
+Ran: [extraction debug04](artifacts/completion-extraction-debug04.json) and
+[release04](artifacts/completion-extraction-release04.json) pass11/11 after the
+signature-only fix. Context grouping then passes11/11. Final assertion-helper
+extraction [debug01](artifacts/completion-helpers-debug01.json) fails compilation
+because a helper was inserted in an earlier test module and two types lacked
+imports. Scope/import-only repair passes [debug02](artifacts/completion-helpers-debug02.json),
+11/11. Complete [lint02](artifacts/completion-helpers-lint02-comparison.json)
+measures239 blocks:238 inherited, one introduced physical-test length diagnostic,
+zero removed. Stage1 `85b666eb…` is frozen for independent refactor review.
+The compile-truncated helper01 inventory does not claim baseline fixes.
+At06:02Z sole writer ownership returns to writer2 for the full pre-assertion
+physical observer; no Stage1 edits are authorized during that assignment.
+
+Independent [Stage1 refactor correctness](artifacts/completion-correctness-stage1-refactor.json)
+is STATIC PASS on frozen `85b666eb…`: exact arithmetic/comparison chronology,
+guard mapping, mutation positions, reservation/counter order and assertions are
+preserved. A duplicate identical success assertion is a low nonblocking advisory;
+the frozen source is not reopened solely for that preference. Physical budget-cap
+execution, complete emitter and final manifest/closure assessment remain pending.
+External support comparison finds only the adopted recorder-deadline hash changed
+among627 pinned files; support links/selected contents remain identical.
+
+[QA preterminal review](artifacts/completion-qa-preterminal.json) accepts frozen
+Stage1 test-only containment, unchanged dependency/support scope and the disclosed
+compatibility selector; complete observer source/manifest and introduced lint
+remain blocking. At06:13Z parent transfers only literal coupled-test assertion
+extraction to the narrow worker after writer2 repeatedly returns partial emitter
+work. Writer2 is stopped; one writer remains. Intermediate emitter01–05 compile/
+lint receipts are preserved, including import/Option correction failures and a
+wrong-style-edition formatting drift (inherited drainage test151→145lines, not a
+new accepted baseline). Restore canonical edition2024 formatting before comparison.
+No physical or target endpoint has been executed.
+
+Ran: literal coupled assertion-tail and outcome-match extraction passes
+[emitter debug02](artifacts/completion-emitter-debug02.json),11/11.
+Complete [lint07](artifacts/completion-emitter-lint07-comparison.json) on coupled
+`ac2852dc…` is238 exact inherited matches, **zero introduced**, zero removed;
+strict lint still exits101. Correctness identifies remaining observer-content
+gaps before any physical run: structured Subproblem/refinement/refusal work and
+failure run state, lower capacity predicate alongside upper, and explicit CPU
+clock-source labels. Sole ownership returns to writer2 for those bounded fixes;
+Stage1 stays frozen. This milestone does not release the physical endpoint.
+
+Final content correction: [same-reviewer emitter followup02](artifacts/completion-correctness-emitter-followup02.json)
+closes all observer findings on coupled `ae365661…`. Prior incomplete structured
+refusal attempts remain preserved. Parent corrected only the top-level capacity
+summary to the same lower-and-upper conjunction already asserted and emitted per
+reservoir. Canonical format first exposed three Stage1 import-order differences;
+format-only Stage1 `f3de57a2…` retains the accepted numerical review.
+
+Ran on frozen tree `538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18`:
+[debug03](artifacts/completion-terminal-debug03.json) and
+[release01](artifacts/completion-terminal-release01.json) each PASS11/11;
+[format04](artifacts/completion-terminal-fmt04.json), default compilation,
+default-feature libtest inventory, combined-feature inventory and doctest
+compilation PASS (doctests0, not behavioral evidence). Complete
+[terminal lint](artifacts/completion-terminal-lint01-comparison.json) remains
+FAIL238 inherited/0 introduced/0 removed. [Selected inventories](artifacts/completion-selected-inventories.json)
+show125 compatibility controls, all five exclusions retained, and exactly one
+reserved release physical endpoint. Both prepared manifests pin canonical627
+supports plus their actual binary. The older622-file physical template omitted
+five retained BVLS03 control supports; this preparation defect was detected and
+repaired before any launch. [Support custody](artifacts/completion-terminal-support-custody.json)
+confirms only three detached Rust files changed and unrelated main Rust is intact.
+[Scoped checks](artifacts/completion-scoped-checks.json) validate JSON, current
+links and absence of new allow-attributes. Final distinct dispatch assessments
+are in progress; manifests/inventories alone are not execution evidence.
+
+Ran: [compatibility01](artifacts/completion-compatibility01.json) PASS125/125,
+244 skipped. [Actual membership](artifacts/completion-compatibility-membership.json)
+matches the selected125 exactly, including real factorization-budget cap and the
+adjudicated KKT oracle. Both reviewers then explicitly clear the sole ordinary
+endpoint; [immediate recheck](artifacts/completion-physical-immediate-recheck.json)
+verifies the exact single selection and all source/support/binary identities.
+
+Ran: **[physical01](artifacts/completion-physical01.json) PASS1/1**,368 skipped,
+ONCE in release; no retry or target arm. Source538250, release binary
+`7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8`
+and every custody check stay unchanged. [Structured observation](artifacts/completion-physical-observation.json)
+records solver-only monotonic wall0.001895410s. Process CPU is0 ticks at100Hz,
+below10ms resolution, not evidence of zero CPU cost or a speedup. Actual work:
+2 Stage1 calls,4 SVD entries,28 Jacobi sweeps,2 face pivots,2 refinement entries,
+117620 refinement scalar operations/247504 guards,84 evaluator entries and one
+materialization. Refinement and whole-KKT/enclosure categories overlap; no
+invented combined unique total is claimed.
+
+[Independent correctness](artifacts/completion-correctness-physical-result.json)
+and [QA](artifacts/completion-qa-physical-result.json) accept this bounded positive.
+[Independent reconstruction](artifacts/completion-correctness-physical-reconstruction.json)
+uses emitted operand bits and matches both published residuals exactly: mass
+5.421010862427522e-19 /6.505213034913027e-19 kg m^-2; enthalpy
+3.637978807091713e-12 /4.547473508864641e-12 J m^-2. Both reservoirs meet closure
+and capacity bounds. Accepted input, captured/final/materialized/result coordinates
+match; one governed update is accepted/installed. The low-severity
+`outcome.materialized=false` label denotes the adapter cache after `Option::take`,
+not absence of materialization; the complete positive identity/counter evidence
+is retained without replay or rewritten raw output.
+
+Conditional continuation is now active within the original deadline: first the
+three retained unperturbed-original60 positive budget/setup obligations, then
+real producer/interface groups and existing harness prerequisites as supported.
+The [prospective three-test selection](artifacts/completion-positive-custody-membership.json)
+excludes the spent ordinary-update endpoint and all target arms. It has not run
+at this entry; distinct source/manifest review is pending. Writer's eight-seam
+preparation is read-only; source remains frozen. Full-feature18-symbol, full09/A1,
+strict-lint, material/BGC, complete-parent/late-rejection, cycles/restart and scale
+HOLDs remain; a local positive does not accept M1 or release target slots.
+
+Ran: [positive custody01](artifacts/completion-positive-custody01.json)
+PASS3/3,366 skipped, after distinct selected-manifest readiness reviews and
+immediate628-file/binary recheck. Source538250 remains unchanged. The historical
+body13 owned-budget and original60-setup failures now pass with original assertions
+intact; nested restoration also passes. [Correctness receipt assessment](artifacts/completion-correctness-positive-result.json)
+limits credit to those three cases. Ordinary-update was not replayed.
+
+Before downstream mutation the exact accepted physical source is independently
+[reconstructed and archived](artifacts/completion-physical-baseline-recovery.json)
+from pinned observer+physical01 patch, all764 entries and archive bytes equal.
+Physical timing/closure claims bind that source; later interface work does not
+silently inherit a new binary's timing or qualification.
+
+Next implementation intent: first real trial-domain producer connection, followed
+by other supported interface groups within the same clock. Sole writer is
+writer2; no Stage1 numerical body change. Reuse the existing invalid-drainage
+operand coordinate5=-MIN_POSITIVE through a real candidate-mutation/shared
+transition seam, never a forced Boolean or canned refusal. Retain actual base/J/
+normalizer/selection/radius observations and the existing full-feature assertions;
+all other missing symbols remain visible. Only necessary private test cfg
+reachability may include controller-stage as well as physical-stage; no manifest,
+new dependency, public API, physics, seed or production dispatch change. If the
+existing physical preparation itself legitimately refuses, preserve it rather
+than changing inputs or numerical policy to manufacture this producer's result.
+
+Internal 60-minute reassessment 2026-09-27 06:50Z — CONTINUE within the
+unchanged deadline. Ordinary-positive and the three unperturbed-root controls
+are independently supported; the next real domain producer has a bounded
+implementation path. Its [initial correctness review](artifacts/completion-correctness-domain-initial.json)
+accepts the actual candidate mutation and shared domain guard, but blocks the
+manual non-nesting-safe flag reset and incomplete assertions. Recorded domain
+lint01/02 remain intermediate FAIL (238 inherited plus3/4 introduced). The writer
+must restore prior hook state with RAII, consume actual retained-state evidence,
+and eliminate introduced lint before dispatch. No new physical control has run;
+no method, input, seed, target permission or allowance changes.
+
+Domain producer sequencing correction: parent inspection rejects the author's
+claim that only17 historical symbol obligations remain. The retained
+`m1_trust_region_with_trial_domain_poison_for_test` is still undefined; all18
+historical references remain HOLD. The implemented physical-only hook is a
+bounded real producer with actual post-phase-model state observation, not closure
+of the historical interface. Execute this focused producer after source/quality/
+manifest review before further interface wiring, so a legitimate physical
+preparation refusal is preserved without tuning or unnecessary wrapper work.
+The RAII/restoration and shared post-model continuation cuts reach238 inherited/
+zero introduced at lint08; final formatting/source-bound validation is pending.
+No numerical policy or original physical-positive replay is authorized by this
+sequencing decision. All source mutation remains in the detached test surfaces.
+
+Ran: producer source921de1 passes [debug11](artifacts/completion-domain-debug01.json),
+[release11](artifacts/completion-domain-release01.json),
+[format](artifacts/completion-domain-fmt01.json) and
+[default build](artifacts/completion-domain-default01.json). These remain an
+intermediate cut. Independent correctness requires the analytic-only shared
+transition selector: [analytic01](artifacts/completion-domain-analytic01.json)
+passes49/49,290 skipped, but its compiler reports an introduced `unused_mut`
+in the physical-hook binding when that hook is cfg-elided. QA requires corrected
+analytic-only and combined-feature strict lint; writer is correcting the binding
+and genuinely introduced feature-specific imports without suppression. Inherited
+analytic findings must be classified against the adopted source, not silently
+called new or waived. [Source correctness](artifacts/completion-correctness-domain-source.json)
+accepts operation order and real refusal construction conditionally; [QA source](artifacts/completion-qa-domain-source.json)
+retains this quality blocker. No domain physical command has executed.
+The author's whole-workspace formatter mutation preceded a symlink guard; actual
+main status and both protected dirty hashes remain unchanged. Only controller,
+physical adapter and coupled-test entries differ from the accepted physical cut.
+
+Current frozen producer source is12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c.
+[Correctness fix verification](artifacts/completion-correctness-domain-fixverify.json)
+and [QA fix verification](artifacts/completion-qa-domain-fixverify.json) close the
+cfg-binding issue. Ran: [debug02](artifacts/completion-domain-debug02.json) and
+[release02](artifacts/completion-domain-release02.json) each PASS11/11,359 skipped;
+[analytic02](artifacts/completion-domain-analytic02.json) PASS49/49;
+[fmt02](artifacts/completion-domain-fmt02.json) and
+[default02](artifacts/completion-domain-default02.json) PASS. Strict lint remains
+FAIL: combined238 inherited/zero introduced; analytic262 inherited/zero introduced.
+[Same-command analytic comparison](artifacts/completion-domain-analytic-same-command-comparison.json)
+measures263→262 with262 exact normalized matches and one import diagnostic removed.
+[QA source-byte inheritance](artifacts/completion-qa-analytic-diagnostic-inheritance.json)
+classifies the analytic-only findings against adopted bf93; this is not an
+executed old-source analytic baseline. Cross-feature unmatched diagnostics were
+never treated as proven source introductions. The narrow physical-import gate
+removes one inherited feature-specific finding; no broad baseline cleanup.
+
+Prospective [selected inventories](artifacts/completion-domain-selected-inventories.json)
+bind370 total tests, exactly the prior125 compatibility members and separately
+one real-candidate domain control. Compatibility explicitly excludes the new
+control, spent ordinary-positive and three spent original60 positives. Both
+physical-classified180-second support manifests include627 canonical files plus
+the exact selected binary. Distinct manifest readiness reviews are pending;
+neither new-source physical command has run at this entry.
+
+Predispatch custody finding: independent correctness caught stale selected-test,
+selected-inventory and selected-binary metadata in the two proposed domain01
+support records, even though source and the628 file hashes were refreshed.
+Neither manifest executed. Preserve01 as rejected preparation; fresh
+`completion-domain-compatibility02-support.json` and
+`completion-domain-physical02-support.json` bind the actual current inventories,
+selected tests and binary hashes consistently. Parent verifies all628 file hashes;
+same-reviewer fix verification is required before dispatch. This was an execution
+preparation defect, not a numerical result or spent physical slot.
+
+Ran: [compatibility02](artifacts/completion-domain-compatibility02.json) PASS125/125,
+[exact membership](artifacts/completion-domain-compatibility-membership.json) and
+all custody unchanged. Corrected02 manifests were independently accepted by
+[correctness](artifacts/completion-correctness-domain-dispatch.json) and
+[QA](artifacts/completion-qa-domain-dispatch.json); the fresh selected inventory,
+628 support hashes, selected executable and deadline were immediately rechecked.
+[Domain physical02](artifacts/completion-domain-physical02.json) is the first and
+only actual new-domain execution:0 PASS/1 FAIL,369 skipped, exit100, no timeout,
+source/support/binary unchanged. The label02 reflects repaired unexecuted support
+preparation, not a physical retry. Its typed pre-mutation refusal records one
+Stage1 call,2 factorizations,14 total Jacobi sweeps (7 current/max),1 face pivot,
+1827 whole-KKT operations/5503 guards,8162 enclosure operations/67427 guards and
+zero refinement work. Command0.668345s includes runner overhead and is not solver
+entry-to-return timing. Both reviews retain the positive-lambda numerical stop;
+no further candidate run, mutation or alternative input follows it.
+
+Terminal reconciliation: [scoped checks](artifacts/completion-terminal-scoped-checks.json)
+identify exactly five detached changed entries relative to adopted bf93: lib,
+coupled tests, controller, Stage1 and physical adapter. The earlier source reviews
+and changed-scope fix reviews establish private test reachability and unchanged
+production/default dispatch, dependencies/manifests and numerical policy. The
+actual recovery verifies all764 final entries and preserves both main dirty
+hashes. Applicable bounded A0/A1/A3 reasoning and prior unchanged authority
+exclusions remain; no Critical/deny trigger or new external-authority suite
+binding was introduced. Full09/A1/strict-lint, material/BGC, complete-parent/
+late-rejection, cycles/restart and scale HOLDs remain. The unchanged broad
+full-feature missing-symbol census was not repeated after a private local
+refactor; its18-reference HOLD is preserved without qualification credit.
+
+Final independent disposition: [correctness](artifacts/completion-correctness-terminal.json)
+approves bounded preservation and scoped publication with no publication blocker;
+[QA](artifacts/completion-qa-terminal.json) accepts evidence, recovery, publication
+scope and ledger custody. Both reuse their earlier accepted scopes, verify their
+own fixes, retain strict inherited lint FAIL and the valid terminal numerical
+negative, and leave all eight groups/18 references/private harness/target slots
+HOLD. Both independently verify terminal recovery and unchanged main dirty
+bytes. This is acceptance of the bounded experimental record and preservation,
+not qualification of the failed domain control or M1. Publication uses authorized
+main and only this record, deadline-only recorder change and `completion-*`
+artifacts; no main Rust or unrelated staged/untracked work is included.
 
 ## Fixed-face compensated runtime refinement — adopted 2026-09-26
 

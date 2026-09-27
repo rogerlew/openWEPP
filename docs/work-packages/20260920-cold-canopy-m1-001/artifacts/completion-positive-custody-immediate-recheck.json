@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: immediate selected inventory/support/binary hashes checked before first custody batch",
+  "recorded_utc": "2026-09-27T06:39:17.432097+00:00",
+  "support_sha256": "01ab051277a22de06457278ea4c1c935af0251eb693e4643664edc01fdc636e5",
+  "selected_tests": [
+    "m1_coupled_tests::m1_trust_region_physical_adapter_original60_setup_is_separate_from_deferred_proposal",
+    "m1_coupled_tests::m1_trust_region_physical_adapter_run_captures_and_restores_owned_budget_scope",
+    "m1_coupled_tests::m1_trust_region_physical_adapter_run_restores_nested_prior_budget_scope"
+  ],
+  "binary": {
+    "path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+    "sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8"
+  },
+  "all_628_support_files_match": true,
+  "correctness": "completion-correctness-positive-readiness.json",
+  "qa": "completion-qa-positive-custody-readiness.json"
+}

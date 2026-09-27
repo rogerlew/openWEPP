@@ -1,0 +1,71 @@
+{
+  "artifact": "completion-qa-domain-dispatch",
+  "reviewer": "/root/completion_qa",
+  "role": "secondary QA/evidence reviewer",
+  "evidence_class": "Static/read-only inspection of the frozen source, terminal receipts, actual inventory receipts, repaired prospective manifests, and current binary hashes. The reviewer ran no compile, test, candidate, solver, compatibility, or physical command.",
+  "findings": [],
+  "repaired_preparation_gap": {
+    "severity": "resolved-before-dispatch",
+    "paths": [
+      "completion-domain-compatibility01-support.json",
+      "completion-domain-physical01-support.json"
+    ],
+    "finding": "The unexecuted 01 manifests retained old inventory receipt, selected-test, and selected-binary summary fields while their 628-file pins had already been updated. No command used them. The replacement 02 manifests bind all summary fields to the current inventories and hashes; the originals remain preserved as evidence of the caught predispatch discrepancy."
+  },
+  "terminal_quality_evidence": {
+    "source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+    "receipts": {
+      "debug02": "PASS: 11 passed, 359 skipped.",
+      "release02": "PASS: 11 passed, 359 skipped.",
+      "analytic02": "PASS: 49 passed.",
+      "fmt02": "PASS.",
+      "default02": "PASS.",
+      "analytic_lint02": "Classified inherited diagnostics only; no introduced diagnostic after same-command comparison.",
+      "combined_lint02": "Classified inherited diagnostics only; no introduced diagnostic."
+    }
+  },
+  "compatibility01_binding": {
+    "support_record": "completion-domain-compatibility02-support.json",
+    "inventory_receipt": "completion-domain-compat-inventory01.json",
+    "source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+    "scope": "Exactly 125 of 370 libtest inventory entries. The selector explicitly excludes the previously spent ordinary endpoint, the three held positive-custody controls, and the new domain test.",
+    "classification": "physical compatibility batch",
+    "timeout_seconds": 180,
+    "binary": {
+      "path": "/tmp/openwepp-cold-canopy-m1-target/debug/deps/openwepp_land_surface_energy-1b46d3e792990fc1",
+      "sha256": "1689a42b5eac54e28231718f48428e16cc5b1f7904c33b0b6638ba0c41fd274c"
+    },
+    "custody": "The support has 628 pinned files, including the same debug binary hash recorded by the actual selected-inventory artifact and observed on disk."
+  },
+  "domain_physical_binding": {
+    "support_record": "completion-domain-physical02-support.json",
+    "inventory_receipt": "completion-domain-inventory01.json",
+    "source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+    "scope": "Exactly one new domain control: m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base.",
+    "classification": "physical release endpoint",
+    "timeout_seconds": 180,
+    "binary": {
+      "path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+      "sha256": "ca2d1a579ae8c69ac3c1bb999e475e5ba8de3112b6adee0647628cb8d8ed48b0"
+    },
+    "custody": "The support has 628 pinned files, including the same release binary hash recorded by the actual selected-inventory artifact and observed on disk."
+  },
+  "qa_disposition": {
+    "compatibility01": "QA CLEAR for exactly one compatibility02 debug physical batch under its recorded argv and 180-second deadline.",
+    "domain_physical01": "CONDITIONALLY CLEAR only after compatibility02 passes and an immediate recheck confirms source tree, exact one-member inventory, both relevant binary/file pins, support record, argv, and deadline remain unchanged. It is not cleared for early, repeated, substituted, ordinary-positive, target, or alternate-selector execution.",
+    "holds": [
+      "All 18 historical references remain HOLD.",
+      "No canonical-wrapper credit is created.",
+      "No target slot is released.",
+      "No M1, target, or package acceptance follows from this dispatch clearance."
+    ]
+  },
+  "non_blocking_debt_and_follow_ups": [
+    {
+      "severity": "non-blocking",
+      "path": "analytic-only strict lint configuration",
+      "finding": "The retained analytic-specific inherited diagnostic population remains visible and is not authorization for baseline cleanup."
+    }
+  ],
+  "qa_pass_statement": "QA accepts the repaired compatibility02 manifest for its single bounded dispatch and conditionally accepts the separate one-member release manifest after the stated successful compatibility and immediate-custody checks."
+}

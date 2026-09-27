@@ -1,0 +1,59 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4354:20
+     |
+4348 | ) -> (bool, f64) {
+     |      ----------- expected `(bool, f64)` because of return type
+...
+4354 |             return false;
+     |                    ^^^^^ expected `(bool, f64)`, found `bool`
+     |
+     = note: expected tuple `(bool, f64)`
+                 found type `bool`
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4365:5
+     |
+4348 | ) -> (bool, f64) {
+     |      ----------- expected `(bool, f64)` because of return type
+...
+4365 |     true
+     |     ^^^^ expected `(bool, f64)`, found `bool`
+     |
+     = note: expected tuple `(bool, f64)`
+                 found type `bool`
+
+error[E0600]: cannot apply unary operator `!` to type `(bool, f64)`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4556:12
+     |
+4556 | ...|| !refinement_eligibility_active_admit(&p0, &state.lower_active, &state.upper_active, &state.p, Some(&mut state.refinement_work)) {
+     |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot apply unary operator `!`
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4804:5
+     |
+4791 | ) -> bool {
+     |      ---- expected `bool` because of return type
+...
+4804 |     (p1_box_feasible, refinement_test_radius)
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `bool`, found `(bool, f64)`
+     |
+     = note: expected type `bool`
+               found tuple `(bool, f64)`
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5120:9
+     |
+5120 |     let (p1_box_feasible, refinement_test_radius) =
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `bool`, found `(_, _)`
+5121 |         refinement_prepare_first_scratch(input, prepared, state, solution, &mut scratch);
+     |         -------------------------------------------------------------------------------- this expression has type `bool`
+     |
+     = note: expected type `bool`
+               found tuple `(_, _)`
+
+Some errors have detailed explanations: E0308, E0600.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 5 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

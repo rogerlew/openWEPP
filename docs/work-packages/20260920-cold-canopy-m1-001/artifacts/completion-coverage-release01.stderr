@@ -1,0 +1,16 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7272:36
+     |
+7272 |         assert_eq!(refusal.reason, RefinementDot2Reason::SubnormalIntermediate);
+     |                                    ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+     |
+help: consider importing this enum
+     |
+7028 +     use crate::m1_trust_region_stage1::RefinementDot2Reason;
+     |
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage --release` exited with code 101

@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: actual nextest list membership checked; no execution of proposed positive custody controls",
+  "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+  "inventory_receipt": "completion-positive-custody-inventory01.json",
+  "selected_tests": [
+    "m1_coupled_tests::m1_trust_region_physical_adapter_original60_setup_is_separate_from_deferred_proposal",
+    "m1_coupled_tests::m1_trust_region_physical_adapter_run_captures_and_restores_owned_budget_scope",
+    "m1_coupled_tests::m1_trust_region_physical_adapter_run_restores_nested_prior_budget_scope"
+  ],
+  "selected_count": 3,
+  "binary": {
+    "path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+    "sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8"
+  },
+  "support_sha256": "01ab051277a22de06457278ea4c1c935af0251eb693e4643664edc01fdc636e5"
+}

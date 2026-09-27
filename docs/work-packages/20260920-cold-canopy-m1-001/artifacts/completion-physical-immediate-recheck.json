@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Ran: immediate inventory, source receipt and all manifest file hashes checked before first physical endpoint dispatch",
+  "recorded_utc": "2026-09-27T06:32:27.173856+00:00",
+  "inventory_receipt": "completion-physical-inventory02.json",
+  "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+  "support_sha256": "45add62e1587239870376f21a5cdb9eac4821ae9abf51970e92c317ff73b12e3",
+  "binary": {
+    "path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+    "sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8"
+  },
+  "selected_tests": [
+    "m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization"
+  ],
+  "all_manifest_files_match": true,
+  "endpoint_previous_receipt_absent": true,
+  "correctness": "completion-correctness-physical-readiness.json",
+  "qa": "completion-qa-physical-readiness.json"
+}

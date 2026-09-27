@@ -1,0 +1,68 @@
+{
+  "artifact": "completion-qa-initial",
+  "reviewer": "/root/completion_qa",
+  "role": "independent QA/evidence reviewer",
+  "evidence_class": "Static: reviewed the owner-adopted completion authorization, package-review and testing/bounded-execution guidance, preserved cutoff QA review, custody/ledger/recorder receipts, corrected lint comparison, correctness initial review, and the detached Stage1 source. Ran: hashes and receipt/log inspection only; no candidate, control, physical, or source command was dispatched.",
+  "review_scope": {
+    "adopted_authorization": "/tmp/openwepp_cold_canopy_m1_bvls03_completion_authorization.md",
+    "detached_source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "final_stage1_sha256": "32f0d14950e22ede0b446326b9b185ce22905c99035a30acde512d1281dae9da",
+    "main_rust_excluded": true,
+    "prior_qa_scope_reused_unchanged": "refinement-qa-final-cutoff.json"
+  },
+  "findings": [
+    {
+      "severity": "resolved",
+      "id": "QA-COMP-01",
+      "location": "artifacts/completion-initial-release.json; artifacts/completion-coverage-release02.json",
+      "finding": "Corrected after initial publication: completion-initial-release is a successful final32f source receipt (exit 0; 9 selected tests passed; source/pins/support unchanged). completion-coverage-release02 is a successful c5c9a9b9 source receipt (exit 0; 10 selected tests passed; source/pins/support unchanged). Neither receipt transfers to the writer's later quality cut; that cut needs its own frozen-source binding and source/manifest assessment before physical dispatch."
+    },
+    {
+      "severity": "blocking",
+      "id": "QA-COMP-02",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7560-7720",
+      "finding": "The present scratch/refusal control compares metadata with capture initial_radius and operation radius, but it does not create unequal original/reduced radii or assert their inequality. The correctness review requires an actual retained-face/refine seam with original radius 2.0 and reduced-face radius 1.0; the current equal-valued comparison cannot detect swapped fields. Add that discriminating control with the specified typed P0-subnormal refusal and preserve its expected-red chronology before relying on custody coverage."
+    },
+    {
+      "severity": "blocking",
+      "id": "QA-COMP-03",
+      "location": "artifacts/completion-initial-lint-comparison.json; docs/standards/testing-and-gate-strategy.md:165-176",
+      "finding": "The corrected comparison properly retains 238 matched inherited diagnostic blocks and identifies 64 introduced blocks, including numeric source/suggestion-gutter normalization. It is not a lint pass: all introduced or ambiguously attributed diagnostics require disposition on the terminal source. The bounded inherited-lint policy may cover only the established private/noncritical inherited population, never the introduced population or missing build/test evidence."
+    }
+  ],
+  "verified_controls_and_custody": {
+    "start_custody": "PASS for starting custody only: completion-start-custody.json records the adopted 47b04e2 base, 764-entry source recovery hash bf93e422..., archive hash fb0ef894..., and unchanged unrelated-dirty hashes. This does not validate later edited source.",
+    "ledger": "PASS for carry accounting: refinement-final-ledger.json charges the prior full envelope through its closing deadline; completion-start-custody.json carries 364933.959294 seconds to ceiling 379333.959294 and records no later greater local ledger. No refund or re-anchor is evidenced.",
+    "recorder": "PASS for deadline-only control: run_recorded.py hash d6d012... matches completion-recorder-controls.json; ordinary180 and exact critical900 are accepted, ordinary181, reserve breach, and wrongcritical are rejected. The recorder rechecks the full bound before output reservation and launch.",
+    "debug_coverage": "PARTIAL: completion-coverage-debug01 is a preserved compile failure (exit 101); debug02 is an actual receipt with exit 0, source/pins/support unchanged, and 10 selected refinement tests passed. release02 provides the matching successful release receipt on c5c9a9b9. completion-initial-release separately provides 9/9 release evidence on final32f. Neither is evidence for a later quality cut.",
+    "coverage_quality": "The EftRemainder, TwoSumRemainder, and per-term Accumulation test uses the actual shared seams and exact assertions recommended by correctness; it is a valid bounded stage-mapping control, not universal reachability coverage."
+  },
+  "non_blocking_debt_or_followups": [
+    {
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "note": "Keep the focused private test seams cohesive and avoid expanding test-only observation records beyond assertions that consume real custody/work evidence. The existing corrected helper call preserves a direct final-add boundary and is readable."
+    },
+    {
+      "location": "artifacts/completion-coverage-debug02.json",
+      "note": "Record selected-test membership explicitly in future receipts; stdout establishes 10 tests here, but a structured count/member field would make review less log-dependent."
+    }
+  ],
+  "terminal_requirements": [
+    "Freeze and hash the exact terminal detached source and manifest before each final result; do not transfer debug02/release02, final32f, or prior bddf credit to a later quality cut.",
+    "Resolve all 64 introduced lint blocks through actual terminal diagnostic blocks, preserving the 238 inherited blocks and the same-command private/noncritical comparison evidence.",
+    "Obtain terminal cargo fmt check, default reachability check, feature inventory, strict lint, and source-bound debug and release C1-C4/whole-controller receipts. Run cargo deny check only if manifest, lockfile, dependency/license/source policy, toolchain dependency, or workspace resolution changes.",
+    "Add and execute the unequal-radius custody control required by completion-correctness-initial.json, then have the same correctness reviewer verify that fix and the frozen selector/source binding.",
+    "Before the one release ordinary-positive physical run, retain distinct QA and correctness source/manifest assessments, confirm exact selected inventory, and preserve the required timing, identity, work-counter, materialization, and independent closure evidence."
+  ],
+  "followup_release_receipt_review": {
+    "evidence_class": "Static: inspected completed receipts/logs and current source hash only; no command dispatched.",
+    "correction": "The original QA-COMP-01 claim was stale and, as worded, incorrect because completion-initial-release already existed at final32f. It is corrected above rather than treated as a new acceptance claim.",
+    "verified_receipts": [
+      "completion-initial-release: exit 0, 84.030648 s, final32f tree bf93e422..., 9 passed/358 skipped, source/pins/support unchanged",
+      "completion-coverage-release02: exit 0, 82.812014 s, tree c5c9a9b9..., 10 passed/358 skipped, source/pins/support unchanged"
+    ],
+    "current_writer_source": "Stage1 hash observed after receipt review: 49c4c8b1d373769660c1e045fea9ea88db51e9899ceea86cda7f5e2ad8438089; it differs from the reviewed receipt cuts.",
+    "verdict": "No package acceptance. QA-COMP-02 and QA-COMP-03 remain blocking; the active quality cut must receive its own final source/manifest binding and same-reviewer assessment."
+  },
+  "verdict": "HOLD / INCOMPLETE. Starting custody, deadline bounds, ledger carry, corrected lint comparison, and final32f/c5c9a9b9 release-control receipts are reviewable. QA does not authorize physical dispatch until QA-COMP-02 and QA-COMP-03 are resolved on one frozen terminal source with current source/manifest assessment."
+}

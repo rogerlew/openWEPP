@@ -1,0 +1,143 @@
+{
+  "artifact": "completion-correctness-emitter",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static review of the frozen physical-emitter source and exact helper-extraction patch, plus read-only inspection of parent-executed compile and strict-lint receipts. The reviewer ran no compile, test, candidate, solver, or physical command.",
+  "findings": [
+    {
+      "severity": "high",
+      "status": "blocking",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "symbol": "m1_physical_outcome_json",
+      "finding": "The frozen failure outcome emits only kind, outer_error_class, own_error_code, a Debug-formatted typed_error string, accepted_capture_present, and adapter_materialized. It does not expose the typed failure payload and controller state as structured JSON.",
+      "required_fix": "For every error variant, emit the discriminant and its structured payload. Subproblem must preserve kind plus optimality reason/coordinate/radius/lambda, attempted work, sweeps, pivots, SVD calls, raw-Jacobian maximum, refinement metadata, canonical refusal work, and any budget-refusal operation/snapshot. Numerical and Own(IncompleteScope) must remain distinguishable without parsing Debug text. Emit the failure-side controller run counts and current/final coordinate evidence needed to prove no accepted/materialized update. Retain typed_error only as supplementary evidence.",
+      "correctness_effect": "A physical failure can currently be observed, but its exact typed cause and full-work accounting cannot be independently checked or compared. Debug formatting is not a stable structured contract and can hide omissions or force lossy parsing."
+    },
+    {
+      "severity": "medium",
+      "status": "blocking",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "symbol": "m1_physical_outcome_json",
+      "finding": "The frozen success outcome's capacity_predicates records only diagnosed_liquid_mass_kg_m2 <= liquid_capacity_kg_m2. The preserved acceptance assertion requires both diagnosed_liquid_mass_kg_m2 >= 0.0 and diagnosed_liquid_mass_kg_m2 <= liquid_capacity_kg_m2.",
+      "required_fix": "Emit the nonnegative predicate and the within-capacity predicate separately, or emit their exact conjunction. The already-emitted raw diagnosed-mass and capacity bits remain sufficient operands; duplicate numeric fields are unnecessary.",
+      "correctness_effect": "The JSON can report capacity_predicates=true for a negative diagnosed liquid mass even though the preserved test assertion would reject that result."
+    },
+    {
+      "severity": "low",
+      "status": "advisory_non_blocking",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "symbols": [
+        "m1_physical_cpu_hz",
+        "m1_physical_cpu_ticks",
+        "m1_physical_cpu_sample"
+      ],
+      "finding": "The structured CPU observation records tick and frequency values or concrete errors, but it does not name the two measurement sources.",
+      "required_fix": "Name /proc/self/stat fields 14 and 15 as the process CPU tick source and getconf CLK_TCK as the frequency source in the emitted record.",
+      "correctness_effect": "The parser is statically correct, but a consumer cannot establish source provenance from the JSON alone."
+    }
+  ],
+  "reviewed_cuts": {
+    "pre_extraction_coupled_tests_sha256": "07da786cae594ac19964b045e5455c9140ea0b0d13b3d2c48589dc2588ca72d4",
+    "helper_extraction_coupled_tests_sha256": "ac2852dc3cea62671ed7cb8bb25d54121689a06119124dbc1f0cb7651ef18a4f",
+    "unchanged_stage1_sha256": "85b666eb0b826fd7a9ef3926e70f61acb0ee37153e1b7e8b7e388aee48762937",
+    "helper_extraction_patch_sha256": "b6b842dd34df3d3c16a888b11c990b98c7d8a2d612adc38f10314f9d081d9963",
+    "scope_limit": "This artifact reviews the frozen ac2852 emitter cut. A later mutable source cut is outside this review and requires same-reviewer fix verification."
+  },
+  "primary_evidence": [
+    {
+      "path": "artifacts/completion-emitter-debug01-source.json",
+      "role": "exact source manifest for the pre-extraction 07da emitter cut"
+    },
+    {
+      "path": "artifacts/completion-emitter-debug02-source.json",
+      "sha256": "4715a293af66db74bcb6c1485c4eed2079b9d84b83756b3c532cb4c0fb32cac3",
+      "role": "exact source manifest for the helper-extraction ac2852 cut"
+    },
+    {
+      "path": "artifacts/completion-emitter-debug02.json",
+      "sha256": "cf08dc7c0dc9358247d80166056567ea27abde8124572f31add3ff0fe116efff",
+      "role": "parent-executed compile/focused-test receipt for source tree 38db2f1f; selector excludes the physical emitter"
+    },
+    {
+      "path": "artifacts/completion-emitter-lint07-source.json",
+      "sha256": "6a1e81f372b3849905ca10bdb03fac06103351f27e3b25cf277ddda547f14673",
+      "role": "exact source manifest for strict lint at the helper-extraction cut"
+    },
+    {
+      "path": "artifacts/completion-emitter-lint07-comparison.json",
+      "sha256": "c7dc99b886fa579c618a627a258c8c07387bb60ceaa59a7fb73bd224b112836d",
+      "role": "exact comparison: 238 candidate diagnostics, all 238 inherited, 0 introduced"
+    }
+  ],
+  "static_verification": [
+    {
+      "area": "single invocation and timing interval",
+      "result": "PASS",
+      "detail": "The original 60-iteration setup solve and accepted-coordinate perturbation occur before timing. CPU and wall-clock samples bracket exactly one m1_trust_region_physical_adapter_proposal_for_test call. The emitted observation is materialized before success expectation, so a failure still produces the JSON. No compatibility control consumes the physical endpoint invocation."
+    },
+    {
+      "area": "setup perturbation and protected input",
+      "result": "PASS",
+      "detail": "The control starts from the accepted original60 coordinates, applies coordinate 20 += 1e-4, records setup and entry bits plus requested/actual delta, requires actual delta > 1e-8 and < 1, resets captures/activity/work, preserves the prior budget, and emits the complete protected input Debug representation."
+    },
+    {
+      "area": "CPU parser and errors",
+      "result": "PASS_WITH_LOW_PROVENANCE_ADVISORY",
+      "detail": "After rsplit_once(')'), /proc/self/stat tail indices 11 and 12 are fields 14 utime and 15 stime. Both parse as u64 and use checked_add. getconf CLK_TCK checks command status, UTF-8, u64 parsing, and nonzero frequency. File, parsing, overflow, and command errors are propagated as concrete observation errors; absence is not mislabeled as a zero sample."
+    },
+    {
+      "area": "common observation content",
+      "result": "PASS",
+      "detail": "The record contains schema/method/control, protected input, setup and perturbed bits, perturbation values, wall and CPU observations, prior/solve/restored budgets, adapter counts and current coordinates, predictor/final runtime counts and dimensions, all controller accounting records, the overlap statement, face capture, phase events, accepted-capture state, and outcome."
+    },
+    {
+      "area": "full-work and budget serialization",
+      "result": "PASS_FOR_SERIALIZED_STRUCT_FIELDS",
+      "detail": "m1_physical_work_json emits stage1 calls, SVD calls, pivots, sweeps, refinement scalar and guard charges, attempted and denied entries, first-residual, second-dot2, factor-application, coordinate-update, whole-KKT, and upward-enclosure operations and guards. m1_physical_budget_json emits attempted and entered evaluations plus core, raw-Jacobian, hydraulic, factorization, and materialization counts. The failure branch does not yet attach this structured evidence and remains blocked by the high finding."
+    },
+    {
+      "area": "success and ordinary accepted update custody",
+      "result": "PASS_EXCEPT_CAPACITY_PREDICATE_FINDING",
+      "detail": "The success record emits accepted coordinates, residual bits, binding status, all reservoir operands, Jacobian absence, materialization, captured input/coordinates/equality, controller run counts/coordinates/refusal state, and the common entry/final coordinate evidence. Together with the preserved assertions, accepted/final/entry bits and run counts are sufficient to reconstruct ordinary accepted-update custody; no duplicate fields are required."
+    },
+    {
+      "area": "independent reservoir closure operands and arithmetic",
+      "result": "PASS",
+      "detail": "Each reservoir record emits raw mass and enthalpy operands and diagnosed-capacity values as f64 bits. It independently reconstructs mass as ending - beginning - dt*(incident - vapor - drainage), and enthalpy as ending - beginning - dt*(non_vapor + incident*incident_enthalpy - vapor*(2501000 + 1849*(temperature - 273.15)) - drainage*4218*(temperature - 273.15)). It emits reconstructed bits, delta from the published value, both tolerances, and match/closure booleans. Operation order matches the preserved independent assertion helper."
+    },
+    {
+      "area": "preserved assertion tail",
+      "result": "PASS",
+      "detail": "assert_ordinary_update_success preserves the prior 63-line assertion tail: independent reservoir reconstruction, capacity and binding assertions, accepted-capture bit equalities, Jacobian absence, adapter input/trial custody, proposals=2, accepted=1, installed=1, materialization=1, final/materialized/captured equality, final differing from perturbation, no terminal refusal, and exact adapter/runtime/work counts."
+    },
+    {
+      "area": "m1_physical_outcome_json extraction",
+      "result": "PASS_MECHANICAL_NO_SEMANTIC_DRIFT",
+      "detail": "The ac2852 change moves the unchanged literal success/failure match into a 56-line helper and replaces the inline match with one call. The only reference adjustment is input == *protected_input because the helper receives &M1CoupledColumnInput. Branch selection, expressions, field names, values, and evaluation order are unchanged. The extraction neither fixes nor worsens the three content findings above."
+    }
+  ],
+  "recorded_validation": {
+    "emitter_debug01_pre_extraction": {
+      "result": "11 passed, 0 failed, 358 skipped",
+      "coverage_limit": "The selector is test(m1_trust_region_refinement_). It compiles the physical emitter but does not execute it."
+    },
+    "emitter_debug02_helper_extraction": {
+      "source_tree_sha256": "38db2f1fbbad990ccf0cc13d9bc9d3ea22050038a4fa4d7e1dcbf2940c8cd6c7",
+      "exit_code": 0,
+      "result": "11 passed, 0 failed, 358 skipped",
+      "coverage_limit": "The selector is test(m1_trust_region_refinement_). It compiles the physical emitter but does not execute it."
+    },
+    "emitter_lint07_helper_extraction": {
+      "record_sha256": "c762b2dde79e502408a940c5f069a3c20f91d4d2c6463584f3269f145423ae77",
+      "comparison_sha256": "c7dc99b886fa579c618a627a258c8c07387bb60ceaa59a7fb73bd224b112836d",
+      "classification": "238 total diagnostics = 238 inherited + 0 introduced",
+      "truthfulness": "This is an exact classified strict-lint comparison, not a clean lint run."
+    }
+  },
+  "residual_risk_and_missing_tests": [
+    "The three findings require same-reviewer verification against a new frozen source cut.",
+    "No physical emitter invocation has been run in the evidence reviewed here. Success/failure branch observations, wall/CPU values, structured serialization, closure values, budget restoration, and exact runtime work remain runtime-unverified.",
+    "The physical source manifest and physical runtime receipt remain required. The debug01/debug02 focused selectors are compile and refinement-regression evidence only.",
+    "This review makes no claim about source edits after coupled-tests SHA ac2852dc3cea62671ed7cb8bb25d54121689a06119124dbc1f0cb7651ef18a4f."
+  ],
+  "approval": "HOLD. The common/success observation, CPU parser, single-invocation timing, closure reconstruction, assertion extraction, and outcome-helper extraction are statically sound. The structured failure cause/work omission and incomplete capacity predicate are correctness blockers; CPU source labels are a low provenance advisory. Physical manifest/runtime evidence remains pending."
+}

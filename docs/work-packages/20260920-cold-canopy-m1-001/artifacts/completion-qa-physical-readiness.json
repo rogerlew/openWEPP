@@ -1,0 +1,46 @@
+{
+  "artifact": "completion-qa-physical-readiness",
+  "reviewer": "/root/completion_qa",
+  "role": "independent QA/evidence reviewer",
+  "evidence_class": "Static/Ran-record inspection: reviewed exact compatibility execution receipt, final source hashes, actual compatibility and physical inventories, final 628-file manifests, and binary pins. Reviewer dispatched no command.",
+  "findings": [],
+  "compatibility_result": {
+    "receipt": "completion-compatibility01.json",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "exit_code": 0,
+    "elapsed_seconds": 13.056078922003508,
+    "result": "125 passed, 0 failed, 244 skipped",
+    "integrity": "source, observer base, pins, support links, and pinned debug binary 0d71d772877728c6586319ea3b2e8177d0ac86999e31e5f8b110fb13c43068ab remained unchanged",
+    "inventory": "completion-compatibility-inventory01.json selects exactly 125 of 369 tests; the five separately obligated endpoint/positive/negative exclusions remain absent."
+  },
+  "physical01_binding": {
+    "support_record": "completion-physical01-support.json",
+    "source_tree_sha256": "538250c003bfb42b29da717319a9eff9e228e86f0ddce5504ba8cbe06f69de18",
+    "support_files": 628,
+    "inventory_receipt": "completion-physical-inventory01.json",
+    "inventory": "exactly one selected test of 369: m1_coupled_tests::m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization",
+    "release_binary_path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+    "release_binary_sha256": "7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8",
+    "classification": "physical",
+    "timeout_seconds": 180,
+    "unused": true
+  },
+  "final_source_identity": {
+    "stage1_sha256": "f3de57a28df00e7383ed2565c997645b0ae5e4665e783e73dd08e4ecded22e92",
+    "coupled_tests_sha256": "ae3656611e3e1dc4167aa47ce70485163b3f1a9c174b58342d93549ae52ac6ae",
+    "lib_sha256": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c",
+    "quality_context": "Final debug/release 11/11, format, default check/list, combined-feature inventory, and empty doctest inventory bind this tree. Strict lint is exactly 238 inherited and zero introduced diagnostics under the documented selected private/noncritical policy."
+  },
+  "qa_readiness": {
+    "verdict": "QA CLEAR FOR ONE physical01 RELEASE ENDPOINT, CONDITIONAL ON EXPLICIT POST-COMPATIBILITY CORRECTNESS APPROVAL",
+    "scope": "Only the exact one-member release selector and 180-second bound in completion-physical01-support.json. No target, repeat, warm-up, replay, alternate arm, or other excluded control is cleared.",
+    "prelaunch_checks": [
+      "Confirm the current source tree, Stage1, coupled-test and lib hashes still equal the identities above.",
+      "Confirm release binary path and SHA-256 still equal 7e36e78f2160f0aca7fbaac8516a38ac0eaf2c598b225acb06bcb28b8a3cb6e8.",
+      "Confirm the selected inventory remains exactly the one ordinary-positive endpoint and no support manifest/link input has drifted.",
+      "Obtain the designated correctness review's explicit post-compatibility approval before launch."
+    ],
+    "postrun_requirements": "Preserve the first physical receipt and structured observation regardless of outcome. Return source/binary/input identity, timing and CPU provenance, accepted/refusal/controller/budget/work evidence, materialization and closure operands, and independent closure review before any further decision."
+  },
+  "verdict": "QA PASS FOR CONDITIONAL physical01 DISPATCH. Compatibility is verified and the endpoint is precisely source/binary/inventory bound; package acceptance remains unavailable."
+}
