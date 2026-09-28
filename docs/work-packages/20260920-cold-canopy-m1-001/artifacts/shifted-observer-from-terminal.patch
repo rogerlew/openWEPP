@@ -1,0 +1,327 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -5384,9 +5384,38 @@
+     let protected_input = input.clone();
+     let protected_trial = trial();
+     let mut adapter = super::M1PhysicalTrustRegionAdapter::new(input, protected_trial.clone());
++    let capture_scope = super::m1_face_pivot_capture_begin_for_test();
++    let observed =
++        super::m1_trust_region_physical_adapter_domain_refusal_observation_for_test(&mut adapter);
++    let face_capture = super::m1_face_pivot_capture_take_for_test();
++    eprintln!(
++        "SHIFTED_FACE_ATTRIBUTION_CAPTURE {}",
++        serde_json::json!({
++            "schema":"m1-shifted-face-attribution-v1",
++            "control":"real-candidate-domain-refusal-retained-base",
++            "fixture":"covered_input(ORIGINAL)+trial()+conditions()+topology_binding()",
++            "protected_input_debug":format!("{protected_input:#?}"),
++            "protected_trial_debug":format!("{protected_trial:#?}"),
++            "protected_trial_coordinate_bits":super::m1_trial_coordinates_for_test(&protected_trial).map(f64::to_bits),
++            "face_capture":serde_json::from_str::<Value>(&super::m1_face_pivot_capture_json_for_test(face_capture.as_ref())).expect("face capture JSON"),
++            "reached_adapter_observation":{
++                "trial_domain_checks":adapter.observation().trial_domain_checks,
++                "current_evaluations":adapter.observation().current_evaluations,
++                "raw_jacobian_assemblies":adapter.observation().raw_jacobian_assemblies,
++                "materialization_entries":adapter.observation().materialization_entries
++            },
++            "protected_input_unchanged":adapter.input == protected_input,
++            "protected_trial_unchanged":adapter.initial_trial == protected_trial,
++            "post_refusal_fields":{
++                "candidate_domain_refusal":"unreached_after_Stage1_typed_refusal",
++                "radius_shrink":"unreached_after_Stage1_typed_refusal",
++                "candidate_materialization":"unreached_after_Stage1_typed_refusal"
++            }
++        })
++    );
++    drop(capture_scope);
+     let observation =
+-        super::m1_trust_region_physical_adapter_domain_refusal_observation_for_test(&mut adapter)
+-            .expect("real negative drainage candidate must be refused before evaluation");
++        observed.expect("real negative drainage candidate must be refused before evaluation");
+     let transition = observation.transition;
+     assert_eq!(
+         transition.stage1_observation.candidate_coordinates[5].to_bits(),
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -155,10 +155,46 @@
+     pub(crate) lower: [bool; 21],
+     pub(crate) upper: [bool; 21],
+     pub(crate) free: [bool; 21],
++    pub(crate) scaled_lower: Option<[f64; 21]>,
++    pub(crate) scaled_upper: Option<[f64; 21]>,
+     pub(crate) entered_factorizations: u8,
+     pub(crate) completed_pivots: u8,
+     pub(crate) completed_sweeps: u8,
+     pub(crate) optimality: Option<super::M1TrustRegionOptimalityObservation>,
++    pub(crate) lambda_trace: Option<M1FacePivotLambdaTraceCapture>,
++    pub(crate) factor: Option<M1FacePivotFactorCapture>,
++}
++
++// This is a copied, reached-state snapshot.  It never calls the lambda or
++// factor routines, so a flight record cannot add numerical work to the solve.
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1FacePivotLambdaTraceCapture {
++    pub(crate) initial_bracket: [f64; 2],
++    pub(crate) bracket: [f64; 2],
++    pub(crate) bracket_evaluations: Vec<(f64, f64)>,
++    pub(crate) bisection_evaluations: Vec<(f64, f64)>,
++    pub(crate) lambda: f64,
++    pub(crate) natural_step: Vec<f64>,
++    pub(crate) pre_hook_step: Vec<f64>,
++    pub(crate) post_hook_step: Vec<f64>,
++    pub(crate) norm: f64,
++    pub(crate) gap: f64,
++    pub(crate) tolerance: f64,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1FacePivotFactorCapture {
++    pub(crate) same_invocation_identity: usize,
++    pub(crate) a: Vec<Vec<f64>>,
++    pub(crate) b: Vec<Vec<f64>>,
++    pub(crate) v: Vec<Vec<f64>>,
++    pub(crate) sigma: Vec<f64>,
++    pub(crate) order: Vec<usize>,
++    pub(crate) visits: Vec<super::M1TrustRegionJacobiPair>,
++    pub(crate) rotations: usize,
++    pub(crate) sweeps: u8,
+ }
+ 
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+@@ -775,6 +811,107 @@
+             admission.admitted
+         );
+     }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_matrix_bits(output: &mut String, matrix: &[Vec<f64>]) {
++    output.push('[');
++    for (index, row) in matrix.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        output.push('[');
++        append_slice_bits(output, row);
++        output.push(']');
++    }
++    output.push(']');
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_lambda_trace_json(output: &mut String, trace: Option<&M1FacePivotLambdaTraceCapture>) {
++    use std::fmt::Write;
++
++    let Some(trace) = trace else {
++        output.push_str("null");
++        return;
++    };
++    output.push_str("{\"initial_bracket\":");
++    append_bits(output, &trace.initial_bracket);
++    output.push_str(",\"bracket\":");
++    append_bits(output, &trace.bracket);
++    for (name, values) in [
++        ("bracket_evaluations", &trace.bracket_evaluations),
++        ("bisection_evaluations", &trace.bisection_evaluations),
++    ] {
++        let _ = write!(output, ",\"{name}\":[");
++        for (index, (lambda, norm)) in values.iter().enumerate() {
++            if index != 0 {
++                output.push(',');
++            }
++            let _ = write!(
++                output,
++                "[\"{:016x}\",\"{:016x}\"]",
++                lambda.to_bits(),
++                norm.to_bits()
++            );
++        }
++        output.push(']');
++    }
++    let _ = write!(
++        output,
++        ",\"lambda\":\"{:016x}\",\"natural_step\":[",
++        trace.lambda.to_bits()
++    );
++    append_slice_bits(output, &trace.natural_step);
++    output.push_str("],\"pre_hook_step\":[");
++    append_slice_bits(output, &trace.pre_hook_step);
++    output.push_str("],\"post_hook_step\":[");
++    append_slice_bits(output, &trace.post_hook_step);
++    let _ = write!(
++        output,
++        "] ,\"norm\":\"{:016x}\",\"gap\":\"{:016x}\",\"tolerance\":\"{:016x}\"}}",
++        trace.norm.to_bits(),
++        trace.gap.to_bits(),
++        trace.tolerance.to_bits()
++    );
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn append_factor_json(output: &mut String, factor: Option<&M1FacePivotFactorCapture>) {
++    use std::fmt::Write;
++
++    let Some(factor) = factor else {
++        output.push_str("null");
++        return;
++    };
++    let _ = write!(
++        output,
++        "{{\"same_invocation_identity\":{},\"a\":",
++        factor.same_invocation_identity
++    );
++    append_matrix_bits(output, &factor.a);
++    output.push_str(",\"b\":");
++    append_matrix_bits(output, &factor.b);
++    output.push_str(",\"v\":");
++    append_matrix_bits(output, &factor.v);
++    output.push_str(",\"sigma\":[");
++    append_slice_bits(output, &factor.sigma);
++    let _ = write!(output, "],\"order\":{:?},\"visits\":[", factor.order);
++    for (index, visit) in factor.visits.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        let _ = write!(
++            output,
++            "{{\"left\":{},\"right\":{},\"rotated\":{},\"sweep\":{}}}",
++            visit.left, visit.right, visit.rotated, visit.sweep
++        );
++    }
++    let _ = write!(
++        output,
++        "],\"rotations\":{},\"sweeps\":{}}}",
++        factor.rotations, factor.sweeps
++    );
+ }
+ 
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+@@ -825,8 +962,16 @@
+             append_bool_bits(output, &refusal.upper);
+             output.push_str(",\"free\":");
+             append_bool_bits(output, &refusal.free);
++            output.push_str(",\"scaled_lower\":");
++            append_optional_bits(output, refusal.scaled_lower);
++            output.push_str(",\"scaled_upper\":");
++            append_optional_bits(output, refusal.scaled_upper);
+             output.push_str(",\"optimality\":");
+             append_optimality_json(output, refusal.optimality.as_ref());
++            output.push_str(",\"lambda_trace\":");
++            append_lambda_trace_json(output, refusal.lambda_trace.as_ref());
++            output.push_str(",\"factor\":");
++            append_factor_json(output, refusal.factor.as_ref());
+             output.push('}');
+         }
+         None => output.push_str("null"),
+@@ -955,10 +1100,41 @@
+             lower: [false; 21],
+             upper: [true; 21],
+             free: [false; 21],
++            scaled_lower: None,
++            scaled_upper: None,
+             entered_factorizations: 43,
+             completed_pivots: 42,
+             completed_sweeps: 7,
+             optimality: None,
++            lambda_trace: Some(M1FacePivotLambdaTraceCapture {
++                initial_bracket: [0.0, 1.0],
++                bracket: [0.5, 1.0],
++                bracket_evaluations: vec![(0.0, 2.0), (1.0, 1.0)],
++                bisection_evaluations: vec![(0.5, 1.5)],
++                lambda: 1.0,
++                natural_step: vec![1.0],
++                pre_hook_step: vec![1.0],
++                post_hook_step: vec![1.0],
++                norm: 1.0,
++                gap: 0.0,
++                tolerance: 1.0e-12,
++            }),
++            factor: Some(M1FacePivotFactorCapture {
++                same_invocation_identity: 17,
++                a: vec![vec![1.0]],
++                b: vec![vec![1.0]],
++                v: vec![vec![1.0]],
++                sigma: vec![1.0],
++                order: vec![0],
++                visits: vec![super::M1TrustRegionJacobiPair {
++                    left: 0,
++                    right: 1,
++                    rotated: true,
++                    sweep: 1,
++                }],
++                rotations: 1,
++                sweeps: 1,
++            }),
+         }),
+     }
+ }
+@@ -977,6 +1153,12 @@
+     assert!(parsed["refusal"]["coordinate"].is_null());
+     assert!(parsed["refusal"]["radius"].is_null());
+     assert!(parsed["refusal"]["lambda"].is_null());
++    assert_eq!(
++        parsed["refusal"]["lambda_trace"]["lambda"],
++        "3ff0000000000000"
++    );
++    assert_eq!(parsed["refusal"]["factor"]["same_invocation_identity"], 17);
++    assert_eq!(parsed["refusal"]["factor"]["visits"][0]["sweep"], 1);
+ 
+     let refusal = capture.refusal.as_mut().expect("populated refusal");
+     refusal.optimality_reason = Some("optimality_nonfinite");
+@@ -2032,10 +2214,14 @@
+             lower: state.lower_active,
+             upper: state.upper_active,
+             free: state.free,
++            scaled_lower: None,
++            scaled_upper: None,
+             entered_factorizations: state.entered,
+             completed_pivots: state.completed_pivots,
+             completed_sweeps: state.completed_sweeps,
+             optimality: None,
++            lambda_trace: None,
++            factor: None,
+         });
+         capture
+             .completed_subproblems
+@@ -2108,10 +2294,39 @@
+             lower: state.lower_active,
+             upper: state.upper_active,
+             free: state.free,
++            scaled_lower: Some(prepared.scaled_lower),
++            scaled_upper: Some(prepared.scaled_upper),
+             entered_factorizations: state.entered,
+             completed_pivots: state.completed_pivots,
+             completed_sweeps: state.completed_sweeps,
+             optimality: assessment.map(|value| value.observation.clone()),
++            lambda_trace: Some(M1FacePivotLambdaTraceCapture {
++                initial_bracket: solution.trace.initial_bracket,
++                bracket: solution.trace.bracket,
++                bracket_evaluations: solution.trace.bracket_evaluations.clone(),
++                bisection_evaluations: solution.trace.bisection_evaluations.clone(),
++                lambda: solution.trace.lambda,
++                natural_step: solution.trace.natural_step.clone(),
++                pre_hook_step: solution.trace.pre_hook_step.clone(),
++                post_hook_step: solution.trace.post_hook_step.clone(),
++                norm: solution.trace.norm,
++                gap: solution.trace.gap,
++                tolerance: solution.trace.tolerance,
++            }),
++            factor: solution
++                .factor
++                .as_ref()
++                .map(|factor| M1FacePivotFactorCapture {
++                    same_invocation_identity: std::ptr::from_ref(factor) as usize,
++                    a: factor.a.clone(),
++                    b: factor.b.clone(),
++                    v: factor.v.clone(),
++                    sigma: factor.sigma.clone(),
++                    order: factor.order.clone(),
++                    visits: factor.visits.clone(),
++                    rotations: factor.rotations,
++                    sweeps: factor.sweeps,
++                }),
+         });
+     });
+ }

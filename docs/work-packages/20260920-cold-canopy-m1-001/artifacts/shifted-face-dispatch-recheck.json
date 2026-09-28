@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: parent immediate prelaunch hash/membership/environment checks; no physical execution",
+  "recorded_utc": "2026-09-28T17:06:46.801618+00:00",
+  "source_tree_sha256": "cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8",
+  "binary": {
+    "path": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+    "sha256": "8c451428f3f7c020e2e7944437756b8c89c9d7ce13028a774c93676638355193"
+  },
+  "support": "shifted-face-physical03-support.json",
+  "support_sha256": "7a75ae5a9660617d4fdb3350561746dcf9aff0710c04b18c8eec1a7bbf912bb4",
+  "pinned_files": 628,
+  "all_pins_match": true,
+  "selected_tests": [
+    "m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base"
+  ],
+  "material_environment_equal": true
+}

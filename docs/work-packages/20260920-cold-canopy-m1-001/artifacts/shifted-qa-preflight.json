@@ -1,0 +1,67 @@
+{
+  "evidence_class": "Static: independent QA read/hash review; no candidate, test, or physical replay",
+  "reviewer": "/root/shifted_qa",
+  "recorded_utc": "2026-09-28T16:58:06Z",
+  "authorization": "/tmp/openwepp_cold_canopy_m1_shifted_face_attribution_authorization.md",
+  "review_scope": "observer source, custody, planned capture completeness, and sole-capture readiness",
+  "terminal_custody": {
+    "declared_source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+    "declared_entries": 764,
+    "preedit_entry_hash_mismatches": 0,
+    "archive_sha256": "65e2cbf11ef4492e4cfdd393255812c55aa098d06138194e0104922801900b12",
+    "historical_binary_sha256": "ca2d1a579ae8c69ac3c1bb999e475e5ba8de3112b6adee0647628cb8d8ed48b0",
+    "qa_rehashed_archive_sha256": "65e2cbf11ef4492e4cfdd393255812c55aa098d06138194e0104922801900b12",
+    "qa_rehashed_historical_binary_sha256": "ca2d1a579ae8c69ac3c1bb999e475e5ba8de3112b6adee0647628cb8d8ed48b0"
+  },
+  "observer_cut_at_review": {
+    "runtime_source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "changed_paths_from_terminal_archive": [
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+    ],
+    "stage1_sha256": "3d9af6e1a86804c94b16bb64403b33a0af3ee8aeadb24fb8088143bd43d6f1a8",
+    "coupled_test_sha256": "ad51710550f4cb7f50ecf71f78a3d65d6eeb93d15ef5d5b53758a17028894de1",
+    "static_scope_assessment": "test/feature-gated opt-in capture structures and the already-authorized named endpoint only; no observed production or numerical-branch change"
+  },
+  "preflight_verdict": "BLOCKED_PENDING_CAPTURE_MANIFEST",
+  "blocking_findings": [
+    {
+      "severity": "blocker",
+      "location": "artifacts/shifted-*.json",
+      "evidence": "No observer source-and-capture manifest existed at review. The one physical execution cannot yet be bound to an exact changed-source identity, allowed changed paths, selected binary, command, capture schema, and raw-output destinations."
+    },
+    {
+      "severity": "blocker",
+      "location": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "evidence": "The planned emitted record exposes protected input and trial only through Debug strings and does not declare injection-hook non-reachability or label all fields unavailable due to short circuiting. This does not yet meet the authorization's exact input/seed, protected-state/scope, injection-not-reached, and unreached-value custody requirements."
+    }
+  ],
+  "required_before_physical_capture": [
+    "Write and independently inspect a stable manifest with exact observer source hashes, terminal-base hashes, allowed paths/diff identity, selected capture binary hash, named endpoint, one-command/180-second bound, stdout/stderr and raw-record destinations, and no-retry rule.",
+    "Make the emitted schema represent the actual input and trial seed in a machine-readable bit-preserving form, record injection-hook non-reachability, and explicitly label values that were not reached rather than encoding or implying zeros.",
+    "Recheck the final observer source/support manifest after writer compile/list evidence and before the sole capture."
+  ],
+  "nonblocking_follow_up": "The current static diff adds scaled bounds plus lambda/factor snapshots and retains the endpoint's existing assertions. Its compile, format, and capture-schema evidence were not available for this preflight and require same-reviewer terminal verification.",
+  "final_frozen_recheck": {
+    "evidence_class": "Static/Ran: read/hash review of frozen manifests and supplied nonphysical receipts; QA did not execute the candidate endpoint",
+    "recorded_utc": "2026-09-28T17:06:00Z",
+    "preflight_verdict": "READY_FOR_THE_ONE_AUTHORIZED_CAPTURE",
+    "source_tree_sha256": "cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8",
+    "stage1_sha256": "2171320c19fdc6f623d5843002ba2c89343b42ebe2dcc226d57536df641db13e",
+    "coupled_test_sha256": "4498dd228ba0b90da28670607d980e535c322aea1fad7e3ab80ba59df1605d65",
+    "selected_release_binary_sha256": "8c451428f3f7c020e2e7944437756b8c89c9d7ce13028a774c93676638355193",
+    "physical_support": "shifted-face-physical03-support.json",
+    "inventory": "shifted-face-list03.json",
+    "inventory_result": "PASS: exit_code 0, exact named selector matches, source/base/pinned/support custody true, automatic_retries 0",
+    "serializer_control": "shifted-face-serializer01.json PASS 1/1; it exercises populated lambda trace and factor fields. Its pinned_files_unchanged=false is explained by the release binary relink during that build; list03 subsequently establishes final source/base/pinned/support custody.",
+    "capture_bound_seconds": 180,
+    "physical_execution_observed_by_qa": false,
+    "cleared_conditions": [
+      "final source hash and selected binary hash match their physical02 manifest and current filesystem",
+      "release inventory identifies the same named non-target endpoint and selected binary",
+      "only the authorized test-gated observer surfaces are changed; static ordering retains the typed Stage1 refusal before injection",
+      "raw capture schema has bit-preserving operands, exact seed coordinates, protected-state comparisons, and explicit unreached labels"
+    ],
+    "parent_environment_rebinding": "PASS: physical03 differs from physical02 only in material_environment. shifted-parent-environment-binding.json identifies PATH, LANG, and TERM as parent-versus-subagent shell differences; source, binary, argv, and all other support fields are identical."
+  }
+}

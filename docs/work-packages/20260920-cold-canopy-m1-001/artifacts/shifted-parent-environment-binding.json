@@ -1,0 +1,12 @@
+{
+  "evidence_class": "Ran: prelaunch parent environment comparison; no physical execution",
+  "recorded_utc": "2026-09-28T17:06:25.766544+00:00",
+  "prior": "shifted-face-physical02-support.json",
+  "current": "shifted-face-physical03-support.json",
+  "changed_environment_names": [
+    "PATH",
+    "LANG",
+    "TERM"
+  ],
+  "explanation": "Subagent and parent tool shells differ in PATH/LANG/TERM; final manifest binds actual parent launch environment. Source/binary/argv and all file pins unchanged."
+}

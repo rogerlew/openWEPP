@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: parsed exactly one captured JSON and compared retained typed refusal text; no second physical execution",
+  "recorded_utc": "2026-09-28T17:08:25.832885+00:00",
+  "raw_receipt": "shifted-face-capture01.json",
+  "raw_stderr": "shifted-face-capture01.stderr",
+  "raw_stderr_sha256": "ae3914509eb06e032d20625f6b9d90708c787599cbab5a5e315c00ad04432ccc",
+  "extracted_capture": "shifted-face-observed-capture.json",
+  "capture_sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+  "capture_count": 1,
+  "historical_typed_refusal_and_all_work_fields_exact_text_equal": true,
+  "protected_input_unchanged": true,
+  "protected_trial_unchanged": true,
+  "adapter_observation": {
+    "current_evaluations": 1,
+    "materialization_entries": 0,
+    "raw_jacobian_assemblies": 1,
+    "trial_domain_checks": 0
+  },
+  "source_binary_pins_links_unchanged": true,
+  "qualification": "Original domain FAIL retained; candidate injection/domain transition/shrink unreached. One authorized capture consumed."
+}

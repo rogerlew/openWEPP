@@ -1,0 +1,27 @@
+{
+  "evidence_class": "Ran: pure bound checks; no physical execution",
+  "deadline_utc": "2026-09-28T17:49:30+00:00",
+  "cases": [
+    {
+      "case": "physical180",
+      "accepted": true
+    },
+    {
+      "case": "physical181",
+      "accepted": false
+    },
+    {
+      "case": "reserve",
+      "accepted": false
+    },
+    {
+      "case": "nonphysical_fit",
+      "accepted": true
+    },
+    {
+      "case": "nonphysical_over",
+      "accepted": false
+    }
+  ],
+  "observed_utc": "2026-09-28T16:52:54.439204+00:00"
+}

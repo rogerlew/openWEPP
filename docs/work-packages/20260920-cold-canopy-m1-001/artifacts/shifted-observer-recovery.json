@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Ran: fresh extraction of retained terminal archive plus observer-only patch; every reconstructed entry matches captured source",
+  "recorded_utc": "2026-09-28T17:09:02.535624+00:00",
+  "source_tree_sha256": "cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8",
+  "source_entry_count": 764,
+  "source_receipt": "shifted-face-capture01-source.json",
+  "base_archive": "completion-terminal-source.tar.gz",
+  "base_archive_sha256": "65e2cbf11ef4492e4cfdd393255812c55aa098d06138194e0104922801900b12",
+  "patch": "shifted-observer-from-terminal.patch",
+  "patch_sha256": "e9093a5b58a80265e71af0bdfba63cdcd9ecbfa8ab7a31412290267b49148944",
+  "changed_paths": [
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+  ],
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-shifted-reconstruction-20260928",
+  "all_entry_hashes_equal": true,
+  "patch_exit": 0,
+  "scope": "Exact source recovery only; external toolchain/input supports remain bound by physical03 manifest."
+}

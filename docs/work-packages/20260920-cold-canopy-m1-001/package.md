@@ -1,5 +1,165 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Positive-multiplier shifted-face attribution — adopted 2026-09-28
+
+Owner adopted `/tmp/openwepp_cold_canopy_m1_shifted_face_attribution_authorization.md`
+by directing execution. Diagnostic continuation only; the prior valid-negative
+stop and domain FAIL remain historical and binding outside this narrow release.
+Main is pinned at `6530dea8f30972081504700c94c5982b4a458605`.
+Accepted ordinary-positive source `538250c0…` / binary `7e36e78f…` and its
+1.895410 ms observation remain distinct from diagnostic source `12665af6…` /
+binary `ca2d1a57…`; no successful endpoint replay or timing transfer is authorized.
+
+Ran: one closing-ledger/publication-record scan found no greater later charge.
+Carry **375733.959294 s**, unchanged ceiling **379333.959294 s**; no new time.
+Conservative first-reading anchor **2026-09-28T16:49:30Z** fixes work cutoff
+**17:19:30Z** and hard deadline **17:49:30Z**. Keep the full 1800-second closing
+reserve, charge concurrent elapsed once, deduct no waits and reclaim no reserve.
+Commands require their entire declared bound before cutoff; physical bound180 s.
+
+Intent: verify all764 actual detached source entries and archive before editing;
+inspect retained failed-face operands first. Only if incomplete, prepare minimal
+opt-in observation and, after distinct source/manifest assessments, execute at
+most one unchanged NON-TARGET domain endpoint. Preserve actual trial/input/phase,
+assertions, numerical arithmetic/branches/errors/work/state and injection order.
+No second capture, solver amendment, target, production/main-Rust change or
+historical method rereview. Incomplete capture remains incomplete.
+
+Writer/calculator `/root/shifted_writer` owns bounded detached observation and
+`shifted-*` raw evidence/calculators. Parent owns package, recorder deadline,
+ledger, integration and scoped publication. Distinct correctness and QA reviewers
+will assess changed claims; correctness independently reconstructs exact operand
+KKT and QA reads/hashes without candidate replay. No nested spawning.
+Reference precisions are prospectively fixed at100 and200 decimal digits.
+Evaluate recorded positive-lambda stationarity, unchanged BVLS-02 enclosures,
+face/box/radius/complementarity and arithmetic guards; separately label unreached
+offline classifications. Fixed-lambda and secular-root references are distinct.
+Optional single offline correction requires completed attribution, declared h
+precision and enough remaining time; no clipping, radius rescue or runtime body.
+
+Validation selection: exact source/support/binary custody and unchanged endpoint
+checks; affected observer compile/format and bounded observation checks if needed;
+independent numerical reconstruction at exact bits, two complementary reviews,
+and exact terminal diff/recovery. Unchanged physical closure/materialization,
+quality and authority evidence retain only their accepted source-specific claims.
+No canonical numerical/physical authority changes; numerical runtime changes are
+a stop condition. All earlier M1/interface/target HOLDs and domain FAIL persist.
+
+Ran: [pre-edit custody](artifacts/shifted-face-attribution-preedit-custody.json)
+verified the actual764-entry diagnostic source, archive and retained binary.
+Retained domain stderr lacks complete failed-face operands; earlier near-root
+captures are not substituted. The one permitted capture is therefore necessary.
+The writer first misreported the binary absent after an incomplete file search,
+then corrected that report by direct path/hash before any source edit.
+The [start ledger](artifacts/shifted-start-ledger.json) fixes the clock above;
+[recorder controls](artifacts/shifted-recorder-controls.json) pass5/5 after a
+deadline-only change. Independent correctness is reviewing only new observation
+and reconstruction claims. Source/readiness checks precede physical execution.
+
+Internal reassessment17:00Z — CONTINUE within the same fixed clock. A wrong-cwd
+nonphysical check did not assess detached source; recorded inventory01 failed
+compilation on a new recorder format-string brace. Both are preparation failures,
+not physical attempts. The observer-only brace correction has a direct remedy.
+Parent and QA also detected stale preparation manifest/source/binary selections;
+only a fresh frozen release inventory and exact support assessment may authorize
+the single capture. No numerical tuning or allowance renewal follows these fixes.
+
+Ran: the sole [capture01](artifacts/shifted-face-capture01.json) executed at
+17:07:06–17:07:07Z on observer source
+`cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8`, release binary
+`8c451428f3f7c020e2e7944437756b8c89c9d7ce13028a774c93676638355193`.
+It remains FAIL0/1,369 skipped, exit100; no retry. Exactly one
+[raw face record](artifacts/shifted-face-observed-capture.json) was extracted.
+[Integrity comparison](artifacts/shifted-capture-integrity.json) verifies the
+historical typed refusal and complete work fields are text-identical; all source,
+binary, file-pin and support-link checks pass, with protected input/trial unchanged.
+Actual adapter counters are current evaluations1, raw Jacobian assemblies1,
+trial-domain checks0 and materialization entries0. Stage1 failed before injection;
+no domain-rejection/shrink credit follows. The single capture allowance is spent.
+
+Before capture, `/root/shifted_correctness` verified its scaled-bound, same-factor
+identity and exact-seed fixes; no numerical arithmetic, branch, guard/error,
+counter or endpoint-assertion change was found. Distinct
+[QA preflight](artifacts/shifted-qa-preflight.json) cleared final support03 after
+release inventory03 PASS and populated serializer01 PASS1/1. Serializer01's
+binary pin changed because it built/relinked that binary; fresh inventory03 and
+[parent recheck](artifacts/shifted-face-dispatch-recheck.json) bind the resulting
+binary without that ambiguity. Support01/02/03 are preparation manifests, not
+physical retries. Support03 differs from02 only in binding actual parent-shell
+PATH/LANG/TERM; all628 file pins, source, binary, selector and bound agree.
+
+Ran: [observer recovery](artifacts/shifted-observer-recovery.json) freshly extracts
+the preserved terminal archive, applies the exact two-file observation patch and
+matches all764 captured-source entries. Numerical source and canonical authority
+are unchanged. The bounded numerical attribution below is independently reviewed; no further
+calculation, physical capture or numerical source work is released.
+
+**Terminal attribution: COMPLETE; domain FAIL and M1 HOLD preserved.**
+Ran: the [writer calculator](artifacts/shifted-face-calculator.py) and
+[result](artifacts/shifted-face-attribution.json), independently checked by
+[correctness](artifacts/shifted-correctness-review.json) with its own
+[calculator](artifacts/shifted-correctness-reconstruct.py) and
+[reconstruction](artifacts/shifted-correctness-reconstruction.json), establish:
+
+| Compared point at recorded lambda5962417150275328 | Stationarity / original feasibility |
+| --- | --- |
+| Actual binary64 p | Five free failures:1,2,5,7,8; box, active-value and original/reduced ball checks pass. |
+| Exact h evaluated at that same p | Coordinate1 h=-25219.540831749433, magnitude13.9056 tau; evaluation error is only+9.04083174943, or0.004985 tau. |
+| Independent exact fixed-face, fixed-lambda reference | All free h are exactly0; squared radius deficit approximately7.355e-13. Exact rational solve, displayed at the predeclared100/200 digits. |
+| Reference rounded once to binary64 | Both independent vectors match bit-for-bit; all21 unchanged BVLS-02 classifications pass (20 FreePass, coordinate11 RetainLower), with original box/ball and active bits preserved. |
+| Optional single correction / secular-root reference | NOT RUN. Attribution completed without consuming either optional calculation. |
+
+The reviewer independently reproduces every captured KKT residual, gradient,
+lambda*p, h, upward Cbar/tau and all-coordinate classification bit-for-bit;
+normal/zero arithmetic-domain guards pass. The largest actual-p evaluation
+error/tau is0.00554. Aggregate computed-face-step accuracy therefore explains
+the refusal; KKT evaluation error does not. The actual versus once-rounded
+reference maximum coordinate difference is5.1391167526e-12. A large absolute
+rounded-reference h alone is not a failure: its unchanged coordinate-specific
+tau and active-sign predicates all pass.
+
+The original and reduced face radii are both1; coordinate11 remains active at0.
+The runtime final bracket is [5962417150275280,5962417150275328], with recorded
+norms1.0000000000000007 and0.9999999999999981; it returns the feasible upper
+endpoint after48 bisections. The reported norm gap1.88737914186e-15 is below
+unchanged9.09494701773e-13 tolerance; lambda times that reported gap is11.25334.
+These are internal multiplier/radius consistency and complementarity observations,
+not an exact complementarity certificate. The fixed-lambda reference has a larger
+radius deficit than the runtime point. No true secular-root multiplier error or
+true-root enclosure by that narrow bracket is established. Factorization versus
+factor application error is also unresolved; equality of the captured free matrix
+to B does not isolate that subcomponent. No implementation deviation was found in
+the observer or the independently reconstructed KKT assessment.
+
+The supported future question is a **positive-multiplier shifted-face accuracy
+amendment** that treats the full h=B^T(Bq+y)+lambda*q, retains the face/active
+values and original box/radius guards, and separately verifies multiplier/radius
+accuracy. This evidence does not select its runtime arithmetic, approve a
+correction body, or justify extending the zero-lambda `-B^+r` formula. BVLS-03,
+its successful zero-lambda branch and source-specific ordinary-positive/closure/
+materializer/timing acceptance remain unchanged. No revision04 or eligibility
+change is authorized or made.
+
+Distinct [terminal QA](artifacts/shifted-qa-terminal.json) accepts the evidence,
+exact recovery and bounded claims; correctness accepts the new numerical
+attribution only. Source/role availability recovered after one bounded
+wake/interruption of completed threads; no fallback reviewer or nested agent was
+used. The completed-attribution stop now applies. Only final review, preservation,
+ledger and scoped publication remain; the sole physical capture is spent.
+
+The [final ledger](artifacts/shifted-final-ledger.json) conservatively charges
+**378883.959294 seconds** cumulatively through17:42Z, including the full existing
+1800-second closing allocation. **450 seconds** remain mathematically under the
+unchanged379333.959294 ceiling; this is not continuing authorization. No old
+reserve is refunded and no time is added. Fixed17:19:30/17:49:30 work/hard
+deadlines remain unchanged; greater actual later consumption increases carry.
+
+Final same-reviewer claim and ledger verification PASS from correctness and QA.
+The [staged publication check](artifacts/shifted-scoped-publication-check.json)
+reports whitespace only in blank-line context markers of raw unified patches;
+those byte-exact recovery records are preserved. All nonpatch staged files pass
+`git diff --cached --check`. The unrelated dirty Rust/test hashes are unchanged.
+
 ## BVLS-03 completion — adopted 2026-09-27
 
 Owner adopted `/tmp/openwepp_cold_canopy_m1_bvls03_completion_authorization.md`

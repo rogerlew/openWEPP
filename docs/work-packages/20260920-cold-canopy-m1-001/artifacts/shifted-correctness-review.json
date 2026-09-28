@@ -1,0 +1,72 @@
+{
+  "reviewer": "/root/shifted_correctness",
+  "role": "independent numerical correctness reviewer",
+  "evidence_class": "Static: adopted scope, BVLS-02/BVLS-03 authority, observer diff, custody and integrity records inspected. Ran: independent Python stdlib binary64 operation replay, exact-Fraction h reconstruction, exact-rational fixed-lambda face solve, once-rounded BVLS-02/box/ball classification, and writer-reference comparison. No Rust test, candidate, physical replay, or secular-root/correction calculation executed by reviewer.",
+  "identity": {
+    "observer_source_tree_sha256": "cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8",
+    "observer_binary_sha256": "8c451428f3f7c020e2e7944437756b8c89c9d7ce13028a774c93676638355193",
+    "capture_sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+    "independent_script_sha256": "d0a221165002fbe9f955366d9752ce613921a83f999eeb92f15f3e55e0762263",
+    "independent_result_sha256": "79d4669f3ca3f7e23bf1222d0f6b07883bd14d4958ac4bd93cfdf895b1b08410",
+    "historical_refusal_and_work_exact_text_equal": true,
+    "observer_recovery_764_entries_equal": true
+  },
+  "findings": [
+    {
+      "severity": "high, blocks domain-producer qualification and any success claim for this face",
+      "location": "captured positive-multiplier face / BVLS-02 optimality_free_stationarity",
+      "finding": "The recorded positive-lambda point is materially nonstationary because of aggregate computed-face-step accuracy, not KKT evaluation rounding. A multiplier correction is not needed to explain this fixed-lambda defect, but this evidence does not establish the accuracy of the true radius-constrained multiplier. Independent exact h retains free violations at coordinates 1, 2, 5, 7 and 8. At first coordinate 1, exact h=-25219.540831749433 while the ordered binary64 h evaluation differs by only +9.04083174943 (0.004985 tau); exact |h| is 13.9056 tau. Every actual-p evaluation error is within tau and the largest error/tau is 0.00554. The evidence does not separately attribute the step error between factorization and factor application.",
+      "evidence": "Independent replay matches captured r, g, lambda*p, h, Cbar, tau and all 21 classes bit-for-bit. The recorded point is box feasible, preserves the active lower value at coordinate 11, and is exactly feasible in squared original/face radius comparisons. Lambda is positive normal. The runtime's final bracket [5962417150275280, 5962417150275328] straddles radius one under its recorded rounded endpoint norms 1.0000000000000007 and 0.9999999999999981, and the runtime selected its feasible upper endpoint. This is internal consistency of the recorded search, not a proof that the bracket encloses the true secular root.",
+      "required_disposition": "Preserve TrustRegionOptimalityIndeterminate / optimality_free_stationarity and the original domain FAIL. Do not credit candidate injection, domain refusal, radius shrink, or materialization; all remained unreached."
+    }
+  ],
+  "independent_fixed_lambda_reference": {
+    "method": "Exact Fraction solve of (B^T B + lambda I)q=-B^T y formed from exact captured binary64 rationals; reference decimals were predeclared at 100 and 200 digits.",
+    "free_exact_stationarity_zero": true,
+    "writer_and_reviewer_once_rounded_vectors_bit_equal": true,
+    "once_rounded_box_feasible": true,
+    "exact_reference_original_ball_feasible": true,
+    "once_rounded_bvls02": "PASS: 20 FreePass, coordinate 11 RetainLower",
+    "actual_vs_once_rounded_reference_free_inf_error": 5.139116752593195e-12,
+    "interpretation": "A feasible fixed-face point at the same recorded lambda satisfies unchanged BVLS-02 after one binary64 rounding. This shows that aggregate computed-face-step accuracy at fixed lambda explains the observed refusal and that KKT evaluation rounding does not. It does not separately isolate factorization from factor application, establish the true radius-constrained multiplier, or prove the recorded bracket encloses the true secular root."
+  },
+  "observer_and_custody_verification": {
+    "observer_diff": "PASS: opt-in recorder copies reached input, prepared bounds, face, factor and multiplier trace only; no solver evaluation, arithmetic branch, guard/error precedence, work counter, state mutation or endpoint assertion changed.",
+    "single_capture": "PASS: one JSON capture; physical receipt exits 100 with the unchanged typed refusal; current evaluations 1, raw Jacobian assemblies 1, trial-domain checks 0, materializations 0.",
+    "source_recovery": "PASS: terminal archive plus two-file observer patch reconstructs all 764 entries."
+  },
+  "residual_risk_and_missing_tests": [
+    "No high-precision secular-root reference was computed. The recorded rounded endpoint evaluations and feasible upper selection are internally consistent only. The exact fixed-lambda reference has a radius-squared deficit of about 7.355e-13 rather than the recorded point's deficit, so this review makes no claim that the narrow recorded bracket encloses the true secular root or quantifies the true multiplier error.",
+    "The optional single fixed-lambda correction was not computed. No runtime correction body, work bound, finite-domain behavior, or radius preservation is qualified.",
+    "The exact fixed-lambda reference is diagnostic attainability evidence, not an approved runtime algorithm. A future amendment should specifically assess a shifted positive-lambda correction/solve and must retain original masks, box/radius checks, unchanged BVLS-02 guards and typed failure precedence.",
+    "The successful BVLS-03 zero-lambda branch and ordinary-positive source538250 result remain source-specific and unchanged; neither is re-reviewed or revised here."
+  ],
+  "reconstruction_command_provenance": {
+    "result_bearing_argv": [
+      "timeout",
+      "120s",
+      ".venv/bin/python",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-correctness-reconstruct.py",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-observed-capture.json",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-correctness-reconstruction.json"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "declared_process_bound_seconds": 120,
+    "recorded_execution_window_utc": "The preceding result-bearing version completed after the retained 17:10:55Z run marker and before the parent's 17:12:00Z closing-allocation boundary; no finer timestamp was retained.",
+    "observed_wall_seconds": 0.2,
+    "exit_code": 0,
+    "post_command_reads": "The same shell invocation used jq to display selected retained fields and sha256sum to bind the calculator/result. Those reads performed no numerical reconstruction and did not mutate evidence.",
+    "no_rerun_for_final_claim_verification": true
+  },
+  "final_claim_verification": {
+    "reviewed_scope": "package.md Positive-multiplier shifted-face attribution through the BVLS-03 heading, plus shifted-final-ledger.json",
+    "evidence_class": "Static final-claim verification only; no calculation, source edit, Rust test, candidate or physical execution",
+    "numerical_claims": "PASS: the terminal table and prose preserve the independently supported five actual-p free failures, coordinate-1 exact/evaluation-error attribution, bit-identical independent once-rounded references, all-coordinate BVLS-02 pass, box/ball/active feasibility, radius-squared deficit, and aggregate computed-face-step conclusion.",
+    "uncertainty_claims": "PASS: package explicitly denies a true secular-root multiplier/error or narrow-bracket enclosure certificate and leaves factorization versus factor application unresolved.",
+    "scope_claims": "PASS: original domain FAIL/M1 HOLD and unreached injection/domain/shrink/materialization remain explicit; BVLS-03 zero-lambda and source538250 results remain unchanged and source-specific; no runtime amendment is approved.",
+    "ledger_claims": "PASS: shifted-final-ledger conservatively carries 375733.959294 seconds, charges 3150 seconds including the 1800-second closing allocation through 17:42Z, totals 378883.959294 under the unchanged 379333.959294 ceiling, leaves 450 seconds mathematically, and preserves the 17:19:30/17:49:30 cutoffs without continuation authority.",
+    "required_corrections": [],
+    "verdict": "PASS — no correctness or claim-accuracy blocker in the final numerical section or closing ledger."
+  },
+  "verdict": "PASS for bounded attribution: the evidence supports an aggregate computed-face-step accuracy diagnosis at the recorded positive multiplier; factorization versus factor application and true secular-multiplier accuracy remain unresolved. FAIL remains for the original domain endpoint and all downstream qualification. No numerical runtime amendment is approved."
+}

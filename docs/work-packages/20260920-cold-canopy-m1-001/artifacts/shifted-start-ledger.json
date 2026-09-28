@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Ran: custody and fixed deadline arithmetic; no numerical execution",
+  "anchor_utc": "2026-09-28T16:49:30+00:00",
+  "anchor_policy": "Conservative rounded-back first-reading anchor; earlier than first printed clock16:50:39Z",
+  "carry_charged_seconds": 375733.959294,
+  "cumulative_ceiling_seconds": 379333.959294,
+  "remaining_seconds": 3600,
+  "closing_reserve_seconds": 1800,
+  "command_cutoff_utc": "2026-09-28T17:19:30+00:00",
+  "hard_deadline_utc": "2026-09-28T17:49:30+00:00",
+  "greater_later_charge_found": false,
+  "later_charge_check": "Scanned all artifact names containing ledger or publication once; numeric top-level charged/closing fields; maximum375733.959294 in completion-final-ledger.json",
+  "unrelated_dirty_hashes": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  },
+  "pinned_commit": "6530dea8f30972081504700c94c5982b4a458605",
+  "recorded_utc": "2026-09-28T16:54:29.901072+00:00"
+}

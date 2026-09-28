@@ -1,0 +1,30 @@
+{
+  "evidence_class": "Ran: scoped staged diff/custody checks; no numerical execution",
+  "recorded_utc": "2026-09-28T17:20:15.206887+00:00",
+  "full_staged_diff_check_exit": 2,
+  "findings_count": 223,
+  "findings_paths": [
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-capture01-from-observer-cut02.patch",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-list01-from-observer-cut02.patch",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-list02-from-observer-cut02.patch",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-list03-from-observer-cut02.patch",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-serializer01-from-observer-cut02.patch",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-observer-from-terminal.patch"
+  ],
+  "classification": "Only raw unified-patch context markers on blank lines; preserve recovery evidence bytes. No source/calculator/narrative whitespace finding.",
+  "nonpatch_staged_check_argv": [
+    "git",
+    "diff",
+    "--cached",
+    "--check",
+    "--",
+    ".",
+    ":(exclude)docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-capture01-from-observer-cut02.patch",
+    ":(exclude)docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-list01-from-observer-cut02.patch",
+    ":(exclude)docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-list02-from-observer-cut02.patch",
+    ":(exclude)docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-list03-from-observer-cut02.patch",
+    ":(exclude)docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-serializer01-from-observer-cut02.patch",
+    ":(exclude)docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-observer-from-terminal.patch"
+  ],
+  "nonpatch_staged_check_exit": 0
+}

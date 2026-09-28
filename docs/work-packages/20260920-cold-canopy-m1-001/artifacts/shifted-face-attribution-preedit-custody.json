@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: read-only pre-edit custody verification; no numerical or physical execution",
+  "recorded_utc": "2026-09-28T16:51:13Z",
+  "runtime_source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "terminal_source_tree_sha256": "12665af6cbbf3f9667e8343778f1b694ba81fbfaca7450fc62580547967e471c",
+  "terminal_manifest": "completion-terminal-recovery.json",
+  "terminal_entries": 764,
+  "actual_entry_hash_mismatches": 0,
+  "archive": "completion-terminal-source.tar.gz",
+  "archive_sha256": "65e2cbf11ef4492e4cfdd393255812c55aa098d06138194e0104922801900b12",
+  "actual_archive_sha256": "65e2cbf11ef4492e4cfdd393255812c55aa098d06138194e0104922801900b12",
+  "historical_release_binary": "/tmp/openwepp-cold-canopy-m1-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+  "historical_release_binary_sha256": "ca2d1a579ae8c69ac3c1bb999e475e5ba8de3112b6adee0647628cb8d8ed48b0",
+  "actual_historical_release_binary_sha256": "ca2d1a579ae8c69ac3c1bb999e475e5ba8de3112b6adee0647628cb8d8ed48b0",
+  "retained_operand_sufficiency": "insufficient: failure receipt retains lambda, coordinate, radius, raw residual maximum and counters but not its exact A/f/p/masks/bounds/factor or lambda trace",
+  "next_authorized_action": "test-only observer preparation; no physical capture in this record"
+}

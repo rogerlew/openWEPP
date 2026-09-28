@@ -1,0 +1,48 @@
+{
+  "reviewer": "/root/shifted_qa",
+  "evidence_class": "Static/Ran: terminal QA read/hash review of the single capture, integrity, attribution, correctness review, and recovery records. QA performed no numerical reconstruction or replay.",
+  "recorded_utc": "2026-09-28T17:11:00Z",
+  "identity": {
+    "observer_source_tree_sha256": "cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8",
+    "observer_binary_sha256": "8c451428f3f7c020e2e7944437756b8c89c9d7ce13028a774c93676638355193",
+    "capture_sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+    "capture_receipt_sha256": "d8ed5c1f2aeb5d91e55cefd8cae9dd0a2b4d685b234b1ee14c598dfa37b84ecc",
+    "capture_stderr_sha256": "ae3914509eb06e032d20625f6b9d90708c787599cbab5a5e315c00ad04432ccc",
+    "terminal_archive_sha256": "65e2cbf11ef4492e4cfdd393255812c55aa098d06138194e0104922801900b12"
+  },
+  "findings": [
+    {
+      "severity": "high outcome, not a QA custody blocker",
+      "location": "captured positive-multiplier face",
+      "evidence": "The independently reviewed attribution retains free-stationarity refusal at coordinates 1, 2, 5, 7, and 8. It supports aggregate computed-face-step accuracy as the diagnosis at the recorded lambda, while leaving factorization-versus-application and true secular-root/lambda accuracy unresolved.",
+      "required_disposition": "Keep TrustRegionOptimalityIndeterminate / optimality_free_stationarity, the original domain FAIL, and all downstream qualification failures."
+    }
+  ],
+  "qa_verification": {
+    "single_capture": "PASS: one physical receipt, automatic_retries 0, exit_code 100, not timed out; the exact historical typed refusal and all work fields match.",
+    "capture_custody": "PASS: integrity record parses one capture and binds the extracted capture hash; source, binary, pins, links, and observer base remained unchanged during capture.",
+    "protected_state": "PASS: protected input and trial unchanged; current_evaluations 1, raw_jacobian_assemblies 1, trial_domain_checks 0, materialization_entries 0.",
+    "scope_and_unreached": "PASS: candidate injection/domain transition, shrink, and materialization are explicitly unreached after the Stage1 typed refusal. No credit is assigned to them.",
+    "source_recovery": "PASS: terminal archive plus the two-path observer patch reconstructs all 764 source entries exactly.",
+    "independent_review_boundary": "PASS: correctness review independently validates exact operands and fixed-lambda reference. It expressly does not certify the true secular root or isolate factorization from factor application."
+  },
+  "nonblocking_debt": [
+    "No high-precision secular-root reference or optional fixed-lambda correction was computed.",
+    "The fixed-lambda reference is diagnostic evidence only and authorizes no runtime amendment."
+  ],
+  "verdict": "PASS for terminal QA custody, scope, recovery, and evidence quality. The bounded attribution is complete; domain FAIL remains and no runtime numerical change is approved.",
+  "final_same_reviewer_verification": {
+    "evidence_class": "Static: package terminal claims, ledger, scoped inventory, source diff, and recovery record inspected",
+    "package_claims": "PASS: the package preserves the sole capture's exit-100 typed refusal, five free violations, fixed-lambda-only scope, unreached downstream actions, unresolved true secular-root/factor-application questions, original domain FAIL, M1 HOLD, and source-specific ordinary-positive result.",
+    "ledger": "PASS: 375733.959294 + 3150.000000 = 378883.959294; under the unchanged 379333.959294 ceiling, 450 seconds remain. The 1800-second closing allocation is charged through 17:42Z, with zero allowance, wait deduction, or reserve reclaim; 17:19:30Z cutoff and 17:49:30Z hard deadline are unchanged.",
+    "scope": "PASS: terminal recovery identifies exactly the two observer source paths; root diff contains only the package record and deadline-only recorder change for this package. Existing unrelated dirty Rust/test changes remain outside the scoped publication.",
+    "inventory": "PASS: shifted-* inventory contains the raw capture, integrity/recovery, calculators and independent review, final manifests/receipts, and failed-preparation records needed to explain why no retry occurred. No second capture record is present.",
+    "publication_verdict": "PASS: scoped commit/publication may proceed with the terminal disposition unchanged."
+  },
+  "final_publication_delta": {
+    "evidence_class": "Static: staged scope and publication-check record inspected; no tests or calculations rerun",
+    "verdict": "PASS",
+    "evidence": "The staged check's 223 findings are confined to blank-line context markers in six byte-exact raw unified recovery patches. The recorded filtered nonpatch `git diff --cached --check` exits 0. The package records this limitation without changing numerical, authority, custody, or disposition claims.",
+    "scope": "The staged files are the deadline-only recorder change, package record, and shifted evidence. Source, capture, and reference identities are unchanged."
+  }
+}
