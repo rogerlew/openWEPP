@@ -160,6 +160,13 @@ reports whitespace only in blank-line context markers of raw unified patches;
 those byte-exact recovery records are preserved. All nonpatch staged files pass
 `git diff --cached --check`. The unrelated dirty Rust/test hashes are unchanged.
 
+Published the reviewed substantive evidence as commit
+`86bbf526a3ee00e361bcdafb12d5075a1a2ea746` on authorized `main`; exact remote
+head verification PASS. [Publication custody](artifacts/shifted-publication.json)
+binds the committed primary evidence and recovery inputs, including the directly
+Git-stored terminal archive. This publication note/receipt is administrative
+metadata; no numerical result, review conclusion or recovery source changes.
+
 ## BVLS-03 completion — adopted 2026-09-27
 
 Owner adopted `/tmp/openwepp_cold_canopy_m1_bvls03_completion_authorization.md`

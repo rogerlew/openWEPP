@@ -1,0 +1,33 @@
+{
+  "evidence_class": "Ran: authorized scoped commit/push and exact remote-head verification; committed recovery inputs verified byte-identical",
+  "recorded_utc": "2026-09-28T17:21:53.629224+00:00",
+  "substantive_commit": "86bbf526a3ee00e361bcdafb12d5075a1a2ea746",
+  "parent_commit": "6530dea8f30972081504700c94c5982b4a458605",
+  "branch": "main",
+  "push_argv": [
+    "git",
+    "push",
+    "origin",
+    "HEAD:main"
+  ],
+  "push_exit_code": 0,
+  "remote_verification_argv": [
+    "git",
+    "ls-remote",
+    "origin",
+    "refs/heads/main"
+  ],
+  "remote_main": "86bbf526a3ee00e361bcdafb12d5075a1a2ea746",
+  "remote_exact_head_match": true,
+  "committed_primary_evidence_sha256": {
+    "completion-terminal-source.tar.gz": "65e2cbf11ef4492e4cfdd393255812c55aa098d06138194e0104922801900b12",
+    "shifted-observer-from-terminal.patch": "e9093a5b58a80265e71af0bdfba63cdcd9ecbfa8ab7a31412290267b49148944",
+    "shifted-face-capture01-source.json": "b65d02a96b6a5fb8467069fd712332bca6ecbaba4e02a9051483b716535ccd0c",
+    "shifted-face-observed-capture.json": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+    "shifted-correctness-review.json": "79c5cb3e20bb6111d2dd00e96289603969fa34b5b39ed6bbabbd41e9f4b2400a",
+    "shifted-qa-terminal.json": "6532930f50c6aad080eca55575e4fece5b1592bc487ba3a53cdbeb6cb89ece9b"
+  },
+  "base_archive_git_filter": "unspecified; stored directly in Git, no LFS object",
+  "scope": "Reviewed package, deadline-only recorder, shifted evidence and exact observer recovery. Main numerical Rust and unrelated dirty work excluded.",
+  "ledger": "shifted-final-ledger.json"
+}
