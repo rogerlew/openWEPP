@@ -1,0 +1,81 @@
+{
+  "schema": "cold-canopy-m1-shifted-refinement-protocol/v1",
+  "candidate": "M1-SHIFTED-DEFECT-CORRECTION-PROTOTYPE-01",
+  "status": "FROZEN_PRE_RESULT_BATCH",
+  "base_commit": "2832bcb686862f654cc1ce121246418777cb0212",
+  "inputs": {
+    "capture": {
+      "path": "shifted-face-observed-capture.json",
+      "sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb"
+    },
+    "accepted_dot2": {
+      "path": "dot2-primitive.py",
+      "sha256": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0"
+    },
+    "retained_fixed_lambda_reference": {
+      "path": "shifted-correctness-reconstruction.json",
+      "sha256": "79d4669f3ca3f7e23bf1222d0f6b07883bd14d4958ac4bd93cfdf895b1b08410"
+    }
+  },
+  "code_identity": {
+    "author": {
+      "path": "shifted-refinement-author.py",
+      "sha256": "5d94d3c259f5f6412db124764612a3ab4cd2a9a57fdd3e6acd223f46c7809993"
+    },
+    "controls": {
+      "path": "shifted-refinement-controls.py",
+      "sha256": "0670f658f2d0577121bc3edd73239bdff4595da6c7edd43187bebcab37b61f56"
+    }
+  },
+  "candidate_path": {
+    "positions": [
+      "ordinary full h at p0",
+      "Dot2 full h at p1"
+    ],
+    "shifted_inverse": "-V diag(1/(sigma^2+lambda)) V^T h: V row index follows free_ids; sigma column follows its stored index; factor.order is the exact traversal order for both component loops, without sorting",
+    "active_values": "unchanged bits",
+    "prohibited": [
+      "third correction",
+      "factor reconstruction when captured arrays exist",
+      "new factorization",
+      "lambda change",
+      "clipping",
+      "FMA",
+      "BLAS",
+      "candidate high precision"
+    ]
+  },
+  "acceptance": {
+    "oracle": "unchanged ordered BVLS-02 at p0/p1/p2",
+    "checks": [
+      "all coordinate classes",
+      "exact active equality",
+      "scaled box",
+      "original and reduced radius",
+      "positive-lambda complementarity"
+    ],
+    "reference": "separate exact-rational fixed-face endpoint evaluation and <=80 bisections",
+    "radius": "original/full norm<=initial radius; reduced norm<=face radius;0<=face radius-reduced norm<=unchanged captured tolerance; exact squared norms additionally recorded"
+  },
+  "command": "timeout 300s .venv/bin/python docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-author.py --reference-seconds 240 --output docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-author-results.json",
+  "review_boundary": "Reviewer independently implements target reconstruction and must not call this author module for expected outputs.",
+  "controls": "timeout 30s .venv/bin/python docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-controls.py",
+  "controls_result": {
+    "path": "shifted-refinement-controls.json",
+    "sha256": "c8547c56e5a8161ab51e03d9354033ceda18d014bb24aeb4a0b5770a84cebb50",
+    "all_13_pass": true
+  },
+  "recorded_utc": "2026-09-28T20:12:18.576088+00:00",
+  "arithmetic_order": "t_j sums free slots i ascending; j visits captured order; z stored by raw j; delta sums j by captured order, unary negation after sum; ordinary free updates",
+  "limits": {
+    "hard_deadline_utc": "2026-09-28T21:51:00Z",
+    "command_cutoff_utc": "2026-09-28T21:21:00Z",
+    "batch_bound_seconds": 300,
+    "reference_soft_limit_seconds": 240,
+    "bisections_max": 80,
+    "candidate_corrections": 2
+  },
+  "counts": "Counted candidate defects/inverses/updates=27446; all point KKT/enclosure/norms separately; exact Fraction endpoint/bisection arithmetic and EFT identity oracles excluded",
+  "frozen_utc": "2026-09-28T20:14:12.365968+00:00",
+  "correctness_preflight": "shifted-refinement-correctness-preflight.json"
+}

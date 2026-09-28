@@ -1,0 +1,49 @@
+{
+  "evidence_class": "Ran: file hashes and pinned Git comparisons; Static: retained identity/dependency records inspected",
+  "recorded_utc": "2026-09-28T19:54:53.017056+00:00",
+  "base_commit": "2832bcb686862f654cc1ce121246418777cb0212",
+  "dependencies": {
+    "shifted-face-observed-capture.json": {
+      "sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+      "matches_pinned_commit": true
+    },
+    "shifted-face-attribution.json": {
+      "sha256": "75325741ba2bdb7b4389d7ea8647c6e69a7fc1b774ddcdaf263851695d5239e1",
+      "matches_pinned_commit": true
+    },
+    "shifted-face-calculator.py": {
+      "sha256": "dd53ee598198fea0d8b843c968e5b11ab962b57ee17edce9ee3fcd567cd3a795",
+      "matches_pinned_commit": true
+    },
+    "shifted-correctness-reconstruct.py": {
+      "sha256": "d0a221165002fbe9f955366d9752ce613921a83f999eeb92f15f3e55e0762263",
+      "matches_pinned_commit": true
+    },
+    "shifted-correctness-reconstruction.json": {
+      "sha256": "79d4669f3ca3f7e23bf1222d0f6b07883bd14d4958ac4bd93cfdf895b1b08410",
+      "matches_pinned_commit": true
+    },
+    "shifted-correctness-review.json": {
+      "sha256": "79c5cb3e20bb6111d2dd00e96289603969fa34b5b39ed6bbabbd41e9f4b2400a",
+      "matches_pinned_commit": true
+    },
+    "shifted-qa-terminal.json": {
+      "sha256": "6532930f50c6aad080eca55575e4fece5b1592bc487ba3a53cdbeb6cb89ece9b",
+      "matches_pinned_commit": true
+    },
+    "dot2-primitive.py": {
+      "sha256": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0",
+      "matches_pinned_commit": true
+    },
+    "shifted-observer-recovery.json": {
+      "sha256": "c082ac6a05ee356d01bc3c56af7d13d633d6d83f580dfb3403736410a9530339",
+      "matches_pinned_commit": true
+    },
+    "shifted-final-ledger.json": {
+      "sha256": "650952844f71c61a8857a8a038f7c94b6cdcbbcbcde3b0daaec892246610f727",
+      "matches_pinned_commit": true
+    }
+  },
+  "runtime_reconstruction": "Not needed: captured v/sigma/order available. Prior764-entry recovery remains accepted; no runtime mutation or rebuild.",
+  "numerical_method_blob": "d321b0554a3e7987b24bacec5ce616e43f244790"
+}

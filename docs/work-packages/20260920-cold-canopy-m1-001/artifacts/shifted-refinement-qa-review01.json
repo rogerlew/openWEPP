@@ -1,0 +1,54 @@
+{
+  "schema": "openwepp.shifted-refinement-qa-review.v1",
+  "reviewer": "/root/shifted_refinement_qa",
+  "recorded_utc": "2026-09-28T20:16:11Z",
+  "scope": "Independent QA/evidence review of M1-SHIFTED-DEFECT-CORRECTION-PROTOTYPE-01. Read/hash only: no candidate, control, target, historical, Rust, or physical replay.",
+  "evidence_class": "Static: adopted authorization, package record, protocols, sources, custody, controls, receipts, author result, correctness result, and terminal diff inspected. Ran: SHA-256 and read-only JSON consistency checks only.",
+  "base_commit": "2832bcb686862f654cc1ce121246418777cb0212",
+  "reviewed_identity": {
+    "author_source_sha256": "5d94d3c259f5f6412db124764612a3ab4cd2a9a57fdd3e6acd223f46c7809993",
+    "controls_source_sha256": "0670f658f2d0577121bc3edd73239bdff4595da6c7edd43187bebcab37b61f56",
+    "capture_sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+    "dot2_sha256": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0",
+    "author_result_sha256": "5b51bd7df2c9d7c58743e6728b5d68c67c21a770460ccd608941b78cf3536b45",
+    "author_receipt_sha256": "8450d4460148b5a9dfa064ed943803d90024e6626de2c041cdae7f0b6c319e8a",
+    "correctness_source_sha256": "34e07597b29cf97d5bd3920a5c954e5c32aaf59376ed453ec1e0a0826fd75d28",
+    "correctness_receipt_sha256": "548a420ce0ee0cac05076e0704f6466f386266df0144ba000e545a3d1d93a972",
+    "correctness_result_sha256": "0d9d9c14c96559b2da2d52029714c60542f8e7e15a43144afaa8dd8e805fbe49",
+    "final_ledger_sha256": "9333bddb8799532d6a7aa8b656662877769343580410f2b124980a8e7e9e0025"
+  },
+  "findings": [],
+  "fix_verification": [
+    {
+      "finding": "Missing independent-reconstruction execution receipt",
+      "status": "FIXED_AND_VERIFIED",
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-correctness-receipt.json",
+      "evidence": "Receipt records the frozen argv, exit 0, 0.155855018 observed seconds within the 300-second bound, exact source/input/result hashes, one independent target reconstruction, zero reviewer root bisections, five endpoint solves, no author candidate call for expected values, and no historical/Rust/physical execution."
+    },
+    {
+      "finding": "Terminal package record did not yet link actual results, independent execution, ledger, and bounded disposition",
+      "status": "FIXED_AND_VERIFIED",
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+      "evidence": "The completed calculation section now links author and correctness receipts/results, states bitwise agreement and the exact-root limitation, retains the offline-only conclusion, links terminal custody and this QA record, and links the closing ledger. The ledger records cumulative 382400.393795 seconds, 3683.565499 seconds under the 386083.959294 ceiling, exactly one author batch and one independent reconstruction, and zero QA/Rust/physical replays."
+    }
+  ],
+  "non_blocking_debt_followups": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-author-results.json",
+      "note": "Add an evidence_class field in a future result schema. The adjacent author receipt currently supplies the missing execution classification, so this is not a present evidence blocker."
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-{author,controls}.py",
+      "note": "The frozen offline prototype uses dense one-line Python statements. It is adequate for this bounded evidence artifact, but any successor experiment should split control flow and result construction into named helpers before adding more behavior."
+    }
+  ],
+  "verified_evidence": {
+    "custody": "All ten retained dependencies recorded by input-custody match their pinned values; captured V/sigma/order are present, so neither runtime nor factor reconstruction occurred.",
+    "protocol_and_controls": "Protocol pins the corrected author/control hashes. The supplied control result records all 13 synthetic controls PASS; controls are explicitly non-target. No Rust/dependency/manifest/authority-suite scope changed, so cargo fmt, clippy -D warnings, cargo test/nextest, and cargo deny are not applicable to this offline Python-only increment.",
+    "author_execution": "Author receipt records one timeout-300s batch, exit 0, 1.4055275558494031 seconds, unchanged source, and zero automatic retries. Its result reports 27,446 candidate scalar operations and keeps exact-reference work excluded.",
+    "independent_reconstruction": "Correctness receipt records one bounded independent reconstruction, no candidate expected-value call, no repeated root bisection, and five endpoint solves. Its independently sourced result matches p0/p1/p2 operands, intermediates, ordered BVLS-02 fields, and classifications bit-for-bit. It reports p1 and p2 acceptance PASS, p0 retains the five known failed coordinates, active bits remain preserved, and candidate exceptional branches are zero.",
+    "reference_partition": "Author records 80 exact bisections and 83 exact solves separately from candidate work. Correctness verifies the author final root endpoints with five exact solves and no repeated bisection. Both retained runtime-bracket endpoints are below the face radius; the independent broad bracket is valid and the retained fixed-lambda reference bits match.",
+    "scope_and_diff": "The exact diff is package narrative plus offline evidence; no production Rust, numerical-policy, manifest, dependency, fixture, or physical-domain artifact was changed. git diff --check passes. The source-specific 1.895410 ms result, DomainFAIL, M1HOLD, and excluded target/interface work remain outside this result."
+  },
+  "verdict": "PASS: same-reviewer QA verifies the corrected terminal package record, custody, result partition, and fixed-clock ledger. The scoped publication/remote verification remains an executor action and must be recorded before publication is claimed. This is not runtime adoption, BVLS-04 activation, physical validation, or release qualification."
+}

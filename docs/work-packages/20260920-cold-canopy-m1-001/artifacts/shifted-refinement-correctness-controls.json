@@ -1,0 +1,34 @@
+{
+  "candidate_operation_counts": {
+    "arithmetic": 63,
+    "branches": 216,
+    "exceptional_branches": 0,
+    "guards": 187,
+    "maximum_abs": 33.0,
+    "minimum_nonzero_abs": 0.017272727272727273,
+    "signed_zero_values": 23
+  },
+  "checks": {
+    "dot2_cancellation_control": true,
+    "dot2_non_normal_refusal": true,
+    "factor_order_is_nonidentity_and_used": true,
+    "inactive_active_join_and_bit_custody": true,
+    "nonzero_lambda_term_detected": true,
+    "unchanged_admission_accepts_valid": true,
+    "unchanged_bound_rejects_invalid": true,
+    "unchanged_radius_rejects_invalid": true,
+    "v_orientation_and_sigma_column_join": true
+  },
+  "exact_control_work": {
+    "bisection_midpoints": 0,
+    "exact_residual_checks": 2,
+    "norm_comparisons": 1,
+    "pivot_tests": 2,
+    "rational_add_sub": 34,
+    "rational_div": 3,
+    "rational_mul": 30,
+    "solves": 1
+  },
+  "passed": true,
+  "schema": "openwepp.shifted-refinement-correctness-controls.v1"
+}

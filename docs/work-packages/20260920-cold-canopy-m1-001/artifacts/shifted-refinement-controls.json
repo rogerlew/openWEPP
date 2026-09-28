@@ -1,0 +1,19 @@
+{
+  "candidate_result_bearing_execution": "not run",
+  "controls": {
+    "actual_category_counts": "pass",
+    "distinct_full_reduced_radius": "pass",
+    "dot2_guards_cancellation_signed_zero": "pass",
+    "exact_reference_root_sign_error_and_cache": "pass",
+    "exact_upper_root": "pass",
+    "inactive_active_join_preservation": "pass",
+    "no_positive_root": "pass",
+    "nonzero_lambda_and_V_orientation": "pass",
+    "nonzero_lambda_full_ordinary_and_dot2_defect": "pass",
+    "original_radius_rejection": "pass",
+    "scaled_box_rejection": "pass",
+    "small_outside_radius_rejection": "pass",
+    "unchanged_bvls02_admission_and_rejection": "pass"
+  },
+  "evidence_class": "Ran: synthetic analytic/primitive controls only; capture is not loaded and target candidate/reference not evaluated"
+}

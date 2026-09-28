@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Static: parent pre-run draft inspection; target calculation NOT RUN",
+  "utc": "2026-09-28T19:57:37.303126+00:00",
+  "source": {
+    "shifted-refinement-author.py": "d225ed0ed8101f4325f7a33f1cf10b308e8dafceac068c2a56ac1f0e5a1d56f3",
+    "shifted-refinement-controls.py": "67b9449171e18eaf26822006be1b96640902b8eb6c9b7a4ffa2d7b5379249f80",
+    "shifted-refinement-protocol.json": "b74596f4e88b38b14670272cbdebfd31eaa9abedf8d5dc02416954a7e20c1d75",
+    "shifted-refinement-controls.json": "0adfba41a0bf4976d67b458b0c970531c47afa7c52ce3cc354da44d4000b1d98"
+  },
+  "findings": [
+    "z append traversal/raw-index read misjoins coefficients for nonidentity order; control expected answer encodes bug",
+    "BVLS02 draft enclosure missing required upward product and zero skip behavior, incomplete guards",
+    "Dot2 exact identity checks placed in candidate instead of separate post-candidate oracle",
+    "Incomplete radius/rejection/primitive controls, reference residual checks, point error/objective/guard/work evidence and code binding"
+  ],
+  "disposition": "Preparation incomplete; freeze/target batch withheld pending writer corrections and independent static assessment."
+}

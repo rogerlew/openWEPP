@@ -1,0 +1,366 @@
+#!/usr/bin/env python3
+"""Frozen offline author batch for M1-SHIFTED-DEFECT-CORRECTION-PROTOTYPE-01.
+
+The candidate path is scalar IEEE binary64.  Exact Fraction work is confined to
+the separately reported fixed-face multiplier reference.  This module exposes
+small operations for the non-result-bearing control program; its ``main`` is
+the sole result-bearing author batch.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import importlib.util
+import json
+import math
+import struct
+import sys
+import time
+from fractions import Fraction
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+CAPTURE = HERE / "shifted-face-observed-capture.json"
+DOT2 = HERE / "dot2-primitive.py"
+CAPTURE_SHA256 = "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb"
+DOT2_SHA256 = "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0"
+RETAINED_REFERENCE = HERE / "shifted-correctness-reconstruction.json"
+RETAINED_REFERENCE_SHA256 = "79d4669f3ca3f7e23bf1222d0f6b07883bd14d4958ac4bd93cfdf895b1b08410"
+N = 21
+COUNTS = {"scalar": 0, "guards": 0}
+
+
+class PrototypeLimitation(RuntimeError):
+    pass
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def f64(word: str) -> float:
+    return struct.unpack(">d", int(word, 16).to_bytes(8, "big"))[0]
+
+
+def bits(value: float) -> str:
+    return struct.pack(">d", float(value)).hex()
+
+
+def q(value: float) -> Fraction:
+    return Fraction.from_float(value)
+
+
+def normal_or_zero(value: float) -> bool:
+    return value == 0.0 or abs(value) >= sys.float_info.min
+
+
+def guard(value: float, label: str) -> float:
+    COUNTS["guards"] += 1
+    if not math.isfinite(value) or not normal_or_zero(value):
+        raise PrototypeLimitation(f"{label}: nonfinite or nonzero subnormal {bits(value)}")
+    return value
+
+
+def snapshot() -> dict:
+    return dict(COUNTS)
+
+
+def count_delta(before: dict) -> dict:
+    return {key: COUNTS[key] - before[key] for key in COUNTS}
+
+
+def mul(left: float, right: float, label: str) -> float:
+    COUNTS["scalar"] += 1
+    guard(left, label + ".left"); guard(right, label + ".right")
+    value = left * right
+    if value == 0.0 and left != 0.0 and right != 0.0:
+        raise PrototypeLimitation(label + ": nonzero-product underflow")
+    return guard(value, label + ".result")
+
+
+def add(left: float, right: float, label: str) -> float:
+    COUNTS["scalar"] += 1
+    guard(left, label + ".left"); guard(right, label + ".right")
+    value = left + right
+    if value == 0.0 and (left != 0.0 or right != 0.0) and bits(left) != bits(-right):
+        raise PrototypeLimitation(label + ": unexpected zero-add")
+    return guard(value, label + ".result")
+
+
+def ordered_residual(A: list[list[float]], f: list[float], p: list[float]) -> list[float]:
+    out = []
+    for row in range(N):
+        total = 0.0
+        for col in range(N):
+            total = add(total, mul(A[row][col], p[col], f"r[{row},{col}]"), f"r[{row}]")
+        out.append(add(f[row], total, f"r[{row}].f"))
+    return out
+
+
+def ordinary_defect(A: list[list[float]], f: list[float], p: list[float], lam: float, columns: list[int] | None = None) -> list[float]:
+    residual = ordered_residual(A, f, p)
+    cols = list(range(N)) if columns is None else columns
+    out = []
+    for col in cols:
+        total = 0.0
+        for row in range(N):
+            total = add(total, mul(A[row][col], residual[row], f"g[{col},{row}]"), f"g[{col}]")
+        out.append(add(total, mul(lam, p[col], f"lp[{col}]"), f"h[{col}]"))
+    return out
+
+
+def load_dot2():
+    if sha256(DOT2) != DOT2_SHA256:
+        raise PrototypeLimitation("accepted Dot2 primitive identity mismatch")
+    spec = importlib.util.spec_from_file_location("m1_accepted_dot2", DOT2)
+    if spec is None or spec.loader is None:
+        raise PrototypeLimitation("cannot load accepted Dot2 primitive")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def dot2_defect(A: list[list[float]], f: list[float], p: list[float], lam: float, columns: list[int], dot2_module) -> tuple[list[float], list[float], dict, list]:
+    residual, traces = [], []
+    cost = {"dot2_rows": 0, "dot2_gradients": 0, "primitive_arithmetic": 0, "primitive_guards": 0, "primitive_identity_checks": 0}
+    for row in range(N):
+        d = dot2_module.dot2([f[row], *A[row]], [1.0, *p])
+        traces.append(d)
+        residual.append(d.value); cost["dot2_rows"] += 1
+        cost["primitive_arithmetic"] += d.counters.arithmetic
+        cost["primitive_guards"] += d.counters.guards
+        cost["primitive_identity_checks"] += d.counters.identity_checks
+    out = []
+    for col in columns:
+        d = dot2_module.dot2([A[row][col] for row in range(N)] + [lam], residual + [p[col]])
+        traces.append(d)
+        out.append(d.value); cost["dot2_gradients"] += 1
+        cost["primitive_arithmetic"] += d.counters.arithmetic
+        cost["primitive_guards"] += d.counters.guards
+        cost["primitive_identity_checks"] += d.counters.identity_checks
+    return residual, out, cost, traces
+
+
+def shifted_inverse(v: list[list[float]], sigma: list[float], order: list[int], h: list[float], lam: float) -> list[float]:
+    """Apply -V diag(1/(sigma²+lambda)) Vᵀ h in stored index order."""
+    m = len(h)
+    z = [0.0] * m
+    for j in order:
+        total = 0.0
+        for i in range(m):
+            total = add(total, mul(v[i][j], h[i], f"vt[{j},{i}]"), f"vt[{j}]")
+        denominator = add(mul(sigma[j], sigma[j], f"den.square[{j}]"), lam, f"den[{j}]")
+        if denominator == 0.0:
+            raise PrototypeLimitation(f"singular shifted denominator {j}")
+        COUNTS["scalar"] += 1
+        quotient = total / denominator
+        if quotient == 0.0 and total != 0.0: raise PrototypeLimitation(f"z[{j}]: division underflow")
+        z[j] = guard(quotient, f"z[{j}]")
+    delta = []
+    for i in range(m):
+        total = 0.0
+        for j in order:
+            total = add(total, mul(v[i][j], z[j], f"vz[{i},{j}]"), f"vz[{i}]")
+        COUNTS["scalar"] += 1
+        delta.append(guard(-total, f"delta[{i}]"))
+    return delta
+
+
+def update_free(p: list[float], free: list[int], delta: list[float]) -> list[float]:
+    out = p[:]
+    for slot, col in enumerate(free):
+        out[col] = add(out[col], delta[slot], f"update[{col}]")
+    return out
+
+
+def upmul(left: float, right: float, label: str) -> float:
+    left, right = abs(guard(left, label + ".left")), abs(guard(right, label + ".right"))
+    if left == 0.0 or right == 0.0: return 0.0
+    return guard(math.nextafter(guard(left * right, label + ".product"), math.inf), label + ".next")
+
+
+def upadd(left: float, right: float, label: str) -> float:
+    left, right = abs(guard(left, label + ".left")), abs(guard(right, label + ".right"))
+    if right == 0.0: return left
+    return guard(math.nextafter(guard(left + right, label + ".sum"), math.inf), label + ".next")
+
+
+def bvls02(A: list[list[float]], f: list[float], p: list[float], lam: float, lo: list[float], hi: list[float], lower: list[bool], upper: list[bool], radius: float) -> dict:
+    residual = ordered_residual(A, f, p)
+    g, lp, h = [], [], []
+    for col in range(N):
+        total = 0.0
+        for row in range(N): total = add(total, mul(A[row][col], residual[row], f"g[{col},{row}]"), f"g[{col}]")
+        g.append(total); lp.append(mul(lam, p[col], f"lp[{col}]")); h.append(add(total, lp[-1], f"h[{col}]"))
+    gamma = math.nextafter(87.0 / (2.0**53 - 87.0), math.inf)
+    cbar, tau, classes = [], [], []
+    for col in range(N):
+        cb = 0.0
+        for row in range(N):
+            inner = 0.0
+            for k in range(N): inner = upadd(inner, upmul(A[row][k], p[k], f"cbar[{col},{row},{k}]"), f"cbar.inner[{col},{row}]")
+            cb = upadd(cb, upmul(A[row][col], upadd(f[row], inner, f"cbar.scale[{col},{row}]"), f"cbar.term[{col},{row}]"), f"cbar.sum[{col}]")
+        cb = upadd(cb, upmul(lam, p[col], f"cbar.lambda.product[{col}]"), f"cbar.lambda.sum[{col}]")
+        cbar.append(cb); t = 0.0 if cb == 0.0 else upmul(gamma, cb, f"tau[{col}]")
+        tau.append(t)
+        if lo[col] == hi[col]: cls = "Fixed"
+        elif lower[col]: cls = "ReleaseLower" if h[col] < -t else "RetainLower"
+        elif upper[col]: cls = "ReleaseUpper" if h[col] > t else "RetainUpper"
+        else: cls = "FreePass" if abs(h[col]) <= t else "FreeRefuse"
+        classes.append(cls)
+    n2 = sum((q(x) * q(x) for x in p), Fraction())
+    return {"residual_bits": [bits(x) for x in residual], "g_bits": [bits(x) for x in g], "lambda_p_bits": [bits(x) for x in lp], "h_bits": [bits(x) for x in h], "cbar_bits": [bits(x) for x in cbar], "tau_bits": [bits(x) for x in tau], "classes": classes,
+            "box_feasible": all(lo[i] <= p[i] <= hi[i] for i in range(N)), "norm_squared_exact": str(n2), "radius_feasible_exact": n2 <= q(radius)*q(radius)}
+
+
+def exact_solve(matrix: list[list[Fraction]], rhs: list[Fraction]) -> list[Fraction]:
+    rows = [row[:] + [b] for row, b in zip(matrix, rhs)]
+    for col in range(len(rhs)):
+        pivot = next((r for r in range(col, len(rhs)) if rows[r][col]), None)
+        if pivot is None: raise PrototypeLimitation(f"exact shifted system singular at {col}")
+        rows[col], rows[pivot] = rows[pivot], rows[col]
+        div = rows[col][col]
+        rows[col] = [x / div for x in rows[col]]
+        for row in range(len(rhs)):
+            if row != col and rows[row][col]:
+                factor = rows[row][col]
+                rows[row] = [x - factor * y for x, y in zip(rows[row], rows[col])]
+    return [rows[i][-1] for i in range(len(rhs))]
+
+
+def exact_norm2_for_lambda(A, f, p, free, active, lam: Fraction) -> tuple[list[Fraction], Fraction, bool]:
+    y = [q(f[row]) + sum((q(A[row][i]) * q(p[i]) for i in active), Fraction()) for row in range(N)]
+    H = [[sum((q(A[row][free[i]]) * q(A[row][free[j]]) for row in range(N)), Fraction()) + (lam if i == j else 0) for j in range(len(free))] for i in range(len(free))]
+    rhs = [-sum((q(A[row][free[i]]) * y[row] for row in range(N)), Fraction()) for i in range(len(free))]
+    qq = exact_solve(H, rhs)
+    residual_zero = all(sum((H[i][j]*qq[j] for j in range(len(free))), Fraction()) == rhs[i] for i in range(len(free)))
+    return qq, sum((x*x for x in qq), Fraction()), residual_zero
+
+
+def exact_point_metrics(A, f, p, lam: float) -> dict:
+    """Post-candidate exact-binary64 operand reconstruction; never candidate input."""
+    residual = [q(f[row]) + sum((q(A[row][col])*q(p[col]) for col in range(N)), Fraction()) for row in range(N)]
+    h = [sum((q(A[row][col])*residual[row] for row in range(N)), Fraction()) + q(lam)*q(p[col]) for col in range(N)]
+    ordered_h = ordinary_defect(A, f, p, lam)
+    return {"exact_residual": [str(x) for x in residual], "exact_h": [str(x) for x in h],
+            "ordered_h_evaluation_error": [str(q(ordered_h[i])-h[i]) for i in range(N)],
+            "objective_half_residual_norm_squared": str(sum((x*x for x in residual), Fraction()) / 2)}
+
+
+def norm_and_disposition(assessment: dict, p: list[float], p0: list[float], free: list[int], active: list[int], initial_radius: float, face_radius: float, tolerance: float, lam: float) -> dict:
+    full = reduced = 0.0
+    for i in range(N): full = add(full, mul(p[i], p[i], f"full_norm[{i}]"), "full_norm")
+    for i in free: reduced = add(reduced, mul(p[i], p[i], f"reduced_norm[{i}]"), "reduced_norm")
+    h, tau = [f64(x) for x in assessment["h_bits"]], [f64(x) for x in assessment["tau_bits"]]
+    failed = [i for i, cls in enumerate(assessment["classes"]) if cls in ("FreeRefuse", "ReleaseLower", "ReleaseUpper")]
+    ratios = [(abs(h[i])/tau[i] if tau[i] else (0.0 if h[i] == 0.0 else math.inf), i) for i in free]
+    return {"active_bits_equal_p0": all(bits(p[i]) == bits(p0[i]) for i in active), "failed_coordinates": failed,
+      "max_free_abs_h_over_tau": max(ratios), "full_norm_squared_ordered_bits": bits(full), "reduced_norm_squared_ordered_bits": bits(reduced),
+      "largest_raw_free_h": max((abs(h[i]), i) for i in free), "full_norm_squared_exact": assessment["norm_squared_exact"],
+      "full_radius_gap_ordered": initial_radius-math.sqrt(full), "reduced_radius_gap_ordered": face_radius-math.sqrt(reduced), "radius_tolerance": tolerance,
+      "full_feasible_ordered": full <= initial_radius*initial_radius, "reduced_feasible_ordered": reduced <= face_radius*face_radius,
+      "full_feasible_exact_squared": assessment["radius_feasible_exact"], "reduced_feasible_exact_squared": sum((q(p[i])*q(p[i]) for i in free), Fraction()) <= q(face_radius)*q(face_radius),
+      "reduced_gap_within_tolerance": 0.0 <= face_radius-math.sqrt(reduced) <= tolerance,
+      "positive_lambda_complementarity_approx": lam*(face_radius-math.sqrt(reduced))}
+
+
+def fixed_lambda_reference(A, f, p0, free, active, lam, radius, lo, hi, lower, upper, initial_radius, tolerance) -> dict:
+    if sha256(RETAINED_REFERENCE) != RETAINED_REFERENCE_SHA256: raise PrototypeLimitation("retained fixed-lambda reference identity mismatch")
+    retained = json.loads(RETAINED_REFERENCE.read_text())["fixed_lambda_exact_reference"]
+    pref = [f64(x) for x in retained["once_rounded_bits"]]
+    assess = bvls02(A,f,pref,lam,lo,hi,lower,upper,radius)
+    return {"source_sha256": RETAINED_REFERENCE_SHA256, "once_rounded_bits": [bits(x) for x in pref], "assessment": assess,
+      "disposition": norm_and_disposition(assess,pref,p0,free,active,initial_radius,radius,tolerance,lam), "step_error_from_p0": [p0[i]-pref[i] for i in range(N)], "exact_metrics": exact_point_metrics(A,f,pref,lam)}
+
+
+def objectives(A, f, p, lam: float) -> dict:
+    residual = [q(f[row]) + sum((q(A[row][col])*q(p[col]) for col in range(N)), Fraction()) for row in range(N)]
+    original = sum((x*x for x in residual), Fraction()) / 2
+    shifted = original + q(lam)*sum((q(x)*q(x) for x in p), Fraction())/2
+    return {"original_half_residual_norm_squared": str(original), "shifted_half_residual_norm_squared": str(shifted)}
+
+
+def reference(A, f, p, free, active, lam, radius, deadline: float) -> dict:
+    exact_lam, exact_radius = q(lam), q(radius)
+    cache = {}; operations = {"exact_solves": 0, "exact_residual_checks": 0}
+    def evaluate(value):
+        if value not in cache:
+            qq, norm2, ok = exact_norm2_for_lambda(A,f,p,free,active,value)
+            operations["exact_solves"] += 1; operations["exact_residual_checks"] += 1
+            if not ok: raise PrototypeLimitation("exact reference linear residual failed")
+            cache[value] = (qq, norm2, norm2-exact_radius*exact_radius, ok)
+        return cache[value]
+    runtime_low, high, low = q(5962417150275280.0), exact_lam, Fraction()
+    _, _, narrow_low_sign, narrow_low_ok = evaluate(runtime_low)
+    _, _, high_sign, high_ok = evaluate(high)
+    endpoint = [{"lambda_bits": bits(5962417150275280.0), "norm_squared_minus_radius_squared": str(narrow_low_sign), "linear_residual_exact_zero": narrow_low_ok}, {"lambda_bits": bits(lam), "norm_squared_minus_radius_squared": str(high_sign), "linear_residual_exact_zero": high_ok}]
+    _, _, low_sign, low_ok = evaluate(low)
+    if low_sign <= 0 or high_sign > 0:
+        return {"endpoint_evaluations": endpoint, "bracket_established": False, "reason": "no independent [0, recorded-lambda] positive-root bracket"}
+    completed = 0
+    while completed < 80 and time.monotonic() < deadline:
+        middle = (low + high) / 2
+        _, _, middle_sign, middle_ok = evaluate(middle)
+        completed += 1
+        if middle_sign == 0:
+            low = high = middle; break
+        if middle_sign > 0: low = middle
+        else: high = middle
+    _, _, final_low_sign, final_low_ok = evaluate(low); _, _, final_high_sign, final_high_ok = evaluate(high)
+    return {"endpoint_evaluations": endpoint, "bracket_established": True, "bisections_completed": completed,
+            "complete_80_or_exact_zero": completed == 80 or low == high,
+            "lower_lambda_fraction": str(low), "upper_lambda_fraction": str(high), "bracket_width": str(high-low), "lambda_error_interval_against_recorded": [str(low-exact_lam), str(high-runtime_low)],
+            "q0_norm_sign": str(low_sign), "final_lower_norm_squared_minus_radius_squared": str(final_low_sign), "final_upper_norm_squared_minus_radius_squared": str(final_high_sign), "final_opposite_signs_or_exact_zero": final_low_sign == 0 or final_high_sign == 0 or (final_low_sign > 0 and final_high_sign < 0),
+            "all_linear_residuals_exact_zero": all(v[3] for v in cache.values()), "exact_reference_operations": operations,
+            "recorded_runtime_bracket_contains_reference": low >= runtime_low and high <= exact_lam}
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(); parser.add_argument("--output", required=True); parser.add_argument("--reference-seconds", type=float, default=240.0)
+    args = parser.parse_args()
+    if sha256(CAPTURE) != CAPTURE_SHA256: raise PrototypeLimitation("capture identity mismatch")
+    data = json.loads(CAPTURE.read_text())["face_capture"]; refusal = data["refusal"]; factor = refusal["factor"]
+    if not all(k in factor for k in ("v", "sigma", "order", "visits")): raise PrototypeLimitation("captured factor array absent; reconstruction requires separate authorization")
+    A = [[f64(x) for x in row] for row in data["weighted_matrix"]]; f = [f64(x) for x in data["weighted_residual"]]
+    p0 = [f64(x) for x in refusal["p"]]; lam = f64(refusal["lambda"]); free = list(refusal["free_ids"]); active = [i for i in range(N) if i not in free]
+    lo = [f64(x) for x in refusal["scaled_lower"]]; hi = [f64(x) for x in refusal["scaled_upper"]]
+    v = [[f64(x) for x in row] for row in factor["v"]]; sigma = [f64(x) for x in factor["sigma"]]
+    if factor["a"] != [[bits(A[row][col]) for col in free] for row in range(N)]: raise PrototypeLimitation("factor A does not equal captured free B")
+    order = list(factor["order"])
+    if len(order) != len(free) or set(order) != set(range(len(free))): raise PrototypeLimitation("captured factor order is not a permutation")
+    lower = refusal["lower"]; upper = refusal["upper"]
+    p0_assessment = bvls02(A,f,p0,lam,lo,hi,lower,upper,f64(refusal["radius"]))
+    expected = refusal["optimality"]["coordinates"]; observed = data["operations"][-1]
+    if p0_assessment["residual_bits"] != observed["residual"] or p0_assessment["g_bits"] != observed["g"] or p0_assessment["lambda_p_bits"] != observed["lambda_times_p"] or p0_assessment["h_bits"] != observed["h"] or p0_assessment["cbar_bits"] != [x["cbar"] for x in expected] or p0_assessment["tau_bits"] != [x["tau"] for x in expected] or p0_assessment["classes"] != [x["class"] for x in expected]: raise PrototypeLimitation("unchanged BVLS-02 p0 replay mismatch")
+    COUNTS["scalar"] = COUNTS["guards"] = 0
+    start = snapshot(); h0_free = ordinary_defect(A, f, p0, lam, free); defect1_count = count_delta(start)
+    start = snapshot(); delta1 = shifted_inverse(v, sigma, order, h0_free, lam); inverse1_count = count_delta(start)
+    start = snapshot(); p1 = update_free(p0, free, delta1); update1_count = count_delta(start)
+    dot2 = load_dot2(); start = snapshot(); residual1, h1_free, dot_cost, dot_traces = dot2_defect(A, f, p1, lam, free, dot2); dot2_count = count_delta(start)
+    start = snapshot(); delta2 = shifted_inverse(v, sigma, order, h1_free, lam); inverse2_count = count_delta(start)
+    start = snapshot(); p2 = update_free(p1, free, delta2); update2_count = count_delta(start)
+    for trace in dot_traces: dot2.verify_identities(trace)
+    dot_cost["primitive_identity_checks"] = sum(trace.counters.identity_checks for trace in dot_traces)
+    tolerance = f64(refusal["lambda_trace"]["tolerance"]); radius = f64(refusal["radius"]); initial_radius = f64(data["initial_radius"])
+    cutoff = time.monotonic() + args.reference_seconds
+    start = snapshot(); p1_assessment = bvls02(A,f,p1,lam,lo,hi,lower,upper,radius); p1_kkt_count = count_delta(start)
+    start = snapshot(); p2_assessment = bvls02(A,f,p2,lam,lo,hi,lower,upper,radius); p2_kkt_count = count_delta(start)
+    result = {"schema": "cold-canopy-m1-shifted-refinement-author-result/v1", "candidate": "M1-SHIFTED-DEFECT-CORRECTION-PROTOTYPE-01",
+      "identity": {"capture_sha256": CAPTURE_SHA256, "dot2_sha256": DOT2_SHA256, "factor_identity": factor["same_invocation_identity"], "lambda_bits": refusal["lambda"], "factor_order": order},
+      "factor_reconstruction": "not needed: captured V/sigma/order/visits present and captured factor A equals B bitwise",
+      "points": {"p0": p0_assessment, "p1": p1_assessment, "p2": p2_assessment},
+      "point_dispositions": {"p0": norm_and_disposition(p0_assessment,p0,p0,free,active,initial_radius,radius,tolerance,lam), "p1": norm_and_disposition(p1_assessment,p1,p0,free,active,initial_radius,radius,tolerance,lam), "p2": norm_and_disposition(p2_assessment,p2,p0,free,active,initial_radius,radius,tolerance,lam)},
+      "objectives": {"p0": objectives(A,f,p0,lam), "p1": objectives(A,f,p1,lam), "p2": objectives(A,f,p2,lam)},
+      "active_bits_preserved": {"p1": all(bits(p1[i]) == bits(p0[i]) for i in active), "p2": all(bits(p2[i]) == bits(p0[i]) for i in active)},
+      "candidate_bits": {"p0": [bits(x) for x in p0], "p1": [bits(x) for x in p1], "p2": [bits(x) for x in p2]},
+      "correction_intermediates": {"h0_free_bits": [bits(x) for x in h0_free], "delta1_bits": [bits(x) for x in delta1], "dot2_residual1_bits": [bits(x) for x in residual1], "h1_free_bits": [bits(x) for x in h1_free], "delta2_bits": [bits(x) for x in delta2]},
+      "post_candidate_exact_metrics": {"p0": exact_point_metrics(A,f,p0,lam), "p1": exact_point_metrics(A,f,p1,lam), "p2": exact_point_metrics(A,f,p2,lam)},
+      "additional_work": {"shifted_inverse_applications": 2, "ordinary_full_defect_free_gradients": len(free), "dot2_full_defect_free_gradients": len(free), "free_coordinate_updates": 2*len(free), "shifted_inverse_arithmetic_including_negation": 2*(4*len(free)*len(free)+4*len(free)), "ordinary_defect_arithmetic": N*(2*N+1) + len(free)*(2*N+2), "dot2_defect_arithmetic": (N+len(free))*(25*(N+1)-7), **dot_cost},
+      "work_partition": {"defect1": defect1_count, "inverse1": inverse1_count, "update1": update1_count, "dot2": {**dot2_count, **dot_cost}, "inverse2": inverse2_count, "update2": update2_count, "p1_kkt_enclosure": p1_kkt_count, "p2_kkt_enclosure": p2_kkt_count, "candidate_scalar_arithmetic": defect1_count["scalar"]+inverse1_count["scalar"]+update1_count["scalar"]+dot_cost["primitive_arithmetic"]+inverse2_count["scalar"]+update2_count["scalar"], "exact_reference_work": "excluded from prospective candidate total"},
+      "fixed_lambda_reference": fixed_lambda_reference(A,f,p0,free,active,lam,radius,lo,hi,lower,upper,initial_radius,tolerance),
+      "reference": reference(A, f, p0, free, active, lam, radius, cutoff)}
+    Path(args.output).write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+
+
+if __name__ == "__main__": main()

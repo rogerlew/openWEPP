@@ -1,0 +1,56 @@
+{
+  "schema": "openwepp.shifted-refinement-correctness-protocol.v1",
+  "status": "FROZEN_PRE_TARGET_EXECUTION",
+  "reviewer": "/root/shifted_refinement_correctness",
+  "candidate": "M1-SHIFTED-DEFECT-CORRECTION-PROTOTYPE-01",
+  "base_commit": "2832bcb686862f654cc1ce121246418777cb0212",
+  "source": {
+    "path": "shifted-refinement-correctness.py",
+    "sha256": "34e07597b29cf97d5bd3920a5c954e5c32aaf59376ed453ec1e0a0826fd75d28"
+  },
+  "inputs": {
+    "capture": {
+      "path": "shifted-face-observed-capture.json",
+      "sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb"
+    },
+    "accepted_dot2": {
+      "path": "dot2-primitive.py",
+      "sha256": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0"
+    },
+    "retained_reference": {
+      "path": "shifted-correctness-reconstruction.json",
+      "sha256": "79d4669f3ca3f7e23bf1222d0f6b07883bd14d4958ac4bd93cfdf895b1b08410"
+    }
+  },
+  "factor_interpretation": {
+    "v_rows": "captured free_ids order",
+    "v_and_sigma_columns": "raw stored spectral index j",
+    "t_accumulation": "free position i ascending from +0 for each raw j visited through factor.order",
+    "delta_accumulation": "captured factor.order traversal, no sorting or reindexing",
+    "factor_order": [9, 3, 13, 14, 15, 16, 17, 18, 19, 11, 12, 7, 4, 10, 1, 2, 8, 0, 6, 5]
+  },
+  "controls": {
+    "path": "shifted-refinement-correctness-controls.json",
+    "sha256": "430f3010bace0d7c7c4d9622213b8211f2fcd05391446d206cdb0115289d46e5",
+    "passed": true,
+    "scope": "nonzero lambda*q omission, nonsymmetric V orientation, raw sigma-column join, nonidentity factor order, inactive/active join, accepted and rejected bound/radius admission, accepted Dot2 cancellation and non-normal refusal"
+  },
+  "target_command": {
+    "argv": [
+      "timeout",
+      "300s",
+      ".venv/bin/python",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-correctness.py",
+      "target",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-observed-capture.json",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-primitive.py",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-correctness-result.json",
+      "--author-result",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-author-results.json"
+    ],
+    "cwd": "/workdir/openWEPP",
+    "declared_bound_seconds": 300,
+    "execution_status": "NOT RUN pending parent release after author protocol freeze; reviewer performs exact endpoint solves only and does not repeat the author's root bisection"
+  },
+  "independence": "The script does not import or invoke the author candidate. Exact Fraction work is confined to this reviewer's own acceptance/reference oracle; the pinned accepted Dot2 primitive is the only shared executable primitive."
+}

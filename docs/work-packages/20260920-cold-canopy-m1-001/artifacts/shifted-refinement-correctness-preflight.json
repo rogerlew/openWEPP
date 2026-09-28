@@ -1,0 +1,44 @@
+{
+  "schema": "openwepp.shifted-refinement-correctness-preflight.v1",
+  "reviewer": "/root/shifted_refinement_correctness",
+  "recorded_utc": "2026-09-28T20:12:59Z",
+  "evidence_class": "Static: complete frozen author/protocol/control source and retained authority inspected. Ran: independent non-target syntax and nine analytic/primitive/orientation/admission controls. No target candidate, author batch, historical prototype, Rust, or physical execution.",
+  "reviewed_identity": {
+    "base_commit": "2832bcb686862f654cc1ce121246418777cb0212",
+    "author_sha256": "5d94d3c259f5f6412db124764612a3ab4cd2a9a57fdd3e6acd223f46c7809993",
+    "author_controls_sha256": "0670f658f2d0577121bc3edd73239bdff4595da6c7edd43187bebcab37b61f56",
+    "author_protocol_sha256": "4a4f7b66b9e827fb0ed21b7c9097d119ffb6f196223203d7d4870cbc97251350",
+    "author_controls_result_sha256": "c8547c56e5a8161ab51e03d9354033ceda18d014bb24aeb4a0b5770a84cebb50",
+    "capture_sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+    "dot2_sha256": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0",
+    "retained_reference_sha256": "79d4669f3ca3f7e23bf1222d0f6b07883bd14d4958ac4bd93cfdf895b1b08410",
+    "independent_source_sha256": "34e07597b29cf97d5bd3920a5c954e5c32aaf59376ed453ec1e0a0826fd75d28",
+    "independent_protocol_sha256": "67e57a3d9943bbed9d2d898dc6d12e7ead9ae8b9628eac0b71e28707f56d3aa6",
+    "independent_controls_sha256": "430f3010bace0d7c7c4d9622213b8211f2fcd05391446d206cdb0115289d46e5"
+  },
+  "checks": {
+    "author_protocol_pins_actual_source_and_inputs": "PASS",
+    "author_13_non_target_controls": "PASS",
+    "two_correction_cadence_and_active_custody": "PASS",
+    "ordinary_full_shifted_defect_includes_lambda_q": "PASS",
+    "dot2_second_defect_places_lambda_q_as_final_term": "PASS",
+    "v_rows_sigma_columns_and_factor_order_join": "PASS",
+    "separately_rounded_shifted_inverse_and_updates": "PASS",
+    "normal_or_zero_nonfinite_underflow_and_zero_add_guards": "PASS",
+    "unchanged_all_coordinate_bvls02_and_box_radius_admission": "PASS",
+    "one_sided_nonnegative_radius_gap_predicate": "PASS",
+    "full_and_reduced_exact_and_ordered_norm_evidence": "PASS",
+    "retained_fixed_lambda_reference_and_exact_diagnostics": "PASS",
+    "exact_original_matrix_endpoint_residual_and_sign_verification": "PASS",
+    "root_bisection_bound_and_recorded_multiplier_error_interval": "PASS",
+    "candidate_and_reference_work_partition": "PASS",
+    "independent_endpoint_only_reconstruction_protocol": "PASS"
+  },
+  "findings": [],
+  "residual_risk_before_execution": [
+    "The numerical outcome remains unknown until the one authorized author batch and the one independent reconstruction execute.",
+    "The exact root search is time bounded; a result with fewer than 80 bisections and no exact-zero endpoint must be reported incomplete rather than promoted.",
+    "Passing this offline prototype would not authorize a Rust/runtime method, physical run, BVLS-04 activation, or release."
+  ],
+  "verdict": "PASS preflight: no correctness blocker in the frozen author or independent protocols. Author target batch may be released by the parent; independent target reconstruction remains held until the author result is retained."
+}

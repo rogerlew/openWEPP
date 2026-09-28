@@ -1,0 +1,39 @@
+{
+  "schema": "openwepp.shifted-refinement-correctness-receipt.v1",
+  "reviewer": "/root/shifted_refinement_correctness",
+  "evidence_class": "Ran: one independently authored target reconstruction and endpoint-only exact reference verification",
+  "execution_window_utc": "2026-09-28T20:14:55Z/2026-09-28T20:14:56Z",
+  "observed_wall_seconds": 0.155855018,
+  "declared_process_bound_seconds": 300,
+  "cutoff_utc": "2026-09-28T21:21:00Z",
+  "exit_code": 0,
+  "cwd": "/workdir/openWEPP",
+  "argv": [
+    "timeout",
+    "300s",
+    ".venv/bin/python",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-correctness.py",
+    "target",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-observed-capture.json",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/dot2-primitive.py",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-correctness-result.json",
+    "--author-result",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-author-results.json"
+  ],
+  "identities": {
+    "source_sha256": "34e07597b29cf97d5bd3920a5c954e5c32aaf59376ed453ec1e0a0826fd75d28",
+    "capture_sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+    "dot2_sha256": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0",
+    "author_source_sha256": "5d94d3c259f5f6412db124764612a3ab4cd2a9a57fdd3e6acd223f46c7809993",
+    "author_result_sha256": "5b51bd7df2c9d7c58743e6728b5d68c67c21a770460ccd608941b78cf3536b45",
+    "independent_result_sha256": "0d9d9c14c96559b2da2d52029714c60542f8e7e15a43144afaa8dd8e805fbe49"
+  },
+  "cadence": {
+    "independent_target_reconstructions": 1,
+    "reviewer_root_bisections": 0,
+    "exact_endpoint_solves": 5,
+    "author_candidate_called_for_expected_values": false,
+    "historical_prototype_executed": false,
+    "rust_or_physical_execution": false
+  }
+}

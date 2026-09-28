@@ -1,0 +1,130 @@
+{
+  "schema": "openwepp.shifted-refinement-correctness-review.v1",
+  "reviewer": "/root/shifted_refinement_correctness",
+  "findings": [
+    {
+      "severity": "high for any exact secular-root or exact-complementarity claim; nonblocking for this prototype's unchanged finite radius tolerance",
+      "location": "shifted-refinement-author-results.json reference; shifted-refinement-correctness-result.json multiplier_reference",
+      "finding": "The recorded runtime bracket [5962417150275280,5962417150275328] does not contain the exact original-matrix fixed-face secular root. Both independently solved runtime endpoints are inside the radius in exact squared norm: lower norm2-radius2=-7.302118058819802e-13 and upper=-7.355292201567101e-13. The 80-bisection reference brackets the root at [5962417150268688.419041395938759199013680,5962417150268688.419041400870755069675103], so the recorded upper multiplier exceeds the root by 6639.580958599129 to 6639.580958604061. Independent exact solves reproduce opposite signs at the retained final endpoints and verify every linear-system residual exactly.",
+      "interpretation": "The narrow runtime straddle was a property of the approximate factor application, not an exact original-matrix root enclosure. This blocks claims of exact multiplier accuracy or exact complementarity. It does not fail the unchanged radius predicate: corrected p2 has ordered radius gap 3.6770586575585185e-13 within tolerance 9.094947017729282e-13."
+    }
+  ],
+  "evidence_class": "Static: frozen author/protocol/control source, retained capture/reference, author result and operation evidence inspected. Ran: one independent stdlib binary64 reconstruction of both corrections and the complete BVLS-02 oracle, plus exact-Fraction solves at zero, both runtime narrow endpoints and both retained author root endpoints. No reviewer bisection replay, author-candidate expected-answer call, Rust, physical run, or historical prototype execution.",
+  "identity": {
+    "base_commit": "2832bcb686862f654cc1ce121246418777cb0212",
+    "capture_sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+    "dot2_sha256": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0",
+    "author_source_sha256": "5d94d3c259f5f6412db124764612a3ab4cd2a9a57fdd3e6acd223f46c7809993",
+    "author_preflight_protocol_sha256": "4a4f7b66b9e827fb0ed21b7c9097d119ffb6f196223203d7d4870cbc97251350",
+    "author_executed_freeze_protocol_sha256": "45cc5715b799cd44423a60b0bbcc1daf4395c4b597ce044ac8387a72609f6885",
+    "author_result_sha256": "5b51bd7df2c9d7c58743e6728b5d68c67c21a770460ccd608941b78cf3536b45",
+    "independent_source_sha256": "34e07597b29cf97d5bd3920a5c954e5c32aaf59376ed453ec1e0a0826fd75d28",
+    "independent_result_sha256": "0d9d9c14c96559b2da2d52029714c60542f8e7e15a43144afaa8dd8e805fbe49",
+    "candidate": "M1-SHIFTED-DEFECT-CORRECTION-PROTOTYPE-01",
+    "lambda_bits": "43352ec96c3eaf00",
+    "lambda": 5962417150275328,
+    "factor_identity": 140737349770744
+  },
+  "independent_reconstruction": {
+    "original_capture_replay": "PASS: residual, gradient, lambda*p, h, Cbar, tau and all 21 classes match captured bits.",
+    "author_candidate_comparison": "PASS: p0/p1/p2 and every ordinary acceptance operand match author bits; correction1 h/delta and correction2 Dot2 residual/h/delta all match author bits.",
+    "factor_interpretation": "PASS: V rows follow free_ids; V[:,j] and sigma[j] retain raw spectral-column joins; both spectral output sums traverse captured factor.order; t_j sums free positions ascending.",
+    "guards": "PASS: every candidate path has zero exceptional branches. Ordinary correction1 defect/inverse/update observed 10429 guards; correction2 Dot2 defect 24067 guards plus 3567 post-candidate EFT identity checks; correction2 inverse/update 5080 guards. Active coordinate 11 remains exact +0 at every point.",
+    "work": {
+      "candidate_arithmetic_total": 27446,
+      "ordinary_full_shifted_defect_1": 1783,
+      "shifted_inverse_1": 1680,
+      "free_update_1": 20,
+      "dot2_full_shifted_defect_2": 22263,
+      "shifted_inverse_2": 1680,
+      "free_update_2": 20,
+      "reviewer_exact_endpoint_solves": 5,
+      "reviewer_exact_residual_components_verified": 100,
+      "reviewer_root_bisections": 0
+    }
+  },
+  "point_disposition": [
+    {
+      "point": "original p0",
+      "stationarity": "FAIL coordinates 1,2,5,7,8; largest free |h|/tau=14.3897859279612 at coordinate 7",
+      "bvls02_classes": "15 FreePass, 5 FreeRefuse, coordinate 11 RetainLower",
+      "box_active_ball": "PASS box, exact active bits, ordered/exact full and reduced balls",
+      "ordered_radius_gap": 1.887379141862766e-15,
+      "radius_tolerance": 9.094947017729282e-13,
+      "radius_predicate": "PASS",
+      "max_step_error_to_once_rounded_reference": 5.139116752593195e-12,
+      "max_evaluation_error_over_tau": 0.005538598360117716,
+      "objectives_approx": {"half_residual_norm2": 3063064328662219.5, "half_residual_norm2_plus_half_lambda_norm2": 6044272903799873.0},
+      "acceptance": "FAIL"
+    },
+    {
+      "point": "ordinary correction 1 p1",
+      "stationarity": "PASS all 21; largest free |h|/tau=0.003918057152674331 at coordinate 10",
+      "bvls02_classes": "20 FreePass, coordinate 11 RetainLower",
+      "box_active_ball": "PASS box, exact active bits, ordered/exact full and reduced balls",
+      "ordered_radius_gap": 3.6781688805831436e-13,
+      "radius_tolerance": 9.094947017729282e-13,
+      "radius_predicate": "PASS",
+      "max_step_error_to_once_rounded_reference": 2.1041653662512427e-16,
+      "max_evaluation_error_over_tau": 0.005088005789845346,
+      "objectives_approx": {"half_residual_norm2": 3063064328664402.0, "half_residual_norm2_plus_half_lambda_norm2": 6044272903799873.0},
+      "acceptance": "PASS intermediate only; protocol still requires p2"
+    },
+    {
+      "point": "compensated correction 2 p2",
+      "stationarity": "PASS all 21; largest free |h|/tau=0.010702990032297 at coordinate 10",
+      "bvls02_classes": "20 FreePass, coordinate 11 RetainLower",
+      "box_active_ball": "PASS box, exact active bits, ordered/exact full and reduced balls",
+      "ordered_radius_gap": 3.6770586575585185e-13,
+      "exact_squared_radius_deficit": 7.354761049584314e-13,
+      "radius_tolerance": 9.094947017729282e-13,
+      "radius_predicate": "PASS",
+      "lambda_times_ordered_gap": 2192.4157602395285,
+      "max_step_error_to_once_rounded_reference": 2.7755575615628914e-17,
+      "max_evaluation_error_over_tau": 0.006455311085917738,
+      "objectives_approx": {"half_residual_norm2": 3063064328664401.5, "half_residual_norm2_plus_half_lambda_norm2": 6044272903799873.0},
+      "acceptance": "PASS"
+    },
+    {
+      "point": "retained fixed-lambda reference rounded once",
+      "stationarity": "PASS all 21; largest free |h|/tau=0.010703066122157708 at coordinate 10",
+      "bvls02_classes": "20 FreePass, coordinate 11 RetainLower",
+      "box_active_ball": "PASS box, exact active bits, ordered/exact full and reduced balls",
+      "ordered_radius_gap": 3.6770586575585185e-13,
+      "radius_tolerance": 9.094947017729282e-13,
+      "radius_predicate": "PASS",
+      "objectives_approx": {"half_residual_norm2": 3063064328664401.5, "half_residual_norm2_plus_half_lambda_norm2": 6044272903799873.0},
+      "author_new_exact_endpoint_matches_retained_bits": true,
+      "acceptance": "PASS"
+    }
+  ],
+  "multiplier_and_complementarity": {
+    "q0_norm2_minus_radius2": 119.10003971075677,
+    "positive_multiplier_required": true,
+    "runtime_narrow_lower_norm2_minus_radius2": -7.302118058819802e-13,
+    "runtime_narrow_upper_norm2_minus_radius2": -7.355292201567101e-13,
+    "runtime_narrow_bracket_contains_exact_root": false,
+    "author_exact_bisections": 80,
+    "author_final_bracket_width": 4.9319958706614235e-9,
+    "independent_final_endpoint_signs": [1, -1],
+    "independent_final_endpoint_residuals_exact_zero": [true, true],
+    "interpretation": "The recorded multiplier is high by the reported interval and produces an interior fixed-lambda reference. p2 nevertheless satisfies the existing finite ordered radius-gap criterion. lambda*gap and lambda*(radius^2-norm^2) are diagnostics only; neither is exact complementarity."
+  },
+  "residual_risk_and_missing_tests": [
+    "This is one captured fixed face. It does not establish eligibility, scratch isolation, nonlinear convergence, active-set behavior on other faces, or a production runtime policy.",
+    "The runtime narrow bracket fails as an exact original-matrix enclosure. A tighter multiplier or exact-complementarity claim would require a joint multiplier/step treatment and separate authority; the current finite radius tolerance does not require it.",
+    "No Rust test, physical endpoint, target case, interface campaign, or production performance measurement ran or is implied by the Python operation counts."
+  ],
+  "final_claim_and_ledger_verification": {
+    "evidence_class": "Static same-reviewer verification only; no numerical, author, independent, Rust, or physical replay",
+    "reviewed_scope": "package.md Fixed-factor shifted refinement prototype through the Positive-multiplier shifted-face attribution heading, plus shifted-refinement-final-ledger.json and executed run-release/protocol identities",
+    "numerical_table_and_claims": "PASS: the table and prose preserve p0 failures 1,2,5,7,8; p1 intermediate PASS; required p2 all-coordinate PASS; exact active +0, box/full/reduced ordered and exact ball custody; unchanged one-sided gap tolerance; step/evaluation errors; original versus fixed-shift objective distinction; exact work counts and all guard outcomes.",
+    "multiplier_claims": "PASS: the record states both exact runtime narrow endpoints are interior, denies true-root enclosure, reports the independently verified 80-bisection opposite-sign interval and recorded-minus-root error interval, and distinguishes finite ball accuracy from exact complementarity.",
+    "scope_claims": "PASS: offline local evidence only; no runtime eligibility/scratch policy, Rust/BVLS-04, physical/nonlinear qualification, target use, timing speedup or release. The prior domain FAIL, source-specific BVLS-03 result and all named HOLDs remain explicit.",
+    "protocol_identity": "PASS: preflight inspected protocol 4a4f7b66b9e827fb0ed21b7c9097d119ffb6f196223203d7d4870cbc97251350; the actual executed freeze is 45cc5715b799cd44423a60b0bbcc1daf4395c4b597ce044ac8387a72609f6885 and differs only by the authorized frozen status/time/preflight link while retaining source/input/command predicates.",
+    "ledger": "PASS: carry 378883.959294 + new conservative charge 3516.434501 = cumulative 382400.393795; ceiling 386083.959294 leaves 3683.565499. The charge is anchored at 19:51Z, includes observed elapsed through 20:19:36.434501Z plus the full 1800-second closing allocation through 20:49:36.434501Z, deducts no waits, reclaims no reserve, and preserves 21:21/21:51 cutoffs. The ledger does not claim publication.",
+    "required_corrections": [],
+    "verdict": "PASS: final numerical claims, scope boundaries and conservative closing ledger are supported."
+  },
+  "verdict": "PASS for the bounded offline prototype. The evidence supports fixed-shift two-correction accuracy refinement under the existing BVLS-02 and finite radius tolerance. It does not support the recorded narrow bracket as a true-root enclosure, exact complementarity, or any runtime/Rust/physical activation. No implementation or recording blocker remains in the reviewed result."
+}

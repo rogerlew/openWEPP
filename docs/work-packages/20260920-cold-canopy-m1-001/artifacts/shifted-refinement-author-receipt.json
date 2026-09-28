@@ -1,0 +1,23 @@
+{
+  "evidence_class": "Ran: sole author result-bearing batch; no physical/Rust execution",
+  "argv": [
+    "timeout",
+    "300s",
+    ".venv/bin/python",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-author.py",
+    "--reference-seconds",
+    "240",
+    "--output",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-author-results.json"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "started_utc": "2026-09-28T20:14:30.870131+00:00",
+  "ended_utc": "2026-09-28T20:14:32.275746+00:00",
+  "elapsed_seconds": 1.4055275558494031,
+  "declared_bound_seconds": 300,
+  "exit_code": 0,
+  "source_sha256": "5d94d3c259f5f6412db124764612a3ab4cd2a9a57fdd3e6acd223f46c7809993",
+  "source_unchanged": true,
+  "result_sha256": "5b51bd7df2c9d7c58743e6728b5d68c67c21a770460ccd608941b78cf3536b45",
+  "automatic_retries": 0
+}

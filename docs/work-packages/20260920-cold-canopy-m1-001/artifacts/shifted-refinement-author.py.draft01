@@ -1,0 +1,259 @@
+#!/usr/bin/env python3
+"""Frozen offline author batch for M1-SHIFTED-DEFECT-CORRECTION-PROTOTYPE-01.
+
+The candidate path is scalar IEEE binary64.  Exact Fraction work is confined to
+the separately reported fixed-face multiplier reference.  This module exposes
+small operations for the non-result-bearing control program; its ``main`` is
+the sole result-bearing author batch.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import importlib.util
+import json
+import math
+import struct
+import sys
+import time
+from fractions import Fraction
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+CAPTURE = HERE / "shifted-face-observed-capture.json"
+DOT2 = HERE / "dot2-primitive.py"
+CAPTURE_SHA256 = "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb"
+DOT2_SHA256 = "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0"
+N = 21
+
+
+class PrototypeLimitation(RuntimeError):
+    pass
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def f64(word: str) -> float:
+    return struct.unpack(">d", int(word, 16).to_bytes(8, "big"))[0]
+
+
+def bits(value: float) -> str:
+    return struct.pack(">d", float(value)).hex()
+
+
+def q(value: float) -> Fraction:
+    return Fraction.from_float(value)
+
+
+def normal_or_zero(value: float) -> bool:
+    return value == 0.0 or abs(value) >= sys.float_info.min
+
+
+def guard(value: float, label: str) -> float:
+    if not math.isfinite(value) or not normal_or_zero(value):
+        raise PrototypeLimitation(f"{label}: nonfinite or nonzero subnormal {bits(value)}")
+    return value
+
+
+def mul(left: float, right: float, label: str) -> float:
+    guard(left, label + ".left"); guard(right, label + ".right")
+    value = left * right
+    if value == 0.0 and left != 0.0 and right != 0.0:
+        raise PrototypeLimitation(label + ": nonzero-product underflow")
+    return guard(value, label + ".result")
+
+
+def add(left: float, right: float, label: str) -> float:
+    guard(left, label + ".left"); guard(right, label + ".right")
+    return guard(left + right, label + ".result")
+
+
+def ordered_residual(A: list[list[float]], f: list[float], p: list[float]) -> list[float]:
+    out = []
+    for row in range(N):
+        total = 0.0
+        for col in range(N):
+            total = add(total, mul(A[row][col], p[col], f"r[{row},{col}]"), f"r[{row}]")
+        out.append(add(f[row], total, f"r[{row}].f"))
+    return out
+
+
+def ordinary_defect(A: list[list[float]], f: list[float], p: list[float], lam: float, columns: list[int] | None = None) -> list[float]:
+    residual = ordered_residual(A, f, p)
+    cols = list(range(N)) if columns is None else columns
+    out = []
+    for col in cols:
+        total = 0.0
+        for row in range(N):
+            total = add(total, mul(A[row][col], residual[row], f"g[{col},{row}]"), f"g[{col}]")
+        out.append(add(total, mul(lam, p[col], f"lp[{col}]"), f"h[{col}]"))
+    return out
+
+
+def load_dot2():
+    if sha256(DOT2) != DOT2_SHA256:
+        raise PrototypeLimitation("accepted Dot2 primitive identity mismatch")
+    spec = importlib.util.spec_from_file_location("m1_accepted_dot2", DOT2)
+    if spec is None or spec.loader is None:
+        raise PrototypeLimitation("cannot load accepted Dot2 primitive")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def dot2_defect(A: list[list[float]], f: list[float], p: list[float], lam: float, columns: list[int], dot2_module) -> tuple[list[float], dict]:
+    residual = []
+    cost = {"dot2_rows": 0, "dot2_gradients": 0, "primitive_arithmetic": 0, "primitive_guards": 0, "primitive_identity_checks": 0}
+    for row in range(N):
+        d = dot2_module.dot2([f[row], *A[row]], [1.0, *p])
+        dot2_module.verify_identities(d)
+        residual.append(d.value); cost["dot2_rows"] += 1
+        cost["primitive_arithmetic"] += d.counters.arithmetic
+        cost["primitive_guards"] += d.counters.guards
+        cost["primitive_identity_checks"] += d.counters.identity_checks
+    out = []
+    for col in columns:
+        d = dot2_module.dot2([A[row][col] for row in range(N)] + [lam], residual + [p[col]])
+        dot2_module.verify_identities(d)
+        out.append(d.value); cost["dot2_gradients"] += 1
+        cost["primitive_arithmetic"] += d.counters.arithmetic
+        cost["primitive_guards"] += d.counters.guards
+        cost["primitive_identity_checks"] += d.counters.identity_checks
+    return out, cost
+
+
+def shifted_inverse(v: list[list[float]], sigma: list[float], order: list[int], h: list[float], lam: float) -> list[float]:
+    """Apply -V diag(1/(sigma²+lambda)) Vᵀ h in stored index order."""
+    m = len(h)
+    t = []
+    for j in order:
+        total = 0.0
+        for i in range(m):
+            total = add(total, mul(v[i][j], h[i], f"vt[{j},{i}]"), f"vt[{j}]")
+        denominator = add(mul(sigma[j], sigma[j], f"den.square[{j}]"), lam, f"den[{j}]")
+        if denominator == 0.0:
+            raise PrototypeLimitation(f"singular shifted denominator {j}")
+        t.append(guard(total / denominator, f"z[{j}]"))
+    delta = []
+    for i in range(m):
+        total = 0.0
+        for j in order:
+            total = add(total, mul(v[i][j], t[j], f"vz[{i},{j}]"), f"vz[{i}]")
+        delta.append(guard(-total, f"delta[{i}]"))
+    return delta
+
+
+def update_free(p: list[float], free: list[int], delta: list[float]) -> list[float]:
+    out = p[:]
+    for slot, col in enumerate(free):
+        out[col] = add(out[col], delta[slot], f"update[{col}]")
+    return out
+
+
+def bvls02(A: list[list[float]], f: list[float], p: list[float], lam: float, lo: list[float], hi: list[float], lower: list[bool], upper: list[bool]) -> dict:
+    h = ordinary_defect(A, f, p, lam)
+    gamma = math.nextafter(87.0 / (2.0**53 - 87.0), math.inf)
+    tau, classes = [], []
+    for col in range(N):
+        cbar = 0.0
+        for row in range(N):
+            inner = 0.0
+            for k in range(N):
+                inner = math.nextafter(abs(inner) + abs(A[row][k] * p[k]), math.inf)
+            cbar = math.nextafter(cbar + abs(A[row][col]) * math.nextafter(abs(f[row]) + inner, math.inf), math.inf)
+        cbar = math.nextafter(cbar + abs(lam * p[col]), math.inf)
+        t = 0.0 if cbar == 0.0 else math.nextafter(gamma * cbar, math.inf)
+        tau.append(t)
+        if lo[col] == hi[col]: cls = "Fixed"
+        elif lower[col]: cls = "ReleaseLower" if h[col] < -t else "RetainLower"
+        elif upper[col]: cls = "ReleaseUpper" if h[col] > t else "RetainUpper"
+        else: cls = "FreePass" if abs(h[col]) <= t else "FreeRefuse"
+        classes.append(cls)
+    n2 = sum((q(x) * q(x) for x in p), Fraction())
+    return {"h_bits": [bits(x) for x in h], "tau_bits": [bits(x) for x in tau], "classes": classes,
+            "box_feasible": all(lo[i] <= p[i] <= hi[i] for i in range(N)), "norm_squared_exact": str(n2)}
+
+
+def exact_solve(matrix: list[list[Fraction]], rhs: list[Fraction]) -> list[Fraction]:
+    rows = [row[:] + [b] for row, b in zip(matrix, rhs)]
+    for col in range(len(rhs)):
+        pivot = next((r for r in range(col, len(rhs)) if rows[r][col]), None)
+        if pivot is None: raise PrototypeLimitation(f"exact shifted system singular at {col}")
+        rows[col], rows[pivot] = rows[pivot], rows[col]
+        div = rows[col][col]
+        rows[col] = [x / div for x in rows[col]]
+        for row in range(len(rhs)):
+            if row != col and rows[row][col]:
+                factor = rows[row][col]
+                rows[row] = [x - factor * y for x, y in zip(rows[row], rows[col])]
+    return [rows[i][-1] for i in range(len(rhs))]
+
+
+def exact_norm2_for_lambda(A, f, p, free, active, lam: Fraction) -> tuple[list[Fraction], Fraction]:
+    y = [q(f[row]) + sum((q(A[row][i]) * q(p[i]) for i in active), Fraction()) for row in range(N)]
+    H = [[sum((q(A[row][free[i]]) * q(A[row][free[j]]) for row in range(N)), Fraction()) + (lam if i == j else 0) for j in range(len(free))] for i in range(len(free))]
+    rhs = [-sum((q(A[row][free[i]]) * y[row] for row in range(N)), Fraction()) for i in range(len(free))]
+    qq = exact_solve(H, rhs)
+    return qq, sum((x*x for x in qq), Fraction())
+
+
+def reference(A, f, p, free, active, lam, radius, deadline: float) -> dict:
+    exact_lam, exact_radius = q(lam), q(radius)
+    endpoints = [5962417150275280.0, lam]
+    endpoint = []
+    for value in endpoints:
+        qq, norm2 = exact_norm2_for_lambda(A, f, p, free, active, q(value))
+        endpoint.append({"lambda_bits": bits(value), "norm_squared_minus_radius_squared": str(norm2 - exact_radius*exact_radius)})
+    low, high = Fraction(), exact_lam
+    _, low_n2 = exact_norm2_for_lambda(A, f, p, free, active, low)
+    _, high_n2 = exact_norm2_for_lambda(A, f, p, free, active, high)
+    if low_n2 <= exact_radius*exact_radius or high_n2 > exact_radius*exact_radius:
+        return {"endpoint_evaluations": endpoint, "bracket_established": False, "reason": "no independent [0, recorded-lambda] positive-root bracket"}
+    completed = 0
+    while completed < 80 and time.monotonic() < deadline:
+        middle = (low + high) / 2
+        _, middle_n2 = exact_norm2_for_lambda(A, f, p, free, active, middle)
+        completed += 1
+        if middle_n2 == exact_radius*exact_radius:
+            low = high = middle; break
+        if middle_n2 > exact_radius*exact_radius: low = middle
+        else: high = middle
+    return {"endpoint_evaluations": endpoint, "bracket_established": True, "bisections_completed": completed,
+            "complete_80_or_exact_zero": completed == 80 or low == high,
+            "lower_lambda_fraction": str(low), "upper_lambda_fraction": str(high),
+            "recorded_runtime_bracket_contains_reference": low >= q(endpoints[0]) and high <= q(endpoints[1])}
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(); parser.add_argument("--output", required=True); parser.add_argument("--reference-seconds", type=float, default=240.0)
+    args = parser.parse_args()
+    if sha256(CAPTURE) != CAPTURE_SHA256: raise PrototypeLimitation("capture identity mismatch")
+    data = json.loads(CAPTURE.read_text())["face_capture"]; refusal = data["refusal"]; factor = refusal["factor"]
+    if not all(k in factor for k in ("v", "sigma", "order", "visits")): raise PrototypeLimitation("captured factor array absent; reconstruction requires separate authorization")
+    A = [[f64(x) for x in row] for row in data["weighted_matrix"]]; f = [f64(x) for x in data["weighted_residual"]]
+    p0 = [f64(x) for x in refusal["p"]]; lam = f64(refusal["lambda"]); free = list(refusal["free_ids"]); active = [i for i in range(N) if i not in free]
+    lo = [f64(x) for x in refusal["scaled_lower"]]; hi = [f64(x) for x in refusal["scaled_upper"]]
+    v = [[f64(x) for x in row] for row in factor["v"]]; sigma = [f64(x) for x in factor["sigma"]]
+    if factor["a"] != [[bits(A[row][col]) for col in free] for row in range(N)]: raise PrototypeLimitation("factor A does not equal captured free B")
+    order = list(factor["order"])
+    if len(order) != len(free) or set(order) != set(range(len(free))): raise PrototypeLimitation("captured factor order is not a permutation")
+    h0_free = ordinary_defect(A, f, p0, lam, free)
+    p1 = update_free(p0, free, shifted_inverse(v, sigma, order, h0_free, lam))
+    dot2 = load_dot2(); h1_free, dot_cost = dot2_defect(A, f, p1, lam, free, dot2); p2 = update_free(p1, free, shifted_inverse(v, sigma, order, h1_free, lam))
+    lower = refusal["lower"]; upper = refusal["upper"]
+    cutoff = time.monotonic() + args.reference_seconds
+    result = {"schema": "cold-canopy-m1-shifted-refinement-author-result/v1", "candidate": "M1-SHIFTED-DEFECT-CORRECTION-PROTOTYPE-01",
+      "identity": {"capture_sha256": CAPTURE_SHA256, "dot2_sha256": DOT2_SHA256, "factor_identity": factor["same_invocation_identity"], "lambda_bits": refusal["lambda"], "factor_order": order},
+      "factor_reconstruction": "not needed: captured V/sigma/order/visits present and captured factor A equals B bitwise",
+      "points": {"p0": bvls02(A,f,p0,lam,lo,hi,lower,upper), "p1": bvls02(A,f,p1,lam,lo,hi,lower,upper), "p2": bvls02(A,f,p2,lam,lo,hi,lower,upper)},
+      "active_bits_preserved": {"p1": all(bits(p1[i]) == bits(p0[i]) for i in active), "p2": all(bits(p2[i]) == bits(p0[i]) for i in active)},
+      "candidate_bits": {"p0": [bits(x) for x in p0], "p1": [bits(x) for x in p1], "p2": [bits(x) for x in p2]},
+      "additional_work": {"shifted_inverse_applications": 2, "ordinary_full_defect_free_gradients": len(free), "dot2_full_defect_free_gradients": len(free), "free_coordinate_updates": 2*len(free), "shifted_inverse_arithmetic_including_negation": 2*(4*len(free)*len(free)+4*len(free)), "ordinary_defect_arithmetic": N*(2*N+1) + len(free)*(2*N+2), "dot2_defect_arithmetic": (N+len(free))*(25*(N+1)-7), **dot_cost},
+      "reference": reference(A, f, p0, free, active, lam, f64(refusal["radius"]), cutoff)}
+    Path(args.output).write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+
+
+if __name__ == "__main__": main()

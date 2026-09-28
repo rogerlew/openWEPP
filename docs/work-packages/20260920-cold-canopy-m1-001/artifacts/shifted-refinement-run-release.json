@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: pre-dispatch hashes and fixed-clock eligibility; Static: independent preflight PASS",
+  "recorded_utc": "2026-09-28T20:14:12.365968+00:00",
+  "candidate": "M1-SHIFTED-DEFECT-CORRECTION-PROTOTYPE-01",
+  "author_sha256": "5d94d3c259f5f6412db124764612a3ab4cd2a9a57fdd3e6acd223f46c7809993",
+  "protocol_sha256": "45cc5715b799cd44423a60b0bbcc1daf4395c4b597ce044ac8387a72609f6885",
+  "bound_seconds": 300,
+  "author_batch_allowance": 1,
+  "prior_author_batches": 0,
+  "reference_bisection_cap": 80,
+  "physical_commands": 0,
+  "command_cutoff_utc": "2026-09-28T21:21:00Z",
+  "hard_deadline_utc": "2026-09-28T21:51:00Z"
+}

@@ -1,0 +1,9 @@
+{
+  "candidate_result_bearing_execution": "not run",
+  "controls": {
+    "inactive_active_join_preservation": "pass",
+    "nonzero_lambda_and_V_orientation": "pass",
+    "unchanged_bvls02_admission_and_rejection": "pass"
+  },
+  "evidence_class": "Ran: synthetic analytic controls only; capture is not loaded and no target candidate or reference is evaluated"
+}

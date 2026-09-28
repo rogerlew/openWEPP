@@ -1,5 +1,229 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+
+## Fixed-factor shifted refinement prototype — adopted 2026-09-28
+
+Owner adopted `/tmp/openwepp_cold_canopy_m1_shifted_refinement_prototype_authorization.md`
+by directing execution. Base publication is `2832bcb686862f654cc1ce121246418777cb0212`.
+**Prototype COMPLETE/PASS after independent correctness and QA; domain FAIL and M1 HOLD remain.**
+Candidate **M1-SHIFTED-DEFECT-CORRECTION-PROTOTYPE-01** is an offline calculation
+only. No Rust, runtime, canonical method, physical run, BVLS-04 activation or
+release is authorized. Preserve all prior accepted results and valid negatives.
+
+Ran: [start ledger](artifacts/shifted-refinement-start-ledger.json) checks the
+prior closing/publication records once; no greater charge was found. Carry
+**378883.959294 s**, new allowance **7200 s**, fixed ceiling **386083.959294 s**.
+Conservative first-reading anchor **2026-09-28T19:51:00Z** fixes calculation
+cutoff **21:21:00Z** and hard deadline **21:51:00Z**. Protect at least1800 seconds
+for independent disposition, preservation and publication. Count elapsed waits
+and concurrency once, reclaim no earlier closing reserve or old450-second balance,
+and never re-anchor. Every standalone calculation is bounded at most300 seconds
+and must fit fully before cutoff. Two unsuccessful corrections or60 charged
+minutes trigger internal reassessment; they grant no new allowance.
+
+Intent: decode the retained positive-lambda capture from its binary64 bits;
+freeze code, input hashes, primitive and orientation/join/shift/admission controls
+before one author result-bearing batch. Preserve original A/f, active values,
+free order, factor order, scales, bounds and radii, and lambda5962417150275328.
+Correction1 uses ordinary full shifted h; correction2 uses guarded non-FMA Dot2
+for21 augmented residual rows and20 augmented free-gradient dots, with lambda*q
+inside the latter. Both apply the retained V shifted inverse with ordinary,
+ascending separately rounded operations and ordinary free-coordinate updates.
+Exactly two corrections; no refactor, precision/threshold/face/shift change,
+clipping, third correction, or result-dependent point selection. Finite infeasible
+p1 may be labeled offline scratch; unsupported arithmetic stops the candidate.
+
+Acceptance: original ordered BVLS-02 r/g/lambda*p/h/Cbar/tau and classifications
+for all21 coordinates at p0/p1/p2; exact active bits, scaled box, original/reduced
+ball, newly evaluated positive-lambda radius gap and unchanged tolerance. Retain
+ordered binary64 and exact rational squared-norm evidence, evaluation/step error,
+objective and the accepted fixed-lambda reference without unnecessary re-solving.
+Separately verify exact-system norm signs at the two recorded bracket endpoints;
+if [0,recorded upper] brackets a positive secular root, perform at most80 exact
+rational bisections, verifying each system residual exactly. The reference never
+feeds the candidate. Incomplete time-bounded root work is explicitly incomplete.
+
+`/root/shifted_refinement_writer` owns new author code/protocol/control/result
+artifacts prefixed `shifted-refinement-`; parent owns this record, ledger and
+publication. A distinct correctness reviewer owns one independently authored
+reconstruction plus reference endpoint verification, without author expected-answer
+calls. Distinct QA reads/hashes/reviews only; no author replay. No nested agents.
+A named implementation/recording defect may receive an affected corrected batch
+and same-reviewer verification, preserving failed source and results. A conforming
+numerical negative is final. Detailed operation/guard and preparation costs remain
+separate from reference costs; Python timings imply no runtime speedup.
+
+Validation selection: isolated numerical experiment with no production consumer;
+syntax and real analytic/primitive controls, unchanged admission predicates,
+source/input custody, independent binary64 reconstruction and exact endpoint
+verification, complementary correctness/QA reviews, terminal diff and scoped
+publication checks. A0/A1/A3 production authority and physical conservation paths
+are unchanged; no physical, Rust, interface/full-feature or target campaign runs.
+No dependencies, protected fixtures, authority suites or policy changes. Keep
+the source-specific BVLS-03 ordinary-positive1.895410ms evidence, domain FAIL,
+M1/interface/strict-lint/material/BGC/parent/cycle/restart/scale HOLDs unchanged.
+Target slots remain unused and unreleased. Only new offline evidence and this
+existing record will be published on authorized main; unrelated work is preserved.
+
+Static: inspected BVLS-01 fixed-face/scaling/radius rules, BVLS-02 all-coordinate
+ordered rounding/enclosure and BVLS-03 retained Dot2 sections in the unchanged
+numerical-methods blob `d321b0554a3e7987b24bacec5ce616e43f244790`, plus accepted-solve
+admission and physical solve boundary. Runtime eligibility/scratch rules remain
+unchanged; only the adopted offline prototype may use infeasible finite scratch.
+[Input custody](artifacts/shifted-refinement-input-custody.json) matches all ten
+retained dependencies to the pinned publication. Actual V/sigma are present;
+no factor or runtime reconstruction is needed. Both author and reviewer retain
+captured `factor.order` traversal over original V/sigma storage, free-row order
+from `free_ids`, and no new sorting.
+
+Static: parent [pre-run draft findings](artifacts/shifted-refinement-preflight-findings01.json)
+identify a coefficient storage/traversal misjoin, an incorrect upward enclosure,
+and incomplete controls/evidence. The early file's `FROZEN_PRE_RESULT_BATCH`
+label was premature and was not a parent execution release. Draft code, controls,
+protocol and preliminary control output are preserved as `.draft01` artifacts;
+the preliminary PASS labels are not accepted evidence. Author owns correction;
+the independent reviewer checks the complete replacement before release.
+No target calculation or physical run occurred.
+
+Internal preparation reassessment at20:04Z: CONTINUE within the same fixed
+allowance. Successive draft corrections have not yet satisfied preflight. The
+remaining defects are supported, in-scope recording/admission issues: actual
+work/guard counters, distinct original/reduced ball predicates, retained-reference
+reuse, exact-residual accounting and multiplier-error interval reporting. The
+same writer received a concrete bounded completion assignment; the independent
+reviewer retains its own endpoint-only verification implementation. No scientific
+negative has been observed, no method tuning is proposed, and no allowance or
+execution cadence changes. Target calculation remains NOT RUN.
+
+Parent assumed sole author-source ownership for final in-scope integration fixes;
+the writer's last draft is preserved as `.draft02`. Ran:13 synthetic controls
+PASS, including actual arithmetic counts, nonzero-lambda defects, nonsymmetric
+V orientation/order, active joins, distinct box/full/reduced radius rejection,
+primitive poisons, exact analytic multiplier root/cache/error and zero-root handling.
+Syntax and scoped whitespace checks PASS. Distinct [correctness preflight](artifacts/shifted-refinement-correctness-preflight.json)
+accepts author `5d94d3c…` and controls `0670f658…`; the [protocol](artifacts/shifted-refinement-protocol.json)
+now freezes actual code/input/result bindings before target execution. The
+[release](artifacts/shifted-refinement-run-release.json) dispatches the sole author
+batch with a300-second bound and240-second reference soft limit. The independent
+reconstruction follows once, verifying recorded and final reference endpoints
+without a second bisection search. QA reads/hashes only. Required distinct QA
+capacity recovered after one explicit wake/interruption of the completed writer;
+failed launch attempts created no additional agent and executed no calculation.
+
+
+### Prototype calculation and multiplier reference
+
+Ran: the sole [author batch](artifacts/shifted-refinement-author-receipt.json)
+completed exit0 in1.40553s on frozen author `5d94d3c…`, without source drift or
+retry; its [raw result](artifacts/shifted-refinement-author-results.json) is
+`5b51bd7d…`. The [independent reconstruction](artifacts/shifted-refinement-correctness-result.json)
+(`0d9d9c14…`) and [receipt](artifacts/shifted-refinement-correctness-receipt.json)
+record one separately authored candidate/oracle implementation and five exact
+endpoint solves, exit0 in0.155855s. No reviewer bisection search or author-candidate
+expected-answer call occurred. All p0/p1/p2 bits, both correction defects/deltas,
+the rounded Dot2 residual, and every original r/g/lambda*p/h/Cbar/tau/class match
+bit-for-bit. The p0 oracle also matches the retained capture completely.
+
+| Point at lambda5962417150275328 | All21 stationarity | Largest free abs(h)/tau (coordinate) | Scaled box / full and reduced ball | Newly computed radius gap | Active-value bits | Correction arithmetic |
+| --- | --- | --- | --- | --- | --- | --- |
+| Original p0 | FAIL1,2,5,7,8 |14.38978593 (7)|PASS|1.88737914e-15|Exact|0|
+| Ordinary correction1 p1 |PASS|0.00391805715 (10)|PASS|3.67816888e-13|Exact|3483|
+| Compensated correction2 p2 |PASS|0.01070299003 (10)|PASS|3.67705866e-13|Exact|23963 additional;27446 total|
+| Retained once-rounded fixed-lambda reference |PASS|0.01070306612 (10)|PASS|3.67705866e-13|Exact|Reference/oracle only|
+
+Every ball entry passes both ordered binary64 and exact-rational squared
+comparisons; original and reduced radii are1, and active coordinate11 remains
+exact+0. Every corrected/reference point has20 FreePass plus RetainLower at11.
+The unchanged positive-lambda radius tolerance is **9.094947017729282e-13**;
+each newly evaluated gap is nonnegative and below it. No old LambdaTrace norm
+certifies a corrected vector. Both corrected points are feasible, so the
+adopted offline-only allowance for infeasible finite p1 was not needed. p1 is
+reported but never selected instead of the prospectively prescribed p2.
+
+Largest absolute free h is711192 at coordinate3 for p0,20591.625 at9 for p1,
+56228.75 at9 for p2, and56228.5 at9 for the rounded reference; coordinate-specific
+tau, not absolute h alone, controls admission. The maximum coordinate error
+against the retained once-rounded reference falls from5.1391167526e-12 to
+2.1041653663e-16 at p1 and2.7755575616e-17 at p2. Exact original-matrix h and
+ordered evaluation error are retained for all coordinates; the largest
+abs(evaluation error)/tau is0.00553860,0.00508801 and0.00645531 respectively.
+No structurally zero coordinate was assigned or clipped.
+
+Exact original objectives0.5||f+A*p||² are approximately
+3.0630643286622193e15 (p0),3.0630643286644019e15 (p1), and
+3.0630643286644014e15 (p2). The fixed-shift objective including
+0.5*lambda*||p||² decreases; the original objective itself increases as the
+corrected vector moves inward. Neither observation establishes nonlinear
+convergence, an accepted physical update or a runtime speedup.
+
+Ran: the exact original-matrix reference evaluates both original narrow
+endpoints first. At5962417150275280, norm²−radius² is approximately
+−7.30211805882e-13; at5962417150275328 it is−7.35529220157e-13. Both are inside,
+so **the runtime bracket does not contain the exact fixed-face secular root**.
+q(0) is outside, permitting the prescribed broad [0,recorded upper] search.
+Exactly80 rational bisections retain opposite-sign endpoints:
+
+- lower lambda5962417150268688.419041395938759199… (norm²−radius² positive);
+- upper lambda5962417150268688.419041400870755070… (norm²−radius² negative).
+
+The bracket width is4.93199587066e-9. Recorded lambda minus true root lies in
+[6639.580958599129…,6639.580958604061…]. All83 author systems verify all20
+residual components exactly; the independent reviewer verifies the original
+narrow pair, zero endpoint and final pair with five fresh exact solves and
+100 exact component residual checks. The required recorded-lambda endpoint
+solve reproduces the retained once-rounded reference bits; that reference was
+not separately re-solved merely for comparison. The reference multiplier never
+enters the candidate. p2's ordered lambda*gap is2192.41576024 in the recorded
+scaled diagnostic units: approximate ball accuracy is **not exact complementarity**.
+Exact squared complementarity and squared norms remain in both raw results.
+
+Work: ordinary full free defect1783; each retained shifted inverse1680
+(`4*m²+4*m`, m20, including negation); each update20; correction2's41 Dot2
+calls22263 (21 residual rows plus20 free-gradient components). Total27446
+candidate arithmetic operations and39456 author-instrumented scalar/primitive guard calls;
+all candidate exceptional counts are0, and3567 post-candidate exact EFT identity
+checks pass. No preparation reconstruction or new factorization occurs. Each
+point's original KKT evaluation is1827 operations and its actual enclosure8162
+(upward zero skips retained); Gamma87 preparation3, full/reduced norms84 and
+gap/complementarity3 are separately recorded with guards/seam comparisons.
+These are logical scalar counts, not instruction or runtime benchmarks. The
+obsolete18960 zero-shift application count is not used. Offline reference work
+is83 solves,275624 rational add/subtract,273758 multiply,34940 divide operations;
+it is excluded from prospective candidate totals. Python elapsed time is only
+execution provenance.
+
+**Supported numerical conclusion:** on this captured face, fixed-factor,
+fixed-shift two-position accuracy refinement satisfies all unchanged applicable
+stationarity/box/radius predicates. The inaccurate narrow multiplier bracket
+does not force a joint step/multiplier correction under the existing finite
+radius tolerance. This is local prototype evidence only; no runtime amendment,
+positive-lambda eligibility or scratch policy, BVLS-04, nonlinear/physical
+qualification or release follows. Prior domain FAIL and all M1 HOLDs remain.
+
+Distinct [correctness review](artifacts/shifted-refinement-correctness-review.json)
+accepts the completed offline prototype and retains the root-bracket limitation.
+[QA](artifacts/shifted-refinement-qa-review01.json) accepts numerical custody and
+cadence; its initial missing-receipt observation was withdrawn after opening
+the existing independent execution receipt. Same-reviewer terminal claim/ledger
+verification now PASS from both reviewers; no numerical replay or new review wave.
+Correctness separately binds the preflight protocol and the executed freeze,
+whose only changes were status, freeze timestamp and preflight-link metadata.
+[Terminal custody](artifacts/shifted-refinement-terminal-checks.json) verifies all
+retained dependencies, the authority blob and both unrelated dirty files unchanged.
+
+The [closing ledger](artifacts/shifted-refinement-final-ledger.json) conservatively
+charges **382400.393795 s** cumulatively through **20:49:36.434501Z**, including
+1800 seconds for review, preservation and publication beginning20:19:36.434501Z.
+**3683.565499 s** remains under the fixed386083.959294 ceiling. No earlier charge
+or reserve is reclaimed. The original21:21/21:51 work/hard deadlines remain
+unchanged; the completed-prototype stop forbids further numerical work despite
+that remaining arithmetic balance. Greater actual later closing work increases
+carry. Publication remains pending; this ledger is not a remote-publication claim.
+
+Status: **bounded offline prototype COMPLETE/PASS**, independent correctness and
+QA PASS; scoped publication is the remaining administrative step. No further
+target calculation, method adjustment, Rust change or physical replay follows.
+
 ## Positive-multiplier shifted-face attribution — adopted 2026-09-28
 
 Owner adopted `/tmp/openwepp_cold_canopy_m1_shifted_face_attribution_authorization.md`
