@@ -218,11 +218,20 @@ charges **382400.393795 s** cumulatively through **20:49:36.434501Z**, including
 or reserve is reclaimed. The original21:21/21:51 work/hard deadlines remain
 unchanged; the completed-prototype stop forbids further numerical work despite
 that remaining arithmetic balance. Greater actual later closing work increases
-carry. Publication remains pending; this ledger is not a remote-publication claim.
+carry. At ledger recording publication was pending; the publication receipt below
+now records the independent remote check.
 
-Status: **bounded offline prototype COMPLETE/PASS**, independent correctness and
-QA PASS; scoped publication is the remaining administrative step. No further
-target calculation, method adjustment, Rust change or physical replay follows.
+Status: **bounded offline prototype COMPLETE/PASS and published**, independent
+correctness and QA PASS. No further target calculation, method adjustment,
+Rust change or physical replay follows.
+
+Published reviewed numerical evidence and recovery code as
+`26c6caa4803b3ba4ae9c9dc08bd9edf3830d34c5` on authorized main. Exact remote-head
+verification PASS; [publication custody](artifacts/shifted-refinement-publication.json)
+binds the committed code/results/reviews/ledger byte-for-byte. This final receipt
+and publication note are administrative metadata only; numerical source, results,
+review conclusions and preserved unrelated work are unchanged. **Prototype complete
+and published; no authorized work remains in this increment.**
 
 ## Positive-multiplier shifted-face attribution — adopted 2026-09-28
 
