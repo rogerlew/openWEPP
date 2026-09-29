@@ -1,0 +1,98 @@
+{
+  "evidence_class": "Ran: parsed original single endpoint stdout/stderr observations; no recalculation or replay",
+  "source_tree_sha256": "3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21",
+  "receipt": "bvls04-resumption-domain01.json",
+  "cost": {
+    "error_kind": null,
+    "initialization_wall_ns": 195171,
+    "milestones": {
+      "candidate_injected": true,
+      "controller_returned": true,
+      "initialization_completed": true,
+      "stage1_model_completed": true,
+      "stage1_model_entered": true,
+      "transition_completed": true,
+      "transition_disposition_merit_rejected_and_shrunk": true,
+      "trial_domain_guard_entered": true,
+      "trial_domain_guard_refused": true
+    },
+    "predictor_lifecycle": {
+      "created_after_proposal_success": 1,
+      "discarded_on_replacement_or_early_error": 0,
+      "forwarded_existing_predictor": 1
+    },
+    "proposal_entered": true,
+    "result": "returned_observation",
+    "timing": {
+      "clock_query_and_start_sample_wall_ns": 1679254,
+      "cpu_after_error": null,
+      "cpu_before_error": null,
+      "cpu_clock": "/proc/self/stat process utime+stime; getconf CLK_TCK",
+      "cpu_delta_error": null,
+      "cpu_delta_ticks": 0,
+      "cpu_interval": "brackets proposal wall; includes clock/sample overhead; process quantization is one tick",
+      "cpu_seconds": null,
+      "cpu_status": "resolution_limited_zero_ticks",
+      "cpu_tick_resolution_s": 0.01,
+      "cpu_ticks_after": 0,
+      "cpu_ticks_before": 0,
+      "cpu_ticks_hz": 100,
+      "cpu_ticks_hz_error": null,
+      "end_sample_wall_ns": 22507,
+      "excluded_from_proposal_wall": "initialization, getconf, proc samples, JSON serialization/emission, build",
+      "proposal_instrumentation": "existing opt-in face capture and counter hooks included; not separately estimated",
+      "proposal_wall_ns": 3212710,
+      "wall_clock": "std::time::Instant (Linux CLOCK_MONOTONIC)",
+      "wall_resolution": "host nominal 1 ns; not empirical accuracy"
+    },
+    "work": {
+      "bvls04_dot2_free_gradients": 20,
+      "bvls04_dot2_residual_rows": 21,
+      "bvls04_factor_applications": 2,
+      "bvls04_ordered_norms": 6,
+      "bvls04_positive_entries": 2,
+      "completed_face_pivots": 1,
+      "coordinate_update_operations": 40,
+      "entered_svd_factorizations": 2,
+      "factor_application_operations": 4240,
+      "first_residual_operations": 903,
+      "refinement_attempted_entries": 1,
+      "refinement_denied_entries": 0,
+      "refinement_guard_events": 106628,
+      "refinement_scalar_operations": 37691,
+      "second_dot2_operations": 22263,
+      "stage1_calls": 1,
+      "total_jacobi_sweeps": 14,
+      "upward_enclosure_guard_events": 67427,
+      "upward_enclosure_operations": 8162,
+      "whole_kkt_guard_events": 5503,
+      "whole_kkt_operations": 1827
+    },
+    "work_categories_overlap": "refinement and whole-KKT/enclosure counters overlap and are not summed into a unique total"
+  },
+  "state_and_domain": {
+    "control": "real-candidate-domain-refusal-retained-base",
+    "domain_mutation_scope_restored": true,
+    "fixture": "covered_input(ORIGINAL)+trial()+conditions()+topology_binding()",
+    "post_refusal_fields": {
+      "candidate_domain_checks": 1,
+      "candidate_domain_refusal": true,
+      "candidate_materialization": 0,
+      "controller_return": "observation",
+      "next_radius_bits": 4598175219545276416,
+      "radius_before_bits": 4607182418800017408
+    },
+    "protected_input_unchanged": true,
+    "protected_trial_unchanged": true,
+    "reached_adapter_observation": {
+      "current_evaluations": 1,
+      "materialization_entries": 0,
+      "raw_jacobian_assemblies": 1,
+      "trial_domain_checks": 1
+    },
+    "schema": "m1-shifted-face-attribution-v1",
+    "typed_error_debug": null
+  },
+  "full_capture_preserved_in": "bvls04-resumption-domain01.stderr",
+  "limitations": "Control-path cost only; zero CPU tick delta is unresolved below0.01s, not zero CPU; no seasonal/target/throughput/M1 acceptance; accounting categories overlap"
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "openwepp.bvls04.resumption.qa-domain-final.v1",
+  "reviewer": "/root/completion_qa",
+  "reviewed_at_utc": "2026-09-29T11:11:27.541888+00:00",
+  "evidence_class": "Static independent QA/evidence review of supplied exact-source receipts and logs. This reviewer ran no Rust, numerical, candidate, physical, or replay command and made no source/configuration edit.",
+  "identity_and_scope": {
+    "source_tree_sha256": "3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21",
+    "source_entry_count": 764,
+    "recovery_archive_sha256": "195cad81afe2da6dcb8d54f6a61b7d240e96f073181e4f7f9c6a4e0a598251bb",
+    "recovery_reconstructed_every_entry_equal": true,
+    "release_executable_sha256": "b55744fa084addd3a336768dc15f64637e8edc190d045533d2ef95e5a22e0e99",
+    "scope": "QA custody of the one authorized BVLS-04 physical endpoint and completion disposition only; no M1, target, production, or conditional-interface acceptance."
+  },
+  "findings": [],
+  "endpoint_evidence": {
+    "receipt": "bvls04-resumption-domain01.json",
+    "observation": "bvls04-resumption-domain01-observation.json",
+    "result": "PASS 1/1",
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 9.746827913913876,
+    "source_binary_pins_and_supports_unchanged": true,
+    "observed_bounded_behavior": "The recorded control reaches and refuses the injected trial-domain condition, restores protected scope, and records a radius transition of 1.0 to 0.25 without materialization.",
+    "measurement_limit": "Proposal wall interval is 3.212710 ms. The 100 Hz process-clock samples were 0 to 0, so CPU consumption is unresolved below 0.01 s and is not reported as zero."
+  },
+  "quality_and_maintainability_evidence": {
+    "private_reachability": "Terminal reachability receipt confines the final change to four private/test Rust files; all 26 Cargo manifests and lockfiles are unchanged.",
+    "terminal_gates": "debug 136/136, release BVLS-04 10/10, analytic-only 49/49, default, selected feature, and format receipts pass on the exact final source.",
+    "lint": "The source-bearing combined comparison matches its inherited 238 diagnostics with no introduced diagnostic. The analytic comparison/reconciliation retains 262 inherited diagnostics with no introduced diagnostic; strict lint itself remains a reconciled inherited failure population, not a clean lint pass.",
+    "correctness_review": "Distinct correctness domain review reports no findings and clears only the bounded endpoint claim."
+  },
+  "conditional_scope_hold": {
+    "status": "HOLD / NOT RUN",
+    "receipt": "bvls04-resumption-conditional-interface-reconciliation.json",
+    "current_source_groups": 8,
+    "unbound_historical_references": 18,
+    "basis": "The real domain producer proof does not define the retained wrapper. The next selected-side VEG-E-142 producer and its controls are not implemented or ready for an independently reviewed physical dispatch.",
+    "not_authorized_by_this_verdict": [
+      "private harness or target-prefix/baseline/treatment/corrected-repeat execution",
+      "full09, A1, A3, material, BGC, parent, cycle, restart, scale, or M1 acceptance",
+      "production activation or a claim of natural/seasonal/throughput behavior"
+    ]
+  },
+  "ledger_custody": {
+    "receipt": "bvls04-resumption-final-ledger.json",
+    "closing_started_utc": "2026-09-29T11:10:48+00:00",
+    "elapsed_before_closing_seconds": 1848,
+    "conservative_closing_charge_seconds": 1800,
+    "session_charged_seconds": 3648,
+    "cumulative_charged_seconds": "403746.393795",
+    "fixed_ceiling_seconds": "404000.393795",
+    "unspent_balance_seconds": "254.000000",
+    "review": "Arithmetic is internally consistent: 400098.393795 carry plus 3648 equals 403746.393795, leaving 254.000000. The full closing reserve remains charged; no refund, wait deduction, or deadline reset is claimed."
+  },
+  "non_blocking_debt_or_followups": [
+    "Reconciled inherited lint populations remain repository debt and should be reduced under separately authorized scope; they are not introduced by this exact source change.",
+    "Any continuation must first implement and independently review a real producer/interface connection, then establish a new authorized source-bound command chain before execution."
+  ],
+  "verdict": "QA PASS for custody and publication of the bounded BVLS-04 completion milestone: the exact one-endpoint receipt, frozen source/binary/support identity, gate evidence, correctness review, and conservative ledger are coherent. This verdict preserves the explicit conditional-interface and broader M1/target HOLDs."
+}

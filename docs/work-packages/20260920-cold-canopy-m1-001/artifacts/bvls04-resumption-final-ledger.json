@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Conservative charged-time ledger; actual concurrent elapsed work/waits counted once plus full closing reserve charge",
+  "carry_charged_seconds": "400098.393795",
+  "new_grant_seconds": "0",
+  "fixed_ceiling_seconds": "404000.393795",
+  "first_reading_anchor_utc": "2026-09-29T10:40:00+00:00",
+  "command_completion_cutoff_utc": "2026-09-29T11:15:02+00:00",
+  "hard_deadline_utc": "2026-09-29T11:45:02+00:00",
+  "closing_started_utc": "2026-09-29T11:10:48+00:00",
+  "closing_start_evidence": "Single domain PASS and conditional current-source8-group/18-reference reconciliation complete. Next real selected-side producer requires implementation/controls/quality/dualreview and full180-second physical bound; no supported complete dispatch chain fits remaining254-second work window. Subsequent work is independent disposition, custody, preservation and publication only.",
+  "elapsed_before_closing_seconds": "1848",
+  "conservative_closing_charge_seconds": "1800",
+  "conservative_closing_charged_through_utc": "2026-09-29T11:40:48+00:00",
+  "minimum_required_closing_reserve_seconds": 1800,
+  "session_charged_seconds": "3648",
+  "cumulative_charged_seconds": "403746.393795",
+  "unspent_balance_seconds": "254.000000",
+  "refunds": "None; historical closing charge and current full reserve remain charged, no wait deduction/deadline reset",
+  "disposition": "BVLS04 completion milestone PASS: current compile/debug136/release10/analytic49, zero introduced lint, five observer findings independently closed, single physical domain1/1 PASS. Conditional8groups18refs/harness and M1/target acceptance HOLD.",
+  "recorded_utc": "2026-09-29T11:11:27.541888+00:00"
+}

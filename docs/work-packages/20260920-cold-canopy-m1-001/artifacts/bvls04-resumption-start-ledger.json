@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Prospective resumption ledger; source hash checked before mutation; concurrent wall time and waits charged once",
+  "carry_charged_seconds": "400098.393795",
+  "new_grant_seconds": "0",
+  "fixed_ceiling_seconds": "404000.393795",
+  "available_balance_seconds": "3902",
+  "first_reading_anchor_utc": "2026-09-29T10:40:00+00:00",
+  "command_completion_cutoff_utc": "2026-09-29T11:15:02+00:00",
+  "hard_deadline_utc": "2026-09-29T11:45:02+00:00",
+  "protected_reserve_seconds": 1800,
+  "maximum_pre_reserve_seconds": 2102,
+  "later_receipt_scan": "Published completion-final-ledger is latest; no greater carry found",
+  "starting_main": "6ffd4b957f717568dc07fbcf5bfb6e7720b22597",
+  "starting_source_tree_sha256": "6b308c88538d5c050457caff029f776121235b43dd998fbece3cd230b4d69099",
+  "source_entries": 764,
+  "current_bytes_match_preserved_manifest": true,
+  "authorization_sha256": "8f45c606f6b002c6d758ac1bd0fd9df2ae2d437a5b1f3ffd64b064ff217500c8",
+  "recorded_utc": "2026-09-29T10:42:13.926625+00:00"
+}

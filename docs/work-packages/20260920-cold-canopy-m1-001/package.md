@@ -1,5 +1,159 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## BVLS-04 independence resumption — adopted 2026-09-29
+
+**BVLS-04 completion milestone PASS; broader M1/interface qualification remains HOLD.**
+Current source compiles; debug **136/136**, release BVLS-04 **10/10**, analytic-only
+**49/49**, format/default/selected-feature checks pass. All four introduced Stage1
+line-count findings and subsequent introduced observer lint findings are removed.
+Strict lint remains FAIL on its reconciled inherited238/262 populations. Distinct
+independent correctness and QA cleared all five observer findings and the exact
+source/manifest before the single authorized physical endpoint.
+
+Ran: [single release endpoint](artifacts/bvls04-resumption-domain01.json) **PASS1/1**,
+380 skipped, with source, executable, supports and links unchanged. The original
+real proposal completed, prescribed coordinate5 negative-drainage mutation reached
+the owning domain guard, and its refusal shrank radius **1.0 → 0.25**. Original
+base/Jacobian/normalizers/phase/input/trial preservation, no installation or
+materialization, and scope-restoration assertions all passed. No rerun occurred.
+[Actual observation](artifacts/bvls04-resumption-domain01-observation.json): proposal
+wall **3.212710 ms**; initialization0.195171 ms, clock setup1.679254 ms and final
+sample0.022507 ms are separate. CPU samples0→0 at100Hz mean **below10 ms resolution**,
+with `cpu_seconds=null`, never measured zero CPU. This is instrumented control-path
+cost, not seasonal/target throughput, natural occurrence, whole-solve convergence,
+or a speedup against a prior refusal.
+
+Actual work: one Stage1 call, two SVD entries,14 Jacobi sweeps, one face pivot;
+two positive-refinement events, two retained-factor applications,21 Dot2 residual
+rows and20 free gradients, six ordered norms, one refinement attempt and zero
+denials. Refinement scalar operations37691/guards106628 overlap whole-KKT/enclosure
+accounting; no unique sum or reservation ceiling is represented as actual work.
+Predictors created/discarded/forwarded are1/0/1; all downstream milestones reached.
+Full refusal/face/state operand capture and logs remain unmodified. The historical
+pre-injection failure and all failed intermediate cuts remain preserved.
+
+[Correctness endpoint verdict](artifacts/bvls04-resumption-correctness-domain01.json)
+accepts only this deliberate post-Stage1 injected-domain control. Final QA custody
+and publication are recorded below. Current tree is
+`3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21`,764 entries;
+release executable SHA256`b55744fa084addd3a336768dc15f64637e8edc190d045533d2ef95e5a22e0e99`;
+source recovery SHA256`195cad81afe2da6dcb8d54f6a61b7d240e96f073181e4f7f9c6a4e0a598251bb`.
+Original fixture preparation/input and all external supports are bound by the
+[endpoint manifest](artifacts/bvls04-resumption-domain01-support.json).
+[Independent final QA](artifacts/bvls04-resumption-qa-domain-final01.json) reports
+no findings and accepts bounded result custody, exact recovery, source/build/input
+identity, quality evidence and ledger for scoped publication.
+
+Conditional continuation performed a [current-source reconciliation](artifacts/bvls04-resumption-conditional-interface-reconciliation.json):
+eight groups still contain18 unbound historical references. The domain producer
+PASS does not define the retained domain wrapper or close that interface. Next is
+the real selected-side owning`VEG-E-142` producer with radius/input custody and its
+controls. It has no ready physical producer; discovery/implementation, quality,
+dual review and the full180-second dispatch bound cannot fit the remaining254-second
+work window. No unreviewed mutation or duplicate analytic control was started.
+Private harness, target prefix/baseline/treatment/corrected-repeat slots, full09/A1/A3,
+material/BGC, complete-parent/late-rejection, cycle/restart and scale remain HOLD;
+all target slots stay unspent. No M1 acceptance or production activation.
+
+[Conservative closing ledger](artifacts/bvls04-resumption-final-ledger.json): closing
+began11:10:48Z,1848 elapsed seconds plus1800 fully charged closing seconds. Cumulative
+**403746.393795 /404000.393795 s**,254 s unspent; no new grant or refunded historical
+reserve/wait. Subsequent work is review/custody/publication only. Main Rust and
+unrelated dirty/staged/untracked work remain outside this publication.
+
+
+Owner adopted `/tmp/openwepp_cold_canopy_m1_bvls04_independence_resumption_authorization.md`.
+Starting main is6ffd4b957f717568dc07fbcf5bfb6e7720b22597; actual detached bytes match
+all764 entries of6b308c88538d5c050457caff029f776121235b43dd998fbece3cd230b4d69099.
+The seven-error failed cut and recovery remain preserved. No recovery overlay occurs.
+The predecessor1ab1d087 release10/10 is reused only for that source, not repeated.
+
+[Resumed ledger](artifacts/bvls04-resumption-start-ledger.json) carries400098.393795 s
+under404000.393795 s; **no added time**, at most3902 s including1800 s reserve.
+No greater later receipt was found. First-reading anchor10:40:00Z prospectively
+fixes **work cutoff11:15:02Z / hard deadline11:45:02Z**. Historical08:02/08:32 windows
+and all charges remain history. No refund, wait deduction or later re-anchoring.
+
+Intent: first prove actually functioning author and distinct correctness/QA routes;
+then correct only the three compiler-backed interface/borrow groups, complete the
+four helper lint extractions and five retained observer findings001–005, obtain
+exact-source debug/release/analytic/default/selected-feature/format/lint evidence
+and independent readiness, then one unchanged release domain endpoint. It remains
+unspent and must not appear inside broad selectors. A conforming numerical refusal
+ends numerical work. Conditional eight-interface/18-reference/harness and all target
+slots retain their separate prerequisites; no live parent/receiver/cycle progression.
+No numerical method, tolerance, seed, multiplier, radius, physics, API or dependency
+change, main Rust adoption, branch switch, or unrelated cleanup is authorized.
+
+Parent owns commands/recording/publication and deadline-only recorder update. Original
+correctness route successfully acknowledged current availability. QA/writer capacity
+checks precede source mutation. Each route remains independent; no nested workaround
+or reviewer-to-author conversion. Prior preservation-only QA is not source clearance.
+The existing private/noncritical inherited-lint posture requires source-bearing238
+combined/262analytic reconciliation and unchanged reachability; strict FAIL stays
+FAIL. Historical full09/A1/A3 and other M1 holds persist. All mandatory stops remain.
+
+
+Original correctness, QA and sole-writer routes each actually resumed and acknowledged
+availability before runtime mutation. Writer repaired the three authorized type/borrow
+groups; parent formatted. [Current repaired debug](artifacts/bvls04-resumption-repair-debug01.json)
+compiles and passes **135/135** (245 skipped), exact source
+`e0e7af4765efec7aaca3eec530817e14d58cc95bf78a74a36c93d2a1f047fac5`, source/support unchanged. This repairs
+all seven compiler diagnostics; terminal observer/lint/release readiness is still open.
+
+The first resumed combined-feature lint run remains FAIL: 238 inherited source-bearing
+blocks match, with ten unmatched blocks pending correction/reconciliation
+([comparison](artifacts/bvls04-resumption-repair-combined-lint01-comparison.json)).
+The writer completed Stage1 extraction corrections and the error-safe domain-event
+snapshot, then repeatedly returned without the assigned predictor lifecycle edit.
+At10:54Z, bounded author-route recovery successfully created `/root/resumption_writer`
+as an implementer replacement, with the same two detached observer/test file bounds.
+Original correctness reviews the frozen Stage1 diff independently; original QA remains
+the QA route. No reviewer became an author and no allowance was reset.
+
+Static: original correctness reviewer found no Stage1 extraction defects
+([review](artifacts/bvls04-resumption-correctness-stage1-review01.json)).
+Ran: [terminal debug01](artifacts/bvls04-resumption-terminal-debug01.json) passes135/135
+on `b90dd46796c8f3e24308e27434254035c8100bc405ed79033f1102df7112da58`.
+Both complete terminal strict lint runs remain FAIL. All four original Stage1
+long-function findings are absent; two introduced controller findings remain
+(102-line transition helper and pass-by-value timing JSON). Analytic mode has only
+the transition finding beyond its source-reconciled inherited population.
+The author is correcting those two and adding a small existing-analytic-fixture
+control to execute the new observer error/restoration seam before the endpoint.
+This extends only the detached `m1_trust_region_stage2_controls.rs` test surface
+within the authorized small non-target shared-seam controls; no additional physical
+endpoint or fabricated numerical oracle. Terminal evidence must be repeated only
+where these edits affect its source identity.
+
+The original correctness reviewer found a concrete observer lifecycle defect on the
+phase-reassembled second proposal ([HOLD](artifacts/bvls04-resumption-correctness-terminal01.json)).
+The same author corrected it without changing numerical calls or ordering, and the
+same reviewer verified the fix ([readiness approval](artifacts/bvls04-resumption-correctness-terminal-fix02.json)).
+The new existing-analytic-fixture control exercises early error `(1,1,0)`, two later
+errors `(2,2,0)`, and reassembled success `(2,1,1)` (created/discarded/forwarded),
+with scope restoration asserted before Result inspection. All five retained observer
+findings001–005 are now correctness-cleared on exact source
+`3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21`.
+
+Ran on those same764 entries: [debug136/136](artifacts/bvls04-resumption-terminal-debug02.json),
+[release10/10](artifacts/bvls04-resumption-terminal-release02.json),
+[analytic49/49](artifacts/bvls04-resumption-terminal-analytic02.json),
+[default validator](artifacts/bvls04-resumption-terminal-default02.json),
+[selected-feature validator](artifacts/bvls04-resumption-terminal-feature02.json),
+and [format](artifacts/bvls04-resumption-terminal-format02.json) PASS. Strict lint
+remains FAIL, with no introduced findings: [238 combined exact matches](artifacts/bvls04-resumption-terminal-combined-lint02-comparison.json)
+and [262 analytic inherited reconciliations](artifacts/bvls04-resumption-terminal-analytic-lint02-inherited-reconciliation.json).
+Only four private/test files differ from reviewed1ab; all26 Cargo manifest/lock
+entries remain equal ([reachability](artifacts/bvls04-resumption-terminal-reachability02.json)).
+No production or Critical trigger was introduced; full09/A1/A3 and all other M1 HOLDs persist.
+
+[Exact recovery](artifacts/bvls04-resumption-terminal-recovery.json) archives all764
+entries and verifies a fresh extraction. [Endpoint binding](artifacts/bvls04-resumption-domain-binding01.json)
+selects exactly the unchanged release endpoint, binds executable`b55744fa…`,
+source, original input supports and the180-second maximum. Distinct final QA
+manifest approval is required before dispatch.
+
 ## BVLS-04 completion continuation — adopted 2026-09-29
 
 **BLOCKED / INCOMPLETE at the indispensable-independence stop.** The preserved

@@ -1,0 +1,164 @@
+{
+  "evidence_class": "Static: current source-level exact reference/definition reconciliation after domain PASS; no full-feature compiler run or new physical replay",
+  "source_tree_sha256": "3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21",
+  "source_file_sha256": "c2b8d1ad742d5adfde8fc47586d047885818b749849afd50825280a402c372fa",
+  "groups": [
+    {
+      "group": 1,
+      "symbols": [
+        "m1_trust_region_with_trial_domain_poison_for_test"
+      ],
+      "current_retained_reference_lines": {
+        "m1_trust_region_with_trial_domain_poison_for_test": [
+          1531
+        ]
+      },
+      "references": 1,
+      "definitions_present": {
+        "m1_trust_region_with_trial_domain_poison_for_test": false
+      },
+      "disposition": "Real domain producer PASS; historical interface reference still undefined/HOLD"
+    },
+    {
+      "group": 2,
+      "symbols": [
+        "m1_trust_region_with_selected_side_error_for_test"
+      ],
+      "current_retained_reference_lines": {
+        "m1_trust_region_with_selected_side_error_for_test": [
+          1542
+        ]
+      },
+      "references": 1,
+      "definitions_present": {
+        "m1_trust_region_with_selected_side_error_for_test": false
+      },
+      "disposition": "HOLD: real producer/interface connection not implemented"
+    },
+    {
+      "group": 3,
+      "symbols": [
+        "M1TrustRegionWitnessPath",
+        "m1_trust_region_witness_thresholds_for_test",
+        "M1_GOVERNED_STEP_NORMS"
+      ],
+      "current_retained_reference_lines": {
+        "M1TrustRegionWitnessPath": [
+          1548,
+          1549,
+          1550
+        ],
+        "m1_trust_region_witness_thresholds_for_test": [
+          1552
+        ],
+        "M1_GOVERNED_STEP_NORMS": [
+          1555
+        ]
+      },
+      "references": 5,
+      "definitions_present": {
+        "M1TrustRegionWitnessPath": false,
+        "m1_trust_region_witness_thresholds_for_test": false,
+        "M1_GOVERNED_STEP_NORMS": false
+      },
+      "disposition": "HOLD: real producer/interface connection not implemented"
+    },
+    {
+      "group": 4,
+      "symbols": [
+        "m1_trust_region_phase_capacity_tie_for_test"
+      ],
+      "current_retained_reference_lines": {
+        "m1_trust_region_phase_capacity_tie_for_test": [
+          1578
+        ]
+      },
+      "references": 1,
+      "definitions_present": {
+        "m1_trust_region_phase_capacity_tie_for_test": false
+      },
+      "disposition": "HOLD: real producer/interface connection not implemented"
+    },
+    {
+      "group": 5,
+      "symbols": [
+        "m1_trust_region_natural_tangent_for_test"
+      ],
+      "current_retained_reference_lines": {
+        "m1_trust_region_natural_tangent_for_test": [
+          1597
+        ]
+      },
+      "references": 1,
+      "definitions_present": {
+        "m1_trust_region_natural_tangent_for_test": false
+      },
+      "disposition": "HOLD: real producer/interface connection not implemented"
+    },
+    {
+      "group": 6,
+      "symbols": [
+        "m1_trust_region_cap_boundary_for_test"
+      ],
+      "current_retained_reference_lines": {
+        "m1_trust_region_cap_boundary_for_test": [
+          1613
+        ]
+      },
+      "references": 1,
+      "definitions_present": {
+        "m1_trust_region_cap_boundary_for_test": false
+      },
+      "disposition": "HOLD: real producer/interface connection not implemented"
+    },
+    {
+      "group": 7,
+      "symbols": [
+        "m1_trust_region_radius_exhaustion_for_test"
+      ],
+      "current_retained_reference_lines": {
+        "m1_trust_region_radius_exhaustion_for_test": [
+          1619
+        ]
+      },
+      "references": 1,
+      "definitions_present": {
+        "m1_trust_region_radius_exhaustion_for_test": false
+      },
+      "disposition": "HOLD: real producer/interface connection not implemented"
+    },
+    {
+      "group": 8,
+      "symbols": [
+        "M1TrustRegionTestAssembly",
+        "m1_trust_region_with_controlled_assembly_for_test"
+      ],
+      "current_retained_reference_lines": {
+        "M1TrustRegionTestAssembly": [
+          1647,
+          1651,
+          1655,
+          1659,
+          1663,
+          1667
+        ],
+        "m1_trust_region_with_controlled_assembly_for_test": [
+          1672
+        ]
+      },
+      "references": 7,
+      "definitions_present": {
+        "M1TrustRegionTestAssembly": false,
+        "m1_trust_region_with_controlled_assembly_for_test": false
+      },
+      "disposition": "HOLD: real producer/interface connection not implemented"
+    }
+  ],
+  "historical_references_still_unbound": 18,
+  "prior_map": "face-pivot-full-feature-seams.json",
+  "new_domain_evidence": "bvls04-resumption-domain01.json",
+  "next_in_scope_work": "Selected-side real-adapter producer using actual owning VEG-E-142 operands, unchanged radius/input observation, focused control and independent source/manifest review; no current ready physical producer exists",
+  "harness_and_targets": "Private full-feature harness remains HOLD on these producer/interface obligations plus existing qualification. Prefix/baseline/treatment/corrected-repeat slots unspent and separately gated. Existing new analytic observer control already ran in debug136; no duplicate run selected.",
+  "remaining_window_assessment": "At11:10Z fewer than302seconds remain to work cutoff. Next producer requires operand-path discovery, authoring, exact-source control/quality and dual review before a physical command with full180-second bound. No supported complete dispatch chain fits this remaining window; no unreviewed source mutation is started.",
+  "recorded_utc": "2026-09-29T11:10:48.717778+00:00"
+}

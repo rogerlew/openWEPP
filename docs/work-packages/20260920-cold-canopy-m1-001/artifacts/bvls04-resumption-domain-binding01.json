@@ -1,0 +1,43 @@
+{
+  "evidence_class": "Ran inventory + Static exact source/support/executable binding before authorized single endpoint; no endpoint executed by this preparation",
+  "inventory": "bvls04-resumption-domain-inventory01.json",
+  "source_tree_sha256": "3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21",
+  "source_entries": 764,
+  "selected_tests": [
+    "m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base"
+  ],
+  "binary": "/tmp/openwepp-cold-canopy-m1-bvls04-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+  "binary_sha256": "b55744fa084addd3a336768dc15f64637e8edc190d045533d2ef95e5a22e0e99",
+  "bytes": 9902584,
+  "mtime_ns": 1790679940522457579,
+  "release_control_receipt": "bvls04-resumption-terminal-release02.json",
+  "endpoint_support_record": "bvls04-resumption-domain01-support.json",
+  "endpoint_argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "env",
+    "CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-bvls04-target",
+    "CARGO_BUILD_JOBS=2",
+    "cargo",
+    "nextest",
+    "run",
+    "-p",
+    "openwepp-land-surface-energy",
+    "--lib",
+    "--release",
+    "--features",
+    "m1-trust-region-analytic-stage,m1-trust-region-physical-stage",
+    "-E",
+    "test(=m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base)",
+    "--no-fail-fast",
+    "--success-output",
+    "immediate",
+    "--failure-output",
+    "immediate"
+  ],
+  "physical": true,
+  "maximum_seconds": 180,
+  "recorded_utc": "2026-09-29T11:07:37.503574+00:00"
+}

@@ -1,0 +1,56 @@
+{
+  "schema": "openwepp.bvls04-resumption-correctness-stage1-review01.v1",
+  "reviewer": "/root/completion_correctness",
+  "reviewed_at_utc": "2026-09-29T10:55:34Z",
+  "evidence_class": "Static independent correctness review only. Reviewer ran no Rust, numerical, candidate, reference, domain, or physical-endpoint command.",
+  "scope": "Frozen m1_trust_region_stage1.rs extraction and compiler-directed repair only. Controller/endpoint observer changes, final tree manifest, lint disposition, and executed validation remain outside this Stage1 review.",
+  "source": {
+    "preserved_path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-terminal-corrected-reconstruction-20260929/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "preserved_sha256": "d8a8a76596db357367d4c0bcaea14043df4d8d7cac1a1d0bc9f18d091b85a3b1",
+    "reviewed_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "reviewed_sha256": "a2ff20d6e0c51d33cf084162998d3b92774920473a0b4de88aa60137af9656f8",
+    "unified_diff_sha256": "68ed5468b5058537eceddf7f0d21a563433e9de7687083e7ba0980f82786a159",
+    "diff_hunks": 10,
+    "diff_scope": "All hunks are confined to extraction of refinement_build_retained_face_observation, refinement_eligible_p0, refinement_check_first_scratch, and refinement_finalize_candidate plus their new private helpers/types."
+  },
+  "findings": [],
+  "verified": [
+    {
+      "area": "Retained-face observation extraction",
+      "result": "No static blocker",
+      "evidence": "Entry and exit snapshots remain complete [u64; 21] arrays. Required live-state failures retain entry-before-exit precedence; required residual0 remains checked before residual1. Final residual/gradient/lambda-step bits, h0/h1 bits, masks, factor identities, optimality fields, radius fields and active-coordinate derivation preserve their source operands and output mappings. h0/h1 now borrow through as_ref rather than move or clone; optimality is passed by reference. The masks struct and final-value alias change representation only."
+    },
+    {
+      "area": "P0 eligibility and reservation extraction",
+      "result": "No static blocker",
+      "evidence": "The invalid-lambda gate remains before p0 assembly. P0 assembly and test mutation/observation remain first, followed for positive lambda by active admission, original-box crossing, full-radius norm/check, reduced-radius norm/check, then eligibility observation and work reservation. Zero-lambda BVLS-03 retains box/active eligibility, lambda_norm and strict original-radius handling before reservation. Arithmetic calls, comparisons, guard charges, refusal reason/stage metadata, and reservation operands are unchanged."
+    },
+    {
+      "area": "First-scratch extraction",
+      "result": "No static blocker",
+      "evidence": "Active admission and its absorbed counters/refusal metadata remain first; positive-lambda box admission remains next; p1/mask observation remains before radius work. Positive lambda still executes full ordered norm/poison/guard/comparison before reduced ordered norm/poison/observation/guard/comparison. Reduced-radius refusal still overwrites metadata.reduced_face_radius with the tested radius. Zero-lambda scratch retains the prior p1_box_feasible interpretation and separate lambda_norm path."
+    },
+    {
+      "area": "Final-candidate extraction",
+      "result": "No static blocker",
+      "evidence": "Zero lambda still performs lambda_norm, guard and original-radius comparison before final observation/installation. Positive lambda still performs final full-radius work, reduced-radius work, then the exact closeness sequence: validate radius, validate free norm, subtract gap, form 2^-40*radius, form 64*epsilon, guard max scale, multiply, guard max tolerance, observe, compare gap<0, compare gap>tolerance. Parenthesization, scalar/guard charge order, typed failure site and signed-zero admission are unchanged. P2/mask observation still precedes free-step installation; installation traversal, per-slot guard, bit equality refusal and refined mutation are unchanged."
+    },
+    {
+      "area": "Duplication and reachability",
+      "result": "No material duplication introduced",
+      "evidence": "The extraction centralizes repeated metadata construction only where identical and does not create a second arithmetic implementation, solver path, constant set, or acceptance predicate. All reviewed code remains in the existing private Stage1 test module surface."
+    }
+  ],
+  "compiler_repair_disposition": {
+    "full_state_arrays": "Resolved statically: helper returns ([u64; 21], [u64; 21]) and destination fields receive the arrays without narrowing or hashing.",
+    "optimality_reference": "Resolved statically: refinement_optimality_observation_fields receives &optimality; no full-record clone or ownership change.",
+    "defect_vector_borrows": "Resolved statically: trace.h0 and trace.h1 use as_ref().map(...); source vectors are neither moved nor cloned."
+  },
+  "residual_risk_and_missing_tests": [
+    "The reviewer did not compile or execute this a2ff20d6 Stage1 source. Parent-reported debug 135/135 passed before later type/line extraction and therefore does not by itself validate this exact hash.",
+    "Exact-source compile, debug/release BVLS-04 controls, analytic controls, formatting, default/selected-feature checks and source-bearing lint evidence remain required.",
+    "Final 764-entry manifest and private cfg/dependency reachability must be reviewed after controller/observer freeze; this Stage1-only review does not clear the endpoint.",
+    "Any further Stage1 byte change reopens the affected static findings and requires same-review verification."
+  ],
+  "verdict": "STATIC STAGE1 CLEARANCE: no numerical, ordering, guard, typed-error, work-accounting, observation-precedence, or material duplication blocker identified in Stage1 hash a2ff20d6. Clearance is limited to the reviewed Stage1 diff and is conditional on exact-source executed validation and final source/manifest review."
+}

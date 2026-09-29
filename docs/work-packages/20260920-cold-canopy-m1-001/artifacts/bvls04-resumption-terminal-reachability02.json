@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Static: exact source-manifest reconciliation against reviewed numerical predecessor; not execution",
+  "source_tree_sha256": "3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21",
+  "source_entries": 764,
+  "predecessor_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+  "changed_from_predecessor": [
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs"
+  ],
+  "cargo_manifests_and_lockfiles": 26,
+  "all_cargo_entries_unchanged": true,
+  "scope": "Four private/test files only: Stage1 extraction, controller observation, endpoint test, new analytic shared-seam control. Numerical equations, dependencies, public APIs and main Rust unchanged. Historical full09/A1/A3/strict lint HOLDs persist; no new Critical trigger by cfg-test-only change. Independent reviews verify reachability separately."
+}

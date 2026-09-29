@@ -1,0 +1,148 @@
+{
+  "schema": "openwepp.bvls04-resumption-correctness-domain01.v1",
+  "reviewer": "/root/completion_correctness",
+  "reviewed_at_utc": "2026-09-29T11:10:00Z",
+  "evidence_class": "Static independent correctness review of the recorded single physical endpoint receipt and emitted observation/capture. Reviewer performed no rerun and executed no Rust, numerical, candidate, reference, domain, or physical command.",
+  "source_and_execution_identity": {
+    "source_entries": 764,
+    "source_tree_sha256": "3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21",
+    "endpoint_receipt": "bvls04-resumption-domain01.json",
+    "endpoint_receipt_sha256": "a01fffa12dc9b08f4d480f2a1cd1647983fe831ddd418e0cac23f908bc7d83c5",
+    "source_receipt_sha256": "f6179be05a44617d35ed7988aa48bb7cace2d4320e318c39c4311c9bb0c28e6a",
+    "support_receipt_sha256": "37cf78a5aa44bd5861ff50f7fa94a84234aebb236431d6aa0d612b2c6a5eaa99",
+    "binary_sha256": "b55744fa084addd3a336768dc15f64637e8edc190d045533d2ef95e5a22e0e99",
+    "result": "PASS 1/1 release-profile exact endpoint; 380 skipped",
+    "execution": "Exit 0, no timeout, 9.746827913913876 seconds recorder elapsed; physical=true. source_unchanged, observer_base_unchanged, binary_unchanged, pinned_files_unchanged and support_links_unchanged are all true. The endpoint ran once from 2026-09-29T11:08:41.564851Z through 2026-09-29T11:08:51.317280Z."
+  },
+  "findings": [],
+  "observed_milestones": {
+    "result": "returned_observation",
+    "error_kind": null,
+    "proposal_entered": true,
+    "initialization_completed": true,
+    "stage1_model_entered": true,
+    "stage1_model_completed": true,
+    "candidate_injected": true,
+    "trial_domain_guard_entered": true,
+    "trial_domain_guard_refused": true,
+    "transition_disposition_merit_rejected_and_shrunk": true,
+    "transition_completed": true,
+    "controller_returned": true,
+    "predictor_lifecycle": {
+      "created_after_proposal_success": 1,
+      "discarded_on_replacement_or_early_error": 0,
+      "forwarded_existing_predictor": 1
+    },
+    "interpretation": "The single predictor was forwarded without phase replacement. Stage1 completed before the one-shot mutation, and the unchanged physical trial-domain predicate refused the mutated candidate before materialization. No typed error was returned because domain refusal is the controller's governed shrink disposition."
+  },
+  "original_assertion_disposition": {
+    "status": "all original physical assertions passed",
+    "verified_behavior": [
+      "The injected candidate coordinate 5 is exactly -f64::MIN_POSITIVE by bits.",
+      "The transition shrinks radius from exact 1.0 bits to exact 0.25 bits.",
+      "base_before and base_after are bitwise equal; raw Jacobian, dynamic normalizers and phase selection are unchanged.",
+      "actual_reduction, rho, moving_merit and dynamic_max_normalized_residual remain absent; installed=false and entered_materializations=0.",
+      "The adapter records exactly one trial-domain check, one current evaluation and one raw-Jacobian assembly.",
+      "The protected physical input and initial trial remain equal to their snapshots.",
+      "The test directly establishes restoration of the one-shot domain-mutation scope before observed.expect inspects the Result."
+    ],
+    "emitted_capture_confirmation": {
+      "candidate_domain_refusal": true,
+      "candidate_domain_checks": 1,
+      "candidate_materialization": 0,
+      "controller_return": "observation",
+      "protected_input_unchanged": true,
+      "protected_trial_unchanged": true,
+      "domain_mutation_scope_restored": true,
+      "typed_error_debug": null
+    }
+  },
+  "measured_work": {
+    "stage1_calls": 1,
+    "entered_svd_factorizations": 2,
+    "total_jacobi_sweeps": 14,
+    "completed_face_pivots": 1,
+    "coordinate_update_operations": 40,
+    "bvls04_positive_entries": 2,
+    "bvls04_factor_applications": 2,
+    "bvls04_ordered_norms": 6,
+    "bvls04_dot2_free_gradients": 20,
+    "bvls04_dot2_residual_rows": 21,
+    "first_residual_operations": 903,
+    "factor_application_operations": 4240,
+    "second_dot2_operations": 22263,
+    "whole_kkt_operations": 1827,
+    "whole_kkt_guard_events": 5503,
+    "upward_enclosure_operations": 8162,
+    "upward_enclosure_guard_events": 67427,
+    "refinement_attempted_entries": 1,
+    "refinement_denied_entries": 0,
+    "refinement_scalar_operations": 37691,
+    "refinement_guard_events": 106628,
+    "accounting_limit": "Refinement, whole-KKT and enclosure categories overlap; they must not be summed as a unique total. These counters describe this invocation only."
+  },
+  "refined_face_evidence": {
+    "initial_radius_bits": "3ff0000000000000",
+    "completed_subproblems": [
+      {
+        "entered": 2,
+        "pivots": 1,
+        "sweeps": 7,
+        "refused": false
+      }
+    ],
+    "operations": [
+      {
+        "action": "activate",
+        "coordinate": 11,
+        "lower": true,
+        "applied": true,
+        "entered": 1,
+        "pivots": 1,
+        "sweeps": 7,
+        "radius_bits": "3ff0000000000000",
+        "theta_bits": "8000000000000000"
+      },
+      {
+        "action": "kkt-return",
+        "applied": true,
+        "entered": 2,
+        "pivots": 1,
+        "sweeps": 7,
+        "radius_bits": "3ff0000000000000"
+      }
+    ],
+    "lifecycle": [
+      "witness-replacement-available"
+    ],
+    "accepted_installs": [],
+    "post_update_admissions": [],
+    "face_refusal": null,
+    "interpretation": "The captured Stage1 solve completed one lower-face activation at coordinate 11 and then returned from the retained face after its KKT check. The capture reports a completed, non-refused subproblem. The separate work observer records one refinement attempt, no refinement denial, two positive-entry events and two factor applications. No candidate was installed because the later physical domain guard refused the deliberately mutated proposal."
+  },
+  "timing": {
+    "initialization_wall_ns": 195171,
+    "proposal_wall_ns": 3212710,
+    "wall_clock": "std::time::Instant (Linux CLOCK_MONOTONIC)",
+    "wall_resolution": "host nominal 1 ns; not empirical accuracy",
+    "clock_query_and_start_sample_wall_ns": 1679254,
+    "end_sample_wall_ns": 22507,
+    "cpu_ticks_hz": 100,
+    "cpu_tick_resolution_s": 0.01,
+    "cpu_ticks_before": 0,
+    "cpu_ticks_after": 0,
+    "cpu_delta_ticks": 0,
+    "cpu_status": "resolution_limited_zero_ticks",
+    "cpu_seconds": null,
+    "interpretation": "The measured proposal wall interval is 3.212710 ms and includes existing capture/counter instrumentation. Zero CPU ticks means the interval was below the 10 ms process-clock resolution; it is not evidence of zero CPU cost. Initialization, getconf, proc sampling, JSON emission, build and harness time are excluded from proposal_wall_ns."
+  },
+  "correctness_scope_and_limits": [
+    "This endpoint exercises the authentic physical adapter, Stage1 numerical proposal and unchanged physical trial-domain predicate on one fixed cold-canopy fixture.",
+    "The negative coordinate is a deliberate test-only one-shot mutation applied after Stage1. The endpoint proves refusal ordering and state preservation for that boundary violation; it does not show that an unmodified physical solve naturally produces the violation or how often such a violation occurs.",
+    "The endpoint proves one refusal-and-shrink transition only. It does not exercise candidate materialization, acceptance/installation, post-update admission, a subsequent controller iteration, or whole-run convergence.",
+    "The face capture and work counters demonstrate actual nontrivial BVLS-04 work for this proposal, including a completed pivot and an attempted refinement. They do not provide population-level performance or numerical-error bounds.",
+    "The wall observation is one instrumented measurement. CPU time is unresolved at host tick resolution, and overlapping work categories preclude a unique summed operation total.",
+    "Conditional follow-on interfaces remain separately gated; this endpoint does not authorize or validate them."
+  ],
+  "verdict": "PASS with bounded claim: the exact cleared source performs the intended single physical domain-refusal transition, preserves the retained base and protected state, restores test scope before Result inspection, and records coherent nontrivial Stage1/BVLS-04 work. No correctness blocker was found in the endpoint evidence."
+}

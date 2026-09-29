@@ -1,0 +1,75 @@
+{
+  "schema": "openwepp.bvls04-resumption-correctness-terminal01.v1",
+  "reviewer": "/root/completion_correctness",
+  "reviewed_at_utc": "2026-09-29T11:01:01Z",
+  "evidence_class": "Static independent correctness review of frozen observer source plus inspection of parent-owned debug receipt. Reviewer ran no Rust, numerical, candidate, reference, domain, or physical-endpoint command.",
+  "scope": "Controller/test observer changes against retained findings COMPLETION-CORRECTNESS-PREREQ-001 through 005, Stage1 post-review formatting delta, and endpoint readiness at frozen tree b90dd467. This is not a fresh BVLS-04 mathematical review and does not approve endpoint dispatch.",
+  "source": {
+    "tree_entries": 764,
+    "tree_sha256": "b90dd46796c8f3e24308e27434254035c8100bc405ed79033f1102df7112da58",
+    "stage1_sha256": "44dd9c851e3c519c36f601da76602e6e299b382fd4ad192796c26256c968e245",
+    "controller_sha256": "15e93d2339640bab356c3077b9032e805c8c60d27d635c1fe3821bf2bd26c22d",
+    "m1_coupled_tests_sha256": "c2b8d1ad742d5adfde8fc47586d047885818b749849afd50825280a402c372fa",
+    "controller_diff_sha256": "2f41064e02c7a252e3d3aad859b014279403729675edf5e9ce5e621ab1360c56",
+    "test_diff_sha256": "04d374634992e8a0b9ab1ebe1308db2a5770a2cd4b2f11e81d7db25e81a380fd"
+  },
+  "findings": [
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-005-FIX01",
+      "severity": "high",
+      "status": "open; blocks endpoint readiness",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:854",
+      "finding": "Predictor lifecycle observation loses the actual final predictor on the valid phase-reassembly path.",
+      "evidence": "M1TestPredictorLifecycle::created is constructed only after the first proposal_model succeeds. When phase selection requires reassembly, that first predictor is correctly dropped and counted discarded, but the second self.proposal_model()? result has no lifecycle guard. The returned final model therefore is neither counted created nor forwarded. A successful reassembled path reports (created=1, discarded=1, forwarded=0) although the actual lifecycle is (2,1,1). This silently misstates discarded/forwarded work and violates retained finding 005.",
+      "required_fix": "Associate a lifecycle guard with every successful proposal_model result. Preserve discard of the first predictor on phase replacement or later error and forward only the guard associated with the model actually returned. Do not alter proposal selection, phase logic, numerical work, or error precedence.",
+      "required_control": "Use one private analytic shared-seam control with two deterministic cases: existing PhaseChanged success must assert (2 created, 1 discarded, 1 forwarded); an early error after the first predictor is created must assert (1,1,0). Both must directly assert candidate-mutation scope restoration before Result unwrap/inspection. No physical invocation is needed."
+    }
+  ],
+  "retained_findings": [
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-001",
+      "status": "statically resolved, execution pending",
+      "evidence": "The second ordinary controller transition is deleted. The test snapshots the domain-mutation flag before the single observation call, compares it afterward, emits the result, and asserts restoration before observed.expect. The wrapper drops the RAII scope on both Ok and Err before returning."
+    },
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-002",
+      "status": "statically resolved, execution pending",
+      "evidence": "Mutation application, trial-domain guard entry and guard refusal are marked at their owning seams. Stage1/model completion is set only after transition_model returns. Unreached bits remain false. The cost record emits typed error kind; the outer endpoint capture emits full Debug error, preserving available subproblem/refinement metadata."
+    },
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-003",
+      "status": "statically resolved",
+      "evidence": "Initialization error labels the default object controller_stage1_work and explicitly states that controller state was not created and evaluator/core/phase/Jacobian activity is partial/unavailable outside that observation. It no longer represents default counters as total physical work. Post-initialization results emit accumulated state.work."
+    },
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-004",
+      "status": "statically resolved, execution pending",
+      "evidence": "CPU source, frequency, tick resolution, raw samples and status are emitted. Zero ticks produce cpu_status=resolution_limited_zero_ticks and cpu_seconds=null. The proposal wall interval starts after getconf/initial CPU sampling and freezes immediately after the controller closure returns; ending sample and JSON serialization occur after the wall freeze and exclusions are disclosed."
+    },
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-005",
+      "status": "partially resolved; blocked by FIX01",
+      "evidence": "Work overlap is disclosed and not summed. Lifecycle counters are active only inside the domain-refusal scope; RAII discard covers early error and forwarding is attempted only on Ok return. The reassembled final predictor is presently unguarded, producing the open blocker above."
+    }
+  ],
+  "stage1_continuity": {
+    "prior_reviewed_sha256": "a2ff20d6e0c51d33cf084162998d3b92774920473a0b4de88aa60137af9656f8",
+    "current_sha256": "44dd9c851e3c519c36f601da76602e6e299b382fd4ad192796c26256c968e245",
+    "disposition": "Formatting only. Comparing the retained prior unified diff with the current base-to-source diff shows the sole substantive text delta is rustfmt collapsing the refinement_final_value_bits signature from three lines to one; hunk offsets change accordingly. The accepted Stage1 static conclusions remain applicable."
+  },
+  "parent_owned_execution": [
+    {
+      "artifact": "bvls04-resumption-terminal-debug01.json",
+      "source_tree_sha256": "b90dd46796c8f3e24308e27434254035c8100bc405ed79033f1102df7112da58",
+      "result": "PASS 135/135",
+      "detail": "Exit 0, no timeout, source_unchanged=true, 764-entry source receipt. The selector explicitly excludes the real domain endpoint and contains no dedicated lifecycle assertions for the new telemetry, so it does not resolve FIX01."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "The new lifecycle instrumentation lacks an executed direct control and is wrong for a valid reassembly branch at this source hash.",
+    "Parent reports current lint evidence has two introduced findings in observer code; exact corrected-source lint disposition remains required.",
+    "Release BVLS-04, analytic-only, format/default/selected-feature, final manifest/reachability and distinct QA evidence are not cleared by this artifact.",
+    "Any controller/test/Stage1 source correction changes tree identity and requires same-review verification before endpoint dispatch."
+  ],
+  "verdict": "HOLD: findings 001-004 are statically addressed, but PREREQ-005 remains open because phase-reassembled success misreports the actual final predictor lifecycle. Correct the guard association, execute the minimal shared-seam control, and return the exact corrected source and receipts for same-review verification before the single endpoint may run."
+}

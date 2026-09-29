@@ -1,0 +1,116 @@
+{
+  "schema": "openwepp.bvls04-resumption-correctness-terminal-fix02.v1",
+  "reviewer": "/root/completion_correctness",
+  "reviewed_at_utc": "2026-09-29T11:07:00Z",
+  "evidence_class": "Static independent same-review fix verification plus inspection of parent-owned execution receipts. Reviewer ran no Rust, numerical, candidate, reference, domain, or physical-endpoint command.",
+  "scope": "Verification of COMPLETION-CORRECTNESS-PREREQ-005-FIX01 and its direct analytic control against frozen terminal01 tree b90dd46796c8f3e24308e27434254035c8100bc405ed79033f1102df7112da58.",
+  "source": {
+    "entries": 764,
+    "tree_sha256": "3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21",
+    "stage1_sha256": "44dd9c851e3c519c36f601da76602e6e299b382fd4ad192796c26256c968e245",
+    "controller_sha256": "218fb9b2e9d0663614a00cc4bae7a0dda53e1ea44c3c49bf00e7e976b29715ae",
+    "stage2_controls_sha256": "30a9ed77926ba76a9326b658d42e3a0ca518b21358e18789aab3d78947318783",
+    "m1_coupled_tests_sha256": "c2b8d1ad742d5adfde8fc47586d047885818b749849afd50825280a402c372fa",
+    "manifest_receipts": [
+      "bvls04-resumption-terminal-debug02-source.json",
+      "bvls04-resumption-terminal-combined-lint02-source.json"
+    ],
+    "manifest_identity": "Both receipts contain identical 764-entry maps and tree SHA-256. Relative to terminal01/b90dd467, only m1_trust_region_controller.rs and m1_trust_region_stage2_controls.rs changed. Stage1 and m1_coupled_tests.rs are unchanged."
+  },
+  "findings": [],
+  "fix_verification": {
+    "finding_id": "COMPLETION-CORRECTNESS-PREREQ-005-FIX01",
+    "status": "resolved",
+    "controller_evidence": [
+      "Every successful proposal_model result in phase_model receives one lifecycle guard while the observation scope is active.",
+      "On phase replacement, the first guard is explicitly consumed as discarded before raw-Jacobian reassembly. A second guard is created only after the replacement proposal succeeds.",
+      "Only the guard associated with the predictor actually returned is consumed as forwarded. Errors after predictor creation leave the live guard to Drop and count one discard; a failed proposal creates no guard because the telemetry label is success-specific.",
+      "The helper extraction for pre_evaluator_trial_domain preserves call position, evaluator call, Own error mapping, guard-entered/refused marking, returned Boolean, and transition branch order.",
+      "The timing and serde-reference lint corrections preserve observer semantics: setup duration is captured before proposal_started, and timing serialization borrows the already-frozen value."
+    ],
+    "control_evidence": [
+      "m1_stage2_domain_observer_error_restores_scope snapshots and directly verifies candidate-scope restoration before inspecting each Result.",
+      "PhasePredictorSelectionError asserts lifecycle (1,1,0); PhaseFinalSelectionError and PhaseSelectedSideError each assert (2,2,0), covering errors after replacement creation.",
+      "PhaseChanged success asserts lifecycle (2,1,1) and one trial-domain entry.",
+      "The error fixtures also assert zero trial-domain entries and absence of PreEvaluatorTrialDomain operations, preserving error precedence."
+    ]
+  },
+  "parent_owned_execution": [
+    {
+      "artifact": "bvls04-resumption-terminal-debug02.json",
+      "receipt_sha256": "e0ea50db3f016730fed6bd2d10776b9ba9a451948cde8fc9be35d39cbd2ea880",
+      "result": "PASS 136/136; 245 skipped",
+      "detail": "Exit 0, no timeout, source_unchanged=true. The new m1_stage2_domain_observer_error_restores_scope control passed. The real physical endpoint remained excluded by the selector."
+    },
+    {
+      "artifact": "bvls04-resumption-terminal-combined-lint02.json",
+      "receipt_sha256": "bb55cf4d379e36f541cb4a7408178e024d4fb539519dcf0664307513adb943d9",
+      "result": "Expected inherited nonzero strict-lint result; no introduced finding",
+      "detail": "Exit 101, no timeout, source_unchanged=true. The source-bearing comparison artifact SHA-256 afc9f5c193406a41292b6e76c91e6291c35aa54c9c8d3e0e332fa0db6ca359f7 records identical argv, baseline_count=238, candidate_count=238, matched_count=238, introduced=[], removed=[]. This is comparative lint evidence, not a strict-lint PASS."
+    }
+  ],
+  "terminal_readiness_evidence": [
+    {
+      "artifact": "bvls04-resumption-terminal-release02.json",
+      "receipt_sha256": "4fea9592f66b4be33826392bd02703dcde67ee41599d8ddb46df6b2979267a8a",
+      "result": "PASS 10/10 release-profile BVLS-04 controls",
+      "detail": "Exit 0, no timeout, source_unchanged=true at tree 3ea88680. The physical endpoint is excluded from this selector."
+    },
+    {
+      "artifact": "bvls04-resumption-terminal-analytic02.json",
+      "receipt_sha256": "1da662c4fa4af7df3a8e5c1da79db06b186cc41edd32a2214d36b6fdb9bf295f",
+      "result": "PASS 49/49 analytic-only controls",
+      "detail": "Exit 0, no timeout, source_unchanged=true at tree 3ea88680."
+    },
+    {
+      "artifacts": [
+        "bvls04-resumption-terminal-default02.json",
+        "bvls04-resumption-terminal-feature02.json",
+        "bvls04-resumption-terminal-format02.json"
+      ],
+      "receipt_sha256": [
+        "2db9cd7a6a8027c29aca9a44d30b81d1b03bf5d6f19a661b4a497a18aee59910",
+        "8973f3ca7772d1b684a2be6d5498e6f1d035118569fc17758642d9c031d3d9e5",
+        "10d4e17eccb5c0911ff31554e3545d2772303a854c5ab5eab6ffdc468c9552fa"
+      ],
+      "result": "PASS default validator, selected-feature validator, and format check",
+      "detail": "Each exits 0 without timeout and records source_unchanged=true at tree 3ea88680. The two cargo checks are validators, not test workflows."
+    },
+    {
+      "artifact": "bvls04-resumption-terminal-analytic-lint02-inherited-reconciliation.json",
+      "receipt_sha256": "c164f8575d72d0f777663cc31682c2e59cc870b16f45a528fe834b1d86feecc3",
+      "result": "No introduced analytic-only strict-lint diagnostic",
+      "detail": "The strict lint remains FAIL with 262 baseline and 262 candidate diagnostics: 259 exact normalized matches plus three source-specific inherited pairs. The reconciliation records introduced_count=0. This is comparative evidence, not strict-lint success."
+    },
+    {
+      "artifact": "bvls04-resumption-terminal-reachability02.json",
+      "receipt_sha256": "fa83646dee09a1733875e970839cd195846edfad99d7c78dee92e90ef1d633c8",
+      "result": "Exact-manifest reachability reconciled",
+      "detail": "All 764 entries were compared with predecessor 1ab1d087. Only four private/test files changed: Stage1 extraction, controller observer, endpoint test, and analytic shared-seam control. All 26 Cargo manifest/lock entries are unchanged."
+    },
+    {
+      "artifact": "bvls04-resumption-terminal-recovery.json",
+      "receipt_sha256": "646b61ccf80f63a1e6e17a661124c17fac5727410750abe8e8b145bec7ac0f44",
+      "result": "Recoverable exact source confirmed",
+      "detail": "Archive SHA-256 195cad81afe2da6dcb8d54f6a61b7d240e96f073181e4f7f9c6a4e0a598251bb; fresh extraction rehashed every one of the 764 canonical source/configuration entries equal."
+    },
+    {
+      "artifact": "bvls04-resumption-domain-inventory01.json",
+      "receipt_sha256": "08ecc076b4ff6a38ba690360df339e70aaee91f84e48170ebfb6f63bb1640f0c",
+      "result": "Exact endpoint selection listed; endpoint unspent",
+      "detail": "Exit 0, source_unchanged=true at tree 3ea88680. The command is cargo nextest list for the single exact release endpoint, physical=false; it does not execute the endpoint."
+    },
+    {
+      "artifact": "bvls04-resumption-domain-binding01.json",
+      "receipt_sha256": "d07f4ebb0c0d470329feab0c6b5b90f397094c048c70dc2634c769276d676cb8",
+      "result": "Single endpoint source/support/executable binding complete",
+      "detail": "The binding names exactly one test, binds the 764-entry tree 3ea88680, release-control binary SHA-256 b55744fa084addd3a336768dc15f64637e8edc190d045533d2ef95e5a22e0e99, endpoint support record SHA-256 37cf78a5aa44bd5861ff50f7fa94a84234aebb236431d6aa0d612b2c6a5eaa99, physical=true, and maximum_seconds=180. Its evidence class expressly records that preparation did not execute the endpoint."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "This artifact clears the reviewer-found lifecycle blocker and retained findings 001-005 for endpoint readiness at tree 3ea88680. It does not substitute for the authorized single physical endpoint, release BVLS-04, analytic-only, format/default/selected-feature, final reachability, or distinct QA evidence.",
+    "The workspace still has 238 inherited strict-lint diagnostics. The source-bearing comparison establishes no introduced diagnostic in this correction but does not claim strict-lint success.",
+    "Any subsequent source change invalidates this exact-source clearance and requires reconciliation before endpoint dispatch."
+  ],
+  "verdict": "APPROVE FOR SINGLE ENDPOINT DISPATCH at exact 764-entry tree 3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21. FIX01 is correctly resolved, the direct analytic control passed, retained observer findings 001-005 have no remaining correctness blocker, and the endpoint itself remains unspent."
+}

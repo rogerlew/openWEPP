@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Static: complete source-bearing comparison of Ran strict lint logs; not a strict lint PASS",
+  "baseline": "completion-domain-combined-lint02",
+  "candidate": "bvls04-resumption-terminal-combined-lint02",
+  "argv_identical": true,
+  "normalization": "Line/column, numeric gutters, diagnostic left gutter indentation only; source text preserved",
+  "baseline_count": 238,
+  "candidate_count": 238,
+  "matched_count": 238,
+  "introduced": [],
+  "removed": [],
+  "baseline_stderr_sha256": "2128c8f23e6e0f50445abed44834043bdd02c4ff8480ea8145b76983080a689b",
+  "candidate_stderr_sha256": "2226d0a984c22fc8cd86219f168a9d280e2d089caa533f39ec1717ae887153b6"
+}

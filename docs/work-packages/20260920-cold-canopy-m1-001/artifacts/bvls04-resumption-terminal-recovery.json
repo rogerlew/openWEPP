@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: full source archive creation and fresh extraction; all canonical source/configuration entries rehashed equal",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source_tree_sha256": "3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21",
+  "source_manifest": "bvls04-resumption-terminal-debug02-source.json",
+  "source_entries": 764,
+  "archive": "bvls04-resumption-terminal-source.tar.gz",
+  "archive_sha256": "195cad81afe2da6dcb8d54f6a61b7d240e96f073181e4f7f9c6a4e0a598251bb",
+  "reconstructed_root": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-resumption-reconstruction-20260929",
+  "reconstructed_every_entry_equal": true,
+  "validation_scope": "Terminal debug136 PASS; other terminal controls/reviews separately recorded. No M1 acceptance.",
+  "external_support_scope": "External inputs/toolchain and symlink supports separately bound by command support records; archive is source/configuration only",
+  "recorded_utc": "2026-09-29T11:06:19.054105+00:00"
+}

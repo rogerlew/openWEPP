@@ -1,0 +1,20 @@
+{
+  "evidence_class": "Static: complete source-bearing comparison of Ran strict lint logs; not a strict lint PASS",
+  "baseline": "completion-domain-combined-lint02",
+  "candidate": "bvls04-resumption-terminal-combined-lint01",
+  "argv_identical": true,
+  "normalization": "Line/column, numeric gutters, diagnostic left gutter indentation only; source text preserved",
+  "baseline_count": 238,
+  "candidate_count": 240,
+  "matched_count": 237,
+  "introduced": [
+    "error: this function has too many lines (102/100)\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:LINE:COL\n|\nLINE | /     fn transition_after_model<E, V>(\nLINE | |         &mut self,\nLINE | |         evaluator: &mut V,\nLINE | |         model: &ProposalModel,\n...   |\nLINE | |     where\nLINE | |         V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,\n| |___________________________________________________________________________________^\n|\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines",
+    "error: this argument is passed by value, but not consumed in the function body\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:LINE:COL\n|\nLINE |     timing: serde_json::Value,\n|             ^^^^^^^^^^^^^^^^^\n|\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value\n     = note: `-D clippy::needless-pass-by-value` implied by `-D warnings`\n     = help: to override `-D warnings` add `#[allow(clippy::needless_pass_by_value)]`\nhelp: consider taking a reference instead\n|\nLINE |     timing: &serde_json::Value,\n|             +",
+    "error: this argument is passed by value, but not consumed in the function body\n--> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:LINE:COL\n|\nLINE |     metadata: M1DrainageMetadataTestView,\n|               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n|\nhelp: or consider marking this type as `Copy`\n--> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:LINE:COL\n|\nLINE | pub struct M1DrainageMetadataTestView {\n| ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value\nhelp: consider taking a reference instead\n|\nLINE |     metadata: &M1DrainageMetadataTestView,\n|               +"
+  ],
+  "removed": [
+    "error: this argument is passed by value, but not consumed in the function body\n--> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:LINE:COL\n|\nLINE |     metadata: M1DrainageMetadataTestView,\n|               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n|\nhelp: or consider marking this type as `Copy`\n--> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:LINE:COL\n|\nLINE | pub struct M1DrainageMetadataTestView {\n| ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value\n     = note: `-D clippy::needless-pass-by-value` implied by `-D warnings`\n     = help: to override `-D warnings` add `#[allow(clippy::needless_pass_by_value)]`\nhelp: consider taking a reference instead\n|\nLINE |     metadata: &M1DrainageMetadataTestView,\n|               +"
+  ],
+  "baseline_stderr_sha256": "2128c8f23e6e0f50445abed44834043bdd02c4ff8480ea8145b76983080a689b",
+  "candidate_stderr_sha256": "9c28d550437328a8d47136fdd4f5ee8b545d42de9ada1f9f5348c029579881e7"
+}
