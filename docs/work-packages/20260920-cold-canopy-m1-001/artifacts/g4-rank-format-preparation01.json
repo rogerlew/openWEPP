@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: formatting preparation, not physical execution",
+  "argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "rustfmt",
+    "--edition",
+    "2024",
+    "--config",
+    "skip_children=true",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+  ],
+  "exit_code": 1,
+  "first_failure": "adapter m1_coupled.rs:2595 mismatched closing delimiter in observer JSON macro",
+  "partial_mutation": "stage1 formatting completed before adapter parse failure",
+  "correction_cycle": 1,
+  "action": "Same writer assigned mechanical parse and reviewer findings; no physical capture consumed."
+}

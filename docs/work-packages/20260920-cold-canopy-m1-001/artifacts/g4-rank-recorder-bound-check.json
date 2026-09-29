@@ -1,0 +1,32 @@
+{
+  "evidence_class": "Ran: direct unchanged recorder bound function checks; no physical or reference execution",
+  "deadline": "2026-09-29T18:26:46+00:00",
+  "checks": [
+    {
+      "case": "physical180",
+      "accepted": true,
+      "expected": true
+    },
+    {
+      "case": "physical181",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "offline300",
+      "accepted": true,
+      "expected": true
+    },
+    {
+      "case": "physicalfullboundmustfit",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "referencefullboundmustfit",
+      "accepted": false,
+      "expected": false
+    }
+  ],
+  "pass": true
+}

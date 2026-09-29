@@ -1,0 +1,134 @@
+{
+  "schema": "openwepp.cold-canopy-m1.g4-rank.correctness-terminal.v1",
+  "reviewer": "interface_correctness",
+  "evidence_class": "Static source/receipt review plus Ran independent offline calculation on the one captured binary64 matrix. Reviewer ran no Rust build, test, solver, physical capture, replay, or second calculator execution.",
+  "findings": [
+    {
+      "severity": "high-acceptance-blocker",
+      "title": "The captured natural-tangent matrix is exactly rank 19 because the fully-wet upper dry shade and stem temperatures remain free but have zero columns",
+      "locations": [
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1368",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1381",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1394",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1406",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2207",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:956"
+      ],
+      "evidence": "The independent exact calculation finds weighted-matrix columns 1 and 2 identically zero, giving exact right-null basis vectors upper_shade_temperature_k and upper_stem_temperature_k. Two independent exact left-null certificates relate upper shade energy, upper stem energy, and upper capacity/drainage rows; both have exact zero projection on the weighted residual. Three odd-prime modular pivot minors independently give rank at least 19, while the two exact left-null relations give rank at most 19, proving exact rank 19. The author calculation independently reports exact raw and weighted rank 19 and the same null coordinates.",
+      "source_attribution": "At the captured upper state, liquid mass equals capacity and wet_fraction is exactly one. The shade and stem structural areas are positive, so their energy equations use the ordinary dry-component branch, but every temperature-sensitive dry term is multiplied by 1-wet_fraction and the corresponding longwave component has zero dry area. Perturbing either dry temperature therefore leaves every captured residual unchanged. Perturbing mass across the capacity boundary changes the dry fraction, so upper shade energy, upper stem energy, and capacity closure each retain only mass-column support and become exactly proportional after weighting.",
+      "chronology": "The controller calls proposal_model before it has a predictor direction for select_phase. The all-free natural matrix therefore must pass Stage1 rank before directional phase/capacity selection or selected-side assembly can occur. It refuses on that first factorization, as the capture shows, so the active-set machinery that could distinguish the tie is unreachable.",
+      "impact": "This is an exact representational singularity of the captured binary64 natural linearization, not a threshold-near miss, scaling defect, or Jacobi accuracy failure. It blocks the intended G4 positive path and leaves G4 physical acceptance on HOLD. It does not prove that the nonlinear physical model has no root or that every admissible directional derivative is singular.",
+      "required_authority_decision": "Canonical science/numerics authority must decide the representational status and chronology of positive-area dry shade/stem temperature coordinates when effective dry area is exactly zero at a simultaneous phase/capacity tie. A prospective contract could define them as inactive/fixed for the natural face, or authorize a canonical directional active-set/tie decision before a full-rank predictor is required. This review does not choose or implement either rule. Lowering the rank threshold, clipping singular values, adding damping, using a pseudoinverse, perturbing the seed, or removing either drainage coordinate is unsupported."
+    }
+  ],
+  "physical_capture": {
+    "receipt": "g4-rank-physical-capture01.json",
+    "receipt_sha256": "aaf93898641e026b8f8e5c5123c7f9c8a08067afd3599718a94125ebe428fad5",
+    "stderr": "g4-rank-physical-capture01.stderr",
+    "stderr_sha256": "acd0cc868d74ebf248e20c1c54048debc16667bbe0cc9a00209227fc9e0b2306",
+    "capture": "g4-rank-capture.json",
+    "capture_sha256": "edfc1df63996608ef015e36822e7e94b3971b7e2c3d956d77bf1f671ec0a4291",
+    "extraction": "g4-rank-capture-extraction01.json",
+    "exit_code": 100,
+    "timed_out": false,
+    "tests_run": 1,
+    "tests_failed": 1,
+    "tests_skipped": 393,
+    "observer_record_count": 1,
+    "source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "source_unchanged": true,
+    "binary_sha256": "ae22132f99bb85a44d0c4037f752a80ef6bdbc3f26a5e532409f89feb70f36c0",
+    "binary_unchanged": true,
+    "correspondence": "All 13 fields shared with the preserved G4 failure are equal. The capture retains the original one Stage1 call, one entered factorization, seven Jacobi sweeps, RankDeficient refusal, and zero selected assemblies, probes, refinement, materialization, or installation. The one authorized physical slot is consumed; no retry is permitted."
+  },
+  "independent_calculation": {
+    "script": "g4-rank-correctness-reference.py",
+    "script_sha256": "b1e1453a8472187abe9f60f4e0101b0528e05874978b21ae4af9aca0b7645251",
+    "receipt": "g4-rank-correctness-reference01.json",
+    "receipt_sha256": "2cd9396faaa2bb352de0d92f76e427173d28dcd5b8d5ffaa540e64fca9eb4989",
+    "stdout": "g4-rank-correctness-reference01.stdout",
+    "stdout_sha256": "0af7146133b733280cf0a63b2ab1de0e2aab3cce3c7a3bdd0e8f696a3c0f5581",
+    "exit_code": 0,
+    "elapsed_seconds": 0.3178453710861504,
+    "source_unchanged": true,
+    "matrix_identity": "The script consumed capture SHA-256 edfc1df63996608ef015e36822e7e94b3971b7e2c3d956d77bf1f671ec0a4291. Its binary64 reconstruction of weighted residual and W*Jraw*S matches every captured bit in runtime operation order.",
+    "exact_result": {
+      "rank": 19,
+      "rank_upper_bound": 19,
+      "rank_lower_bound": 19,
+      "zero_columns": [
+        1,
+        2
+      ],
+      "zero_column_names": [
+        "upper_shade_temperature_k",
+        "upper_stem_temperature_k"
+      ],
+      "proportional_row_group": [
+        1,
+        2,
+        5
+      ],
+      "proportional_row_names": [
+        "upper_shade_energy",
+        "upper_stem_energy",
+        "upper_capacity_drainage_closure"
+      ],
+      "exact_left_null_weighted_residual_projections": [
+        "0",
+        "0"
+      ],
+      "modular_certificate_primes": [
+        2305843009213693951,
+        1000000007,
+        1000000009
+      ],
+      "pivot_minor_retains_both_drainage_columns": true
+    },
+    "runtime_spectrum": {
+      "sigma_max": 42191528160.85992,
+      "rank_threshold": 0.03837297132200539,
+      "exact_zero_count": 2,
+      "zero_unsorted_indices": [
+        1,
+        2
+      ],
+      "smallest_nonzero": 573552.7228674303,
+      "interpretation": "The smallest nonzero singular value exceeds the cutoff by about 1.49e7; only the two exact zeros refuse. The threshold equals the exact captured rank_max*2^-40 operand."
+    },
+    "direct_svd": {
+      "precisions_decimal_digits": [
+        80,
+        160
+      ],
+      "largest_80dps": "42191528160.859905934338980257501684049986865577156995484254082080521423884596406",
+      "largest_160dps": "42191528160.8599059343389802575016840499868655771569954842540820805214238845964055199810574",
+      "smallest_nonzero_80dps": "573552.72286743059024203021810522053533832949123013294570964092367606774064304387",
+      "smallest_nonzero_160dps": "573552.722867430590242030218105220535338329491230132945709640923676067740643043361267299149",
+      "numerical_null_artifact_80dps": "2.2463179915421290998209106459613677094370586451374921669757414857733361230778897e-73",
+      "numerical_null_artifact_160dps": "1.05809978364605117456090998321233311141933600382523535503720947714385800196575711639401352e-152",
+      "second_null_value": "0",
+      "interpretation": "The nonzero spectrum is stable across 80 and 160 dps. The one tiny reference value falls by roughly 79 decimal orders when precision doubles and is superseded by the exact rank certificate; it is high-precision SVD roundoff on the second exact null mode. Runtime nonzero singular values agree with the direct reference to about 1.35e-15 relative or better."
+    }
+  },
+  "corroborating_author_calculation": {
+    "receipt": "g4-rank-author-reference01.json",
+    "receipt_sha256": "dc2235f002c9a5f71f6b41443f2f8bf02575c5e6f3267426c98050900039b361",
+    "output": "g4-rank-author-reference.json",
+    "output_sha256": "caad90bbe0148821a05618e10483e40885f15402134ef48bb0a71bb2926e3256",
+    "exit_code": 0,
+    "result": "Independently corroborates exact raw and weighted rank 19, zero columns 1/2, the same right and left nullspaces, exact-zero residual projections, exact raw-to-weighted reconstruction, and stable 80/160-dps spectra. This result is corroboration; the reviewer calculation above supplies the independent correctness evidence."
+  },
+  "scaling_and_factorization_disposition": {
+    "scales_and_normalizers": "Every captured coordinate scale is finite and nonzero and every normalizer is finite and positive. Both independent calculations reconstruct the weighted matrix exactly from the raw Jacobian, normalizers, and scales. Raw and weighted matrices both have exact rank 19, so scaling did not create the deficiency.",
+    "jacobi": "The runtime reports two exact zero column norms after seven sweeps and 260 rotations. The author diagnostic gives max |B-A*V| about 6.78e-6 in the matrix's absolute scale and max |V^T*V-I| about 2.32e-15; the runtime nonzero spectrum agrees with direct high precision. Jacobi arithmetic correctly exposes the structural rank loss.",
+    "drainage": "The exact 19-by-19 modular pivot minor includes upper and lower drainage columns. Both drainage coordinates are independent retained columns and are not the source of rank loss."
+  },
+  "residual_risk_and_missing_tests": [
+    "The causal statement is limited to the captured binary64 finite-difference natural matrix and the reached source branches. Exact matrix rank does not establish exact rank of the underlying continuum derivative or every directional phase tangent.",
+    "The two exact left-null projections are zero, so this evidence does not show linear inconsistency; it shows two unconstrained predictor coordinates. It is not proof that the nonlinear system lacks a root.",
+    "No prospective inactive-coordinate or preselection policy has canonical authority or execution evidence. Any correction requires a new authorized science/numerics decision and its own tests; this diagnostic releases no implementation.",
+    "G2, G3 physical witnesses, G4 positive-path acceptance, five G6 physical-owner cases, native harness, target cases, broader conservation/restart/cycle/scale evidence, and M1 acceptance remain HOLD."
+  ],
+  "terminal_verdict": "DIAGNOSTIC ATTRIBUTION COMPLETE with a source-conforming G4 physical FAIL. The current implementation correctly refuses an exactly rank-19 natural matrix. G4 remains unaccepted; no rerun or numerical workaround is authorized."
+}

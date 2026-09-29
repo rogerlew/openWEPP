@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: all764 retained source entries and release executable verified before edits",
+  "anchor_utc": "2026-09-29T16:15:00+00:00",
+  "carry_charged_seconds": "410240.393795",
+  "ceiling_seconds": "418146.393795",
+  "available_seconds": 7906,
+  "protected_reserve_seconds": 1800,
+  "work_cutoff_utc": "2026-09-29T17:56:46+00:00",
+  "hard_deadline_utc": "2026-09-29T18:26:46+00:00",
+  "prior_closing_receipt": "interface-harness-publication01.json and final remote61fde94ca: no greater charge; prior conservative6494s retained with no refund",
+  "source_tree_sha256": "858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85",
+  "source_entries": 764,
+  "authorization_sha256": "3c0881c7311bbc1004896c4a184f8e45e435b30c77a2cf03137690718d80bc9d"
+}

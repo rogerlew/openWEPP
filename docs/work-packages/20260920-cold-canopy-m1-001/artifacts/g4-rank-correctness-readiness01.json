@@ -1,0 +1,73 @@
+{
+  "schema": "openwepp.cold-canopy-m1.g4-rank.correctness-readiness.v1",
+  "reviewer": "interface_correctness",
+  "evidence_class": "Static: independent source, authority, plan, custody, and supplied-receipt review; reviewer ran no Rust build, test, solver, physical capture, replay, or numerical reference calculation.",
+  "frozen_identity": {
+    "source_manifest": "g4-rank-controls-release04-source.json",
+    "source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "entry_count": 764,
+    "all_live_entry_hashes_match_manifest": true,
+    "observer_source_hashes": {
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "3237baf092e22e16af90ad1c7b0864782acb97ed6a6d08d54472c787075a9b83",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "129ea3f2161a5376899018e42e9abcad386265a81de643121e0f0726ffd5fb03"
+    },
+    "release_binary": "/tmp/openwepp-cold-canopy-m1-g4-rank-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "release_binary_sha256": "ae22132f99bb85a44d0c4037f752a80ef6bdbc3f26a5e532409f89feb70f36c0",
+    "prior_preserved_binary_sha256": "2fda6ef922a345ad3a780ef9c7b5fb144445b899bbbd804e4af07dccebaf2118",
+    "recovery": "g4-rank-terminal-recovery.json",
+    "recovery_archive": "g4-rank-terminal-source.tar.gz",
+    "recovery_archive_sha256": "1e7395de7e8aece4b985aed3677a335ad3f1f7219e5ab134133b98b5086c5aad",
+    "recovery_all_entry_hashes_equal": true,
+    "recovery_archive_all_bytes_equal": true
+  },
+  "findings": [],
+  "source_correctness": {
+    "verdict": "READY",
+    "rank_path": "The frozen path performs the original square/accumulate/sqrt sequence, max fold, per-visited 2^-40*max operation, comparison, short circuit, and pre-sort rank refusal. The observer borrows the one completed SortedSingularValues result and copies reached arrays only on the rank-deficient error; the same error string then maps to the same typed RankDeficient refusal.",
+    "error_and_work_precedence": "Nonfinite and no-convergence precedence, Stage1 work accounting, face preparation, Jacobi visit/rotation order, and downstream suppression are unchanged. Observation allocation or capture absence cannot replace the typed solver result.",
+    "custody": "The refused factor records A, rotated B, V, unsorted sigma, rank max and threshold, visits, rotations, sweeps, masks, free ordering, scaled bounds, and the actual prepared-face radius. It truthfully records singular ordering and factor identity as unavailable at the pre-sort refusal.",
+    "physical_operands": "The adapter copies the already-computed base residual/Jacobian/normalizers and phase/capacity events. Liquid mass and structural areas are copied from the reached core/input state under the test+physical observer gate; no physics, Jacobian, phase-selection, probe, factorization, or solver evaluation is added.",
+    "serialization_controls": "The focused rank-refusal control parses the actual singular capture and asserts null identity, empty/uncomputed order, all-free first-face custody, radius, factor A equality, sigma dimension, and threshold presence. Nested observer scope restoration and error-preserving controls are included in the reported 61-test selections."
+  },
+  "supplied_validation_review": {
+    "debug_controls": "g4-rank-controls-debug04.json: exit 0 on source tree 2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "release_controls": "g4-rank-controls-release04.json: exit 0; 61 passed and 333 skipped from the 394-test inventory",
+    "inventory": "g4-rank-release-inventory01.stdout: 394 tests; the G4 physical selector and focused rank-refusal capture control each resolve exactly once and are not ignored",
+    "format": "g4-rank-format04.json: exit 0",
+    "default_check": "g4-rank-default-check01.json: exit 0",
+    "lint": "g4-rank-qa-lint-reconciliation01.json: no introduced diagnostic across combined, analytic, and all-feature comparisons",
+    "qa": "g4-rank-qa-readiness01.json: READY conditional on this correctness review and pre-dispatch identity checks"
+  },
+  "physical_plan_review": {
+    "plan": "g4-rank-capture-plan01.json",
+    "plan_sha256": "ce74551a3cb9fd936b2abc7b64cd1af85c14d320451fc4b9ac763c20c2c49e04",
+    "selector": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+    "expected_selected_case_count": 1,
+    "maximum_physical_executions": 1,
+    "maximum_seconds": 180,
+    "input_hashes": {
+      "original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+      "radiation-reference-m1.json": "b92985388719f4a59406c2b8f3a5e03d3af2a2f35c99617926c20aeed284b47e"
+    },
+    "expected_disposition": "The original test assertion remains expected to fail after producing the one observation record. That expected process failure is diagnostic evidence, not G4 acceptance and not permission to retry.",
+    "required_stop_conditions": [
+      "Stop after the one selected execution regardless of completeness or outcome; do not retry.",
+      "Treat an unexpected test pass, a refusal other than the original first-face RankDeficient result, changed work chronology, or missing/multiple observer records as an implementation or recording deviation.",
+      "Do not run G2, G3, G6, G1/G5 replay, native harness, target cases, or any other physical selector.",
+      "Do not infer physical success from the captured arrays or from either offline reference calculation."
+    ],
+    "predispatch_checks": "The recorder must recheck the exact source tree, release binary, two input hashes, selector count, argv, 180-second bound, fixed deadline/reserve, and unused output identity immediately before dispatch."
+  },
+  "independent_reference": {
+    "script": "g4-rank-correctness-reference.py",
+    "script_sha256": "b1e1453a8472187abe9f60f4e0101b0528e05874978b21ae4af9aca0b7645251",
+    "status": "Authored and AST-parsed; deliberately unexecuted before the physical capture.",
+    "postcapture_scope": "Use only the validated captured binary64 matrix. One command bounded to at most 300 seconds may perform exact rational relation checks, modular nonzero-minor rank certificates, direct 80/160-dps SVD, runtime-spectrum comparison, named equation/coordinate mapping, and left-null residual projections. No computed direction may enter runtime."
+  },
+  "residual_risk_and_missing_evidence": [
+    "Physical evidence does not yet exist. G4 remains a physical FAIL/HOLD until the single capture is classified; this readiness record is not an acceptance result.",
+    "The general observer's last_face_radius metadata can be stale for a hypothetical later prepare-face failure after an earlier completed face. The authorized G4 refusal occurs on the first face after successful prepare_face, so its copied radius is reached and exact; reuse for another failure topology requires fresh review.",
+    "G2, G3 physical witnesses, five G6 physical owners, native harness, all target slots, broader conservation/restart/cycle/scale evidence, and M1 acceptance remain HOLD."
+  ],
+  "readiness_verdict": "CORRECTNESS READY for exactly the single observer-only G4 execution in g4-rank-capture-plan01.json, conditional on the stated immediate pre-dispatch identity checks. No other physical execution or numerical conclusion is authorized by this review."
+}

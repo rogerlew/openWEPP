@@ -1,0 +1,47 @@
+{
+  "evidence_class": "Ran: terminal receipt/custody audit; conservative prospective closing charge",
+  "anchor_utc": "2026-09-29T16:15:00+00:00",
+  "ledger_recorded_utc": "2026-09-29T16:55:24.594384+00:00",
+  "fixed_work_cutoff_utc": "2026-09-29T17:56:46+00:00",
+  "fixed_hard_deadline_utc": "2026-09-29T18:26:46+00:00",
+  "carry_charged_seconds": "410240.393795",
+  "new_grant_seconds": 0,
+  "fixed_ceiling_seconds": "418146.393795",
+  "actual_elapsed_at_record_seconds": "2424.594384",
+  "conservative_closing_reservation_seconds": 1800,
+  "resumed_charged_seconds": 4225,
+  "cumulative_charged_seconds": "414465.393795",
+  "unused_ceiling_seconds": "3681.000000",
+  "conservative_charge_covers_through_utc": "2026-09-29T17:25:25+00:00",
+  "accounting": "Concurrent work and waits charged once from first reading; rounded elapsed plus full existing 1800s closing reserve. No refund of prior charges/reserves. If actual close exceeds coverage, charge greater elapsed. Fixed deadlines unchanged.",
+  "physical_capture_count": 1,
+  "physical_capture_maximum": 1,
+  "physical_capture_result": "Expected original RankDeficient assertion FAIL; exit100; one complete actual operand record; all13prior commonfields identical",
+  "physical_retries": 0,
+  "other_physical_cases_run": 0,
+  "target_slots_consumed": 0,
+  "reference_commands": {
+    "author": "g4-rank-author-reference01.json",
+    "correctness": "g4-rank-correctness-reference01.json",
+    "each_bound_seconds": 300,
+    "both_exit0": true,
+    "fixed_dps": [
+      80,
+      160
+    ]
+  },
+  "source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+  "archive_sha256": "1e7395de7e8aece4b985aed3677a335ad3f1f7219e5ab134133b98b5086c5aad",
+  "release_binary_sha256": "ae22132f99bb85a44d0c4037f752a80ef6bdbc3f26a5e532409f89feb70f36c0",
+  "diagnostic_result": "Exact rank19 of21; upper dry shade/stem temperature columns zero at fullywet natural tie; scaling bits exact; Jacobi spectrum corroborated; no physical acceptance",
+  "holds": [
+    "G4 physical acceptance",
+    "G2",
+    "G3 physical",
+    "five G6 physical owner cases",
+    "native harness",
+    "all target slots",
+    "broader M1 qualification"
+  ],
+  "review_status": "Correctness terminal complete; final QA/publication pending within closing reservation"
+}

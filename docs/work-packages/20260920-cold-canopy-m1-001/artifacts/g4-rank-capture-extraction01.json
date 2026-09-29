@@ -1,0 +1,30 @@
+{
+  "evidence_class": "Ran: exact single-record extraction and prior/refusal chronology comparison; no second physical execution",
+  "stderr": "g4-rank-physical-capture01.stderr",
+  "stderr_sha256": "acd0cc868d74ebf248e20c1c54048debc16667bbe0cc9a00209227fc9e0b2306",
+  "capture": "g4-rank-capture.json",
+  "capture_sha256": "edfc1df63996608ef015e36822e7e94b3971b7e2c3d956d77bf1f671ec0a4291",
+  "record_count": 1,
+  "prior_common_fields_all_equal": true,
+  "compared_prior_keys": [
+    "completed_assemblies",
+    "control",
+    "controller_work",
+    "final_probe_entries",
+    "input_unchanged",
+    "materialization_entries",
+    "natural_assembly_attempts",
+    "predictor_probe_entries",
+    "schema",
+    "selected_assembly_attempts",
+    "trial_domain_checks",
+    "trial_unchanged",
+    "typed_error_debug"
+  ],
+  "physical_exit_code": 100,
+  "physical_tests_run": 1,
+  "physical_tests_failed": 1,
+  "physical_tests_skipped": 393,
+  "classification": "Expected original physical FAIL with complete rank operands; diagnostic capture consumed, no retry",
+  "downstream": "No selected assembly/probe/refinement/materialization/install; no other physical or target case"
+}

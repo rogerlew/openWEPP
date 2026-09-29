@@ -1,0 +1,80 @@
+{
+  "schema": "openwepp.cold-canopy-m1.g4-rank.qa-terminal.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static: QA review of supplied Ran capture, extraction, reference, recovery, ledger, and correctness receipts. QA ran no physical capture, Rust command, or calculator.",
+  "findings": [],
+  "terminal_custody": {
+    "source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "entry_count": 764,
+    "release_binary_sha256": "ae22132f99bb85a44d0c4037f752a80ef6bdbc3f26a5e532409f89feb70f36c0",
+    "recovery": "g4-rank-terminal-recovery.json",
+    "recovery_archive_sha256": "1e7395de7e8aece4b985aed3677a335ad3f1f7219e5ab134133b98b5086c5aad",
+    "recovery_all_entry_hashes_equal": true,
+    "recovery_archive_all_bytes_equal": true,
+    "capture_receipt": "g4-rank-physical-capture01.json",
+    "capture_receipt_sha256": "aaf93898641e026b8f8e5c5123c7f9c8a08067afd3599718a94125ebe428fad5",
+    "capture_stderr_sha256": "acd0cc868d74ebf248e20c1c54048debc16667bbe0cc9a00209227fc9e0b2306",
+    "capture_json_sha256": "edfc1df63996608ef015e36822e7e94b3971b7e2c3d956d77bf1f671ec0a4291"
+  },
+  "single_execution_review": {
+    "plan": "g4-rank-capture-plan01.json",
+    "selector": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+    "maximum_executions": 1,
+    "observed_executions": 1,
+    "exit_code": 100,
+    "timed_out": false,
+    "tests_run": 1,
+    "tests_failed": 1,
+    "tests_skipped": 393,
+    "automatic_retries": 0,
+    "other_physical_cases_run": 0,
+    "target_slots_consumed": 0,
+    "identity_unchanged_during_capture": {
+      "source": true,
+      "observer_base": true,
+      "binary": true,
+      "pinned_files": true,
+      "support_links": true
+    },
+    "verdict": "The sole permitted observer capture was consumed. It is an expected original RankDeficient assertion FAIL, never a physical PASS."
+  },
+  "extraction_and_reference_custody": {
+    "extraction": "g4-rank-capture-extraction01.json",
+    "observer_records": 1,
+    "prior_common_fields_compared": 13,
+    "prior_common_fields_all_equal": true,
+    "captured_chronology": "one natural assembly and Stage1/factorization; seven Jacobi sweeps; no selected assembly, probe, refinement, domain check, install, or materialization",
+    "author_reference": {
+      "receipt": "g4-rank-author-reference01.json",
+      "receipt_sha256": "dc2235f002c9a5f71f6b41443f2f8bf02575c5e6f3267426c98050900039b361",
+      "exit_code": 0,
+      "elapsed_seconds": 0.5189952021464705
+    },
+    "independent_correctness_reference": {
+      "receipt": "g4-rank-correctness-reference01.json",
+      "receipt_sha256": "2cd9396faaa2bb352de0d92f76e427173d28dcd5b8d5ffaa540e64fca9eb4989",
+      "exit_code": 0,
+      "elapsed_seconds": 0.3178453710861504
+    },
+    "reference_bound_seconds_each": 300,
+    "calculation_scope": "Both recorded commands consumed the one hash-bound capture; QA did not replay either calculation."
+  },
+  "claim_boundary_review": {
+    "accepted": "Diagnostic attribution is complete: the frozen capture supplies the rank-refusal operands and the independent correctness review attributes the exact rank-19 natural linearization.",
+    "not_accepted": "G4 physical acceptance remains HOLD. The physical test failed as expected, and the evidence does not establish a nonlinear root, every directional tangent, or permission for a numerical workaround or second capture.",
+    "documentation_alignment": "The current package top labels the result a physical FAIL and diagnostic completion, preserves target/native/G2/G3/G6 holds, and states the unresolved authority decision without presenting it as an implemented fix."
+  },
+  "nonblocking_follow_up": [
+    "The general observer's cached face-radius behavior is documented as reliable for this successfully prepared first G4 face only; any broader reuse requires a fresh review."
+  ],
+  "ledger_review": {
+    "receipt": "g4-rank-final-ledger.json",
+    "cumulative_charged_seconds": "414465.393795",
+    "unused_ceiling_seconds": "3681.000000",
+    "closing_reservation_seconds": 1800,
+    "covered_through_utc": "2026-09-29T17:25:25+00:00",
+    "fixed_hard_deadline_utc": "2026-09-29T18:26:46+00:00",
+    "recorder_bound_check": "g4-rank-recorder-bound-check.json: PASS"
+  },
+  "qa_verdict": "PASS for the bounded diagnostic disposition and publication: custody, one-execution limit, extraction correspondence, claim boundaries, and preservation evidence are complete. This QA PASS does not convert the original G4 physical FAIL into an accepted result."
+}

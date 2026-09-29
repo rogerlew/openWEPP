@@ -1,0 +1,47 @@
+{
+  "schema": "openwepp.cold-canopy-m1.g4-rank.qa-readiness.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static review of supplied Ran receipts; QA performed no build, test, calculator, or physical execution.",
+  "frozen_identity": {
+    "source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "entry_count": 764,
+    "release_binary": "/tmp/openwepp-cold-canopy-m1-g4-rank-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "release_binary_sha256": "ae22132f99bb85a44d0c4037f752a80ef6bdbc3f26a5e532409f89feb70f36c0",
+    "inventory": "g4-rank-release-inventory01.stdout",
+    "inventory_count": 394,
+    "recovery": "g4-rank-terminal-recovery.json",
+    "recovery_archive_sha256": "1e7395de7e8aece4b985aed3677a335ad3f1f7219e5ab134133b98b5086c5aad",
+    "recovery_all_entry_hashes_equal": true,
+    "recovery_archive_all_bytes_equal": true
+  },
+  "qa_findings": [],
+  "quality_receipts": {
+    "format": "g4-rank-format04.json: exit 0 on both observer-touched Rust files",
+    "debug_controls": "g4-rank-controls-debug04.json: exit 0; selected observer/scope and retained controller controls",
+    "release_controls": "g4-rank-controls-release04.json: exit 0; 61 passed, 333 skipped from the 394-test all-feature inventory",
+    "default_check": "g4-rank-default-check01.json: exit 0",
+    "strict_lint": "g4-rank-qa-lint-reconciliation01.json: no introduced diagnostics across combined (238), analytic (262), and all-feature (238) source-bearing comparisons; pre-existing lint debt remains exit 101 and is not waived"
+  },
+  "observer_api_and_gate_review": {
+    "source_scope": [
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+    ],
+    "gate": "Observer capture, helper API, and serialization are cfg(all(test, feature = m1-trust-region-physical-stage)); capture scope restores prior nested state and the focused controls exercise opt-in/error-preserving behavior.",
+    "maintainability_verdict": "No material QA maintainability, API-surface, naming, or fixture-provenance finding at this frozen cut. The observer remains crate-private and physical-stage/test-gated."
+  },
+  "physical_plan_review": {
+    "plan": "g4-rank-capture-plan01.json",
+    "selector": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+    "expected_selected_case_count": 1,
+    "maximum_physical_executions": 1,
+    "maximum_seconds": 180,
+    "inputs": {
+      "original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+      "radiation-reference-m1.json": "b92985388719f4a59406c2b8f3a5e03d3af2a2f35c99617926c20aeed284b47e"
+    },
+    "paired_controls": "G5 positive natural-model and retained stage-2/tie-operand controls are named; no G2, G3, G6, native harness, target, or refund execution is authorized.",
+    "custody": "Plan binds the frozen source, new release binary, inventory, prior preserved binary identity, exact input hashes, one selector, no retry, and the fixed start-ledger deadline/reserve."
+  },
+  "readiness_verdict": "QA READY for the single planned observer-only G4 execution, conditional on independent correctness readiness and the pre-dispatch recorder/source/binary/input identity check. This is not a physical result, acceptance, numerical conclusion, or permission for any additional case."
+}

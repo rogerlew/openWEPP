@@ -1,0 +1,7 @@
+{
+  "evidence_class": "Ran: formatting preparation only",
+  "exit_code": 1,
+  "failure": "stage1.rs:3537 missing closing parenthesis in observation cfg(not(all(...)))",
+  "physical_execution": false,
+  "action": "Same writer one-character correction and formatter verification assigned."
+}

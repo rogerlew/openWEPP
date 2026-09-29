@@ -1,0 +1,86 @@
+{
+  "evidence_class": "Static: prospective single-capture plan; not execution or acceptance",
+  "source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+  "source_manifest": "g4-rank-controls-release04-source.json",
+  "inventory": "g4-rank-release-inventory01.stdout",
+  "inventory_count": 394,
+  "binary": "/tmp/openwepp-cold-canopy-m1-g4-rank-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+  "binary_sha256": "ae22132f99bb85a44d0c4037f752a80ef6bdbc3f26a5e532409f89feb70f36c0",
+  "prior_preserved_binary": "/tmp/openwepp-cold-canopy-m1-interface-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+  "prior_preserved_binary_sha256": "2fda6ef922a345ad3a780ef9c7b5fb144445b899bbbd804e4af07dccebaf2118",
+  "input_files": {
+    "original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+    "radiation-reference-m1.json": "b92985388719f4a59406c2b8f3a5e03d3af2a2f35c99617926c20aeed284b47e"
+  },
+  "cases": [
+    {
+      "group": "g4",
+      "selector": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+      "expected_selected_case_count": 1,
+      "input_lineage": "Original fixture; clone unchanged trial then upper M=canonical zero-direction capacity, H=+0,D=+0; no other change.",
+      "paired_controls": "G5 positive natural model and m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1; exact tie operand assertions.",
+      "argv": [
+        "nix",
+        "develop",
+        "/workdir/openWEPP",
+        "--command",
+        "env",
+        "CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-g4-rank-target",
+        "CARGO_BUILD_JOBS=2",
+        "cargo",
+        "nextest",
+        "run",
+        "--release",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--lib",
+        "--features",
+        "m1-trust-region-controller-stage,m1-trust-region-analytic-stage,m1-trust-region-physical-stage",
+        "-E",
+        "test(=m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model)",
+        "--no-fail-fast",
+        "--success-output",
+        "immediate",
+        "--failure-output",
+        "immediate"
+      ],
+      "purpose": "One observation-only capture of the original first natural-tangent rank refusal; expected original assertion FAIL; no retry even if incomplete."
+    }
+  ],
+  "expected_selected_count": 1,
+  "maximum_physical_executions": 1,
+  "maximum_seconds": 180,
+  "expected_observed_refusal": "SubproblemRankDeficient, Stage1 calls 1, entered SVD 1, Jacobi sweeps 7; selected/probe/refinement/materialization zero",
+  "qualification_receipts": [
+    "g4-rank-controls-debug04.json",
+    "g4-rank-controls-release04.json",
+    "g4-rank-format04.json",
+    "g4-rank-default-check01.json",
+    "g4-rank-qa-lint-reconciliation01.json"
+  ],
+  "required_clearances": [
+    "g4-rank-correctness-readiness01.json",
+    "g4-rank-qa-readiness01.json"
+  ],
+  "offline_reference_plan": {
+    "precisions_decimal_digits": [
+      80,
+      160
+    ],
+    "each_command_maximum_seconds": 300,
+    "author_script": "g4-rank-reference.py",
+    "reviewer_script": "g4-rank-correctness-reference.py",
+    "matrix": "Captured binary64 weighted matrix only; exact rational certificates and direct high-precision SVD; no reference direction enters runtime"
+  },
+  "holds": [
+    "G4 physical acceptance",
+    "G2",
+    "G3 physical",
+    "five G6 physical-owner cases",
+    "G1/G5 replay",
+    "native harness",
+    "all target slots",
+    "M1 acceptance"
+  ],
+  "budget": "g4-rank-start-ledger.json; work cutoff 17:56:46 UTC; hard deadline 18:26:46 UTC; no new allowance"
+}

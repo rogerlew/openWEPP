@@ -1,5 +1,158 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## G4 natural-tangent rank attribution — adopted 2026-09-29
+
+**Diagnostic COMPLETE. G4 physical FAIL and overall M1 HOLD remain unchanged.** The actual stored raw
+Jacobian and weighted 21×21 matrix both have exact rank **19**. Upper shaded-leaf
+and stem temperature columns (zero-based 1 and 2) are exactly zero. This is an
+exact dependence at the frozen fully wet natural tangent, not a marginal cutoff
+failure or evidence of inaccurate Jacobi factorization.
+
+Owner adopted [the G4 attribution authorization](artifacts/g4-rank-authorization.md)
+at main `61fde94ca77df8a0adcdbfd7f078d47f0fdd3e38`. Starting detached source
+`858c5389…` (764 entries), release `2fda6ef9…`, and recovery archive `c0b45795…`
+were verified before edits; no recovery overlay was needed. Retained original G4
+outputs contained chronology/refusal but no matrix or spectrum. One indispensable
+observer-only capture was therefore prepared, with fixed source-level predicates,
+unchanged tie preparation, and distinct correctness/QA prelaunch clearances.
+No G1/G5 replay, other physical case, new solver, or target slot was released.
+
+[The fixed resumed ledger](artifacts/g4-rank-start-ledger.json) carries
+410240.393795 charged seconds under the unchanged 418146.393795-second ceiling.
+The 7906-second balance includes the existing 1800-second closing reserve.
+Initial-reading anchor 16:15:00 UTC fixes work cutoff 17:56:46 UTC and hard deadline
+18:26:46 UTC. No prior charge or wait is refunded and no new time is granted.
+Root owns sequencing/custody; one implementer authored the observer and offline
+calculator; the existing distinct correctness and QA reviewers own their reviews.
+
+Intent and validation were declared before edits: private observation only,
+copying reached natural assembly and rank-refusal operands without additional
+physics/Jacobian/probe/SVD/solver evaluation. Focused opt-in/restoration/refusal
+controls, exact-feature inventory, format/default checks, and source-bearing
+no-new lint were selected; unrelated accepted science evidence is reused.
+A0/A1/A3 and broad physical/campaign obligations remain intact, not discharged
+by this diagnostic. No authority, numerical method, input, seed, threshold,
+production/default dispatch, public API, or Cargo dependency was changed.
+Offline-only mpmath 1.3.0 and SymPy 1.14.0 were installed in ignored `.venv`.
+
+Ran: [one release G4 capture](artifacts/g4-rank-physical-capture01.json), with the
+[reviewed exact-selector plan](artifacts/g4-rank-capture-plan01.json), returned the
+original assertion failure: 1 test failed, 393 skipped, exit 100. This is the
+expected physical FAIL, not a test PASS. [Extraction/correspondence evidence](artifacts/g4-rank-capture-extraction01.json)
+retains exactly one [raw capture](artifacts/g4-rank-capture.json); all 13 fields
+shared with the preserved G4 record match. Input/trial remain unchanged. Work is
+one natural assembly, one Stage1 call, one factorization, seven Jacobi sweeps,
+260 rotations and 1470 pair visits, with no rotations in the final complete sweep.
+Selected assemblies/probes, refinement, domain checks, installation and
+materialization are absent. All 21 coordinates are free, active masks are false,
+scaled step is zero, radius is 1; both drainage columns remain present.
+Sorting, multiplier, refinement and proposal are unreached. The capture allowance
+is consumed: no second capture occurred or is authorized.
+
+Ran: the [author reference](artifacts/g4-rank-author-reference01.json) and
+[reviewer-owned independent reference](artifacts/g4-rank-correctness-reference01.json)
+each completed within its prospective 300-second bound, using only captured bits.
+The [author output](artifacts/g4-rank-author-reference.json) gives exact rational
+raw/weighted ranks and nullspaces. The [independent output](artifacts/g4-rank-correctness-reference01.stdout)
+establishes the same rank using exact null relations and three nonzero 19×19
+modular-minor certificates, plus separately authored direct 80/160-digit SVD.
+Neither calculator forms binary64 normal equations or supplies a runtime direction.
+
+| Spectrum quantity | Runtime at refusal | Direct 160-digit reference (rounded here) |
+| --- | ---: | ---: |
+| Largest singular value | 42191528160.8599167 | 42191528160.8599059 |
+| Smallest nonzero singular value | 573552.722867430304 | 573552.722867430590 |
+| Two null singular values | 0, 0 | ~1.0581e-152, 0 |
+| Actual rank threshold, `2^-40 * max` | 0.03837297132200539 | unchanged runtime rule |
+| Minimum/maximum ratio | 0 | 0 |
+
+The full spectra, row/column norms and vectors are retained in both outputs.
+The 80-digit reference's spurious null value (~2.2463e-73) decreases to
+~1.0581e-152 at 160 digits; exact certificates establish both true zeros.
+All 19 nonzero singular values are stable; the largest runtime relative discrepancy
+is 1.352e-15. The smallest nonzero/max ratio is 1.3594e-5, far above 2^-40.
+Copied-factor checks give max `|B-A*V|` 6.783e-6 on a ~4.22e10 matrix scale and
+max `|VᵀV-I|` 2.321e-15. Jacobi arithmetic is not the cause of this refusal.
+
+Ran: all normalizers and coordinate scales are finite and positive. Replaying
+only the recorded arithmetic order (`weight=1/normalizer`, `(weight*Jraw)*S`,
+`weight*Rraw`) reproduces every weighted matrix and residual bit. Raw and weighted
+ranks agree at 19. There are no zero rows; columns 1 and 2 are the only zero
+columns and coincide. Rows 1, 2 and 5 are exactly proportional, each supported
+only on upper mass column 3. Thus the rank loss is already in the natural raw
+assembly; scaling neither creates it nor repairs it.
+
+Static source/algebra attribution, corroborated by captured operands: canonical
+[SC-VEGETATION-001](../../specifications/science-contracts/contracts/SC-VEGETATION-001.md)
+uses `fwet=min(1,(M/Cliq)^(2/3))`. G4 sets upper `M=Cliq`, `H=+0`, `D=+0`;
+its recorded zero-direction selection is Liquid/Capacity and wet fraction is
+exactly 1. In recovered `solver_covered_evaluation/m1_coupled.rs`,
+`capacity_and_wet` and the dry energy/emission/longwave branches multiply dry
+contributions by `1-fwet`. Upper shade/stem structural areas are positive, so
+those temperatures receive no inactive-component anchor. Their perturbations
+cannot affect these residuals at the captured fixed mass: columns 1 and 2 vanish.
+Upper sun area is exactly zero and row 0 has its canonical temperature anchor,
+so column 0 remains identified. This refines the pre-capture hypothesis, which
+had not yet distinguished the zero-area sun branch.
+
+The centered mass stencil crosses the wet-fraction join on its lower side,
+leaving dry energy rows 1/2 supported only on M. The natural exact-tie capacity
+row 5 has `dRcap/dM=-1` and all other entries zero. Two independent exact left
+relations therefore involve upper shade energy, stem energy and capacity closure.
+Both project to **exactly zero** against the captured weighted residual. Right
+null directions are the two unit coordinate vectors for upper shade/stem
+temperature; multiplication by S leaves them as the corresponding 1 K physical
+coordinate directions. This is non-identification in this linearization, not
+proof of nonlinear infeasibility. Finite-difference matrix rank is not claimed
+as the exact rank of every mathematical derivative or admissible phase tangent.
+
+The obstruction precedes side selection: the canonical
+[numerical-methods contract](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md)
+(blob `26600e22ae80c470246a56b20e9140ed1d9ce20c`) requires a full natural-tangent
+predictor before using its direction to select phase/capacity sides. At this
+fully wet tie the full-rank prerequisite fails before that direction exists.
+The smallest supported next decision is an explicit authority resolution of
+fully wet positive-area dry-temperature non-identification in that natural
+predictor: define an authoritative inactive-coordinate closure or a rank-capable
+predictor/tie policy. This diagnostic selects neither implementation. It does not
+authorize clipping, pseudoinverse, damping, coordinate removal, a different side,
+a changed cutoff, seed perturbation, or any further physical solve.
+
+Final private source is `2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6`
+(764 entries), release executable `ae22132f99bb85a44d0c4037f752a80ef6bdbc3f26a5e532409f89feb70f36c0`.
+Ran: final debug/release controls 61/61, inventory 394 (prior 392 plus two observer
+controls), touched format and default library checks PASS. [Independent lint reconciliation](artifacts/g4-rank-qa-lint-reconciliation01.json)
+finds zero introduced diagnostics against 238/262/238 inherited populations;
+strict lint remains exit 101. No suppression or numerical-loop extraction was used.
+Earlier formatter, compiler and lint failures remain retained; internal
+reassessments after two unsuccessful corrections continued only bounded recording
+fixes because controls passed and sufficient fixed budget remained. No physical
+allowance was consumed during preparation.
+
+[Correctness readiness](artifacts/g4-rank-correctness-readiness01.json) and
+[QA readiness](artifacts/g4-rank-qa-readiness01.json) bind the source, executable,
+inputs, selector, single-run limit and full bound. The general observer's cached
+face radius may be stale for a different later prepare-face failure topology;
+G4's first face has a successfully prepared, exact recorded radius. Any broader
+reuse requires review. [Recovery](artifacts/g4-rank-terminal-recovery.json) verifies
+a fresh reconstruction and all archive bytes, archive SHA-256
+`1e7395de7e8aece4b985aed3677a335ad3f1f7219e5ab134133b98b5086c5aad`.
+Main Rust and both unrelated dirty files remain unchanged. G1/G5 positives and
+all eight callable groups are preserved. G2, five G6 physical-owner cases, G3
+physical witnesses, native harness, all target slots, broader conservation/
+restart/cycle/scale evidence and M1 acceptance remain HOLD.
+
+[Terminal independent correctness](artifacts/g4-rank-correctness-terminal01.json)
+accepts the causal attribution and records the structural rank loss as a physical
+acceptance blocker. [Terminal QA](artifacts/g4-rank-qa-terminal01.json) passes
+custody, single-capture limits, claim boundaries and preservation for publication.
+[Final ledger](artifacts/g4-rank-final-ledger.json) charges 414465.393795 seconds,
+including the full conservative closing allocation, leaving 3681 seconds below
+the unchanged ceiling; coverage extends through 17:25:25 UTC without refund.
+Unused time does not authorize more physical execution or a numerical correction.
+Exact source and reviewed evidence are locally preserved; scoped publication is
+being completed on authorized main.
+
 ## Interface and private harness continuation — adopted 2026-09-29
 
 **Disposition: PARTIAL — terminal numerical HOLD.** G1/G5 physical PASS; G4
