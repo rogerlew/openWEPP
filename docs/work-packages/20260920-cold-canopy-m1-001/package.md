@@ -311,8 +311,14 @@ on authorized main; unrelated dirty/untracked work is excluded.
 
 Publication check: authored package/recorder/JSON diff whitespace checks PASS. The
 whole staged diff reports whitespace carried literally inside generated recovery
-patch payloads; those immutable evidence bytes are preserved rather than reformatted.
+patch payloads and captured lint logs; those immutable evidence bytes are preserved rather than reformatted.
 No source/test/physical command was repeated for this packaging check.
+
+Published scoped payload [`d42f337fe63005ded6bfc83e06dbd4559f2bf77f`](https://github.com/rogerlew/openWEPP/commit/d42f337fe63005ded6bfc83e06dbd4559f2bf77f)
+to authorized main and verified the remote head directly. The
+[publication receipt](artifacts/interface-harness-publication01.json) records source,
+archive, unchanged unrelated-file hashes and the terminal HOLD. Publication adds no
+numerical execution and remains covered by the conservative closing charge.
 
 ## BVLS-04 independence resumption — adopted 2026-09-29
 

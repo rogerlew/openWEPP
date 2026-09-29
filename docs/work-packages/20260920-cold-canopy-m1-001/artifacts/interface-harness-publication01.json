@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Ran: scoped commit, push, direct remote-head verification",
+  "payload_commit": "d42f337fe63005ded6bfc83e06dbd4559f2bf77f",
+  "remote": "origin",
+  "branch": "main",
+  "verified_remote_head": "d42f337fe63005ded6bfc83e06dbd4559f2bf77f",
+  "verified_utc": "2026-09-29T12:51:31.120977+00:00",
+  "scope": "Package/evidence, deadline-only recorder change and exact detached recovery; no main Rust adoption",
+  "source_tree_sha256": "858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85",
+  "archive_sha256": "c0b45795bf93cd3ada97b8f5b6ec8f5c5c494a8185816a2f01dea09bc7500d17",
+  "final_ledger": "interface-harness-final-ledger.json",
+  "unrelated_dirty_files": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  },
+  "physical_disposition": "G1/G5 PASS; G4 source-conforming RankDeficient, terminal numerical HOLD; no retry or target execution",
+  "literal_evidence_whitespace": "1188 generated patch and119 captured stderr whitespace diagnostics retained byte-for-byte; authored package/recorder/JSON check PASS"
+}
