@@ -1,5 +1,46 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Owner priority — practical runtime, reaffirmed 2026-09-29
+
+**Correctness alone is insufficient: a model that cannot meet the adopted
+runtime budget is undeployable.** The owner explicitly rejected continued
+solver elaboration that loses sight of previously discussed runtime targets.
+This direction must survive handoffs and context resets. Do not ask the owner
+to set the targets again or treat them as optional end-of-project checks.
+
+Existing fixed M1 slice ceilings, surfaced from this package's retained scope:
+
+| Completed workload | CPU ceiling per OFE-day |
+| --- | --- |
+| Stable cold | 750 microseconds |
+| Mixed phase | 1.5 milliseconds |
+| Transition | 2.5 milliseconds |
+
+Retain the existing map-count, scaling, memory and warm CPU/wall regression
+screens below. These slice CPU ceilings are not whole-model wall-time targets.
+The owner's current scale concern is a 100-year, five-OFE run, with roughly
+100x improvement requested over the discussed G4 cost. The earlier 16.6-minute
+projection assumes one proposal/OFE-day; it is neither a completed-run timing
+nor an adopted runtime target. Do not turn its roughly 10-second, 100x-scaled
+value into a new owner-approved ceiling. Recover any prior whole-run target
+from its actual record before using it; do not invent one.
+
+Current evidence: G4 proposal wall 5.463608 ms plus initialization 0.160638 ms;
+instrumentation included, CPU unresolved, no complete nonlinear solve or
+completed OFE-day denominator. Therefore deployment feasibility is **UNPROVEN**;
+the proposal wall figure cannot be divided by the slice CPU ceilings to claim
+a measured overrun ratio. Numerical/control checkpoint acceptance below does
+not establish deployability.
+
+For subsequent performance-relevant work, lead decisions and handoffs with the
+existing target, comparable cost evidence (or explicitly missing evidence),
+remaining gap and bounded next action to close it. Do not continue accumulating
+solver complexity while leaving feasibility indefinitely deferred. A missed
+budget requires cost reduction or an explicit model/architecture decision,
+not a correctness-only success claim or an unapproved tolerance relaxation.
+This records owner direction; it does not reopen stopped native work, renew
+run/time allowances, change scientific predicates or authorize new execution.
+
 ## Fully wet structural null directions — BVLS-05 adopted 2026-09-29
 
 Current accepted checkpoint: the fully wet structural-null policy and private

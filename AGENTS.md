@@ -25,6 +25,16 @@
 
 ## Core Directives
 - `??` means critical analysis only; no implementation.
+- **Owner direction: deployable speed is a prerequisite, not later polish.**
+  A numerically correct model that misses the adopted runtime budget is not an
+  acceptable deployable result. Recover existing targets before proposing work;
+  never ask the owner to restate recorded targets or silently replace them.
+  Keep target, measured/estimated cost, evidence limits and remaining gap at the
+  front of the active package and in performance-relevant handoffs. When cost
+  misses the budget or feasibility is unestablished, prioritize bounded cost
+  reduction/feasibility work over further solver elaboration; do not indefinitely
+  defer performance behind correctness. Preserve scientific acceptance and
+  distinguish CPU, wall time, proposal, completed OFE-day and whole-run costs.
 - Work within authorized packages or user-directed follow-on scope; see
   docs/work-packages/AGENTS.md for execution, independent closure and handoff.
 - Keep one maintained `package.md` per work-package. The common guide owns
