@@ -1,0 +1,56 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-policy.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static policy/control review before Rust body work. No Rust, numerical, calculator, or physical command was run by QA.",
+  "reviewed_custody": {
+    "starting_main": "d7ad407e956e3ecea716db6744f4fd2bbe14ed61",
+    "detached_source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "detached_source_entries": 764,
+    "authorization": {
+      "path": "/tmp/openwepp_cold_canopy_m1_fully_wet_null_direction_authorization.md",
+      "sha256": "7846b291f3aae59156745d15416d1804d2c26871a615993208a04004f4bdd32e"
+    },
+    "package": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+      "sha256": "ef463d61164c49693b3854cb847c466e87125a134e07e7471461c75188a58d04"
+    },
+    "numerical_authority": {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "section": "COLD-CANOPY-M1-TR-SVD-BVLS-05 fully-wet structural-null-direction amendment",
+      "sha256": "a72b645379ef633f7687af96769d19990db73a4eefc297455930dad4201a9658"
+    },
+    "vegetation_cross_reference": {
+      "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "section": "BVLS-05 fully-wet structural-null numerical cross-reference and 2026-09-29 v38 change-log entry",
+      "sha256": "4ec67053fdd41db0f1bf23f84b647f0ffa7a9e21add8bb6b95da7ddfa1458f65"
+    },
+    "control_plan": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan01.json",
+      "sha256": "7421486fdbb632b6b915ba9ed2e15d9d0bab62414fb68e19916a645e0bdf0a09"
+    }
+  },
+  "findings": [],
+  "control_quality_review": {
+    "runnable_expected_red": "BVLS05-C10 is pre-body, data-only, formula-derived, and expressly requires behavioral failure of the unchanged numerical body rather than a compile/missing-symbol failure or a fabricated terminal stub. It cannot consume the sole G4 physical endpoint.",
+    "finite_non_target_cases": "C01--C09 form a finite declared set. Actual nonphysical assembly cases cover the retained G4 full-wet positive-area case, partial wetness, and the separate structural-zero-area anchor; analytic guards cover nonzero/unexpected zero columns, nonfinite scaling, active bounds, and retained-column dependency. No broad filter or stopped physical endpoint is embedded.",
+    "discriminating_acceptance": "C01/C02 require full 21 rows and f, retained original index 19, drainage/capacity retention, positive-zero held increments, base-bit reconstruction, and full KKT/root/error/work consumer reachability. C05/C06 retain ordinary refusal for ineligible or remaining rank loss; C08 requires bit-identical empty-mask BVLS03/04 routing; C09 forbids added work.",
+    "mask_lifecycle": "C07 explicitly distinguishes natural and selected derivation, identical-assembly radius reuse, fresh base/J derivation, and dry-area reactivation. The amendment separately preserves full physical trial evaluation and does not treat held directions as physical bounds.",
+    "real_endpoint": "The only later result-bearing physical selector is the unchanged G4 phase/capacity-tie endpoint. A successful reduced factorization alone is expressly insufficient; real natural/selected assemblies, probes, drainage and full returned direction remain required."
+  },
+  "quality_and_confinement": {
+    "feature_scope": "The prospective treatment is isolated detached M1/test-control work; default/production dispatch and public API remain forbidden. The vegetation cross-reference keeps the physical dark-sun rule separate from this step-only representation.",
+    "source_custody": "No source body has been reviewed or accepted at this policy stage. New source must be exact-manifest-bound before controls/readiness and independently compared to the 2d67 starting tree.",
+    "lint_policy": "No no-new-lint result exists yet. After body edits, combined, analytic, and all-feature strict-lint populations require source-bearing reconciliation; inherited strict failures remain failures and no suppression is authorized.",
+    "required_before_endpoint": [
+      "dual independent review of the implemented authority/control behavior",
+      "reviewed expected-red and discriminating body controls",
+      "affected debug/release/all-feature inventory and validation receipts",
+      "format/default/feature checks and source-bearing lint reconciliation",
+      "source/binary/input/selector/count recorder preflight and renewed correctness/QA readiness"
+    ]
+  },
+  "nonblocking_follow_up": [
+    "Keep C05's active-bound rejection and C09's exact work/call-count assertions directly tied to their future source consumers; a constant or report-only mask would not satisfy either control."
+  ],
+  "disposition": "QA POLICY PASS: the adopted authority and frozen plan are sufficiently bounded and discriminating to release the controls-before-body stage only. This is not approval of Rust implementation, a numerical result, G4 acceptance, a lint result, or a physical run."
+}

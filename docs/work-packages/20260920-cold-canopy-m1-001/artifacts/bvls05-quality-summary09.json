@@ -1,0 +1,111 @@
+{
+  "evidence_class": "Ran: exact corrected source quality; no corrected physical run yet",
+  "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+  "checks": [
+    {
+      "receipt": "bvls05-quality-debug09.json",
+      "receipt_sha256": "dddf0b6472cece43befe4d5fe54ebe46d156ba65e4747bd5ee0d220037e1259b",
+      "exit_code": 0,
+      "elapsed_seconds": 16.57502149231732,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-release09.json",
+      "receipt_sha256": "c7c04fe02744d0f74d32e96518d9053b6b06615e8bdc8e587f563aa88889709b",
+      "exit_code": 0,
+      "elapsed_seconds": 92.16869608312845,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-analytic-only09.json",
+      "receipt_sha256": "a60a1ee23e1747860ea1b7283358a96b55475018c46a8532e889fd3227bf5664",
+      "exit_code": 0,
+      "elapsed_seconds": 4.080263589974493,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-release-inventory09.json",
+      "receipt_sha256": "8d46f08d31f1304e9b4ffb56dec1550ad88db40f21cbe802a4f4ef54fb3038eb",
+      "exit_code": 0,
+      "elapsed_seconds": 65.70984445372596,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-debug-inventory09.json",
+      "receipt_sha256": "9efca3756c84d5472c7fefd798665fd17a46efa2dc62bfe5ff3aa5b40e9e9b86",
+      "exit_code": 0,
+      "elapsed_seconds": 0.5688027408905327,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-analytic-inventory09.json",
+      "receipt_sha256": "e9d56972996bba3110b60bc2fa00cabd55a1dba07f7be484d424cc3e46cd8823",
+      "exit_code": 0,
+      "elapsed_seconds": 5.335406748112291,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-default09.json",
+      "receipt_sha256": "75b147370cc6d704b756363c01ddb5c379f0a46da809eca1d701b3183483a005",
+      "exit_code": 0,
+      "elapsed_seconds": 1.6704153842292726,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-format09.json",
+      "receipt_sha256": "98ba76cd0ce43de991460c54f35f0007e3036bb706ab18cb48199555dcb5c878",
+      "exit_code": 0,
+      "elapsed_seconds": 0.6683608489111066,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-all-lint09.json",
+      "receipt_sha256": "5d697a8d431f2135f0b0311f503944aa13917dfb6616840b3240cc2ffd52627f",
+      "exit_code": 101,
+      "elapsed_seconds": 11.360890737269074,
+      "disposition": "STRICT_FAIL_INHERITED_ONLY",
+      "comparison": "bvls05-quality-all-lint09-comparison02.json",
+      "baseline_count": 238,
+      "candidate_count": 238,
+      "matched_count": 238
+    },
+    {
+      "receipt": "bvls05-quality-combined-lint09.json",
+      "receipt_sha256": "5a9e85ae47c02ec6f2ba601e3421817e8b5b9f3f7986cfd43a0bc6cb5a1293bb",
+      "exit_code": 101,
+      "elapsed_seconds": 11.31391374906525,
+      "disposition": "STRICT_FAIL_INHERITED_ONLY",
+      "comparison": "bvls05-quality-combined-lint09-comparison02.json",
+      "baseline_count": 238,
+      "candidate_count": 238,
+      "matched_count": 238
+    },
+    {
+      "receipt": "bvls05-quality-analytic-lint09.json",
+      "receipt_sha256": "bc5666e07d72888c51526f4b316891553b86be94f8a3150e25aa04f728343e32",
+      "exit_code": 101,
+      "elapsed_seconds": 10.455326746217906,
+      "disposition": "STRICT_FAIL_INHERITED_ONLY",
+      "comparison": "bvls05-quality-analytic-lint09-comparison02.json",
+      "baseline_count": 262,
+      "candidate_count": 262,
+      "matched_count": 262
+    }
+  ],
+  "focused_pass_counts": {
+    "debug": 120,
+    "release": 120,
+    "analytic_only": 103
+  },
+  "old_body_empty_payload_exact_in_all_profiles": true,
+  "inventories": {
+    "debug": 409,
+    "release": 409,
+    "analytic": 359
+  },
+  "binary": "/tmp/openwepp-cold-canopy-m1-bvls05-g2-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+  "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+  "authority_and_unaffected_evidence_reuse": "bvls05-quality-summary08.json; only G2 observation wrapper/struct and additive assertions changed; no contract/build/feature/solver edits",
+  "source_delta": "bvls05-g2-fix09.json",
+  "recovery": "bvls05-terminal09-recovery.json"
+}

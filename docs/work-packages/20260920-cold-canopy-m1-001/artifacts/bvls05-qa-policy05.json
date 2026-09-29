@@ -1,0 +1,22 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-policy.v5",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static exact plan rebind only. QA ran no numerical, Rust, or physical command.",
+  "reviewed_custody": {
+    "prior_qa_policy04_sha256": "de43a105e5dd8e28e296126a8b7acda3b34202b68bf0dc4bb9ea442472c32803",
+    "plan05": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan05.json",
+    "plan05_sha256": "0697ddc894667648f3dc247cf3d2e1b2b4d6f993ef3b7e33f89243d9b792f6f3",
+    "numerical_methods_sha256": "a9a3caaeb7e68b03ae324540572fcb299e1f8467412fb199c9d6a167e818aba0",
+    "starting_source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6"
+  },
+  "findings": [],
+  "fix_verification": {
+    "rectangular_factor_fixture": "CLOSED. The fixture's matrix and factor declarations now both define B as the same embedded 21-by-19 identity-column matrix, eliminating the former ambiguous `B=I19` statement while retaining V=I19, 19 singular values, ordering, and original free IDs.",
+    "zero_bit_claim": "CLOSED. R06 now limits canonical +0-bit requirements to held coordinates; other retained zero bits are observed as produced by unchanged arithmetic, not newly canonicalized.",
+    "scope": "Other differences are JSON formatting and plan05 preservation/pointer custody. The L01 direction/selection clarification and all policy03 accepted constraints remain unchanged."
+  },
+  "nonblocking_follow_up": [
+    "Implementation review must still bind each declared selector and fixture assertion to the actual source consumers."
+  ],
+  "disposition": "QA POLICY REBIND PASS for controls-before-body only. This does not approve Rust implementation correctness, control execution, non-target assembly/trial execution, validation gates, the G4 endpoint, or M1 acceptance."
+}

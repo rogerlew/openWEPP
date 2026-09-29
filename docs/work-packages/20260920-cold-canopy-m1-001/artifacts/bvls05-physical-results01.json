@@ -1,0 +1,112 @@
+{
+  "evidence_class": "Ran: seven individually selected authentic release physical controls; assertions in frozen source",
+  "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+  "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+  "plan": "bvls05-physical-run-plan02.json",
+  "cases": [
+    {
+      "case": "BVLS05-A01",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_g4_full_wet_actual_assembly",
+      "receipt": "bvls05-physical-a01-01.json",
+      "receipt_sha256": "a7febcfb0cc9d0917ae50773393a7bc04041b08c44cd81e21469f701178b4bb5",
+      "stderr_sha256": "f2b93c3445436550c860eeee4f52ca0f601167c8400fa61e7136e5f6a146e968",
+      "exit_code": 0,
+      "tests_passed": 1,
+      "tests_skipped": 408,
+      "elapsed_command_seconds": 9.749904738273472,
+      "bound_seconds": 180,
+      "source_unchanged": true
+    },
+    {
+      "case": "BVLS05-A02",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_role_universe_actual_assembly",
+      "receipt": "bvls05-physical-a02-01.json",
+      "receipt_sha256": "a5b3058286251698bf16db872f9c4d8a37bffc09ab589efa69899d46dcdce322",
+      "stderr_sha256": "8800931a8323a2df091cdecbabb39f7f4ba8f5b29cb271cc15d705a486563689",
+      "exit_code": 0,
+      "tests_passed": 1,
+      "tests_skipped": 408,
+      "elapsed_command_seconds": 1.5704436381347477,
+      "bound_seconds": 180,
+      "source_unchanged": true
+    },
+    {
+      "case": "BVLS05-A03",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_partial_nearfull_actual_assembly",
+      "receipt": "bvls05-physical-a03-01.json",
+      "receipt_sha256": "cad116a2f40f48c67cd5ac44e447a76bbc565fabb3135316131bc26ecfe6f192",
+      "stderr_sha256": "eadb41106979f6473a708ef9b24ad1b9d21be09cf10323d6b53fee55705325a4",
+      "exit_code": 0,
+      "tests_passed": 1,
+      "tests_skipped": 408,
+      "elapsed_command_seconds": 0.6185511839576066,
+      "bound_seconds": 180,
+      "source_unchanged": true
+    },
+    {
+      "case": "BVLS05-A04",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_structural_zero_anchor_actual_assembly",
+      "receipt": "bvls05-physical-a04-01.json",
+      "receipt_sha256": "0df7634e44c164a84e985b12a111ad5d43f965c8b91ab5871e0ed545da413907",
+      "stderr_sha256": "7ee0a3cb9b2cfda6b9fe12e9cdabd5b0d116530759a69e027fc4fab4b37d119d",
+      "exit_code": 0,
+      "tests_passed": 1,
+      "tests_skipped": 408,
+      "elapsed_command_seconds": 0.6182660460472107,
+      "bound_seconds": 180,
+      "source_unchanged": true
+    },
+    {
+      "case": "BVLS05-L01",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_selected_retry_lifecycle",
+      "receipt": "bvls05-physical-l01-01.json",
+      "receipt_sha256": "54e0207c59228b79cd8801a8c89012f2257a708c6d440066dd1909d681709f42",
+      "stderr_sha256": "d57de0d0ca6b172243235265165cc01f61a48d48b73ec83f0727769fbf2bb8ec",
+      "exit_code": 0,
+      "tests_passed": 1,
+      "tests_skipped": 408,
+      "elapsed_command_seconds": 0.5683789411559701,
+      "bound_seconds": 180,
+      "source_unchanged": true
+    },
+    {
+      "case": "BVLS05-L02",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_full_to_dry_trial_recomputation",
+      "receipt": "bvls05-physical-l02-01.json",
+      "receipt_sha256": "ba528eb380d12f5436319d40d52f6309d76193ed739b9fa9c77b79f0b59e7a13",
+      "stderr_sha256": "65d5a74511f1a5fad9d2d58ed1abb3dd50fcccd015ed7de5f791fe2000ee88c9",
+      "exit_code": 0,
+      "tests_passed": 1,
+      "tests_skipped": 408,
+      "elapsed_command_seconds": 0.568242974113673,
+      "bound_seconds": 180,
+      "source_unchanged": true
+    },
+    {
+      "case": "BVLS05-L03",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_dry_to_full_trial_recomputation",
+      "receipt": "bvls05-physical-l03-01.json",
+      "receipt_sha256": "e84741cbd3c5af44f1e643c4306943d54b2e933f4b1420c0987a5a9aebb4a1cd",
+      "stderr_sha256": "00d13ebdf05504fe9e60deb2780baccd5510fceafaedfdc49ebf7d7ff30075cf",
+      "exit_code": 0,
+      "tests_passed": 1,
+      "tests_skipped": 408,
+      "elapsed_command_seconds": 0.5689730020239949,
+      "bound_seconds": 180,
+      "source_unchanged": true
+    }
+  ],
+  "result": "7/7 PASS; one planned run each; no retry or broad filter",
+  "claims": [
+    "Actual G4 canonical full-wet natural assembly retains all21rows and ordered19columns, heldexact1/2; both drainage columns retained",
+    "Bothoccupancy semanticroles/areas/wet fractions and completezero-column predicates asserted; partial/nearfull and structural-zero anchors excluded",
+    "Selectedassembly/newbasefresh masks and sameJretrywithoutrescan; frozenphysicalworkpairs andcounts asserted",
+    "Full-to-dry anddry-to-full candidates executeactualdomain/evaluator/full21residualrootpredicate; freshassemblies reactivate/certify correctly; no accepted-rootclaim"
+  ],
+  "not_executed": [
+    "G4",
+    "conditionalG2/G3/G6/nativeharness",
+    "target slots"
+  ],
+  "cost_caveat": "Command durations include launch/build/harness; these seven control timings are not proposal benchmarks"
+}

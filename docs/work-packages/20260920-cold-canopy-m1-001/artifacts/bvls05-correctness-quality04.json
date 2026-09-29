@@ -1,0 +1,104 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-quality-review.v1",
+  "reviewer": "interface_correctness",
+  "role": "independent numerical correctness reviewer",
+  "evidence_class": "Static review of the exact frozen quality04 source diff and recorded failed compile/lint receipts. The reviewer ran no Rust build, test, physical assembly, solver, replay, or G4 endpoint.",
+  "reviewed_identity": {
+    "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "source_tree_sha256": "bfa6cef8c07e66db13d814a8f157989d8bfb5d46b59cdf22b60856018eaca303",
+    "tree_entries": 764,
+    "manifest": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-quality04-source-diff.json",
+      "sha256": "c83f851ba1b50745603ffb4f35b49e64fc18f7beb1864f994d801a0e9d5cb0d0"
+    },
+    "patch": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-quality04-from-start.patch",
+      "sha256": "b254d4a3d5cfa69da7dde102c5aec40571aa6368e96b52069c446360d6f28635"
+    },
+    "changed_file_hashes": {
+      "crates/openwepp-land-surface-energy/src/lib.rs": "40b7539964698c6c354054be55d0f83709d9433fad8e92e545a932d752162f5b",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "965f3e9e8959fc24eca227fe1bdfde03cc05fdf32b571e0b33d9598e1ff2d8e1",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "7a66ad159b65995fd5478c4792ad7c38b87cadf1cb7c5a8633a89897a4695384",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs": "86d2e727becf3495cf5f82a0daf880c873e3dc3434fdf7cb1143a91a840c3493",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "0698393211b7cc93a1d73f7ef6f8098f8ab2dd65b6fcbbb8265c79e25a6c9afe",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "f3ed53d1c098013493ba2cda18bda106b5510c19de20a31eb3b903cb395a33fa"
+    }
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "id": "BVLS05-QUALITY04-TYPE-COMPILE-BLOCKERS",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5808",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:12236",
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:5418"
+      ],
+      "finding": "The exact all-feature source does not compile. refinement_observation_required_bits declares the first observation pair as Vec<u64> values although the producer and consumer use [u64; 21]. bvls05_fixed_active_certificate_and_partition declares M1TrustRegionBvls05Certificate but returns Bvls05CertificateObservation. The newly called m1_physical_budget_json remains private to m1_coupled_tests. The recorded debug receipt stops with one E0603 and four E0308 errors before any selected test executes.",
+      "required_fix": "Give the refinement helper an exact named return shape (or a concise type alias) containing ([u64; 21], [u64; 21]) and (Vec<u64>, Vec<u64>); return Bvls05CertificateObservation from the R03 helper; and expose the existing budget JSON projection with the narrow test/physical visibility already used by sibling observation helpers. These are type/visibility corrections only and must not change arithmetic, observation timing, or error propagation."
+    },
+    {
+      "severity": "HIGH",
+      "id": "BVLS05-QUALITY04-FEATURE-CFG-CLOSURE",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1186",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1146",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6397"
+      ],
+      "finding": "The analytic-only feature surface no longer compiles. The BVLS05 assembly-inspection type and controller inspection method are physical-test-only, while the selected-retry observation type, error adapter and lifecycle helper that name/call them remain cfg(test). owner_snapshot_before likewise names RefinementScratchGlobalSnapshot outside the feature gate that owns that type. The analytic lint receipt records the resulting missing-type/missing-method/missing-field errors and executes no linted target.",
+      "required_fix": "Apply cfg(all(test, feature = \"m1-trust-region-physical-stage\")) consistently to the physical inspection consumers and to owner_snapshot_before, including their initializers and assertions. Do not broaden production or analytic-only exposure and do not move the numerical owner."
+    },
+    {
+      "severity": "MEDIUM",
+      "id": "BVLS05-QUALITY04-G4-OWNER-WORK-MISPLACED",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2868",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2947"
+      ],
+      "finding": "The functional03 observation addendum is not closed. current_evaluations, natural_phase_selections, selected_side_probes, current_hydraulics, current-coordinate bits and budget_snapshot were inserted into the selected-side attribution wrapper, where current_hydraulics is now serialized twice. The G4 natural-tangent capture still lacks those fields. The existing controller G4_PROPOSAL_COST helper remains correct; this finding concerns placement and completeness of already available owner-work observations only.",
+      "required_fix": "Remove the accidental owner-work additions and duplicate key from the selected-side wrapper. After the existing timed G4 invocation, serialize the six required observations into the G4 record using the existing projections, leaving face_capture.bvls05_lifecycle as the sole lifecycle custody. Add no evaluator, Jacobian, factorization, rank calculation, retry, materialization, or numerical operation."
+    }
+  ],
+  "accepted_static_equivalence": [
+    "FaceMaskContext only groups the existing lower, upper, free and held references. prepare_face retains original loop order, free && !held eligibility, active-residual accumulation, guard precedence and arithmetic.",
+    "Passing the large raw assembly by reference into replace_assembly_for_bvls05 retains the same post-success copies and the same error-before-mutation boundary.",
+    "The helper extractions and iterator rewrites reviewed in quality04 preserve predicate and traversal semantics. The test-only exact-zero and partial_cmp assertions do not alter solver arithmetic; held +0 remains covered by its separate bit assertion.",
+    "No new solver algorithm, duplicated numerical source, fallback, evaluator call, raw-Jacobian assembly, factorization, phase selection, retry or materialization was found in the intended quality refactors."
+  ],
+  "recorded_evidence": {
+    "debug04": {
+      "receipt": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-quality-debug04.json",
+      "receipt_sha256": "519a85af27c53b4192c5a6551d4a8c443e0adbc23d9b9e8b6a682dcf6dc5f5c8",
+      "stderr_sha256": "88dda0da94903edc8f0ab4c8ec202a37c9fe0289999d9534ad552fa6b20f3e2c",
+      "result": "FAIL during compilation; zero tests executed."
+    },
+    "combined_lint04": {
+      "receipt_sha256": "1ce817c9d7bad63206c2f500a3e57078c3a5969cd80ae3e837dc747b92b41c8b",
+      "stderr_sha256": "6f0936a637f3953e229f8f3f5950704a9f163143c333e5d46a7d1e8b611bfb0a",
+      "result": "FAIL during compilation/lint; no usable quality pass."
+    },
+    "analytic_lint04": {
+      "receipt_sha256": "eebdfe4d73c2b5fb9d90a84658f40fb1e08dea5d07cb73d2d9ffbb41f5f7cac2",
+      "stderr_sha256": "df5bf198be52e2b2eeb3df1fc2f4d38c004954a7c736ecfb90207b43ab9ac5f1",
+      "result": "FAIL during compilation/lint; feature-isolation errors present."
+    },
+    "all_feature_lint04": {
+      "receipt_sha256": "a0971425bd73acfc20485dfdf7906e2f9023c5e603c0275521cf31578d1ded78",
+      "stderr_sha256": "6f0936a637f3953e229f8f3f5950704a9f163143c333e5d46a7d1e8b611bfb0a",
+      "result": "FAIL during compilation/lint; no usable quality pass."
+    }
+  },
+  "residual_risk_and_missing_tests": [
+    "No quality04 test or lint target reached execution because compilation failed. A corrected exact cut needs compilation, affected analytic controls, and the three declared feature lint surfaces before physical release.",
+    "All seven plan06 physical controls and the G4 endpoint remain unexecuted. Static review establishes neither physical outcomes nor endpoint convergence.",
+    "The accepted policy06, body01, controls04, physical-controls01, and functional03 findings remain reusable only where their bytes and reviewed seams are unchanged. The correction cut requires bounded same-reviewer verification of the listed fixes."
+  ],
+  "disposition": {
+    "quality04_numerical_refactors": "PASS_STATIC_EQUIVALENCE",
+    "quality04_source_correctness": "BLOCKED_BY_COMPILE_AND_OBSERVATION_FINDINGS",
+    "finite_seven_physical_execution_readiness": false,
+    "g4_endpoint_readiness": false,
+    "production_activation_release": false,
+    "correction_scope": "The three bounded findings may be corrected without reopening accepted policy or numerical design; same-reviewer fix verification is required on the exact corrected source.",
+    "status": "CHANGES_REQUIRED"
+  }
+}

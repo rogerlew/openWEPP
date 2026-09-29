@@ -1,0 +1,44 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-g4-readiness.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static review of frozen plans/source assertions plus inspection of supplied Ran physical receipts. QA ran no build, test, solver, physical assembly, endpoint, or calculation command.",
+  "findings": [],
+  "frozen_binding": {
+    "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+    "release_binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+    "release_inventory": "bvls05-quality-release-inventory08.json",
+    "recovery": "bvls05-terminal08-recovery.json",
+    "protected_g4_source": "bvls05-g4-protected-source08.json",
+    "protected_g4_result": "All seven protected fixture/preparation/assertion functions are recorded byte-identical to the original G4 source."
+  },
+  "seven_control_receipts": {
+    "index": "bvls05-physical-results01.json",
+    "result": "7/7 PASS, exactly one release exact-selector invocation per planned case, no retry or broad filter.",
+    "cases": [
+      "BVLS05-A01 / bvls05-physical-a01-01.json",
+      "BVLS05-A02 / bvls05-physical-a02-01.json",
+      "BVLS05-A03 / bvls05-physical-a03-01.json",
+      "BVLS05-A04 / bvls05-physical-a04-01.json",
+      "BVLS05-L01 / bvls05-physical-l01-01.json",
+      "BVLS05-L02 / bvls05-physical-l02-01.json",
+      "BVLS05-L03 / bvls05-physical-l03-01.json"
+    ],
+    "receipt_checks": "Every receipt has exit_code=0, timed_out=false, source_unchanged=true, binary_unchanged=true, exact planned -E test(=selector), one passed and 408 skipped. Its SHA-256 equals the corresponding index entry and its source/binary hashes equal the frozen binding.",
+    "claim_boundary": "The receipts demonstrate only their frozen assertions and first-run dispositions. Their command times include harness/build effects and make no proposal-speed, accepted-root, seasonal, watershed, or target qualification claim."
+  },
+  "g4_plan": {
+    "artifact": "bvls05-g4-plan02.json",
+    "plan_sha256": "11627fba8d6f11f2015caf0abc974cad71954d03eaa49194d9dfac6987e8575f",
+    "selector": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+    "membership": "Exactly one release-inventory member.",
+    "command": "One unchanged exact-selector release nextest invocation, 180-second bound, no retry/broad filter.",
+    "negative_handling": "A source-conforming numerical negative stops fixed effort; only an independently demonstrated implementation/recording deviation may justify corrected verification, retaining the first source/result."
+  },
+  "non_blocking_follow_up": [
+    "Keep result capture separate from timing and retain the explicit overlapping-counter caveat when publishing any later observations."
+  ],
+  "missing_evidence": [
+    "No G4 result exists yet; this review does not characterize its numerical endpoint."
+  ],
+  "disposition": "QA READY: the sole unchanged G4 command in bvls05-g4-plan02.json may proceed only with the separately required correctness readiness. It remains a one-run, 180-second, same-source/binary action; no subsequent conditional G2/G3/G6/native-harness/target dispatch is authorized by this artifact."
+}

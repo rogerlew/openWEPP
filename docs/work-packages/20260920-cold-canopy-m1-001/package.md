@@ -1,5 +1,440 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Fully wet structural null directions — BVLS-05 adopted 2026-09-29
+
+Current accepted checkpoint: the fully wet structural-null policy and private
+BVLS-05 body are implemented; all seven frozen non-target physical controls,
+the unchanged G4 endpoint, corrected G2 and all five G6 controls PASS.
+G4 ran once on cut08 `7e16f57a…` / release `b5b5a1e7…`; final accepted
+observation cut09 is `04465bc0…` / release `42388917…`. G2's original FAIL
+remains preserved and independently classified as an owner-counter reporting
+defect; only that private reporting join was corrected before one reviewed
+verification. All original fixture, poison and acceptance assertions remain.
+
+The policy holds only role-proven, positive-structural-area dry-temperature
+increments whose full raw and weighted columns are exact zero at canonical
+`fwet=1`. Physical G4 certifies held coordinates {1,2}, retains 19 columns and
+all 21 residual rows, both drainage columns and unchanged full-vector/root/KKT
+checks. Each actual natural/selected/new-base assembly renews eligibility;
+identical-J retries reuse it, and actual wet/dry trials retain every residual.
+No temperature anchor, physical equation, stencil, rank cutoff or fallback changed.
+
+[G4 evidence](artifacts/bvls05-g4-results01.json): proposal wall 5.463608ms,
+initialization 0.160638ms; process CPU unresolved below 10 ms. One natural and one
+selected assembly, both probes, 4 SVD factors, 2 pivots, 28 Jacobi sweeps and 2
+refinement entries. New work attempted/completed: 12 role joins, 504 column-entry
+checks, 84 mask joins and 4 held-base copies. Existing runtime counters around
+initialization plus proposal record 82 core entries, 0 hydraulic/materializer
+entries. This is phase-model/control evidence, not nonlinear root or scale
+qualification; initialization/build/observation timing and overlapping work
+categories stay separate in the raw evidence.
+
+[Quality09](artifacts/bvls05-quality-summary09.json): 120/120 focused debug and
+release, 103/103 analytic-only, exact old-body empty-mask payload parity,
+inventories 409/409/359 and format/default PASS. Strict lint remains FAIL with
+exact inherited 238/238/262 source-bearing matches and zero additions/removals.
+Same independent correctness/QA reviewers accepted policy, body, G4 readiness
+and results, G2 correction/results, and [five G6 results](artifacts/bvls05-conditional-g6-results01.json).
+The factor cap is seeded analytic actual-owner evidence; materialization uses
+canonical-baseline accepted core and independent closure, not a TR root claim.
+[Recovery09](artifacts/bvls05-terminal09-recovery.json) verifies all 764 source
+entries and archive bytes; cut08 and both actual release binaries also remain
+separately preserved. Main Rust and original target slots remain untouched.
+
+Terminal disposition: **PARTIAL — numerical/control checkpoint accepted;
+native implementation stopped for source integrity.** The first native compile
+(check10) is a stable FAIL. The writer then edited after declaring freeze11;
+[check11 is INVALID](artifacts/bvls05-native-integrity-incident01.json), because
+`lib.rs` and `solver_covered_evaluation.rs` changed during compilation. Its
+exit 101 is not a source-bound numerical or build result. No native solver or
+target executed, and no corrected rerun follows this stop. Root owns this
+orchestration failure; it does not affect the earlier immutable accepted evidence.
+
+The existing native diagnostic already captures complete prepared input and
+canonical seed before baseline policy. An earlier duplicate-capture draft was
+rejected and preserved; the replacement writer attempted a direct same-body
+facade. That unfinished closure is not an executable or accepted native harness.
+Before-check11 source `0354c6f7…` was independently reconstructed across all 764
+entries; after-check11 source `f4517b20…` was reconstructed and archived as
+[bvls05-native-terminal12-source.tar.gz](artifacts/bvls05-native-terminal12-source.tar.gz)
+(SHA256 `29252a46361e792e9c6be33dda43a1ee3418c3f15c2fc53fa95d553a7768330f`).
+[Preservation-only restoration](artifacts/bvls05-native-integrity-restoration01.json)
+returned the LIVE tree exactly to accepted cut09, all 764 hashes equal. The
+pending candidate remains separately recoverable; no draft code was silently
+promoted or lost. The candidate's Critical/source/feature qualification is
+NOT RUN and not waived; the restored accepted diff has no new feature exposure.
+
+Independent [correctness checkpoint review](artifacts/bvls05-correctness-terminal-checkpoint01.json)
+and [QA checkpoint review](artifacts/bvls05-qa-terminal-checkpoint01.json) accept
+only the bounded cut08/cut09 evidence. Final
+[correctness closure](artifacts/bvls05-correctness-terminal01.json) and
+[QA closure](artifacts/bvls05-qa-terminal01.json) accept scoped partial publication,
+including independent integrity-stop disposition and exact restored-source custody. G3 physical witnesses, the actual native treatment
+connection and all original target prefix/baseline/treatment/repeat slots remain
+HOLD/unspent. Full09/A1/A3, material/BGC, complete-parent/late-reject,
+cycle/restart, conservation and scale requirements remain unmet wherever
+previously held. There is no M1 acceptance, production Rust adoption or release.
+
+[Final ledger](artifacts/bvls05-final-ledger.json) charges 13278 new seconds,
+including all elapsed work/waits once and the full 1800-second closing allocation:
+**427743.393795 cumulative seconds**, with 1122 seconds below the fixed ceiling.
+Charged closing coverage ends 21:09:18 UTC; fixed work cutoff 20:58 and hard
+deadline 21:28 remain unchanged. No refund or old-balance addition. The unused
+allowance does not lift the integrity stop. Scoped publication of the reviewed
+contracts, package/evidence and exact accepted/pending recovery is authorized;
+remote verification remains the final closing action.
+
+### BVLS-05 execution history
+
+Current outcome: all seven non-target physical controls and the sole unchanged
+G4 endpoint PASS on terminal08 (`7e16f57a…`, release `b5b5a1e7…`), one planned
+run each with source/binary unchanged. [G4 actual evidence](artifacts/bvls05-g4-results01.json)
+records one natural and one selected assembly, both required probes, two fresh
+held-{1,2}/19-column certificates,4 SVDs,2 pivots,28 sweeps and2 refinement entries.
+Proposal wall5.463608ms; initialization0.160638ms; CPU unresolved below10ms.
+Runtime ledgers record82 actual core entries and0 hydraulic/materializer entries;
+G4 is a phase-model control, not nonlinear root/materialization or scale acceptance.
+The [previously unrun G2/five-G6 continuation](artifacts/bvls05-conditional-plan01.json)
+received both independent G4/results readiness reviews. First G2 execution FAIL
+is preserved: the actual predictor selected probe reached the intended
+`VEG-E-142/MhConsistency`, but the wrapper reported the later final-probe counter.
+[Correctness classification](artifacts/bvls05-correctness-g2-failure01.json) and
+[QA corrected classification](artifacts/bvls05-qa-g2-failure01-addendum01.json)
+independently establish a private observation-owner join defect, not a
+source-conforming numerical negative. A narrow correction is authorized with
+unchanged fixture, poison, assertions, method and precedence; exact fix review
+and affected quality precede one corrected G2 verification. Five G6 cases are
+NOT RUN. G3 physical/native harness and every original target slot remain
+separately gated; the fixed allowance continues. Terminal08 source and the actual
+G4 release executable are preserved before correction.
+
+Ran: the observation-only [G2 correction](artifacts/bvls05-g2-fix09.json) is
+frozen on cut09 `04465bc0…` with release binary `42388917…`. The
+[quality09 summary](artifacts/bvls05-quality-summary09.json) records120/120
+debug and release,103/103 analytic-only, inventories409/409/359, exact
+old-body empty-mask payload parity, format/default PASS and strict inherited
+lint FAIL with exact238/238/262 source-bearing matches, zero additions/removals.
+[Recovery09](artifacts/bvls05-terminal09-recovery.json) independently reconstructs
+all764 entries and verifies archive bytes. The existing G2 assertions are intact;
+additional predictor1/direct0 assertions expose owner identity. No fixture,
+poison, solver, feature or manifest changes. [Conditional plan02](artifacts/bvls05-conditional-plan02.json)
+requires exact fix readiness and then corrected G2 result review before G6.
+
+Ran: [corrected G2](artifacts/bvls05-conditional-g2-results01.json) PASS1/1,
+408 skipped,9.748604 seconds command elapsed, source and binary unchanged.
+Actual predictor probe entered1, final direct probe entered0, completed0; owning
+`VEG-E-142/MhConsistency`, all protected-state and no-materialization assertions
+pass. The original failed run remains FAIL evidence. Both independent
+[correctness](artifacts/bvls05-correctness-g2-fix01.json) and
+[QA](artifacts/bvls05-qa-g2-fix01.json) accepted the exact fix and readiness before
+this sole corrected verification. Five G6 cases still await result review.
+
+Ran: all [five G6 cases](artifacts/bvls05-conditional-g6-results01.json) PASS
+once each,408 skipped per command, unchanged cut09 source/binary. Core, raw-J,
+hydraulic and materialization controls reach actual physical-adapter owners;
+factorization is the declared seeded analytic Stage1 owner control. Materialization
+uses canonical-baseline accepted core with independent closure, then denies the
+second entry; it does not establish trust-region root acceptance.
+
+Next authorized scope: a bounded native-harness implementation attempt, preserving
+cut09 before any edits. The native provider already constructs the complete input;
+LSE has one canonical21-coordinate seed construction before Newton dispatch.
+Minimal internal feature wiring may make the same private TR body callable from
+a restricted diagnostic arm at that seed point. No JSON reconstruction, duplicate
+solver/seed, new dependency, public/default dispatch, physical run or target slot
+is authorized by this source-only step. The writer must declare the exact closure
+before edits and return compile-ready source or a concrete blocker by20:32 UTC.
+Unknown cross-owner/feature reachability is conservatively Critical until bounded
+by exact review; applicable full900-second qualification must entirely fit before
+20:58, and inherited-lint treatment cannot waive a Critical obligation. G3 has
+no frozen physical first-valid-replacement witness; source-only harness progress
+cannot substitute for that requirement or qualify a reserved target dispatch.
+
+Static: [correctness G6](artifacts/bvls05-correctness-g6-results01.json) and
+[QA G6](artifacts/bvls05-qa-g6-results01.json) accept all five actual results.
+The correctness review explicitly supports source-only native progression under
+the existing authorization. The [writer's dependency trace](artifacts/bvls05-native-intent01-addendum01.json)
+corrects its earlier gate-count feasibility shorthand:193 textual gates are not
+a proven minimal edit set or a permission blocker. Root continues a targeted
+private compilation-closure attempt, with test fixture/poison/analytic controls
+excluded and a separate harness feature that does not activate physical-stage
+test selectors through dependency feature unification. Existing baseline ordinal
+diagnostic behavior stays unchanged; treatment is a distinct explicit opt-in.
+
+Owner adopted [the BVLS-05 authorization](artifacts/bvls05-authorization.md).
+Objective: prospectively amend and independently review the assembly-owned
+structural null-direction policy, implement its confined private controls/body,
+and execute the unchanged real G4 phase/capacity endpoint once under that policy.
+A policy review or matrix PASS alone does not complete this implementation task.
+Prior BVLS-04 G4 FAIL and exact rank-19 attribution remain historical evidence.
+Only after G4 passes may the authorized unrun G2/G3/G6 and native-harness obligations
+continue; every target slot and main Rust adoption remain separately HOLD.
+
+Ran: starting main `d7ad407e956e3ecea716db6744f4fd2bbe14ed61`, all 764 detached
+entries/tree `2d67a9bb…`, release `ae22132f…`, archive `1e7395de…`, and capture
+`edfc1df6…` match their retained bytes. No recovery overlay or diagnostic rerun.
+[Fixed ledger](artifacts/bvls05-start-ledger.json) carries 414465.393795 seconds,
+adds only 14400 seconds and fixes ceiling 428865.393795 seconds. First-reading
+anchor 17:28:00 UTC fixes work cutoff 20:58:00 UTC and hard deadline 21:28:00 UTC,
+with 1800 seconds reserved for closure. Do not add the old 3681-second balance,
+refund conservative closing charges/waits, or re-anchor this interval.
+
+Permitted writes: scoped owning LSE numerical/vegetation authority and its
+necessary obligation/change-log joins; existing package/evidence/recorder;
+confined detached controller/adapter/Stage1/controls and observation. One writer
+owns detailed changes, distinct existing correctness/QA reviewers own acceptance.
+Contracts and discriminating controls precede body release. No main Rust,
+physical equation, finite-difference stencil, original G4 input/assertion, rank
+cutoff, solver arithmetic/fallback, dependency, or public/default dispatch change.
+
+Initial validation selection: authority/schema/reference checks; finite frozen
+analytic and necessary non-target assembly-control list; expected-red controls
+before body; affected debug/release/all-feature inventories and owning tests;
+format/default/feature checks and source-bearing inherited-lint reconciliation.
+The prospective no-new lint policy is confined to the isolated nonproduction arm;
+strict inherited failures remain failures. Actual reachability is assessed before
+body release: production/shared/unknown impact triggers conservative Critical
+full correctness requirements and the existing exact 900-second command exception.
+A0/A1/A3, unchanged conservation/root/guard predicates and independent reconstruction
+remain binding. No broad filter may incidentally replay a stopped physical case.
+Exact source/binary/inputs, complementary readiness and the full 180-second bound
+are required before the one BVLS-05 G4 endpoint. Source-conforming numerical
+negative ends this fixed effort; verified implementation/recording defects alone
+may receive affected corrections within the adopted limits.
+
+Current evidence at 19:30 UTC: all seven frozen non-target controls compile
+(inventory08:409 tests). Complete functional source `99bf7161…` passes all120
+focused analytic tests in debug and release; exact no-provenance old-body
+Debug/work payloads match in both profiles. Independent functional03 correctness
+and QA reviews accept the controls/body; correctness additionally requires existing
+owner-work fields in the post-timing G4 capture. Strict all-feature lint remains
+FAIL:238 inherited diagnostic instances match,24 owned findings require correction,
+and one extra instance repeats an unchanged inherited diagnostic. The single
+writer is resolving style/observation findings without predicate changes; no
+physical case or G4 has run. The [finite7 execution protocol](artifacts/bvls05-physical-run-plan01.json)
+requires final quality/source/binary custody and dual readiness before dispatch.
+Internal continuation is supported by actual120/120 debug/release evidence and
+bounded remaining fixes; the original fixed allowance and cutoff do not change.
+
+Ran: quality cut04 (`bfa6cef8…`) fails compilation before test execution.
+The lint-cleanup helper extraction introduced tuple/type mismatches and incomplete
+feature guards; the post-timing owner-work insertion also targeted the adjacent
+wrapper and called a still-private serializer. All failed source/logs are retained.
+These are bounded implementation defects, not a scientific negative or physical
+measurement. The same writer will correct exact mechanical findings and both
+reviewers will verify their own scopes before any physical execution.
+
+Internal reassessment after quality04/05 compilation corrections: quality05
+closed the other mechanical errors but two exact return-type/feature-attribute
+sites remained unchanged despite the writer's report. Root inspected those
+sites, reassigned the two concrete edits, verified the actual snippets, and
+restored one accidentally removed inherited hydraulic-report field. Continue
+within the same allowance on frozen quality06 `c80dd2d2…`: the remaining work is
+source-specific verification, not a revised method or physical retry. All prior
+failed cuts/logs remain preserved; no physical measurement has occurred.
+
+Ran: final observation cut08 `7e16f57a…` passes120/120 debug,
+120/120 release and103/103 analytic-only controls, exact old-body empty-mask
+Debug/work parity in all three profiles, default/format checks, and inventories
+409/409/359. All three strict lint runs remain inherited FAIL with exact
+source-bearing238/238/262 baseline matches and zero introduced or removed
+findings. Unchanged authority A0/schema/unit evidence is explicitly rebound in
+[the final quality summary](artifacts/bvls05-quality-summary08.json).
+The actual owner-work report now brackets the G4 controller using existing
+runtime counters; null budget/state fields are not misrepresented as counts.
+[Recovery08](artifacts/bvls05-terminal08-recovery.json) reconstructs and verifies
+all764 entries and archive bytes; [protected G4 source](artifacts/bvls05-g4-protected-source08.json)
+proves seven fixture/preparation/assertion functions byte-identical to the start.
+[Finite7 plan02](artifacts/bvls05-physical-run-plan02.json) and
+[G4 plan02](artifacts/bvls05-g4-plan02.json) bind exact release binary `b5b5a1e7…`
+and individual180-second commands. QA readiness08 accepts finite7; correctness
+readiness is pending. No physical run has occurred; G4 remains separately gated.
+
+Static: independent policy01 correctness review blocked face-mask semantics,
+role coverage, concrete cases, refinement/work evidence and authority metadata.
+The first corrected draft/plan02 closes several gaps, but policy02 review still
+requires one consistent face-mask lifetime, explicit analytic refinement
+operands, honest prescribed-trial wording and empty-mask accounting. All
+reviewed drafts and findings remain retained; no Rust body or physical run has
+started. Internal decision after two unsuccessful policy drafts: continue with
+the same writer and reviewer-owned verification, because the remaining defects
+are concrete bounded specification/control joins within the adopted scope.
+There is no new allowance, re-anchoring, owner prompt or physical retry.
+
+Static: [correctness policy05](artifacts/bvls05-correctness-policy05.json) and
+[QA policy05](artifacts/bvls05-qa-policy05.json) accept the exact
+[frozen plan05](artifacts/bvls05-control-plan05.json) (`0697ddc8…`) and canonical
+numerical amendment (`a9a3caae…`) for controls-scaffold authoring. All prior
+policy reviews/plans are retained. The final coordinating correction replaced
+two stale matrix/zero-sign strings; it changed no runtime source. Fifteen finite
+selectors distinguish eight analytic controls from seven necessary non-target
+physical assembly/trial controls and the separately gated real G4 endpoint.
+Stable assembly-held directions remain distinct from physical bounds; every
+face retains current physical-free coordinates minus the hold, all21 residuals
+and KKT coordinates, and independent dimensioned work counters. Root released
+only data/observation scaffolding and behavioral expected-red controls to the
+single detached writer. Exact scaffold review and actual red evidence precede
+numerical body release; physical commands remain gated.
+
+Ran: [scaffold inventory01](artifacts/bvls05-controls-inventory01.json) fails
+compilation on20 mechanical diagnostics in7.740983 seconds; no tests execute.
+[Source9eaf10b0…](artifacts/bvls05-controls01-source-diff.json) changes only private
+lib/Stage1 declarations, observations and controls; exact failed bytes/patch are
+retained. Missing test imports, ambiguous float arrays and `expect_err`'s Debug
+bound require correction. This is not expected-red evidence. Independent scaffold
+review also checks that R01 can accept a reached 19-column face without requiring
+the historical rank refusal after a correct implementation. Numerical body and
+all physical runs remain unreleased.
+
+Static: [correctness controls01](artifacts/bvls05-correctness-controls01.json)
+and [QA controls01](artifacts/bvls05-qa-controls01.json) block expected-red
+execution on concrete coverage defects. Accepted portions remain private cfg
+isolation, unchanged numerical bodies, dedicated additive counters and actual
+base-copy adapter. Corrections require true G4 preparation provenance; an
+outcome-independent first-face reduction check; actual fixed/active/KKT joins;
+unconfounded retained-rank and role guards; p0/p1/p2 factor-order custody; both
+empty-mask refinement routes; and exact work accounting. Internal decision:
+continue the same writer for one bounded consolidated correction with those
+source-level findings and compile diagnostics; another incomplete delivery
+triggers reassessment. No numerical body or physical command is released.
+
+Internal reassessment at18:14 UTC: the original writer corrected mechanical,
+provenance and several guard defects but again returned before completing the
+explicit R03/R05/R06/R07/W01 deliverable. Root preserves
+[partial controls02](artifacts/bvls05-controls-partial02-source-diff.json) and
+reassigns the sole source-writer role to a replacement implementer. The same
+independent reviewers retain fix ownership; no reviewer becomes author, no
+nested agent is used, and the fixed allowance/run limits remain unchanged.
+No test or physical execution has occurred.
+
+Static: [plan06](artifacts/bvls05-control-plan06.json) preserves all15 cases
+and operands from plan05 while correcting accounting occurrence units. Certificate
+role/column scans are bounded per actual Jacobian assembly; mask joins are bounded
+per face/state initialization and held-base copies per candidate reconstruction,
+including rejected proposals when entered. Identical-J retries reuse the admitted
+certificate but count repeated joins/copies. This prevents undercounting without
+raising any numerical cap. [Correctness policy06](artifacts/bvls05-correctness-policy06.json)
+and [QA policy06](artifacts/bvls05-qa-policy06.json) accept that bounded
+clarification. Control fixes and all execution/body gates remain open.
+
+Ran: [inventory02](artifacts/bvls05-controls-inventory02.json) fails13
+mechanical diagnostics in7.447914 seconds; no tests execute. Reviews
+[correctness02](artifacts/bvls05-correctness-controls02.json) and
+[QA02](artifacts/bvls05-qa-controls02.json) accept provenance/guard/rank fixes but
+retain five control gaps. Root took exclusive custody for small integration
+corrections: imports in the owning test module, explicit float type, removal of
+an unplanned ninth historical-fixture test, and outcome-independent first-face
+capture with chronology assertions. [Inventory03](artifacts/bvls05-controls-inventory03.json)
+then compiles402 tests, exactly8 BVLS05 controls, in15.024733 seconds. This is a
+compiler/inventory result, not expected-red execution; two unused observation
+fields remain to be connected or removed. Replacement writer now owns the
+narrow R05/R06 actual-trace connection, with remaining control integration next.
+
+Internal 60-minute reassessment: continue within the unchanged allowance.
+Concrete progress is accepted canonical policy, verified finite operands,
+three closed control findings and a compiling exact8-control inventory. The
+next bounded action is actual refinement-trace binding plus remaining owning
+KKT/accounting assertions, then recorded behavioral red and numerical body
+release. No review failure is treated as acceptance and no run is added.
+
+Ran: [inventory04](artifacts/bvls05-controls-inventory04.json) compiles402
+cases, exactly8 frozen BVLS05 controls, in6.441338 seconds with no Rust warning.
+Static: [correctness controls03](artifacts/bvls05-correctness-controls03.json)
+and [QA controls03](artifacts/bvls05-qa-controls03.json) close the earlier
+trace, chronology, guard, rank and baseline-design findings. They retain two
+narrow assertion gaps: actual base-at-bound/current-free KKT observation and
+attempted held-copy counts. The replacement writer owns those final control
+fixes; same-reviewer verification precedes expected-red execution. Body and
+physical endpoints remain gated. No new allowance or protocol change.
+
+Ran: exact [controls04 source](artifacts/bvls05-controls04-source-diff.json)
+(`1c72fea1…`) compiles in [inventory05](artifacts/bvls05-controls-inventory05.json).
+Both [correctness04](artifacts/bvls05-correctness-controls04.json) and
+[QA04](artifacts/bvls05-qa-controls04.json) accept the final narrow assertions.
+[Expected-red01](artifacts/bvls05-expected-red01.json) executes all8 controls in
+0.618544 seconds:5 PASS and3 intended behavioral FAIL. R01 observes21 rather
+than19 columns; R05/R06 return existing RankDeficient before refinement. Source
+and support remain unchanged. [Empty-mask baseline](artifacts/bvls05-empty-old-body-baseline.json)
+preserves both complete old-body result/work/observer Debug records for later
+exact comparison. No physical evaluator or G4 endpoint ran. Independent review
+of these execution results precedes the confined numerical implementation.
+
+Static/Ran: [correctness red01](artifacts/bvls05-correctness-red01.json) and
+[QA red01](artifacts/bvls05-qa-red01.json) independently verify expected-red
+custody and baseline extraction, releasing the confined implementation. One
+writer now owns Stage1/controller/physical-adapter mask integration and the seven
+already frozen non-target controls. A separate QA audit checks applicable
+validation scope; no physical endpoint has been released. The prospective
+[focused selection](artifacts/bvls05-focused-selection01.json) adds affected
+Stage1 analytic invariants to the prior61 private controls, with exact inventory
+deduplication before execution. It excludes every physical/target endpoint.
+
+Ran: Stage1 partial body [inventory01](artifacts/bvls05-body-inventory01.json)
+failed one fixed-array type inference diagnostic; [inventory02](artifacts/bvls05-body-inventory02.json)
+passes in6.188743 seconds after correction. Neither run executes tests. Physical
+free masks are preserved separately from factor-column exclusion. Controller,
+adapter provenance/cache, refinement integration and physical controls remain
+in progress under the same writer. The explicit authorized write surfaces include
+the private controller interface and actual adapter; a default-None trait accessor
+preserves analytic constructors while actual assembly cores supply provenance.
+No production/public interface change is authorized. [QA validation scope01](artifacts/bvls05-qa-validation-scope01.json)
+and its [scope02 clarification](artifacts/bvls05-qa-validation-scope02.json)
+accept bounded private validation, conditional on terminal reachability proof;
+private physical-adapter consumption is expressly part of this experiment.
+
+Ran: the completed first numerical body is [source0861d858…](artifacts/bvls05-body01-source-diff.json),
+changing only five private source files. [Inventory06](artifacts/bvls05-body-inventory06.json)
+passes402 tests; [analytic debug01](artifacts/bvls05-body-analytic-debug01.json)
+runs the deduplicated120 affected controls, all PASS, in4.082208 seconds. The
+three pre-body behavioral failures now pass. [Exact empty-path comparison](artifacts/bvls05-body-empty-comparison01.json)
+finds both full result/work/observation records identical to the old body.
+No physical evaluator/control endpoint ran. Earlier partial compile failures
+(inventory01 type inference, inventory03 incorrect structural-field ownership)
+remain preserved; inventories02/04/05 are compiling intermediate evidence only.
+Correctness review reads a separately verified immutable764-entry copy at
+`/home/roger/openwepp-experiments/cold-canopy-m1-bvls05-body01-review-20260929`.
+The sole writer now adds the seven frozen physical controls and G4 observation/
+timing in the live detached source. Physical dispatch remains gated on their
+exact source, quality and complementary review.
+
+Internal execution reassessment at18:59 UTC: the writer returned twice without
+implementing the assigned physical controls, while body01 remained byte-exact.
+A replacement spawn and one retry after interrupt were rejected by the agent
+thread limit; no further saturated retry is attempted. The writer identified a
+concrete missing private observation seam, rather than a physics/data blocker.
+Root continues with one narrow deliverable: expose the same assembly certificate
+admission/cache consumer without a proposal/SVD, then implement the frozen
+physical controls. The body review continues independently on its immutable
+copy. No extra allowance, changed operand, physical run, or acceptance waiver.
+
+Static: [correctness body01](artifacts/bvls05-correctness-body01.json) and
+[QA body01](artifacts/bvls05-qa-body01.json) accept the numerical method, physical
+mask/KKT semantics, provenance/cache lifecycle and private reachability. They
+require shared held-scatter/accounting and corrected stale comments. The next
+[source8d6bcb08…](artifacts/bvls05-body02-source-diff.json) centralizes these and
+exposes the shared certificate admission for assembly-only controls; [inventory07](artifacts/bvls05-body-inventory07.json)
+compiles in10.050665 seconds. Same-reviewer fix verification remains pending.
+[Early all-feature lint01](artifacts/bvls05-body-all-lint01.json) remains FAIL:
+260 diagnostics versus238 inherited, with introduced findings to correct and
+currently unused inspection seams awaiting physical test consumers. This is
+not a no-new-lint acceptance. [A04 lineage clarification](artifacts/bvls05-physical-control-lineage01.json)
+reuses the already frozen A03 partial-wet operands for the whole-empty-mask
+anchor control; QA accepts it before any physical execution, correctness review
+remains part of physical readiness. No additional case or seed search.
+
+Ran: [physical inventory01](artifacts/bvls05-physical-inventory01.json) and
+[inventory02](artifacts/bvls05-physical-inventory02.json) preserve type-inference
+compile failures; neither executes physical tests. Root static inspection also
+corrected draft operand mistakes before any result: canonical upper capacity and
+H/D zeros, frozen lower wet fraction, and the structural anchor's identity row.
+[Inventory03](artifacts/bvls05-physical-inventory03.json) now compiles406 tests,
+exactly8 analytic plus4 new BVLS05 physical selectors, in7.291040 seconds.
+[Sourcecd84765b…](artifacts/bvls05-physical-controls01-source-diff.json) is copied
+for immutable correctness review. Two evaluator-trial controls and selected/
+retry lifecycle plus realG4 observations remain under implementation. All
+physical commands remain unrun and gated; no failed scientific result was
+used to change operands.
+
 ## G4 natural-tangent rank attribution — adopted 2026-09-29
 
 **Diagnostic COMPLETE. G4 physical FAIL and overall M1 HOLD remain unchanged.** The actual stored raw

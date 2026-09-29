@@ -1,0 +1,86 @@
+--- crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs	2026-09-29 13:26:15.151914681 -0700
++++ /tmp/bvls05-native-rejected-draft/provider.rs	2026-09-29 13:24:44.921035476 -0700
+@@ -12,6 +12,8 @@
+     LedgerEntryV1, ModelTimeNs, OwnerState, ParentAuthorityV1, StepConstraintV1, TimeSupport,
+     accept_slab, complete_owner_set_digest, reduce_constraints,
+ };
++#[cfg(test)]
++use openwepp_land_surface_energy::M1NativeHarnessCanonicalSeed;
+ use openwepp_land_surface_energy::{
+     M1CoupledColumnInput, M1PhaseReservoirInput, solve_m1_coupled_column,
+ };
+@@ -25,6 +27,8 @@
+     static M1_RAW_WATER_ORACLE: RefCell<Vec<M1RawWaterOracle>> = const { RefCell::new(Vec::new()) };
+     static M1_LSE_DIAGNOSTIC_ORDINAL: Cell<Option<u32>> = const { Cell::new(None) };
+     static M1_LSE_DIAGNOSTIC_RECORD: RefCell<Option<serde_json::Value>> = const { RefCell::new(None) };
++    static M1_NATIVE_HARNESS_ORDINAL: Cell<Option<u32>> = const { Cell::new(None) };
++    static M1_NATIVE_HARNESS_RECORD: RefCell<Option<M1NativeHarnessCanonicalSeed>> = const { RefCell::new(None) };
+ }
+ 
+ #[cfg(test)]
+@@ -39,6 +43,17 @@
+ }
+ 
+ #[cfg(test)]
++pub(super) fn arm_m1_native_harness_for_ordinal(ordinal: u32) {
++    M1_NATIVE_HARNESS_ORDINAL.with(|armed| armed.set(Some(ordinal)));
++    M1_NATIVE_HARNESS_RECORD.with(|record| *record.borrow_mut() = None);
++}
++
++#[cfg(test)]
++pub(super) fn take_m1_native_harness_record() -> Option<M1NativeHarnessCanonicalSeed> {
++    M1_NATIVE_HARNESS_RECORD.with(|record| record.borrow_mut().take())
++}
++
++#[cfg(test)]
+ #[derive(Clone, Debug)]
+ pub(super) struct M1RawWaterOracle {
+     pub(super) key: openwepp_vegetation::v11::V11SharedResourceKey,
+@@ -1263,6 +1278,19 @@
+             }
+         });
+         #[cfg(test)]
++        let native_harness_armed = M1_NATIVE_HARNESS_ORDINAL.with(|armed| {
++            if armed.get() == Some(record.ordinal()) {
++                armed.set(None);
++                true
++            } else {
++                false
++            }
++        });
++        #[cfg(test)]
++        if native_harness_armed {
++            openwepp_land_surface_energy::m1_native_harness_arm_for_ordinal(record.ordinal());
++        }
++        #[cfg(test)]
+         if diagnostic_armed {
+             let guard = input.enable_one_m1_diagnostic_observation();
+             let result = solve_m1_coupled_column(&input);
+@@ -1349,12 +1377,26 @@
+                 }
+             });
+             drop(guard);
++            if native_harness_armed {
++                M1_NATIVE_HARNESS_RECORD.with(|capture| {
++                    *capture.borrow_mut() =
++                        openwepp_land_surface_energy::m1_native_harness_take_canonical_seed();
++                });
++            }
+             let evaluation = result.map_err(M1ParentExecutionError::Solver)?;
+             let prepared = super::M1PreparedCallerContext::new(input, evaluation)
+                 .map_err(M1ParentExecutionError::Solver)?;
+             return Ok((prepared, gsi));
+         }
+-        let evaluation = solve_m1_coupled_column(&input).map_err(M1ParentExecutionError::Solver)?;
++        let evaluation = solve_m1_coupled_column(&input);
++        #[cfg(test)]
++        if native_harness_armed {
++            M1_NATIVE_HARNESS_RECORD.with(|capture| {
++                *capture.borrow_mut() =
++                    openwepp_land_surface_energy::m1_native_harness_take_canonical_seed();
++            });
++        }
++        let evaluation = evaluation.map_err(M1ParentExecutionError::Solver)?;
+         let prepared = super::M1PreparedCallerContext::new(input, evaluation)
+             .map_err(M1ParentExecutionError::Solver)?;
+         Ok((prepared, gsi))

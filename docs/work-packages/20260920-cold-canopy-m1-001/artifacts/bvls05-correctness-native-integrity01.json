@@ -1,0 +1,113 @@
+{
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "title": "Check11 lost its frozen-source boundary and is invalid as validation evidence",
+      "paths": [
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-native-check11.json",
+        "crates/openwepp-land-surface-energy/src/lib.rs",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs"
+      ],
+      "evidence": "The recorded command began at 2026-09-29T20:35:11.104351Z on source tree 0354c6f702c743a37531ce6e9cee01e683a28d238ae84a54a130441c93ac0ba1, ended at 20:35:25.922772Z with exit 101, and records source_unchanged=false. Independent comparison of its 764-entry start manifest with terminal12 found exactly lib.rs and solver_covered_evaluation.rs changed; the writer separately admitted editing those native cfg/budget seams after declaring Freeze11 and during the command window.",
+      "impact": "The compiler may have read a mixture of file revisions. Exit 101 and its diagnostics cannot be attributed to either the before11 or terminal12 source, cannot prove a stable compile failure or a repaired defect, and receive no native progress, correctness, or behavioral credit.",
+      "required_disposition": "Classify check11 as INVALID_SOURCE_CHANGED and preserve it only as integrity-incident evidence. Native implementation, build, physical, target, G3, and production work remain stopped; this review grants no resumption."
+    },
+    {
+      "severity": "HIGH",
+      "title": "The last valid native compile evidence remains the stable negative check10",
+      "paths": [
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-native-check10.json",
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-native-check10.stderr"
+      ],
+      "evidence": "Check10 ran on exact tree 9715e89846461d925fff08ab14957393a6f1d192a401d2820460900a377da6d6, exited 101 without timeout, and records source_unchanged=true. Its diagnostics establish that this feature candidate did not compile because required private/controller/refinement seams remained unavailable under the native feature closure.",
+      "impact": "This is a valid, bounded compile-negative for cut10 only. It does not establish numerical behavior, physical behavior, orchestrator linkage, G3 witness completion, target readiness, or acceptance of the candidate. The previously identified private-refusal exposure and incomplete-scope-to-physical-error mapping remain rejected typed-interface/taxonomy defects; invalid check11 does not close them.",
+      "required_disposition": "Retain check10 as the terminal valid native compile result and keep every native acceptance claim on HOLD."
+    }
+  ],
+  "reviewer": "/root/interface_correctness",
+  "evidence_class": "Ran: independent read/hash/custody comparison of supplied manifests, reconstructions, archives, and command receipts; no source/config edit, build, test, solver, replay, numerical, physical, orchestrator, or target execution",
+  "review_scope": {
+    "included": "Native check10/check11 result classification, before11 and terminal12 custody, changed-during-command paths, accepted-cut09 preservation boundary, and preservation-only restoration disposition.",
+    "excluded": "Correctness review of either unaccepted native candidate, implementation design, any source correction, compiler replay, physical/G3 witness execution, target dispatch, and broader M1 acceptance."
+  },
+  "identity_and_custody": {
+    "check10": {
+      "receipt": "bvls05-native-check10.json",
+      "receipt_sha256": "2653569d6e8d6874344eda3c2f962b34c2c985513208956fef3e513ebb938a7c",
+      "source_tree_sha256": "9715e89846461d925fff08ab14957393a6f1d192a401d2820460900a377da6d6",
+      "exit_code": 101,
+      "source_unchanged": true,
+      "classification": "VALID_STABLE_COMPILE_NEGATIVE"
+    },
+    "check11": {
+      "receipt": "bvls05-native-check11.json",
+      "receipt_sha256": "bfafa63d37a1f90dd302b2490152398eaebd3e3de2293d5b8d31376a73ff4fd7",
+      "start_source_tree_sha256": "0354c6f702c743a37531ce6e9cee01e683a28d238ae84a54a130441c93ac0ba1",
+      "terminal_source_tree_sha256": "f4517b20492be7f2493c84b0a6bdc3b241426171f044ba6827d2c14739d54222",
+      "exit_code": 101,
+      "source_unchanged": false,
+      "classification": "INVALID_MIXED_SOURCE_COMMAND",
+      "changed_during_command": [
+        "crates/openwepp-land-surface-energy/src/lib.rs",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs"
+      ],
+      "explicit_non_change": "solver_covered_evaluation/m1_coupled.rs did not change during check11; the QA correction addendum agrees."
+    },
+    "before11": {
+      "artifact": "bvls05-native-before11-recovery.json",
+      "artifact_sha256": "8deed60c5fe5a89855abbddb413581c19b2943f6edd0ca278082b474d1b9cf40",
+      "source_tree_sha256": "0354c6f702c743a37531ce6e9cee01e683a28d238ae84a54a130441c93ac0ba1",
+      "independent_check": "All 764 reconstructed file bytes matched the check11 start manifest."
+    },
+    "terminal12": {
+      "artifact": "bvls05-native-terminal12-recovery.json",
+      "artifact_sha256": "d389ab9909cdac1bd02a8e93077598d31d0d469a10b3ab25bee5b599faeb6dd2",
+      "source_tree_sha256": "f4517b20492be7f2493c84b0a6bdc3b241426171f044ba6827d2c14739d54222",
+      "entry_count": 764,
+      "archive": "bvls05-native-terminal12-source.tar.gz",
+      "archive_sha256": "29252a46361e792e9c6be33dda43a1ee3418c3f15c2fc53fa95d553a7768330f",
+      "independent_check": "The archive hash matched; all 764 regular-file members matched the recovery manifest byte hashes with no missing or extra files."
+    },
+    "accepted_cut09": {
+      "artifact": "bvls05-terminal09-recovery.json",
+      "artifact_sha256": "c98012ba3ffac4bd5769fdb97b57a62a481b7323d0364f80d9dc165137fc95fc",
+      "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+      "entry_count": 764,
+      "archive": "bvls05-terminal09-source.tar.gz",
+      "archive_sha256": "8c8bb484098c98abb19147fe158bfad3522a5efd8115bb6f31249fcc40a292ad",
+      "independent_check": "The archive hash matched; all 764 regular-file members matched the accepted recovery manifest byte hashes with no missing or extra files.",
+      "status": "Remains the accepted numerical/conditional checkpoint; the detached native incident does not alter its prior evidence."
+    }
+  },
+  "preservation_only_restoration": {
+    "disposition": "APPROVED_FOR_CUSTODY_ONLY",
+    "reason": "Both native incident states are now durably recoverable, while terminal12 is unaccepted and check11 cannot validate it. Returning LIVE to the exact accepted cut09 archive is the least ambiguous terminal custody state and does not continue implementation.",
+    "conditions": [
+      "Retain check10/check11 receipts, start manifest, before11 reconstruction, terminal12 manifest/patch/archive, incident record, and writer admission.",
+      "Restore the full 764-entry cut09 snapshot rather than overlaying selected candidate files, while preserving separately recorded unrelated dirty-file custody.",
+      "After restoration, perform only byte/hash equality against bvls05-terminal09-recovery.json; any compile, test, numerical, physical, target, or implementation action requires separate authorization and a new frozen review sequence."
+    ],
+    "not_inferred": [
+      "No native resumption permission",
+      "No acceptance or rejection of terminal12 source correctness beyond its unvalidated status",
+      "No G3 physical witness closure",
+      "No native target slot release",
+      "No broader M1 or production acceptance"
+    ]
+  },
+  "residual_risk_and_missing_tests": [
+    "Neither before11 nor terminal12 has a valid source-bound compile result; check11 diagnostics cannot be partitioned reliably by revision.",
+    "No orchestrator closure, native harness behavior, numerical/physical operation, G3 witness, or target execution was run during this native attempt.",
+    "The package top still describes ongoing native correction and should be reconciled by the package owner to the adopted integrity stop; this reviewer does not edit package authority.",
+    "Any future native attempt must start from explicit renewed authority, an immutable source cut, and fresh independent source/quality/readiness review."
+  ],
+  "approval": {
+    "integrity_stop": "APPROVED",
+    "candidate_preservation": "PASS",
+    "restore_live_to_accepted_cut09": "READY_FOR_PRESERVATION_ONLY_RESTORE",
+    "check11_validation_credit": "NONE",
+    "native_candidate": "STOPPED_UNACCEPTED",
+    "native_g3_target_and_production": "HOLD",
+    "resumption_permission": false
+  }
+}

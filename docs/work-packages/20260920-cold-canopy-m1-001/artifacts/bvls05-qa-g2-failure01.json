@@ -1,0 +1,34 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-g2-failure.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static source/requirement review plus inspection of supplied Ran G2 receipt and capture. QA ran no command or calculation.",
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3528-3542",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2848-2920",
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:6386-6414"
+      ],
+      "finding": "The G2 assertion expects the adapter-owned selected-side probe entry to record the reached probe. The low-level selected probe increments the runtime counter before the poisoned evaluation; the capture proves poison armed/probe entered/applied/core entered and raw Jacobian assembly=1. But adapter predictor_selected_probe_entries is incremented only after evaluate_core_with_jacobian returns Ok, so the terminal owning VEG-E-142/MhConsistency error skips the adapter join and returns 0. The failed assertion is therefore an observation/owner-join implementation defect, not a source-conforming numerical-subproblem refusal."
+    }
+  ],
+  "receipt": {
+    "artifact": "bvls05-conditional-g2-01.json",
+    "result": "First planned G2 execution failed assertion (exit=100), timed_out=false; source/binary/support/pinned files unchanged.",
+    "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+    "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+    "capture": "bvls05-conditional-g2-shifted_face_attribution_capture.json",
+    "reached_behavior": "The retained fixture reaches the intended terminal-owning error path: VEG-E-142/MhConsistency, radius/base/selected phase preserved, poison bits=0b111, no materialization, and no numerical subproblem refusal."
+  },
+  "classification": {
+    "source_conforming_numerical_negative": false,
+    "implementation_or_recording_deviation": true,
+    "corrected_verification_eligibility": "ELIGIBLE only for a narrowly evidenced repair that carries the pre/post runtime selected-probe delta into the adapter observation even when the evaluator returns its owning error. Preserve the first receipt, source, fixture, poison bit, error precedence, radius/base/phase assertions, and no-materialization guarantee. Do not change seed, input, rank/tolerance/predicate, or retry into a pass without that repair and renewed quality/readiness evidence."
+  },
+  "remaining_execution": "HOLD all five G6 commands and every other physical/numerical command pending correction review and a new exact-source/binary plan/quality/readiness binding.",
+  "non_blocking_follow_up": [
+    "For future adapter observations, record attempted/reached runtime deltas on both success and typed-error exits to keep owner telemetry aligned with terminal-path controls."
+  ],
+  "disposition": "BLOCKED for the current source. The first G2 result is preserved as a recording/owner-join defect; it supports a narrow corrected verification path but does not authorize an unchanged rerun or remaining conditional dispatch."
+}

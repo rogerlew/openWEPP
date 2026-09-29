@@ -1,0 +1,33 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-terminal-checkpoint.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static consolidation of archived cut08/cut09 evidence and prior QA artifacts. QA ran no build, lint, test, solver, replay, physical command, or live-native-candidate review.",
+  "scope": {
+    "included": "Archived accepted cut08/cut09 reconstruction, four canonical documents, quality09, seven cut08 controls/G4, preserved and corrected cut09 G2, five cut09 G6, and recovery/binary custody.",
+    "excluded": "Mutating native candidate and its check10/check11 outcomes, G3 physical/native harness closure, targets, final ledger, publication, and broader M1/production qualification."
+  },
+  "findings": [],
+  "accepted_checkpoint": {
+    "cut08": "Source 7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e / release b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead: seven finite non-target controls and the one G4 endpoint each ran once and passed.",
+    "cut09": "Source 04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b / release 42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a: only the reviewed private G2 observation join/assertions changed; corrected G2 and five G6 controls passed.",
+    "recovery": "terminal09 records all 764 entry hashes and archive bytes; cut08 evidence remains explicitly cut08-bound and is not relabeled as cut09 execution.",
+    "quality": "quality09 records focused debug/release 120/120, analytic 103/103, inventories 409/409/359, format/default pass, exact old-body empty parity, and no-new source-bearing lint reconciliation (238/238/262); inherited strict lint exit 101 is not called a pass."
+  },
+  "claim_boundaries": {
+    "g4": "G4 supports phase-model/control evidence only: held {1,2}, 19 retained columns, all 21 rows and recorded work/custody. Its 5.463608 ms proposal wall and resolution-limited CPU sample do not support performance, root, materialization, scale, target, or production claims.",
+    "g2": "The first cut08 failure is preserved as an owner-field reporting defect. The only corrective verification on cut09 reports predictor=1/direct=0/additive total=1 and preserves fixture, poison, precedence, and no-materialization conditions.",
+    "g6": "Four physical-adapter owner controls and one seeded analytic Stage1 factor control passed. The factor is not a natural physical trajectory; materialization's accepted core plus independent closure is not a trust-region root qualification."
+  },
+  "package_review": "package.md first 70 lines accurately distinguishes the accepted checkpoint from native unfinished work, preserves cut08/cut09 identities, and states G3/broader qualification holds without prohibited inference.",
+  "open_holds": [
+    "Native candidate is unreviewed mutable work; check10 failure/check11 candidate receive no checkpoint credit.",
+    "G3 physical witness and native harness remain incomplete.",
+    "Targets remain unspent and separately gated.",
+    "Final ledger, terminal reconciliation, and publication remain pending.",
+    "Full09, A1/A3, strict-lint closure, material/BGC, parent/late-reject, cycle/restart, scale/cost, and broader M1/production acceptance remain HOLD."
+  ],
+  "non_blocking_follow_up": [
+    "Retain the cut08/cut09 split in final publication so observation-only cut09 results never imply rerun G4/seven-control evidence."
+  ],
+  "disposition": "QA PASS: accept and preserve the archived partial BVLS05 cut09 checkpoint with stated scope limits. BLOCK any claim that it accepts native, G3, targets, complete M1, or production behavior."
+}

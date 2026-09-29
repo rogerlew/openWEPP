@@ -1,0 +1,104 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-physical-controls-review.v1",
+  "reviewer": "interface_correctness",
+  "role": "independent numerical correctness and physical-control readiness reviewer",
+  "evidence_class": "Static: reviewed the immutable 764-entry physical-controls01 copy and recorded compile/inventory evidence. The reviewer ran no Rust build, test, physical assembly, solver, replay, calculator, or target command.",
+  "findings": [],
+  "reviewed_identity": {
+    "immutable_review_copy": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls05-physical01-review-20260929",
+    "source_tree_sha256": "cd84765b46b90ae48b5fc0eb31e638d2fbc47dc01f8ed2956e126bc5a621d72c",
+    "tree_entries": 764,
+    "independent_entry_check": "All 764 files in the immutable copy matched the source-diff entry hashes.",
+    "files": [
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+        "sha256": "40b7539964698c6c354054be55d0f83709d9433fad8e92e545a932d752162f5b"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+        "sha256": "63aed8dd8e20ee9d95bdd18c5eebd9e5af9ff3fb82dc259af3213926256b098f"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+        "sha256": "caee31e29ace020f8262326ec1ad07f0b4bd0bd6650e8d63345245c49c28e608"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs",
+        "sha256": "86d2e727becf3495cf5f82a0daf880c873e3dc3434fdf7cb1143a91a840c3493"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+        "sha256": "b8a9cf3521566bd369b2dad78d7ef551b1ecdbd3ead71d611ad6258cf56c74db"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+        "sha256": "fd18ff802b4928458ce19b695b9501bff80675d2f6105f051e8b418a9e1d50ce"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-physical-controls01-source-diff.json",
+        "sha256": "5e03917f778bdec21afaf12e23bbf7bd55da55af451eb2a0f10f24713a8203c0"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-physical-controls01-from-start.patch",
+        "sha256": "976ab603eab6accf55a7c2e59772b27a84178a7e90dedde103508ecde307c9b5"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan06.json",
+        "sha256": "a73b72f62aab8116b04fd18b0e53c72727586fd2331023e527d7ac3b8838c3e8"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-physical-control-lineage01.json",
+        "sha256": "8c662b82b8cc30062b1e46d1a8cbcdbdcd933766b13b75190f7fcd3fc5061198"
+      }
+    ]
+  },
+  "fix_verification": [
+    {
+      "id": "BVLS05-BODY-SCATTER-DUPLICATION",
+      "status": "CLOSED",
+      "evidence": "m1_trust_region_stage1.rs:5008 defines the single held scatter/base-copy/accounting helper; the owning solve return at 9274 and W01 controls call that helper. Non-held values pass through unchanged and attempted/completed increments surround each held copy."
+    },
+    {
+      "id": "BVLS05-BODY-STALE-ISOLATION-COMMENTS",
+      "status": "CLOSED",
+      "evidence": "lib.rs:207 and m1_trust_region_stage1.rs:4878 now state that cfg(test) experimental provenance is consumed by the numerical body and that controls inspect the same admission path."
+    }
+  ],
+  "accepted_source_behavior": [
+    "FoundationState initialization performs the ordinary natural phase selection and real raw-Jacobian assembly. The adapter inspection seam then constructs the ordinary subproblem input and calls the shared prepare_subproblem plus bvls05_admit_state path.",
+    "The inspection seam performs no Jacobi/SVD, lambda/ball solve, face pivot, candidate reconstruction, trial evaluation, or materialization. It is an assembly/certificate control and cannot consume or predict the sole G4 endpoint.",
+    "The inspector and owning solve share certificate derivation, admission, and cache behavior. First admission records six role joins and 252 raw/weighted entry tests; inspection records one 21-coordinate retained-face mask join.",
+    "A01 uses the canonical upper capacity with H=+0 and D=+0, expects exactly held coordinates 1/2 and ordered retained coordinates 0,3..20, retains drainage coordinates 5/11, checks every raw-to-weighted matrix entry in the prescribed multiplication order, and reconstructs the full versus reduced 21-row objective. Capacity residual rows remain the unchanged physical rows 5/11 at m1_coupled.rs:1413 and are not removed by the column-only inspection.",
+    "A01's retained rank-19 claim remains bound to the previously accepted exact G4 rank certificate. This source does not add an SVD; the existing 2^-40 rank threshold at m1_trust_region_stage1.rs:3385 is unchanged.",
+    "A02 obtains all six upper/lower sun-leaf, shade-leaf, and dry-stem roles from the actual occupancy/Core assembly, checks exact area and wet-fraction bits, independently reconstructs every eligibility predicate, and confirms the structural-zero upper-sun anchor is excluded.",
+    "A03 uses the frozen M=Cliq/2 and next_down(Cliq), H=+0, D=+0 operands; both must diagnose strict partial wetness and an empty held mask while retaining the full 6/252/21 inspected-work deltas. With empty D, the downstream face/rank/error path is the unchanged ordinary path already covered by the accepted analytic empty-path comparison.",
+    "A04 follows the reviewed lineage clarification and reuses A03's half-capacity assembly. It verifies the actual upper-sun area is exact zero, its raw dark-sun row is the unchanged identity row, the anchor is not held, the entire held mask is empty, and certificate work remains visible.",
+    "All new inspection and physical controls remain private under cfg(test) and m1-trust-region-physical-stage; no public/default dispatch, physical equation, finite-difference stencil, rank cutoff, or typed-error mapping changes."
+  ],
+  "recorded_validation_review": {
+    "inventory": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-physical-inventory03.json",
+      "sha256": "145a9629041415bde3acde2326967afa5755bfe3fb1005609b5b468c13a9a840",
+      "source_receipt_sha256": "e61db37d4129e821043522a62a23d3d7cb92334b8cfedba499f8f3d44e71c14a",
+      "stdout_sha256": "625063c44fd4308f2ba63b9298fbbc394b6191a2d9401f72cd32ab3223096a4a",
+      "result": "PASS compile/list only: 406 total tests, exactly 12 BVLS05 selectors comprising the accepted eight analytic controls and A01-A04; source/support unchanged. No test or physics executed."
+    },
+    "earlier_failed_inventories": "physical inventory01/02 are retained compile failures and provide no behavioral evidence."
+  },
+  "residual_risk_and_missing_tests": [
+    "A01-A04 have compiled but have not executed. Their authentic wet fractions, held masks, matrix identities and work counts remain prospective until the four exact selectors run on these bytes.",
+    "The assembly-only controls intentionally do not factor the actual matrix. Rank-19 sufficiency uses the unchanged accepted G4 exact-minor/null certificate and unchanged threshold; no physical nonlinear success follows from this review.",
+    "Plan06 L01-L03, selected/retry/new-base provenance, G4 timing/observation, source-bearing quality gates, release builds, and the sole G4 endpoint are outside this immutable cut and remain gated.",
+    "This review does not release any target validation, other stopped physical case, production/default activation, or package acceptance."
+  ],
+  "disposition": {
+    "body01_fix_verification": "PASS",
+    "shared_certificate_inspector": "PASS_STATIC",
+    "a01_a04_source_correctness": "PASS_STATIC",
+    "a01_a04_exact_selector_execution_release": true,
+    "l01_l03_execution_release": false,
+    "g4_endpoint_release": false,
+    "production_activation_release": false,
+    "status": "READY_FOR_EXACT_A01_A04_EXECUTION_ONLY"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Static: complete source-bearing comparison of Ran strict lint logs; not a strict lint PASS",
+  "baseline": "g4-rank-combined-lint04",
+  "candidate": "bvls05-quality-combined-lint09",
+  "argv_identical": true,
+  "normalization": "Line/column and numeric diagnostic/suggestion gutters and first-occurrence-only lint-enablement notes; diagnostic headers, locations and source-bearing content remain unchanged",
+  "baseline_count": 238,
+  "candidate_count": 238,
+  "matched_count": 238,
+  "introduced": [],
+  "removed": [],
+  "baseline_stderr_sha256": "1a024bae67fa611265e4b8001e5181d630d851206235e36580550b5ca395819f",
+  "candidate_stderr_sha256": "d8ef2b5b391328bd3341ec645bcf5cf2298139b938debf858db0e157494bbebc"
+}

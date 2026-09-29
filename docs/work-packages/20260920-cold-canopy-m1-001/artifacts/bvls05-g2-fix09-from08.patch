@@ -1,0 +1,70 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -1588,6 +1588,8 @@
+     );
+     assert_eq!(terminal.controller_materializations, 0);
+     assert_eq!(terminal.selected_side_probe_entries, 1);
++    assert_eq!(terminal.predictor_selected_side_probe_entries, 1);
++    assert_eq!(terminal.direct_selected_side_probe_entries, 0);
+     assert_eq!(terminal.selected_side_probes, 0);
+     assert_eq!(terminal.materialization_entries, 0);
+     assert_eq!(terminal.poison_events, 0b111);
+@@ -6403,6 +6405,8 @@
+     );
+     assert_eq!(observed.controller_materializations, 0);
+     assert_eq!(observed.selected_side_probe_entries, 1);
++    assert_eq!(observed.predictor_selected_side_probe_entries, 1);
++    assert_eq!(observed.direct_selected_side_probe_entries, 0);
+     assert_eq!(observed.selected_side_probes, 0);
+     assert_eq!(observed.materialization_entries, 0);
+     assert_eq!(observed.poison_events, 0b111);
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
+@@ -2503,7 +2503,13 @@
+     pub(crate) base_after: [f64; 21],
+     pub(crate) selected_phase_before: [M1PhaseJoinSelection; 2],
+     pub(crate) selected_phase_after: [M1PhaseJoinSelection; 2],
++    /// All selected-side entries reached by this wrapper.  This is the sum of
++    /// the predictor-Jacobian and direct adapter entry counters below.
+     pub(crate) selected_side_probe_entries: u16,
++    /// Entries bracketed by the selected predictor-Jacobian assembly.
++    pub(crate) predictor_selected_side_probe_entries: u16,
++    /// Entries made through the later direct adapter probe method.
++    pub(crate) direct_selected_side_probe_entries: u16,
+     pub(crate) selected_side_probes: u16,
+     pub(crate) materialization_entries: u16,
+     pub(crate) controller_materializations: u8,
+@@ -2865,6 +2871,11 @@
+     drop(scope);
+     let poison_scope_restored = m1_selected_side_domain_poison_active_for_test() == prior_scope;
+     let observation = adapter.observation();
++    let predictor_selected_side_probe_entries = observation.predictor_selected_probe_entries;
++    let direct_selected_side_probe_entries = observation.selected_side_probe_entries;
++    let selected_side_probe_entries = predictor_selected_side_probe_entries
++        .checked_add(direct_selected_side_probe_entries)
++        .ok_or(crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope)?;
+     eprintln!(
+         "SHIFTED_FACE_ATTRIBUTION_CAPTURE {}",
+         serde_json::json!({
+@@ -2875,7 +2886,9 @@
+             "typed_error_debug":observed.as_ref().err().map(|error| format!("{error:?}")),
+             "controller_materializations":observed.as_ref().ok().map(|value| value.entered_materializations),
+             "reached_adapter_observation":{
+-                "selected_side_probe_entries":observation.selected_side_probe_entries,
++                "selected_side_probe_entries":selected_side_probe_entries,
++                "predictor_selected_side_probe_entries":predictor_selected_side_probe_entries,
++                "direct_selected_side_probe_entries":direct_selected_side_probe_entries,
+                 "selected_side_probes_completed":observation.selected_side_probes,
+                 "current_evaluations":observation.current_evaluations,
+                 "raw_jacobian_assemblies":observation.raw_jacobian_assemblies,
+@@ -2905,7 +2918,9 @@
+         base_after: observed.base_after,
+         selected_phase_before: observed.selected_phase_before,
+         selected_phase_after: observed.selected_phase_after,
+-        selected_side_probe_entries: adapter.observation().selected_side_probe_entries,
++        selected_side_probe_entries,
++        predictor_selected_side_probe_entries,
++        direct_selected_side_probe_entries,
+         selected_side_probes: adapter.observation().selected_side_probes,
+         materialization_entries: adapter.observation().materialization_entries,
+         controller_materializations: observed.entered_materializations,

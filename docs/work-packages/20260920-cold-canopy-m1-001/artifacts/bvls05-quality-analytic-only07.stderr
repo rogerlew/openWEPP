@@ -1,0 +1,1061 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+warning: unused variable: `current_max`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:613:9
+    |
+613 |         current_max: f64,
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_current_max`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4134:5
+     |
+4134 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: variable does not need to be mutable
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6468:13
+     |
+6468 |         Err(mut refusal) => {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9235:5
+     |
+9235 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: unused variable: `prepared`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9236:5
+     |
+9236 |     prepared: &PreparedSubproblem,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_prepared`
+
+warning: fields `ratio` and `tied_coordinates` are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:388:16
+    |
+385 | pub(crate) struct M1TrustRegionOptimalityReleaseObservation {
+    |                   ----------------------------------------- fields in this struct
+...
+388 |     pub(crate) ratio: Option<f64>,
+    |                ^^^^^
+389 |     pub(crate) tied_coordinates: u8,
+    |                ^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionOptimalityReleaseObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `selected_release` is never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:396:16
+    |
+394 | pub(crate) struct M1TrustRegionOptimalityObservation {
+    |                   ---------------------------------- field in this struct
+395 |     pub(crate) coordinates: Vec<M1TrustRegionOptimalityCoordinateObservation>,
+396 |     pub(crate) selected_release: Option<M1TrustRegionOptimalityReleaseObservation>,
+    |                ^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionOptimalityObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `refinement_scalar_operations`, `refinement_guard_events`, `refinement_attempted_entries`, and `refinement_denied_entries` are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:422:16
+    |
+402 | pub(crate) struct M1TrustRegionSubproblemObservation {
+    |                   ---------------------------------- fields in this struct
+...
+422 |     pub(crate) refinement_scalar_operations: u64,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+423 |     pub(crate) refinement_guard_events: u64,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^
+424 |     pub(crate) refinement_attempted_entries: u16,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+425 |     pub(crate) refinement_denied_entries: u16,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionSubproblemObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: multiple fields are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:569:16
+    |
+565 | pub(crate) struct M1TrustRegionRefinementFailureMetadata {
+    |                   -------------------------------------- fields in this struct
+...
+569 |     pub(crate) row: Option<u8>,
+    |                ^^^
+570 |     pub(crate) term: Option<u8>,
+    |                ^^^^
+571 |     pub(crate) coordinate: Option<u8>,
+572 |     pub(crate) lower_active: [bool; 21],
+    |                ^^^^^^^^^^^^
+573 |     pub(crate) upper_active: [bool; 21],
+    |                ^^^^^^^^^^^^
+574 |     pub(crate) free: [bool; 21],
+    |                ^^^^
+575 |     pub(crate) lambda: f64,
+    |                ^^^^^^
+...
+578 |     pub(crate) scratch_box_feasible: Option<bool>,
+    |                ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionRefinementFailureMetadata` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `optimality_radius` and `optimality_lambda` are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:587:16
+    |
+583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+    |                   ------------------------------ fields in this struct
+...
+587 |     pub(crate) optimality_radius: Option<Box<f64>>,
+    |                ^^^^^^^^^^^^^^^^^
+588 |     pub(crate) optimality_lambda: Option<Box<f64>>,
+    |                ^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionSubproblemRefusal` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: field `ci` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:265:9
+    |
+259 |     Complete {
+    |     -------- field in this variant
+...
+265 |         ci: [f64; 4],
+    |         ^^
+    |
+    = note: `GovernedStep` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: function `m1_refinement_phase_join_selections_for_test` is never used
+  --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:82:15
+   |
+82 | pub(crate) fn m1_refinement_phase_join_selections_for_test() -> u32 {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `refinement_frozen_weighted_merit_entries_for_test` is never used
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:772:15
+    |
+772 | pub(crate) fn refinement_frozen_weighted_merit_entries_for_test() -> u32 {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variants `P0Subnormal`, `FinalBox`, `ScratchRadius`, and `ActiveValue` are never constructed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1034:5
+     |
+1033 | enum RefinementRawCandidateMutation {
+     |      ------------------------------ variants in this enum
+1034 |     P0Subnormal {
+     |     ^^^^^^^^^^^
+...
+1037 |     FinalBox {
+     |     ^^^^^^^^
+...
+1041 |     ScratchRadius {
+     |     ^^^^^^^^^^^^^
+...
+1046 |     ActiveValue {
+     |     ^^^^^^^^^^^
+     |
+     = note: `RefinementRawCandidateMutation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `live_state_bits_entry` and `live_state_bits_exit` are never read
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5388:5
+     |
+5386 | struct RefinementRetainedFaceObservation {
+     |        --------------------------------- fields in this struct
+5387 |     lambda_bits: u64,
+5388 |     live_state_bits_entry: [u64; 21],
+     |     ^^^^^^^^^^^^^^^^^^^^^
+5389 |     live_state_bits_exit: [u64; 21],
+     |     ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `RefinementRetainedFaceObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: struct `RefinementMutationScope` is never constructed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6354:8
+     |
+6354 | struct RefinementMutationScope(Option<RefinementRawCandidateMutation>);
+     |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `install` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6358:8
+     |
+6357 | impl RefinementMutationScope {
+     | ---------------------------- associated function in this implementation
+6358 |     fn install(mutation: Option<RefinementRawCandidateMutation>) -> Self {
+     |        ^^^^^^^
+
+warning: struct `RefinementScratchHooksObservation` is never constructed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6385:8
+     |
+6385 | struct RefinementScratchHooksObservation {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_refinement_scratch_hooks_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6440:4
+     |
+6440 | fn m1_trust_region_refinement_scratch_hooks_for_test(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `bits` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9587:8
+     |
+9587 |     fn bits(values: [f64; 21]) -> [u64; 21] {
+     |        ^^^^
+
+warning: function `capture_return_input` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9595:8
+     |
+9595 |     fn capture_return_input() -> M1TrustRegionSubproblemInput {
+     |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_nonzero_return_input` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9613:8
+     |
+9613 |     fn capture_nonzero_return_input() -> M1TrustRegionSubproblemInput {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `bit` is never used
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11604:8
+      |
+11604 |     fn bit(value: &Value) -> f64 {
+      |        ^^^
+
+warning: function `m1_trust_region_analytic_work_cap_run_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:3185:15
+     |
+3185 | pub(crate) fn m1_trust_region_analytic_work_cap_run_for_test()
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 24 warnings (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 5 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+────────────
+ Nextest run ID 52a61764-eaec-4567-be4b-4615e829ebf9 with nextest profile: default
+    Starting 103 tests across 1 binary (256 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_refuses_guarded_primitive_domains ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_remainder_and_per_term_accumulation_metadata_are_observed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_bvls05_accounting_caps ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_preserves_negative_zero ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_bvls05_remaining_rank_refusal_red ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_later_primitive_stages_are_observed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_bvls05_column_guard_red ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_retained_controlled_assembly_interface_uses_real_operations ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_bvls05_fixed_bound_active_precedence_red ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_bvls05_nonempty_hold_zero_lambda_refinement ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_analytic_shift_is_shared_operation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_m4_factor_order_changes_binary64_accumulation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_nonsymmetric_factor_order_and_coordinate_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_independent_scalar_guard_and_exact_bound ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cbar_overflow_has_typed_02_transition_metadata ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_at_unit_scale ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_must_not_release_on_sign_alone ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_under_coordinate_permutation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_cancellation_band_is_stable_at_diagonal_scale ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_nonfinite_kkt_operand_has_typed_optimality_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_overflow_kkt_operand_has_typed_optimality_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_negative_lambda_has_typed_optimality_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_nonzero_enclosure_records_exact_scalar_arithmetic ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_bvls05_nonempty_hold_positive_lambda_refinement ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_free_stationarity_must_refuse_from_shared_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_release_ranking_uses_observed_ratio_not_multiplier_magnitude ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_intermediate_must_refuse ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_subnormal_kkt_operand_must_refuse ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_negative_zero_uses_unchanged_bvls03_seam ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.02s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_underflow_to_zero_kkt_product_must_refuse ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_tau_subnormal_has_typed_optimality_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_physical_distinct_bounds_that_collapse_when_scaled_are_free ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_retained_face_reuses_factor_and_reproduces_all_bits ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_upward_normal_operands_underflow_with_stable_reason ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_zero_cbar_with_zero_h_is_an_explicit_02_observation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_upper_cancellation_band_must_not_release_on_sign_alone ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::expected_red_zero_identity_enclosure_records_no_scalar_arithmetic ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::fixed_finite_bound_uses_shared_prepare_and_full_solve_metadata ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_bvls05_default_empty_regression ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.04s
+
+  stderr ───
+    BVLS05_DEFAULT_EMPTY_BASELINE {"positive_debug":"M1TrustRegionSubproblemObservation { optimality_observation: Some(M1TrustRegionOptimalityObservation { coordinates: [M1TrustRegionOptimalityCoordinateObservation { coordinate: 0, h: 0.0, cbar: 2.0000000000000013, tau: 1.931788062847793e-14, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 1, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 2, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 3, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 4, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 5, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 6, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 7, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 8, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 9, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 10, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 11, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 12, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 13, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 14, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 15, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 16, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 17, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 18, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 19, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 20, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }], selected_release: None, scalar_operations: 136 }), initial_face_step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], base_coordinates: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], candidate_coordinates: [0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], initial_lower_mask: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], initial_upper_mask: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], initial_free_mask: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], scaled_step: [0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], final_residual: [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], final_g: [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], final_lambda_times_p: [0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], final_h: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], lambda: 1.0, event_trace: [M1TrustRegionKktEvent { action: Return, selected_coordinate: 18446744073709551615, lower_mask: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_mask: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free_mask: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], g: Some([-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), lambda_times_p: Some([0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), h: Some([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]) }], entered_svd_factorizations: 1, completed_face_pivots: 0, raw_jacobian_columns: [[1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]], active_lower: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], active_upper: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], refinement_scalar_operations: 30596, refinement_guard_events: 99552, refinement_attempted_entries: 1, refinement_denied_entries: 0, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 1, refinement_scalar_operations: 30596, refinement_guard_events: 99552, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 2, bvls04_dot2_residual_rows: 21, bvls04_dot2_free_gradients: 21, bvls04_ordered_norms: 6, first_residual_operations: 903, second_dot2_operations: 22806, factor_application_operations: 4620, coordinate_update_operations: 42, whole_kkt_operations: 1827, whole_kkt_guard_events: 5503, upward_enclosure_operations: 136, upward_enclosure_guard_events: 59359, bvls05_role_joins_attempted: 0, bvls05_role_joins_completed: 0, bvls05_column_entry_tests_attempted: 0, bvls05_column_entry_tests_completed: 0, bvls05_mask_joins_attempted: 0, bvls05_mask_joins_completed: 0, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 } }","zero_debug":"M1TrustRegionSubproblemObservation { optimality_observation: Some(M1TrustRegionOptimalityObservation { coordinates: [M1TrustRegionOptimalityCoordinateObservation { coordinate: 0, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 1, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 2, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 3, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 4, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 5, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 6, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 7, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 8, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 9, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 10, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 11, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 12, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 13, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 14, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 15, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 16, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 17, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 18, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 19, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }, M1TrustRegionOptimalityCoordinateObservation { coordinate: 20, h: 0.0, cbar: 0.0, tau: 0.0, class: FreePass }], selected_release: None, scalar_operations: 0 }), initial_face_step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], base_coordinates: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], candidate_coordinates: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], initial_lower_mask: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], initial_upper_mask: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], initial_free_mask: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], scaled_step: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], final_residual: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], final_g: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], final_lambda_times_p: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], final_h: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], lambda: 0.0, event_trace: [M1TrustRegionKktEvent { action: Return, selected_coordinate: 18446744073709551615, lower_mask: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_mask: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free_mask: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], g: Some([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), lambda_times_p: Some([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), h: Some([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]) }], entered_svd_factorizations: 1, completed_face_pivots: 0, raw_jacobian_columns: [[1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]], active_lower: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], active_upper: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], refinement_scalar_operations: 55968, refinement_guard_events: 120822, refinement_attempted_entries: 1, refinement_denied_entries: 0, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 1, refinement_scalar_operations: 55968, refinement_guard_events: 120822, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 0, bvls04_factor_applications: 0, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 0, first_residual_operations: 903, second_dot2_operations: 11403, factor_application_operations: 41664, coordinate_update_operations: 42, whole_kkt_operations: 1827, whole_kkt_guard_events: 5503, upward_enclosure_operations: 0, upward_enclosure_guard_events: 59220, bvls05_role_joins_attempted: 0, bvls05_role_joins_completed: 0, bvls05_column_entry_tests_attempted: 0, bvls05_column_entry_tests_completed: 0, bvls05_mask_joins_attempted: 0, bvls05_mask_joins_completed: 0, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 } }"}
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::resolvable_upper_violation_releases_through_shared_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::shared_signed_zero_crossing_precedes_genuine_descent_release ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::shared_normal_nonfinite_and_overflow_kkt_operands_are_real_operations ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::zero_scale_is_rejected_by_shared_preparation_before_kkt_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::finite_precision_controls::retained_capture_uses_shared_ordered_kkt_operation_before_policy_change ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_full_rank_admits_complete_no_update_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c2_c4_expected_red_controls::m1_trust_region_refinement_eligibility_uses_raw_face_predicates_and_counts_denied_work ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.05s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_operands_norms_and_bvls02_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.05s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_current_hydraulics_complete_after_selected_probe_before_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_constrained_stationarity_is_nonterminal_rejection ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_changed_predictor_phase_reassembles_once_and_resolves_stage1 ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_final_phase_disagreement_is_owning_and_precedes_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_finite_ci_operands_do_not_create_a_governed_threshold ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_accepted_update_reassembles_natural_phase_at_new_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_materializes_current_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_incomplete_evaluation_is_terminal_and_opens_no_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_hydraulic_nan_precedes_incomplete_scope ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_initial_raw_and_normalizer_faults_fail_at_weighted_system_guard ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_domain_valid_replacement_terminal_error_cannot_open_third_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.07s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_valid_radius_replacement_materializes_original_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_domain_invalid_opens_one_domain_valid_replacement_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.07s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exhausted_witness_still_allows_ordinary_update_and_resets_at_new_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.10s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_mixed_wet_presence_cannot_open_witness_then_complete_quarter_updates ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_incomplete_full_governed_evaluation_is_terminal_and_opens_no_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_mixed_wet_presence_rejects_ordinary_nonroot_step_and_shrinks ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_hydraulic_threshold_equality_admits_full_no_update ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.08s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_intervening_domain_invalid_does_not_consume_replacement_witness ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.10s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_none_none_wet_operands_preserve_complete_governed_transition ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_negative_humidity_excess_never_admits_or_materializes ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_candidate_governed_operands_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.16s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_pending_base_hydraulic_error_masks_no_prediction_and_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_all_eight_hydraulic_operands_fail_closed_before_admission ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.25s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_pending_candidate_hydraulics_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.07s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_pending_base_left_pending_fails_closed_before_trial ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.07s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_pending_hydraulics_complete_once_per_base_and_reset_after_nonroot_update ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.05s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_post_update_root_materializes_installed_base_before_reassembly ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_ordinary_four_radius_cases_use_actual_state ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.12s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_full_no_update_candidate_raw_and_normalizer_faults_fail_before_materialization ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.30s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_phase_selection_errors_retain_owning_error_and_chronology ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.10s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_seeded_work_guard_records_actual_pre_entry_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls03_c1_expected_red_controls::m1_trust_region_refinement_dot2_all_retained_rows_preserve_independent_bits_and_guards ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.40s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_raw_jacobian_and_frozen_merit_are_actual ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.06s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_mixed_replacement_is_consumed_and_three_excess_exhausts ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.29s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_side_owner_error_follows_final_phase_verification ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_first_two_governed_temperature_excesses_block_third_small_proposal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.39s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_retry_retains_selected_tangent_after_domain_refusal ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.07s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_side_error_precedes_pending_current_hydraulics ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.07s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_unchanged_predictor_phase_uses_one_assembly_and_final_probe ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.03s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_selected_retry_phase_drift_is_terminal_without_third_assembly ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.10s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_trust_region_refinement_controller_accounting_observes_all_solves_and_errors ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.09s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.57s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_finite_governed_threshold_operands_gate_full_no_update_admission ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.53s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_retained_radius_exhaustion_interface_uses_actual_trace ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.29s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_stationarity_exhausts_after_eleven_proposals_and_twenty_two_faces ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.26s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_post_update_candidate_faults_precede_installation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.44s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_rejected_global_twenty_fifth_retries_per_base ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 0.76s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_work_cap_is_fifty_accepted_proposals ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 1.15s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_fiftieth_root_materializer_error_precedes_cap ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 1.16s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_long_progress_root_on_fiftieth_update_precedes_next_jacobian ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 1.17s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_retained_witness_interface_binds_three_real_paths ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 2.12s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage2_controls::m1_stage2_exact_root_and_replacement_candidate_faults_fail_closed ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 3.40s
+
+
+────────────
+     Summary [   3.447s] 103 tests run: 103 passed, 256 skipped

@@ -1,0 +1,96 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-controls-source-review.v3",
+  "reviewer": "interface_correctness",
+  "role": "same-reviewer narrow verification of the five open controls02 findings",
+  "evidence_class": "Static exact-source and accepted-plan review only. This reviewer ran no Rust build, test, physical assembly, solver, replay, or result-bearing execution.",
+  "reviewed_identity": {
+    "tree_sha256": "c742aba43b7926f3dd3b2dc7d81b25be67c421b485b9cb27e0e6c6b49b95bf17",
+    "tree_entries": 764,
+    "files": [
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+        "sha256": "818e26f1634bab3a50aa36756668725ee2d2839443dcb3615efd425e58459626"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+        "sha256": "d38727dea899c24d2b1583aa5ab629f36539a90e2c38910c2118c8b7efe3911d"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-controls03-source-diff.json",
+        "sha256": "7a1acd21a9b8a20413c1946af002dbca0fd08e6238b563702191352a91ed6eb0"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-controls03-from-start.patch",
+        "sha256": "9258fb670040f8e355059245046df957c12ec183486a493834e4e355f994a863"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan06.json",
+        "sha256": "a73b72f62aab8116b04fd18b0e53c72727586fd2331023e527d7ac3b8838c3e8"
+      }
+    ]
+  },
+  "controls02_fix_verification": [
+    {
+      "id": "BVLS05-CONTROL-R01-TERMINAL-OUTCOME",
+      "status": "CLOSED",
+      "source": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11890",
+      "evidence": "R01 ignores the terminal disposition, takes the chronologically first captured operation when present, and otherwise admits only a first-factorization/no-pivot refusal. It no longer requires a later or terminal refusal."
+    },
+    {
+      "id": "BVLS05-CONTROL-R03-LIFETIME-KKT",
+      "status": "OPEN",
+      "source": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11995",
+      "evidence": "R03 now calls the actual KKT owner and observes a real lower-active release while retaining the upper-active coordinate. The accepted base-at-bound/current-free case is still represented only by role booleans: neither input.base nor a real lower/upper bound is made equal at held coordinate 1 or 2. The KKT outcome's 21 coordinate observations are also discarded; the test reads only the event g array at indices 1 and 2, so it does not assert full-21 h/cbar/tau/class custody or held-coordinate FreePass behavior.",
+      "required_fix": "Place a certified held coordinate's base exactly on one physical bound while leaving it physically free and assert actual SubproblemState admission. Assert transition.observation.coordinates has all 21 original coordinates and check the held entries' h, cbar, tau and class, while retaining the actual non-held active release assertions. R05/R06 already supply stable-D refinement custody."
+    },
+    {
+      "id": "BVLS05-CONTROL-R05-R06-TRACE-CUSTODY",
+      "status": "CLOSED",
+      "source": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:12120",
+      "evidence": "Each planned selector wraps its own actual solve in the existing observation scope. The live callback copies free_ids/factor order and p0/p1/p2 at the reached refinement boundary; the controls assert the exact 19 retained IDs/order, held +0 bits, unchanged fixture points, stable physical masks, full-21 terminal KKT, and held base-bit reconstruction. No replay or unrelated capture remains."
+    },
+    {
+      "id": "BVLS05-CONTROL-W01-ACCOUNTING-INCOMPLETE",
+      "status": "CLOSED_FOR_PRE_BODY_CONTROL",
+      "source": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:12324",
+      "evidence": "W01 now distinguishes inspected-empty from no-provenance default-empty, asserts exact role/entry/mask attempted and completed values for inspected work, preserves non-held step/candidate bits, charges only the two actual held copies under the per-occurrence maximum of 21, and verifies additive absorption without relabeling refinement scalar work. Identical-J retry reuse remains assigned to the later L01 lifecycle control under plan06 and is not evidence from this pre-body selector."
+    },
+    {
+      "id": "BVLS05-CONTROL-R07-REGRESSION-COVERAGE",
+      "status": "CLOSED_FOR_BASELINE_CAPTURE",
+      "source": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:12285",
+      "evidence": "R07 reaches both actual default-empty zero- and positive-lambda routes, checks their independent analytic terminal values and zero dedicated work, and emits one stable JSON envelope containing both complete result Debug representations for an external exact before/after body comparison. The pre-body execution must preserve this emitted baseline as the comparator oracle; candidate output alone is not acceptance evidence."
+    }
+  ],
+  "accepted_isolation": [
+    "The replacement removed the unplanned ninth finite-precision replay selector.",
+    "The live refinement additions are observation-only callbacks on the actual R05/R06 solve and do not add a numerical call.",
+    "Held scatter now changes only held coordinates and preserves supplied non-held step/candidate bits.",
+    "The numerical body still contains no BVLS05 hold consumption or production activation."
+  ],
+  "residual_risk_and_missing_evidence": [
+    "Inventory04 compilation was still running when this source review was requested and is not reviewer-run evidence here.",
+    "R03 needs the two narrow assertions above before all eight planned selectors are fit for expected-red execution.",
+    "When expected-red execution is released, preserve the exact R07 baseline envelope and verify R01/R05/R06 fail for missing body hold consumption while the remaining selectors pass their intended control predicates.",
+    "Same-J retry accounting and lifecycle remain a later L01 reviewed-body obligation; no body or physical release follows from this review."
+  ],
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "id": "BVLS05-CONTROL-R03-BOUND-KKT-ASSERTION",
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11995",
+      "finding": "The last open pre-body control does not create the required actual base-at-bound/current-free state and does not inspect the full 21-coordinate KKT observation it computes."
+    }
+  ],
+  "disposition": {
+    "controls02_findings_closed": 4,
+    "controls02_findings_open": 1,
+    "controls_scaffold_source_correctness": "BLOCKED",
+    "bounded_r03_assertion_fix_release": true,
+    "behavioral_expected_red_execution_release": false,
+    "rust_numerical_body_release": false,
+    "physical_execution_release": false,
+    "same_reviewer_fix_verification_required": true,
+    "status": "BLOCKED_PENDING_ONE_NARROW_R03_CONTROL_FIX"
+  }
+}

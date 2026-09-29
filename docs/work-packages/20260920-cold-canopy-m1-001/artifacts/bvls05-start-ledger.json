@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: retained source/binary/archive/capture and prior ledger verified before mutation",
+  "anchor_utc": "2026-09-29T17:28:00+00:00",
+  "carry_charged_seconds": "414465.393795",
+  "new_grant_seconds": 14400,
+  "fixed_ceiling_seconds": "428865.393795",
+  "closing_reserve_seconds": 1800,
+  "work_cutoff_utc": "2026-09-29T20:58:00+00:00",
+  "hard_deadline_utc": "2026-09-29T21:28:00+00:00",
+  "source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+  "source_entries": 764,
+  "binary_sha256": "ae22132f99bb85a44d0c4037f752a80ef6bdbc3f26a5e532409f89feb70f36c0",
+  "archive_sha256": "1e7395de7e8aece4b985aed3677a335ad3f1f7219e5ab134133b98b5086c5aad",
+  "capture_sha256": "edfc1df63996608ef015e36822e7e94b3971b7e2c3d956d77bf1f671ec0a4291",
+  "prior_closing_coverage_not_exceeded": true,
+  "no_old_balance_added_or_refund": true,
+  "unrelated_dirty_files": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  }
+}

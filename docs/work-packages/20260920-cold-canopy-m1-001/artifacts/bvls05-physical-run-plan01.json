@@ -1,0 +1,97 @@
+{
+  "evidence_class": "Static: prospective finite non-target physical execution protocol; no run release yet",
+  "method": "COLD-CANOPY-M1-TR-SVD-BVLS-05",
+  "plan": "bvls05-control-plan06.json",
+  "plan_sha256": "a73b72f62aab8116b04fd18b0e53c72727586fd2331023e527d7ac3b8838c3e8",
+  "lineage": "bvls05-physical-control-lineage01.json",
+  "cases": [
+    {
+      "id": "BVLS05-A01",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_g4_full_wet_actual_assembly",
+      "operands": "frozen G4 input/capture edfc1df..., natural raw assembly M=Cliq,H=+0,D=+0",
+      "required_assertions": [
+        "both drainage columns/capacity rows",
+        "raw-to-weighted order",
+        "19 ordered free/factor entries",
+        "unchanged rank threshold"
+      ]
+    },
+    {
+      "id": "BVLS05-A02",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_role_universe_actual_assembly",
+      "operands": "six named upper/lower sun/shade/stem role-map joins using captured area/fwet bits",
+      "required_assertions": [
+        "upper-sun structural-zero anchor excluded",
+        "no numeric-coordinate selector"
+      ]
+    },
+    {
+      "id": "BVLS05-A03",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_partial_nearfull_actual_assembly",
+      "operands": "M=Cliq/2 and M=next_down(Cliq), H=+0,D=+0",
+      "required_assertions": [
+        "ordinary rank/face/error path",
+        "record nonzero certificate scan deltas"
+      ]
+    },
+    {
+      "id": "BVLS05-A04",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_structural_zero_anchor_actual_assembly",
+      "operands": "existing upper sun structural-zero-area anchor",
+      "required_assertions": [
+        "dark-sun rule separate",
+        "record certificate scan deltas"
+      ]
+    },
+    {
+      "id": "BVLS05-L01",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_selected_retry_lifecycle",
+      "operands": "direct phase seam: full 21-coordinate predictor direction is +0.0 except upper H=-1.0; base upper (M,H,D)=(Cliq,+0,+0), yielding upper Mixed and Drainage selection. Lower base bits are M=3f978d4fdf3b645a, H=c0beed4a3d70a3d7, D=+0; its zero direction preserves lower Ice and Drainage selection. Invoke the selected assembly directly, not the G4 predictor; then one identical-J retry and one new-base M=Cliq/2 assembly.",
+      "required_assertions": [
+        "natural=1 assembly, selected=1 assembly, retry=0 assembly, new-base=1 assembly",
+        "upper Mixed/Drainage and lower Ice/Drainage recorded",
+        "no endpoint/predictor result discovery"
+      ]
+    },
+    {
+      "id": "BVLS05-L02",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_full_to_dry_trial_recomputation",
+      "operands": "captured G4 coordinate-bit array for all nonreservoir coordinates/lower occupancy; upper base (M,H,D)=(Cliq,+0,+0), evaluator trial=(Cliq/2,+0,+0)",
+      "required_assertions": [
+        "next assembly receives no inherited D",
+        "ordinary validation/root/physical disposition observed"
+      ]
+    },
+    {
+      "id": "BVLS05-L03",
+      "selector": "m1_coupled_tests::m1_trust_region_bvls05_dry_to_full_trial_recomputation",
+      "operands": "captured G4 coordinate-bit array for all nonreservoir coordinates/lower occupancy; upper base (M,H,D)=(Cliq/2,+0,+0), evaluator trial=(Cliq,+0,+0)",
+      "required_assertions": [
+        "no predictor-time D",
+        "ordinary validation/root/physical disposition observed"
+      ]
+    }
+  ],
+  "execution": "Seven individually recorded release-binary libtest invocations, each --exact selector --nocapture; one planned execution per case, separate from G4; no broad filters",
+  "timeout_seconds_each": 180,
+  "preconditions": [
+    "Final source/binary inventory and exact hashes",
+    "All affected analytic debug/release/default/feature/format checks and source-bearing inherited-lint reconciliation",
+    "Dual independent readiness of final source, controls and evidence",
+    "Full supported command bound fits before 2026-09-29T20:58:00Z"
+  ],
+  "postconditions": [
+    "Preserve first result/source/capture for each case",
+    "Independently classify unexpected failure before any corrected execution; no operand or scientific predicate tuning",
+    "All seven pass and dual review of actual evidence before G4"
+  ],
+  "not_released": [
+    "G4",
+    "G2",
+    "G3",
+    "G6",
+    "native harness",
+    "target slots"
+  ],
+  "source_binding": "Final exact manifest/binary/argv supplemental plan required before dispatch; ongoing style/capture changes not frozen here"
+}

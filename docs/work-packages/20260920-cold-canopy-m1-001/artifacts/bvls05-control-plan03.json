@@ -1,0 +1,55 @@
+{
+  "schema": "cold-canopy-m1-bvls05-control-plan-v3",
+  "status": "corrected_frozen_pre_body_dual_review_required",
+  "preserves": ["bvls05-control-plan01.json", "bvls05-control-plan02.json"],
+  "method": "COLD-CANOPY-M1-TR-SVD-BVLS-05",
+  "fixed_custody": {
+    "starting_source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "g4_capture_sha256": "edfc1df63996608ef015e36822e7e94b3971b7e2c3d956d77bf1f671ec0a4291",
+    "g4_rank_reference": "g4-rank-correctness-reference01.json",
+    "sole_later_endpoint": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model"
+  },
+  "role_universe": ["upper.sun_leaf_temperature", "upper.shade_leaf_temperature", "upper.dry_stem_temperature", "lower.sun_leaf_temperature", "lower.shade_leaf_temperature", "lower.dry_stem_temperature"],
+  "assembly_mask_lifetime": {
+    "admission": "once at each natural/selected assembly initial face: certified AND initial_free AND physical_current_free",
+    "face_factor_set": "physical_current_free minus stable D, ascending original index",
+    "pivots_and_refinement": "preserve D; never derive it from factor-free state or repopulate after a pivot",
+    "same_j_retry": "reuse the admitted D only after the initial face proves identical admitted assembly",
+    "new_base_or_j": "derive a new D",
+    "physical_active": "non-held physical active coordinates retain ordinary KKT release; BVLS05 never activates/releases a held direction"
+  },
+  "work_observation": {
+    "dedicated_existing_structure_fields": ["bvls05_role_joins", "bvls05_column_entry_tests", "bvls05_mask_joins", "bvls05_held_base_copies"],
+    "each_field": "attempted and completed",
+    "per_assembly_max": {"role_joins": 6, "column_entry_tests": 252, "mask_joins": 21, "held_base_copies": 21},
+    "separation": "factor/refinement/KKT/upward-enclosure counters retain their existing meanings; factor work uses face dimension and residual/KKT/norm/box/scatter use dimension 21",
+    "empty_cases": {"R07_default_empty": "no provenance and all four BVLS05 deltas zero", "R02_R03_A03_A04_inspected_empty": "record actual certificate deltas; no held copy/factor delta"}
+  },
+  "analytic_refinement_fixture": {
+    "dimensions": {"full_rows": 21, "full_columns": 21, "held_original_indices": [1, 2], "retained_original_indices": [0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]},
+    "physical_roles": "indices 1 and 2 are only synthetic certified shade/stem roles for this data-only fixture; all scales and normalizers are exactly 1",
+    "matrix": "A[r,c]=1 iff r==c and c is retained_original_indices; otherwise +0.0; rawJ=A; W=S=identity",
+    "bounds": "all coordinates [-2,+2], base all +0.0, initial_free/current_physical_free true for retained and held fixture directions",
+    "factor": "B=I19, V=I19, sigma=[1;19], order=[0..18], free_ids=retained_original_indices",
+    "full_kkt": "all 21 coordinates observed; held h=+0.0 and held cbar/tau/class are recorded without physical activation"
+  },
+  "cases": [
+    {"id":"BVLS05-R01","selector":"m1_trust_region_bvls05_expected_red_g4_full_wet_hold","class":"runnable_expected_red_data_only","operands":"captured G4 exact bits M=Cliq,H=+0,D=+0 and recorded full raw/weighted matrices","expected":"unchanged body behaviorally fails held-mask/21x19/scatter assertion, never missing-symbol or stub","asserts":["upper shade/stem certificate","independent retained rank19 reuse","original index19 retained","no endpoint"]},
+    {"id":"BVLS05-A01","selector":"m1_trust_region_bvls05_g4_full_wet_actual_assembly","class":"non_target_actual_physical_assembly","operands":"frozen G4 input/capture edfc1df..., natural raw assembly M=Cliq,H=+0,D=+0","expected":"21 rows and 19 retained columns, independent exact rank19","asserts":["both drainage columns/capacity rows","raw-to-weighted order","19 ordered free/factor entries","unchanged rank threshold"]},
+    {"id":"BVLS05-A02","selector":"m1_trust_region_bvls05_role_universe_actual_assembly","class":"non_target_actual_physical_assembly","operands":"six named upper/lower sun/shade/stem role-map joins using captured area/fwet bits","expected":"only certified positive-area/full-wet/zero-column roles can enter D","asserts":["upper-sun structural-zero anchor excluded","no numeric-coordinate selector"]},
+    {"id":"BVLS05-A03","selector":"m1_trust_region_bvls05_partial_nearfull_actual_assembly","class":"non_target_actual_physical_assembly","operands":"M=Cliq/2 and M=next_down(Cliq), H=+0,D=+0","expected":"0<fwet<1 and inspected D empty","asserts":["ordinary rank/face/error path","record nonzero certificate scan deltas"]},
+    {"id":"BVLS05-A04","selector":"m1_trust_region_bvls05_structural_zero_anchor_actual_assembly","class":"non_target_actual_physical_assembly","operands":"existing upper sun structural-zero-area anchor","expected":"existing anchor only; inspected D empty","asserts":["dark-sun rule separate","record certificate scan deltas"]},
+    {"id":"BVLS05-R02","selector":"m1_trust_region_bvls05_column_guard_red","class":"analytic_data_only","operands":"one raw nonzero, one weighted nonzero, unexpected zero role, nonfinite normalizer, nonfinite scale","expected":"excluded with existing owner precedence","asserts":["no general rank relaxation","inspected-empty work"]},
+    {"id":"BVLS05-R03","selector":"m1_trust_region_bvls05_fixed_bound_active_precedence_red","class":"analytic_data_only","operands":"certificate under initial-fixed, base-at-bound/current-free, lower-active, upper-active masks","expected":"fixed/active excluded; base-bound/current-free admitted","asserts":["D stable across pivot/refinement","ordinary nonheld active release remains","full21 KKT"]},
+    {"id":"BVLS05-R04","selector":"m1_trust_region_bvls05_remaining_rank_refusal_red","class":"analytic_data_only","operands":"A01 retained order with duplicate retained column","expected":"unchanged sigma_min<=2^-40*sigma_max refusal","asserts":["no pseudoinverse/clipping/damping/fallback"]},
+    {"id":"BVLS05-R05","selector":"m1_trust_region_bvls05_nonempty_hold_zero_lambda_refinement","class":"analytic_data_only","operands":"analytic_refinement_fixture; f[r]=-1 for retained r and +0 for r=1,2; radius=8; lambda=+0.0","expected":"p0=p1=p2 is +1 at retained IDs and +0 at held IDs","asserts":["BVLS03 route","19 free/factor/order entries at every join","held +0 bits","full21 KKT","independent diagonal calculation"]},
+    {"id":"BVLS05-R06","selector":"m1_trust_region_bvls05_nonempty_hold_positive_lambda_refinement","class":"analytic_data_only","operands":"analytic_refinement_fixture; f[0]=-1 and all other f=+0; radius=0.5; lambda=1; p0[0]=0.5","expected":"p1=p2=p0; p[0]=0.5 and every other retained/held coordinate +0","asserts":["BVLS04 route","19 free/factor/order entries","held +0 bits","full21 KKT","independent (1+lambda)^-1 calculation"]},
+    {"id":"BVLS05-L01","selector":"m1_trust_region_bvls05_selected_retry_lifecycle","class":"non_target_actual_physical_assembly","operands":"direct phase seam M=Cliq,H=+0,D=+0 with prescribed predictor normal d_p,H=-1 selecting mixed; invoke selected assembly directly, not G4 predictor; one identical-J retry and one new-base M=Cliq/2 assembly","expected":"one natural-mask derivation, one direct selected-mask derivation, retry reuse only, new-base fresh scan","asserts":["natural=1 assembly, selected=1 assembly, retry=0 assembly, new-base=1 assembly","no endpoint/predictor result discovery"]},
+    {"id":"BVLS05-L02","selector":"m1_trust_region_bvls05_full_to_dry_trial_recomputation","class":"non_target_evaluator_trial","operands":"captured G4 coordinate-bit array for all nonreservoir coordinates/lower occupancy; upper base (M,H,D)=(Cliq,+0,+0), evaluator trial=(Cliq/2,+0,+0)","expected":"domain-admissible evaluator result with fwet<1 and all21 residuals recomputed; no acceptance claim","asserts":["next assembly receives no inherited D","ordinary validation/root/physical disposition observed"]},
+    {"id":"BVLS05-L03","selector":"m1_trust_region_bvls05_dry_to_full_trial_recomputation","class":"non_target_evaluator_trial","operands":"captured G4 coordinate-bit array for all nonreservoir coordinates/lower occupancy; upper base (M,H,D)=(Cliq/2,+0,+0), evaluator trial=(Cliq,+0,+0)","expected":"domain-admissible evaluator result with fwet=1 and all21 residuals recomputed; only later fresh assembly may certify D","asserts":["no predictor-time D","ordinary validation/root/physical disposition observed"]},
+    {"id":"BVLS05-R07","selector":"m1_trust_region_bvls05_default_empty_regression","class":"analytic_data_only","operands":"declared no-provenance default-empty path and retained BVLS03/BVLS04 vectors","expected":"bit-identical existing routing with all dedicated BVLS05 deltas zero","asserts":["no eligibility scan shortcut claim","no mask/scatter/factor delta"]},
+    {"id":"BVLS05-W01","selector":"m1_trust_region_bvls05_accounting_caps","class":"data_only_work_oracle","operands":"all declared role predicates, D cardinalities, and analytic fixture","expected":"exact dedicated BVLS05 attempted/completed deltas and unchanged numerical counters","asserts":["max6/252/21/21","inspected-empty versus default-empty","19 factor versus21 KKT/scatter","no cap increase/double count"]}
+  ],
+  "execution_groups": {"pre_body_expected_red_only":["BVLS05-R01","BVLS05-R02","BVLS05-R03","BVLS05-R04","BVLS05-R05","BVLS05-R06","BVLS05-R07","BVLS05-W01"],"reviewed_body_non_target":["BVLS05-A01","BVLS05-A02","BVLS05-A03","BVLS05-A04","BVLS05-L01","BVLS05-L02","BVLS05-L03"],"result_bearing_later":["m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model"]},
+  "prohibitions": ["result search","G4 predictor as lifecycle oracle","new physics","general rank relaxation","extra evaluator/assembly/factorization/materialization","production/default API change"]
+}

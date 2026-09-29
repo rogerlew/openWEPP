@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Static: prospective operand-lineage clarification before any new physical control execution",
+  "plan": "bvls05-control-plan06.json",
+  "case": "BVLS05-A04",
+  "unchanged_case_set": true,
+  "operand_reuse": "Use the already frozen A03 upper (M,H,D)=(Cliq/2,+0,+0) and the same original all-other-coordinate/input bits. Inspect the existing upper sun structural-zero-area anchor. No additional seed or physical case is introduced.",
+  "reason": "Whole-certificate D is empty at this declared partial-wet assembly. At G4 full wetness other positive-area roles legitimately hold; expecting the whole mask empty there would conflict with the policy. The anchor itself remains excluded at either assembly.",
+  "required_assertions": [
+    "structural area exactly zero",
+    "existing anchored raw-Jacobian identity remains unchanged",
+    "anchor never appears in held set",
+    "inspected-empty certificate retains role/column work"
+  ],
+  "release": "Requires both reviewers acceptance together with physical control readiness; this clarification neither executes nor releases a physical command."
+}

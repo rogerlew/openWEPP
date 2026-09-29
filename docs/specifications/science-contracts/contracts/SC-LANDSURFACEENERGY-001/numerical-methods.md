@@ -1155,6 +1155,125 @@ existing work observation, including refused/discarded work.  A domain-refusal
 endpoint is control-path cost only, never a seasonal, target, or throughput
 claim.
 
+### COLD-CANOPY-M1-TR-SVD-BVLS-05 fully-wet structural-null-direction amendment
+
+**Status: OWNER-ADOPTED prospective experimental authority; dual independent
+review and the frozen controls below are required before body release.** This is
+a representation of certified zero *increments* in the isolated detached M1
+treatment. It preserves BVLS-02--04 arithmetic, every physical equation, the
+complete 21-coordinate state and residual, and the historical G4 rank refusal.
+It is neither a temperature anchor nor a deletion of an energy, mass, enthalpy,
+capacity, drainage, or shared equation; it does not admit a general
+rank-deficient matrix, alter a finite-difference probe, freeze wetness during a
+probe, or add an evaluator, assembly, factorization, rank estimate, or physical
+retry.
+
+After the existing complete natural or selected raw-Jacobian assembly and its
+ordinary finite/normalizer/scale guards, derive each candidate only from the
+closed existing role universe: sun-leaf, shade-leaf, and dry-stem temperature
+for each actual upper/lower occupancy. The role comes from the existing
+occupancy/component map, never a coordinate number. A candidate certificate
+requires its reviewed dry-temperature role, finite strictly-positive structural
+area, diagnosed wet fraction exactly `1.0` (therefore exact zero effective dry
+area), and IEEE-754 zero (either sign) in every entry of both its complete raw
+and already assembled weighted column. A structural-zero-area anchor, a
+near-full or near-zero value, rank/singular-vector result, unexplained zero
+column, fixture identity, or observed error cannot select it.
+
+The certificate has a separate face-admission precedence. An initially fixed
+coordinate (`lower==upper`) is never held. A coordinate whose base equals a
+physical bound but which is not lower/upper active remains eligible if it is in
+the pre-existing current free set and meets every certificate predicate. A
+currently lower- or upper-active coordinate remains in that existing active
+mask and is excluded from the held face mask, even if its column is zero. At
+the initial face of each natural or selected assembly, derive and admit `D`
+once as `certified AND initial_free AND physical_current_free`. Preserve that
+assembly-owned `D` unchanged through all later pivots and BVLS-03/04
+refinement. It is never recomputed from reduced factor-free state. A failed
+certificate or face-admission predicate leaves the coordinate on the unchanged
+BVLS path and retains its ordinary rank/error precedence.
+
+Let `D` be those admitted ascending original-coordinate indices. `D` is an
+assembly-owned held-direction mask,
+distinct from lower/upper/fixed/free physical-bound masks. Preserve the stored
+full `A`, full `f`, all 21 residual rows, dynamic normalizers, `W`, `S`,
+physical/scaled bounds, and drainage columns. The full retained representation
+has columns `21-minus-D`; each factor face instead uses its pre-existing current
+physical-free set minus the stable `D`, in ascending original-index traversal.
+Set `p[D]=+0.0`, and scatter its result back in original coordinate order while
+copying each held base coordinate bit exactly.
+Do not clear or rewrite the existing `initial_free` physical-fixed
+classification: face pivots may reduce only the current physical-free set and
+cannot remove `D` provenance; the all-coordinate KKT classification remains over the original
+physical masks and records a held coordinate's zero contribution explicitly.
+Thus the captured G4 natural matrix has a 21-by-19 retained system: the two
+certified upper shaded-leaf/stem directions are held, both drainage coordinates
+and every capacity row remain, and original coordinate index 19 remains a free
+retained coordinate. The full residual is always `f + A*p`; no 19-equation
+physical model or altered RHS is permitted.
+
+Apply the unchanged rectangular free-column Jacobi/SVD, its ordering, and
+`sigma_min <= 2^-40*sigma_max` refusal to the remaining free columns. Any
+remaining dependency, nonfinite operand, face construction failure, box/radius
+failure, or factor error retains its existing owner and precedence. Full-vector
+box/radius checks, BVLS-02 KKT assessment, BVLS-03/04 routing, nonlinear/root
+checks, physical trial evaluation, materialization, typed errors, work caps,
+and custody remain over all 21 original coordinates. BVLS05 neither activates
+nor releases a held direction during that assembly. Existing KKT release of a
+physically active, non-held coordinate remains unchanged. A held direction is
+not a physical active bound and receives no acceptance exemption; its zero
+first-order contribution is checked from the full representation, not omitted.
+
+Mask work uses dedicated attempted/completed BVLS-05 counters in the existing
+`M1TrustRegionWorkObservation`; refinement, KKT and upward-enclosure counters
+retain their existing meanings. Certificate derivation is bounded per actual
+Jacobian assembly by six semantic-role checks and twelve complete 21-entry
+raw/weighted column scans (252 entry checks). Applying the stable held mask to
+a face or state initialization performs at most 21 mask/free-set joins per
+occurrence. Each candidate reconstruction performs at most 21 held-base copies;
+count copies for rejected proposals whenever reconstruction was entered.
+Identical-J retries reuse the admitted certificate without role/column rescans,
+but count every repeated face-mask join and candidate copy actually entered.
+These are per-occurrence bounds, not a license to omit repeated work. Controls
+assert exact attempted/completed deltas, refusal precedence, additive absorption,
+and the distinction between no-provenance default-empty and inspected-empty
+certificates. Existing factor work is dimensioned by the current retained face,
+whereas residual, KKT, norm, box/radius and reconstruction retain all 21
+coordinates. No owning cap is raised, no existing numerical work is relabeled,
+and no evaluator, assembly, factorization or materialization is added.
+
+Derive `D` afresh after every actual natural assembly, every actual selected
+assembly, and every new-base/new-Jacobian assembly. A radius retry that retains
+the identical admitted assembly may retain its mask. Selection retains the
+existing natural predictor first, at most one selected reassembly and
+selected-side verification. Every trial still recomputes canonical wet/dry
+fractions and all 21 residuals: a candidate that creates effective dry area
+does not inherit this linearization hold. No mask persists across a new base,
+new Jacobian, owner state, support, or restart.
+
+#### Contract-derived 05 controls and release conditions
+
+Before implementation, freeze and independently review the corrected finite
+control plan
+`docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan06.json`;
+plans01/02/03 remain reviewed historical evidence and are not rewritten.
+Controls use formula-derived operands and independent reconstruction, never a
+result search or candidate-produced expected arrays. They must prove actual
+role/area/full-wetness and complete raw/weighted-zero eligibility; G4's full
+21-row/19-column reduction, `+0.0` held increments, base-bit reconstruction,
+and original-index-19 retention; separate held/bound masks; retained drainage,
+capacity and full KKT/root/error/work paths; non-target partially wet,
+structural-zero-area, unexpected-zero, remaining-rank-loss, nonfinite/scaling,
+and active-bound refusals; fresh natural/selected/new-base masks and same-J
+retry retention; reactivation when dry area returns; empty-`D` BVLS-03/04
+identity; and no additional assembly, residual evaluation, factorization, or
+materialization. They must also cover held-mask cardinality at refinement joins
+without changing physical fixed masks. Before body work, runnable expected-red
+controls use only minimal data declarations/adapters and formula-derived
+operands: unchanged numerical body must demonstrably fail the new hold
+assertion, rather than merely fail to compile or return a fabricated terminal
+stub. A control cannot consume the sole physical G4 endpoint.
+
 ### Contract-derived experiment controls
 
 Independent expected values, never the candidate helper, must cover: an

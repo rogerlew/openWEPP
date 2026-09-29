@@ -1,0 +1,43 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-validation-scope.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static prospective validation-scope audit only. QA ran no source, build, test, solver, or physical command.",
+  "reviewed_inputs": {
+    "selection": "bvls05-focused-selection01.json",
+    "package_section": "Fully wet structural null directions — BVLS-05 adopted 2026-09-29",
+    "governing_standard": "docs/standards/testing-and-gate-strategy.md sections 6-10",
+    "prior_reviews": [
+      "bvls05-qa-policy06.json",
+      "bvls05-qa-controls04.json",
+      "bvls05-qa-red01.json"
+    ]
+  },
+  "findings": [],
+  "classification": {
+    "current_scope": "bounded component / isolated nonproduction experiment",
+    "basis": "The declared change is confined to private cfg(test) LSE Stage1/control observation paths. lib.rs imports Stage1 under cfg(test); no production/default dispatch, physical equation, G4 input/assertion, rank cutoff, dependency, manifest, lockfile, or public API change is authorized. The focused selection includes the full Stage1 inventory and named direct analytic/controller/observer consumers; physical cases are explicitly excluded from its filter and separately gated.",
+    "not_a_release_or_campaign": "The work package preserves the existing M1, physical-domain, A1/A3, conservation, strict-lint, and broader campaign HOLDs. This increment cannot claim release or campaign closure."
+  },
+  "required_terminal_validation": {
+    "focused_controls": "Run the declared focused filter in debug and release, unioned with the complete Stage1 inventory and deduplicated, on the exact frozen source. This covers the private Stage1 factor/mask/refinement/KKT consumers without using a broad m1_coupled_tests filter.",
+    "physical_separation": "Run the seven declared non-target physical assembly/trial selectors separately and retain their frozen inputs. The sole unchanged G4 endpoint remains a distinct post-readiness command with its original 180-second bound, source/binary/input custody, and no retry. No target slot or stopped historical endpoint is selected incidentally.",
+    "quality_and_custody": "Exact-source default and feature inventories, rustfmt, the three existing strict-lint commands with source-bearing baseline/candidate reconciliation, and terminal diff/recovery are required. The inherited-lint exception is valid only if the final comparison finds no introduced or ambiguously relocated relevant diagnostic.",
+    "authority": "Current A0 document/schema/unit admission and the touched root/guard/mask invariant checks remain required. A1 hard-invariant coverage is supplied here by the full Stage1/direct-consumer controls. No new A3 constitutive suite is applicable while the terminal diff remains test-only and does not change constitutive runtime behavior; historical A3 HOLD remains visible and undischargeable by this experiment.",
+    "conservation": "The body must retain all21 residual/KKT/reconstruction controls and the independently derived R05/R06 operands. No new conservation formula or operand lineage is authorized; the unchanged real G4 physical endpoint still requires its existing input/assertion and independent reconstruction evidence before any physical claim."
+  },
+  "additional_requirement": {
+    "requirement": "Before interpreting the focused gate as noncritical closure, independently reconcile the exact terminal diff and direct consumers to prove every new BVLS05 body/observation path remains cfg(test)-only and absent from default/public/physical dispatch.",
+    "verification": "Use the terminal source manifest/diff plus a direct consumer search of crates/openwepp-land-surface-energy/src/lib.rs and the changed Stage1 paths. Record the result with the terminal review; do not substitute the pre-body scaffold finding."
+  },
+  "critical_triggers": [
+    {
+      "trigger": "Any production/shared/default/public import or runtime reachability of the BVLS05 body, or unknown reachability.",
+      "required_escalation": "Classify Critical and run cargo nextest run --workspace --profile full, applicable A1/A3 authority suites, affected real-consumer/conservation/reconstruction checks, and the exact 900-second exception process already recorded by the package."
+    },
+    {
+      "trigger": "Any change to a physical equation, conservation operand lineage, original G4 inputs/assertions, solver arithmetic/cutoff/fallback, authority binding, fixture/required-case binding, manifest/lockfile, dependency, feature topology, or validation runner.",
+      "required_escalation": "Classify Critical; add the applicable authority/conservation/anti-evasion checks and cargo deny check when manifest, lockfile, dependency, toolchain, or workspace resolution changes."
+    }
+  ],
+  "disposition": "PASS, conditional on the named terminal reachability/diff proof. The proposed focused/debug/release, separate physical, quality, authority, and custody plan is sufficient for the declared isolated nonproduction experiment. It does not qualify production, A3 behavior, release, campaign closure, or any physical endpoint before its own readiness gate."
+}

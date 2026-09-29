@@ -1,0 +1,161 @@
+{
+  "evidence_class": "Ran: independent correctness review of the sole frozen release G4 result; Static: conditional readiness review for the six unrun continuation cases",
+  "reviewer_role": "independent correctness",
+  "reviewer_availability": "actual same-reviewer route available and completed within the fixed package window",
+  "scope": {
+    "g4": "Review exact source/binary custody, selected test result, raw capture, lifecycle, owner work, and timing semantics.",
+    "conditional_six": "Rebind the previously reviewed unrun G2 and five G6 cases to the same frozen BVLS05 source and binary without reopening accepted test design.",
+    "execution_by_reviewer": "none",
+    "source_edits_by_reviewer": "none"
+  },
+  "identity": {
+    "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+    "binary": "/tmp/openwepp-cold-canopy-m1-bvls05-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "binary_sha256_recorded_and_read_back": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+    "release_inventory_count": 409,
+    "g4_selector": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model"
+  },
+  "reviewed_evidence": {
+    "bvls05-g4-plan01.json": "0515e589c7e4e3b95f6f3fab4aae4ffc4734c401bfaf395b5e05b6028e891da2",
+    "bvls05-g4-physical01.json": "ef8bf6e949449717948d9149e9018c2045bee173ff37bd3f2544eccb2fbb3c12",
+    "bvls05-g4-physical01.stderr": "3d4658af0274b7dd1a50b284acce3d6e31563401b603ac8311cdbb670de42aea",
+    "bvls05-g4-capture01.json": "ef699905cbd87dc77d35e452c9fa92e94ad6db323a21bcfe7c7f9840b36e78b9",
+    "bvls05-g4-cost01.json": "35f400ccc0395be1aaafee1ec028e43982a8643754514c0cf8dbc837737bbe6c",
+    "bvls05-g4-results01.json": "fa1b16b69d82d5cd231be4c58e7e4a1123eb3a24255781e8b3e5418d60773aa2",
+    "bvls05-g4-protected-source08.json": "95aeccc9d4652b28c33f802b3787070ea95a58750e1ad2e1a9dc3ab8ea8d8867",
+    "bvls05-quality-release-inventory08.stdout": "bcca974a07643f8a4a3738c2be395d0872c5b86415da35b911ed0f727b1b8de5",
+    "bvls05-conditional-plan01.json": "0bc670e48eb52eb80e60e57e20c4ff56e938d706065a817383b7e0a8b2382208",
+    "interface-harness-physical-plan01.json": "848fd6c7af5098c7442524e87ad5183fa664b28fa8687f9d27367a914be69177"
+  },
+  "findings": [],
+  "g4_result_review": {
+    "disposition": "PASS",
+    "execution": {
+      "selected_passed_skipped_exit": "1 passed, 408 skipped, exit 0",
+      "planned_invocations": 1,
+      "automatic_retries": 0,
+      "timeout_seconds": 180,
+      "timed_out": false,
+      "source_unchanged": true,
+      "binary_unchanged": true,
+      "typed_error": null
+    },
+    "raw_extraction": {
+      "SHIFTED_FACE_ATTRIBUTION_CAPTURE_occurrences": 1,
+      "G4_PROPOSAL_COST_occurrences": 1,
+      "capture_structurally_equal_to_verbatim_stderr_payload": true,
+      "cost_structurally_equal_to_verbatim_stderr_payload": true
+    },
+    "assertion_and_phase_custody": {
+      "prepared_upper_state": "canonical M=capacity, H=+0, D=+0 with retained fixture and other operands unchanged",
+      "input_unchanged": true,
+      "trial_unchanged": true,
+      "natural_assembly_attempts": 1,
+      "selected_assembly_attempts": 1,
+      "selected_side_probes": 1,
+      "predictor_probe_entries": 1,
+      "final_probe_entries": 1,
+      "completed_assemblies": 2,
+      "phase_capacity_event_count": 3,
+      "phase_chronology": [
+        "initial zero-direction cache: upper Liquid/Capacity and lower Ice/Drainage",
+        "natural nonzero direction: upper corrected Mixed/Drainage and lower Ice/Drainage",
+        "selected nonzero direction: upper corrected Mixed/Drainage and lower Ice/Drainage"
+      ],
+      "trial_domain_checks": 0,
+      "materialization_entries": 0,
+      "interpretation": "The retained G4 assertions reached and passed the actual natural and selected assembly owners and their phase/capacity custody. No downstream trial or materialization claim is made."
+    },
+    "bvls05_lifecycle": {
+      "fresh_admissions": 2,
+      "reused_admissions": 0,
+      "held_indices_each": [1, 2],
+      "retained_free_ids_each": [0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+      "completed_subproblems": 2,
+      "subproblem_shape_each": {
+        "entered_factorizations": 2,
+        "completed_pivots": 1,
+        "jacobi_sweeps_per_factorization": 7,
+        "refused": false
+      },
+      "operation_chronology_each": "activate coordinate 5, then KKT return on the reduced free set",
+      "accepted_installs": 0,
+      "refusal": null,
+      "interpretation": "Both actual assemblies independently admitted the same authority-certified held set and reduced 19-column face. No stale certificate reuse or held-coordinate repopulation is observed."
+    },
+    "work_accounting": {
+      "stage1_calls": 2,
+      "entered_svd_factorizations": 4,
+      "completed_face_pivots": 2,
+      "total_jacobi_sweeps": 28,
+      "refinement_attempted_entries": 2,
+      "refinement_denied_entries": 0,
+      "bvls05_role_joins_attempted_completed": [12, 12],
+      "bvls05_column_entries_attempted_completed": [504, 504],
+      "bvls05_mask_joins_attempted_completed": [84, 84],
+      "bvls05_held_base_copies_attempted_completed": [4, 4],
+      "coherence": "Two fresh certificates account for 2*6 role joins and 2*252 column entries; four 21-coordinate face/candidate joins account for 84 mask joins; two candidates copy two held coordinates each. Four seven-sweep factor entries account for 28 sweeps.",
+      "overlap_rule": "Refinement, whole-KKT, and enclosure counters overlap and are not summed into a unique total."
+    },
+    "owner_runtime": {
+      "before_complete_evaluator_entries": 0,
+      "after_complete_evaluator_entries": 82,
+      "interpretation_complete_evaluator": "Two assemblies each induced 41 complete evaluator entries; this is actual derivative/core owner work, not an inferred phase-event count.",
+      "hydraulic_entries": 0,
+      "actual_hydraulic_entries": 0,
+      "materialization_entries": 0,
+      "trial_entries": 0,
+      "interpretation_zeros": "These owners were unreached in this endpoint. The observed zeros are retained as results and are not treated as missing instrumentation or positive coverage.",
+      "overlap_rule": "Core, Jacobian, hydraulic, and materializer ledgers overlap and are not summed."
+    },
+    "cost": {
+      "proposal_wall_ns": 5463608,
+      "initialization_wall_ns": 160638,
+      "cpu_status": "resolution_limited_zero_ticks",
+      "cpu_tick_resolution_s": 0.01,
+      "cpu_seconds": null,
+      "interpretation": "Zero CPU ticks means the interval was below process-clock resolution, not zero CPU. Proposal wall time includes the opt-in observer and counters; initialization, clock query/samples, build, and JSON serialization/emission are separately excluded as declared. No speedup inference is supported."
+    }
+  },
+  "conditional_six_review": {
+    "disposition": "READY",
+    "evidence_status": "unexecuted prospective cases",
+    "selectors": [
+      "m1_coupled_tests::m1_trust_region_retained_selected_side_wrapper_returns_own_mh_guard",
+      "m1_coupled_tests::m1_trust_region_physical_budget_core_cap_control_reaches_actual_owner",
+      "m1_coupled_tests::m1_trust_region_physical_budget_raw_jacobian_cap_control_reaches_actual_owner",
+      "m1_coupled_tests::m1_trust_region_physical_budget_hydraulic_cap_control_reaches_actual_owner",
+      "m1_coupled_tests::m1_trust_region_physical_budget_stage1_factorization_cap_reaches_actual_face",
+      "m1_coupled_tests::m1_trust_region_physical_budget_materialization_cap_reaches_actual_owner"
+    ],
+    "inventory_binding": "Each exact selector occurs once in the frozen 409-test release inventory.",
+    "original_plan_equivalence": "For all six cases, selector order, argv after target-directory normalization, expected selected count, input lineage, paired controls, and group are byte-value equivalent to the corresponding cases in interface-harness-physical-plan01.json. The new labels and target/source/binary custody are the only reviewed rebind differences.",
+    "execution_protocol": {
+      "profile": "release",
+      "expected_selected_case_count_each": 1,
+      "planned_executions_each": 1,
+      "bound_seconds_each": 180,
+      "negative_stop": "An expected owning refusal is a negative-control PASS. An unexpected source-conforming numerical refusal before the intended branch stops remaining physical/numerical work. Do not alter seed, input, method, tolerance, or retry into PASS. Only an independently demonstrated implementation or recording deviation may receive an affected correction, while preserving the first source and result.",
+      "order": "G2, G6 core, G6 raw Jacobian, G6 hydraulic, G6 Stage1 factorization, G6 materialization"
+    },
+    "scope_limits": [
+      "G1 and G5 passed earlier and are not repeated.",
+      "The G4 slot is spent and must not be repeated.",
+      "The G6 Stage1 case is an analytic seeded actual owner, not a natural physical trajectory.",
+      "G3 and the native harness remain separate obligations and are not released by these cases."
+    ]
+  },
+  "residual_risk_and_missing_tests": [
+    "The conditional six have not run on this frozen binary; READY authorizes only their exact bounded executions and does not predict PASS.",
+    "G4 does not exercise hydraulics, trial validation, materialization, nonlinear-root completion, seasonal or watershed scale, or production activation.",
+    "G3/native-harness physical witness remains outside this plan and unmet here.",
+    "The single G4 timing sample supports bounded cost recording only; it does not support performance comparison or qualification."
+  ],
+  "disposition": {
+    "g4_exact_result": "PASS",
+    "conditional_g2_plus_five_g6": "READY",
+    "same_negative_stop_required": true,
+    "production_activation_release": false,
+    "status": "NO_CORRECTNESS_BLOCKER_TO_EXACT_CONDITIONAL_SIX_DISPATCH"
+  }
+}

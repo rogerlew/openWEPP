@@ -1,0 +1,109 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-policy-fix-review.v2",
+  "reviewer": "interface_correctness",
+  "role": "same-reviewer independent correctness focused fix verification",
+  "evidence_class": "Static authority, source-semantics, and exact analytic-operand review only. No Rust build, test, physical assembly, physical trial, solver, replay, or result-bearing execution was run by this reviewer.",
+  "reviewed_identity": {
+    "main_commit": "d7ad407e956e3ecea716db6744f4fd2bbe14ed61",
+    "detached_starting_source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "files": [
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan03.json",
+        "sha256": "fbeab47e64dd9c29e06967e329166560cf4ebfa70d1df3b4dac021e3ca51cd6d"
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+        "sha256": "09ae195d46209e264267110faa0a3728baf095102f9cecf5a34552ac06e02f2e"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan02.json",
+        "sha256": "7d86ab6c8631245b342778ec8d6376d244d881db22c462f8ae2c52b08455a19b"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-correctness-policy02.json",
+        "sha256": "3acfa886a14b0e3a1069db5dda8c1daf29ce8aeb64e779ebc1fba0f5697b9b4a"
+      }
+    ]
+  },
+  "policy02_fix_verification": [
+    {
+      "finding": "assembly-owned held-mask lifetime and physical active-face precedence",
+      "status": "CLOSED",
+      "evidence": "The contract and plan derive D once from the initial pre-hold physical-current-free state, preserve it across pivots/refinement, prohibit derivation from reduced factor state, factor each face on current physical-free minus D, and preserve ordinary KKT release for active non-held coordinates."
+    },
+    {
+      "finding": "deterministic zero- and positive-lambda refinement fixtures",
+      "status": "PARTIAL",
+      "evidence": "R05 and R06 now prescribe a diagonal retained system, residual, bounds, radius, lambda category, factor order, free IDs, and expected p0/p1/p2. Their mathematics is feasible and deterministic. The factor's rectangular embedding remains misstated as B=I19."
+    },
+    {
+      "finding": "selected/retry and wetness-transition lifecycle operands",
+      "status": "PARTIAL",
+      "evidence": "L02/L03 now freeze exact upper M/H/D transitions using the captured remaining coordinate bits and make no acceptance premise. L01 avoids the G4 predictor and fixes counts, but does not yet state the complete 21-direction vector or the capacity selection caused by the prescribed negative enthalpy direction."
+    },
+    {
+      "finding": "dedicated work observation and empty-path accounting",
+      "status": "CLOSED",
+      "evidence": "The contract assigns dedicated attempted/completed BVLS05 role, column-entry, mask, and held-base-copy fields inside existing WorkObservation; it preserves refinement/KKT/enclosure counter meanings and caps. Plan03 separates no-provenance default-empty from inspected-ineligible empty cases and freezes per-assembly maxima."
+    }
+  ],
+  "analytic_verification": {
+    "R05": {
+      "matrix": "21 rows by 19 retained columns with one unit entry at row retained_original_indices[k], column k",
+      "residual": "-1 on all 19 retained rows and +0 on held rows",
+      "unconstrained_step": "+1 on all retained coordinates and +0 on held coordinates",
+      "norm": "sqrt(19), strictly less than radius 8",
+      "lambda": "+0.0",
+      "defect": "exact zero for the identity retained system",
+      "disposition": "feasibly and deterministically exercises BVLS03 with 19 factor columns and full 21-coordinate KKT/scatter"
+    },
+    "R06": {
+      "matrix": "same 21-by-19 embedded identity",
+      "residual": "f[0]=-1 and all other entries zero",
+      "radius": "0.5",
+      "step": "p[0]=0.5; all other mathematical components zero",
+      "lambda": "1.0 because 1/(1+lambda)=0.5; the existing bracket reaches hi=1 exactly and all midpoints below 1 remain outside the ball",
+      "shifted_defect": "(-1+0.5)+1*0.5 = 0 at coordinate 0 and zero elsewhere",
+      "disposition": "feasibly and deterministically exercises BVLS04 without result search; p1 and p2 equal p0 mathematically"
+    },
+    "signed_zero_scope": "The authority requires held D increments and held reconstructed coordinates to use +0/base bits. Retained-coordinate zero signs remain outputs of unchanged BVLS03/04 arithmetic. Plan controls may assert independently derived retained bits, but must not make a new retained-zero canonicalization rule."
+  },
+  "findings": [
+    {
+      "severity": "medium-blocker",
+      "title": "The analytic factor is dimensionally misstated and the retained-zero expectation needs a non-normative bit qualifier",
+      "locations": [
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan03.json:31",
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan03.json:47"
+      ],
+      "evidence": "The full system has 21 residual rows and 19 retained columns, so B cannot literally be I19. The intended factor is the 21-by-19 embedded identity B[r,k]=1 exactly when r==retained_original_indices[k], with V=I19 and sigma=1. R06 also states every other retained coordinate is +0. That may be a valid independently derived bit result for this exact ordered diagonal fixture, but only held D +0 is canonical authority; the wording otherwise risks introducing zero-sign normalization in retained BVLS arithmetic.",
+      "required_fix": "State B's exact 21-by-19 row/slot formula. State expected retained-coordinate bit patterns as independently calculated results of the unchanged arithmetic, with no canonicalization, while retaining the normative +0 requirement only for D."
+    },
+    {
+      "severity": "medium-blocker",
+      "title": "L01 does not completely prescribe the direct selected-side seam",
+      "locations": [
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan03.json:48"
+      ],
+      "evidence": "At upper M=Cliq,H=0,D=0, dH=-1 selects Mixed phase. With all other upper M/H/D direction components zero, d_liquid=-1/LF and the capacity normal is negative, so the capacity branch is Drainage. The plan names only d_p,H=-1 and Mixed, leaving the other 20 direction components, lower-occupancy selection, and upper capacity branch unstated. An implementation could fill those operands from a predictor or candidate result despite the stated prohibition.",
+      "required_fix": "Freeze the complete 21-direction vector as +0 except the upper enthalpy component -1, explicitly expect upper Mixed/Drainage selection, freeze the lower selection from its stated base/direction operands, and require the direct selected assembly/validation seam to consume those values with the already declared 1 natural, 1 selected, 0 retry, and 1 new-base assembly counts."
+    }
+  ],
+  "accepted_controls_and_policy": [
+    "The six-role exact-wet/exact-zero eligibility, dark-sun separation, near-full rejection, raw and weighted full-column checks, and remaining-rank refusal are correctly frozen.",
+    "D lifetime, current physical-free face reduction, all-21 residual/KKT/validation, retained drainage/capacity rows, and ordinary active-coordinate KKT behavior are correctly specified.",
+    "R05 and R06 route mathematics is sound once the rectangular notation is corrected; no calculator or physical replay is needed for this static conclusion.",
+    "L02/L03 accurately test evaluator recomputation and defer nonlinear/root/physical acceptance to ordinary validation.",
+    "Dedicated WorkObservation fields preserve existing counter taxonomy/caps and distinguish default-empty from inspected-empty work.",
+    "Plans01/02 remain historical; plan03 is the candidate control authority; body, non-target physical controls, G4 endpoint, targets, and production activation remain gated."
+  ],
+  "disposition": {
+    "controls_scaffold_release": false,
+    "behavioral_expected_red_execution_release": false,
+    "rust_body_release": false,
+    "physical_control_or_endpoint_release": false,
+    "status": "BLOCKED_PENDING_TWO_OPERAND_CLARIFICATIONS",
+    "same_reviewer_fix_verification_required": true,
+    "scope_note": "Both remaining findings are bounded specification corrections. They do not change the adopted numerical method, require source-body work, or authorize execution."
+  }
+}

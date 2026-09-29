@@ -1,0 +1,8 @@
+{
+  "evidence_class": "Ran: original measured G4 executable copied byte-exactly outside disposable build target",
+  "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+  "original_path": "/tmp/openwepp-cold-canopy-m1-bvls05-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+  "durable_binary": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls05-g4-release08-20260929/openwepp_land_surface_energy-d48ff3e2c6b93487",
+  "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+  "scope": "Measured historical G4 release executable; source recovery08 separately preserves all764sourceentries"
+}

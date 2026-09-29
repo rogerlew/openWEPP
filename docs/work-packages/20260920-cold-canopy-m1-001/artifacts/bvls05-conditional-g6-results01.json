@@ -1,0 +1,74 @@
+{
+  "evidence_class": "Ran: five frozen G6 cases each executed once after dual corrected-G2 result readiness",
+  "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+  "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+  "plan": "bvls05-conditional-plan02.json",
+  "cases": [
+    {
+      "group": "g6-core",
+      "selector": "m1_coupled_tests::m1_trust_region_physical_budget_core_cap_control_reaches_actual_owner",
+      "receipt": "bvls05-conditional-g6-core-01.json",
+      "result": "PASS",
+      "passed": 1,
+      "skipped": 408,
+      "elapsed_seconds": 9.696212481241673,
+      "source_unchanged": true,
+      "binary_unchanged": true,
+      "captures": [],
+      "classification": "physical adapter actual owning cap control"
+    },
+    {
+      "group": "g6-raw-j",
+      "selector": "m1_coupled_tests::m1_trust_region_physical_budget_raw_jacobian_cap_control_reaches_actual_owner",
+      "receipt": "bvls05-conditional-g6-raw-j-01.json",
+      "result": "PASS",
+      "passed": 1,
+      "skipped": 408,
+      "elapsed_seconds": 1.5724828280508518,
+      "source_unchanged": true,
+      "binary_unchanged": true,
+      "captures": [],
+      "classification": "physical adapter actual owning cap control"
+    },
+    {
+      "group": "g6-hydraulic",
+      "selector": "m1_coupled_tests::m1_trust_region_physical_budget_hydraulic_cap_control_reaches_actual_owner",
+      "receipt": "bvls05-conditional-g6-hydraulic-01.json",
+      "result": "PASS",
+      "passed": 1,
+      "skipped": 408,
+      "elapsed_seconds": 0.568503987044096,
+      "source_unchanged": true,
+      "binary_unchanged": true,
+      "captures": [],
+      "classification": "physical adapter actual owning cap control"
+    },
+    {
+      "group": "g6-factor",
+      "selector": "m1_coupled_tests::m1_trust_region_physical_budget_stage1_factorization_cap_reaches_actual_face",
+      "receipt": "bvls05-conditional-g6-factor-01.json",
+      "result": "PASS",
+      "passed": 1,
+      "skipped": 408,
+      "elapsed_seconds": 0.6184245240874588,
+      "source_unchanged": true,
+      "binary_unchanged": true,
+      "captures": [],
+      "classification": "seeded analytic actual Stage1 owner"
+    },
+    {
+      "group": "g6-materialization",
+      "selector": "m1_coupled_tests::m1_trust_region_physical_budget_materialization_cap_reaches_actual_owner",
+      "receipt": "bvls05-conditional-g6-materialization-01.json",
+      "result": "PASS",
+      "passed": 1,
+      "skipped": 408,
+      "elapsed_seconds": 0.5687994589097798,
+      "source_unchanged": true,
+      "binary_unchanged": true,
+      "captures": [],
+      "classification": "physical adapter actual owning cap control"
+    }
+  ],
+  "remaining": "G3 physical and native harness incomplete; targets unspent; no production/M1 acceptance"
+}

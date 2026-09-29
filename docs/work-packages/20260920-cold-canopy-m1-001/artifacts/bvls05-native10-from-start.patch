@@ -1,0 +1,2738 @@
+--- a/crates/openwepp-land-surface-energy/Cargo.toml
++++ b/crates/openwepp-land-surface-energy/Cargo.toml
+@@ -13,6 +13,7 @@
+ m1-trust-region-analytic-stage = []
+ # Private physical-adapter controls; test-only and distinct from Stage 2.
+ m1-trust-region-physical-stage = []
++m1-trust-region-native-harness = ["test-support"]
+ default = []
+ test-support = []
+ 
+--- a/crates/openwepp-land-surface-energy/src/lib.rs
++++ b/crates/openwepp-land-surface-energy/src/lib.rs
+@@ -17,22 +17,22 @@
+ pub mod litter_phase_closure;
+ pub mod litter_phase_output;
+ mod m1_liquid_routing;
+-#[cfg(all(
+-    test,
+-    any(
++#[cfg(any(
++    all(test, any(
+         feature = "m1-trust-region-controller-stage",
+         feature = "m1-trust-region-analytic-stage",
+         feature = "m1-trust-region-physical-stage"
+-    )
++    )),
++    feature = "m1-trust-region-native-harness"
+ ))]
+ mod m1_trust_region_controller;
+-#[cfg(all(
+-    test,
+-    any(
++#[cfg(any(
++    all(test, any(
+         feature = "m1-trust-region-controller-stage",
+         feature = "m1-trust-region-analytic-stage",
+         feature = "m1-trust-region-physical-stage"
+-    )
++    )),
++    feature = "m1-trust-region-native-harness"
+ ))]
+ mod m1_trust_region_controller_interface;
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+@@ -132,7 +132,7 @@
+ mod covered_oracle_conformance_tests;
+ #[cfg(test)]
+ mod m1_coupled_tests;
+-#[cfg(test)]
++#[cfg(any(test, feature = "m1-trust-region-native-harness"))]
+ mod m1_trust_region_stage1;
+ // Stage 2 controls are deliberately a separate, feature-gated expected-red
+ // surface.  They name the controller observations that a later body must
+@@ -204,6 +204,18 @@
+     // substitute a requested outcome or alter any frozen cap.
+     pub(crate) completed_jacobi_sweeps: u8,
+     pub(crate) completed_face_pivots: u8,
++    /// BVLS-05 experimental provenance consumed by the cfg(test) numerical body.
++    pub(crate) bvls05_provenance: Option<M1TrustRegionBvls05TestProvenance>,
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug)]
++pub(crate) struct M1TrustRegionBvls05TestProvenance {
++    pub(crate) role_columns: [usize; 6],
++    pub(crate) structural_areas: [f64; 6],
++    pub(crate) wet_fractions: [f64; 6],
++    pub(crate) initial_free: [bool; 6],
++    pub(crate) physical_current_free: [bool; 6],
+ }
+ 
+ #[cfg(test)]
+@@ -443,6 +455,18 @@
+     pub(crate) whole_kkt_guard_events: u64,
+     pub(crate) upward_enclosure_operations: u64,
+     pub(crate) upward_enclosure_guard_events: u64,
++    /// BVLS-05 semantic role joins attempted/completed by test-only controls.
++    pub(crate) bvls05_role_joins_attempted: u32,
++    pub(crate) bvls05_role_joins_completed: u32,
++    /// BVLS-05 raw/weighted column-entry tests attempted/completed.
++    pub(crate) bvls05_column_entry_tests_attempted: u32,
++    pub(crate) bvls05_column_entry_tests_completed: u32,
++    /// BVLS-05 held-mask joins attempted/completed.
++    pub(crate) bvls05_mask_joins_attempted: u32,
++    pub(crate) bvls05_mask_joins_completed: u32,
++    /// BVLS-05 held base-coordinate copies attempted/completed.
++    pub(crate) bvls05_held_base_copies_attempted: u32,
++    pub(crate) bvls05_held_base_copies_completed: u32,
+ }
+ 
+ #[cfg(test)]
+@@ -469,6 +493,14 @@
+         self.whole_kkt_guard_events += other.whole_kkt_guard_events;
+         self.upward_enclosure_operations += other.upward_enclosure_operations;
+         self.upward_enclosure_guard_events += other.upward_enclosure_guard_events;
++        self.bvls05_role_joins_attempted += other.bvls05_role_joins_attempted;
++        self.bvls05_role_joins_completed += other.bvls05_role_joins_completed;
++        self.bvls05_column_entry_tests_attempted += other.bvls05_column_entry_tests_attempted;
++        self.bvls05_column_entry_tests_completed += other.bvls05_column_entry_tests_completed;
++        self.bvls05_mask_joins_attempted += other.bvls05_mask_joins_attempted;
++        self.bvls05_mask_joins_completed += other.bvls05_mask_joins_completed;
++        self.bvls05_held_base_copies_attempted += other.bvls05_held_base_copies_attempted;
++        self.bvls05_held_base_copies_completed += other.bvls05_held_base_copies_completed;
+     }
+ }
+ 
+--- a/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -1588,6 +1588,8 @@
+     );
+     assert_eq!(terminal.controller_materializations, 0);
+     assert_eq!(terminal.selected_side_probe_entries, 1);
++    assert_eq!(terminal.predictor_selected_side_probe_entries, 1);
++    assert_eq!(terminal.direct_selected_side_probe_entries, 0);
+     assert_eq!(terminal.selected_side_probes, 0);
+     assert_eq!(terminal.materialization_entries, 0);
+     assert_eq!(terminal.poison_events, 0b111);
+@@ -1765,6 +1767,452 @@
+         conditions(),
+         topology_binding(),
+     )
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn bvls05_natural_assembly(
++    input: M1CoupledColumnInput,
++    trial: M1CoupledColumnTrial,
++) -> super::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection {
++    let mut adapter = super::M1PhysicalTrustRegionAdapter::new(input, trial);
++    super::m1_trust_region_physical_adapter_bvls05_assembly_for_test(&mut adapter)
++        .expect("actual natural assembly and BVLS-05 admission")
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn bvls05_upper_capacity(input: &M1CoupledColumnInput) -> f64 {
++    super::m1_phase_join_upper_capacity_for_test(input, &trial())
++        .expect("canonical upper phase-join capacity")
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn bvls05_trial_with_upper_operands(mass: f64) -> M1CoupledColumnTrial {
++    let mut coordinates = super::m1_trial_coordinates_for_test(&trial());
++    coordinates[3] = mass;
++    coordinates[4] = 0.0;
++    coordinates[5] = 0.0;
++    M1CoupledColumnTrial::from_coordinates(coordinates)
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn bvls05_held_objective_identity(
++    inspection: &super::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection,
++) {
++    let step: [f64; 21] = std::array::from_fn(|column| {
++        if inspection.held[column] {
++            0.0
++        } else {
++            f64::from(u32::try_from(column + 1).expect("21-coordinate test vector"))
++        }
++    });
++    let full = inspection
++        .weighted_matrix
++        .iter()
++        .zip(&inspection.weighted_residual)
++        .map(|(row, residual)| {
++            residual
++                + row
++                    .iter()
++                    .zip(&step)
++                    .map(|(entry, value)| entry * value)
++                    .sum::<f64>()
++        })
++        .collect::<Vec<_>>();
++    let reduced = inspection
++        .weighted_matrix
++        .iter()
++        .zip(&inspection.weighted_residual)
++        .map(|(row, residual)| {
++            residual
++                + inspection
++                    .retained_free_ids
++                    .iter()
++                    .map(|&column| row[column] * step[column])
++                    .sum::<f64>()
++        })
++        .collect::<Vec<_>>();
++    for (full_value, reduced_value) in full.iter().zip(&reduced) {
++        assert_eq!(full_value.to_bits(), reduced_value.to_bits());
++    }
++    let full_norm = step.iter().map(|value| value * value).sum::<f64>();
++    let reduced_norm = inspection
++        .retained_free_ids
++        .iter()
++        .map(|&column| step[column] * step[column])
++        .sum::<f64>();
++    assert_eq!(full_norm.to_bits(), reduced_norm.to_bits());
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn bvls05_role_is_certified(
++    inspection: &super::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection,
++    slot: usize,
++) -> bool {
++    let provenance = inspection.provenance.expect("actual physical provenance");
++    let column = provenance.role_columns[slot];
++    let area = provenance.structural_areas[slot];
++    let wet = provenance.wet_fractions[slot];
++    let dry_bits = (area * (1.0 - wet)).to_bits() & 0x7fff_ffff_ffff_ffff;
++    let raw_zero = inspection
++        .input
++        .raw_jacobian
++        .iter()
++        .all(|row| row[column].to_bits().trailing_zeros() >= 63);
++    let weighted_zero = inspection
++        .weighted_matrix
++        .iter()
++        .all(|row| row[column].to_bits().trailing_zeros() >= 63);
++    area.is_finite()
++        && matches!(area.partial_cmp(&0.0), Some(std::cmp::Ordering::Greater))
++        && wet.to_bits() == 1.0_f64.to_bits()
++        && dry_bits == 0
++        && provenance.initial_free[slot]
++        && provenance.physical_current_free[slot]
++        && raw_zero
++        && weighted_zero
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn bvls05_assert_inspected_empty_work(
++    inspection: &super::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection,
++) {
++    assert_eq!(inspection.work.bvls05_role_joins_attempted, 6);
++    assert_eq!(inspection.work.bvls05_role_joins_completed, 6);
++    assert_eq!(inspection.work.bvls05_column_entry_tests_attempted, 252);
++    assert_eq!(inspection.work.bvls05_column_entry_tests_completed, 252);
++    assert_eq!(inspection.work.bvls05_mask_joins_attempted, 21);
++    assert_eq!(inspection.work.bvls05_mask_joins_completed, 21);
++    assert!(inspection.held.iter().all(|held| !held));
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn bvls05_trial_recomputation(
++    input: M1CoupledColumnInput,
++    base: &M1CoupledColumnTrial,
++    candidate: &M1CoupledColumnTrial,
++) -> super::M1TrustRegionBvls05TrialRecomputationObservation {
++    let mut adapter = super::M1PhysicalTrustRegionAdapter::new(input, base.clone());
++    super::m1_trust_region_physical_adapter_bvls05_trial_recomputation_for_test(
++        &mut adapter,
++        super::m1_trial_coordinates_for_test(candidate),
++    )
++    .expect("ordinary physical evaluator recomputation")
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn bvls05_assert_trial_recomputation(
++    observation: &super::M1TrustRegionBvls05TrialRecomputationObservation,
++    expected_upper_wet: bool,
++) {
++    assert_eq!(observation.current_evaluations, 2);
++    assert_eq!(observation.trial_domain_checks, 1);
++    assert!(observation.input_unchanged);
++    assert!(observation.trial_unchanged);
++    assert!(
++        observation
++            .candidate_residual
++            .iter()
++            .all(|value| value.is_finite())
++    );
++    assert!(observation.candidate_normalizers.iter().all(|value| {
++        value.is_finite() && matches!(value.partial_cmp(&0.0), Some(std::cmp::Ordering::Greater))
++    }));
++    assert!(!observation.candidate_full_residual_root);
++    assert_ne!(
++        observation.base_residual.map(f64::to_bits),
++        observation.candidate_residual.map(f64::to_bits)
++    );
++    let upper_wet = observation.candidate_wet_fractions[0];
++    if expected_upper_wet {
++        assert_eq!(upper_wet.to_bits(), 1.0_f64.to_bits());
++    } else {
++        assert!(matches!(
++            upper_wet.partial_cmp(&0.0),
++            Some(std::cmp::Ordering::Greater)
++        ));
++        assert!(matches!(
++            upper_wet.partial_cmp(&1.0),
++            Some(std::cmp::Ordering::Less)
++        ));
++    }
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++#[test]
++fn m1_trust_region_bvls05_g4_full_wet_actual_assembly() {
++    let input = retained_phase_control_input();
++    let inspection = bvls05_natural_assembly(
++        input.clone(),
++        bvls05_trial_with_upper_operands(bvls05_upper_capacity(&input)),
++    );
++    assert_eq!(inspection.input.raw_jacobian.len(), 21);
++    assert_eq!(inspection.weighted_matrix.len(), 21);
++    assert_eq!(
++        inspection.held,
++        std::array::from_fn(|column| matches!(column, 1 | 2))
++    );
++    assert_eq!(
++        inspection.retained_free_ids,
++        (0..21)
++            .filter(|&column| !matches!(column, 1 | 2))
++            .collect::<Vec<_>>()
++    );
++    for &column in &[5_usize, 11] {
++        assert!(inspection.retained_free_ids.contains(&column));
++        assert!(
++            inspection
++                .input
++                .raw_jacobian
++                .iter()
++                .any(|row| { row[column].to_bits() & 0x7fff_ffff_ffff_ffff != 0 })
++        );
++    }
++    for (row, raw_row) in inspection.input.raw_jacobian.iter().enumerate() {
++        let weight = 1.0 / inspection.input.normalizers[row];
++        for (column, raw) in raw_row.iter().enumerate() {
++            assert_eq!(
++                inspection.weighted_matrix[row][column].to_bits(),
++                (weight * raw * inspection.input.scales[column]).to_bits()
++            );
++        }
++    }
++    bvls05_held_objective_identity(&inspection);
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++#[test]
++fn m1_trust_region_bvls05_role_universe_actual_assembly() {
++    let input = retained_phase_control_input();
++    let inspection = bvls05_natural_assembly(
++        input.clone(),
++        bvls05_trial_with_upper_operands(bvls05_upper_capacity(&input)),
++    );
++    let provenance = inspection.provenance.expect("actual physical provenance");
++    assert_eq!(provenance.role_columns, [0, 1, 2, 6, 7, 8]);
++    assert_eq!(
++        provenance.structural_areas.map(f64::to_bits),
++        [
++            input.column.occupancies[0]
++                .sun
++                .leaf_area_m2_m2_tile
++                .to_bits(),
++            input.column.occupancies[0]
++                .shade
++                .leaf_area_m2_m2_tile
++                .to_bits(),
++            input.column.occupancies[0].stem_area_m2_m2_tile.to_bits(),
++            input.column.occupancies[1]
++                .sun
++                .leaf_area_m2_m2_tile
++                .to_bits(),
++            input.column.occupancies[1]
++                .shade
++                .leaf_area_m2_m2_tile
++                .to_bits(),
++            input.column.occupancies[1].stem_area_m2_m2_tile.to_bits(),
++        ]
++    );
++    assert_eq!(
++        provenance.wet_fractions.map(f64::to_bits),
++        [
++            1.0_f64.to_bits(),
++            1.0_f64.to_bits(),
++            1.0_f64.to_bits(),
++            0x3fc7_4163_587b_03b8,
++            0x3fc7_4163_587b_03b8,
++            0x3fc7_4163_587b_03b8,
++        ]
++    );
++    for (slot, &column) in provenance.role_columns.iter().enumerate() {
++        assert_eq!(
++            inspection.held[column],
++            bvls05_role_is_certified(&inspection, slot)
++        );
++    }
++    assert_eq!(provenance.structural_areas[0].to_bits(), 0.0_f64.to_bits());
++    assert!(!inspection.held[provenance.role_columns[0]]);
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++#[test]
++fn m1_trust_region_bvls05_partial_nearfull_actual_assembly() {
++    let input = retained_phase_control_input();
++    let capacity = bvls05_upper_capacity(&input);
++    for mass in [capacity / 2.0, capacity.next_down()] {
++        let inspection =
++            bvls05_natural_assembly(input.clone(), bvls05_trial_with_upper_operands(mass));
++        let provenance = inspection.provenance.expect("actual physical provenance");
++        let upper_wet = provenance.wet_fractions[0];
++        assert!(matches!(
++            upper_wet.partial_cmp(&0.0),
++            Some(std::cmp::Ordering::Greater)
++        ));
++        assert!(matches!(
++            upper_wet.partial_cmp(&1.0),
++            Some(std::cmp::Ordering::Less)
++        ));
++        bvls05_assert_inspected_empty_work(&inspection);
++    }
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++#[test]
++fn m1_trust_region_bvls05_structural_zero_anchor_actual_assembly() {
++    let input = retained_phase_control_input();
++    let capacity = bvls05_upper_capacity(&input);
++    let inspection =
++        bvls05_natural_assembly(input, bvls05_trial_with_upper_operands(capacity / 2.0));
++    let provenance = inspection.provenance.expect("actual physical provenance");
++    let anchor = provenance.role_columns[0];
++    assert_eq!(provenance.structural_areas[0].to_bits(), 0.0_f64.to_bits());
++    for (column, value) in inspection.input.raw_jacobian[anchor].iter().enumerate() {
++        let expected: f64 = if column == anchor { 1.0 } else { 0.0 };
++        assert_eq!(value.to_bits(), expected.to_bits());
++    }
++    assert!(!inspection.held[anchor]);
++    bvls05_assert_inspected_empty_work(&inspection);
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++#[test]
++fn m1_trust_region_bvls05_full_to_dry_trial_recomputation() {
++    let input = retained_phase_control_input();
++    let capacity = bvls05_upper_capacity(&input);
++    let full = bvls05_trial_with_upper_operands(capacity);
++    let dry = bvls05_trial_with_upper_operands(capacity / 2.0);
++    let base = bvls05_natural_assembly(input.clone(), full.clone());
++    assert_eq!(
++        base.held,
++        std::array::from_fn(|column| matches!(column, 1 | 2))
++    );
++    let recomputed = bvls05_trial_recomputation(input.clone(), &full, &dry);
++    bvls05_assert_trial_recomputation(&recomputed, false);
++    let dry_assembly = bvls05_natural_assembly(input, dry);
++    bvls05_assert_inspected_empty_work(&dry_assembly);
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++#[test]
++fn m1_trust_region_bvls05_dry_to_full_trial_recomputation() {
++    let input = retained_phase_control_input();
++    let capacity = bvls05_upper_capacity(&input);
++    let dry = bvls05_trial_with_upper_operands(capacity / 2.0);
++    let full = bvls05_trial_with_upper_operands(capacity);
++    let base = bvls05_natural_assembly(input.clone(), dry.clone());
++    bvls05_assert_inspected_empty_work(&base);
++    let recomputed = bvls05_trial_recomputation(input.clone(), &dry, &full);
++    bvls05_assert_trial_recomputation(&recomputed, true);
++    let full_assembly = bvls05_natural_assembly(input, full);
++    assert_eq!(
++        full_assembly.held,
++        std::array::from_fn(|column| matches!(column, 1 | 2))
++    );
++    assert_eq!(full_assembly.work.bvls05_role_joins_completed, 6);
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn bvls05_assert_fresh_certificate_scan(
++    inspection: &super::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection,
++) {
++    assert_eq!(inspection.work.bvls05_role_joins_attempted, 6);
++    assert_eq!(inspection.work.bvls05_role_joins_completed, 6);
++    assert_eq!(inspection.work.bvls05_column_entry_tests_attempted, 252);
++    assert_eq!(inspection.work.bvls05_column_entry_tests_completed, 252);
++    assert_eq!(inspection.work.bvls05_mask_joins_attempted, 21);
++    assert_eq!(inspection.work.bvls05_mask_joins_completed, 21);
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++#[test]
++fn m1_trust_region_bvls05_selected_retry_lifecycle() {
++    let input = retained_phase_control_input();
++    let capacity = bvls05_upper_capacity(&input);
++    let full = bvls05_trial_with_upper_operands(capacity);
++    let dry = bvls05_trial_with_upper_operands(capacity / 2.0);
++    let mut selected_direction = [0.0; 21];
++    selected_direction[4] = -1.0;
++    let mut adapter = super::M1PhysicalTrustRegionAdapter::new(input.clone(), full.clone());
++    let observed = super::m1_trust_region_physical_adapter_bvls05_selected_retry_for_test(
++        &mut adapter,
++        selected_direction,
++        super::m1_trial_coordinates_for_test(&dry),
++    )
++    .expect("actual selected assembly, retry, and new-base lifecycle");
++    assert_eq!(observed.natural_assemblies, 2);
++    assert_eq!(observed.selected_assemblies, 1);
++    assert_eq!(observed.raw_jacobian_assemblies, 3);
++    assert!(observed.input_unchanged);
++    assert!(observed.trial_unchanged);
++    assert_eq!(observed.lifecycle.selected_phase[0].phase(), M1Phase::Mixed);
++    assert_eq!(
++        observed.lifecycle.selected_phase[0].capacity_branch(),
++        M1CapacityBranch::Drainage
++    );
++    assert_eq!(observed.lifecycle.selected_phase[1].phase(), M1Phase::Ice);
++    assert_eq!(
++        observed.lifecycle.selected_phase[1].capacity_branch(),
++        M1CapacityBranch::Drainage
++    );
++    bvls05_assert_fresh_certificate_scan(&observed.lifecycle.natural);
++    bvls05_assert_fresh_certificate_scan(&observed.lifecycle.selected);
++    assert_eq!(
++        observed.lifecycle.natural.held,
++        std::array::from_fn(|column| matches!(column, 1 | 2))
++    );
++    assert_eq!(
++        observed.lifecycle.selected.held,
++        std::array::from_fn(|column| matches!(column, 1 | 2))
++    );
++    assert_eq!(
++        observed.lifecycle.retry.held,
++        observed.lifecycle.selected.held
++    );
++    assert_eq!(
++        observed
++            .lifecycle
++            .retry
++            .input
++            .raw_jacobian
++            .map(|row| row.map(f64::to_bits)),
++        observed
++            .lifecycle
++            .selected
++            .input
++            .raw_jacobian
++            .map(|row| row.map(f64::to_bits))
++    );
++    assert_eq!(
++        observed.lifecycle.retry.input.base.map(f64::to_bits),
++        observed.lifecycle.selected.input.base.map(f64::to_bits)
++    );
++    assert_eq!(observed.lifecycle.retry.work.bvls05_role_joins_attempted, 0);
++    assert_eq!(observed.lifecycle.retry.work.bvls05_role_joins_completed, 0);
++    assert_eq!(
++        observed
++            .lifecycle
++            .retry
++            .work
++            .bvls05_column_entry_tests_attempted,
++        0
++    );
++    assert_eq!(
++        observed
++            .lifecycle
++            .retry
++            .work
++            .bvls05_column_entry_tests_completed,
++        0
++    );
++    assert_eq!(
++        observed.lifecycle.retry.work.bvls05_mask_joins_attempted,
++        21
++    );
++    assert_eq!(
++        observed.lifecycle.retry.work.bvls05_mask_joins_completed,
++        21
++    );
++    bvls05_assert_fresh_certificate_scan(&observed.lifecycle.new_base);
++    bvls05_assert_inspected_empty_work(&observed.lifecycle.new_base);
+ }
+ 
+ #[cfg(feature = "m1-trust-region-physical-stage")]
+@@ -4961,11 +5409,17 @@
+         "factor_application_operations":work.factor_application_operations,"coordinate_update_operations":work.coordinate_update_operations,
+         "whole_kkt_operations":work.whole_kkt_operations,"whole_kkt_guard_events":work.whole_kkt_guard_events,
+         "upward_enclosure_operations":work.upward_enclosure_operations,"upward_enclosure_guard_events":work.upward_enclosure_guard_events
++        ,"bvls05_role_joins_attempted":work.bvls05_role_joins_attempted,"bvls05_role_joins_completed":work.bvls05_role_joins_completed
++        ,"bvls05_column_entry_tests_attempted":work.bvls05_column_entry_tests_attempted,"bvls05_column_entry_tests_completed":work.bvls05_column_entry_tests_completed
++        ,"bvls05_mask_joins_attempted":work.bvls05_mask_joins_attempted,"bvls05_mask_joins_completed":work.bvls05_mask_joins_completed
++        ,"bvls05_held_base_copies_attempted":work.bvls05_held_base_copies_attempted,"bvls05_held_base_copies_completed":work.bvls05_held_base_copies_completed
+     })
+ }
+ 
+ #[cfg(feature = "m1-trust-region-physical-stage")]
+-fn m1_physical_budget_json(snapshot: Option<crate::M1PhysicalBudgetSnapshot>) -> serde_json::Value {
++pub(crate) fn m1_physical_budget_json(
++    snapshot: Option<crate::M1PhysicalBudgetSnapshot>,
++) -> serde_json::Value {
+     snapshot.map_or(serde_json::Value::Null, |value| serde_json::json!({
+         "core_attempted": value.core_attempted, "core": value.core,
+         "raw_jacobian_attempted": value.raw_jacobian_attempted, "raw_jacobian": value.raw_jacobian,
+@@ -5070,7 +5524,7 @@
+ }
+ 
+ #[cfg(feature = "m1-trust-region-physical-stage")]
+-fn m1_physical_runtime_json() -> serde_json::Value {
++pub(crate) fn m1_physical_runtime_json() -> serde_json::Value {
+     let runtime = super::m1_loop_activity_observation_for_test();
+     serde_json::json!({"complete_evaluator_entries":runtime.complete_evaluator_entries,
+         "hydraulic_entries":runtime.hydraulic_entries,"actual_hydraulic_entries":runtime.actual_hydraulic_entries,
+@@ -5951,6 +6405,8 @@
+     );
+     assert_eq!(observed.controller_materializations, 0);
+     assert_eq!(observed.selected_side_probe_entries, 1);
++    assert_eq!(observed.predictor_selected_side_probe_entries, 1);
++    assert_eq!(observed.direct_selected_side_probe_entries, 0);
+     assert_eq!(observed.selected_side_probes, 0);
+     assert_eq!(observed.materialization_entries, 0);
+     assert_eq!(observed.poison_events, 0b111);
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs
+@@ -160,6 +160,10 @@
+     proposal_trace:
+         Vec<super::m1_trust_region_controller_interface::M1TrustRegionControllerTransition>,
+     work: super::M1TrustRegionWorkObservation,
++    #[cfg(test)]
++    bvls05_provenance: Option<super::M1TrustRegionBvls05TestProvenance>,
++    #[cfg(test)]
++    bvls05_certificate: Option<super::m1_trust_region_stage1::M1TrustRegionBvls05Certificate>,
+ }
+ #[derive(Clone, Copy, Eq, PartialEq)]
+ enum ReplacementWitnessEligibility {
+@@ -282,6 +286,23 @@
+     })
+ }
+ impl<P: Clone, Phase: Clone + PartialEq> FoundationState<P, Phase> {
++    fn subproblem_input(&self) -> super::M1TrustRegionSubproblemInput {
++        super::M1TrustRegionSubproblemInput {
++            raw_residual: self.current.raw_residual,
++            raw_jacobian: self.raw_jacobian,
++            normalizers: self.current.dynamic_normalizers,
++            scales: self.scales,
++            lower: self.bounds[0],
++            upper: self.bounds[1],
++            initial_radius: self.radius,
++            base: self.current.coordinates,
++            test_work: super::M1TrustRegionTestWorkState {
++                #[cfg(test)]
++                bvls05_provenance: self.bvls05_provenance,
++                ..super::M1TrustRegionTestWorkState::default()
++            },
++        }
++    }
+     pub(crate) fn initialize<
+         E,
+         V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,
+@@ -297,6 +318,8 @@
+         let raw_jacobian = evaluator
+             .raw_jacobian(&current, None, zero)
+             .map_err(M1TrustRegionControllerError::Own)?;
++        #[cfg(test)]
++        let bvls05_provenance = evaluator.bvls05_provenance(&current);
+         Ok(Self {
+             current,
+             radius: 1.0,
+@@ -313,6 +336,10 @@
+             witness_eligibility: ReplacementWitnessEligibility::FullProposal,
+             proposal_trace: Vec::new(),
+             work: super::M1TrustRegionWorkObservation::default(),
++            #[cfg(test)]
++            bvls05_provenance,
++            #[cfg(test)]
++            bvls05_certificate: None,
+         })
+     }
+     pub(crate) fn solve_proposal(
+@@ -331,18 +358,11 @@
+                 &self.scales,
+             )
+             .map_err(M1TrustRegionControllerError::Numerical)?;
+-        let input = super::M1TrustRegionSubproblemInput {
+-            raw_residual: self.current.raw_residual,
+-            raw_jacobian: self.raw_jacobian,
+-            normalizers: self.current.dynamic_normalizers,
+-            scales: self.scales,
+-            lower: self.bounds[0],
+-            upper: self.bounds[1],
+-            initial_radius: self.radius,
+-            base: self.current.coordinates,
+-            test_work: super::M1TrustRegionTestWorkState::default(),
+-        };
+-        let observation = match super::m1_trust_region_stage1::solve_subproblem(&input) {
++        let input = self.subproblem_input();
++        let observation = match super::m1_trust_region_stage1::solve_subproblem_with_certificate(
++            &input,
++            &mut self.bvls05_certificate,
++        ) {
+             Ok(observation) => {
+                 self.work.absorb(&observation.work);
+                 observation
+@@ -369,6 +389,33 @@
+             weighted_jacobian,
+             predicted_reduction,
+         })
++    }
++
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    pub(crate) fn inspect_bvls05_assembly_for_test(
++        &mut self,
++    ) -> Result<
++        super::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection,
++        M1TrustRegionControllerError<core::convert::Infallible>,
++    > {
++        let input = self.subproblem_input();
++        super::m1_trust_region_stage1::inspect_bvls05_assembly_with_certificate(
++            &input,
++            &mut self.bvls05_certificate,
++        )
++        .map_err(|refusal| M1TrustRegionControllerError::Subproblem(Box::new(refusal)))
++    }
++
++    fn replace_assembly_for_bvls05<E, V>(&mut self, evaluator: &V, raw_jacobian: &[[f64; 21]; 21])
++    where
++        V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,
++    {
++        self.raw_jacobian = *raw_jacobian;
++        #[cfg(test)]
++        {
++            self.bvls05_provenance = evaluator.bvls05_provenance(&self.current);
++            self.bvls05_certificate = None;
++        }
+     }
+ 
+     fn weighted_array(model: &ProposalModel) -> [[f64; 21]; 21] {
+@@ -992,9 +1039,10 @@
+             if let Some(lifecycle) = predictor_lifecycle.take() {
+                 lifecycle.discard();
+             }
+-            self.raw_jacobian = evaluator
++            let raw_jacobian = evaluator
+                 .raw_jacobian(&self.current, Some(&phase), predictor_direction)
+                 .map_err(M1TrustRegionControllerError::Own)?;
++            self.replace_assembly_for_bvls05::<E, V>(evaluator, &raw_jacobian);
+             self.selected_phase = phase.clone();
+             let model = self.proposal_model()?;
+             #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+@@ -1127,11 +1175,94 @@
+             .map_err(M1TrustRegionControllerError::Own)?;
+         self.selected_phase = self.natural_phase.clone();
+         self.phase_finalized = false;
+-        self.raw_jacobian = evaluator
++        let raw_jacobian = evaluator
+             .raw_jacobian(&self.current, None, zero)
+             .map_err(M1TrustRegionControllerError::Own)?;
++        self.replace_assembly_for_bvls05::<E, V>(evaluator, &raw_jacobian);
+         Ok(())
+     }
++}
++
++/// Private lifecycle evidence for the BVLS-05 selected-assembly control.  Each
++/// inspection reaches the same `FoundationState` certificate cache as a solve,
++/// but deliberately stops before factorization or a proposal endpoint.
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) struct M1TrustRegionBvls05SelectedRetryObservation<Phase> {
++    pub(crate) selected_phase: Phase,
++    pub(crate) natural: super::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection,
++    pub(crate) selected: super::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection,
++    pub(crate) retry: super::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection,
++    pub(crate) new_base: super::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn bvls05_inspection_error<E>(
++    error: M1TrustRegionControllerError<core::convert::Infallible>,
++) -> M1TrustRegionControllerError<E> {
++    match error {
++        M1TrustRegionControllerError::Subproblem(refusal) => {
++            M1TrustRegionControllerError::Subproblem(refusal)
++        }
++        M1TrustRegionControllerError::CoreWorkCap => M1TrustRegionControllerError::CoreWorkCap,
++        M1TrustRegionControllerError::Numerical(message) => {
++            M1TrustRegionControllerError::Numerical(message)
++        }
++        M1TrustRegionControllerError::IncompleteScope => {
++            M1TrustRegionControllerError::IncompleteScope
++        }
++        M1TrustRegionControllerError::Own(never) => match never {},
++    }
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_trust_region_bvls05_selected_retry_lifecycle_for_test<E, P, Phase, V>(
++    evaluator: &mut V,
++    selected_direction: [f64; 21],
++    new_base: [f64; 21],
++) -> Result<M1TrustRegionBvls05SelectedRetryObservation<Phase>, M1TrustRegionControllerError<E>>
++where
++    P: Clone,
++    Phase: Clone + PartialEq,
++    V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,
++{
++    let mut state = FoundationState::initialize(evaluator)?;
++    let natural = state
++        .inspect_bvls05_assembly_for_test()
++        .map_err(bvls05_inspection_error)?;
++    let selected_phase = evaluator
++        .select_phase(&state.current, selected_direction)
++        .map_err(M1TrustRegionControllerError::Own)?;
++    let raw_jacobian = evaluator
++        .raw_jacobian(&state.current, Some(&selected_phase), selected_direction)
++        .map_err(M1TrustRegionControllerError::Own)?;
++    state.replace_assembly_for_bvls05::<E, V>(evaluator, &raw_jacobian);
++    state.selected_phase = selected_phase.clone();
++    let selected = state
++        .inspect_bvls05_assembly_for_test()
++        .map_err(bvls05_inspection_error)?;
++    state.radius *= 0.25;
++    let retry = state
++        .inspect_bvls05_assembly_for_test()
++        .map_err(bvls05_inspection_error)?;
++    state.current = state.budget.enter(evaluator, new_base)?;
++    state.reassemble_current(evaluator)?;
++    let new_base = state
++        .inspect_bvls05_assembly_for_test()
++        .map_err(bvls05_inspection_error)?;
++    Ok(M1TrustRegionBvls05SelectedRetryObservation {
++        selected_phase,
++        natural,
++        selected,
++        retry,
++        new_base,
++    })
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_trust_region_full_residual_root_predicate_for_test<P: Clone>(
++    evaluation: &M1TrustRegionControllerEvaluation<P>,
++) -> Result<bool, &'static str> {
++    FoundationState::<P, ()>::dynamic_max(evaluation).map(|maximum| maximum <= 1.0)
+ }
+ 
+ pub(crate) fn m1_trust_region_controller_transition_for_test<E, P, Phase, V>(
+@@ -1477,11 +1608,25 @@
+     P: Clone,
+     Phase: Clone + PartialEq,
+ {
++    let initialization_started = std::time::Instant::now();
+     let mut state = FoundationState::initialize(evaluator)?;
++    let initialization_wall_ns = initialization_started.elapsed().as_nanos();
++    let clock = M1DomainRefusalClock::start();
+     let result = state.transition_model(evaluator).map(|_| ());
++    let timing = clock.finish();
+     evaluator.observe_controller_accounting(state.work.clone());
+     evaluator
+         .observe_controller_terminal_state(state.current.coordinates, state.materialization_count);
++    eprintln!(
++        "G4_PROPOSAL_COST {}",
++        serde_json::json!({
++            "result":if result.is_ok() {"transition_model"} else {"typed_refusal"},
++            "initialization_wall_ns":initialization_wall_ns,
++            "timing":timing,
++            "work":crate::m1_coupled_tests::m1_physical_work_json(&state.work),
++            "work_categories_overlap":"refinement and whole-KKT/enclosure counters overlap and are not summed into a unique total"
++        })
++    );
+     result
+ }
+ pub(crate) fn m1_trust_region_seeded_entry_guard_for_test<
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs
+@@ -121,6 +121,15 @@
+         [[f64; M1_TRUST_REGION_CONTROLLER_DIMENSION]; M1_TRUST_REGION_CONTROLLER_DIMENSION],
+         Self::Error,
+     >;
++    /// Optional test-only semantic ownership for BVLS-05.  Analytic
++    /// evaluators retain the default-empty route.
++    #[cfg(test)]
++    fn bvls05_provenance(
++        &self,
++        _current: &M1TrustRegionControllerEvaluation<Self::Payload>,
++    ) -> Option<crate::M1TrustRegionBvls05TestProvenance> {
++        None
++    }
+     /// Completes only a pending current base after selected-tangent work and
+     /// before prediction/trial admission. Analytic fixtures are already
+     /// complete and leave this unchanged.
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -794,9 +794,20 @@
+     pub(crate) accepted_installs: Vec<M1FacePivotAcceptedInstall>,
+     pub(crate) post_update_admissions: Vec<M1FacePivotPostUpdateAdmission>,
+     pub(crate) lifecycle: Vec<&'static str>,
++    pub(crate) bvls05_lifecycle: Vec<M1FacePivotBvls05Capture>,
+     /// Copied at first rank refusal; the runtime did not sort this spectrum.
+     pub(crate) rank_refusal_factor: Option<M1FacePivotFactorCapture>,
+     pub(crate) refusal: Option<M1FacePivotCaptureRefusal>,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1FacePivotBvls05Capture {
++    pub(crate) provenance: Option<super::M1TrustRegionBvls05TestProvenance>,
++    pub(crate) held: [bool; 21],
++    pub(crate) reused: bool,
++    pub(crate) free_ids: Vec<usize>,
++    pub(crate) work: super::M1TrustRegionWorkObservation,
+ }
+ 
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+@@ -968,6 +979,10 @@
+ #[cfg(test)]
+ #[derive(Clone, Debug, Default)]
+ struct RefinementObservationTrace {
++    // Copied at the actual refinement boundary.  These metadata never enter
++    // face preparation, factorization, masks, or arithmetic.
++    face_free_ids: Option<Vec<usize>>,
++    factor_order: Option<Vec<usize>>,
+     live_state_entry: Option<[u64; 21]>,
+     live_state_exit: Option<[u64; 21]>,
+     p0: Option<[f64; 21]>,
+@@ -1638,6 +1653,27 @@
+             summary.completed_sweeps,
+             summary.refused
+         );
++    }
++    output.push_str("],\"bvls05_lifecycle\":[");
++    for (index, event) in capture.bvls05_lifecycle.iter().enumerate() {
++        if index != 0 {
++            output.push(',');
++        }
++        let provenance = event.provenance.map(|value| {
++            serde_json::json!({
++                "role_columns":value.role_columns,
++                "structural_areas":value.structural_areas.map(f64::to_bits),
++                "wet_fractions":value.wet_fractions.map(f64::to_bits)
++            })
++        });
++        let value = serde_json::json!({
++            "provenance":provenance,
++            "held":event.held,
++            "reused":event.reused,
++            "free_ids":event.free_ids,
++            "work":format!("{:?}", event.work)
++        });
++        output.push_str(&value.to_string());
+     }
+ }
+ 
+@@ -2104,6 +2140,7 @@
+             governed_thresholds: [1.0; 4],
+             admitted: false,
+         }],
++        bvls05_lifecycle: Vec::new(),
+         lifecycle: vec!["test"],
+         rank_refusal_factor: None,
+         refusal: Some(populated_face_pivot_refusal_for_test()),
+@@ -2207,6 +2244,7 @@
+                 accepted_installs: Vec::new(),
+                 post_update_admissions: Vec::new(),
+                 lifecycle: Vec::new(),
++                bvls05_lifecycle: Vec::new(),
+                 rank_refusal_factor: None,
+                 refusal: None,
+             });
+@@ -3638,6 +3676,11 @@
+     upper_active: [bool; 21],
+     free: [bool; 21],
+     initial_free: [bool; 21],
++    // BVLS-05 is an assembly-owned direction hold.  It is deliberately
++    // separate from the physical active-bound masks.
++    held: [bool; 21],
++    bvls05_inspected: bool,
++    bvls05_work: super::M1TrustRegionWorkObservation,
+     events: Vec<super::M1TrustRegionKktEvent>,
+     entered: u8,
+     completed_pivots: u8,
+@@ -3659,6 +3702,9 @@
+             upper_active: [false; 21],
+             initial_free: free,
+             free,
++            held: [false; 21],
++            bvls05_inspected: false,
++            bvls05_work: super::M1TrustRegionWorkObservation::default(),
+             events: Vec::new(),
+             entered: 0,
+             completed_pivots: input.test_work.completed_face_pivots,
+@@ -4070,6 +4116,14 @@
+         whole_kkt_guard_events: state.refinement_work.whole_kkt_guard_events,
+         upward_enclosure_operations: state.refinement_work.upward_enclosure_operations,
+         upward_enclosure_guard_events: state.refinement_work.upward_enclosure_guard_events,
++        bvls05_role_joins_attempted: state.bvls05_work.bvls05_role_joins_attempted,
++        bvls05_role_joins_completed: state.bvls05_work.bvls05_role_joins_completed,
++        bvls05_column_entry_tests_attempted: state.bvls05_work.bvls05_column_entry_tests_attempted,
++        bvls05_column_entry_tests_completed: state.bvls05_work.bvls05_column_entry_tests_completed,
++        bvls05_mask_joins_attempted: state.bvls05_work.bvls05_mask_joins_attempted,
++        bvls05_mask_joins_completed: state.bvls05_work.bvls05_mask_joins_completed,
++        bvls05_held_base_copies_attempted: state.bvls05_work.bvls05_held_base_copies_attempted,
++        bvls05_held_base_copies_completed: state.bvls05_work.bvls05_held_base_copies_completed,
+     }
+ }
+ 
+@@ -4314,20 +4368,26 @@
+     matrix: Vec<Vec<f64>>,
+ }
+ 
++#[derive(Clone, Copy)]
++struct FaceMaskContext<'a> {
++    lower_active: &'a [bool; 21],
++    upper_active: &'a [bool; 21],
++    free: &'a [bool; 21],
++    held: &'a [bool; 21],
++}
++
+ fn prepare_face(
+     initial_radius: f64,
+     step: &[f64; 21],
+-    lower_active: &[bool; 21],
+-    upper_active: &[bool; 21],
+-    free: &[bool; 21],
++    masks: FaceMaskContext<'_>,
+     weighted_residual: &[f64],
+     weighted_matrix: &[Vec<f64>],
+ ) -> Result<FacePreparation, M1TrustRegionRefusalKind> {
+     const N: usize = 21;
+     let mut active_square_sum = 0.0;
+-    for col in 0..N {
+-        if lower_active[col] || upper_active[col] {
+-            let square = step[col] * step[col];
++    for (col, value) in step.iter().enumerate() {
++        if masks.lower_active[col] || masks.upper_active[col] {
++            let square = value * value;
+             if !square.is_finite() {
+                 return Err(M1TrustRegionRefusalKind::SvdNonFinite);
+             }
+@@ -4338,15 +4398,21 @@
+         }
+     }
+     let r2 = initial_radius * initial_radius - active_square_sum;
+-    if !r2.is_finite() || r2 < 0.0 || r2 == 0.0 || !free.iter().any(|value| *value) {
++    if !r2.is_finite()
++        || r2 < 0.0
++        || r2 == 0.0
++        || !(0..N).any(|index| masks.free[index] && !masks.held[index])
++    {
+         return Err(M1TrustRegionRefusalKind::DegenerateFace);
+     }
+-    let free_ids: Vec<usize> = (0..N).filter(|&index| free[index]).collect();
++    let free_ids: Vec<usize> = (0..N)
++        .filter(|&index| masks.free[index] && !masks.held[index])
++        .collect();
+     let mut residual = [0.0; N];
+     for row in 0..N {
+         let mut active_product_sum = 0.0;
+         for col in 0..N {
+-            if lower_active[col] || upper_active[col] {
++            if masks.lower_active[col] || masks.upper_active[col] {
+                 let term = weighted_matrix[row][col] * step[col];
+                 if !term.is_finite() {
+                     return Err(M1TrustRegionRefusalKind::SvdNonFinite);
+@@ -4852,6 +4918,235 @@
+     columns
+ }
+ 
++// BVLS-05 test-build numerical ownership.  The certificate derives a stable
++// held set from already assembled operands and is admitted by the owning solve
++// path; controls may inspect that same admission before factorization.
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++enum Bvls05Role {
++    SunLeaf,
++    ShadeLeaf,
++    DryStem,
++    Other,
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug)]
++struct Bvls05RoleInput {
++    role: Bvls05Role,
++    column: usize,
++    structural_area: f64,
++    wet_fraction: f64,
++    initial_free: bool,
++    physical_current_free: bool,
++}
++
++#[cfg(test)]
++#[derive(Clone, Debug, Default)]
++struct Bvls05CertificateObservation {
++    held: [bool; 21],
++    work: super::M1TrustRegionWorkObservation,
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug)]
++pub(crate) struct M1TrustRegionBvls05Certificate {
++    held: [bool; 21],
++}
++
++/// Bounded test-only view of the actual admitted assembly.  It is constructed
++/// by the same preparation and certificate admission path as the solver, but
++/// deliberately stops before factorization and proposal construction.
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[derive(Clone, Debug)]
++pub(crate) struct M1TrustRegionBvls05AssemblyInspection {
++    pub(crate) provenance: Option<super::M1TrustRegionBvls05TestProvenance>,
++    pub(crate) held: [bool; 21],
++    pub(crate) retained_free_ids: Vec<usize>,
++    pub(crate) weighted_residual: Vec<f64>,
++    pub(crate) weighted_matrix: Vec<Vec<f64>>,
++    pub(crate) input: super::M1TrustRegionSubproblemInput,
++    pub(crate) work: super::M1TrustRegionWorkObservation,
++}
++
++#[cfg(test)]
++fn bvls05_certificate_for_test(
++    roles: &[Bvls05RoleInput],
++    raw: &[[f64; 21]; 21],
++    weighted: &[Vec<f64>],
++) -> Bvls05CertificateObservation {
++    let mut observed = Bvls05CertificateObservation::default();
++    for input in roles {
++        observed.work.bvls05_role_joins_attempted += 1;
++        observed.work.bvls05_role_joins_completed += 1;
++        let dry_temperature = matches!(
++            input.role,
++            Bvls05Role::SunLeaf | Bvls05Role::ShadeLeaf | Bvls05Role::DryStem
++        );
++        let effective_dry_area = input.structural_area * (1.0 - input.wet_fraction);
++        let eligible_prefix = dry_temperature
++            && input.structural_area.is_finite()
++            && input.structural_area > 0.0
++            && input.wet_fraction.to_bits() == 1.0_f64.to_bits()
++            && effective_dry_area == 0.0
++            && input.initial_free
++            && input.physical_current_free;
++        let mut zero = true;
++        for (row, raw_row) in raw.iter().enumerate() {
++            observed.work.bvls05_column_entry_tests_attempted += 2;
++            let Some(weighted_entry) = weighted
++                .get(row)
++                .and_then(|values| values.get(input.column))
++            else {
++                zero = false;
++                break;
++            };
++            if raw_row[input.column] != 0.0 || *weighted_entry != 0.0 {
++                zero = false;
++            }
++            observed.work.bvls05_column_entry_tests_completed += 2;
++        }
++        if eligible_prefix && input.column < 21 && weighted.len() == 21 && zero {
++            observed.held[input.column] = true;
++        }
++    }
++    // No provenance takes the default-empty shortcut with no BVLS-05 work.
++    // An inspected certificate joins its completed held set to all face slots.
++    if !roles.is_empty() {
++        observed.work.bvls05_mask_joins_attempted = 21;
++        observed.work.bvls05_mask_joins_completed = 21;
++    }
++    observed
++}
++
++#[cfg(test)]
++fn bvls05_admit_for_input(
++    input: &super::M1TrustRegionSubproblemInput,
++    prepared: &PreparedSubproblem,
++    state: &SubproblemState,
++) -> Bvls05CertificateObservation {
++    let Some(provenance) = input.test_work.bvls05_provenance else {
++        return Bvls05CertificateObservation::default();
++    };
++    let kinds = [
++        Bvls05Role::SunLeaf,
++        Bvls05Role::ShadeLeaf,
++        Bvls05Role::DryStem,
++        Bvls05Role::SunLeaf,
++        Bvls05Role::ShadeLeaf,
++        Bvls05Role::DryStem,
++    ];
++    let roles: [Bvls05RoleInput; 6] = std::array::from_fn(|slot| Bvls05RoleInput {
++        role: kinds[slot],
++        column: provenance.role_columns[slot],
++        structural_area: provenance.structural_areas[slot],
++        wet_fraction: provenance.wet_fractions[slot],
++        initial_free: state.initial_free[provenance.role_columns[slot]],
++        physical_current_free: state.free[provenance.role_columns[slot]],
++    });
++    bvls05_certificate_for_test(&roles, &input.raw_jacobian, &prepared.weighted_matrix)
++}
++
++#[cfg(test)]
++fn bvls05_scatter_held(
++    base: [f64; 21],
++    held: [bool; 21],
++    mut step: [f64; 21],
++    mut candidate: [f64; 21],
++    work: &mut super::M1TrustRegionWorkObservation,
++) -> ([f64; 21], [f64; 21]) {
++    for coordinate in 0..21 {
++        if held[coordinate] {
++            work.bvls05_held_base_copies_attempted += 1;
++            step[coordinate] = 0.0;
++            candidate[coordinate] = base[coordinate];
++            work.bvls05_held_base_copies_completed += 1;
++        }
++    }
++    (step, candidate)
++}
++
++#[cfg(test)]
++fn bvls05_admit_state(
++    input: &super::M1TrustRegionSubproblemInput,
++    prepared: &PreparedSubproblem,
++    state: &mut SubproblemState,
++    certificate_cache: &mut Option<M1TrustRegionBvls05Certificate>,
++) {
++    if input.test_work.bvls05_provenance.is_none() {
++        return;
++    }
++    if let Some(certificate) = *certificate_cache {
++        state.held = certificate.held;
++        state.bvls05_inspected = true;
++        return;
++    }
++    let certificate = bvls05_admit_for_input(input, prepared, state);
++    state.held = certificate.held;
++    state.bvls05_work = certificate.work;
++    state.bvls05_inspected = true;
++    // Certificate admission does not itself enter a face; each actual face
++    // charges its own full-coordinate mask join in solve_face.
++    state.bvls05_work.bvls05_mask_joins_attempted = 0;
++    state.bvls05_work.bvls05_mask_joins_completed = 0;
++    *certificate_cache = Some(M1TrustRegionBvls05Certificate {
++        held: certificate.held,
++    });
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn capture_bvls05_admission(
++    input: &super::M1TrustRegionSubproblemInput,
++    state: &SubproblemState,
++    reused: bool,
++) {
++    if !state.bvls05_inspected {
++        return;
++    }
++    record_face_pivot_capture(|capture| {
++        capture.bvls05_lifecycle.push(M1FacePivotBvls05Capture {
++            provenance: input.test_work.bvls05_provenance,
++            held: state.held,
++            reused,
++            free_ids: (0..21)
++                .filter(|&coordinate| state.free[coordinate] && !state.held[coordinate])
++                .collect(),
++            work: state.bvls05_work.clone(),
++        });
++    });
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn inspect_bvls05_assembly_with_certificate(
++    input: &super::M1TrustRegionSubproblemInput,
++    certificate_cache: &mut Option<M1TrustRegionBvls05Certificate>,
++) -> Result<M1TrustRegionBvls05AssemblyInspection, super::M1TrustRegionSubproblemRefusal> {
++    let prepared = prepare_subproblem(input).map_err(|refusal| *refusal)?;
++    let mut state = SubproblemState::new(input);
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let bvls05_reused = certificate_cache.is_some();
++    bvls05_admit_state(input, &prepared, &mut state, certificate_cache);
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    capture_bvls05_admission(input, &state, bvls05_reused);
++    if state.bvls05_inspected {
++        // Inspection constructs the same retained free-coordinate face view as
++        // an entered solve face, so it owns one full-coordinate mask join.
++        state.bvls05_work.bvls05_mask_joins_attempted += 21;
++        state.bvls05_work.bvls05_mask_joins_completed += 21;
++    }
++    Ok(M1TrustRegionBvls05AssemblyInspection {
++        provenance: input.test_work.bvls05_provenance,
++        held: state.held,
++        retained_free_ids: (0..21)
++            .filter(|&coordinate| state.free[coordinate] && !state.held[coordinate])
++            .collect(),
++        weighted_residual: prepared.weighted_residual,
++        weighted_matrix: prepared.weighted_matrix,
++        input: input.clone(),
++        work: state.bvls05_work,
++    })
++}
++
+ struct FaceSolution {
+     free_ids: Vec<usize>,
+     trace: LambdaTrace,
+@@ -4868,12 +5163,19 @@
+     prepared: &PreparedSubproblem,
+     state: &mut SubproblemState,
+ ) -> Result<FaceSolution, super::M1TrustRegionSubproblemRefusal> {
++    if state.bvls05_inspected {
++        state.bvls05_work.bvls05_mask_joins_attempted += 21;
++        state.bvls05_work.bvls05_mask_joins_completed += 21;
++    }
+     let face = prepare_face(
+         input.initial_radius,
+         &state.p,
+-        &state.lower_active,
+-        &state.upper_active,
+-        &state.free,
++        FaceMaskContext {
++            lower_active: &state.lower_active,
++            upper_active: &state.upper_active,
++            free: &state.free,
++            held: &state.held,
++        },
+         &prepared.weighted_residual,
+         &prepared.weighted_matrix,
+     )
+@@ -5506,10 +5808,23 @@
+     )
+ }
+ 
++type RefinementRequiredObservationBits = (([u64; 21], [u64; 21]), (Vec<u64>, Vec<u64>));
++
++fn refinement_observation_required_bits(
++    trace: &RefinementObservationTrace,
++    state: &SubproblemState,
++) -> Result<RefinementRequiredObservationBits, Box<RefinementObservationRefusal>> {
++    Ok((
++        refinement_required_observation_live_state_bits(trace, state)?,
++        refinement_required_observation_residual_bits(trace, state)?,
++    ))
++}
++
+ fn refinement_build_retained_face_observation(
+     context: RefinementRetainedFaceObservationContext<'_>,
+ ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationRefusal>> {
+     let RefinementRetainedFaceObservationContext {
++        input,
+         prepared,
+         state,
+         trace,
+@@ -5519,12 +5834,16 @@
+         bvls02_pass,
+         optimality,
+         values,
++        lambda,
++        p2_norm,
++        entered_before_refinement,
++        factor_identity_before,
++        factor_identity_after,
+         ..
+     } = context;
+     let trace_bits = refinement_retained_face_trace_bits(&trace, p2, state)?;
+-    let (live_state_bits_entry, live_state_bits_exit) =
+-        refinement_required_observation_live_state_bits(&trace, state)?;
+-    let (r0_bits, residual1_bits) = refinement_required_observation_residual_bits(&trace, state)?;
++    let ((live_state_bits_entry, live_state_bits_exit), (r0_bits, residual1_bits)) =
++        refinement_observation_required_bits(&trace, state)?;
+     let masks = refinement_observation_masks(&trace, lower, upper);
+     let (final_residual_bits, final_gradient_bits, final_lambda_p_bits) =
+         refinement_final_value_bits(values.as_ref());
+@@ -5532,7 +5851,7 @@
+         refinement_optimality_observation_fields(&optimality);
+     let (h0_free_bits, h1_free_bits) = refinement_observation_defect_bits(&trace);
+     Ok(RefinementRetainedFaceObservation {
+-        lambda_bits: context.lambda.to_bits(),
++        lambda_bits: lambda.to_bits(),
+         live_state_bits_entry,
+         live_state_bits_exit,
+         p0_bits: trace_bits.p0,
+@@ -5560,7 +5879,7 @@
+         p2_full_norm_bits: trace.p2_full_norm.map(f64::to_bits),
+         p2_reduced_norm2_bits: trace.p2_reduced_norm2.map(f64::to_bits),
+         p2_reduced_norm_bits: trace.p2_reduced_norm.map(f64::to_bits),
+-        original_radius_bits: context.input.initial_radius.to_bits(),
++        original_radius_bits: input.initial_radius.to_bits(),
+         remaining_radius_bits: trace.remaining_radius.map(f64::to_bits),
+         radius_gap_bits: trace.radius_gap.map(f64::to_bits),
+         radius_tolerance_bits: trace.radius_tolerance.map(f64::to_bits),
+@@ -5571,11 +5890,11 @@
+         tau_bits,
+         classes,
+         box_feasible: refinement_box_admit(prepared, &p2, None, None).is_none(),
+-        ball_feasible: context.p2_norm <= context.input.initial_radius,
+-        factorizations_added: state.entered - context.entered_before_refinement,
++        ball_feasible: p2_norm <= input.initial_radius,
++        factorizations_added: state.entered - entered_before_refinement,
+         factor_application_count: trace.factor_applications,
+-        factor_identity_before: context.factor_identity_before,
+-        factor_identity_after: context.factor_identity_after,
++        factor_identity_before,
++        factor_identity_after,
+         factor_application_identities: trace.factor_application_identities,
+         lower_mask_p0: masks.lower_p0,
+         upper_mask_p0: masks.upper_p0,
+@@ -8481,7 +8800,7 @@
+             .free
+             .iter()
+             .enumerate()
+-            .filter_map(|(i, free)| free.then_some(i))
++            .filter_map(|(i, free)| (*free && !state.held[i]).then_some(i))
+             .collect();
+         state.refinement_work.guard();
+         if expected_free.len() != m {
+@@ -8630,7 +8949,11 @@
+     solution: &mut FaceSolution,
+ ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     #[cfg(test)]
+-    refinement_observe(|trace| trace.live_state_entry = Some(state.p.map(f64::to_bits)));
++    refinement_observe(|trace| {
++        trace.face_free_ids = Some(solution.free_ids.clone());
++        trace.factor_order = solution.factor.as_ref().map(|factor| factor.order.clone());
++        trace.live_state_entry = Some(state.p.map(f64::to_bits));
++    });
+     let result = refine_face_before_crossing_inner(input, prepared, state, solution);
+     #[cfg(test)]
+     refinement_observe(|trace| trace.live_state_exit = Some(state.p.map(f64::to_bits)));
+@@ -8952,6 +9275,9 @@
+                 let lifecycle = slot
+                     .as_ref()
+                     .map_or_else(Vec::new, |prior| prior.lifecycle.clone());
++                let bvls05_lifecycle = slot
++                    .as_ref()
++                    .map_or_else(Vec::new, |prior| prior.bvls05_lifecycle.clone());
+                 let completed_subproblems = slot
+                     .as_ref()
+                     .map_or_else(Vec::new, |prior| prior.completed_subproblems.clone());
+@@ -8974,6 +9300,7 @@
+                     accepted_installs,
+                     post_update_admissions,
+                     lifecycle,
++                    bvls05_lifecycle,
+                     rank_refusal_factor: None,
+                     refusal: None,
+                 });
+@@ -8984,12 +9311,30 @@
+ 
+ pub(crate) fn solve_subproblem(
+     input: &super::M1TrustRegionSubproblemInput,
++) -> Result<super::M1TrustRegionSubproblemObservation, super::M1TrustRegionSubproblemRefusal> {
++    #[cfg(test)]
++    let mut certificate = None;
++    #[cfg(test)]
++    return solve_subproblem_with_certificate(input, &mut certificate);
++    #[cfg(not(test))]
++    unreachable!()
++}
++
++#[cfg(test)]
++pub(crate) fn solve_subproblem_with_certificate(
++    input: &super::M1TrustRegionSubproblemInput,
++    certificate_cache: &mut Option<M1TrustRegionBvls05Certificate>,
+ ) -> Result<super::M1TrustRegionSubproblemObservation, super::M1TrustRegionSubproblemRefusal> {
+     const N: usize = 21;
+     let prepared = prepare_subproblem(input).map_err(|refusal| *refusal)?;
+     #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     begin_face_pivot_capture(input, &prepared);
+     let mut state = SubproblemState::new(input);
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let bvls05_reused = certificate_cache.is_some();
++    bvls05_admit_state(input, &prepared, &mut state, certificate_cache);
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    capture_bvls05_admission(input, &state, bvls05_reused);
+     loop {
+         let mut solution = match solve_face(input, &prepared, &mut state) {
+             Ok(solution) => solution,
+@@ -9007,13 +9352,23 @@
+         let Some(values) = transition.values else {
+             continue;
+         };
+-        let candidate = candidate_coordinates(input, &state.p).ok_or_else(|| {
++        let mut candidate = candidate_coordinates(input, &state.p).ok_or_else(|| {
+             state_refusal(
+                 M1TrustRegionRefusalKind::SvdNonFinite,
+                 &state,
+                 prepared.raw_max,
+             )
+         })?;
++        #[cfg(test)]
++        {
++            (state.p, candidate) = bvls05_scatter_held(
++                input.base,
++                state.held,
++                state.p,
++                candidate,
++                &mut state.bvls05_work,
++            );
++        }
+         #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+         capture_successful_subproblem(&state);
+         return Ok(super::M1TrustRegionSubproblemObservation {
+@@ -9104,6 +9459,9 @@
+         upper_active,
+         free,
+         initial_free: [true; 21],
++        held: [false; 21],
++        bvls05_inspected: false,
++        bvls05_work: super::M1TrustRegionWorkObservation::default(),
+         events: Vec::new(),
+         entered: 1,
+         completed_pivots: 0,
+@@ -9154,6 +9512,9 @@
+         upper_active: [false; 21],
+         free: [true; 21],
+         initial_free: [true; 21],
++        held: [false; 21],
++        bvls05_inspected: false,
++        bvls05_work: super::M1TrustRegionWorkObservation::default(),
+         events: Vec::new(),
+         entered: 1,
+         completed_pivots: 0,
+@@ -11023,6 +11384,9 @@
+         M1TrustRegionCorrectionPosition, M1TrustRegionRefinementGuardStage,
+         M1TrustRegionRefinementReason,
+     };
++    use crate::{
++        M1TrustRegionRefusalKind, M1TrustRegionSubproblemInput, M1TrustRegionTestWorkState,
++    };
+     use serde_json::Value;
+ 
+     const ORDINARY_CAPTURE: &str = include_str!(concat!(
+@@ -11580,4 +11944,723 @@
+             );
+         }
+     }
+-}
++
++    #[cfg(feature = "m1-trust-region-physical-stage")]
++    fn bvls05_captured_g4_input() -> (M1TrustRegionSubproblemInput, Vec<Vec<f64>>) {
++        const G4_CAPTURE: &str = include_str!(concat!(
++            env!("CARGO_MANIFEST_DIR"),
++            "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/g4-rank-capture.json"
++        ));
++        let capture: serde_json::Value =
++            serde_json::from_str(G4_CAPTURE).expect("preserved G4 capture");
++        let face = &capture["face_capture"];
++        let core = capture["base_core_operands"]
++            .as_array()
++            .expect("captured core operands");
++        let bit = |value: &serde_json::Value| {
++            super::refinement_capture_bit(value).expect("captured binary64")
++        };
++        let upper_areas = core[0]["structural_areas_m2_m2_tile"]
++            .as_array()
++            .expect("upper areas");
++        let lower_areas = core[1]["structural_areas_m2_m2_tile"]
++            .as_array()
++            .expect("lower areas");
++        let upper_wet = bit(&core[0]["wet_fraction"]);
++        let lower_wet = bit(&core[1]["wet_fraction"]);
++        let provenance = crate::M1TrustRegionBvls05TestProvenance {
++            role_columns: [0, 1, 2, 6, 7, 8],
++            structural_areas: [
++                bit(&upper_areas[0]),
++                bit(&upper_areas[1]),
++                bit(&upper_areas[2]),
++                bit(&lower_areas[0]),
++                bit(&lower_areas[1]),
++                bit(&lower_areas[2]),
++            ],
++            wet_fractions: [
++                upper_wet, upper_wet, upper_wet, lower_wet, lower_wet, lower_wet,
++            ],
++            initial_free: [true; 6],
++            physical_current_free: [true; 6],
++        };
++        let weighted = face["weighted_matrix"]
++            .as_array()
++            .expect("captured weighted rows")
++            .iter()
++            .map(|row| {
++                super::refinement_capture_vector(row)
++                    .expect("captured weighted row")
++                    .to_vec()
++            })
++            .collect::<Vec<_>>();
++        (
++            M1TrustRegionSubproblemInput {
++                raw_residual: super::refinement_capture_vector(&face["raw_residual"])
++                    .expect("captured raw residual"),
++                raw_jacobian: super::refinement_capture_matrix(&face["raw_jacobian"])
++                    .expect("captured raw Jacobian"),
++                normalizers: super::refinement_capture_vector(&face["normalizers"])
++                    .expect("captured normalizers"),
++                scales: super::refinement_capture_vector(&face["scales"]).expect("captured scales"),
++                lower: super::refinement_capture_vector(&face["lower"]).expect("captured lower"),
++                upper: super::refinement_capture_vector(&face["upper"]).expect("captured upper"),
++                initial_radius: super::refinement_capture_bit(&face["initial_radius"])
++                    .expect("captured radius"),
++                base: super::refinement_capture_vector(&face["base"]).expect("captured base"),
++                test_work: M1TrustRegionTestWorkState {
++                    bvls05_provenance: Some(provenance),
++                    ..M1TrustRegionTestWorkState::default()
++                },
++            },
++            weighted,
++        )
++    }
++
++    fn bvls05_diagonal_input() -> M1TrustRegionSubproblemInput {
++        let mut raw_jacobian = [[0.0; 21]; 21];
++        for (coordinate, row) in raw_jacobian.iter_mut().enumerate() {
++            if coordinate != 1 && coordinate != 2 {
++                row[coordinate] = 1.0;
++            }
++        }
++        M1TrustRegionSubproblemInput {
++            raw_residual: [0.0; 21],
++            raw_jacobian,
++            normalizers: [1.0; 21],
++            scales: [1.0; 21],
++            lower: [-2.0; 21],
++            upper: [2.0; 21],
++            initial_radius: 8.0,
++            base: [0.0; 21],
++            test_work: M1TrustRegionTestWorkState {
++                bvls05_provenance: Some(bvls05_provenance()),
++                ..M1TrustRegionTestWorkState::default()
++            },
++        }
++    }
++
++    fn bvls05_provenance() -> crate::M1TrustRegionBvls05TestProvenance {
++        crate::M1TrustRegionBvls05TestProvenance {
++            role_columns: [0, 1, 2, 3, 4, 5],
++            structural_areas: [0.0, 1.0, 1.0, 1.0, 1.0, 1.0],
++            wet_fractions: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5],
++            initial_free: [true; 6],
++            physical_current_free: [true; 6],
++        }
++    }
++
++    fn bvls05_roles(input: &M1TrustRegionSubproblemInput) -> [super::Bvls05RoleInput; 6] {
++        let provenance = input
++            .test_work
++            .bvls05_provenance
++            .expect("BVLS05 test provenance");
++        [
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::SunLeaf,
++                column: provenance.role_columns[0],
++                structural_area: provenance.structural_areas[0],
++                wet_fraction: provenance.wet_fractions[0],
++                initial_free: provenance.initial_free[0],
++                physical_current_free: provenance.physical_current_free[0],
++            },
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::ShadeLeaf,
++                column: provenance.role_columns[1],
++                structural_area: provenance.structural_areas[1],
++                wet_fraction: provenance.wet_fractions[1],
++                initial_free: provenance.initial_free[1],
++                physical_current_free: provenance.physical_current_free[1],
++            },
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::DryStem,
++                column: provenance.role_columns[2],
++                structural_area: provenance.structural_areas[2],
++                wet_fraction: provenance.wet_fractions[2],
++                initial_free: provenance.initial_free[2],
++                physical_current_free: provenance.physical_current_free[2],
++            },
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::SunLeaf,
++                column: provenance.role_columns[3],
++                structural_area: provenance.structural_areas[3],
++                wet_fraction: provenance.wet_fractions[3],
++                initial_free: provenance.initial_free[3],
++                physical_current_free: provenance.physical_current_free[3],
++            },
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::ShadeLeaf,
++                column: provenance.role_columns[4],
++                structural_area: provenance.structural_areas[4],
++                wet_fraction: provenance.wet_fractions[4],
++                initial_free: provenance.initial_free[4],
++                physical_current_free: provenance.physical_current_free[4],
++            },
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::DryStem,
++                column: provenance.role_columns[5],
++                structural_area: provenance.structural_areas[5],
++                wet_fraction: provenance.wet_fractions[5],
++                initial_free: provenance.initial_free[5],
++                physical_current_free: provenance.physical_current_free[5],
++            },
++        ]
++    }
++
++    fn bvls05_weighted(raw: &[[f64; 21]; 21]) -> Vec<Vec<f64>> {
++        raw.iter().map(|row| row.to_vec()).collect()
++    }
++
++    fn bvls05_full_h(raw: &[[f64; 21]; 21], f: [f64; 21], p: [f64; 21], lambda: f64) -> [f64; 21] {
++        let mut residual = f;
++        for row in 0..21 {
++            for column in 0..21 {
++                residual[row] += raw[row][column] * p[column];
++            }
++        }
++        let mut h = [0.0; 21];
++        for column in 0..21 {
++            for row in 0..21 {
++                h[column] += raw[row][column] * residual[row];
++            }
++            h[column] += lambda * p[column];
++        }
++        h
++    }
++
++    fn assert_bvls05_exact_array(actual: [f64; 21], expected: [f64; 21]) {
++        assert!(actual.iter().zip(expected).all(|(actual, expected)| {
++            actual.partial_cmp(&expected) == Some(std::cmp::Ordering::Equal)
++        }));
++    }
++
++    #[cfg(feature = "m1-trust-region-physical-stage")]
++    #[test]
++    fn m1_trust_region_bvls05_expected_red_g4_full_wet_hold() {
++        let (input, weighted) = bvls05_captured_g4_input();
++        let certificate = super::bvls05_certificate_for_test(
++            &bvls05_roles(&input),
++            &input.raw_jacobian,
++            &weighted,
++        );
++        assert_eq!(certificate.held[1..3], [true, true]);
++        assert!(!certificate.held[19]);
++        let scope = super::m1_face_pivot_capture_begin_for_test();
++        let _terminal = super::solve_subproblem(&input);
++        let capture = super::m1_face_pivot_capture_take_for_test().expect("first-face capture");
++        drop(scope);
++        assert_eq!(capture.raw_jacobian, input.raw_jacobian);
++        assert_eq!(capture.weighted_residual.len(), 21, "full f is retained");
++        assert_eq!(capture.weighted_matrix.len(), 21, "full A is retained");
++        // The terminal result is intentionally independent of the first-face
++        // observation: the released body may continue after this face.
++        let first_free_ids = if let Some(first) = capture.operations.first() {
++            &first.free_ids
++        } else {
++            let first = capture
++                .refusal
++                .as_ref()
++                .expect("first face refused before any transition");
++            assert_eq!(
++                first.entered_factorizations, 1,
++                "refusal is from the first factorization"
++            );
++            assert_eq!(first.completed_pivots, 0, "no earlier face transition");
++            &first.free_ids
++        };
++        assert_eq!(capture.weighted_matrix, weighted);
++        assert_eq!(
++            first_free_ids.len(),
++            19,
++            "expected-red: unchanged body has not admitted the structural hold"
++        );
++        assert_eq!(
++            *first_free_ids,
++            vec![
++                0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
++            ]
++        );
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_column_guard_red() {
++        let mut input = bvls05_diagonal_input();
++        let mut roles = bvls05_roles(&input);
++        // Eligibility is isolated: a completely zero, fully wet, free
++        // temperature column is refused solely because its semantic role is
++        // not a dry-temperature role.
++        roles[1].role = super::Bvls05Role::Other;
++        let unexpected_role = super::bvls05_certificate_for_test(
++            &roles,
++            &input.raw_jacobian,
++            &bvls05_weighted(&input.raw_jacobian),
++        );
++        assert!(super::prepare_subproblem(&input).is_ok());
++        assert!(!unexpected_role.held[1]);
++        let certificate = super::bvls05_certificate_for_test(
++            &bvls05_roles(&input),
++            &input.raw_jacobian,
++            &bvls05_weighted(&input.raw_jacobian),
++        );
++        assert!(certificate.held[1] && certificate.held[2]);
++        input.raw_jacobian[0][1] = 1.0;
++        let raw_rejection = super::bvls05_certificate_for_test(
++            &bvls05_roles(&input),
++            &input.raw_jacobian,
++            &bvls05_weighted(&input.raw_jacobian),
++        );
++        assert!(!raw_rejection.held[1]);
++        let mut weighted = bvls05_weighted(&input.raw_jacobian);
++        weighted[0][2] = 1.0;
++        let weighted_rejection = super::bvls05_certificate_for_test(
++            &bvls05_roles(&input),
++            &input.raw_jacobian,
++            &weighted,
++        );
++        assert!(!weighted_rejection.held[2]);
++        assert_eq!(certificate.work.bvls05_role_joins_attempted, 6);
++        assert_eq!(certificate.work.bvls05_column_entry_tests_attempted, 252);
++        let mut nonfinite_normalizer = input.clone();
++        nonfinite_normalizer.normalizers[0] = f64::NAN;
++        assert_eq!(
++            super::prepare_subproblem(&nonfinite_normalizer)
++                .err()
++                .expect("nonfinite normalizer retains preparation owner")
++                .kind,
++            M1TrustRegionRefusalKind::SvdNonFinite
++        );
++        let mut nonfinite_scale = input;
++        nonfinite_scale.scales[0] = f64::NAN;
++        assert_eq!(
++            super::prepare_subproblem(&nonfinite_scale)
++                .err()
++                .expect("nonfinite scale retains preparation owner")
++                .kind,
++            M1TrustRegionRefusalKind::SvdNonFinite
++        );
++    }
++
++    fn bvls05_fixed_active_certificate_and_partition(
++        input: &M1TrustRegionSubproblemInput,
++    ) -> super::Bvls05CertificateObservation {
++        let weighted = bvls05_weighted(&input.raw_jacobian);
++        let mut roles = bvls05_roles(input);
++        roles[1].initial_free = false;
++        roles[2].physical_current_free = false;
++        let rejected = super::bvls05_certificate_for_test(&roles, &input.raw_jacobian, &weighted);
++        assert!(!rejected.held[1]);
++        assert!(!rejected.held[2]);
++        let mut bound_free = bvls05_roles(input);
++        bound_free[1].initial_free = true;
++        bound_free[1].physical_current_free = true;
++        let certificate =
++            super::bvls05_certificate_for_test(&bound_free, &input.raw_jacobian, &weighted);
++        assert!(certificate.held[1]);
++        // Drive the real state partition: coordinate 0 is fixed, 3 is at a
++        // lower active bound, 4 at an upper active bound, and 5 is ordinary
++        // free/releasable.  The admitted certificate is external to physical
++        // bounds and never changes this partition.
++        let mut state_input = input.clone();
++        state_input.lower[0] = 0.0;
++        state_input.upper[0] = 0.0;
++        let mut state = super::SubproblemState::new(&state_input);
++        state.lower_active[3] = true;
++        state.free[3] = false;
++        state.upper_active[4] = true;
++        state.free[4] = false;
++        assert!(!state.initial_free[0]);
++        assert!(state.initial_free[1]);
++        assert!(state.lower_active[3] && !state.free[3]);
++        assert!(state.upper_active[4] && !state.free[4]);
++        assert!(state.free[5]);
++        state.lower_active[3] = false;
++        state.free[3] = true;
++        assert!(
++            state.free[3],
++            "ordinary non-held active coordinates release"
++        );
++        let mut held_step = [1.0_f64; 21];
++        held_step[1] = 0.0;
++        held_step[2] = 0.0;
++        let (scattered, _) = super::bvls05_scatter_held(
++            state_input.base,
++            certificate.held,
++            [0.0; 21],
++            state_input.base,
++            &mut crate::M1TrustRegionWorkObservation::default(),
++        );
++        assert_eq!(scattered[1].to_bits(), held_step[1].to_bits());
++        assert_eq!(scattered[2].to_bits(), held_step[2].to_bits());
++        certificate
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_fixed_bound_active_precedence_red() {
++        let input = bvls05_diagonal_input();
++        let certificate = bvls05_fixed_active_certificate_and_partition(&input);
++
++        // Exercise the actual KKT owner with a fixed coordinate, two
++        // certificate-held free coordinates, and independent lower/upper
++        // physical active coordinates.  The certificate is only metadata at
++        // this pre-body seam; it does not mutate physical masks.
++        let mut kkt_input = bvls05_diagonal_input();
++        kkt_input.lower[0] = 0.0;
++        kkt_input.upper[0] = 0.0;
++        // Physical bounds do not make a coordinate fixed when they are only
++        // attained by the base: both certified coordinates remain free.
++        kkt_input.lower[1] = -2.0;
++        kkt_input.base[1] = -2.0;
++        kkt_input.upper[2] = 2.0;
++        kkt_input.base[2] = 2.0;
++        kkt_input.raw_residual[3] = -1.0;
++        kkt_input.raw_residual[4] = -2.0;
++        let prepared = super::prepare_subproblem(&kkt_input).expect("KKT preparation");
++        let mut kkt_state = super::SubproblemState::new(&kkt_input);
++        kkt_state.p[3] = -2.0;
++        kkt_state.p[4] = 2.0;
++        kkt_state.lower_active[3] = true;
++        kkt_state.upper_active[4] = true;
++        kkt_state.free[3] = false;
++        kkt_state.free[4] = false;
++        let held = certificate.held;
++        assert!(held[1] && held[2]);
++        assert!(kkt_state.initial_free[1] && kkt_state.initial_free[2]);
++        assert!(kkt_state.free[1] && kkt_state.free[2]);
++        let solution = super::FaceSolution {
++            free_ids: (0..21)
++                .filter(|coordinate| kkt_state.free[*coordinate])
++                .collect(),
++            trace: super::LambdaTrace {
++                lambda: 0.0,
++                ..Default::default()
++            },
++            refined: false,
++            factor: None,
++            radius: 8.0,
++        };
++        let transition = super::kkt_transition(&prepared, &mut kkt_state, &solution)
++            .expect("actual KKT transition");
++        assert!(transition.values.is_none());
++        assert_eq!(transition.observation.coordinates.len(), 21);
++        for held_coordinate in [1, 2] {
++            let observed = &transition.observation.coordinates[held_coordinate];
++            assert_eq!(observed.coordinate, held_coordinate);
++            assert_eq!(observed.h.to_bits(), 0.0f64.to_bits());
++            assert_eq!(observed.cbar.to_bits(), 0.0f64.to_bits());
++            assert_eq!(observed.tau.to_bits(), 0.0f64.to_bits());
++            assert_eq!(
++                observed.class,
++                crate::M1TrustRegionOptimalityClass::FreePass
++            );
++        }
++        assert_eq!(
++            transition.observation.coordinates[0].class,
++            crate::M1TrustRegionOptimalityClass::Fixed
++        );
++        assert!(
++            kkt_state.free[3],
++            "actual owner releases lower-active coordinate 3"
++        );
++        assert!(
++            kkt_state.upper_active[4],
++            "upper-active coordinate remains retained"
++        );
++        assert!(kkt_state.initial_free[1] && kkt_state.initial_free[2]);
++        let observation = kkt_state
++            .events
++            .last()
++            .and_then(|event| event.g)
++            .expect("KKT event");
++        assert_eq!(observation[1].to_bits(), 0.0f64.to_bits());
++        assert_eq!(observation[2].to_bits(), 0.0f64.to_bits());
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_remaining_rank_refusal_red() {
++        let retained = [
++            0usize, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
++        ];
++        let mut reduced = vec![vec![0.0_f64; 19]; 21];
++        for (slot, original) in retained.iter().enumerate() {
++            reduced[*original][slot] = 1.0;
++        }
++        for values in &mut reduced {
++            values[1] = values[0];
++        }
++        let mut sweeps = 0;
++        assert_eq!(
++            super::jacobi_factor(reduced, &retained, 0, &mut sweeps).err(),
++            Some("rank deficient")
++        );
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_nonempty_hold_zero_lambda_refinement() {
++        let mut input = bvls05_diagonal_input();
++        for (coordinate, value) in input.raw_residual.iter_mut().enumerate() {
++            if !matches!(coordinate, 1 | 2) {
++                *value = -1.0;
++            }
++        }
++        let mut expected_p = [0.0_f64; 21];
++        for (coordinate, value) in expected_p.iter_mut().enumerate() {
++            if !matches!(coordinate, 1 | 2) {
++                *value = 1.0;
++            }
++        }
++        assert_eq!(expected_p[1].to_bits(), 0.0f64.to_bits());
++        assert_eq!(expected_p[2].to_bits(), 0.0f64.to_bits());
++        assert_eq!(
++            expected_p
++                .iter()
++                .filter(|value| value.to_bits() == 1.0f64.to_bits())
++                .count(),
++            19
++        );
++        assert_bvls05_exact_array(
++            bvls05_full_h(&input.raw_jacobian, input.raw_residual, expected_p, 0.0),
++            [0.0; 21],
++        );
++        let _scope = super::RefinementObservationScope::begin();
++        let result = super::solve_subproblem(&input)
++            .expect("expected-red: zero-lambda held refinement requires body consumption");
++        let trace = super::refinement_observation_take().expect("actual zero-lambda trace");
++        let retained = vec![
++            0usize, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
++        ];
++        assert_eq!(trace.face_free_ids.as_ref(), Some(&retained));
++        assert_eq!(
++            trace.factor_order.as_ref(),
++            Some(&(0usize..19).collect::<Vec<_>>())
++        );
++        assert_eq!(trace.p0, Some(expected_p));
++        assert_eq!(trace.p1, Some(expected_p));
++        assert_eq!(trace.p2, Some(expected_p));
++        for held in [1, 2] {
++            assert_eq!(
++                trace.p0.map(|point| point[held].to_bits()),
++                Some(0.0f64.to_bits())
++            );
++            assert_eq!(
++                trace.p1.map(|point| point[held].to_bits()),
++                Some(0.0f64.to_bits())
++            );
++            assert_eq!(
++                trace.p2.map(|point| point[held].to_bits()),
++                Some(0.0f64.to_bits())
++            );
++        }
++        assert_eq!(trace.lower_mask_p0, Some([false; 21]));
++        assert_eq!(trace.upper_mask_p0, Some([false; 21]));
++        assert_eq!(trace.lower_mask_p1, Some([false; 21]));
++        assert_eq!(trace.upper_mask_p1, Some([false; 21]));
++        assert_eq!(trace.lower_mask_p2, Some([false; 21]));
++        assert_eq!(trace.upper_mask_p2, Some([false; 21]));
++        assert_bvls05_exact_array(result.scaled_step, expected_p);
++        assert_eq!(result.lambda.to_bits(), 0.0f64.to_bits());
++        assert_bvls05_exact_array(result.final_residual, [0.0; 21]);
++        assert_bvls05_exact_array(result.final_h, [0.0; 21]);
++        assert_eq!(
++            result
++                .optimality_observation
++                .expect("full KKT")
++                .coordinates
++                .len(),
++            21
++        );
++        assert_eq!(result.entered_svd_factorizations, 1);
++        assert_eq!(result.work.bvls05_role_joins_attempted, 6);
++        assert_eq!(result.work.bvls05_column_entry_tests_attempted, 252);
++        assert_eq!(result.work.bvls05_mask_joins_attempted, 21);
++        assert_eq!(result.work.bvls05_held_base_copies_completed, 2);
++        assert_eq!(
++            result.candidate_coordinates[1].to_bits(),
++            input.base[1].to_bits()
++        );
++        assert_eq!(
++            result.candidate_coordinates[2].to_bits(),
++            input.base[2].to_bits()
++        );
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_nonempty_hold_positive_lambda_refinement() {
++        let mut input = bvls05_diagonal_input();
++        input.raw_residual[0] = -1.0;
++        input.initial_radius = 0.5;
++        let mut expected_p = [0.0_f64; 21];
++        expected_p[0] = 0.5;
++        assert_eq!(expected_p[1].to_bits(), 0.0f64.to_bits());
++        assert_eq!(expected_p[2].to_bits(), 0.0f64.to_bits());
++        assert_eq!(expected_p[0].to_bits(), 0.5f64.to_bits());
++        assert_bvls05_exact_array(
++            bvls05_full_h(&input.raw_jacobian, input.raw_residual, expected_p, 1.0),
++            [0.0; 21],
++        );
++        let _scope = super::RefinementObservationScope::begin();
++        let result = super::solve_subproblem(&input)
++            .expect("expected-red: positive-lambda held refinement requires body consumption");
++        let trace = super::refinement_observation_take().expect("actual positive-lambda trace");
++        let retained = vec![
++            0usize, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
++        ];
++        assert_eq!(trace.face_free_ids.as_ref(), Some(&retained));
++        assert_eq!(
++            trace.factor_order.as_ref(),
++            Some(&(0usize..19).collect::<Vec<_>>())
++        );
++        assert_eq!(trace.p0, Some(expected_p));
++        assert_eq!(trace.p1, Some(expected_p));
++        assert_eq!(trace.p2, Some(expected_p));
++        for held in [1, 2] {
++            assert_eq!(
++                trace.p0.map(|point| point[held].to_bits()),
++                Some(0.0f64.to_bits())
++            );
++            assert_eq!(
++                trace.p1.map(|point| point[held].to_bits()),
++                Some(0.0f64.to_bits())
++            );
++            assert_eq!(
++                trace.p2.map(|point| point[held].to_bits()),
++                Some(0.0f64.to_bits())
++            );
++        }
++        assert_eq!(trace.lower_mask_p0, Some([false; 21]));
++        assert_eq!(trace.upper_mask_p0, Some([false; 21]));
++        assert_eq!(trace.lower_mask_p1, Some([false; 21]));
++        assert_eq!(trace.upper_mask_p1, Some([false; 21]));
++        assert_eq!(trace.lower_mask_p2, Some([false; 21]));
++        assert_eq!(trace.upper_mask_p2, Some([false; 21]));
++        assert_bvls05_exact_array(result.scaled_step, expected_p);
++        assert_eq!(result.lambda.to_bits(), 1.0f64.to_bits());
++        assert_bvls05_exact_array(
++            result.final_residual,
++            [
++                -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
++                0.0, 0.0, 0.0, 0.0, 0.0,
++            ],
++        );
++        assert_bvls05_exact_array(result.final_h, [0.0; 21]);
++        assert_eq!(
++            result
++                .optimality_observation
++                .expect("full KKT")
++                .coordinates
++                .len(),
++            21
++        );
++        assert_eq!(result.entered_svd_factorizations, 1);
++        assert_eq!(result.work.bvls05_role_joins_attempted, 6);
++        assert_eq!(result.work.bvls05_column_entry_tests_attempted, 252);
++        assert_eq!(result.work.bvls05_mask_joins_attempted, 21);
++        assert_eq!(result.work.bvls05_held_base_copies_completed, 2);
++        assert_eq!(
++            result.candidate_coordinates[1].to_bits(),
++            input.base[1].to_bits()
++        );
++        assert_eq!(
++            result.candidate_coordinates[2].to_bits(),
++            input.base[2].to_bits()
++        );
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_default_empty_regression() {
++        let mut input = bvls05_diagonal_input();
++        input.test_work.bvls05_provenance = None;
++        input.raw_jacobian[1][1] = 1.0;
++        input.raw_jacobian[2][2] = 1.0;
++        let certificate = super::bvls05_certificate_for_test(
++            &[],
++            &input.raw_jacobian,
++            &bvls05_weighted(&input.raw_jacobian),
++        );
++        assert_eq!(certificate.held, [false; 21]);
++        assert_eq!(
++            certificate.work,
++            crate::M1TrustRegionWorkObservation::default()
++        );
++        let result =
++            super::solve_subproblem(&input).expect("default-empty old route remains solvable");
++        assert_bvls05_exact_array(result.scaled_step, [0.0; 21]);
++        assert_eq!(result.work.bvls05_mask_joins_attempted, 0);
++        assert_eq!(result.work.bvls05_held_base_copies_attempted, 0);
++
++        let mut positive = input;
++        positive.raw_residual[0] = -1.0;
++        positive.initial_radius = 0.5;
++        let positive_result = super::solve_subproblem(&positive)
++            .expect("default-empty positive-lambda BVLS04 route remains available");
++        assert_eq!(positive_result.lambda.to_bits(), 1.0f64.to_bits());
++        assert_eq!(positive_result.scaled_step[0].to_bits(), 0.5f64.to_bits());
++        assert_eq!(positive_result.work.bvls05_role_joins_attempted, 0);
++        eprintln!(
++            "BVLS05_DEFAULT_EMPTY_BASELINE {}",
++            serde_json::json!({
++                "zero_debug": format!("{result:?}"),
++                "positive_debug": format!("{positive_result:?}"),
++            })
++        );
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_accounting_caps() {
++        let input = bvls05_diagonal_input();
++        let certificate = super::bvls05_certificate_for_test(
++            &bvls05_roles(&input),
++            &input.raw_jacobian,
++            &bvls05_weighted(&input.raw_jacobian),
++        );
++        assert_eq!(certificate.work.bvls05_role_joins_attempted, 6);
++        assert_eq!(certificate.work.bvls05_column_entry_tests_attempted, 252);
++        assert_eq!(certificate.work.bvls05_mask_joins_attempted, 21);
++        let mut inspected_roles = bvls05_roles(&input);
++        for role in &mut inspected_roles {
++            role.wet_fraction = 0.5;
++        }
++        let inspected_empty = super::bvls05_certificate_for_test(
++            &inspected_roles,
++            &input.raw_jacobian,
++            &bvls05_weighted(&input.raw_jacobian),
++        );
++        assert_eq!(inspected_empty.held, [false; 21]);
++        assert_eq!(inspected_empty.work.bvls05_role_joins_attempted, 6);
++        assert_eq!(inspected_empty.work.bvls05_role_joins_completed, 6);
++        assert_eq!(
++            inspected_empty.work.bvls05_column_entry_tests_attempted,
++            252
++        );
++        assert_eq!(
++            inspected_empty.work.bvls05_column_entry_tests_completed,
++            252
++        );
++        assert_eq!(inspected_empty.work.bvls05_mask_joins_attempted, 21);
++        assert_eq!(inspected_empty.work.bvls05_mask_joins_completed, 21);
++        let mut base = input.base;
++        base[1] = f64::from_bits(0x4009_21fb_5444_2d18);
++        base[2] = f64::from_bits(0xc005_bf0a_8b14_5769);
++        let mut work = certificate.work.clone();
++        let mut step = [f64::from_bits(0x8000_0000_0000_0000); 21];
++        step[0] = 3.0;
++        let mut candidate = [f64::from_bits(0x4009_21fb_5444_2d18); 21];
++        candidate[0] = f64::from_bits(0xc005_bf0a_8b14_5769);
++        let (step, candidate) =
++            super::bvls05_scatter_held(base, certificate.held, step, candidate, &mut work);
++        assert_eq!(step[1].to_bits(), 0.0f64.to_bits());
++        assert_eq!(step[2].to_bits(), 0.0f64.to_bits());
++        assert_eq!(candidate[1].to_bits(), base[1].to_bits());
++        assert_eq!(candidate[2].to_bits(), base[2].to_bits());
++        assert_eq!(step[0].to_bits(), 3.0f64.to_bits());
++        assert_eq!(candidate[0].to_bits(), 0xc005_bf0a_8b14_5769);
++        assert_eq!(work.bvls05_held_base_copies_attempted, 2);
++        assert_eq!(work.bvls05_held_base_copies_completed, 2);
++        let numerical_before = work.refinement_scalar_operations;
++        let additive = work.clone();
++        work.absorb(&additive);
++        assert_eq!(work.refinement_scalar_operations, numerical_before);
++        assert_eq!(work.bvls05_role_joins_attempted, 12);
++        assert_eq!(work.bvls05_held_base_copies_attempted, 4);
++        assert_eq!(work.bvls05_held_base_copies_completed, 4);
++    }
++}
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
+@@ -2444,19 +2444,20 @@
+ 
+ // Confined physical-adapter boundary for COLD-CANOPY-M1-TR-SVD-BVLS-01.  Its
+ // private feature is distinct from the analytic controller and full skeleton.
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ #[derive(Debug)]
+ pub(crate) enum M1PhysicalTrustRegionAdapterOutcome {
+     Accepted(M1CoupledEvaluation),
+     Refused(crate::M1TrustRegionRefusalKind),
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ pub(crate) struct M1PhysicalTrustRegionAdapter {
+     pub(crate) input: M1CoupledColumnInput,
+     pub(crate) initial_trial: M1CoupledColumnTrial,
+     observation: M1PhysicalTrustRegionAdapterObservation,
+     natural_phase_cache: Option<([f64; 21], [M1PhaseJoinSelection; 2])>,
++    last_assembly_provenance: Option<crate::M1TrustRegionBvls05TestProvenance>,
+     materialized: Option<M1CoupledEvaluation>,
+ }
+ 
+@@ -2502,7 +2503,13 @@
+     pub(crate) base_after: [f64; 21],
+     pub(crate) selected_phase_before: [M1PhaseJoinSelection; 2],
+     pub(crate) selected_phase_after: [M1PhaseJoinSelection; 2],
++    /// All selected-side entries reached by this wrapper.  This is the sum of
++    /// the predictor-Jacobian and direct adapter entry counters below.
+     pub(crate) selected_side_probe_entries: u16,
++    /// Entries bracketed by the selected predictor-Jacobian assembly.
++    pub(crate) predictor_selected_side_probe_entries: u16,
++    /// Entries made through the later direct adapter probe method.
++    pub(crate) direct_selected_side_probe_entries: u16,
+     pub(crate) selected_side_probes: u16,
+     pub(crate) materialization_entries: u16,
+     pub(crate) controller_materializations: u8,
+@@ -2533,7 +2540,7 @@
+     pub(crate) trial_unchanged: bool,
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ #[derive(Clone)]
+ pub(crate) struct M1PhysicalTrustRegionPayload {
+     core: Core,
+@@ -2541,7 +2548,7 @@
+     raw_jacobian: Option<Vec<Vec<f64>>>,
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ #[derive(Clone, Debug, Default)]
+ pub(crate) struct M1PhysicalTrustRegionAdapterObservation {
+     pub(crate) current_evaluations: u16,
+@@ -2569,7 +2576,7 @@
+     pub(crate) phase_events: Vec<M1PhysicalTrustRegionPhaseObservation>,
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ #[derive(Clone, Copy, Debug)]
+ pub(crate) struct M1PhysicalTrustRegionCoreOperands {
+     wet_temperature_k: Option<f64>,
+@@ -2579,7 +2586,7 @@
+     structural_areas_m2_m2_tile: [f64; 3],
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ #[derive(Clone, Debug)]
+ pub(crate) struct M1PhysicalTrustRegionPhaseObservation {
+     pub(crate) coordinates: [f64; 21],
+@@ -2690,7 +2697,7 @@
+     pub(crate) terminal_refusal: Option<crate::M1TrustRegionRefusalKind>,
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ impl M1PhysicalTrustRegionAdapter {
+     pub(crate) fn new(input: M1CoupledColumnInput, initial_trial: M1CoupledColumnTrial) -> Self {
+         Self {
+@@ -2698,6 +2705,7 @@
+             initial_trial,
+             observation: M1PhysicalTrustRegionAdapterObservation::default(),
+             natural_phase_cache: None,
++            last_assembly_provenance: None,
+             materialized: None,
+         }
+     }
+@@ -2726,6 +2734,43 @@
+         )) => Err(crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope),
+         Err(error) => Err(error),
+         Ok(_) => Ok(()),
++    }
++}
++
++/// Inspect the natural physical assembly through `FoundationState`'s ordinary
++/// initialization and the shared BVLS-05 certificate admission path.  This
++/// stops before any face factorization, trial endpoint, or proposal solve.
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_trust_region_physical_adapter_bvls05_assembly_for_test(
++    adapter: &mut M1PhysicalTrustRegionAdapter,
++) -> Result<
++    crate::m1_trust_region_stage1::M1TrustRegionBvls05AssemblyInspection,
++    crate::m1_trust_region_controller::M1TrustRegionControllerError<
++        M1PhysicalTrustRegionAdapterOwnError,
++    >,
++> {
++    let mut foundation = crate::m1_trust_region_controller::FoundationState::initialize(adapter)?;
++    match foundation.inspect_bvls05_assembly_for_test() {
++        Ok(inspection) => Ok(inspection),
++        Err(crate::m1_trust_region_controller::M1TrustRegionControllerError::Subproblem(
++            refusal,
++        )) => Err(
++            crate::m1_trust_region_controller::M1TrustRegionControllerError::Subproblem(refusal),
++        ),
++        Err(crate::m1_trust_region_controller::M1TrustRegionControllerError::CoreWorkCap) => {
++            Err(crate::m1_trust_region_controller::M1TrustRegionControllerError::CoreWorkCap)
++        }
++        Err(crate::m1_trust_region_controller::M1TrustRegionControllerError::Numerical(
++            message,
++        )) => {
++            Err(crate::m1_trust_region_controller::M1TrustRegionControllerError::Numerical(message))
++        }
++        Err(crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope) => {
++            Err(crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope)
++        }
++        Err(crate::m1_trust_region_controller::M1TrustRegionControllerError::Own(never)) => {
++            match never {}
++        }
+     }
+ }
+ 
+@@ -2826,6 +2871,11 @@
+     drop(scope);
+     let poison_scope_restored = m1_selected_side_domain_poison_active_for_test() == prior_scope;
+     let observation = adapter.observation();
++    let predictor_selected_side_probe_entries = observation.predictor_selected_probe_entries;
++    let direct_selected_side_probe_entries = observation.selected_side_probe_entries;
++    let selected_side_probe_entries = predictor_selected_side_probe_entries
++        .checked_add(direct_selected_side_probe_entries)
++        .ok_or(crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope)?;
+     eprintln!(
+         "SHIFTED_FACE_ATTRIBUTION_CAPTURE {}",
+         serde_json::json!({
+@@ -2836,7 +2886,9 @@
+             "typed_error_debug":observed.as_ref().err().map(|error| format!("{error:?}")),
+             "controller_materializations":observed.as_ref().ok().map(|value| value.entered_materializations),
+             "reached_adapter_observation":{
+-                "selected_side_probe_entries":observation.selected_side_probe_entries,
++                "selected_side_probe_entries":selected_side_probe_entries,
++                "predictor_selected_side_probe_entries":predictor_selected_side_probe_entries,
++                "direct_selected_side_probe_entries":direct_selected_side_probe_entries,
+                 "selected_side_probes_completed":observation.selected_side_probes,
+                 "current_evaluations":observation.current_evaluations,
+                 "raw_jacobian_assemblies":observation.raw_jacobian_assemblies,
+@@ -2866,7 +2918,9 @@
+         base_after: observed.base_after,
+         selected_phase_before: observed.selected_phase_before,
+         selected_phase_after: observed.selected_phase_after,
+-        selected_side_probe_entries: adapter.observation().selected_side_probe_entries,
++        selected_side_probe_entries,
++        predictor_selected_side_probe_entries,
++        direct_selected_side_probe_entries,
+         selected_side_probes: adapter.observation().selected_side_probes,
+         materialization_entries: adapter.observation().materialization_entries,
+         controller_materializations: observed.entered_materializations,
+@@ -2895,7 +2949,9 @@
+ > {
+     let mut adapter = M1PhysicalTrustRegionAdapter::new(input.clone(), trial.clone());
+     let scope = crate::m1_face_pivot_capture_begin_for_test();
++    let runtime_before = crate::m1_coupled_tests::m1_physical_runtime_json();
+     let result = crate::m1_trust_region_controller_natural_tangent_for_test(&mut adapter);
++    let runtime_after = crate::m1_coupled_tests::m1_physical_runtime_json();
+     let face_capture = crate::m1_face_pivot_capture_take_for_test();
+     drop(scope);
+     let observation = adapter.observation();
+@@ -2917,6 +2973,17 @@
+             "final_probe_entries":observation.final_selected_probe_entries,
+             "trial_domain_checks":observation.trial_domain_checks,
+             "materialization_entries":observation.materialization_entries,
++            "current_evaluations":observation.current_evaluations,
++            "natural_phase_selections":observation.natural_phase_selections,
++            "selected_side_probes":observation.selected_side_probes,
++            "current_hydraulics":format!("{:?}", observation.current_hydraulics),
++            "current_coordinates_bits":observation.current_coordinates.map(|value| value.map(f64::to_bits)),
++            "budget_snapshot":crate::m1_coupled_tests::m1_physical_budget_json(observation.budget_snapshot),
++            "budget_snapshot_scope":"no solve-owned budget scope in this wrapper; null is not work evidence",
++            "runtime_before":runtime_before,
++            "runtime_after":runtime_after,
++            "runtime_interval":"initialization plus transition; snapshots and serialization occur outside proposal timing",
++            "runtime_categories_overlap":"core, Jacobian, hydraulic, and materializer ledgers overlap and are not summed",
+             "controller_work":observation.controller_accounting.last().map(crate::m1_coupled_tests::m1_physical_work_json),
+             "input_unchanged":adapter.input == *input, "trial_unchanged":adapter.initial_trial == *trial
+         })
+@@ -2979,7 +3046,7 @@
+     m1_trust_region_natural_tangent_for_test(input, &prepared)
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ fn m1_trust_region_physical_adapter_finalize_run_for_test(
+     adapter: &mut M1PhysicalTrustRegionAdapter,
+     run: &crate::m1_trust_region_controller_interface::M1TrustRegionControllerRun,
+@@ -3012,7 +3079,7 @@
+     m1_trust_region_physical_adapter_finalize_run_for_test(adapter, run)
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ pub(crate) fn m1_trust_region_physical_adapter_run_outcome_for_test(
+     adapter: &mut M1PhysicalTrustRegionAdapter,
+ ) -> Result<
+@@ -3050,6 +3117,48 @@
+     result
+ }
+ 
++/// Explicit, default-off treatment entry point for an already captured native
++/// input and its canonical pre-policy seed.  It reuses the adapter and
++/// controller body and deliberately has no connection to normal dispatch.
++#[cfg(feature = "m1-trust-region-native-harness")]
++#[doc(hidden)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub struct M1TrustRegionNativeHarnessObservation {
++    pub accepted: bool,
++    pub terminal_refusal: Option<crate::M1TrustRegionRefusalKind>,
++    pub proposals: u16,
++    pub entered_svd_factorizations: u16,
++    pub entered_materializations: u8,
++}
++
++#[cfg(feature = "m1-trust-region-native-harness")]
++#[doc(hidden)]
++pub fn run_m1_trust_region_native_harness(
++    input: &M1CoupledColumnInput,
++    seed_coordinates: [f64; 21],
++) -> Result<M1TrustRegionNativeHarnessObservation, M1CoupledError> {
++    let mut adapter = M1PhysicalTrustRegionAdapter::new(
++        input.clone(),
++        M1CoupledColumnTrial::from_coordinates(seed_coordinates),
++    );
++    let outcome = m1_trust_region_physical_adapter_run_outcome_for_test(&mut adapter)
++        .map_err(|error| match error {
++            M1PhysicalTrustRegionAdapterOwnError::Coupled(error) => *error,
++            M1PhysicalTrustRegionAdapterOwnError::IncompleteScope => domain_error(),
++        })?;
++    let run = adapter.observation().controller_run.ok_or_else(domain_error)?;
++    Ok(M1TrustRegionNativeHarnessObservation {
++        accepted: matches!(outcome, M1PhysicalTrustRegionAdapterOutcome::Accepted(_)),
++        terminal_refusal: match outcome {
++            M1PhysicalTrustRegionAdapterOutcome::Accepted(_) => None,
++            M1PhysicalTrustRegionAdapterOutcome::Refused(kind) => Some(kind),
++        },
++        proposals: run.proposals,
++        entered_svd_factorizations: run.entered_svd_factorizations,
++        entered_materializations: run.entered_materializations,
++    })
++}
++
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+ pub(crate) fn m1_trust_region_physical_adapter_proposal_for_test(
+     adapter: &mut M1PhysicalTrustRegionAdapter,
+@@ -3127,6 +3236,99 @@
+     adapter.raw_jacobian(&candidate, None, [0.0; 21])
+ }
+ 
++/// Test-only projection of two ordinary evaluator entries.  It records the
++/// candidate's recomputed core/residuals and the existing domain-check and
++/// restoration observations without entering a proposal or endpoint path.
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) struct M1TrustRegionBvls05TrialRecomputationObservation {
++    pub(crate) base_residual: [f64; 21],
++    pub(crate) candidate_residual: [f64; 21],
++    pub(crate) candidate_normalizers: [f64; 21],
++    pub(crate) candidate_wet_fractions: [f64; 2],
++    pub(crate) candidate_full_residual_root: bool,
++    pub(crate) current_evaluations: u16,
++    pub(crate) trial_domain_checks: u16,
++    pub(crate) input_unchanged: bool,
++    pub(crate) trial_unchanged: bool,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_trust_region_physical_adapter_bvls05_trial_recomputation_for_test(
++    adapter: &mut M1PhysicalTrustRegionAdapter,
++    candidate_coordinates: [f64; 21],
++) -> Result<M1TrustRegionBvls05TrialRecomputationObservation, M1PhysicalTrustRegionAdapterOwnError>
++{
++    use crate::m1_trust_region_controller_interface::M1TrustRegionControllerEvaluator;
++
++    let protected_input = adapter.input.clone();
++    let protected_trial = adapter.initial_trial.clone();
++    let base = adapter.evaluate(adapter.initial_coordinates())?;
++    if !adapter.pre_evaluator_trial_domain(candidate_coordinates)? {
++        return Err(M1PhysicalTrustRegionAdapterOwnError::IncompleteScope);
++    }
++    let candidate = adapter.evaluate(candidate_coordinates)?;
++    let candidate_full_residual_root =
++        crate::m1_trust_region_controller::m1_trust_region_full_residual_root_predicate_for_test(
++            &candidate,
++        )
++        .map_err(|_| M1PhysicalTrustRegionAdapterOwnError::IncompleteScope)?;
++    Ok(M1TrustRegionBvls05TrialRecomputationObservation {
++        base_residual: base.raw_residual,
++        candidate_residual: candidate.raw_residual,
++        candidate_normalizers: candidate.dynamic_normalizers,
++        candidate_wet_fractions: [
++            candidate.payload.core.occupancies[0].wet_fraction,
++            candidate.payload.core.occupancies[1].wet_fraction,
++        ],
++        candidate_full_residual_root,
++        current_evaluations: adapter.observation.current_evaluations,
++        trial_domain_checks: adapter.observation.trial_domain_checks,
++        input_unchanged: adapter.input == protected_input,
++        trial_unchanged: adapter.initial_trial == protected_trial,
++    })
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) struct M1TrustRegionBvls05SelectedRetryPhysicalObservation {
++    pub(crate) lifecycle:
++        crate::m1_trust_region_controller::M1TrustRegionBvls05SelectedRetryObservation<
++            [M1PhaseJoinSelection; 2],
++        >,
++    pub(crate) natural_assemblies: u16,
++    pub(crate) selected_assemblies: u16,
++    pub(crate) raw_jacobian_assemblies: u16,
++    pub(crate) input_unchanged: bool,
++    pub(crate) trial_unchanged: bool,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_trust_region_physical_adapter_bvls05_selected_retry_for_test(
++    adapter: &mut M1PhysicalTrustRegionAdapter,
++    selected_direction: [f64; 21],
++    new_base: [f64; 21],
++) -> Result<
++    M1TrustRegionBvls05SelectedRetryPhysicalObservation,
++    crate::m1_trust_region_controller::M1TrustRegionControllerError<
++        M1PhysicalTrustRegionAdapterOwnError,
++    >,
++> {
++    let protected_input = adapter.input.clone();
++    let protected_trial = adapter.initial_trial.clone();
++    let lifecycle = crate::m1_trust_region_controller::m1_trust_region_bvls05_selected_retry_lifecycle_for_test(
++        adapter,
++        selected_direction,
++        new_base,
++    )?;
++    Ok(M1TrustRegionBvls05SelectedRetryPhysicalObservation {
++        lifecycle,
++        natural_assemblies: adapter.observation.natural_assemblies,
++        selected_assemblies: adapter.observation.selected_assemblies,
++        raw_jacobian_assemblies: adapter.observation.raw_jacobian_assemblies,
++        input_unchanged: adapter.input == protected_input,
++        trial_unchanged: adapter.initial_trial == protected_trial,
++    })
++}
++
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+ pub(crate) fn m1_trust_region_physical_adapter_over_capacity_materialize_for_test(
+     adapter: &mut M1PhysicalTrustRegionAdapter,
+@@ -3138,13 +3340,13 @@
+     adapter.materialize(&current).map(|_| ())
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ pub(crate) enum M1PhysicalTrustRegionAdapterOwnError {
+     Coupled(Box<M1CoupledError>),
+     IncompleteScope,
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ impl std::fmt::Debug for M1PhysicalTrustRegionAdapterOwnError {
+     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+         match self {
+@@ -3154,14 +3356,14 @@
+     }
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ impl From<M1CoupledError> for M1PhysicalTrustRegionAdapterOwnError {
+     fn from(error: M1CoupledError) -> Self {
+         Self::Coupled(Box::new(error))
+     }
+ }
+ 
+-#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ fn m1_physical_adapter_phase_failure(
+     failure: M1PhaseJoinFailure,
+ ) -> M1PhysicalTrustRegionAdapterOwnError {
+@@ -3177,6 +3379,36 @@
+ }
+ 
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++fn bvls05_assembly_provenance(
++    input: &M1CoupledColumnInput,
++    core: &Core,
++) -> crate::M1TrustRegionBvls05TestProvenance {
++    let mut structural_areas = [0.0; 6];
++    let mut wet_fractions = [0.0; 6];
++    let mut role_columns = [0; 6];
++    for occupancy in 0..2 {
++        let structural = &input.column.occupancies[occupancy];
++        let start = occupancy * 3;
++        role_columns[start] = occupancy * 6;
++        role_columns[start + 1] = occupancy * 6 + 1;
++        role_columns[start + 2] = occupancy * 6 + 2;
++        structural_areas[start..start + 3].copy_from_slice(&[
++            structural.sun.leaf_area_m2_m2_tile,
++            structural.shade.leaf_area_m2_m2_tile,
++            structural.stem_area_m2_m2_tile,
++        ]);
++        wet_fractions[start..start + 3].fill(core.occupancies[occupancy].wet_fraction);
++    }
++    crate::M1TrustRegionBvls05TestProvenance {
++        role_columns,
++        structural_areas,
++        wet_fractions,
++        initial_free: [true; 6],
++        physical_current_free: [true; 6],
++    }
++}
++
++#[cfg(any(all(test, feature = "m1-trust-region-physical-stage"), feature = "m1-trust-region-native-harness"))]
+ impl crate::m1_trust_region_controller_interface::M1TrustRegionControllerEvaluator
+     for M1PhysicalTrustRegionAdapter
+ {
+@@ -3255,6 +3487,7 @@
+         let mut raw_residual = [0.0; 21];
+         raw_residual.copy_from_slice(&core.residuals);
+         let normalizers = m1_tolerances(&self.input, &core);
++        self.last_assembly_provenance = Some(bvls05_assembly_provenance(&self.input, &core));
+         self.observation.current_evaluations += 1;
+         if is_base {
+             self.observation.raw_jacobian_assemblies += 1;
+@@ -3340,6 +3573,10 @@
+     ) -> Result<[[f64; 21]; 21], Self::Error> {
+         if selected_phase.is_none() && predictor_direction == [0.0; 21] {
+             if let Some(cached) = &current.payload.raw_jacobian {
++                self.last_assembly_provenance = Some(bvls05_assembly_provenance(
++                    &self.input,
++                    &current.payload.core,
++                ));
+                 let mut raw = [[0.0; 21]; 21];
+                 for (row, source) in raw.iter_mut().zip(cached) {
+                     row.copy_from_slice(source);
+@@ -3364,7 +3601,9 @@
+         self.observation.predictor_selected_probe_entries +=
+             u16::try_from(probes_after - probes_before)
+                 .map_err(|_| M1PhysicalTrustRegionAdapterOwnError::IncompleteScope)?;
+-        let (_, raw_jacobian, _) = assembled.map_err(Self::Error::from)?;
++        let (assembly_core, raw_jacobian, _) = assembled.map_err(Self::Error::from)?;
++        self.last_assembly_provenance =
++            Some(bvls05_assembly_provenance(&self.input, &assembly_core));
+         let mut raw = [[0.0; 21]; 21];
+         for (row, source) in raw.iter_mut().zip(&raw_jacobian) {
+             row.copy_from_slice(source);
+@@ -3372,6 +3611,21 @@
+         self.observation.raw_jacobian_assemblies += 1;
+         self.observation.raw_jacobian = Some(raw);
+         Ok(raw)
++    }
++
++    #[cfg(test)]
++    fn bvls05_provenance(
++        &self,
++        current: &crate::m1_trust_region_controller_interface::M1TrustRegionControllerEvaluation<
++            Self::Payload,
++        >,
++    ) -> Option<crate::M1TrustRegionBvls05TestProvenance> {
++        self.last_assembly_provenance.or_else(|| {
++            Some(bvls05_assembly_provenance(
++                &self.input,
++                &current.payload.core,
++            ))
++        })
+     }
+ 
+     fn complete_current_hydraulics(
+@@ -3711,6 +3965,16 @@
+         )
+     };
+     Ok([selection(0)?, selection(6)?])
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_phase_join_upper_capacity_for_test(
++    input: &M1CoupledColumnInput,
++    trial: &M1CoupledColumnTrial,
++) -> Result<f64, M1PhysicalTrustRegionAdapterOwnError> {
++    phase_join_selections(input, trial, &[0.0; 21])
++        .map(|selection| selection[0].capacity_value)
++        .map_err(m1_physical_adapter_phase_failure)
+ }
+ 
+ #[derive(Clone, Copy)]

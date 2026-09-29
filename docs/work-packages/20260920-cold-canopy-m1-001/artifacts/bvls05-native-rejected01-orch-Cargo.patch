@@ -1,0 +1,8 @@
+--- crates/openwepp-hillslope-orchestrator/Cargo.toml	2026-09-29 13:25:45.867277440 -0700
++++ /tmp/bvls05-native-rejected-draft/orch-Cargo.toml	2026-09-29 13:24:44.919912907 -0700
+@@ -40,4 +40,4 @@
+ libm = "=0.2.16"
+ 
+ [dev-dependencies]
+-openwepp-land-surface-energy = { path = "../openwepp-land-surface-energy", version = "0.1.0", features = ["test-support"] }
++openwepp-land-surface-energy = { path = "../openwepp-land-surface-energy", version = "0.1.0", features = ["test-support", "m1-trust-region-native-harness"] }

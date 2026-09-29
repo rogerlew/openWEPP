@@ -1,0 +1,36 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-g4-results.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Inspection of supplied Ran receipt/capture/cost artifacts and static continuation-plan review. QA ran no command or calculation.",
+  "findings": [],
+  "g4_receipt": {
+    "receipt": "bvls05-g4-physical01.json",
+    "receipt_sha256": "ef8bf6e949449717948d9149e9018c2045bee173ff37bd3f2544eccb2fbb3c12",
+    "result": "PASS: one exact planned release selector, 1 passed/408 skipped, exit=0, timed_out=false.",
+    "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+    "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+    "custody": "Receipt records unchanged source and binary; exact argv matches bvls05-g4-plan02.json."
+  },
+  "capture_and_cost": {
+    "capture": "bvls05-g4-capture01.json / ef699905cbd87dc77d35e452c9fa92e94ad6db323a21bcfe7c7f9840b36e78b9",
+    "event_quality": "Capture records the actual natural/selected assembly counts (1/1), two completed assemblies, one current evaluation, protected input/trial unchanged, and phase/mask event custody. It records no materialization and no root/accepted-result evidence.",
+    "cost": "bvls05-g4-cost01.json / 35f400ccc0395be1aaafee1ec028e43982a8643754514c0cf8dbc837737bbe6c: proposal wall=5,463,608 ns; initialization=160,638 ns; CPU delta is zero ticks at a 10 ms quantization and correctly reported resolution-limited, not zero CPU time.",
+    "work_boundary": "The capture/cost artifacts state overlapping refinement/KKT/enclosure categories are not summed. Their work evidence is custody/operation observation only; it does not establish root success, materialization, performance comparison, seasonal/watershed behavior, or target qualification."
+  },
+  "conditional_six": {
+    "plan": "bvls05-conditional-plan01.json",
+    "plan_sha256": "0bc670e48eb52eb80e60e57e20c4ff56e938d706065a817383b7e0a8b2382208",
+    "status": "QA READY, subject to the separately required correctness result disposition.",
+    "binding": "Six G2/five-G6 exact single-selector release commands bind the same source/binary; all six selectors occur exactly once in the release inventory. Each has one planned execution and a 180-second bound.",
+    "stop_rule": "The preserved plan stops remaining physical/numerical work after an unexpected source-conforming numerical refusal before its intended branch. It forbids seed/input/method changes or retry into PASS; only an independently demonstrated implementation/recording deviation may receive affected correction while retaining the first source/result.",
+    "exclusions": "No G3/native harness or target slot is released by this artifact."
+  },
+  "non_blocking_follow_up": [
+    "Continue reporting wall timing and resolution-limited CPU sampling separately; do not convert them into a speed claim."
+  ],
+  "missing_evidence": [
+    "No results exist yet for the six conditional cases.",
+    "No G3/native-harness or target evidence exists."
+  ],
+  "disposition": "QA PASS: G4 completed once with source/binary custody and bounded claims. The six unchanged conditional commands are READY under their preserved numerical-stop rule; downstream excluded work remains held."
+}

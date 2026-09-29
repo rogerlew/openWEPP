@@ -1,0 +1,158 @@
+{
+  "evidence_class": "Ran: independent correctness review of five exact frozen G6 executions; Static: bounded native-harness source-progression feasibility",
+  "reviewer": "/root/interface_correctness",
+  "identity": {
+    "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+    "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+    "plan": "bvls05-conditional-plan02.json",
+    "plan_sha256": "834224ed1fec1b89314968b56647dd12179fc44fec2102df489a67fd799a599a"
+  },
+  "reviewed_evidence": {
+    "bvls05-conditional-g6-results01.json": "a3f464c452d8469dc33b48c994756814b88fee1b3285d93b20efa871a307dd04",
+    "bvls05-conditional-g6-core-01.json": "47e81eea66f6c81106399f4223b327d204111e2c3e2e288298b1ffa2fdd2f670",
+    "bvls05-conditional-g6-raw-j-01.json": "140b3f7451e9d3760428c23dbf326f66b4a8949da141d928b720dbecaf9b8d28",
+    "bvls05-conditional-g6-hydraulic-01.json": "7f917460495987258923eaaee901bf6019038d6916be5beacf4854358b0c8d03",
+    "bvls05-conditional-g6-factor-01.json": "f353dd24578b66124f2fe40216884ab63a133209c7bcb11726850159cde058ce",
+    "bvls05-conditional-g6-materialization-01.json": "e2503caea21d1de5157289ef5f0ffb28052245062e02e354fdd219d89e67ee3b",
+    "bvls05-qa-g6-results01.json": "370745aaa8d82db5bfceb6e54bc0fd61addaf0ed57ad2fb27419e8ae60270197"
+  },
+  "findings": [],
+  "execution_custody": {
+    "case_count": 5,
+    "each_result": "1 passed, 408 skipped, exit 0",
+    "each_planned_executions": 1,
+    "automatic_retries_each": 0,
+    "timed_out_each": false,
+    "source_unchanged_each": true,
+    "binary_unchanged_each": true,
+    "observer_base_unchanged_each": true,
+    "pinned_files_unchanged_each": true,
+    "support_links_unchanged_each": true,
+    "argv_binding": "Every recorded argv is exactly equal to its plan02 case argv.",
+    "negative_stop": "No unexpected refusal occurred; all five intended negative controls passed, so the stop boundary was never triggered."
+  },
+  "case_reviews": [
+    {
+      "group": "g6-core",
+      "classification": "physical adapter actual core owner",
+      "selector": "m1_coupled_tests::m1_trust_region_physical_budget_core_cap_control_reaches_actual_owner",
+      "elapsed_seconds": 9.696212481241673,
+      "operands": "Radiation fixture and trial unchanged; shared budget seeded at attempted=entered=6499.",
+      "asserted_result": "Base core #6500 enters; first finite-difference attempt #6501 refuses as Core with snapshot core_attempted=6501, core=6500 and raw_jacobian_attempted=entered=1.",
+      "work_and_custody": "One complete evaluator entry; zero hydraulic, actual-hydraulic and materialization entries; input/trial unchanged; scoped budget restored to None.",
+      "disposition": "PASS"
+    },
+    {
+      "group": "g6-raw-j",
+      "classification": "physical adapter actual raw-J owner",
+      "selector": "m1_coupled_tests::m1_trust_region_physical_budget_raw_jacobian_cap_control_reaches_actual_owner",
+      "elapsed_seconds": 1.5724828280508518,
+      "operands": "Radiation fixture and trial unchanged; shared budget seeded at attempted=entered=99.",
+      "asserted_result": "Raw-J #100 enters and completes its 41 core evaluations; attempt #101 refuses as RawJacobian before a new core, with raw_jacobian_attempted=101, entered=100 and core_attempted=entered=41.",
+      "work_and_custody": "Forty-one complete evaluator entries; zero hydraulic, actual-hydraulic and materialization entries; scoped budget restored to None.",
+      "disposition": "PASS"
+    },
+    {
+      "group": "g6-hydraulic",
+      "classification": "physical adapter actual hydraulic owner and precedence control",
+      "selector": "m1_coupled_tests::m1_trust_region_physical_budget_hydraulic_cap_control_reaches_actual_owner",
+      "elapsed_seconds": 0.568503987044096,
+      "operands": "Radiation fixture and unchanged trial with the existing owner height poison; shared budget seeded at attempted=entered=2201.",
+      "asserted_result": "Hydraulic #2202 enters and reaches its own VEG-E-141 nonfinite-height guard. Attempt #2203 then refuses as Hydraulic before the owner guard, with attempted=2203, entered=2202; core=82, raw-J=2 and materialization=0 remain exact.",
+      "work_and_custody": "Eighty-two complete evaluator entries, two hydraulic entry observations, one actual hydraulic owner entry and zero materialization; allowed and denied adapters preserve input/trial; scoped budget restored to None.",
+      "disposition": "PASS"
+    },
+    {
+      "group": "g6-factor",
+      "classification": "seeded analytic actual Stage1 factorization owner",
+      "selector": "m1_coupled_tests::m1_trust_region_physical_budget_stage1_factorization_cap_reaches_actual_face",
+      "elapsed_seconds": 0.6184245240874588,
+      "operands": "Explicit 21x21 identity raw Jacobian, residual 0.25 in all rows, unit normalizers/scales, unbounded box, radius 1, zero base; budget seeded at attempted=entered=47299.",
+      "asserted_result": "Factorization #47300 enters through the real Stage1 face and succeeds. Attempt #47301 refuses as WorkCap/Stage1Factorization before local SVD entry; the refusal itself reports entered_svd_factorizations=0 and exact attempted/entered snapshot 47301/47300.",
+      "scope_boundary": "This is analytic seeded actual-owner evidence. It is not a natural physical trajectory and receives no physical-path credit.",
+      "work_and_custody": "Scoped budget restored to None.",
+      "disposition": "PASS"
+    },
+    {
+      "group": "g6-materialization",
+      "classification": "physical actual materialization owner with independent closure",
+      "selector": "m1_coupled_tests::m1_trust_region_physical_budget_materialization_cap_reaches_actual_owner",
+      "elapsed_seconds": 0.5687994589097798,
+      "operands": "Original60 canonical input and its accepted captured core; no reconstructed or expected-output substitute.",
+      "asserted_result": "The canonical root is independently reconstructed first. Materialization #1 enters using the actual accepted core, is independently reconstructed again and remains bound to the protected input. Attempt #2 refuses as Materialization with attempted=2, entered=1 before additional hydraulic or materializer work.",
+      "work_and_custody": "Post-reset runtime records core=0, actual hydraulic entries=2 and materialization entries=1; refusal snapshot has core/raw-J=0, hydraulic attempted=entered=2 and materialization attempted=2/entered=1; input unchanged and scoped budget restored to None.",
+      "disposition": "PASS"
+    }
+  ],
+  "g6_disposition": {
+    "result": "PASS_5_OF_5",
+    "physical_actual_owner_cases": [
+      "core",
+      "raw Jacobian",
+      "hydraulic",
+      "materialization"
+    ],
+    "analytic_seeded_actual_owner_cases": [
+      "Stage1 factorization"
+    ],
+    "production_or_natural_trajectory_inference": false
+  },
+  "native_harness_source_only_feasibility": {
+    "disposition": "SOURCE_ONLY_PROGRESSION_SUPPORTED_WITHIN_EXISTING_AUTHORIZATION; TARGET_DISPATCH_HOLD",
+    "authorization_boundary": "The adopted authorization already permits minimal private feature wiring. The reported 193 textual physical-stage gates across four files are a scoping inventory, not evidence that all must change and not a reason to seek new owner permission.",
+    "existing_owners": [
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs",
+        "seam": "prepare_fixed_sequence_support",
+        "role": "Builds the complete native support input from the actual provider record, true current reservoirs and staged soil temperatures before invoking the solver. This is the only acceptable input-capture boundary."
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+        "seam": "solve_m1_coupled_column_inner canonical 21-coordinate construction",
+        "role": "Owns the canonical seed after structural preflight, including zero drainage coordinates. Existing test-support diagnostic observation already returns this seed for the legacy arm."
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+        "seam": "M1PhysicalTrustRegionAdapter plus the shared controller run",
+        "role": "Owns the BVLS treatment path, typed outcome and actual work, but remains cfg(test)-private and is not yet reachable by a dependency built only with test-support."
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/Cargo.toml",
+        "seam": "dev-dependency openwepp-land-surface-energy/test-support",
+        "role": "Provides an existing feature boundary for a hidden dependency-local harness without changing default production dispatch."
+      }
+    ],
+    "source_only_work_that_is_currently_supported": [
+      "Confine reachability changes to the existing test-support/private-feature boundary and the smallest transitive adapter/controller types actually required by a hidden harness entry.",
+      "Use one shared canonical-seed owner with byte-identical coordinate construction and ordering for both arms; do not create a second seed formula.",
+      "Capture an immutable clone of the provider-built input before either arm and pass that same input and seed to baseline and treatment paths.",
+      "Expose outcomes, typed errors, complete witness/domain/phase/radius/materialization/closure/nonpublication custody and existing work ledgers without adding numerical calls for reporting.",
+      "Perform source/compile/inventory/control review before any numerical or physical target execution."
+    ],
+    "prohibited_shortcuts": [
+      "No JSON-history reconstruction, terminal Newton base, trial() fixture, guessed support1 input or post-result seed change.",
+      "No new solver method, numerical fallback, tolerance/rank policy, duplicated controller, expected-output factory or public/default production API.",
+      "No claim that the legacy diagnostic observer alone executes the BVLS treatment.",
+      "No broad mechanical promotion of all textual feature gates without a minimal transitive reachability proof."
+    ],
+    "unresolved_prerequisites": [
+      "G3 still lacks a prospectively frozen actual physical first-valid-replacement trajectory. Existing analytic ReplacementWitness controls cannot substitute.",
+      "The older ordinary physical control was stopped and supplies no current-source positive treatment result; the harness must record whatever the exact treatment returns rather than assume success.",
+      "The dependency cannot yet call the cfg(test)-private BVLS treatment entry under test-support.",
+      "Dual source/readiness review and exact source/binary/input/seed plans remain required before any target slot is spent."
+    ],
+    "conclusion": "Source-only harness progression can proceed now without a new method, a new physical fixture or numerical evaluation. It may establish compile-time reachability and exact custody interfaces only. G3 closure and baseline/treatment dispatch remain HOLD until their independent physical and launch prerequisites are actually met."
+  },
+  "residual_risk_and_missing_tests": [
+    "The G6 results validate the five bounded owner controls; they do not establish a full natural physical solve, performance, scale or production acceptance.",
+    "The Stage1 factorization result is intentionally analytic seeded evidence.",
+    "G3 physical first-valid replacement and the executable native BVLS treatment bridge remain absent; all target slots remain unspent."
+  ],
+  "approval": {
+    "g6_results": "PASS",
+    "native_harness_source_only_progression": "SUPPORTED",
+    "native_target_dispatch": "HOLD",
+    "g3_physical": "HOLD",
+    "production_activation": false
+  }
+}

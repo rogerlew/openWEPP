@@ -1,0 +1,29 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05-native-bridge-intent.v1",
+  "evidence_class": "Static implementation intent before native-harness source edits; no Cargo, numerical, physical, or target execution.",
+  "source_tree": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "recovered_source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+  "deliverable": "One feature-gated hidden facade that runs the existing M1PhysicalTrustRegionAdapter through the existing FoundationState controller body from an immutable M1CoupledColumnInput and canonical 21-coordinate seed already captured by M1DiagnosticObservation.",
+  "permitted_write_set": [
+    "crates/openwepp-land-surface-energy/Cargo.toml",
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-hillslope-orchestrator/Cargo.toml",
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs"
+  ],
+  "required_seams": [
+    "RealM1ProviderCaller::prepare_fixed_sequence_support arms the existing diagnostic observation before baseline policy and consumes its complete input plus seed only after that arm returns.",
+    "The facade constructs M1PhysicalTrustRegionAdapter::new(input.clone(), M1CoupledColumnTrial::from_coordinates(seed)) and calls the existing controller-run/finalization body; it does not reconstruct input, seed, JSON, or a solver body.",
+    "The compact observation carries actual typed outcome and existing controller/budget accounting, while adapter and controller types remain crate-private."
+  ],
+  "feature_policy": "m1-trust-region-native-harness is default-off and may include test-support, but never m1-trust-region-physical-stage; cfg expansion is restricted to body types, controller/interface, Stage1 certificate, adapter/provenance, and budget needed by this facade.",
+  "exclusions": [
+    "No production/default dispatch, public normal API, dependency, numerical method, seed substitution, fixture/JSON reconstruction, target execution, or physical execution.",
+    "Existing m1_coupled_tests fixtures, poison controls, analytic controls, and physical-stage selector closure remain under their current cfg(test) gates."
+  ],
+  "selected_followup_check_owned_by_orchestrator": "cargo check for the exact LSE and orchestrator native-harness feature closure, followed only by the owner-selected source-quality and integration selectors; this writer runs no Cargo command."
+}

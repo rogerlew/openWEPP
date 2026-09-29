@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: exact full old-body no-provenance Debug/work comparison, zero andpositive lambda",
+  "baseline": "bvls05-empty-old-body-baseline.json",
+  "candidate_checks": [
+    {
+      "receipt": "bvls05-quality-debug08.json",
+      "stderr_sha256": "838ddb75975b3acbc99c4dbd579e16c6597ae7ac083b2bd966bf6f586f00c1ad",
+      "exact_all_fields_equal": true
+    },
+    {
+      "receipt": "bvls05-quality-release08.json",
+      "stderr_sha256": "c762706c70d9ea74906071208ce236d4548067541945b5f89a7222412211a072",
+      "exact_all_fields_equal": true
+    },
+    {
+      "receipt": "bvls05-quality-analytic-only08.json",
+      "stderr_sha256": "8405e7a7e398ee0c2cd824d9053c49c98b91a2ccea9b9c79d4e24ccf59e4c079",
+      "exact_all_fields_equal": true
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-policy-accounting.v1",
+  "reviewer": "interface_correctness",
+  "role": "same-reviewer independent correctness review of the BVLS05 accounting occurrence-unit clarification",
+  "evidence_class": "Static canonical-text and parsed-plan comparison only. No Rust source audit, build, test, physical assembly, solver, replay, or result-bearing execution was performed.",
+  "reviewed_files": [
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "sha256": "ba0dba474ee78f5efde530f9e0764d9899b684cf98675d6609228cfcfd7ee2c1"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan06.json",
+      "sha256": "a73b72f62aab8116b04fd18b0e53c72727586fd2331023e527d7ac3b8838c3e8"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan05.json",
+      "sha256": "0697ddc894667648f3dc247cf3d2e1b2b4d6f993ef3b7e33f89243d9b792f6f3"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-correctness-policy05.json",
+      "sha256": "30608c2d72680792758f66269e849d6ae9e7c759dee2ef6aabc5a7a3be092e67"
+    }
+  ],
+  "bounded_parsed_diff": [
+    {
+      "path": "preserves",
+      "change": "Added bvls05-control-plan05.json; plans01-05 remain preserved."
+    },
+    {
+      "path": "work_observation.per_assembly_max",
+      "change": "Replaced the ambiguous per-assembly label with per_occurrence_max while retaining the exact maxima role_joins=6, column_entry_tests=252, mask_joins=21 and held_base_copies=21."
+    },
+    {
+      "path": "work_observation.occurrence_units",
+      "change": "Defined role and column work per actual-Jacobian certificate derivation, mask work per face/state initialization, and held-base copy work per entered candidate reconstruction, including rejected proposals."
+    },
+    {
+      "path": "work_observation.retry_rule",
+      "change": "Identical-J retries reuse the admitted certificate without role/column rescans and count each repeated mask join and entered candidate copy."
+    }
+  ],
+  "verification": [
+    {
+      "claim": "case inventory and operands",
+      "status": "UNCHANGED",
+      "evidence": "A recursive parsed comparison found changes only in preserves and work_observation; all 15 case dictionaries, selectors, operands, formulas, expected behavior and assertions are byte-equivalent as parsed values."
+    },
+    {
+      "claim": "canonical/plan agreement",
+      "status": "PASS",
+      "evidence": "The canonical BVLS05 paragraph and plan06 use the same four occurrence owners and maxima. Both require repeated face/candidate work to be counted while forbidding redundant certificate rescans for an identical Jacobian."
+    },
+    {
+      "claim": "numerical and cap ownership",
+      "status": "PASS",
+      "evidence": "The clarification keeps factor work dimensioned by the retained face and full residual/KKT/norm/box/reconstruction work dimensioned by 21, preserves existing counter meanings, raises no cap, and adds no numerical operation."
+    },
+    {
+      "claim": "assembly-owned held-mask lifetime",
+      "status": "PASS",
+      "evidence": "Certificate work is charged only when derived from an actual Jacobian; the stable admitted D is reused for identical-J retries, while every actual application to a new face/state and every entered candidate reconstruction remains observable."
+    },
+    {
+      "claim": "canonical pointer",
+      "status": "PASS",
+      "evidence": "The numerical-methods authority points to bvls05-control-plan06.json, and plan06 explicitly preserves plan05."
+    }
+  ],
+  "findings": [],
+  "residual_risk_and_next_gate": [
+    "This disposition approves only the accounting-unit clarification. It does not close or weaken any finding in bvls05-correctness-controls01.json.",
+    "The controls implementation must distinguish a fresh actual-J certificate derivation from an identical-J retry, count inspected-but-ineligible certificate work, count repeated face/state joins and entered rejected-candidate copies, and preserve attempted/completed refusal evidence.",
+    "Exact source review and behavioral expected-red evidence remain required after the sole writer completes the bounded controls corrections.",
+    "Numerical body implementation, non-target physical controls, the G4 endpoint, targets, and production/default activation remain gated."
+  ],
+  "disposition": {
+    "accounting_occurrence_unit_clarification": "PASS",
+    "accepted_scientific_policy_preserved": true,
+    "case_operands_preserved": true,
+    "controls_correction_scope_release": true,
+    "behavioral_expected_red_execution_release": false,
+    "rust_numerical_body_release": false,
+    "physical_execution_release": false,
+    "status": "ACCOUNTING_CLARIFICATION_ACCEPTED_CONTROLS_FIXES_ONLY"
+  }
+}

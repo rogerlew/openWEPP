@@ -1,0 +1,12 @@
+--- crates/openwepp-land-surface-energy/Cargo.toml	2026-09-29 13:25:45.867200362 -0700
++++ /tmp/bvls05-native-rejected-draft/lse-Cargo.toml	2026-09-29 13:24:44.916768571 -0700
+@@ -13,6 +13,9 @@
+ m1-trust-region-analytic-stage = []
+ # Private physical-adapter controls; test-only and distinct from Stage 2.
+ m1-trust-region-physical-stage = []
++# Private cross-crate custody seam.  It captures an already-constructed native
++# input and canonical seed without enabling the physical-stage test suite.
++m1-trust-region-native-harness = ["test-support"]
+ default = []
+ test-support = []
+ 

@@ -1,0 +1,123 @@
+{
+  "findings": [],
+  "reviewer": "/root/interface_correctness",
+  "evidence_class": "Ran: independent read/hash, parse, and arithmetic reconciliation of the terminal package top, accepted/restored custody, final ledger, and prospective publication scope; no source/config edit, build, test, replay, numerical, physical, target, staging, commit, push, or remote verification",
+  "review_scope": {
+    "included": [
+      "docs/work-packages/20260920-cold-canopy-m1-001/package.md lines 1-85",
+      "bvls05-final-ledger.json and bvls05-native-integrity-restoration01.json",
+      "Previously accepted cut08/cut09 checkpoint and native-integrity reviews",
+      "Publication readiness of the four reviewed contract files, package-owned BVLS05 evidence, and command recorder"
+    ],
+    "excluded": [
+      "Any main-repository Rust or integration-test source",
+      "The preserved but unaccepted native candidate",
+      "Any native continuation, build, G3/target execution, or broader M1 qualification",
+      "The final commit/push/remote-verification receipt"
+    ]
+  },
+  "terminal_package_review": {
+    "path": "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+    "sha256": "4e407bd649b028da6645be0a93cc637dbc285970335af24feea029e05af1141c",
+    "reviewed_region": "lines 1-85",
+    "disposition": "ACCURATE_PARTIAL_CHECKPOINT",
+    "supported_claims": [
+      "BVLS05 numerical/control evidence remains accepted only at the recorded cut08/cut09 boundaries.",
+      "Terminal disposition is PARTIAL; check10 is the last stable native compile-negative and check11 is INVALID because source changed during compilation.",
+      "No native solver or target ran, no corrected rerun followed the integrity stop, and the unfinished candidate is neither executable nor accepted.",
+      "Before11 and terminal12 states remain separately recoverable, while LIVE was restored byte-for-byte to accepted cut09.",
+      "G3/native/target and all named broader M1, production, regression, conservation, and scale obligations remain HOLD/unspent.",
+      "Scoped publication is evidence publication, not Rust adoption or release."
+    ],
+    "stale_active_continuation_claim": false
+  },
+  "custody_verification": {
+    "accepted_cut09_source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+    "restoration_artifact": "bvls05-native-integrity-restoration01.json",
+    "restoration_artifact_sha256": "241115341cc0d97e8cbcf9d94d208b44e3d9226f76b872f9bce133527f18f41c",
+    "independent_live_comparison": "All 764 LIVE source/config files match bvls05-terminal09-recovery.json; no missing or mismatched entries.",
+    "native_feature_exposure_after_restore": "No m1-trust-region-native-harness reference exists in the restored LSE Cargo.toml, lib.rs, or solver_covered_evaluation.rs.",
+    "pending_candidate": {
+      "tree_sha256": "f4517b20492be7f2493c84b0a6bdc3b241426171f044ba6827d2c14739d54222",
+      "archive_sha256": "29252a46361e792e9c6be33dda43a1ee3418c3f15c2fc53fa95d553a7768330f",
+      "status": "PRESERVED_UNACCEPTED"
+    },
+    "malformed_writer_status": {
+      "wrapper": "bvls05-native-bridge-status02.json",
+      "wrapper_sha256": "6fbaf189a9967fced20462c8fb7e5da173ca9298a8859e8db76d5f611526fe95",
+      "raw_note": "bvls05-native-bridge-status02.raw.txt",
+      "raw_note_sha256": "613768d592a8ce463714aa33285c32b95f2502642a6f9927db21ac80d16106d0",
+      "disposition": "Raw malformed historical bytes are retained verbatim; the valid JSON wrapper points to the controlling integrity stop and grants no implementation or validation credit. All 421 bvls05-*.json artifacts parse after this preservation repair."
+    },
+    "native_resumption_authorized": false
+  },
+  "ledger_verification": {
+    "artifact": "bvls05-final-ledger.json",
+    "sha256": "6c30d36109a7221dfa9f7ba17dc82983878f31a07abfc44f5f2e182d93ea0d4b",
+    "anchor_utc": "2026-09-29T17:28:00Z",
+    "accounted_at_utc": "2026-09-29T20:39:17.022260Z",
+    "elapsed_exact_seconds": "11477.022260",
+    "elapsed_rounded_up_seconds": 11478,
+    "closing_seconds": 1800,
+    "increment_check": "11478 + 1800 = 13278",
+    "cumulative_check": "414465.393795 + 13278 = 427743.393795",
+    "remaining_check": "428865.393795 - 427743.393795 = 1122.000000",
+    "coverage_check": "17:28:00Z + 13278 s = 21:09:18Z",
+    "fixed_work_cutoff_utc": "2026-09-29T20:58:00Z",
+    "fixed_hard_deadline_utc": "2026-09-29T21:28:00Z",
+    "disposition": "ARITHMETIC_AND_CLAIMS_RECONCILE; no refund, re-anchor, old-balance addition, or resumption inference"
+  },
+  "publication_scope": {
+    "disposition": "READY_FOR_SCOPED_COMMIT_AND_PUBLICATION",
+    "reviewed_contracts": [
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+        "sha256": "ba0dba474ee78f5efde530f9e0764d9899b684cf98675d6609228cfcfd7ee2c1"
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+        "sha256": "c80270ba93bd702d67b5260bd0ce1074113b190c016ba98591f6d84ff5f19b47"
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+        "sha256": "2192bf6a2234e1b7738a0ac4b7815ecc2e268df9a19f914168ec18afbf494606"
+      },
+      {
+        "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+        "sha256": "9289b21afae8420be74b61abd3a939778a6ca990b5d95d0d6b53f28d265dfeac"
+      }
+    ],
+    "package": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+      "sha256": "4e407bd649b028da6645be0a93cc637dbc285970335af24feea029e05af1141c"
+    },
+    "recorder": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/run_recorded.py",
+      "sha256": "235316eef3384a59e7bc181edb3d6e24e441f24bbe78aecdb2a934166d1bd477",
+      "reviewed_change": "Only the recorded hard deadline changed from the earlier G4 diagnostic deadline to the adopted fixed 2026-09-29T21:28:00Z package deadline."
+    },
+    "evidence": "Package-owned BVLS05 authority, plan, source-custody, command, result, independent-review, recovery, integrity-stop, and ledger artifacts supporting the terminal claims.",
+    "stage_boundary": [
+      "Use an exact allowlist for the four contracts, package.md, package-owned BVLS05 evidence/recovery, this review, and run_recorded.py.",
+      "Exclude all main Rust and integration-test source. In particular, do not stage the existing unrelated modified crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs or tests/integration/advisory_linter_authority_contract.rs.",
+      "Exclude unrelated work-package artifacts and dirty files; a broad git add of the artifact or repository tree is not covered by this readiness.",
+      "The final publication receipt may be added only as closing evidence binding the scoped commit and remote verification; it cannot upgrade PARTIAL/HOLD claims."
+    ],
+    "main_rust_adoption": false
+  },
+  "residual_risk_and_missing_tests": [
+    "Native Critical/source/feature qualification, orchestrator closure, G3 physical witnesses, and original target prefix/baseline/treatment/repeat runs remain NOT RUN/HOLD.",
+    "Strict lint remains inherited-only FAIL as disclosed; full09/A1/A3, material/BGC, complete-parent/late-reject, cycle/restart, conservation, scale, and production acceptance remain outside this partial publication.",
+    "Final commit identity, push, and remote verification do not yet exist and must be captured by the closing publication receipt without altering the reviewed scope or claims."
+  ],
+  "approval": {
+    "terminal_partial_checkpoint": "PASS",
+    "integrity_stop_and_restoration": "PASS",
+    "ledger": "PASS",
+    "scoped_commit_publication": "READY",
+    "native_continuation": "STOPPED",
+    "main_rust": "EXCLUDED",
+    "g3_targets_and_broader_m1": "HOLD",
+    "overall": "NO_CORRECTNESS_BLOCKER_TO_SCOPED_PARTIAL_PUBLICATION"
+  }
+}

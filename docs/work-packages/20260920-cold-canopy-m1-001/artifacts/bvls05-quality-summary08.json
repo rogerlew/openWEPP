@@ -1,0 +1,991 @@
+{
+  "evidence_class": "Ran: exact final-source quality receipts plus explicit unchanged-authority evidence reuse",
+  "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+  "checks": [
+    {
+      "receipt": "bvls05-quality-debug08.json",
+      "receipt_sha256": "1956a56eb3799c7e10a181c2b8e08798a15fab396471d81f91c5ca1de4471c41",
+      "exit_code": 0,
+      "elapsed_seconds": 9.099432000890374,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-release08.json",
+      "receipt_sha256": "1d3e3479d81c83790ac4df064daaa89bde0818c399f97584d0cf686c379f07d9",
+      "exit_code": 0,
+      "elapsed_seconds": 95.51705867098644,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-analytic-only08.json",
+      "receipt_sha256": "983edd78988d172229ad3d01d956216c05abb2de93c5892b3b37e0498cc654d8",
+      "exit_code": 0,
+      "elapsed_seconds": 4.132062524091452,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-release-inventory08.json",
+      "receipt_sha256": "5f6c617fa81cd5d9693fa188e91ce6f411da22829c1f4d724090c1e79551afff",
+      "exit_code": 0,
+      "elapsed_seconds": 0.6186504950746894,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-debug-inventory08.json",
+      "receipt_sha256": "deadf1fcb6edc6ee1d0ad087467379155cad9652f2f7a2f2877157682b1cb027",
+      "exit_code": 0,
+      "elapsed_seconds": 0.5688658319413662,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-analytic-inventory08.json",
+      "receipt_sha256": "086ea8cf37d91003b2838c64912e5c20336bfb00b2f29104ce9e9c5899e91548",
+      "exit_code": 0,
+      "elapsed_seconds": 4.234376988839358,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-default08.json",
+      "receipt_sha256": "c326ea2663000652e39f87e10cc09f0e75d3c86bdf655d106b324a0712a06aee",
+      "exit_code": 0,
+      "elapsed_seconds": 1.7210364728234708,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-format08.json",
+      "receipt_sha256": "3e801f99ddc33e6bb546e716c4f076bd9480d3387cb1432fe0929c9aca15a459",
+      "exit_code": 0,
+      "elapsed_seconds": 0.8694390440359712,
+      "disposition": "PASS"
+    },
+    {
+      "receipt": "bvls05-quality-all-lint08.json",
+      "receipt_sha256": "afbee3c30937340c99988c8ec5b9af62ee472cbeca491bc1fd14e29d392f3ef7",
+      "exit_code": 101,
+      "elapsed_seconds": 13.161924608051777,
+      "disposition": "STRICT_FAIL_INHERITED_ONLY",
+      "source_bearing_comparison": "bvls05-quality-all-lint08-comparison02.json",
+      "baseline_count": 238,
+      "candidate_count": 238,
+      "matched_count": 238
+    },
+    {
+      "receipt": "bvls05-quality-combined-lint08.json",
+      "receipt_sha256": "708538f59a31a6614aa94cc26d10934f880089fc368a3aa21ae639303035d3cb",
+      "exit_code": 101,
+      "elapsed_seconds": 13.723140467889607,
+      "disposition": "STRICT_FAIL_INHERITED_ONLY",
+      "source_bearing_comparison": "bvls05-quality-combined-lint08-comparison02.json",
+      "baseline_count": 238,
+      "candidate_count": 238,
+      "matched_count": 238
+    },
+    {
+      "receipt": "bvls05-quality-analytic-lint08.json",
+      "receipt_sha256": "0375e9b5a3803cd7b1cb973dd036490354fcfc40739a65277ee3b24b4f768f28",
+      "exit_code": 101,
+      "elapsed_seconds": 11.463795003015548,
+      "disposition": "STRICT_FAIL_INHERITED_ONLY",
+      "source_bearing_comparison": "bvls05-quality-analytic-lint08-comparison02.json",
+      "baseline_count": 262,
+      "candidate_count": 262,
+      "matched_count": 262
+    }
+  ],
+  "counts": {
+    "debug_tests_passed": 120,
+    "release_tests_passed": 120,
+    "analytic_only_tests_passed": 103,
+    "allfeature_debug_inventory": 409,
+    "allfeature_release_inventory": 409,
+    "analytic_only_inventory": 359
+  },
+  "empty_mask_parity": "bvls05-quality-empty-comparison08.json",
+  "authority_reuse": [
+    {
+      "receipt": "bvls05-quality-a0-07.json",
+      "basis": "same canonical authority/tool input hashes; final08 delta is confined cfg(test) observation visibility/snapshots, no canonical/default/production change",
+      "canonical_files_still_match": [
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/README.md",
+          "sha256": "6454fca08116bef63bd00e38a6bfb0408f5425293d556608a5cd4fb6351dd8b8"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md",
+          "sha256": "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md",
+          "sha256": "9ab58b4c5da79aa3e4e8855a57d76d2b1c94d3b22002342bc8a8689a560b35ff"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+          "sha256": "b76d674dff647066f3cfabb1756bc121ed49942250b51319799c16964b0445d2"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-EVAP-001.md",
+          "sha256": "b9edfef1d644b48f487fe95138761765ca24ffa58b323120e9585a22004a45be"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
+          "sha256": "97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md",
+          "sha256": "1b5d02f6f7115c1a04f56e3ea933773876fc2ccc874e862e17e683fdc960bb93"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-IMPOUND-001.md",
+          "sha256": "ebad8c01395e85b638124b296923f85bbc8bcdbd6d898fe081b9ed8dd53a2e76"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-CHANINP-001.md",
+          "sha256": "da94093ff009be0e8ee618783c799d1ed70c0377b398e546fecd7e5c6c605be6"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-CLIMATE-001.md",
+          "sha256": "dafd32adf1975202525eba3985aa5b0c4bad00201859bc80c92ee31964c68264"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-FROST-001.md",
+          "sha256": "da9a81713b6f10e401604fe36e44d782534fcbb487c21b18cb83356ea39237fa"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-GWCOEFF-001.md",
+          "sha256": "af29486e9e90c30906ae9a103b14ce1ba48edb64bc623a03f5e2df705f79ed51"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-HBP-001.md",
+          "sha256": "ead119f5280cab6bec23f1ffa39e71a2bc83cb17f6943184423b803d0cbe5d18"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-DEPLETION-001.md",
+          "sha256": "f9127c610bdd9e72cf9a4487d4717a40860fe7bab5f929d7644dc17627a76b92"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-FIXEDDATE-001.md",
+          "sha256": "8ab23208b0e7c9c6c7ef221c1f4f7a4698c1d235c7ce386acec54b920523df64"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-LCWB-001.md",
+          "sha256": "f9db7b19ab3d5a87e7911724e32d65cf761fb764e84133402913a30e36b1615a"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md",
+          "sha256": "e2e4f70c91ea874bb37f60a7b516232d5e44b53ba4066e560a0565d972f2dca7"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md",
+          "sha256": "752c834592654cf0b7017a46dc82b5b6483e0c3a5b3279dffe77a5e71e5b027d"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-PHOSPHORUS-001.md",
+          "sha256": "13c5d5179a08d9c7b56733e574b7f394685b4b35c6ce5cf5e41aa6cc71eb0ba8"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-PMETPARA-001.md",
+          "sha256": "86997e0979b7c682a360ecced231c2eef661d3195f2f4c454230934b9010a54c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-SLOPE-001.md",
+          "sha256": "0944911bf268f4655f26694eb41882e5cba20abeffa431aa203eecf709196b5f"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-SNOW-001.md",
+          "sha256": "bcfe7c665a73bc45d89816de84179350ce11cfb78e4b6472e60b28c0c9e7003b"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md",
+          "sha256": "122de662fd9414c44edbc5284db08e348e0138aeba728ec6603141b65c37e9f1"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-TC-001.md",
+          "sha256": "6e01d483be28290e39b441a1eebcd923d2f8fc38b5c632f0b4efc3b1c51074cd"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-TCR-001.md",
+          "sha256": "b7efb516ba3d2cf6fe4e53f3e2fb21ac723a561009ff81adcad162878cafa639"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-CHANNEL-001.md",
+          "sha256": "835facb44b2065f5c4505228d83d52200e8472e9826e54db75efe553850cdb0c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-IMPOUNDMENT-001.md",
+          "sha256": "e8655b9284f700de90273197c178343fd9d8a7ec77ce7f8fe5072a9a8d2696bf"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-STRUCTURE-001.md",
+          "sha256": "2019152be93ef5cb5281950cd2efc0e21ba91cd141ad71545126c0acdd6b80f3"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md",
+          "sha256": "f4dfb7758ea7e9c819a4db404137288fd8dbe9e852fec28b4b09f7c35fea0779"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-IRRIG-001.md",
+          "sha256": "d8a257c5f1880947fb5b78083681e17fe445dc104eef1ada42f494070403d6ab"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+          "sha256": "c80270ba93bd702d67b5260bd0ce1074113b190c016ba98591f6d84ff5f19b47"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+          "sha256": "1b04f5ef31d4d329e522a7d1bae99514ce829032e8a59d1b56be9e549468e322"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+          "sha256": "2192bf6a2234e1b7738a0ac4b7815ecc2e268df9a19f914168ec18afbf494606"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
+          "sha256": "b930bbd0f0ce2c16d826be6a6d1d0bb4e6fe0155e611232047e0b4205e2dbfc4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+          "sha256": "6ce8ffe21317027f5d1171579a9059c64c7ae3bd9ba9181ceea91323254b6b25"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md",
+          "sha256": "86774b170dd985c15b731a6eb66763c4db29b73997c6f2a5298fde52facf175b"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/inactive-jacobian.md",
+          "sha256": "e8917d559b9f33d3939c4db4a63567017961751a05984e83d2b4cc83ebf7f6d6"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+          "sha256": "ecad8d17ad3facb5bff86b8dc3e65a529df777fa370ffc6d82d2cc5c0138a78c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+          "sha256": "9df995278840bdb03345c3b5087a8f8e1d170a9162725a986e538219585f492e"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+          "sha256": "8508b3ceaa49f081ce8c2df1d7cce39249d8f3875fea5a017404c0816cdae2c1"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+          "sha256": "d8ba959af095a9e829a7d7324968ed2a89f80d921a5a72ee5b72c0f6b776c2e3"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+          "sha256": "ba0dba474ee78f5efde530f9e0764d9899b684cf98675d6609228cfcfd7ee2c1"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
+          "sha256": "09cd7e0a7f8601dfdc6eb769513866e21ed4a9d2d77bfd8c8423432323c89f4b"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/replay-evidence.md",
+          "sha256": "607794e36841d3238df031e523bccbe1e5873e0056cbd5732b52401e07a7b0e4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+          "sha256": "80090af568d33abb0b31ca9fd6282bbff7bf82060732424f31d5f7a739eef3ec"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+          "sha256": "5998e11f4de7258240e76fc0ae2666659bd3a2e0122484039631a844850babab"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+          "sha256": "c6b60b52eb194341324df1fc69736030627fe4e7d45371442d32e6f4dc80ee94"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+          "sha256": "4acd7ddf7a20d9c1198a41ee26d4caa8c57361728eb893ae365c31c669fe66e3"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+          "sha256": "2c3afa3f25827508ab9bd4826249d6557d08aa44b8f4ba7f0ecd5c988a900bb8"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+          "sha256": "d6d48539ad0e27eee6ab3d829fd64cb7f9f02b3cc2954bac76c72d49399ef211"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+          "sha256": "ccab71a8e84298c52a264a2a94a0b1ee899dcfd93435815be3d8ca484904f05c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md",
+          "sha256": "1a78c926c65d869a4f738c073ba841861a24602989521f33cc90f28e615b1f82"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md",
+          "sha256": "daa11cc1066a9cca1fa1bf9458a060f268c69a0a45cbbcdc35042d99c1cce70e"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-PERC-001.md",
+          "sha256": "74cf1282d9dcfe6cf84767f1e3c6ec4d4b20a1cb8b2852bbc40ad7495e0b09af"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-PLANT-001.md",
+          "sha256": "76c876d91ec95dfb18b436ebd1ff232f31d412bf42bc82cdd272d158a7ee459c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md",
+          "sha256": "c3cc6da20f39ead5b465db66be5bd5b60b99d1326c219955444075fdff05c991"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-ROOTZONEHYDRAULICS-001.md",
+          "sha256": "428fe3c3956c792a4768e11360373709f84d8936834dc310ec7e998d831c475d"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-ROUTE-001.md",
+          "sha256": "e6aa282c81f10f25341875b7d5f793b77e4b355a8ae6ee970bcc3d357780a11c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+          "sha256": "2861a7ba877468e9aa9893266b8c46a09b2ca8181b4b211db756108cb703defa"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SED-001.md",
+          "sha256": "5586a8eec6f790014172acffc8701ff514fac944639e4f7991f9357460a3a353"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+          "sha256": "e0e0735fd240ec9b7f1b7bcba759b7b8db4bb59fc4f8dd6d5390be27dce33e23"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SNOWFREEFORCING-001.md",
+          "sha256": "1dc78f05bf6841254da2016f7eeec69d4a84963af763603d53a5ae5e6dc0e638"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+          "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SOIL-001.md",
+          "sha256": "f81809c50944d186fcfdf42bf66d2db821595b7bbce54083e71a8b0d58694afd"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md",
+          "sha256": "fb9360da5eb303b2fa61e8da1daccfed62f4d944ee76f3c367474b679ac3fbcb"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+          "sha256": "0f7bfb46764f1db883988e0b34771be2e455435b213095fe61756d332e94931e"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md",
+          "sha256": "9d5dde7b02fdfa594b8b5572dbfd628b7c03ab77bdb073eeb4bbb13198632b45"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+          "sha256": "9289b21afae8420be74b61abd3a939778a6ca990b5d95d0d6b53f28d265dfeac"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",
+          "sha256": "39e48280cae983b47dc20fd2b9d9472a9d7e205299aade165b03938f56268ac4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+          "sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/provenance/SC-SYSTEM-001-provenance.md",
+          "sha256": "2092d79911a3b17f5d12514c7207cdba4a8b451ef68cc370e38313507c9b640c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/provenance/SC-WATBAL-001-provenance.md",
+          "sha256": "b1d0e550c524eecc759f83e728ae89d7354272bf946cc9082431582a059ae91e"
+        }
+      ]
+    },
+    {
+      "receipt": "bvls05-quality-schema07.json",
+      "basis": "same canonical authority/tool input hashes; final08 delta is confined cfg(test) observation visibility/snapshots, no canonical/default/production change",
+      "canonical_files_still_match": [
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/README.md",
+          "sha256": "6454fca08116bef63bd00e38a6bfb0408f5425293d556608a5cd4fb6351dd8b8"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md",
+          "sha256": "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md",
+          "sha256": "9ab58b4c5da79aa3e4e8855a57d76d2b1c94d3b22002342bc8a8689a560b35ff"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+          "sha256": "b76d674dff647066f3cfabb1756bc121ed49942250b51319799c16964b0445d2"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-EVAP-001.md",
+          "sha256": "b9edfef1d644b48f487fe95138761765ca24ffa58b323120e9585a22004a45be"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
+          "sha256": "97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md",
+          "sha256": "1b5d02f6f7115c1a04f56e3ea933773876fc2ccc874e862e17e683fdc960bb93"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-IMPOUND-001.md",
+          "sha256": "ebad8c01395e85b638124b296923f85bbc8bcdbd6d898fe081b9ed8dd53a2e76"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-CHANINP-001.md",
+          "sha256": "da94093ff009be0e8ee618783c799d1ed70c0377b398e546fecd7e5c6c605be6"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-CLIMATE-001.md",
+          "sha256": "dafd32adf1975202525eba3985aa5b0c4bad00201859bc80c92ee31964c68264"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-FROST-001.md",
+          "sha256": "da9a81713b6f10e401604fe36e44d782534fcbb487c21b18cb83356ea39237fa"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-GWCOEFF-001.md",
+          "sha256": "af29486e9e90c30906ae9a103b14ce1ba48edb64bc623a03f5e2df705f79ed51"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-HBP-001.md",
+          "sha256": "ead119f5280cab6bec23f1ffa39e71a2bc83cb17f6943184423b803d0cbe5d18"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-DEPLETION-001.md",
+          "sha256": "f9127c610bdd9e72cf9a4487d4717a40860fe7bab5f929d7644dc17627a76b92"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-FIXEDDATE-001.md",
+          "sha256": "8ab23208b0e7c9c6c7ef221c1f4f7a4698c1d235c7ce386acec54b920523df64"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-LCWB-001.md",
+          "sha256": "f9db7b19ab3d5a87e7911724e32d65cf761fb764e84133402913a30e36b1615a"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md",
+          "sha256": "e2e4f70c91ea874bb37f60a7b516232d5e44b53ba4066e560a0565d972f2dca7"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md",
+          "sha256": "752c834592654cf0b7017a46dc82b5b6483e0c3a5b3279dffe77a5e71e5b027d"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-PHOSPHORUS-001.md",
+          "sha256": "13c5d5179a08d9c7b56733e574b7f394685b4b35c6ce5cf5e41aa6cc71eb0ba8"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-PMETPARA-001.md",
+          "sha256": "86997e0979b7c682a360ecced231c2eef661d3195f2f4c454230934b9010a54c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-SLOPE-001.md",
+          "sha256": "0944911bf268f4655f26694eb41882e5cba20abeffa431aa203eecf709196b5f"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-SNOW-001.md",
+          "sha256": "bcfe7c665a73bc45d89816de84179350ce11cfb78e4b6472e60b28c0c9e7003b"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md",
+          "sha256": "122de662fd9414c44edbc5284db08e348e0138aeba728ec6603141b65c37e9f1"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-TC-001.md",
+          "sha256": "6e01d483be28290e39b441a1eebcd923d2f8fc38b5c632f0b4efc3b1c51074cd"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-TCR-001.md",
+          "sha256": "b7efb516ba3d2cf6fe4e53f3e2fb21ac723a561009ff81adcad162878cafa639"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-CHANNEL-001.md",
+          "sha256": "835facb44b2065f5c4505228d83d52200e8472e9826e54db75efe553850cdb0c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-IMPOUNDMENT-001.md",
+          "sha256": "e8655b9284f700de90273197c178343fd9d8a7ec77ce7f8fe5072a9a8d2696bf"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-STRUCTURE-001.md",
+          "sha256": "2019152be93ef5cb5281950cd2efc0e21ba91cd141ad71545126c0acdd6b80f3"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md",
+          "sha256": "f4dfb7758ea7e9c819a4db404137288fd8dbe9e852fec28b4b09f7c35fea0779"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-IRRIG-001.md",
+          "sha256": "d8a257c5f1880947fb5b78083681e17fe445dc104eef1ada42f494070403d6ab"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+          "sha256": "c80270ba93bd702d67b5260bd0ce1074113b190c016ba98591f6d84ff5f19b47"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+          "sha256": "1b04f5ef31d4d329e522a7d1bae99514ce829032e8a59d1b56be9e549468e322"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+          "sha256": "2192bf6a2234e1b7738a0ac4b7815ecc2e268df9a19f914168ec18afbf494606"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
+          "sha256": "b930bbd0f0ce2c16d826be6a6d1d0bb4e6fe0155e611232047e0b4205e2dbfc4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+          "sha256": "6ce8ffe21317027f5d1171579a9059c64c7ae3bd9ba9181ceea91323254b6b25"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md",
+          "sha256": "86774b170dd985c15b731a6eb66763c4db29b73997c6f2a5298fde52facf175b"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/inactive-jacobian.md",
+          "sha256": "e8917d559b9f33d3939c4db4a63567017961751a05984e83d2b4cc83ebf7f6d6"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+          "sha256": "ecad8d17ad3facb5bff86b8dc3e65a529df777fa370ffc6d82d2cc5c0138a78c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+          "sha256": "9df995278840bdb03345c3b5087a8f8e1d170a9162725a986e538219585f492e"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+          "sha256": "8508b3ceaa49f081ce8c2df1d7cce39249d8f3875fea5a017404c0816cdae2c1"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+          "sha256": "d8ba959af095a9e829a7d7324968ed2a89f80d921a5a72ee5b72c0f6b776c2e3"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+          "sha256": "ba0dba474ee78f5efde530f9e0764d9899b684cf98675d6609228cfcfd7ee2c1"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
+          "sha256": "09cd7e0a7f8601dfdc6eb769513866e21ed4a9d2d77bfd8c8423432323c89f4b"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/replay-evidence.md",
+          "sha256": "607794e36841d3238df031e523bccbe1e5873e0056cbd5732b52401e07a7b0e4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+          "sha256": "80090af568d33abb0b31ca9fd6282bbff7bf82060732424f31d5f7a739eef3ec"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+          "sha256": "5998e11f4de7258240e76fc0ae2666659bd3a2e0122484039631a844850babab"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+          "sha256": "c6b60b52eb194341324df1fc69736030627fe4e7d45371442d32e6f4dc80ee94"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+          "sha256": "4acd7ddf7a20d9c1198a41ee26d4caa8c57361728eb893ae365c31c669fe66e3"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+          "sha256": "2c3afa3f25827508ab9bd4826249d6557d08aa44b8f4ba7f0ecd5c988a900bb8"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+          "sha256": "d6d48539ad0e27eee6ab3d829fd64cb7f9f02b3cc2954bac76c72d49399ef211"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+          "sha256": "ccab71a8e84298c52a264a2a94a0b1ee899dcfd93435815be3d8ca484904f05c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md",
+          "sha256": "1a78c926c65d869a4f738c073ba841861a24602989521f33cc90f28e615b1f82"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md",
+          "sha256": "daa11cc1066a9cca1fa1bf9458a060f268c69a0a45cbbcdc35042d99c1cce70e"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-PERC-001.md",
+          "sha256": "74cf1282d9dcfe6cf84767f1e3c6ec4d4b20a1cb8b2852bbc40ad7495e0b09af"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-PLANT-001.md",
+          "sha256": "76c876d91ec95dfb18b436ebd1ff232f31d412bf42bc82cdd272d158a7ee459c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md",
+          "sha256": "c3cc6da20f39ead5b465db66be5bd5b60b99d1326c219955444075fdff05c991"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-ROOTZONEHYDRAULICS-001.md",
+          "sha256": "428fe3c3956c792a4768e11360373709f84d8936834dc310ec7e998d831c475d"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-ROUTE-001.md",
+          "sha256": "e6aa282c81f10f25341875b7d5f793b77e4b355a8ae6ee970bcc3d357780a11c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+          "sha256": "2861a7ba877468e9aa9893266b8c46a09b2ca8181b4b211db756108cb703defa"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SED-001.md",
+          "sha256": "5586a8eec6f790014172acffc8701ff514fac944639e4f7991f9357460a3a353"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+          "sha256": "e0e0735fd240ec9b7f1b7bcba759b7b8db4bb59fc4f8dd6d5390be27dce33e23"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SNOWFREEFORCING-001.md",
+          "sha256": "1dc78f05bf6841254da2016f7eeec69d4a84963af763603d53a5ae5e6dc0e638"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+          "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SOIL-001.md",
+          "sha256": "f81809c50944d186fcfdf42bf66d2db821595b7bbce54083e71a8b0d58694afd"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md",
+          "sha256": "fb9360da5eb303b2fa61e8da1daccfed62f4d944ee76f3c367474b679ac3fbcb"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+          "sha256": "0f7bfb46764f1db883988e0b34771be2e455435b213095fe61756d332e94931e"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md",
+          "sha256": "9d5dde7b02fdfa594b8b5572dbfd628b7c03ab77bdb073eeb4bbb13198632b45"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+          "sha256": "9289b21afae8420be74b61abd3a939778a6ca990b5d95d0d6b53f28d265dfeac"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",
+          "sha256": "39e48280cae983b47dc20fd2b9d9472a9d7e205299aade165b03938f56268ac4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+          "sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/provenance/SC-SYSTEM-001-provenance.md",
+          "sha256": "2092d79911a3b17f5d12514c7207cdba4a8b451ef68cc370e38313507c9b640c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/provenance/SC-WATBAL-001-provenance.md",
+          "sha256": "b1d0e550c524eecc759f83e728ae89d7354272bf946cc9082431582a059ae91e"
+        }
+      ]
+    },
+    {
+      "receipt": "bvls05-quality-units07.json",
+      "basis": "same canonical authority/tool input hashes; final08 delta is confined cfg(test) observation visibility/snapshots, no canonical/default/production change",
+      "canonical_files_still_match": [
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/README.md",
+          "sha256": "6454fca08116bef63bd00e38a6bfb0408f5425293d556608a5cd4fb6351dd8b8"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-BIOGEOCHEM-001.md",
+          "sha256": "6cfd2143f9941613e6f6324d2790f88773c9b9eafa1ab8cad72e5a95df6794b4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md",
+          "sha256": "9ab58b4c5da79aa3e4e8855a57d76d2b1c94d3b22002342bc8a8689a560b35ff"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+          "sha256": "b76d674dff647066f3cfabb1756bc121ed49942250b51319799c16964b0445d2"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-EVAP-001.md",
+          "sha256": "b9edfef1d644b48f487fe95138761765ca24ffa58b323120e9585a22004a45be"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
+          "sha256": "97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md",
+          "sha256": "1b5d02f6f7115c1a04f56e3ea933773876fc2ccc874e862e17e683fdc960bb93"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-IMPOUND-001.md",
+          "sha256": "ebad8c01395e85b638124b296923f85bbc8bcdbd6d898fe081b9ed8dd53a2e76"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-CHANINP-001.md",
+          "sha256": "da94093ff009be0e8ee618783c799d1ed70c0377b398e546fecd7e5c6c605be6"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-CLIMATE-001.md",
+          "sha256": "dafd32adf1975202525eba3985aa5b0c4bad00201859bc80c92ee31964c68264"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-FROST-001.md",
+          "sha256": "da9a81713b6f10e401604fe36e44d782534fcbb487c21b18cb83356ea39237fa"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-GWCOEFF-001.md",
+          "sha256": "af29486e9e90c30906ae9a103b14ce1ba48edb64bc623a03f5e2df705f79ed51"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-HBP-001.md",
+          "sha256": "ead119f5280cab6bec23f1ffa39e71a2bc83cb17f6943184423b803d0cbe5d18"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-DEPLETION-001.md",
+          "sha256": "f9127c610bdd9e72cf9a4487d4717a40860fe7bab5f929d7644dc17627a76b92"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-FIXEDDATE-001.md",
+          "sha256": "8ab23208b0e7c9c6c7ef221c1f4f7a4698c1d235c7ce386acec54b920523df64"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-LCWB-001.md",
+          "sha256": "f9db7b19ab3d5a87e7911724e32d65cf761fb764e84133402913a30e36b1615a"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md",
+          "sha256": "e2e4f70c91ea874bb37f60a7b516232d5e44b53ba4066e560a0565d972f2dca7"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md",
+          "sha256": "752c834592654cf0b7017a46dc82b5b6483e0c3a5b3279dffe77a5e71e5b027d"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-PHOSPHORUS-001.md",
+          "sha256": "13c5d5179a08d9c7b56733e574b7f394685b4b35c6ce5cf5e41aa6cc71eb0ba8"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-PMETPARA-001.md",
+          "sha256": "86997e0979b7c682a360ecced231c2eef661d3195f2f4c454230934b9010a54c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-SLOPE-001.md",
+          "sha256": "0944911bf268f4655f26694eb41882e5cba20abeffa431aa203eecf709196b5f"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-SNOW-001.md",
+          "sha256": "bcfe7c665a73bc45d89816de84179350ce11cfb78e4b6472e60b28c0c9e7003b"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md",
+          "sha256": "122de662fd9414c44edbc5284db08e348e0138aeba728ec6603141b65c37e9f1"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-TC-001.md",
+          "sha256": "6e01d483be28290e39b441a1eebcd923d2f8fc38b5c632f0b4efc3b1c51074cd"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-TCR-001.md",
+          "sha256": "b7efb516ba3d2cf6fe4e53f3e2fb21ac723a561009ff81adcad162878cafa639"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-CHANNEL-001.md",
+          "sha256": "835facb44b2065f5c4505228d83d52200e8472e9826e54db75efe553850cdb0c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-IMPOUNDMENT-001.md",
+          "sha256": "e8655b9284f700de90273197c178343fd9d8a7ec77ce7f8fe5072a9a8d2696bf"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-STRUCTURE-001.md",
+          "sha256": "2019152be93ef5cb5281950cd2efc0e21ba91cd141ad71545126c0acdd6b80f3"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md",
+          "sha256": "f4dfb7758ea7e9c819a4db404137288fd8dbe9e852fec28b4b09f7c35fea0779"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-IRRIG-001.md",
+          "sha256": "d8a257c5f1880947fb5b78083681e17fe445dc104eef1ada42f494070403d6ab"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+          "sha256": "c80270ba93bd702d67b5260bd0ce1074113b190c016ba98591f6d84ff5f19b47"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/audit-details.md",
+          "sha256": "1b04f5ef31d4d329e522a7d1bae99514ce829032e8a59d1b56be9e549468e322"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+          "sha256": "2192bf6a2234e1b7738a0ac4b7815ecc2e268df9a19f914168ec18afbf494606"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
+          "sha256": "b930bbd0f0ce2c16d826be6a6d1d0bb4e6fe0155e611232047e0b4205e2dbfc4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+          "sha256": "6ce8ffe21317027f5d1171579a9059c64c7ae3bd9ba9181ceea91323254b6b25"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/history.md",
+          "sha256": "86774b170dd985c15b731a6eb66763c4db29b73997c6f2a5298fde52facf175b"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/inactive-jacobian.md",
+          "sha256": "e8917d559b9f33d3939c4db4a63567017961751a05984e83d2b4cc83ebf7f6d6"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+          "sha256": "ecad8d17ad3facb5bff86b8dc3e65a529df777fa370ffc6d82d2cc5c0138a78c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/litter-phase.md",
+          "sha256": "9df995278840bdb03345c3b5087a8f8e1d170a9162725a986e538219585f492e"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/map-custody.md",
+          "sha256": "8508b3ceaa49f081ce8c2df1d7cce39249d8f3875fea5a017404c0816cdae2c1"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+          "sha256": "d8ba959af095a9e829a7d7324968ed2a89f80d921a5a72ee5b72c0f6b776c2e3"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+          "sha256": "ba0dba474ee78f5efde530f9e0764d9899b684cf98675d6609228cfcfd7ee2c1"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/qualification.md",
+          "sha256": "09cd7e0a7f8601dfdc6eb769513866e21ed4a9d2d77bfd8c8423432323c89f4b"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/replay-evidence.md",
+          "sha256": "607794e36841d3238df031e523bccbe1e5873e0056cbd5732b52401e07a7b0e4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-coupling.md",
+          "sha256": "80090af568d33abb0b31ca9fd6282bbff7bf82060732424f31d5f7a739eef3ec"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/soil-custody.md",
+          "sha256": "5998e11f4de7258240e76fc0ae2666659bd3a2e0122484039631a844850babab"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+          "sha256": "c6b60b52eb194341324df1fc69736030627fe4e7d45371442d32e6f4dc80ee94"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-custody.md",
+          "sha256": "4acd7ddf7a20d9c1198a41ee26d4caa8c57361728eb893ae365c31c669fe66e3"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/surface-energy.md",
+          "sha256": "2c3afa3f25827508ab9bd4826249d6557d08aa44b8f4ba7f0ecd5c988a900bb8"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+          "sha256": "d6d48539ad0e27eee6ab3d829fd64cb7f9f02b3cc2954bac76c72d49399ef211"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/water-vapor.md",
+          "sha256": "ccab71a8e84298c52a264a2a94a0b1ee899dcfd93435815be3d8ca484904f05c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md",
+          "sha256": "1a78c926c65d869a4f738c073ba841861a24602989521f33cc90f28e615b1f82"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-OUTPUT-WAT5-001.md",
+          "sha256": "daa11cc1066a9cca1fa1bf9458a060f268c69a0a45cbbcdc35042d99c1cce70e"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-PERC-001.md",
+          "sha256": "74cf1282d9dcfe6cf84767f1e3c6ec4d4b20a1cb8b2852bbc40ad7495e0b09af"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-PLANT-001.md",
+          "sha256": "76c876d91ec95dfb18b436ebd1ff232f31d412bf42bc82cdd272d158a7ee459c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md",
+          "sha256": "c3cc6da20f39ead5b465db66be5bd5b60b99d1326c219955444075fdff05c991"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-ROOTZONEHYDRAULICS-001.md",
+          "sha256": "428fe3c3956c792a4768e11360373709f84d8936834dc310ec7e998d831c475d"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-ROUTE-001.md",
+          "sha256": "e6aa282c81f10f25341875b7d5f793b77e4b355a8ae6ee970bcc3d357780a11c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md",
+          "sha256": "2861a7ba877468e9aa9893266b8c46a09b2ca8181b4b211db756108cb703defa"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SED-001.md",
+          "sha256": "5586a8eec6f790014172acffc8701ff514fac944639e4f7991f9357460a3a353"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md",
+          "sha256": "e0e0735fd240ec9b7f1b7bcba759b7b8db4bb59fc4f8dd6d5390be27dce33e23"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SNOWFREEFORCING-001.md",
+          "sha256": "1dc78f05bf6841254da2016f7eeec69d4a84963af763603d53a5ae5e6dc0e638"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+          "sha256": "50e285aa00bcf7313a232da915e0ec033590e5db2b7c5694b7574fb0b2d508f4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SOIL-001.md",
+          "sha256": "f81809c50944d186fcfdf42bf66d2db821595b7bbce54083e71a8b0d58694afd"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md",
+          "sha256": "fb9360da5eb303b2fa61e8da1daccfed62f4d944ee76f3c367474b679ac3fbcb"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SURFACELIQUID-001.md",
+          "sha256": "0f7bfb46764f1db883988e0b34771be2e455435b213095fe61756d332e94931e"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md",
+          "sha256": "9d5dde7b02fdfa594b8b5572dbfd628b7c03ab77bdb073eeb4bbb13198632b45"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+          "sha256": "9289b21afae8420be74b61abd3a939778a6ca990b5d95d0d6b53f28d265dfeac"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-VEGETATIONTRANSACTION-001.md",
+          "sha256": "39e48280cae983b47dc20fd2b9d9472a9d7e205299aade165b03938f56268ac4"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+          "sha256": "1d60a1c5e879bd28551b3fd73091b108597fa4172d67c35d1957826406c4cd1c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/provenance/SC-SYSTEM-001-provenance.md",
+          "sha256": "2092d79911a3b17f5d12514c7207cdba4a8b451ef68cc370e38313507c9b640c"
+        },
+        {
+          "path": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/provenance/SC-WATBAL-001-provenance.md",
+          "sha256": "b1d0e550c524eecc759f83e728ae89d7354272bf946cc9082431582a059ae91e"
+        }
+      ]
+    }
+  ],
+  "private_scope": "Independent final reviewers must confirm no production/shared/default/public reachability; no dependency/protected fixture/authority-suite changes",
+  "physical": "Seven BVLS05 assembly/trial controls and sole G4 NOT RUN at this record",
+  "preserved_negatives": "All prior expected-red, compile/lint failures and source-specific receipts remain separate historical evidence; no strict-lint PASS claim"
+}

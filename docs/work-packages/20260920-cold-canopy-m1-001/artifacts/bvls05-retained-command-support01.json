@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Ran: exact supporting script copies retained; no commands dispatched by this preservation",
+  "files": [
+    {
+      "path": "bvls05-command-recorder.py",
+      "sha256": "65b4a848075503ea0fe587539b0f0f90bda1888d56318b111526a0941f90287d",
+      "source": "/tmp/bvls05_record.py"
+    },
+    {
+      "path": "bvls05-source-diff.py",
+      "sha256": "e50cc00f5e7280ee812beb19f4c919cf53c7911880ae6293d22137d3ec0802a7",
+      "source": "/tmp/bvls05_source_diff.py"
+    },
+    {
+      "path": "bvls05-compare-inherited-lint.py",
+      "sha256": "aa100853a147e18f59d08abbcb7dafbe4aad3db40a93ff6ff33a7360a087b4b4",
+      "source": "/tmp/bvls05_compare_lint02.py"
+    },
+    {
+      "path": "bvls05-reconstruct-source09.py",
+      "sha256": "1430d8070bdd3b090092d5f6a9c8c0d4ea01dce13cceb7295fe342962278e69a",
+      "source": "/tmp/bvls05_recovery09.py"
+    }
+  ],
+  "scope": "Manual explicit command/source/lint/recovery helpers only, not a validation planner; fixed deadline remains in run_recorded.py"
+}

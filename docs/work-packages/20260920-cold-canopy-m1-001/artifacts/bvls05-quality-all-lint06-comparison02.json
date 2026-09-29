@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Static: complete source-bearing comparison of Ran strict lint logs; not a strict lint PASS",
+  "baseline": "g4-rank-all-features-lint02",
+  "candidate": "bvls05-quality-all-lint06",
+  "argv_identical": true,
+  "normalization": "Line/column and numeric diagnostic/suggestion gutters and first-occurrence-only lint-enablement notes; diagnostic headers, locations and source-bearing content remain unchanged",
+  "baseline_count": 238,
+  "candidate_count": 242,
+  "matched_count": 238,
+  "introduced": [
+    "error: this argument is passed by value, but not consumed in the function body\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE |     masks: FaceMaskContext<'_>,\n|            ^^^^^^^^^^^^^^^^^^^\n|\nhelp: or consider marking this type as `Copy`\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE | struct FaceMaskContext<'a> {\n| ^^^^^^^^^^^^^^^^^^^^^^^^^^\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value\nhelp: consider taking a reference instead\n|\nLINE |     masks: &FaceMaskContext<'_>,\n|            +",
+    "error: the loop variable `col` is used to index `step`\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE |     for col in 0..N {\n|                ^^^^\n|\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop\nhelp: consider using an iterator and enumerate()\n|\nLINE -     for col in 0..N {\nLINE +     for (col, <item>) in step.iter().enumerate().take(N) {\n|",
+    "error: the loop variable `row` is used to index `raw`\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE |         for row in 0..21 {\n|                    ^^^^^\n|\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop\nhelp: consider using an iterator and enumerate()\n|\nLINE -         for row in 0..21 {\nLINE +         for (row, <item>) in raw.iter().enumerate().take(21) {\n|",
+    "error: the loop variable `coordinate` is used to index `raw_jacobian`\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE |         for coordinate in 0..21 {\n|                           ^^^^^\n|\n      = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop\nhelp: consider using an iterator and enumerate()\n|\nLINE -         for coordinate in 0..21 {\nLINE +         for (coordinate, <item>) in raw_jacobian.iter_mut().enumerate() {\n|"
+  ],
+  "removed": [],
+  "baseline_stderr_sha256": "1a024bae67fa611265e4b8001e5181d630d851206235e36580550b5ca395819f",
+  "candidate_stderr_sha256": "b0a667dae7fcdfc5b727631f0704cc3f672478d2a3ff06d29fac8409a0aa15cf"
+}

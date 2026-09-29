@@ -1,0 +1,66 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-functional-review.v1",
+  "reviewer": "interface_correctness",
+  "role": "independent numerical correctness reviewer",
+  "evidence_class": "Static review of frozen functional03 source plus recorded compile/inventory and affected analytic receipts. The reviewer ran no Rust build, test, physical assembly, solver, replay, or G4 endpoint.",
+  "findings": [],
+  "reviewed_identity": {
+    "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "source_tree_sha256": "99bf7161a5c5f381ed3d6e931e60f490af58ad64a5f4f287803da6dfde410abf",
+    "tree_entries": 764,
+    "independent_entry_check": "All 764 live files matched functional03 manifest entry hashes.",
+    "manifest": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-functional03-source-diff.json",
+      "sha256": "ef27e58d1bee653b454adbf0e5f771441113db6cb153460c4a188dc82fd799a8"
+    },
+    "patch": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-functional03-from-start.patch",
+      "sha256": "41ef1c1d23d158ed79c51ba3ea3e5b5ac0388024f1645885ce6ef0806136f2ae"
+    },
+    "changed_file_hashes": {
+      "crates/openwepp-land-surface-energy/src/lib.rs": "40b7539964698c6c354054be55d0f83709d9433fad8e92e545a932d752162f5b",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "c3057e5149240ebdb67a3535f615bc7d1be1271a35361f01f283931fa6414315",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "03606f84bee1068179023ef490d746344cd4369eab1e257facd32e912f6eb863",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs": "86d2e727becf3495cf5f82a0daf880c873e3dc3434fdf7cb1143a91a840c3493",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "a1cd1ee7bc13b49cc94c8f58a748de55fb7c0d1de15a161bc1c5cbc0bd6c4927",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "79e20b339ebd4d00ad4d2f24f870a9108f2f8894d02ba7fc10dd456c16ff2e37"
+    }
+  },
+  "accepted_functional_behavior": [
+    "Assembly replacement is centralized in replace_assembly_for_bvls05. Raw-Jacobian construction must succeed before raw matrix, provenance, certificate cache, or selected phase are replaced; selected-assembly errors therefore retain the prior assembly and typed cause.",
+    "L01 uses the prescribed +0 direction except upper H=-1, invokes the direct selected phase/assembly seam, records upper Mixed/Drainage and lower Ice/Drainage, and observes initial natural, selected, identical-J retry, and dry new-base assemblies without invoking the G4 predictor or endpoint.",
+    "L01 proves fresh 6-role/252-entry/21-mask work for natural, selected and new-base admissions; exact selected-J/base bits and zero role/entry rescans with one 21-mask join on retry; held {1,2} on natural/selected/retry and empty held set on the dry new base. Aggregate adapter counts distinguish two natural assemblies (initial plus new base), one selected assembly and three total raw-J assemblies.",
+    "L02 and L03 use ordinary adapter evaluate and pre-evaluator domain-check owners, preserve protected input/initial-trial bytes, require exactly two evaluations and one trial-domain check, observe all 21 finite candidate residuals and positive finite normalizers, and call the actual full-21 dynamic root predicate. They make no nonlinear acceptance claim.",
+    "L02 proves a full-to-half-capacity candidate recomputes partial wetness and a later dry assembly admits no inherited D. L03 proves a half-to-full-capacity candidate recomputes exact wetness and only a separate fresh full assembly may certify {1,2}.",
+    "The G4 natural-tangent wrapper brackets initialization and proposal timing separately, preserves typed transition_model success/error propagation, publishes controller accounting and terminal state, and labels overlapping work categories rather than summing them.",
+    "G4 face capture records each actual certificate admission's provenance, held mask, reuse status, retained original-coordinate order and reached work without adding an evaluator, Jacobian, factorization, rank calculation, retry or materialization. Cache-reuse classification is taken before the shared admission call; controller replacement/new-base paths clear the cache.",
+    "The lifecycle JSON serializer remains valid by design: append_installs_json begins with the closing bracket for bvls05_lifecycle. An initial static concern about a missing bracket was withdrawn after inspecting that helper boundary and the recorded parse control."
+  ],
+  "recorded_evidence": {
+    "inventory08": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-physical-inventory08.json",
+      "sha256": "e2206322dbfe7456dd51ad4cd9cf400b2afa1b4844c537e4622d5a956cb43f6d",
+      "result": "PASS compile/list: 409 tests on exact functional03 source; no tests or physics executed by inventory."
+    },
+    "affected_analytic_debug03": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-functional-debug03.json",
+      "sha256": "70f9e45781552fb2afcd2fdb6147209e1746ea7875168fff8f0ca78475ab6667",
+      "result": "PASS recorded: 120/120 affected analytic/controller/observer controls, including m1_face_pivot_populated_capture_json_parses, on exact source; all seven BVLS05 physical controls and G4 remained unrun."
+    }
+  },
+  "residual_risk_and_missing_tests": [
+    "All seven plan06 physical controls remain unexecuted. Static correctness does not establish their actual phase, wet-fraction, work-count, cache-lifecycle, or root-disposition results.",
+    "The sole G4 endpoint and its lifecycle/timing capture remain unexecuted. No physical convergence, nonlinear acceptance, target validation, or production/default activation follows from this review.",
+    "Final execution readiness remains conditional on exact-source release/quality checks and complementary QA. The recorded functional03 all-feature lint receipt is currently a failed quality result and cannot be treated as readiness until reconciled or corrected under the package rules.",
+    "Release/source changes after tree 99bf7161 require bounded same-reviewer verification of affected functional behavior."
+  ],
+  "disposition": {
+    "functional03_source_correctness": "PASS_STATIC",
+    "l01_l03_source_correctness": "PASS_STATIC",
+    "g4_timing_and_lifecycle_capture": "PASS_STATIC",
+    "finite_seven_physical_execution_readiness": "CONDITIONAL_ON_FINAL_QUALITY_AND_QA",
+    "g4_endpoint_readiness": "CONDITIONAL_ON_FINITE_SEVEN_RESULTS_FINAL_QUALITY_AND_DUAL_READINESS",
+    "production_activation_release": false,
+    "status": "NO_CORRECTNESS_BLOCKER_ON_FROZEN_FUNCTIONAL03"
+  }
+}

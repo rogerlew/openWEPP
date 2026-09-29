@@ -1,0 +1,36 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-native-integrity.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static incident/custody review of supplied receipts and manifests. QA ran no build, replay, physical command, or source edit.",
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "paths": [
+        "bvls05-native-check11.json",
+        "crates/openwepp-land-surface-energy/src/lib.rs",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+      ],
+      "finding": "The writer changed source during native check11. The receipt begins on tree 0354c6f7… and records source_unchanged=false; the current candidate is f4517b20…. Check11 exit 101 is therefore invalid as source-bound validation and cannot be classified as a source-bound failure, a pass, or evidence for native behavior."
+    }
+  ],
+  "incident": {
+    "check11": "Ran 2026-09-29T20:35:11.104351Z through 20:35:25.922772Z, cargo check with m1-trust-region-native-harness, exit=101, no timeout. The failure is evidence of an integrity breach only.",
+    "cause": "Source changed after firstFreeze11 while the check was running, affecting lib.rs and solver_covered_evaluation/m1_coupled.rs.",
+    "check10": "Stable prior source-bound compile failure remains preserved: check10 exit=101 on tree 9715e898… with source_unchanged=true. It is not repaired or superseded by invalid check11."
+  },
+  "accepted_checkpoint": {
+    "status": "UNCHANGED and accepted under bvls05-qa-terminal-checkpoint01.json.",
+    "cut09": "Archived accepted source 04465bc08… and its recovery/archive remain distinct from the native candidate. No accepted cut09 physical, G4, G2, G6, quality, or custody evidence is invalidated by this incident."
+  },
+  "required_custody_actions": [
+    "Preserve check11 receipt, start-tree manifest, current-tree manifest, and source delta as an integrity incident record; do not relabel check11 as validation evidence.",
+    "Obtain the promised current12 recovery binding before any later native review.",
+    "Keep native work stopped unless a new explicit authorization and a fresh frozen source/binary/plan/review sequence is established."
+  ],
+  "holds": [
+    "No native compile/pass/failure claim is accepted from check11.",
+    "No native numerical, physical, target, G3, or production dispatch is authorized or inferred.",
+    "No resumption permission is created by this incident review."
+  ],
+  "disposition": "INTEGRITY STOP: invalidate check11 as source-bound evidence; preserve check10 and the accepted cut09 checkpoint unchanged. Native candidate remains blocked pending explicit reauthorization and fresh custody."
+}

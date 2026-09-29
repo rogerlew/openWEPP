@@ -1,0 +1,144 @@
+{
+  "evidence_class": "Static: independent correctness review of exact G2 observation correction; Ran evidence cited only from root-owned affected quality receipts available at review time",
+  "reviewer": "/root/interface_correctness",
+  "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+  "comparison_base": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls05-reconstruction08-20260929",
+    "tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e"
+  },
+  "reviewed_artifacts": {
+    "bvls05-quality09-source-diff.json": "08691fed253f6d2fbe0433a0463284d3b8b2c79ac6c28169bc6cc337b86fd4c3",
+    "bvls05-quality09-from-start.patch": "019a7530758543d35fbd3121bb54d394c6145aba1c4f07734cc72a7c752c6a42",
+    "bvls05-g2-fix09-from08.patch": "0763c478d31b6a5da8464e68b63d920f57d3e1323f257e729fb18f184de958ab",
+    "bvls05-quality-summary09.json": "e03d8f4af2e1b71229f6b32e7c9dda5d8dae6e96459eb77e073f467eff25a346",
+    "bvls05-terminal09-recovery.json": "c98012ba3ffac4bd5769fdb97b57a62a481b7323d0364f80d9dc165137fc95fc",
+    "bvls05-conditional-plan02.json": "834224ed1fec1b89314968b56647dd12179fc44fec2102df489a67fd799a599a",
+    "bvls05-correctness-g2-failure01.json": "d4ad4b97a959729ced188b90f455a1bff4b16a7705851c3c2eec184440b150c3"
+  },
+  "reviewed_source": {
+    "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "9fcef9389b7e31f19352120ca4d0c7c6b86e536b874e90653a0008c59c482b2d",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "1a5d7b59dae8df80f6fb912c25d2bcf15c422368447ea8c23d2b4eb42c2e0dd6"
+  },
+  "findings": [],
+  "g2_fix_review": {
+    "disposition": "ACCEPT",
+    "exact_delta": [
+      "The selected-side error observation now carries aggregate, predictor-Jacobian, and direct adapter-method entry counts.",
+      "The aggregate is a checked addition of the two existing nonoverlapping counters after the terminal-own-error observation returns and before report serialization.",
+      "The JSON capture names all three values, preserving owner distinction.",
+      "Both existing G2 assertion sites retain the aggregate equals one assertion and add predictor equals one and direct equals zero assertions."
+    ],
+    "counter_ownership": {
+      "predictor_selected_side_probe_entries": "Delta of M1_RUNTIME_ACTIVITY.selected_probe_entries across the selected predictor evaluate_core_with_jacobian call; recorded even when that call returns the intended owning error.",
+      "direct_selected_side_probe_entries": "Entries into the later adapter selected_side_probe method.",
+      "selected_side_probe_entries": "Checked aggregate of predictor and direct entries for this private wrapper.",
+      "nonoverlap_proof": "The predictor counter is sampled around raw_jacobian assembly; the direct counter is incremented only at entry to the separate evaluator trait method. The retained assertions require the observed chronology 1+0, so the aggregate cannot hide a direct call or a missing predictor entry in the corrected G2 case."
+    },
+    "unchanged_behavior": [
+      "Original input fixture and frozen H=+0 tie trial",
+      "Pre-poison probe operands and -f64::MIN_POSITIVE coordinate-3 poison",
+      "Phase selection, validation, side checks, canonical core call and VEG-E-142/MhConsistency mapping",
+      "Radius, base, selected-phase, materialization, hydraulics and custody assertions",
+      "Production/default numerical dispatch, arithmetic, tolerances and error precedence"
+    ],
+    "serialization_note": "The test-only v1 capture's prior selected_side_probe_entries value represented only the direct adapter method. Cut09 corrects that field to the intended aggregate and adds both owner-specific fields. The preserved failed artifact retains the old value and source identity, so the semantic correction is attributable rather than silently rewriting history.",
+    "runtime_drift": "None in production or solver math. checked_add is test-report fail-closed handling after the intended controller observation and cannot change the physical path."
+  },
+  "quality_available_at_review": {
+    "debug09": "PASS 120/120, 289 skipped, exit 0, source unchanged",
+    "format09": "PASS, exit 0, source unchanged",
+    "default09": "PASS, exit 0, source unchanged",
+    "release09": "PASS 120/120, 289 skipped, exit 0, source unchanged",
+    "release_inventory09": "PASS 409 tests, exact G2 selector present once, exit 0, source unchanged",
+    "lint09": "Source-reconciled combined 238/238, analytic 262/262 and all-feature 238/238; zero introduced and zero removed in every comparison",
+    "receipts": {
+      "bvls05-quality-debug09.json": "dddf0b6472cece43befe4d5fe54ebe46d156ba65e4747bd5ee0d220037e1259b",
+      "bvls05-quality-release09.json": "c7c04fe02744d0f74d32e96518d9053b6b06615e8bdc8e587f563aa88889709b",
+      "bvls05-quality-release-inventory09.json": "8d46f08d31f1304e9b4ffb56dec1550ad88db40f21cbe802a4f4ef54fb3038eb",
+      "bvls05-quality-format09.json": "98ba76cd0ce43de991460c54f35f0007e3036bb706ab18cb48199555dcb5c878",
+      "bvls05-quality-default09.json": "75b147370cc6d704b756363c01ddb5c379f0a46da809eca1d701b3183483a005",
+      "bvls05-quality-combined-lint09-comparison02.json": "0d5fb946e3abec5c49d9737b814fb644b48bd1d42a01571dfe98c7406e5fa6a2",
+      "bvls05-quality-analytic-lint09-comparison02.json": "f9b3fa22517be6deaaae0ed48ca8d5b45567161594e19e2e7fae203d44db18bb",
+      "bvls05-quality-all-lint09-comparison02.json": "c916a0683fcab3cf2c5bbdc3ab45d90fe4477cfe4a8f6ceac177c0b2d6081ac2"
+    },
+    "release_binary": "/tmp/openwepp-cold-canopy-m1-bvls05-g2-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "release_binary_sha256_read_back": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a"
+  },
+  "conditional_execution_readiness": {
+    "corrected_g2": "READY",
+    "five_g6": "READY_CONDITIONAL_AFTER_CORRECTED_G2_PASS_AND_REVIEW",
+    "conditions": [
+      "Dispatch uses the reviewed release binary hash and rebinds the corrected G2 command without fixture, selector, feature, bound, or input change.",
+      "The preserved cut08 G2 failure remains immutable and the corrected run is explicitly labeled as the independently authorized recording-defect verification.",
+      "Only after corrected G2 passes and its capture is reviewed may the five unchanged G6 cases resume in their frozen order under the same negative-stop rule."
+    ],
+    "physical_execution_reviewed_here": false
+  },
+  "g3_and_native_bridge_assessment": {
+    "disposition": "HOLD_NOT_COMPLETABLE_WITHIN_REMAINING_WINDOW_WITHOUT_UNSUPPORTED_OPERAND_DISCOVERY_OR_UNREVIEWED_WIRING",
+    "g3_existing_seams": [
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+        "seams": [
+          "post_update_admit",
+          "root_admit",
+          "governed_step_pass",
+          "M1TrustRegionControllerRun.proposal_trace and terminal state callback"
+        ],
+        "use": "These are the actual controller owners for installed-root, full-no-update and first-valid replacement custody."
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+        "seams": [
+          "M1PhysicalTrustRegionAdapter",
+          "m1_trust_region_physical_adapter_run_outcome_for_test",
+          "M1PhysicalTrustRegionAdapterObservation.controller_run",
+          "evaluate/raw_jacobian/materialize owner observations"
+        ],
+        "use": "The physical adapter already reaches the shared controller and records final/materialized coordinates and proposal counts, but it does not yet project all three physical witness operands/dispositions needed by G3."
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+        "seams": [
+          "m1_trust_region_physical_adapter_original60_setup_is_separate_from_deferred_proposal",
+          "m1_trust_region_physical_adapter_ordinary_update_reassembles_before_root_materialization"
+        ],
+        "use": "The accepted original60 coordinates are a source-defined physical full-no-update candidate; the coordinate-20 perturbation is an existing source-defined installed-update candidate. Neither may be credited without exact source-bound execution and complete G3 operand/custody assertions."
+      }
+    ],
+    "g3_decisive_gap": "No prospectively frozen natural physical case currently establishes the first-valid replacement path. Existing ReplacementWitness fixtures are analytic by explicit contract. Discovering a physical seed, perturbation, factor, or input after observing results would be forbidden seed substitution/result search; an analytic fixture cannot discharge the physical-adapter obligation.",
+    "native_existing_seams": [
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs",
+        "seam": "prepare_fixed_sequence_support",
+        "facts": "Constructs the complete native M1CoupledColumnInput from the provider record, true current reservoirs and staged soil temperatures before calling solve_m1_coupled_column. Its existing cfg(test) diagnostic arm enables an observation on that exact input and records the returned canonical seed."
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+        "seam": "solve_m1_coupled_column_inner canonical coordinate construction and M1 diagnostic test-support observation",
+        "facts": "The legacy solver constructs the canonical 21-coordinate seed after structural preflight and publishes it through seed_coordinates without JSON reconstruction."
+      },
+      {
+        "path": "crates/openwepp-hillslope-orchestrator/Cargo.toml",
+        "seam": "dev-dependency enables openwepp-land-surface-energy/test-support",
+        "facts": "This already permits the dependency-local diagnostic observation in orchestrator tests."
+      }
+    ],
+    "native_decisive_gap": "The BVLS physical adapter and controller treatment entry remain cfg(test)-private inside the LSE crate and are not callable by an orchestrator dependency built with test-support. The current test-support route invokes only the legacy solve. A legitimate bridge would require reviewed private feature/visibility wiring and one shared canonical-seed owner; using diagnostic JSON, a terminal Newton base, trial(), or reconstructed history as the treatment seed would violate the adopted native-boundary requirement.",
+    "time_and_validation_conclusion": "With approximately 40 minutes remaining, the missing first-valid physical G3 fixture plus cross-crate treatment reachability, source review, quality/inventory, exact input/seed custody, dual readiness and bounded physical dispatch cannot be completed responsibly. Preserve both obligations as HOLD rather than narrowing them to the two reachable G3 candidates or the existing legacy diagnostic observer."
+  },
+  "residual_risk_and_missing_tests": [
+    "Cut09 has not received physical corrected-G2 evidence in this review.",
+    "Cut09 quality, inventory, lint reconciliation and release-binary hashing are complete; execution evidence remains absent until the one corrected G2 run.",
+    "G3 has analytic coverage only; none of its three required paths has accepted physical-adapter evidence under this disposition.",
+    "The native bridge has not run a BVLS treatment on the exact provider-built input and canonical seed. No target slot is released here."
+  ],
+  "approval": {
+    "static_g2_correction": "PASS",
+    "corrected_g2_dispatch": "READY",
+    "five_g6_dispatch": "CONDITIONAL_AFTER_G2_PASS",
+    "g3_physical": "HOLD",
+    "native_bridge_and_targets": "HOLD",
+    "production_activation": false
+  }
+}

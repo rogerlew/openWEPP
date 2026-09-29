@@ -1,0 +1,19 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-functional-observation-addendum.v1",
+  "reviewer": "interface_correctness",
+  "evidence_class": "Static addendum on the exact frozen functional03 source; no command or physical endpoint was executed.",
+  "reviewed_source_tree_sha256": "99bf7161a5c5f381ed3d6e931e60f490af58ad64a5f4f287803da6dfde410abf",
+  "finding": {
+    "severity": "MEDIUM",
+    "id": "BVLS05-G4-OWNER-WORK-OBSERVATION",
+    "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2942",
+    "finding": "The G4 attribution record preserves assembly, probe-entry, domain, materialization and controller-work fields, but omits existing adapter observations needed to account for all induced owner work: current evaluation count, natural phase-selection count, selected-side probe attempts, current-hydraulics state and the physical budget snapshot. Probe-entry counts alone do not establish attempted probe ownership. The face capture already provides BVLS05 certificate lifecycle custody.",
+    "required_fix": "After the timed invocation, serialize current_evaluations, natural_phase_selections, selected_side_probes, current_hydraulics, current_coordinates as bits, and budget_snapshot through the existing JSON projection. Retain face_capture.bvls05_lifecycle as the sole certificate lifecycle record and add no evaluator, assembly or numerical operation."
+  },
+  "disposition": {
+    "l01_l03_and_numerical_source_review": "UNCHANGED_ACCEPTED_IN_FUNCTIONAL03",
+    "finite_seven_execution_readiness": "UNCHANGED_CONDITIONAL_ON_FINAL_QUALITY_AND_QA",
+    "g4_capture_readiness": "CONDITIONAL_PENDING_SAME_REVIEWER_FIX_VERIFICATION",
+    "status": "BOUNDED_OBSERVATION_COMPLETENESS_FIX_REQUIRED"
+  }
+}

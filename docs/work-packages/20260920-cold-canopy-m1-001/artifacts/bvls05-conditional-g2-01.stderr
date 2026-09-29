@@ -1,0 +1,31 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `release` profile [optimized] target(s) in 0.03s
+────────────
+ Nextest run ID f42cff94-10b8-418f-8fa8-8867eefee760 with nextest profile: default
+    Starting 1 test across 1 binary (408 tests skipped)
+        FAIL [   0.008s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_retained_selected_side_wrapper_returns_own_mh_guard
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_retained_selected_side_wrapper_returns_own_mh_guard ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_trust_region_retained_selected_side_wrapper_returns_own_mh_guard
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 408 filtered out; finished in 0.00s
+
+  stderr ───
+    SHIFTED_FACE_ATTRIBUTION_CAPTURE {"control":"retained-selected-side-own-mh-guard","controller_materializations":0,"current_hydraulics":"Pending","fixture":"covered_input(ORIGINAL)+frozen H=+0.0 phase-join trial","poison":{"applied":true,"armed":true,"core_entered":true,"probe_entered":true,"scope_restored":true},"poisoned_probe_coordinate3_bits":9227875636482146304,"pre_poison_probe_coordinate_bits":[4643404729865485784,4643387137689110504,4643422322052828972,4580845367875276668,13785626545772145148,4414666935733680982,4643439914237569467,4643404729872632930,4643457506424686801,4582286520996594521,13888799203911457645,0,4643422322021369281,4564560352564700162,4643372184321289851,4643835738423558144,4643805831707282637,4643862126702624768,4643862126702624768,4643862126702624768,4643457506423603200],"protected_input_unchanged":true,"protected_trial_unchanged":true,"reached_adapter_observation":{"controller_work":{"bvls04_dot2_free_gradients":20,"bvls04_dot2_residual_rows":21,"bvls04_factor_applications":2,"bvls04_ordered_norms":6,"bvls04_positive_entries":2,"bvls05_column_entry_tests_attempted":252,"bvls05_column_entry_tests_completed":252,"bvls05_held_base_copies_attempted":0,"bvls05_held_base_copies_completed":0,"bvls05_mask_joins_attempted":42,"bvls05_mask_joins_completed":42,"bvls05_role_joins_attempted":6,"bvls05_role_joins_completed":6,"completed_face_pivots":1,"coordinate_update_operations":40,"entered_svd_factorizations":2,"factor_application_operations":4240,"first_residual_operations":903,"refinement_attempted_entries":1,"refinement_denied_entries":0,"refinement_guard_events":106452,"refinement_scalar_operations":37515,"second_dot2_operations":22263,"stage1_calls":1,"total_jacobi_sweeps":14,"upward_enclosure_guard_events":67251,"upward_enclosure_operations":7986,"whole_kkt_guard_events":5503,"whole_kkt_operations":1827},"current_evaluations":1,"materialization_entries":0,"raw_jacobian_assemblies":1,"selected_side_probe_entries":0,"selected_side_probes_completed":0},"result":"terminal-own-error-observation","schema":"m1-shifted-face-attribution-v1","trial_domain_checks":0,"typed_error_debug":null}
+
+    thread 'm1_coupled_tests::m1_trust_region_retained_selected_side_wrapper_returns_own_mh_guard' (1860649) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:6405:5:
+    assertion `left == right` failed
+      left: 0
+     right: 1
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.010s] 1 test run: 0 passed, 1 failed, 408 skipped
+        FAIL [   0.008s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_retained_selected_side_wrapper_returns_own_mh_guard
+error: test run failed

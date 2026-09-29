@@ -1,0 +1,103 @@
+{
+  "evidence_class": "Ran: independent correctness classification of the preserved frozen G2 failure; Static: source-seam attribution and corrected-verification eligibility",
+  "reviewer": "/root/interface_correctness",
+  "scope": "Classify the first conditional G2 result only. No source edit, build, replay, or G6 dispatch was performed by this reviewer.",
+  "identity": {
+    "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+    "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+    "m1_coupled_rs_sha256": "ea9a53eadffc11edc00e0db492fbc363c0784e94bda4e64c86c7e38c663a1651",
+    "m1_coupled_tests_rs_sha256": "677b66c4921a1b3340b09bc75f879a929d1f6a191b82c42c4500802f2684fd19",
+    "selector": "m1_coupled_tests::m1_trust_region_retained_selected_side_wrapper_returns_own_mh_guard"
+  },
+  "reviewed_evidence": {
+    "bvls05-conditional-g2-01.json": "007556b23b4e3f3d3bb7b5baac306e0290da381081051905737e2cead1f75761",
+    "bvls05-conditional-g2-01.stderr": "992aec0c3e7a6a2de099c92b90d0274820d1496059b70ffe4352a3d2dd9c7484",
+    "bvls05-conditional-g2-shifted_face_attribution_capture.json": "1afa695e74442df6ebd9e9205484275545d6a55a4988f69343cb19f30200437c",
+    "bvls05-conditional-plan01.json": "0bc670e48eb52eb80e60e57e20c4ff56e938d706065a817383b7e0a8b2382208",
+    "interface-harness-physical-plan01.json": "848fd6c7af5098c7442524e87ad5183fa664b28fa8687f9d27367a914be69177",
+    "capture_extraction": "Exactly one SHIFTED_FACE_ATTRIBUTION_CAPTURE payload occurs in stderr and is structurally identical to the parsed capture artifact."
+  },
+  "findings": [
+    {
+      "severity": "medium",
+      "classification": "test-only observation join defect",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+      "lines": [
+        2003,
+        3535,
+        3546,
+        3681,
+        2908
+      ],
+      "finding": "The G2 wrapper reports M1PhysicalTrustRegionAdapterObservation.selected_side_probe_entries, which is incremented only by the later adapter selected_side_probe method at line 3681. This control fails intentionally inside the earlier selected predictor-Jacobian assembly. The actual low-level m1_selected_probe entry increments M1_RUNTIME_ACTIVITY.selected_probe_entries at line 2003, and raw_jacobian samples that delta across evaluate_core_with_jacobian and stores it in predictor_selected_probe_entries at lines 3535-3546 even when assembly returns an error. The wrapper therefore joins the wrong already-existing counter at line 2908. Its assertion of one low-level owning entry reads zero from a semantically different final-method counter.",
+      "effect": "The exact intended owning operation occurred, but the dedicated test fails at its first reporting assertion and cannot receive G2 PASS credit on this source. This is evidence/reporting drift; it does not establish changed numerical behavior, guard precedence, or an alternative physical outcome."
+    }
+  ],
+  "failure_record": {
+    "result": "FAIL",
+    "exit_code": 100,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 408,
+    "elapsed_seconds": 9.793785769026726,
+    "automatic_retries": 0,
+    "timed_out": false,
+    "source_unchanged": true,
+    "binary_unchanged": true,
+    "failing_assertion": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:6405 expected selected_side_probe_entries == 1, observed 0",
+    "batch_disposition": "Correctly stopped before every G6 case."
+  },
+  "operation_and_precedence_assessment": {
+    "frozen_tie_preconditions_passed_before_failure": true,
+    "owning_error_passed_before_failure": "VEG-E-142 at M1Stage::MhConsistency",
+    "radius_unchanged_passed_before_failure": true,
+    "base_unchanged_passed_before_failure": true,
+    "selected_phase_unchanged_passed_before_failure": true,
+    "controller_materializations_zero_passed_before_failure": true,
+    "capture": {
+      "poison_armed_probe_entered_applied_core_entered": "0b111",
+      "pre_poison_coordinate3": "finite and positive",
+      "poisoned_coordinate3_bits": 9227875636482146304,
+      "poisoned_coordinate3_meaning": "-f64::MIN_POSITIVE",
+      "protected_input_unchanged": true,
+      "protected_trial_unchanged": true,
+      "current_evaluations": 1,
+      "current_hydraulics": "Pending",
+      "materialization_entries": 0,
+      "trial_domain_checks": 0,
+      "stage1_calls": 1,
+      "raw_jacobian_assemblies": 1,
+      "adapter_final_selected_side_probe_entries": 0,
+      "adapter_final_selected_side_probes_completed": 0
+    },
+    "typed_error_debug_null_explanation": "The outer terminal-own-error observation call succeeded in returning an observation whose embedded own error is VEG-E-142. Null here means the observation mechanism itself did not fail; it does not mean the owning error was absent.",
+    "conclusion": "The actual factor-built selected predictor probe passed the frozen admission and side chronology, was poisoned only at the owning seam, entered canonical core, and produced the required owning typed error before hydraulics, domain checking, or materialization. The failed assertion observes the wrong counter, after those substantive assertions already passed."
+  },
+  "negative_stop_classification": {
+    "source_conforming_numerical_negative": false,
+    "independently_demonstrated_implementation_or_recording_deviation": true,
+    "correction_eligible": true,
+    "basis": "The frozen negative-stop rule expressly allows affected corrected verification after an independently demonstrated implementation or recording deviation while preserving the first source and result. The distinct counter increment and join sites prove that condition without changing any numerical outcome or searching for a passing fixture."
+  },
+  "bounded_correction_requirements": [
+    "Change only the private test observation/reporting join so G2 asserts the already-recorded predictor selected-probe entry that brackets the failing evaluate_core_with_jacobian call. Preserve the separate final adapter-method entry/completion counters and their meanings.",
+    "Do not change the fixture, frozen H=+0 tie preparation, selected phase, probe coordinates before injection, -MIN_POSITIVE poison, validation/side predicates, canonical core call, error mapping, radius, solver method, tolerance, or production numerical dispatch.",
+    "The error-safe capture and returned observation must distinguish predictor owning entry from final adapter selected_side_probe entry; no sum or relabel may hide which chronology was reached.",
+    "Preserve this failed source/result. Review the exact bounded diff, compile/inventory and applicable focused quality evidence before one corrected execution of the same exact G2 selector on its newly bound source and binary.",
+    "Keep all five G6 cases paused until corrected G2 verification is reviewed and accepted."
+  ],
+  "residual_risk_and_missing_tests": [
+    "G2 remains FAIL on source 7e16f57a and binary b5b5a1e7; substantive reached-owner evidence is not a test PASS.",
+    "Assertions after line 6405 did not execute in this run. Their values are partly present in the capture, but corrected execution must still exercise the retained in-test assertions.",
+    "No G6 conditional case has executed; no readiness or result inference transfers from this classification.",
+    "G3/native-harness and production acceptance remain separate and unmet here."
+  ],
+  "disposition": {
+    "g2_first_result": "FAIL_PRESERVED",
+    "classification": "RECORDING_DEFECT_NOT_NUMERICAL_NEGATIVE",
+    "minimal_test_observation_correction": "ELIGIBLE",
+    "corrected_g2_execution": "HOLD_PENDING_EXACT_FIX_REVIEW_AND_SOURCE_BINARY_REBIND",
+    "g6_batch": "STOPPED",
+    "production_activation_release": false
+  }
+}

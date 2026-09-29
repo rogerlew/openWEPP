@@ -1,0 +1,54 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-controls.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static frozen-source and supplied-receipt review only. QA ran no compile, test, solver, physical assembly, or numerical calculation.",
+  "frozen_source": {
+    "tree_sha256": "64cfe283d47df3bf70fa3ebde533d174ad1038b20dd144672c2a16db9dabb849",
+    "entry_count": 764,
+    "source_diff": "bvls05-controls02-source-diff.json",
+    "patch": "bvls05-controls02-from-start.patch",
+    "changed_files": [
+      "crates/openwepp-land-surface-energy/src/lib.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "high-blocker",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:m1_trust_region_bvls05_expected_red_g4_full_wet_hold",
+      "title": "R01 still requires a refusal capture and has no meaningful terminal assertion.",
+      "evidence": "The test calls capture.refusal.expect(...) after solve_subproblem, while assert!(terminal.is_err() || terminal.is_ok()) is tautological. It therefore does not establish that the actual G4 first 21-by-19 held face was reached independently of the later terminal outcome. A correct body that proceeds from that face without a refusal cannot make this control green.",
+      "required_fix": "Record and assert the first-face operands and 19 retained ids at the face boundary independently of final Ok/Err or refusal. Keep the old rank refusal as an explicitly bounded pre-body expected-red assertion, rather than making it the green-body witness."
+    },
+    {
+      "severity": "high-blocker",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:m1_trust_region_bvls05_nonempty_hold_zero_lambda_refinement; m1_trust_region_bvls05_nonempty_hold_positive_lambda_refinement; m1_trust_region_bvls05_retained_face_trace_custody_red",
+      "title": "R05/R06 do not bind the required face trace to their own synthetic executions.",
+      "evidence": "R05/R06 check final values and selected work counts but do not assert returned free ids, factor order, or p0/p1/p2 held-coordinate values. The added ninth retained_face_trace_custody_red test reads an unrelated historical finite-precision capture, checks only vector lengths for p0/p1/p2, and is not coupled to either frozen diagonal fixture. It cannot demonstrate the plan06 joins or reconstructions of R05/R06.",
+      "required_fix": "Expose the real R05/R06 face/refinement trace and assert its 19-id ordering plus p0/p1/p2 held +0 and reconstructed base-coordinate bits. Remove the unplanned historical-capture substitute or retain it only as separately labelled provenance evidence."
+    },
+    {
+      "severity": "medium-blocker",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs: BVLS05-R03, BVLS05-R07, and BVLS05-W01 controls",
+      "title": "State, counter, and default-route assertions remain incomplete against plan06.",
+      "evidence": "R03 manually releases a test state but does not couple that transition to a returned KKT/body observation. W01 checks selected attempts and one held-copy completion, but does not exercise absorb/additive composition or both attempted/completed exact deltas. R07 supplies default-empty helper evidence and two routes, but no returned-work/result comparison that establishes the preserved no-provenance body route. These gaps leave mask lifecycle and exact accounting vulnerable to an implementation that satisfies local helper checks only.",
+      "required_fix": "Assert returned state/KKT transitions, exact attempted and completed deltas for all prescribed counter families including absorb/additive composition, and the no-provenance body result/work equivalence."
+    },
+    {
+      "severity": "high-blocker",
+      "location": "bvls05-controls-inventory02.json",
+      "title": "The supplied expected-red inventory is mechanically non-runnable.",
+      "evidence": "The supplied inventory02 receipt records exit 101 and the executor reports 13 mechanical errors, including imports from the wrong module/test-module location and an ambiguous held_step numeric type. No selector execution occurred; this is not expected-red evidence.",
+      "required_fix": "Correct the mechanical source errors after the assertion-scope repairs, preserve this failed receipt, and rerun the exact inventory on a newly manifested frozen source before any expected-red selector execution."
+    }
+  ],
+  "verified_positive_scope": {
+    "private_confinement": "The added BVLS05 helpers, fixtures, observations, counters, and selectors remain cfg(test)/crate-private. Static inspection found no default/public API or numerical-body wiring.",
+    "actual_g4_provenance": "R01 obtains its input through bvls05_captured_g4_input and records the 21-row raw matrix/captured weighted inputs; this is useful provenance but does not cure the terminal/refusal coupling above.",
+    "partial_improvements": "R02 introduces actual role perturbations and role/column attempt counts; R03 constructs state masks; R07 covers default-empty and inspected routes; and W01 checks some fixed certificate/scatter counts. These are retained improvements, but not sufficient closure."
+  },
+  "nonblocking_follow_up": [
+    "Keep test-only observation names distinct from production solver state so future body wiring cannot accidentally expose the instrumentation as a public API."
+  ],
+  "disposition": "BLOCKED: controls02 does not authorize expected-red execution or a BVLS05 numerical-body release. The compiler receipt is a mechanical failure, not expected-red evidence; QA did not execute any command."
+}

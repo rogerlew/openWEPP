@@ -1,0 +1,41 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-controls.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static frozen-source review only. QA ran no inventory, test, build, solver, physical assembly, or numerical calculation.",
+  "frozen_source": {
+    "tree_sha256": "c742aba43b7926f3dd3b2dc7d81b25be67c421b485b9cb27e0e6c6b49b95bf17",
+    "entry_count": 764,
+    "source_diff": "bvls05-controls03-source-diff.json",
+    "patch": "bvls05-controls03-from-start.patch",
+    "changed_files": [
+      "crates/openwepp-land-surface-energy/src/lib.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+    ],
+    "verified_file_sha256": {
+      "crates/openwepp-land-surface-energy/src/lib.rs": "818e26f1634bab3a50aa36756668725ee2d2839443dcb3615efd425e58459626",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "d38727dea899c24d2b1583aa5ab629f36539a90e2c38910c2118c8b7efe3911d"
+    }
+  },
+  "findings": [
+    {
+      "severity": "medium-blocker",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:m1_trust_region_bvls05_accounting_caps",
+      "title": "W01 does not assert the held-base-copy attempted delta alongside its completed delta.",
+      "evidence": "The scatter helper increments both bvls05_held_base_copies_attempted and bvls05_held_base_copies_completed for each held coordinate. W01 asserts completed=2 and, after absorb, completed=4, but never checks attempted=2 or attempted=4. Plan06 requires exact attempted/completed dedicated deltas; a one-sided counter regression can therefore pass this control.",
+      "required_fix": "Assert held-base-copy attempted=2 before absorb and =4 after absorb, together with the existing completion assertions."
+    }
+  ],
+  "verified_fixes": {
+    "selector_scope": "Exactly the eight plan06 pre-body selectors are present; the unplanned retained_face_trace_custody_red selector is absent.",
+    "R01": "The capture now derives the earliest available face ids from the first operation, or otherwise an explicitly first-factorization/no-pivot refusal, without requiring a terminal result. It retains actual G4 raw/weighted provenance and the 19 retained ids.",
+    "R03": "The control exercises the actual KKT transition with a 21-coordinate state, fixed/lower-active/upper-active partitions, and checks release behavior plus held-coordinate KKT observations.",
+    "R05_R06": "Both synthetic fixtures now take a real RefinementObservationTrace from solve_subproblem and assert the exact 19 retained ids/order, p0/p1/p2 values including held +0 bits, masks, final result, and candidate base-coordinate reconstruction. No historical capture substitutes for those executions.",
+    "R07": "The default-empty control has independent zero and positive-lambda result assertions, zero dedicated route deltas, and deterministic Debug JSON emission for the declared external pre/post-body baseline comparison; it is not represented as a self-oracle.",
+    "confinement": "The observation path is test-only and static review found no production numerical-method body change beyond opt-in trace copies."
+  },
+  "missing_execution_evidence": {
+    "inventory04": "Still compiling at review time; no supplied compile/list receipt or selector execution result was inspected.",
+    "expected_red": "No expected-red selector execution was performed by QA or supplied as evidence."
+  },
+  "disposition": "BLOCKED pending the single W01 attempted-counter assertion and a newly manifested successful inventory. This review does not authorize the expected-red gate or a numerical-body release."
+}

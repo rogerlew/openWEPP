@@ -1,0 +1,83 @@
+{
+  "schema": "cold-canopy-m1-bvls05-control-plan-v1",
+  "status": "frozen_pre_body_review_required",
+  "method": "COLD-CANOPY-M1-TR-SVD-BVLS-05",
+  "authority": {
+    "numerical_section": "COLD-CANOPY-M1-TR-SVD-BVLS-05 fully-wet structural-null-direction amendment",
+    "vegetation_section": "BVLS-05 fully-wet structural-null numerical cross-reference"
+  },
+  "fixed_invariants": [
+    "complete 21-row residual and full f are retained",
+    "held directions are assembly-owned and distinct from physical bounds",
+    "p[D] is positive zero and held base-coordinate bits are reconstructed",
+    "remaining free columns use unchanged Jacobi/SVD rank guard",
+    "no additional evaluator, Jacobian assembly, factorization, or materialization"
+  ],
+  "controls": [
+    {
+      "id": "BVLS05-C01",
+      "kind": "actual_assembly_nonphysical",
+      "operands": "G4 retained M=Cliq, H=+0, D=+0, positive upper shade/stem structural areas, formula-derived fwet=1",
+      "asserts": ["role-proven upper shade/stem eligibility", "complete raw and weighted zero columns", "21x19 retained system", "original index 19 retained free", "both drainage columns and all capacity rows retained"]
+    },
+    {
+      "id": "BVLS05-C02",
+      "kind": "analytic_reconstruction",
+      "operands": "C01 stored full A, f, bounds, base, scales and normalizers",
+      "asserts": ["p[D] bits are +0", "held base-coordinate bits unchanged", "full f+A*p and full norm equal the retained-column reconstruction", "held mask differs from lower/upper/fixed masks", "full KKT/root/error/work consumers remain reached"]
+    },
+    {
+      "id": "BVLS05-C03",
+      "kind": "actual_assembly_nonphysical",
+      "operands": "same positive-area roles with formula-derived 0<fwet<1",
+      "asserts": ["no hold mask", "ordinary rank/face path retained"]
+    },
+    {
+      "id": "BVLS05-C04",
+      "kind": "actual_assembly_nonphysical",
+      "operands": "existing structurally zero-area dark-sun anchor case",
+      "asserts": ["existing anchor remains distinct", "BVLS05 does not certify it"]
+    },
+    {
+      "id": "BVLS05-C05",
+      "kind": "analytic_matrix_guard",
+      "operands": "role-valid formula-derived column variants with a nonzero raw or weighted entry; unexpected zero-role; nonfinite normalizer/scale; active bound",
+      "asserts": ["each is ineligible", "no rank relaxation", "existing owning refusal/precedence remains"]
+    },
+    {
+      "id": "BVLS05-C06",
+      "kind": "analytic_matrix_guard",
+      "operands": "C01 retained 21x19 matrix plus a formula-derived dependency among retained columns",
+      "asserts": ["unchanged remaining-column rank refusal", "no pseudoinverse, clipping, damping, or fallback"]
+    },
+    {
+      "id": "BVLS05-C07",
+      "kind": "lifecycle_control",
+      "operands": "natural assembly, selected reassembly, same-J radius retry, and new-base/new-J assembly seams",
+      "asserts": ["natural and selected masks are independently derived", "same-J retry may retain only its admitted mask", "new base/J derives a fresh mask", "dry-area reappearance restores ordinary direction"]
+    },
+    {
+      "id": "BVLS05-C08",
+      "kind": "regression_control",
+      "operands": "D empty, zero-lambda BVLS03 and positive-lambda BVLS04 controls",
+      "asserts": ["bit-identical existing routing and arithmetic", "no extra work or observer event"]
+    },
+    {
+      "id": "BVLS05-C09",
+      "kind": "call_count_control",
+      "operands": "all C01-C08 seams",
+      "asserts": ["no extra physical evaluation", "no extra assembly", "no extra factorization", "no extra materialization", "attempted work remains monotonic and truthfully dimensioned"]
+    },
+    {
+      "id": "BVLS05-C10",
+      "kind": "runnable_expected_red_before_body",
+      "operands": "minimal data-only role/mask/assembly adapters and formula-derived C01 operands; no physical fixture execution",
+      "asserts": ["unchanged numerical body fails the required held-direction/reconstruction assertion", "failure is behavioral and discriminating, not a missing-symbol compile failure", "no stable terminal stub or result-bearing execution"]
+    }
+  ],
+  "execution": {
+    "result_bearing_physical_run": "forbidden before dual review and reviewed body controls",
+    "sole_later_endpoint": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+    "result_search": "forbidden"
+  }
+}

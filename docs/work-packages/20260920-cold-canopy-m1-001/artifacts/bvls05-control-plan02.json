@@ -1,0 +1,176 @@
+{
+  "schema": "cold-canopy-m1-bvls05-control-plan-v2",
+  "status": "corrected_frozen_pre_body_dual_review_required",
+  "supersedes_for_release": "bvls05-control-plan01.json",
+  "plan01_disposition": "preserved reviewed historical policy evidence; not modified",
+  "method": "COLD-CANOPY-M1-TR-SVD-BVLS-05",
+  "fixed_inputs": {
+    "starting_source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "g4_capture_sha256": "edfc1df63996608ef015e36822e7e94b3971b7e2c3d956d77bf1f671ec0a4291",
+    "g4_reference": "g4-rank-correctness-reference01.json",
+    "sole_later_result_bearing_endpoint": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model"
+  },
+  "closed_role_universe": [
+    "upper.sun_leaf_temperature",
+    "upper.shade_leaf_temperature",
+    "upper.dry_stem_temperature",
+    "lower.sun_leaf_temperature",
+    "lower.shade_leaf_temperature",
+    "lower.dry_stem_temperature"
+  ],
+  "eligibility_order": [
+    "existing full natural or selected raw assembly and ordinary finite/normalizer/scale guards",
+    "existing semantic role-map join in closed_role_universe",
+    "finite positive structural area",
+    "fwet.to_bits()==1.0_f64.to_bits and formula-derived effective_dry_area==+0.0 or -0.0",
+    "complete 21-entry raw and weighted columns are IEEE-754 zero",
+    "initial_free and current state.free admission"
+  ],
+  "face_precedence": {
+    "initially_fixed_lower_equals_upper": "never certified into D; existing fixed mask and error precedence own it",
+    "base_at_bound_not_currently_active": "may enter D only after all ordinary certificate predicates and current-free admission",
+    "currently_lower_or_upper_active": "excluded from D and remains in existing active mask; no release or reactivation by BVLS05",
+    "face_free": "existing state.free intersected with complement(D); initial_free/lower_active/upper_active are not rewritten",
+    "held_direction": "p[D]=+0.0, held base-coordinate bits copied, full 21-coordinate KKT records exact-zero held contribution"
+  },
+  "bounded_accounting": {
+    "per_assembly_maximum": {
+      "semantic_role_joins": 6,
+      "complete_column_scans": 12,
+      "column_entry_tests": 252,
+      "mask_free_set_joins": 21,
+      "scatter_base_bit_copies": 21
+    },
+    "factor_dimension": "|R| only",
+    "full_dimension_operations": ["residual", "KKT", "norm", "box/radius", "scatter"],
+    "cap_rule": "use existing scalar/guard/factor work counters; assert attempted and completed deltas per case; no cap increase, duplicate charge, evaluator, assembly, factorization, or materialization"
+  },
+  "cases": [
+    {
+      "id": "BVLS05-R01",
+      "selector": "m1_trust_region_bvls05_expected_red_g4_full_wet_hold",
+      "class": "runnable_expected_red_data_only",
+      "operands": "captured G4 exact bits: upper M=Cliq, H=+0, D=+0; captured 21x21 raw/weighted matrices and role/area inputs",
+      "expected": "unchanged body behaviorally fails held-mask/21x19/scatter assertion; no missing-symbol failure or terminal stub",
+      "asserts": ["upper shade/stem certified", "rank-19 independent reference oracle", "original index 19 retained", "no endpoint invocation"]
+    },
+    {
+      "id": "BVLS05-A01",
+      "selector": "m1_trust_region_bvls05_g4_full_wet_actual_assembly",
+      "class": "non_target_actual_physical_assembly",
+      "operands": "frozen G4 phase/capacity-tie input, retained natural full-J capture identity edfc1df..., M=Cliq,H=+0,D=+0",
+      "expected": "only upper shade/stem D entries; 21x19 retained matrix; independent exact retained rank 19",
+      "asserts": ["all 21 rows/f, both drainage columns and capacity rows", "raw-to-weighted source order", "19 free_ids/factor/order entries", "unchanged remaining rank threshold"]
+    },
+    {
+      "id": "BVLS05-A02",
+      "selector": "m1_trust_region_bvls05_role_universe_actual_assembly",
+      "class": "non_target_actual_physical_assembly",
+      "operands": "six named role-map joins from frozen G4 preparation: upper/lower sun, shade, stem; captured structural-area and fwet bits",
+      "expected": "only formula-certified positive-area/full-wet/zero-column roles may enter D",
+      "asserts": ["upper sun structural-zero anchor excluded", "all lower roles evaluated semantically", "no coordinate-number selector"]
+    },
+    {
+      "id": "BVLS05-A03",
+      "selector": "m1_trust_region_bvls05_partial_and_near_full_actual_assembly",
+      "class": "non_target_actual_physical_assembly",
+      "operands": "same role preparation at formula-derived M=Cliq/2 and M=next_down(Cliq), H=+0,D=+0",
+      "expected": "0<fwet<1 for both operands and D empty for their dry temperature roles",
+      "asserts": ["ordinary rank/face/error path", "no tolerance or near-full admission"]
+    },
+    {
+      "id": "BVLS05-A04",
+      "selector": "m1_trust_region_bvls05_structural_zero_anchor_actual_assembly",
+      "class": "non_target_actual_physical_assembly",
+      "operands": "existing upper sun structural-zero-area anchor operand",
+      "expected": "existing anchor behavior; never BVLS05 D certification",
+      "asserts": ["dark-sun physical rule remains separate", "no temperature anchor added"]
+    },
+    {
+      "id": "BVLS05-R02",
+      "selector": "m1_trust_region_bvls05_column_and_guard_red",
+      "class": "analytic_data_only",
+      "operands": "C01 matrix with one raw nonzero, one weighted nonzero, unexpected non-temperature zero column, nonfinite normalizer, nonfinite scale",
+      "expected": "each candidate excluded and existing owning error/rank precedence retained",
+      "asserts": ["no generalized rank relaxation", "complete 21-entry scan", "no physical assembly"]
+    },
+    {
+      "id": "BVLS05-R03",
+      "selector": "m1_trust_region_bvls05_fixed_bound_active_precedence_red",
+      "class": "analytic_data_only",
+      "operands": "C01 role certificate under initial fixed; base-at-bound/current-free; current lower-active; current upper-active masks",
+      "expected": "fixed/active excluded, base-at-bound/current-free eligible, existing masks and owner precedence unchanged",
+      "asserts": ["state.free intersection", "no active release", "full 21-coordinate KKT class/zero contribution"]
+    },
+    {
+      "id": "BVLS05-R04",
+      "selector": "m1_trust_region_bvls05_remaining_rank19_refusal_red",
+      "class": "analytic_data_only",
+      "operands": "C01 retained ordered columns plus formula-declared duplicate retained column",
+      "expected": "unchanged sigma_min <= 2^-40*sigma_max owning rank refusal",
+      "asserts": ["no pseudoinverse, clipping, damping, fallback, or new factor"]
+    },
+    {
+      "id": "BVLS05-R05",
+      "selector": "m1_trust_region_bvls05_nonempty_hold_zero_lambda_refinement",
+      "class": "analytic_data_only",
+      "operands": "C01 ordered 19-column retained system with nonempty D and zero lambda factor",
+      "expected": "held +0 bits at p0/p1/p2; 19-entry free/factor/order joins; full 21 KKT and scatter",
+      "asserts": ["BVLS03 route", "held cardinality at every refinement join", "full root/error/work observation"]
+    },
+    {
+      "id": "BVLS05-R06",
+      "selector": "m1_trust_region_bvls05_nonempty_hold_positive_lambda_refinement",
+      "class": "analytic_data_only",
+      "operands": "C01 ordered 19-column retained system with nonempty D and finite positive lambda factor",
+      "expected": "held +0 bits at p0/p1/p2; 19-entry free/factor/order joins; full 21 KKT and scatter",
+      "asserts": ["BVLS04 route", "no held release", "full root/error/work observation"]
+    },
+    {
+      "id": "BVLS05-L01",
+      "selector": "m1_trust_region_bvls05_natural_selected_retry_lifecycle",
+      "class": "non_target_actual_physical_assembly",
+      "operands": "frozen G4 natural assembly, selected-side assembly, identical-J radius retry, and new-base/new-J seam",
+      "expected": "natural and selected masks newly derived; same-J retry alone reuses admitted mask; new base/J scans anew",
+      "asserts": ["no extra assembly", "exact lifecycle/call counters", "no mask transfer across owner/support"]
+    },
+    {
+      "id": "BVLS05-L02",
+      "selector": "m1_trust_region_bvls05_full_to_dry_trial_recomputation",
+      "class": "non_target_actual_physical_trial",
+      "operands": "formula-derived accepted candidate from exact-full base whose M is below Cliq",
+      "expected": "candidate recomputes fwet<1 and all 21 residuals; next assembly has no inherited hold",
+      "asserts": ["no residual exemption", "full nonlinear/root/physical acceptance still decides"]
+    },
+    {
+      "id": "BVLS05-L03",
+      "selector": "m1_trust_region_bvls05_dry_to_full_trial_recomputation",
+      "class": "non_target_actual_physical_trial",
+      "operands": "formula-derived dry base M=Cliq/2 and candidate M=Cliq, H=+0,D=+0",
+      "expected": "candidate recomputes fwet=1; only subsequent fresh assembly may certify D",
+      "asserts": ["no predictor-time mask creation", "all 21 trial residuals"]
+    },
+    {
+      "id": "BVLS05-R07",
+      "selector": "m1_trust_region_bvls05_empty_hold_regression",
+      "class": "analytic_data_only",
+      "operands": "D empty with retained zero-lambda and positive-lambda BVLS03/BVLS04 controls",
+      "expected": "bit-identical routing/arithmetic/observer behavior",
+      "asserts": ["zero added mask/scatter/factor work", "existing results preserved"]
+    },
+    {
+      "id": "BVLS05-W01",
+      "selector": "m1_trust_region_bvls05_accounting_caps",
+      "class": "data_only_work_oracle",
+      "operands": "per-case declared role predicates and D cardinalities",
+      "expected": "exact attempted/completed deltas match bounded_accounting and existing factor/KKT counters",
+      "asserts": ["max 6/252/21/21 mask work", "19-column factor versus 21-coordinate KKT/scatter", "no uncounted or duplicate work", "no cap increase"]
+    }
+  ],
+  "execution_groups": {
+    "pre_body_expected_red_only": ["BVLS05-R01", "BVLS05-R02", "BVLS05-R03", "BVLS05-R04", "BVLS05-R05", "BVLS05-R06", "BVLS05-R07", "BVLS05-W01"],
+    "reviewed_body_non_target_physical_assembly_or_trial": ["BVLS05-A01", "BVLS05-A02", "BVLS05-A03", "BVLS05-A04", "BVLS05-L01", "BVLS05-L02", "BVLS05-L03"],
+    "result_bearing_endpoint_after_all_prior_gates": ["m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model"]
+  },
+  "prohibitions": ["result search", "fixture/coordinate selection", "new physics", "general rank relaxation", "extra physical evaluation", "extra assembly", "extra factorization", "extra materialization", "production/default API change"]
+}

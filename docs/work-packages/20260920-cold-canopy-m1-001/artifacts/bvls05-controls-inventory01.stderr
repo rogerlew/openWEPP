@@ -1,0 +1,209 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11687:39
+      |
+11687 |     fn bvls05_captured_g4_input() -> (M1TrustRegionSubproblemInput, Vec<Vec<f64>>) {
+      |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: consider importing this struct
+      |
+11113 +     use crate::M1TrustRegionSubproblemInput;
+      |
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionSubproblemInput` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11706:13
+      |
+11706 |             M1TrustRegionSubproblemInput {
+      |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: consider importing this struct
+      |
+11113 +     use crate::M1TrustRegionSubproblemInput;
+      |
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionTestWorkState` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11719:28
+      |
+11719 |                 test_work: M1TrustRegionTestWorkState {
+      |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: consider importing this struct
+      |
+11113 +     use crate::M1TrustRegionTestWorkState;
+      |
+
+error[E0433]: cannot find type `M1TrustRegionTestWorkState` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11721:23
+      |
+11721 |                     ..M1TrustRegionTestWorkState::default()
+      |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionTestWorkState`
+      |
+help: consider importing this struct
+      |
+11113 +     use crate::M1TrustRegionTestWorkState;
+      |
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11728:35
+      |
+11728 |     fn bvls05_diagonal_input() -> M1TrustRegionSubproblemInput {
+      |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: consider importing this struct
+      |
+11113 +     use crate::M1TrustRegionSubproblemInput;
+      |
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionSubproblemInput` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11735:9
+      |
+11735 |         M1TrustRegionSubproblemInput {
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: consider importing this struct
+      |
+11113 +     use crate::M1TrustRegionSubproblemInput;
+      |
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionTestWorkState` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11744:24
+      |
+11744 |             test_work: M1TrustRegionTestWorkState {
+      |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: consider importing this struct
+      |
+11113 +     use crate::M1TrustRegionTestWorkState;
+      |
+
+error[E0433]: cannot find type `M1TrustRegionTestWorkState` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11746:19
+      |
+11746 |                 ..M1TrustRegionTestWorkState::default()
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionTestWorkState`
+      |
+help: consider importing this struct
+      |
+11113 +     use crate::M1TrustRegionTestWorkState;
+      |
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11761:29
+      |
+11761 |     fn bvls05_roles(input: &M1TrustRegionSubproblemInput) -> [super::Bvls05RoleInput; 6] {
+      |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: consider importing this struct
+      |
+11113 +     use crate::M1TrustRegionSubproblemInput;
+      |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11855:34
+      |
+11855 |         assert_eq!(refusal.kind, M1TrustRegionRefusalKind::RankDeficient);
+      |                                  ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+      |
+help: consider importing this enum
+      |
+11113 +     use crate::M1TrustRegionRefusalKind;
+      |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11897:13
+      |
+11897 |             M1TrustRegionRefusalKind::SvdNonFinite
+      |             ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+      |
+help: consider importing this enum
+      |
+11113 +     use crate::M1TrustRegionRefusalKind;
+      |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11905:13
+      |
+11905 |             M1TrustRegionRefusalKind::SvdNonFinite
+      |             ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+      |
+help: consider importing this enum
+      |
+11113 +     use crate::M1TrustRegionRefusalKind;
+      |
+
+error[E0433]: cannot find type `M1TrustRegionRefusalKind` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11936:34
+      |
+11936 |         assert_eq!(refusal.kind, M1TrustRegionRefusalKind::RankDeficient);
+      |                                  ^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefusalKind`
+      |
+help: consider importing this enum
+      |
+11113 +     use crate::M1TrustRegionRefusalKind;
+      |
+
+error[E0277]: `PreparedSubproblem` doesn't implement `Debug`
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11895:18
+      |
+11895 |                 .expect_err("nonfinite normalizer retains preparation owner")
+      |                  ^^^^^^^^^^ the trait `Debug` is not implemented for `PreparedSubproblem`
+      |
+      = note: add `#[derive(Debug)]` to `PreparedSubproblem` or manually `impl Debug for PreparedSubproblem`
+note: required by a bound in `Result::<T, E>::expect_err`
+     --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:1293:4
+help: consider annotating `PreparedSubproblem` with `#[derive(Debug)]`
+      |
+ 3620 + #[derive(Debug)]
+ 3621 | struct PreparedSubproblem {
+      |
+
+error[E0277]: `PreparedSubproblem` doesn't implement `Debug`
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11903:18
+      |
+11903 |                 .expect_err("nonfinite scale retains preparation owner")
+      |                  ^^^^^^^^^^ the trait `Debug` is not implemented for `PreparedSubproblem`
+      |
+      = note: add `#[derive(Debug)]` to `PreparedSubproblem` or manually `impl Debug for PreparedSubproblem`
+note: required by a bound in `Result::<T, E>::expect_err`
+     --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:1293:4
+help: consider annotating `PreparedSubproblem` with `#[derive(Debug)]`
+      |
+ 3620 + #[derive(Debug)]
+ 3621 | struct PreparedSubproblem {
+      |
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11953:34
+      |
+11953 |         assert_eq!(expected_p[1].to_bits(), 0.0f64.to_bits());
+      |                                  ^^^^^^^
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11954:34
+      |
+11954 |         assert_eq!(expected_p[2].to_bits(), 0.0f64.to_bits());
+      |                                  ^^^^^^^
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11987:34
+      |
+11987 |         assert_eq!(expected_p[1].to_bits(), 0.0f64.to_bits());
+      |                                  ^^^^^^^
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11988:34
+      |
+11988 |         assert_eq!(expected_p[2].to_bits(), 0.0f64.to_bits());
+      |                                  ^^^^^^^
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11989:34
+      |
+11989 |         assert_eq!(expected_p[0].to_bits(), 0.5f64.to_bits());
+      |                                  ^^^^^^^
+
+Some errors have detailed explanations: E0277, E0422, E0425, E0433, E0689.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 20 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-controller-stage,m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

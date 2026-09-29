@@ -1,0 +1,231 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused variable: `current_max`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:613:9
+    |
+613 |         current_max: f64,
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_current_max`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4134:5
+     |
+4134 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: variable does not need to be mutable
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6468:13
+     |
+6468 |         Err(mut refusal) => {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9235:5
+     |
+9235 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: unused variable: `prepared`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9236:5
+     |
+9236 |     prepared: &PreparedSubproblem,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_prepared`
+
+warning: fields `ratio` and `tied_coordinates` are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:388:16
+    |
+385 | pub(crate) struct M1TrustRegionOptimalityReleaseObservation {
+    |                   ----------------------------------------- fields in this struct
+...
+388 |     pub(crate) ratio: Option<f64>,
+    |                ^^^^^
+389 |     pub(crate) tied_coordinates: u8,
+    |                ^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionOptimalityReleaseObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `selected_release` is never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:396:16
+    |
+394 | pub(crate) struct M1TrustRegionOptimalityObservation {
+    |                   ---------------------------------- field in this struct
+395 |     pub(crate) coordinates: Vec<M1TrustRegionOptimalityCoordinateObservation>,
+396 |     pub(crate) selected_release: Option<M1TrustRegionOptimalityReleaseObservation>,
+    |                ^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionOptimalityObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `refinement_scalar_operations`, `refinement_guard_events`, `refinement_attempted_entries`, and `refinement_denied_entries` are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:422:16
+    |
+402 | pub(crate) struct M1TrustRegionSubproblemObservation {
+    |                   ---------------------------------- fields in this struct
+...
+422 |     pub(crate) refinement_scalar_operations: u64,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+423 |     pub(crate) refinement_guard_events: u64,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^
+424 |     pub(crate) refinement_attempted_entries: u16,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+425 |     pub(crate) refinement_denied_entries: u16,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionSubproblemObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: multiple fields are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:569:16
+    |
+565 | pub(crate) struct M1TrustRegionRefinementFailureMetadata {
+    |                   -------------------------------------- fields in this struct
+...
+569 |     pub(crate) row: Option<u8>,
+    |                ^^^
+570 |     pub(crate) term: Option<u8>,
+    |                ^^^^
+571 |     pub(crate) coordinate: Option<u8>,
+572 |     pub(crate) lower_active: [bool; 21],
+    |                ^^^^^^^^^^^^
+573 |     pub(crate) upper_active: [bool; 21],
+    |                ^^^^^^^^^^^^
+574 |     pub(crate) free: [bool; 21],
+    |                ^^^^
+575 |     pub(crate) lambda: f64,
+    |                ^^^^^^
+...
+578 |     pub(crate) scratch_box_feasible: Option<bool>,
+    |                ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionRefinementFailureMetadata` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `optimality_radius` and `optimality_lambda` are never read
+   --> crates/openwepp-land-surface-energy/src/lib.rs:587:16
+    |
+583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+    |                   ------------------------------ fields in this struct
+...
+587 |     pub(crate) optimality_radius: Option<Box<f64>>,
+    |                ^^^^^^^^^^^^^^^^^
+588 |     pub(crate) optimality_lambda: Option<Box<f64>>,
+    |                ^^^^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionSubproblemRefusal` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: field `ci` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:265:9
+    |
+259 |     Complete {
+    |     -------- field in this variant
+...
+265 |         ci: [f64; 4],
+    |         ^^
+    |
+    = note: `GovernedStep` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: function `m1_refinement_phase_join_selections_for_test` is never used
+  --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:82:15
+   |
+82 | pub(crate) fn m1_refinement_phase_join_selections_for_test() -> u32 {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `refinement_frozen_weighted_merit_entries_for_test` is never used
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:772:15
+    |
+772 | pub(crate) fn refinement_frozen_weighted_merit_entries_for_test() -> u32 {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variants `P0Subnormal`, `FinalBox`, `ScratchRadius`, and `ActiveValue` are never constructed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1034:5
+     |
+1033 | enum RefinementRawCandidateMutation {
+     |      ------------------------------ variants in this enum
+1034 |     P0Subnormal {
+     |     ^^^^^^^^^^^
+...
+1037 |     FinalBox {
+     |     ^^^^^^^^
+...
+1041 |     ScratchRadius {
+     |     ^^^^^^^^^^^^^
+...
+1046 |     ActiveValue {
+     |     ^^^^^^^^^^^
+     |
+     = note: `RefinementRawCandidateMutation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `live_state_bits_entry` and `live_state_bits_exit` are never read
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5388:5
+     |
+5386 | struct RefinementRetainedFaceObservation {
+     |        --------------------------------- fields in this struct
+5387 |     lambda_bits: u64,
+5388 |     live_state_bits_entry: [u64; 21],
+     |     ^^^^^^^^^^^^^^^^^^^^^
+5389 |     live_state_bits_exit: [u64; 21],
+     |     ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `RefinementRetainedFaceObservation` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: struct `RefinementMutationScope` is never constructed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6354:8
+     |
+6354 | struct RefinementMutationScope(Option<RefinementRawCandidateMutation>);
+     |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `install` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6358:8
+     |
+6357 | impl RefinementMutationScope {
+     | ---------------------------- associated function in this implementation
+6358 |     fn install(mutation: Option<RefinementRawCandidateMutation>) -> Self {
+     |        ^^^^^^^
+
+warning: struct `RefinementScratchHooksObservation` is never constructed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6385:8
+     |
+6385 | struct RefinementScratchHooksObservation {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_refinement_scratch_hooks_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6440:4
+     |
+6440 | fn m1_trust_region_refinement_scratch_hooks_for_test(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `bits` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9587:8
+     |
+9587 |     fn bits(values: [f64; 21]) -> [u64; 21] {
+     |        ^^^^
+
+warning: function `capture_return_input` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9595:8
+     |
+9595 |     fn capture_return_input() -> M1TrustRegionSubproblemInput {
+     |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_nonzero_return_input` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9613:8
+     |
+9613 |     fn capture_nonzero_return_input() -> M1TrustRegionSubproblemInput {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `bit` is never used
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11604:8
+      |
+11604 |     fn bit(value: &Value) -> f64 {
+      |        ^^^
+
+warning: function `m1_trust_region_analytic_work_cap_run_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:3185:15
+     |
+3185 | pub(crate) fn m1_trust_region_analytic_work_cap_run_for_test()
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 24 warnings (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 5 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.74s

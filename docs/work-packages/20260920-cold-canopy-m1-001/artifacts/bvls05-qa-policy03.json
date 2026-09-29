@@ -1,0 +1,37 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-policy.v3",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static focused fix verification only. QA ran no Rust build, test, physical assembly, solver, replay, or numerical calculation.",
+  "reviewed_custody": {
+    "starting_main": "d7ad407e956e3ecea716db6744f4fd2bbe14ed61",
+    "starting_source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "prior_qa_policy": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-qa-policy02.json",
+      "sha256": "8d35b00b455c1eb88e931955868e162c29601f8392b0247923b2d5894e42b827"
+    },
+    "corrected_plan": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan03.json",
+      "sha256": "fbeab47e64dd9c29e06967e329166560cf4ebfa70d1df3b4dac021e3ca51cd6d"
+    },
+    "corrected_numerical_authority": {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "sha256": "09ae195d46209e264267110faa0a3728baf095102f9cecf5a34552ac06e02f2e"
+    },
+    "unchanged_metadata_joins": {
+      "lse_entrypoint_sha256": "c80270ba93bd702d67b5260bd0ce1074113b190c016ba98591f6d84ff5f19b47",
+      "binding_index_sha256": "2192bf6a2234e1b7738a0ac4b7815ecc2e268df9a19f914168ec18afbf494606",
+      "vegetation_sha256": "9289b21afae8420be74b61abd3a939778a6ca990b5d95d0d6b53f28d265dfeac"
+    }
+  },
+  "findings": [],
+  "fix_verification": {
+    "face_free_precedence": "CLOSED. Authority now admits D once at each initial natural/selected face as certified AND initial_free AND physical_current_free; later factor faces use current physical-free minus stable D. Held directions are not derived from reduced factor state, and physical active release remains only for non-held coordinates.",
+    "refinement_operands": "CLOSED. R05/R06 use an independent 21-by-21 diagonal fixture with held original indices 1/2, identity W/S, explicit f/radius/lambda/p0, and declared expected full vectors. R05 reaches the zero-lambda 19-free BVLS03 path; R06 reaches the positive-lambda BVLS04 path without using G4 as a result oracle.",
+    "lifecycle_trials": "CLOSED. L01 has a prescribed direct phase seam and explicit natural/selected/retry/new-base counts. L02/L03 freeze the captured nonreservoir/lower bits and exact upper M/H/D changes, require evaluator-only wet/dry recomputation and all 21 residuals, and make no physical acceptance claim.",
+    "empty_and_work_provenance": "CLOSED. Dedicated attempted/completed BVLS05 counters separate no-provenance default-empty from inspected-ineligible empty D. R07 covers the former with zero deltas; R02/R03/A03/A04 cover inspected empty cases, and W01 binds the declared 6/252/21/21 maxima without altering existing numerical-counter meanings."
+  },
+  "nonblocking_follow_up": [
+    "At implementation review, bind every declared selector to its actual source consumer and retain the plan's execution-class boundary; policy closure does not substitute for expected-red behavior or source-level call-count evidence."
+  ],
+  "disposition": "QA POLICY PASS for controls-before-body release only. This does not approve Rust body edits as correct, expected-red execution outcomes, non-target assembly/trial runs, validation gates, the G4 endpoint, or M1 acceptance. Those remain subject to their stated later evidence and independent reviews."
+}

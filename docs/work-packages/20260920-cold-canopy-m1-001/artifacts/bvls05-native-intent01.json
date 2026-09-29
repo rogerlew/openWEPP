@@ -1,0 +1,36 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05-native-intent.v1",
+  "evidence_class": "Static intent before any native-harness source edit; no build or physical execution",
+  "scope": "Private opt-in native-provider canonical-input/seed capture to the existing trust-region body only; default dispatch and numerical predicates remain unchanged.",
+  "canonical_seed_owner": {
+    "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+    "function": "solve_m1_coupled_column_inner",
+    "site": "the sole M1CoupledColumnTrial::from_coordinates(coordinates) construction after structural preflight and before validate/Newton policy"
+  },
+  "native_caller": {
+    "path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs",
+    "function": "RealM1ProviderCaller::prepare_fixed_sequence_support",
+    "existing_test_hook": "arm_m1_lse_diagnostic_for_ordinal"
+  },
+  "candidate_paths": [
+    "crates/openwepp-land-surface-energy/Cargo.toml",
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-hillslope-orchestrator/Cargo.toml",
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs",
+    "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider_controls.rs"
+  ],
+  "intended_controls": [
+    "one opt-in ordinal arm obtains the native prepared input and canonical trial at the sole seed owner",
+    "one hidden facade returns compact owned observation while raw adapter/controller types remain private",
+    "no JSON reconstruction, duplicated seed construction, copied solver body, target dispatch, or default/public production dispatch"
+  ],
+  "guarded_nonclaims": [
+    "No physical G3 post-update, full-no-update, or first-valid-replacement fixture is established by this intent.",
+    "No execution, compilation, source acceptance, or Critical qualification is claimed."
+  ],
+  "closure_risk": "Existing physical trust-region code is cfg(all(test, feature=...)) and pub(crate); an external orchestrator test cannot invoke it without a feature-gated transitive closure. Exact gate inventory is lib=2, controller=44, stage1=87, m1_coupled=62, plus interface mixed gates."
+}

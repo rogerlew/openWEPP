@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Ran: source-custody incident classification and before/after recovery verification; no numericalexecution",
+  "incident": "Native check11 source mutated after writer declared freeze and during compilation",
+  "compile_receipt": "bvls05-native-check11.json",
+  "raw_exit_code": 101,
+  "validation_disposition": "INVALID_SOURCE_CHANGED",
+  "before_tree_sha256": "0354c6f702c743a37531ce6e9cee01e683a28d238ae84a54a130441c93ac0ba1",
+  "after_tree_sha256": "f4517b20492be7f2493c84b0a6bdc3b241426171f044ba6827d2c14739d54222",
+  "changed_during_command": [
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs"
+  ],
+  "before_recovery": "bvls05-native-before11-recovery.json",
+  "after_recovery": "bvls05-native-terminal12-recovery.json",
+  "writer": "/root/native_bridge_writer",
+  "writer_admission": "After that Freeze11 message, while Root\u2019s immediate Check11 may have begun, I made further edits. These invalidate Check11\u2019s source binding.",
+  "admitted_edits": [
+    "additional native cfg closures in lib.rs",
+    "native budget scope/entry cfg closures in solver_covered_evaluation.rs",
+    "status artifact update"
+  ],
+  "stable_prior_compile_failure": "bvls05-native-check10.json",
+  "accepted_checkpoint": "bvls05-terminal09-recovery.json",
+  "decision": "Stop all native implementation/build/physical work; preserve all source states and negatives. No resumption, target release or numerical acceptance inferred from remaining allowance. Preservation-only return to accepted cut09 permitted after verified durable candidate recovery.",
+  "physical_or_target_execution_during_native_attempt": false
+}

@@ -1,0 +1,152 @@
+{
+  "evidence_class": "Static: independent correctness consolidation of the immutable accepted BVLS05 checkpoint, reusing prior accepted reviews and recorded runs; no source edit, build, test, solver, replay or live-native-candidate review",
+  "reviewer": "/root/interface_correctness",
+  "scope_boundary": {
+    "included": "Archived terminal08/terminal09 source and binaries, four canonical authority documents, final quality09, seven cut08 non-target controls, cut08 G4, preserved and corrected cut09 G2, five cut09 G6 controls, exact recovery and rejected-native-draft restoration.",
+    "excluded": "The mutating live native candidate owned by /root/native_bridge_writer, any new native build/result, final ledger, package publication, G3 physical closure, target dispatch and broader M1 qualification."
+  },
+  "canonical_authority": [
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "sha256": "ba0dba474ee78f5efde530f9e0764d9899b684cf98675d6609228cfcfd7ee2c1",
+      "binding": "COLD-CANOPY-M1-TR-SVD-BVLS-05 fully-wet structural-null amendment and accounting occurrence units"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+      "sha256": "c80270ba93bd702d67b5260bd0ce1074113b190c016ba98591f6d84ff5f19b47",
+      "contract_version": 40
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+      "sha256": "2192bf6a2234e1b7738a0ac4b7815ecc2e268df9a19f914168ec18afbf494606",
+      "binding": "LSE-COLD-CANOPY-M1-TR-SVD-BVLS-05 active unpromoted binding"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "sha256": "9289b21afae8420be74b61abd3a939778a6ca990b5d95d0d6b53f28d265dfeac",
+      "contract_version": 38
+    }
+  ],
+  "findings": [],
+  "accepted_source_and_binary_custody": {
+    "cut08": {
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "release_binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "accepted_results": "Seven prospectively frozen non-target controls plus the sole unchanged G4 endpoint, one planned execution each with source/binary unchanged.",
+      "review_boundary": "G4 and seven-control evidence remains bound to cut08; it is not relabeled as cut09 execution."
+    },
+    "cut09": {
+      "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+      "entry_count": 764,
+      "release_binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+      "reconstruction": "bvls05-terminal09-recovery.json",
+      "reconstruction_sha256": "c98012ba3ffac4bd5769fdb97b57a62a481b7323d0364f80d9dc165137fc95fc",
+      "archive": "bvls05-terminal09-source.tar.gz",
+      "archive_sha256": "8c8bb484098c98abb19147fe158bfad3522a5efd8115bb6f31249fcc40a292ad",
+      "delta_from_cut08": "Only the reviewed private G2 observation wrapper/struct and additive assertions changed; no numerical body, contract, feature or solver change.",
+      "accepted_results": "One corrected G2 verification and all five frozen G6 controls."
+    },
+    "main_rust": "Untouched by the detached accepted checkpoint.",
+    "original_target_slots": "Unspent."
+  },
+  "quality09": {
+    "artifact": "bvls05-quality-summary09.json",
+    "sha256": "e03d8f4af2e1b71229f6b32e7c9dda5d8dae6e96459eb77e073f467eff25a346",
+    "focused_debug": "120/120 PASS",
+    "focused_release": "120/120 PASS",
+    "analytic_only": "103/103 PASS",
+    "inventories": {
+      "debug": 409,
+      "release": 409,
+      "analytic": 359
+    },
+    "format": "PASS",
+    "default_check": "PASS",
+    "empty_mask_old_body_payload": "Exact parity in all reviewed profiles",
+    "strict_lint": "Commands retain inherited failures only: combined 238/238, all-feature 238/238, analytic 262/262, with zero introduced and zero removed diagnostics.",
+    "interpretation": "Strict-lint exit 101 is not called a PASS; source-bearing reconciliation demonstrates no cut09 lint drift."
+  },
+  "accepted_numerical_and_physical_evidence": {
+    "seven_non_target_controls": {
+      "artifact": "bvls05-physical-results01.json",
+      "sha256": "2b0a248047cfef6aeba7c6f6e6f2b5315499d48d79707d362c50a365f4159908",
+      "result": "PASS 7/7 on cut08",
+      "scope": "Finite prerequisite physical assembly/trial controls only; no target or production qualification."
+    },
+    "g4": {
+      "raw_result": "bvls05-g4-results01.json",
+      "raw_result_sha256": "fa1b16b69d82d5cd231be4c58e7e4a1123eb3a24255781e8b3e5418d60773aa2",
+      "correctness_review": "bvls05-correctness-g4-results01.json",
+      "correctness_review_sha256": "318f079481a641d05f3b8873fa9cd298ebe726b5e0c295776c3454022c21a95d",
+      "qa_review_sha256": "b05675cd673e48c702efcadf6389307867efa62a1be0d3d970e99bc44f62ee80",
+      "result": "PASS on cut08",
+      "accepted_claim": "One natural and one selected assembly, two fresh held-{1,2}/19-column certificates, all 21 residual rows retained, required probes and work observed.",
+      "scope_limit": "Phase-model/control evidence only; no nonlinear root, materialization, scale or production acceptance."
+    },
+    "g2": {
+      "first_result": "FAIL preserved on cut08 because the wrapper joined the later direct-probe counter after the intended predictor owning error was reached.",
+      "first_failure_correctness_sha256": "d4ad4b97a959729ced188b90f455a1bff4b16a7705851c3c2eec184440b150c3",
+      "first_failure_qa_addendum_sha256": "d0053cbc74ddd7b76b2b54b5feb3597e0224bd623ac7ec32b81470dc02fd866f",
+      "correction": "Private reporting join only; predictor=1/direct=0 retained explicitly, with original fixture, poison, precedence and acceptance assertions unchanged.",
+      "correction_correctness_sha256": "261633673fbdf3b27d7e863384883cb7fefb768ba09d4ad9f7a73ff4293580da",
+      "correction_qa_sha256": "48aa8d5818875f1aa00044746ffd66d25d965c829385e6e90fccd1e9bd3d34cf",
+      "corrected_result": "PASS 1/1 on cut09; source/binary unchanged and no retry beyond the one independently authorized recording-defect verification.",
+      "corrected_result_artifact_sha256": "c38916e09024f3bb7a8fc74d9f9d2782fde0388097d9b16e14953bc1c6830d28",
+      "correctness_result_sha256": "a43034d61341e6b0dabacb3dd413ae057f8fcada886a48658bf7710c5491f2a1",
+      "qa_result_sha256": "44cdf330e64f11154e38549b39f53207fbc27cbac74cc1f184ff0f6461e0e607"
+    },
+    "g6": {
+      "raw_result": "bvls05-conditional-g6-results01.json",
+      "raw_result_sha256": "a3f464c452d8469dc33b48c994756814b88fee1b3285d93b20efa871a307dd04",
+      "correctness_review_sha256": "afcda1345a30064306ea26600de58cf9e22d1489ab13a0a2b7f143be98ff6336",
+      "qa_review_sha256": "370745aaa8d82db5bfceb6e54bc0fd61addaf0ed57ad2fb27419e8ae60270197",
+      "result": "PASS 5/5 on cut09",
+      "accepted_claim": "Actual physical core, raw-J, hydraulic and materialization owner controls plus seeded analytic actual Stage1 factorization owner. Materialization independently reconstructs closure.",
+      "scope_limit": "The Stage1 factor case is not a natural physical trajectory; no G6 result constitutes full-solve or production evidence."
+    }
+  },
+  "science_contract_parity": {
+    "held_policy": "Only role-proven dry-temperature coordinates with positive structural area, exact fwet=1 and exact raw and weighted zero columns may be held.",
+    "retained_system": "The accepted G4 case holds coordinates {1,2}, retains 19 columns in original order and keeps all 21 physical residual/KKT/root/custody checks.",
+    "lifecycle": "Eligibility renews for actual natural, selected and new-base/new-J assemblies; identical-J retries reuse the certificate while repeated mask joins and candidate copies remain counted.",
+    "unchanged_science": "No physical equation, temperature anchor, stencil, rank cutoff, tolerance, fallback, phase/wetness law or production/default dispatch changed.",
+    "work_accounting": "Dedicated attempted/completed role, column, mask and held-copy counters preserve existing refinement/KKT/enclosure meanings and overlap rules."
+  },
+  "native_rejected_draft": {
+    "artifact": "bvls05-native-rejected01-restoration.json",
+    "sha256": "3a7305f104b726ffdaf444674962a3dbde607419dcb5518ae6835b6e5fb1cab5",
+    "classification": "Rejected duplicate capture, not progress or native proof.",
+    "reason": "It duplicated M1DiagnosticObservation input/seed capture at the same canonical site and did not connect the trust-region body.",
+    "restoration": "All 764 source entries match recovery09; no compile or result-bearing run occurred.",
+    "credit": "NONE"
+  },
+  "package_checkpoint_review": {
+    "reviewed_region": "docs/work-packages/20260920-cold-canopy-m1-001/package.md first 60 lines",
+    "disposition": "ACCURATE",
+    "supported_claims": [
+      "Implemented BVLS05 policy/body and accepted cut08/cut09 result split",
+      "Preserved first G2 failure and reporting-only corrected verification",
+      "Exact quality09/recovery identities and inherited-only lint posture",
+      "Native harness pending and rejected duplicate draft receiving no credit",
+      "G3 physical and broader qualification holds"
+    ],
+    "prohibited_inference_absent": "The checkpoint does not claim complete M1, production, target, nonlinear-root, materialization, scale or performance acceptance."
+  },
+  "open_holds": [
+    "The live native candidate is mutating and has no correctness disposition here; exact frozen source, affected controls/quality and independent correctness/QA review remain required.",
+    "G3 actual physical witnesses remain incomplete, especially first-valid replacement; analytic witnesses cannot substitute.",
+    "No native baseline/treatment target is released or spent by this checkpoint.",
+    "Final conservative ledger, terminal package reconciliation and publication remain pending.",
+    "Full09, A1/A3, strict-lint closure, material/BGC, complete-parent/late-rejection, cycle/restart, scale/cost and broader M1/production acceptance remain HOLD."
+  ],
+  "disposition": {
+    "accepted_checkpoint": "PASS",
+    "bvls05_numerical_and_conditional_controls": "ACCEPTED_WITH_RECORDED_SCOPE_LIMITS",
+    "native_candidate": "PENDING_INDEPENDENT_REVIEW",
+    "native_target_dispatch": "HOLD",
+    "g3_physical": "HOLD",
+    "final_ledger_and_publication": "PENDING",
+    "all_m1_or_production_acceptance": false,
+    "status": "NO_CORRECTNESS_BLOCKER_TO_PRESERVING_AND_PUBLISHING_THIS PARTIAL_CHECKPOINT_AFTER_PENDING_TERMINAL_RECONCILIATION"
+  }
+}

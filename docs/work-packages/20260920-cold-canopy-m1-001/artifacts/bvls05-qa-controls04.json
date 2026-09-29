@@ -1,0 +1,30 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-controls.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static frozen-source rebind only. QA ran no compile, test, solver, physical assembly, or numerical calculation.",
+  "frozen_source": {
+    "tree_sha256": "1c72fea10aafecc1ce862094f3bd46246bbbc006c122e83877ed7f478bc2d1d4",
+    "entry_count": 764,
+    "source_diff": "bvls05-controls04-source-diff.json",
+    "patch": "bvls05-controls04-from-start.patch",
+    "verified_stage1_sha256": "484c048d394e8e6892a0bf525f70a18bfa93b0878aaf2ccff933d43771582c75"
+  },
+  "findings": [],
+  "fix_verification": {
+    "scope": "The controls03-to-controls04 change is confined to the reviewed R03 KKT/bound observation and W01 accounting assertions; previously accepted controls03 findings are preserved.",
+    "R03": "The actual KKT fixture now establishes base-at-bound certified coordinates as physically free, verifies their 21-coordinate transition observations and FreePass class, keeps the fixed coordinate Fixed, and retains lower-active release/upper-active behavior.",
+    "W01": "The scatter assertion now checks held-base-copy attempted=2 and completed=2, and absorb doubles both to 4. This closes the controls03 one-sided-counter finding.",
+    "confinement": "No new production API or numerical-body wiring is introduced by this narrow delta."
+  },
+  "supplied_prior_gate": {
+    "artifact": "bvls05-controls-inventory04.json",
+    "source_tree_sha256": "c742aba43b7926f3dd3b2dc7d81b25be67c421b485b9cb27e0e6c6b49b95bf17",
+    "exit_code": 0,
+    "note": "This validates the preceding controls03 cut only. It cannot validate the new controls04 source."
+  },
+  "missing_execution_evidence": {
+    "controls04_inventory": "The exact controls04 source inventory was still compiling at review time.",
+    "expected_red": "No expected-red selector execution was performed by QA or supplied for the controls04 cut."
+  },
+  "disposition": "PASS for the narrow controls04 static rebind. Expected-red execution remains gated on a successful exact-source inventory; this is not a numerical-body release."
+}

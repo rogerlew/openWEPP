@@ -1,0 +1,12 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-native-integrity-addendum.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static correction and preservation-custody review; no command or source edit.",
+  "supersedes_explanation_only": "bvls05-qa-native-integrity01.json remains in force; its integrity-stop disposition and holds are unchanged.",
+  "path_correction": "The exact paths changed between check11's before manifest 0354c6f702c743a37531ce6e9cee01e683a28d238ae84a54a130441c93ac0ba1 and terminal current f4517b20492be7f2493c84b0a6bdc3b241426171f044ba6827d2c14739d54222 are crates/openwepp-land-surface-energy/src/lib.rs and crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs. The prior reference to solver_covered_evaluation/m1_coupled.rs was incorrect.",
+  "recovery": {
+    "before11": "bvls05-native-before11-recovery.json records the check11 start tree and all_entry_hashes_equal=true.",
+    "terminal12": "bvls05-native-terminal12-recovery.json records 764 entries, all_entry_hashes_equal=true, archive_all_bytes_equal=true, runtime_source_unchanged=true, and archive_sha256=29252a46361e792e9c6be33dda43a1ee3418c3f15c2fc53fa95d553a7768330f."
+  },
+  "disposition": "Preservation-only recovery evidence is adequate to retain both incident states for custody. It does not validate check11, resume native implementation, or release native/G3/target work."
+}

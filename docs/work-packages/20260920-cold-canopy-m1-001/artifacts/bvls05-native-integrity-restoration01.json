@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Ran: preservation-only restoration after native integrity stop; no implementation or numericalexecution",
+  "recorded_utc": "2026-09-29T20:38:47.476636+00:00",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "restored_source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+  "entry_count": 764,
+  "all_entry_hashes_equal": true,
+  "restored_paths": [
+    "crates/openwepp-land-surface-energy/Cargo.toml",
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+  ],
+  "pending_native_preserved_tree": "f4517b20492be7f2493c84b0a6bdc3b241426171f044ba6827d2c14739d54222",
+  "pending_native_recovery": "bvls05-native-terminal12-recovery.json",
+  "pending_native_archive": "bvls05-native-terminal12-source.tar.gz",
+  "pending_native_archive_sha256": "29252a46361e792e9c6be33dda43a1ee3418c3f15c2fc53fa95d553a7768330f",
+  "accepted_recovery": "bvls05-terminal09-recovery.json",
+  "unrelated_dirty_unchanged": true,
+  "resumption_authorized": false
+}

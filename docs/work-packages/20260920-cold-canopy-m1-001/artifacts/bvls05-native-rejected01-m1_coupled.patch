@@ -1,0 +1,65 @@
+--- crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs	2026-09-29 13:26:15.150883958 -0700
++++ /tmp/bvls05-native-rejected-draft/m1_coupled.rs	2026-09-29 13:24:44.918703910 -0700
+@@ -92,6 +92,53 @@
+     static M1_DIAGNOSTIC_OBSERVATION: RefCell<Option<M1DiagnosticObservation>> = const { RefCell::new(None) };
+ }
+ 
++#[cfg(feature = "m1-trust-region-native-harness")]
++thread_local! {
++    static M1_NATIVE_HARNESS_ORDINAL: Cell<Option<u32>> = const { Cell::new(None) };
++    static M1_NATIVE_HARNESS_CAPTURE: RefCell<Option<M1NativeHarnessCanonicalSeed>> = const { RefCell::new(None) };
++}
++
++/// Private, opt-in native caller custody record.  It is captured at the sole
++/// canonical seed construction point and does not select a numerical policy.
++#[cfg(feature = "m1-trust-region-native-harness")]
++#[doc(hidden)]
++#[derive(Clone, Debug, PartialEq)]
++pub struct M1NativeHarnessCanonicalSeed {
++    pub ordinal: u32,
++    pub input: M1CoupledColumnInput,
++    pub seed_coordinates: [f64; 21],
++}
++
++#[cfg(feature = "m1-trust-region-native-harness")]
++#[doc(hidden)]
++pub fn m1_native_harness_arm_for_ordinal(ordinal: u32) {
++    M1_NATIVE_HARNESS_ORDINAL.with(|armed| armed.set(Some(ordinal)));
++    M1_NATIVE_HARNESS_CAPTURE.with(|capture| *capture.borrow_mut() = None);
++}
++
++#[cfg(feature = "m1-trust-region-native-harness")]
++#[doc(hidden)]
++pub fn m1_native_harness_take_canonical_seed() -> Option<M1NativeHarnessCanonicalSeed> {
++    M1_NATIVE_HARNESS_CAPTURE.with(|capture| capture.borrow_mut().take())
++}
++
++#[cfg(feature = "m1-trust-region-native-harness")]
++fn m1_native_harness_capture_canonical_seed(
++    input: &M1CoupledColumnInput,
++    seed_coordinates: [f64; 21],
++) {
++    let ordinal = M1_NATIVE_HARNESS_ORDINAL.with(|armed| armed.replace(None));
++    if let Some(ordinal) = ordinal {
++        M1_NATIVE_HARNESS_CAPTURE.with(|capture| {
++            *capture.borrow_mut() = Some(M1NativeHarnessCanonicalSeed {
++                ordinal,
++                input: input.clone(),
++                seed_coordinates,
++            });
++        });
++    }
++}
++
+ #[cfg(any(test, feature = "test-support"))]
+ #[derive(Clone)]
+ struct M1DiagnosticPending {
+@@ -5508,6 +5555,8 @@
+         coordinates[15 + soil] = input.column.ground.soil_nodes[soil].beginning_temperature_k;
+     }
+     let mut trial = M1CoupledColumnTrial::from_coordinates(coordinates);
++    #[cfg(feature = "m1-trust-region-native-harness")]
++    m1_native_harness_capture_canonical_seed(input, trial.coordinates);
+     #[cfg(any(test, feature = "test-support"))]
+     if let Some(generation) = diagnostic_generation {
+         // This is the exact constructed canonical seed, after preflight and

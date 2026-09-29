@@ -1,0 +1,18 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-validation-scope-addendum.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static clarification only; QA ran no command.",
+  "supersedes_portions_of": "bvls05-qa-validation-scope01.json",
+  "clarification": {
+    "accepted_private_scope": "The adopted BVLS05 experiment may change its private numerical representation and isolated experimental contract/binding, including the authorized cfg(test) physical-adapter consumer. Those changes do not alone make the increment Critical.",
+    "terminal_reachability_proof": "The terminal review must prove that new BVLS05 paths have no production, shared, default, or public reachability. It must not incorrectly require absence from the authorized private cfg(test) physical adapter.",
+    "authority_scope": "A changed isolated experimental contract/binding within the adopted private scope does not itself trigger a production A3 suite. Expansion to production authority, a required authority-suite binding, a protected fixture/cohort, or an anti-evasion posture does.",
+    "solver_scope": "Authorized private BVLS05 representation/seam changes remain subject to the declared focused controls, independent operands, real assembly cases, terminal diff, and separate physical readiness. A Critical escalation applies if a change alters shared/default/production solver arithmetic, cutoff/fallback behavior, or an unknown executable path, rather than any private experimental arithmetic representation change."
+  },
+  "retained_escalation": [
+    "Production/shared/default/public reachability or unknown reachability remains Critical.",
+    "A physical equation, conservation operand lineage, original G4 input/assertion, production solver cutoff/fallback, authority-suite/fixture/required-case binding, manifest/lockfile/dependency/feature topology, or validation-runner change remains a concrete Critical trigger.",
+    "The private physical-adapter route remains separately gated by its named frozen cases and the sole G4 readiness process; this clarification does not release it."
+  ],
+  "disposition": "PASS: no standards conflict. This addendum narrows scope classification language only and leaves every concrete validation and escalation requirement intact."
+}

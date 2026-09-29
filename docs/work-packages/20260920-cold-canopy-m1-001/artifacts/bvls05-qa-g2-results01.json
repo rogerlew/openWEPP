@@ -1,0 +1,29 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-g2-results.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Inspection of supplied Ran corrected-G2 receipt/capture and static plan02 review. QA ran no command or calculation.",
+  "findings": [],
+  "corrected_g2": {
+    "index": "bvls05-conditional-g2-results01.json",
+    "receipt": "bvls05-conditional-g2-corrected01.json",
+    "result": "PASS: one justified corrected execution, 1 passed/408 skipped, exit=0, timed_out=false, no automatic retry.",
+    "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+    "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+    "custody": "Source, binary, observer base, pinned files, and support links are unchanged during the command. The original failed receipt remains preserved.",
+    "capture": "The intended VEG-E-142/MhConsistency terminal owning path was reached with poison armed/probe/core entered and scope restored; predictor=1, direct=0, additive total=1, completed=0, no materialization, and protected input/trial unchanged."
+  },
+  "five_g6": {
+    "plan": "bvls05-conditional-plan02.json",
+    "status": "QA READY, subject to the separately required correctness result disposition.",
+    "binding": "The five exact single-selector release commands retain the same cut09 source/binary, one planned execution each, and 180-second bounds.",
+    "stop_rule": "Preserved: an unexpected source-conforming numerical refusal before the intended branch stops remaining physical/numerical work; no seed/input/method change or retry into PASS."
+  },
+  "non_blocking_follow_up": [
+    "Preserve predictor/direct/total fields together in later captures so error-path telemetry remains unambiguous."
+  ],
+  "missing_evidence": [
+    "All five G6 results remain absent.",
+    "G3/native harness and target evidence remain absent and held."
+  ],
+  "disposition": "QA PASS for the corrected G2 result and QA READY for the five G6 commands under plan02. G3/native/target work remains held."
+}

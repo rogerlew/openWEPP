@@ -1,0 +1,33 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-terminal.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static terminal closure review of restored accepted cut09, package/document disposition, custody and ledger artifacts. QA ran no build, replay, physical command, source edit, or remote publication.",
+  "findings": [],
+  "package_disposition": {
+    "reviewed": "package.md lines 1-85",
+    "result": "Accurate PARTIAL/integrity-STOP disposition. It preserves the cut08/cut09 split; bounds G4 timing/counter claims; labels inherited strict lint as FAIL; preserves first G2 failure and narrow reporting correction; and makes no native, G3, target, M1, production, root, materialization, scale, or release claim."
+  },
+  "source_custody": {
+    "accepted_live": "bvls05-native-integrity-restoration01.json restores source 04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b with 764 entries and all hashes equal.",
+    "pending_native": "Tree f4517b20492be7f2493c84b0a6bdc3b241426171f044ba6827d2c14739d54222 remains separately preserved with archive 29252a46361e792e9c6be33dda43a1ee3418c3f15c2fc53fa95d553a7768330f; it receives no validation credit.",
+    "integrity": "Restoration is preservation-only and states resumption_authorized=false. The native integrity stop and path-correction addendum remain binding."
+  },
+  "authority_and_evidence": {
+    "contracts": "The four canonical documents and hashes reviewed in bvls05-qa-terminal-checkpoint01.json remain the scoped authoritative basis; no new contract bytes are claimed.",
+    "accepted_evidence": "Checkpoint review reuse is valid for quality09, cut08 seven controls/G4, corrected cut09 G2, and five cut09 G6 within their recorded scopes.",
+    "holds": "Native candidate, G3 physical/native harness, targets, Full09/A1/A3, strict-lint closure, material/BGC, parent/late-reject, cycle/restart, conservation, scale/cost, and broader M1/production acceptance remain HOLD."
+  },
+  "ledger": {
+    "artifact": "bvls05-final-ledger.json",
+    "result": "Charges 13278 new seconds including the full 1800-second closing allocation; cumulative=427743.393795, remaining under fixed ceiling=1122.000000, charged coverage through 21:09:18 UTC, fixed work cutoff=20:58 UTC, hard deadline=21:28 UTC.",
+    "integrity_stop": "Remaining allowance does not authorize native resumption. Ledger records native check10 stable FAIL, check11 invalid source change, zero native physical runs, and zero target slots used."
+  },
+  "publication_readiness": {
+    "status": "READY for scoped staging/publication of the four reviewed contracts, package, evidence, and exact accepted/pending recovery records only.",
+    "final_action": "Remote verification/publication receipt remains the final closing action and must retain the PARTIAL/integrity-STOP wording."
+  },
+  "non_blocking_follow_up": [
+    "Use the archived native candidate only as a separately reauthorized future starting point; do not merge its narrative into this checkpoint."
+  ],
+  "disposition": "QA PASS for terminal partial-checkpoint closure and scoped publication readiness. Native/G3/target and broader acceptance remains blocked."
+}

@@ -1,0 +1,62 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-quality.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static frozen-source review plus inspection of supplied Ran receipts. QA ran no build, lint, test, solver, physical assembly, or endpoint command.",
+  "frozen_source": {
+    "tree_sha256": "8bca6357d9abd8e3a6341309f6194c1251926b252a91e4234ef49643d9af0da3",
+    "entry_count": 764,
+    "source_diff": "bvls05-quality07-source-diff.json",
+    "patch": "bvls05-quality07-from-start.patch"
+  },
+  "findings": [],
+  "quality04_fix_verification": {
+    "feature_gating": "The physical-only BVLS05 assembly inspection and selected-retry types are consistently cfg(test)+physical-stage. The scratch snapshot fields/types are consistently feature-gated. The exact debug07 receipt passes, closing the quality04 compile failures.",
+    "g4_wrapper": "G4_PROPOSAL_COST remains in the controller natural-tangent helper. The natural-tangent physical wrapper now serializes its own owner-work/budget fields; the selected-side wrapper retains its own controller-work field. The invalid private helper use is absent from the reviewed G4 path.",
+    "control_scope": "The private cfg(test) control/body/adapter boundaries and prior accepted scatter, mask, counter, and plan06/lineage01 controls remain intact."
+  },
+  "recorded_receipts": {
+    "debug07": {
+      "receipt": "bvls05-quality-debug07.json",
+      "exit_code": 0,
+      "elapsed_seconds": 14.425514564849436,
+      "source_unchanged": true,
+      "observer_base_unchanged": true,
+      "result": "120 selected controls passed."
+    },
+    "all_features_lint07": {
+      "receipt": "bvls05-quality-all-lint07.json",
+      "comparison": "bvls05-quality-all-lint07-comparison02.json",
+      "exit_code": 101,
+      "baseline_count": 238,
+      "candidate_count": 238,
+      "matched_count": 238,
+      "introduced": 0,
+      "removed": 0,
+      "result": "Source-bearing no-new-relevant reconciliation passes; strict lint remains an inherited exit-101 failure."
+    },
+    "combined_lint07": {
+      "receipt": "bvls05-quality-combined-lint07.json",
+      "comparison": "bvls05-quality-combined-lint07-comparison02.json",
+      "exit_code": 101,
+      "baseline_count": 238,
+      "candidate_count": 238,
+      "matched_count": 238,
+      "introduced": 0,
+      "removed": 0,
+      "result": "Source-bearing no-new-relevant reconciliation passes; strict lint remains an inherited exit-101 failure."
+    }
+  },
+  "lint_reconciliation": "No multiplicity waiver is needed on either completed population: raw candidate and baseline counts are both 238 and all normalized blocks match. This does not report Clippy PASS or waive the pending analytic population.",
+  "physical_readiness": {
+    "seven_cases": "bvls05-physical-run-plan01 remains finite and correctly separated: seven individually recorded exact release selectors, 180 seconds each, no retry/broad filter/target slot, preserved first result, and actual dual review before G4.",
+    "g4": "bvls05-g4-plan01 correctly remains conditional on same-source seven-case passes, exact final release source/binary/argv binding, two readiness reviews, and remaining time for the entire 180-second command. Owner-work fields support custody only and cannot make a performance or success claim.",
+    "current_status": "NOT READY."
+  },
+  "missing_evidence": [
+    "Exact quality07 analytic lint receipt and source-bearing reconciliation.",
+    "Exact quality07 release controls, release/default/feature inventories, rustfmt, final manifest/release binary, and final direct-consumer/recovery proof.",
+    "Independent final correctness readiness and final QA readiness after all quality evidence binds this same source.",
+    "All seven physical-control results and their independent evidence review; G4 remains unrun."
+  ],
+  "disposition": "CONDITIONAL PASS: quality04's concrete compile and wrong-wrapper defects are closed, and the two available lint populations have no introduced diagnostics. Do not dispatch any physical command until every listed same-source quality/readiness prerequisite is complete."
+}

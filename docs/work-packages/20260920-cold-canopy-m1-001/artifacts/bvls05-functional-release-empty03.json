@@ -1,0 +1,7 @@
+{
+  "evidence_class": "Ran: release exact old-body complete Debug/work parity",
+  "candidate": "bvls05-functional-release03.stderr",
+  "candidate_sha256": "371f9f6f53bf3658abfd0b29f328f961211029bbfea550537986d73290b120b9",
+  "baseline": "bvls05-empty-old-body-baseline.json",
+  "all_fields_equal": true
+}

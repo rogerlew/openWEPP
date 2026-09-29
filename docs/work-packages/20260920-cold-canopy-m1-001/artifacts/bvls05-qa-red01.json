@@ -1,0 +1,52 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-expected-red.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Ran evidence inspected; QA did not execute a command, solver, physical assembly, or numerical calculation.",
+  "frozen_source": {
+    "tree_sha256": "1c72fea10aafecc1ce862094f3bd46246bbbc006c122e83877ed7f478bc2d1d4",
+    "entry_count": 764,
+    "source_unchanged_during_inventory": true,
+    "source_unchanged_during_expected_red": true,
+    "observer_base_unchanged_during_expected_red": true
+  },
+  "findings": [],
+  "inventory": {
+    "receipt": "bvls05-controls-inventory05.json",
+    "exit_code": 0,
+    "elapsed_seconds": 5.031700031366199,
+    "feature_set": "m1-trust-region-controller-stage,m1-trust-region-analytic-stage,m1-trust-region-physical-stage",
+    "result": "PASS: supplied manifest binds the 402-test inventory and the exact eight BVLS05 pre-body selectors."
+  },
+  "expected_red": {
+    "receipt": "bvls05-expected-red01.json",
+    "exit_code": 100,
+    "elapsed_seconds": 0.6185439610853791,
+    "selector_expression": "test(m1_trust_region_bvls05_)",
+    "selected": 8,
+    "passed": 5,
+    "expected_failed": 3,
+    "unexpected_outcomes": 0,
+    "failures": {
+      "m1_trust_region_bvls05_expected_red_g4_full_wet_hold": "Observed 21 free ids where the pre-body held face requires 19; this is the intended G4 held-mask/21-by-19 failure before endpoint work.",
+      "m1_trust_region_bvls05_nonempty_hold_zero_lambda_refinement": "Observed RankDeficient before refinement/held-face consumption, with zero BVLS05 work deltas.",
+      "m1_trust_region_bvls05_nonempty_hold_positive_lambda_refinement": "Observed RankDeficient before refinement/held-face consumption, with zero BVLS05 work deltas."
+    },
+    "custody": "The receipt records source and observer-base unchanged, no binary identity, and no physical input scope. The command is an eight-selector libtest run with no physical dispatch."
+  },
+  "default_empty_baseline": {
+    "artifact": "bvls05-empty-old-body-baseline.json",
+    "receipt": "bvls05-expected-red01.json",
+    "receipt_stderr_sha256": "04e7a027e2455b359e810a15015d31eea9ca001dc235bfb31d09cf93a3a9f2fc",
+    "combined_json_bytes": 17360,
+    "positive_debug": {
+      "bytes": 8681,
+      "sha256": "dd6b892c6d08428c0581ef50a0388a88f17ab8dee791988cb688ad457248dd3b"
+    },
+    "zero_debug": {
+      "bytes": 8642,
+      "sha256": "a3657663b0fd517ea1a1bef66f2ce571f3b6eee4b4195d8503c2f319518aaaa9"
+    },
+    "verification": "Both stored debug strings exactly match the marker JSON extracted from the manifest-bound expected-red stderr. This is a pre-body comparison baseline, not evidence of a later implementation result."
+  },
+  "disposition": "PASS: the expected-red evidence is valid and releases the authorized implementation step. Physical execution remains gated, and this review makes no claim that the numerical body, later green controls, or default-empty post-body comparison has passed."
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05-native-bridge-status.v1",
+  "evidence_class": "Static source investigation only; no Cargo, numerical, physical, or target execution.",
+  "source_tree": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "recovered_source_tree_sha256_before_write": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+  "source_changes": [
+    "LSE Cargo.toml adds the default-off m1-trust-region-native-harness feature, depending only on test-support.",
+    "LSE lib.rs exposes only the controller/interface/Stage1 body modules to that feature.",
+    "m1_coupled.rs adds the hidden explicit facade, which consumes M1DiagnosticObservation directly, clones its captured input, constructs M1CoupledColumnTrial from its captured canonical seed, and invokes the existing adapter/controller run path.",
+    "The native cfg closure now includes the required private Stage1/controller operand types and real budget scope/entry accounting, while retaining fixture and poison controls behind their original test gates."
+  ],
+  "recorded_artifact_changes": ["bvls05-native-bridge-intent02.json", "bvls05-native-bridge-status02.json"],
+  "confirmed_native_operand_seam": {
+    "seed_owner": "solve_m1_coupled_column_inner",
+    "record": "M1DiagnosticObservation.input clone and seed_coordinates are created after structural preflight and canonical seed construction, before validate and baseline Newton policy.",
+    "provider": "RealM1ProviderCaller::prepare_fixed_sequence_support arms the observation only for the existing ordinal baseline diagnostic path. Its current path must stay baseline-only."
+  },
+  "first_relevant_compile_closure_blocker": {
+    "kind": "feature-gating design not yet safely reduced to a minimal body closure",
+    "evidence": [
+      "m1_trust_region_controller and its interface are compiled only under cfg(all(test, stage feature)); an external orchestrator dependency has cfg(test)=false.",
+      "The same controller body references lib.rs trust-region types and the Stage1 module that are individually cfg(test), while M1PhysicalTrustRegionAdapter, its trait implementation, provenance, and budget accounting are cfg(all(test, m1-trust-region-physical-stage)).",
+      "Blindly replacing those gates would also expose retained physical poison and wrapper controls, contrary to the required minimal closure and the prohibition on lifting m1_coupled_tests/poison controls."
+    ],
+    "required_next_source_step": "Introduce a narrowly named native-body cfg predicate only on the actual controller/interface/Stage1 solver types plus adapter trait implementation, provenance and budget; retain every poison, fixture, selector and existing ordinal diagnostic branch under its original test-only cfg. Then add the hidden facade and distinct future caller helper without dispatching it."
+  },
+  "intended_owner_check_after_source_completion": "cargo check -p openwepp-land-surface-energy --features m1-trust-region-native-harness; Check10 was run by the orchestrator and failed only on incomplete feature closure. No command was run by this writer.",
+  "remaining_acceptance": [
+    "No explicit future treatment request/helper has been implemented.",
+    "No physical G3 or target result was run or claimed."
+    "Actual same-body facade compilation and review are not established; the first feature-closure cargo check is owned by the orchestrator.",
+    "No provider-side future treatment request/helper has been implemented, so the existing baseline ordinal diagnostic cannot dispatch the facade.",
+    "No physical G3 or target result was run or claimed."
+    "No explicit future treatment request/helper has been implemented.",
+    "No physical G3 or target result was run or claimed."
+  ]
+}

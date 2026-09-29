@@ -1,0 +1,49 @@
+{
+  "evidence_class": "Static: byte-exact original/terminal protected fixture, canonical preparation and endpoint assertions",
+  "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+  "original_source": "/home/roger/openwepp-experiments/cold-canopy-m1-g4-rank-reconstruction-20260929",
+  "functions": [
+    {
+      "file": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "function": "retained_phase_control_input",
+      "sha256": "9478664cb0fee2716c5e0269c28b3672e488dc2775e227d12d8127736b543ce8",
+      "byte_identical_to_original_g4": true
+    },
+    {
+      "file": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "function": "assert_retained_phase_capacity_tie",
+      "sha256": "7422a5803c2a99c538dada78be2ec6f885b39ba2623bd5a5f4125780cd36e9da",
+      "byte_identical_to_original_g4": true
+    },
+    {
+      "file": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "function": "m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+      "sha256": "bdf1435b4efd14c2f9d55046934f6c8c8738f2a016cb43fdaaccca6315982e2b",
+      "byte_identical_to_original_g4": true
+    },
+    {
+      "file": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "function": "trial",
+      "sha256": "354661abe33c074a9fbe093ccee7758d831bc3c990892acc834c8eb4f506c27d",
+      "byte_identical_to_original_g4": true
+    },
+    {
+      "file": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "function": "conditions",
+      "sha256": "4007a2918c4bfea49f606df6b78abd578c7ee08a5b2de73bf2bc843190cc75e7",
+      "byte_identical_to_original_g4": true
+    },
+    {
+      "file": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "function": "topology_binding",
+      "sha256": "03f17a994005eba1402522fae072de3ff0dda7cc69027e81e2cf8b636171751c",
+      "byte_identical_to_original_g4": true
+    },
+    {
+      "file": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+      "function": "m1_trust_region_phase_capacity_tie_for_test",
+      "sha256": "8397eafe279c7932e03cfaa0560a11e15a4e9aaecf4c5f6d6fe00cc3faf4eb35",
+      "byte_identical_to_original_g4": true
+    }
+  ]
+}

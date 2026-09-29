@@ -1,0 +1,1398 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find function `solve_subproblem_with_certificate` in module `super::m1_trust_region_stage1`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:362:64
+     |
+ 362 |         let observation = match super::m1_trust_region_stage1::solve_subproblem_with_certificate(
+     |                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super::m1_trust_region_stage1`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9324:15
+     |
+9323 | #[cfg(test)]
+     |       ---- the item is gated here
+9324 | pub(crate) fn solve_subproblem_with_certificate(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_governed_step_components_pass_for_trust_region` in module `super::solver`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:524:34
+    |
+524 |             pass: super::solver::m1_governed_step_components_pass_for_trust_region(
+    |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super::solver`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:557:15
+    |
+550 |     test,
+    |     ---- the item is gated here
+...
+557 | pub(crate) fn m1_governed_step_components_pass_for_trust_region(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1PhysicalBudgetSnapshot` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2573:47
+     |
+2573 |     pub(crate) budget_snapshot: Option<crate::M1PhysicalBudgetSnapshot>,
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:31:12
+     |
+  29 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+  30 | #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+  31 | pub struct M1PhysicalBudgetSnapshot {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1PhysicalTrustRegionControllerRunObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2574:39
+     |
+2574 |     pub(crate) controller_run: Option<M1PhysicalTrustRegionControllerRunObservation>,
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2689:19
+     |
+2687 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+2688 | #[derive(Clone, Copy, Debug, PartialEq)]
+2689 | pub(crate) struct M1PhysicalTrustRegionControllerRunObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: you might be missing a type parameter
+     |
+2553 | pub(crate) struct M1PhysicalTrustRegionAdapterObservation<M1PhysicalTrustRegionControllerRunObservation> {
+     |                                                          +++++++++++++++++++++++++++++++++++++++++++++++
+
+error[E0425]: cannot find function `m1_physical_budget_scope_for_test` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3091:24
+     |
+3091 |     let scope = crate::m1_physical_budget_scope_for_test();
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:64:15
+     |
+  63 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+  64 | pub(crate) fn m1_physical_budget_scope_for_test() -> M1PhysicalBudgetScope {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1PhysicalTrustRegionControllerRunObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3095:51
+     |
+2553 | pub(crate) struct M1PhysicalTrustRegionAdapterObservation {
+     | --------------------------------------------------------- similarly named struct `M1PhysicalTrustRegionAdapterObservation` defined here
+...
+3095 |         adapter.observation.controller_run = Some(M1PhysicalTrustRegionControllerRunObservation {
+     |                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2689:19
+     |
+2687 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+2688 | #[derive(Clone, Copy, Debug, PartialEq)]
+2689 | pub(crate) struct M1PhysicalTrustRegionControllerRunObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: a struct with a similar name exists
+     |
+3095 -         adapter.observation.controller_run = Some(M1PhysicalTrustRegionControllerRunObservation {
+3095 +         adapter.observation.controller_run = Some(M1PhysicalTrustRegionAdapterObservation {
+     |
+
+error[E0425]: cannot find function `m1_physical_budget_observation_for_test` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3115:50
+     |
+3115 |     adapter.observation.budget_snapshot = crate::m1_physical_budget_observation_for_test();
+     |                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:74:15
+     |
+  73 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+  74 | pub(crate) fn m1_physical_budget_observation_for_test() -> Option<M1PhysicalBudgetSnapshot> {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1PhysicalTrustRegionControllerRunObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3128:17
+     |
+2553 | pub(crate) struct M1PhysicalTrustRegionAdapterObservation {
+     | --------------------------------------------------------- similarly named struct `M1PhysicalTrustRegionAdapterObservation` defined here
+...
+3128 |     run: Option<M1PhysicalTrustRegionControllerRunObservation>,
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2689:19
+     |
+2687 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+2688 | #[derive(Clone, Copy, Debug, PartialEq)]
+2689 | pub(crate) struct M1PhysicalTrustRegionControllerRunObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: a struct with a similar name exists
+     |
+3128 -     run: Option<M1PhysicalTrustRegionControllerRunObservation>,
+3128 +     run: Option<M1PhysicalTrustRegionAdapterObservation>,
+     |
+help: you might be missing a type parameter
+     |
+3126 | pub struct M1TrustRegionNativeHarnessObservation<M1PhysicalTrustRegionControllerRunObservation> {
+     |                                                 +++++++++++++++++++++++++++++++++++++++++++++++
+
+error[E0425]: cannot find function `m1_face_pivot_capture_enabled_for_test` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3681:23
+     |
+3681 |             if crate::m1_face_pivot_capture_enabled_for_test() {
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:155:43
+     |
+ 153 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+ 154 | pub(crate) use m1_trust_region_stage1::{
+ 155 |     m1_face_pivot_capture_begin_for_test, m1_face_pivot_capture_enabled_for_test,
+     |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_enabled_for_test` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3695:19
+     |
+3695 |         if crate::m1_face_pivot_capture_enabled_for_test() {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:155:43
+     |
+ 153 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+ 154 | pub(crate) use m1_trust_region_stage1::{
+ 155 |     m1_face_pivot_capture_begin_for_test, m1_face_pivot_capture_enabled_for_test,
+     |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2583:41
+     |
+2583 |     fn absorb_dot2(&mut self, counters: RefinementDot2Counters) {
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2716:17
+     |
+2716 | ) -> Result<(), RefinementDot2Reason> {
+     |                 ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+2713 | fn bvls04_normal_or_signed_zero<RefinementDot2Reason>(
+     |                                ++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2732:17
+     |
+2732 | ) -> Result<(), RefinementDot2Reason> {
+     |                 ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+2727 | fn bvls04_product_guard<RefinementDot2Reason>(
+     |                        ++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2880:17
+     |
+2880 | ) -> Result<(), RefinementDot2Reason> {
+     |                 ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+2875 | fn bvls04_validate_ordinary_defect_input<RefinementDot2Reason>(
+     |                                         ++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2896:18
+     |
+2896 | ) -> Result<(), (RefinementDot2Reason, M1TrustRegionRefinementGuardStage)> {
+     |                  ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+2891 | fn bvls04_add_shift<RefinementDot2Reason>(
+     |                    ++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2920:23
+     |
+2920 | ) -> Result<Vec<f64>, RefinementDot2Refusal> {
+     |                       ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+2913 | fn bvls04_ordinary_defect<RefinementDot2Refusal>(
+     |                          +++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2937 | /         fail!(
+2938 | |             reason,
+2939 | |             M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+2940 | |             None,
+2941 | |             None,
+2942 | |             None
+2943 | |         );
+     | |_________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2949 | /                 fail!(
+2950 | |                     reason,
+2951 | |                     M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+2952 | |                     Some(refinement_face_index(row)),
+2953 | |                     Some(refinement_face_index(slot)),
+2954 | |                     Some(refinement_face_index(free[slot]))
+2955 | |                 );
+     | |_________________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2958 | /                 fail!(
+2959 | |                     reason,
+2960 | |                     M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+2961 | |                     Some(refinement_face_index(row)),
+2962 | |                     Some(refinement_face_index(slot)),
+2963 | |                     Some(refinement_face_index(free[slot]))
+2964 | |                 );
+     | |_________________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2971 | /                 fail!(
+2972 | |                     reason,
+2973 | |                     M1TrustRegionRefinementGuardStage::PrimaryProduct,
+2974 | |                     Some(refinement_face_index(row)),
+2975 | |                     Some(refinement_face_index(slot)),
+2976 | |                     Some(refinement_face_index(free[slot]))
+2977 | |                 );
+     | |_________________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2982 | /                 fail!(
+2983 | |                     reason,
+2984 | |                     M1TrustRegionRefinementGuardStage::Accumulation,
+2985 | |                     Some(refinement_face_index(row)),
+2986 | |                     Some(refinement_face_index(slot)),
+2987 | |                     Some(refinement_face_index(free[slot]))
+2988 | |                 );
+     | |_________________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2994 | /             fail!(
+2995 | |                 reason,
+2996 | |                 guard_stage,
+2997 | |                 None,
+2998 | |                 Some(refinement_face_index(slot)),
+2999 | |                 Some(refinement_face_index(free[slot]))
+3000 | |             );
+     | |_____________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3049:25
+     |
+3049 | ) -> Result<(f64, f64), RefinementDot2Reason> {
+     |                         ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+3045 | fn bvls04_ordered_norm<RefinementDot2Reason>(
+     |                       ++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementObservationTrace` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5717:13
+     |
+5717 |     trace: &RefinementObservationTrace,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+     |
+help: a struct with a similar name exists
+     |
+5717 -     trace: &RefinementObservationTrace,
+5717 +     trace: &RefinementObservationMasks,
+     |
+
+error[E0425]: cannot find type `RefinementObservationRefusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5719:39
+     |
+5719 | ) -> Result<(Vec<u64>, Vec<u64>), Box<RefinementObservationRefusal>> {
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+     |
+help: a struct with a similar name exists
+     |
+5719 - ) -> Result<(Vec<u64>, Vec<u64>), Box<RefinementObservationRefusal>> {
+5719 + ) -> Result<(Vec<u64>, Vec<u64>), Box<RefinementObservationMasks>> {
+     |
+help: you might be missing a type parameter
+     |
+5716 | fn refinement_required_observation_residual_bits<RefinementObservationRefusal>(
+     |                                                 ++++++++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementObservationTrace` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5746:13
+     |
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+...
+5746 |     trace: &RefinementObservationTrace,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+5746 -     trace: &RefinementObservationTrace,
+5746 +     trace: &RefinementObservationMasks,
+     |
+
+error[E0425]: cannot find type `RefinementObservationTrace` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5797:13
+     |
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+...
+5797 |     trace: &RefinementObservationTrace,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+5797 -     trace: &RefinementObservationTrace,
+5797 +     trace: &RefinementObservationMasks,
+     |
+
+error[E0425]: cannot find type `RefinementObservationTrace` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5814:13
+     |
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+...
+5814 |     trace: &RefinementObservationTrace,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+5814 -     trace: &RefinementObservationTrace,
+5814 +     trace: &RefinementObservationMasks,
+     |
+
+error[E0425]: cannot find type `RefinementObservationRefusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5816:52
+     |
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+...
+5816 | ) -> Result<RefinementRequiredObservationBits, Box<RefinementObservationRefusal>> {
+     |                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+5816 - ) -> Result<RefinementRequiredObservationBits, Box<RefinementObservationRefusal>> {
+5816 + ) -> Result<RefinementRequiredObservationBits, Box<RefinementObservationMasks>> {
+     |
+help: you might be missing a type parameter
+     |
+5813 | fn refinement_observation_required_bits<RefinementObservationRefusal>(
+     |                                        ++++++++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementRetainedFaceObservationContext` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5824:14
+     |
+5811 | type RefinementRequiredObservationBits = (([u64; 21], [u64; 21]), (Vec<u64>, Vec<u64>));
+     | ---------------------------------------------------------------------------------------- similarly named type alias `RefinementRequiredObservationBits` defined here
+...
+5824 |     context: RefinementRetainedFaceObservationContext<'_>,
+     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a type alias with a similar name exists
+     |
+5824 -     context: RefinementRetainedFaceObservationContext<'_>,
+5824 +     context: RefinementRequiredObservationBits<'_>,
+     |
+
+error[E0425]: cannot find type `RefinementRetainedFaceObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5825:13
+     |
+5811 | type RefinementRequiredObservationBits = (([u64; 21], [u64; 21]), (Vec<u64>, Vec<u64>));
+     | ---------------------------------------------------------------------------------------- similarly named type alias `RefinementRequiredObservationBits` defined here
+...
+5825 | ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationRefusal>> {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a type alias with a similar name exists
+     |
+5825 - ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationRefusal>> {
+5825 + ) -> Result<RefinementRequiredObservationBits, Box<RefinementObservationRefusal>> {
+     |
+help: you might be missing a type parameter
+     |
+5823 | fn refinement_build_retained_face_observation<RefinementRetainedFaceObservation>(
+     |                                              +++++++++++++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementObservationRefusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5825:52
+     |
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+...
+5825 | ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationRefusal>> {
+     |                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+5825 - ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationRefusal>> {
+5825 + ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationMasks>> {
+     |
+help: you might be missing a type parameter
+     |
+5823 | fn refinement_build_retained_face_observation<RefinementObservationRefusal>(
+     |                                              ++++++++++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementRetainedFaceObservationContext` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5826:9
+     |
+5811 | type RefinementRequiredObservationBits = (([u64; 21], [u64; 21]), (Vec<u64>, Vec<u64>));
+     | ---------------------------------------------------------------------------------------- similarly named type alias `RefinementRequiredObservationBits` defined here
+...
+5826 |     let RefinementRetainedFaceObservationContext {
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a type alias with a similar name exists
+     |
+5826 -     let RefinementRetainedFaceObservationContext {
+5826 +     let RefinementRequiredObservationBits {
+     |
+
+error[E0422]: cannot find struct, variant or union type `RefinementRetainedFaceObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5853:8
+     |
+5811 | type RefinementRequiredObservationBits = (([u64; 21], [u64; 21]), (Vec<u64>, Vec<u64>));
+     | ---------------------------------------------------------------------------------------- similarly named type alias `RefinementRequiredObservationBits` defined here
+...
+5853 |     Ok(RefinementRetainedFaceObservation {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a type alias with a similar name exists
+     |
+5853 -     Ok(RefinementRetainedFaceObservation {
+5853 +     Ok(RefinementRequiredObservationBits {
+     |
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6847:13
+     |
+6847 |     reason: RefinementDot2Reason,
+     |             ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6948:13
+     |
+6948 | ) -> Result<RefinementDot2Counters, RefinementDot2Refusal> {
+     |             ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+6943 | fn refinement_active_admit<RefinementDot2Counters>(
+     |                           ++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6948:37
+     |
+6948 | ) -> Result<RefinementDot2Counters, RefinementDot2Refusal> {
+     |                                     ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+6943 | fn refinement_active_admit<RefinementDot2Refusal>(
+     |                           +++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6952:24
+     |
+6952 |             return Err(RefinementDot2Refusal {
+     |                        ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6969:24
+     |
+6969 |             return Err(RefinementDot2Refusal {
+     |                        ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7014:25
+     |
+7014 | ) -> Result<([f64; 21], RefinementDot2Counters), RefinementDot2Refusal> {
+     |                         ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+7011 | fn refinement_first_residual<RefinementDot2Counters>(
+     |                             ++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7014:50
+     |
+7014 | ) -> Result<([f64; 21], RefinementDot2Counters), RefinementDot2Refusal> {
+     |                                                  ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+7011 | fn refinement_first_residual<RefinementDot2Refusal>(
+     |                             +++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7017:65
+     |
+7017 |         |reason, guard_stage, row, term, coordinate, counters: &RefinementDot2Counters| {
+     |                                                                 ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7018:13
+     |
+7018 |             RefinementDot2Refusal {
+     |             ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7107:25
+     |
+7107 | ) -> Result<([f64; 21], RefinementDot2Counters), RefinementDot2Refusal> {
+     |                         ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+7104 | fn refinement_second_residual<RefinementDot2Counters>(
+     |                              ++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7107:50
+     |
+7107 | ) -> Result<([f64; 21], RefinementDot2Counters), RefinementDot2Refusal> {
+     |                                                  ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+7104 | fn refinement_second_residual<RefinementDot2Refusal>(
+     |                              +++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7130:28
+     |
+7130 |                 return Err(RefinementDot2Refusal {
+     |                            ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7384:51
+     |
+7384 |                 state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |                                                   ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7481:47
+     |
+7481 |             state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7853:47
+     |
+7853 |             state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8180:47
+     |
+8180 |             state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8284:47
+     |
+8284 |             state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `RefinementDot2Observation` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10946:13
+      |
+10946 | ) -> Result<RefinementDot2Observation, RefinementDot2Refusal> {
+      |             ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: you might be missing a type parameter
+      |
+10943 | fn m1_trust_region_refinement_dot2_for_test<RefinementDot2Observation>(
+      |                                            +++++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10946:40
+      |
+10946 | ) -> Result<RefinementDot2Observation, RefinementDot2Refusal> {
+      |                                        ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: you might be missing a type parameter
+      |
+10943 | fn m1_trust_region_refinement_dot2_for_test<RefinementDot2Refusal>(
+      |                                            +++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Observation` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11003:8
+      |
+11003 |     Ok(RefinementDot2Observation {
+      |        ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11020:23
+      |
+11020 | ) -> Result<Vec<f64>, RefinementDot2Refusal> {
+      |                       ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: you might be missing a type parameter
+      |
+11013 | fn bvls04_dot2_defect<RefinementDot2Refusal>(
+      |                      +++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11027:24
+      |
+11027 |             return Err(RefinementDot2Refusal {
+      |                        ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11049:34
+      |
+11049 |                 work.absorb_dot2(RefinementDot2Counters {
+      |                                  ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11060:34
+      |
+11060 |                 work.absorb_dot2(RefinementDot2Counters {
+      |                                  ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11068:28
+      |
+11068 |                 return Err(RefinementDot2Refusal {
+      |                            ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0609]: no field `bvls05_certificate` on type `&mut FoundationState<P, Phase>`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:364:23
+    |
+364 |             &mut self.bvls05_certificate,
+    |                       ^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `current`, `radius`, `budget`, `raw_jacobian`, `natural_phase` ... and 10 others
+
+error[E0599]: no variant or associated item named `RadiusExhausted` found for enum `M1TrustRegionRefusalKind` in the current scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1559:74
+     |
+1559 |                 terminal_refusal = Some(super::M1TrustRegionRefusalKind::RadiusExhausted);
+     |                                                                          ^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefusalKind`
+     |
+    ::: crates/openwepp-land-surface-energy/src/lib.rs:235:1
+     |
+ 235 | pub(crate) enum M1TrustRegionRefusalKind {
+     | ---------------------------------------- variant or associated item `RadiusExhausted` not found for this enum
+
+error[E0425]: cannot find function `bvls05_assembly_provenance` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3496:46
+     |
+3496 |         self.last_assembly_provenance = Some(bvls05_assembly_provenance(&self.input, &core));
+     |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3388:4
+     |
+3387 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+3388 | fn bvls05_assembly_provenance(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0609]: no field `liquid_mass_kg_m2` on type `&CoreOccupancy`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3522:50
+     |
+3522 |                     liquid_mass_kg_m2: occupancy.liquid_mass_kg_m2,
+     |                                                  ^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `sun`, `shade`, `wet_temperature_k`, `wet_fraction`, `wet_vapor` ... and 9 others
+
+error[E0425]: cannot find function `bvls05_assembly_provenance` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3582:54
+     |
+3582 |                 self.last_assembly_provenance = Some(bvls05_assembly_provenance(
+     |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3388:4
+     |
+3387 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+3388 | fn bvls05_assembly_provenance(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0609]: no field `selected_probe_entries` on type `Ref<'_, M1LoopActivityObservation>`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3599:67
+     |
+3599 |             M1_RUNTIME_ACTIVITY.with(|activity| activity.borrow().selected_probe_entries);
+     |                                                                   ^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `complete_evaluator_entries`, `hydraulic_entries`, `actual_hydraulic_entries`, `trial_entries`, `materialization_entries` ... and 25 others
+
+error[E0609]: no field `selected_probe_entries` on type `Ref<'_, M1LoopActivityObservation>`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3606:67
+     |
+3606 |             M1_RUNTIME_ACTIVITY.with(|activity| activity.borrow().selected_probe_entries);
+     |                                                                   ^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `complete_evaluator_entries`, `hydraulic_entries`, `actual_hydraulic_entries`, `trial_entries`, `materialization_entries` ... and 25 others
+
+error[E0425]: cannot find function `bvls05_assembly_provenance` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3612:18
+     |
+3612 |             Some(bvls05_assembly_provenance(&self.input, &assembly_core));
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3388:4
+     |
+3387 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+3388 | fn bvls05_assembly_provenance(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2719:20
+     |
+2719 |         return Err(RefinementDot2Reason::NonfiniteOperand);
+     |                    ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2722:20
+     |
+2722 |         return Err(RefinementDot2Reason::SubnormalIntermediate);
+     |                    ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2735:20
+     |
+2735 |         return Err(RefinementDot2Reason::UnderflowToZero);
+     |                    ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2886:20
+     |
+2886 |         return Err(RefinementDot2Reason::NonfiniteOperand);
+     |                    ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3054:24
+     |
+3054 |             return Err(RefinementDot2Reason::NonfiniteOperand);
+     |                        ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0425]: cannot find function `refinement_observation_refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5723:28
+     |
+5723 |               .ok_or_else(|| refinement_observation_refusal("refinement_r0_missing", state))?
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5745 | / fn refinement_observation_masks(
+5746 | |     trace: &RefinementObservationTrace,
+5747 | |     lower: [bool; 21],
+5748 | |     upper: [bool; 21],
+...    |
+5759 | | }
+     | |_- similarly named function `refinement_observation_masks` defined here
+     |
+help: a function with a similar name exists
+     |
+5723 -             .ok_or_else(|| refinement_observation_refusal("refinement_r0_missing", state))?
+5723 +             .ok_or_else(|| refinement_observation_masks("refinement_r0_missing", state))?
+     |
+
+error[E0425]: cannot find function `refinement_observation_refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5728:28
+     |
+5728 |               .ok_or_else(|| refinement_observation_refusal("refinement_residual1_missing", state))?
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5745 | / fn refinement_observation_masks(
+5746 | |     trace: &RefinementObservationTrace,
+5747 | |     lower: [bool; 21],
+5748 | |     upper: [bool; 21],
+...    |
+5759 | | }
+     | |_- similarly named function `refinement_observation_masks` defined here
+     |
+help: a function with a similar name exists
+     |
+5728 -             .ok_or_else(|| refinement_observation_refusal("refinement_residual1_missing", state))?
+5728 +             .ok_or_else(|| refinement_observation_masks("refinement_residual1_missing", state))?
+     |
+
+error[E0425]: cannot find function `refinement_class_name` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5783:26
+     |
+5783 |             .map(|value| refinement_class_name(value.class).to_owned())
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_required_observation_live_state_bits` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5818:9
+     |
+5716 | / fn refinement_required_observation_residual_bits(
+5717 | |     trace: &RefinementObservationTrace,
+5718 | |     state: &SubproblemState,
+5719 | | ) -> Result<(Vec<u64>, Vec<u64>), Box<RefinementObservationRefusal>> {
+...    |
+5731 | |     ))
+5732 | | }
+     | |_- similarly named function `refinement_required_observation_residual_bits` defined here
+...
+5818 |           refinement_required_observation_live_state_bits(trace, state)?,
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+5818 -         refinement_required_observation_live_state_bits(trace, state)?,
+5818 +         refinement_required_observation_residual_bits(trace, state)?,
+     |
+
+error[E0425]: cannot find function `refinement_retained_face_trace_bits` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5844:22
+     |
+5844 |     let trace_bits = refinement_retained_face_trace_bits(&trace, p2, state)?;
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6949:24
+     |
+6949 |     let mut counters = RefinementDot2Counters::default();
+     |                        ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6951:30
+     |
+6951 |         if let Err(reason) = refinement_dot2_guard(p[column], &mut counters) {
+     |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6970:25
+     |
+6970 |                 reason: RefinementDot2Reason::NonfiniteOperand,
+     |                         ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7015:24
+     |
+7015 |     let mut counters = RefinementDot2Counters::default();
+     |                        ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7032:30
+     |
+7032 |         if let Err(reason) = refinement_dot2_guard(prepared.weighted_residual[row], &mut counters) {
+     |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7045:17
+     |
+7045 |                 refinement_dot2_guard(prepared.weighted_matrix[row][column], &mut counters)
+     |                 ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7056:34
+     |
+7056 |             if let Err(reason) = refinement_dot2_guard(step, &mut counters) {
+     |                                  ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_mul` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7067:17
+     |
+7067 |                 refinement_dot2_mul(prepared.weighted_matrix[row][column], step, &mut counters)
+     |                 ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7078:19
+     |
+6901 | / fn refinement_box_admit(
+6902 | |     prepared: &PreparedSubproblem,
+6903 | |     p: &[f64; 21],
+6904 | |     free_ids: Option<&[usize]>,
+...    |
+6933 | |     None
+6934 | | }
+     | |_- similarly named function `refinement_box_admit` defined here
+...
+7078 |               sum = refinement_dot2_add(sum, product, &mut counters).map_err(|reason| {
+     |                     ^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+7078 -             sum = refinement_dot2_add(sum, product, &mut counters).map_err(|reason| {
+7078 +             sum = refinement_box_admit(sum, product, &mut counters).map_err(|reason| {
+     |
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7089:25
+     |
+6901 | / fn refinement_box_admit(
+6902 | |     prepared: &PreparedSubproblem,
+6903 | |     p: &[f64; 21],
+6904 | |     free_ids: Option<&[usize]>,
+...    |
+6933 | |     None
+6934 | | }
+     | |_- similarly named function `refinement_box_admit` defined here
+...
+7089 |           residual[row] = refinement_dot2_add(prepared.weighted_residual[row], sum, &mut counters)
+     |                           ^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+7089 -         residual[row] = refinement_dot2_add(prepared.weighted_residual[row], sum, &mut counters)
+7089 +         residual[row] = refinement_box_admit(prepared.weighted_residual[row], sum, &mut counters)
+     |
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7109:24
+     |
+7109 |     let mut counters = RefinementDot2Counters::default();
+     |                        ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7538:31
+     |
+7538 |     let mut factor_counters = RefinementDot2Counters::default();
+     |                               ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7540:12
+     |
+7540 |         if refinement_dot2_guard(value, &mut factor_counters).is_err() {
+     |            ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7752:28
+     |
+7752 |         let mut counters = RefinementDot2Counters::default();
+     |                            ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7756:23
+     |
+6901 | / fn refinement_box_admit(
+6902 | |     prepared: &PreparedSubproblem,
+6903 | |     p: &[f64; 21],
+6904 | |     free_ids: Option<&[usize]>,
+...    |
+6933 | |     None
+6934 | | }
+     | |_- similarly named function `refinement_box_admit` defined here
+...
+7756 |           let updated = refinement_dot2_add(left, right, &mut counters);
+     |                         ^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+7756 -         let updated = refinement_dot2_add(left, right, &mut counters);
+7756 +         let updated = refinement_box_admit(left, right, &mut counters);
+     |
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8226:28
+     |
+8226 |         let mut counters = RefinementDot2Counters::default();
+     |                            ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8227:23
+     |
+6901 | / fn refinement_box_admit(
+6902 | |     prepared: &PreparedSubproblem,
+6903 | |     p: &[f64; 21],
+6904 | |     free_ids: Option<&[usize]>,
+...    |
+6933 | |     None
+6934 | | }
+     | |_- similarly named function `refinement_box_admit` defined here
+...
+8227 |           let updated = refinement_dot2_add(p2[column], delta1[slot], &mut counters);
+     |                         ^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+8227 -         let updated = refinement_dot2_add(p2[column], delta1[slot], &mut counters);
+8227 +         let updated = refinement_box_admit(p2[column], delta1[slot], &mut counters);
+     |
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10947:24
+      |
+10947 |     let mut counters = RefinementDot2Counters::default();
+      |                        ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10949:30
+      |
+10949 |         if let Err(reason) = refinement_dot2_guard(value, &mut counters) {
+      |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10950:24
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10950 |               return Err(refinement_dot2_refusal(
+      |                          ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10950 -             return Err(refinement_dot2_refusal(
+10950 +             return Err(refinement_metadata_refusal(
+      |
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10959:30
+      |
+10959 |         if let Err(reason) = refinement_dot2_guard(value, &mut counters) {
+      |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10960:24
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10960 |               return Err(refinement_dot2_refusal(
+      |                          ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10960 -             return Err(refinement_dot2_refusal(
+10960 +             return Err(refinement_metadata_refusal(
+      |
+
+error[E0425]: cannot find function `refinement_dot2_two_product` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10969:9
+      |
+10969 |         refinement_dot2_two_product(terms[0], weights[0], &mut counters).map_err(|failure| {
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10970:13
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10970 |               refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(0))
+      |               ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10970 -             refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(0))
+10970 +             refinement_metadata_refusal(counters, failure.reason, failure.guard_stage, Some(0))
+      |
+
+error[E0425]: cannot find function `refinement_dot2_two_product` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10974:28
+      |
+10974 |         let (head, tail) = refinement_dot2_two_product(terms[index], weights[index], &mut counters)
+      |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10976:17
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10976 |                   refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10976 -                 refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+10976 +                 refinement_metadata_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+      |
+
+error[E0425]: cannot find function `refinement_dot2_two_sum` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10978:40
+      |
+10978 |         let (next_partial, sum_tail) = refinement_dot2_two_sum(partial, head, &mut counters)
+      |                                        ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10980:17
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10980 |                   refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10980 -                 refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+10980 +                 refinement_metadata_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+      |
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10984:13
+      |
+ 6901 | / fn refinement_box_admit(
+ 6902 | |     prepared: &PreparedSubproblem,
+ 6903 | |     p: &[f64; 21],
+ 6904 | |     free_ids: Option<&[usize]>,
+...     |
+ 6933 | |     None
+ 6934 | | }
+      | |_- similarly named function `refinement_box_admit` defined here
+...
+10984 |               refinement_dot2_add(sum_tail, tail, &mut counters).map_err(|reason| {
+      |               ^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10984 -             refinement_dot2_add(sum_tail, tail, &mut counters).map_err(|reason| {
+10984 +             refinement_box_admit(sum_tail, tail, &mut counters).map_err(|reason| {
+      |
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10985:17
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10985 |                   refinement_dot2_refusal(
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10985 -                 refinement_dot2_refusal(
+10985 +                 refinement_metadata_refusal(
+      |
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10992:24
+      |
+ 6901 | / fn refinement_box_admit(
+ 6902 | |     prepared: &PreparedSubproblem,
+ 6903 | |     p: &[f64; 21],
+ 6904 | |     free_ids: Option<&[usize]>,
+...     |
+ 6933 | |     None
+ 6934 | | }
+      | |_- similarly named function `refinement_box_admit` defined here
+...
+10992 |           compensation = refinement_dot2_add(compensation, sum_tail_plus_tail, &mut counters)
+      |                          ^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10992 -         compensation = refinement_dot2_add(compensation, sum_tail_plus_tail, &mut counters)
+10992 +         compensation = refinement_box_admit(compensation, sum_tail_plus_tail, &mut counters)
+      |
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10994:17
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10994 |                   refinement_dot2_refusal(
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10994 -                 refinement_dot2_refusal(
+10994 +                 refinement_metadata_refusal(
+      |
+
+error[E0425]: cannot find function `refinement_dot2_final_add` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11002:17
+      |
+11002 |     let value = refinement_dot2_final_add(partial, compensation, &mut counters)?;
+      |                 ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11028:25
+      |
+11028 |                 reason: RefinementDot2Reason::NonfiniteOperand,
+      |                         ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+warning: unused variable: `evaluator`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:409:53
+    |
+409 |     fn replace_assembly_for_bvls05<E, V>(&mut self, evaluator: &V, raw_jacobian: &[[f64; 21]; 21])
+    |                                                     ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_evaluator`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `current_max`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:613:9
+    |
+613 |         current_max: f64,
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_current_max`
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4134:5
+     |
+4134 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: variable does not need to be mutable
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7216:9
+     |
+7216 |     let mut p0 =
+     |         ----^^
+     |         |
+     |         help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `full_norm2`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8677:14
+     |
+8677 |         let (full_norm2, full_norm) =
+     |              ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_full_norm2`
+
+warning: unused variable: `full_norm`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8677:26
+     |
+8677 |         let (full_norm2, full_norm) =
+     |                          ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_full_norm`
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9235:5
+     |
+9235 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: unused variable: `prepared`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9236:5
+     |
+9236 |     prepared: &PreparedSubproblem,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_prepared`
+
+warning: unused variable: `input`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9313:5
+     |
+9313 |     input: &super::M1TrustRegionSubproblemInput,
+     |     ^^^^^ help: if this is intentional, prefix it with an underscore: `_input`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6862:13
+     |
+6862 |             RefinementDot2Reason::SubnormalIntermediate => {
+     |             ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6853:13
+     |
+6853 |             RefinementDot2Reason::NonfiniteOperand => {
+     |             ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6856:13
+     |
+6856 |             RefinementDot2Reason::SplitterOverflow => {
+     |             ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6859:13
+     |
+6859 |             RefinementDot2Reason::UnderflowToZero => {
+     |             ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+Some errors have detailed explanations: E0422, E0425, E0433, E0599, E0609.
+For more information about an error, try `rustc --explain E0422`.
+warning: `openwepp-land-surface-energy` (lib) generated 9 warnings
+error: could not compile `openwepp-land-surface-energy` (lib) due to 115 previous errors; 9 warnings emitted

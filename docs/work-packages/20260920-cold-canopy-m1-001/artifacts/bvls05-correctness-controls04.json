@@ -1,0 +1,69 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-controls-source-review.v4",
+  "reviewer": "interface_correctness",
+  "role": "same-reviewer narrow controls04 fix verification",
+  "evidence_class": "Static exact-source and accepted-plan review only. This reviewer ran no Rust build, test, physical assembly, solver, replay, or result-bearing execution.",
+  "reviewed_identity": {
+    "tree_sha256": "1c72fea10aafecc1ce862094f3bd46246bbbc006c122e83877ed7f478bc2d1d4",
+    "tree_entries": 764,
+    "files": [
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+        "sha256": "818e26f1634bab3a50aa36756668725ee2d2839443dcb3615efd425e58459626"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+        "sha256": "484c048d394e8e6892a0bf525f70a18bfa93b0878aaf2ccff933d43771582c75"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-controls04-source-diff.json",
+        "sha256": "4a05ffb07022aa38675a3b1eb1039c3815da024fe21ee8c52e4741d865c51809"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-controls04-from-start.patch",
+        "sha256": "ebb1fc9d95ea817e907626d158f4496fe0778eb0ed9c742ea54284aabe23edbe"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan06.json",
+        "sha256": "a73b72f62aab8116b04fd18b0e53c72727586fd2331023e527d7ac3b8838c3e8"
+      }
+    ]
+  },
+  "narrow_fix_verification": [
+    {
+      "finding": "BVLS05-CONTROL-R03-BOUND-KKT-ASSERTION",
+      "status": "CLOSED",
+      "source": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11995",
+      "evidence": "R03 now places certified coordinate 1 exactly at its lower bound and coordinate 2 exactly at its upper bound while SubproblemState retains both as initial/current free. It calls the actual KKT transition, asserts all 21 original-coordinate observations exist, and verifies held coordinates have h=+0, cbar=+0, tau=+0 and FreePass while coordinate 0 remains Fixed. The reached lower-active release and retained upper-active case remain asserted. R05/R06 retain the stable-D refinement custody accepted in controls03."
+    },
+    {
+      "finding": "W01 attempted held-copy symmetry",
+      "status": "CLOSED",
+      "source": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:12324",
+      "evidence": "W01 now asserts attempted and completed held-copy counts are both 2 for the actual held cardinality and both 4 after additive absorption; the bound remains at most 21 per entered candidate occurrence."
+    }
+  ],
+  "preserved_controls03_conclusions": [
+    "R01 observes the chronological first face without terminal-result coupling.",
+    "R05/R06 use live solve callbacks and assert the exact 19-entry custody, held +0 bits, stable masks, full KKT and base reconstruction without replay.",
+    "R07 reaches both default-empty routes and emits a complete baseline envelope for external exact comparison after body work.",
+    "G4 provenance, R02 guard isolation, R04 retained-rank attribution, occurrence accounting and held-only scatter remain unchanged from their accepted source.",
+    "The numerical body still contains no BVLS05 hold wiring and no production/public activation."
+  ],
+  "findings": [],
+  "residual_risk_and_execution_requirements": [
+    "The parent reported the prior controls03 inventory passed 402 parsed tests with exactly eight planned BVLS05 selectors, but the exact controls04 compile was still running at review time. That compile must pass on this exact source before execution.",
+    "Execute only the eight plan06 pre-body selectors. Preserve the exact R07 baseline envelope for the later external before/after comparison.",
+    "Expected-red acceptance requires R01, R05 and R06 to fail for the intended absent body hold behavior while R02, R03, R04, R07 and W01 pass their intended predicates; compilation, missing symbols, panic, stub behavior or an unrelated failure is not acceptable red evidence.",
+    "This is a controls-only release. Numerical body authoring, reviewed-body controls, non-target physical cases, the G4 endpoint and production/default activation remain gated."
+  ],
+  "disposition": {
+    "controls03_open_finding": "CLOSED",
+    "controls_scaffold_source_correctness": "PASS",
+    "correctness_expected_red_execution_release": true,
+    "overall_expected_red_execution_pending_exact_compile": true,
+    "rust_numerical_body_release": false,
+    "physical_execution_release": false,
+    "status": "CORRECTNESS_READY_FOR_EXACT_EIGHT_SELECTOR_EXPECTED_RED_AFTER_COMPILE_PASS"
+  }
+}

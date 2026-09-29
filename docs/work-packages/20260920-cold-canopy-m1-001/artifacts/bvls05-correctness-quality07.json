@@ -1,0 +1,100 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-quality-review.v1",
+  "reviewer": "interface_correctness",
+  "role": "independent numerical correctness reviewer",
+  "evidence_class": "Static review of the exact frozen quality07 source and its delta from quality04/quality06, plus read-only inspection of recorded quality07 receipts. The reviewer ran no Rust build, test, physical assembly, solver, replay, or G4 endpoint.",
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "id": "BVLS05-QUALITY07-G4-RUNTIME-OWNER-COUNTS",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1182",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1648",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2928",
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:5525"
+      ],
+      "finding": "The G4 record still does not count all induced owning evaluator, hydraulic and materializer work required by the adopted authorization. current_hydraulics is a Pending/Complete state, not an operation count. Adapter current_evaluations counts adapter entries but does not expose every core() call made by finite-difference Jacobian columns or selected probes. budget_snapshot is always None on the natural-tangent wrapper because only the separate full-run helper installs and copies a physical budget scope. Consequently the newly serialized fields cannot prove the complete induced owner work.",
+      "required_fix": "Reuse the existing M1_RUNTIME_ACTIVITY observer: give m1_physical_runtime_json narrow crate visibility, take one snapshot immediately before and one immediately after m1_trust_region_controller_natural_tangent_for_test, and serialize both in the G4 record with an explicit label that the interval covers controller initialization plus transition_model and overlaps the other ledgers. Do not reset the thread-local observer, compute a synthetic total, install a budget scope, or add an evaluator, hydraulic, materializer, Jacobian or solver call. complete_evaluator_entries counts every core() entry; hydraulic_entries counts aggregate hydraulic-potential entries; actual_hydraulic_entries counts each owning hydraulic solve; materialization_entries counts actual materialization. Preserve controller_work and adapter assembly/probe counters as complementary evidence. The null budget snapshot must be identified as unscoped evidence or omitted rather than treated as a work counter."
+    }
+  ],
+  "reviewed_identity": {
+    "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "source_tree_sha256": "8bca6357d9abd8e3a6341309f6194c1251926b252a91e4234ef49643d9af0da3",
+    "tree_entries": 764,
+    "independent_entry_check": "All 764 live source entries matched the quality07 manifest hashes during the frozen review.",
+    "manifest": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-quality07-source-diff.json",
+      "sha256": "ab7874079d544daed66dfa9aa45082da172eb5ae7e15cc19e9d169e2f9863155"
+    },
+    "patch": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-quality07-from-start.patch",
+      "sha256": "dd2b2e2c36372bd9ea78b5c76c036bb08bece3a7ee191e2cc2d537849eccaf2b"
+    },
+    "changed_file_hashes": {
+      "crates/openwepp-land-surface-energy/src/lib.rs": "40b7539964698c6c354054be55d0f83709d9433fad8e92e545a932d752162f5b",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "bc426be1ada94f378f1dcb9181999e8a9d9ae21a11e71bf47312c2c47a93dd63",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "1c0c3c7f6bddd1dcca128499ddd5c6dab583b91d7e3f2eca56985b7a1fa4e918",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs": "86d2e727becf3495cf5f82a0daf880c873e3dc3434fdf7cb1143a91a840c3493",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "b6a160ebbef1e450713de037cb27b94e5ddf23f3cabab4a38c4223008caebdd9",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "db0a91756d1f9af1fb0e2a71b59b1e66642f62f1ffd240ba81d10878313a687e"
+    }
+  },
+  "quality04_finding_closure": [
+    {
+      "id": "BVLS05-QUALITY04-TYPE-COMPILE-BLOCKERS",
+      "status": "CLOSED_STATIC_AND_COMPILED",
+      "evidence": "RefinementRequiredObservationBits now carries the exact ([u64; 21], [u64; 21]) and (Vec<u64>, Vec<u64>) shape; the R03 helper returns Bvls05CertificateObservation; m1_physical_budget_json has narrow crate visibility. The exact quality07 affected suite compiled and passed."
+    },
+    {
+      "id": "BVLS05-QUALITY04-FEATURE-CFG-CLOSURE",
+      "status": "CLOSED_STATIC",
+      "evidence": "The assembly inspection type, controller inspection method, selected-retry observation/error/lifecycle helpers, physical root-predicate helper and G4 fixture helper are consistently physical-test-only. The poison observation owner snapshot fields and construction are likewise feature-gated. No production/default surface was broadened."
+    },
+    {
+      "id": "BVLS05-QUALITY04-G4-OWNER-WORK-MISPLACED",
+      "status": "PLACEMENT_CLOSED_RUNTIME_COUNT_COMPLETENESS_OPEN",
+      "evidence": "The selected-side wrapper retains its inherited single current_hydraulics field and no G4-only fields. The actual natural-tangent G4 wrapper receives the requested fields after the timed invocation, reuses existing projections and leaves face_capture as sole BVLS05 lifecycle custody. The existing G4_PROPOSAL_COST controller helper is unchanged. The separate BVLS05-QUALITY07-G4-RUNTIME-OWNER-COUNTS finding records why those fields do not yet establish all induced owning operations."
+    }
+  ],
+  "quality07_delta_assessment": [
+    "Deriving Clone and Copy for FaceMaskContext changes no data, arithmetic or ownership boundary; it only permits the existing reference bundle to be passed by value without a move warning.",
+    "The step, raw-Jacobian row and diagonal-fixture loops retain identical ascending indices, operands, additions, guards, short-circuit behavior and work-counter increments under their iterator forms. No floating-point reduction order changes.",
+    "The two added physical-feature gates cover helpers whose only call sites are already physical-feature tests or physical adapter controls. They remove analytic-only dead exposure without altering production dispatch or physical behavior.",
+    "The grouped mask context, assembly borrow, observation helper extraction and partial_cmp test assertions accepted in quality04 remain numerically equivalent. No new solver algorithm, fallback, evaluator call, Jacobian assembly, factorization, phase selection, retry or materialization was introduced."
+  ],
+  "reused_correctness_scope": [
+    "The accepted policy06 science and accounting decisions remain unchanged.",
+    "The accepted body01 fixes, controls04 controls, physical-controls01 A01-A04, and functional03 L01-L03/G4 lifecycle findings remain applicable to unchanged reviewed seams.",
+    "The functional03 G4 observation fields are placed in the correct wrapper without adding numerical work; complete owner-operation accounting remains open under BVLS05-QUALITY07-G4-RUNTIME-OWNER-COUNTS."
+  ],
+  "recorded_evidence": {
+    "quality07_affected_debug": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-quality-debug07.json",
+      "sha256": "5887705f6245b418ffff1e75c30230b4019c6ebc6d4b363e0ceddd9fd6ea2b6f",
+      "stderr_sha256": "65c134198f86971bbb4a0aa9f00604aa6df7be888397fd7e3f3c68dc7eb57b1a",
+      "result": "PASS: exit 0, 120/120 selected affected tests, exact quality07 source unchanged."
+    },
+    "quality07_raw_lints": {
+      "combined_receipt_sha256": "7b3840ce3d1f317581eb3aba3141986ee2331508b448b512750179a7b11dcbb9",
+      "analytic_receipt_sha256": "411fcb8ddea2830095e1ff6ce9a1ae34c0f902089c9ef7fac3d1e1f90dc1a3b8",
+      "all_feature_receipt_sha256": "6e1aea82c6e7b241bb803fee00c77b987cc6f5667491881b4e7c2c2e586f122a",
+      "result": "Each raw -D warnings lint receipt exits 101 on repository warning inventory. This correctness review does not reinterpret those raw failures as passes; source-reconciled introduced-warning disposition belongs to the complementary QA/quality gate."
+    }
+  },
+  "residual_risk_and_missing_tests": [
+    "All seven plan06 physical controls remain unexecuted at this review point. Static source review does not establish actual phase, wet-fraction, work-count, cache-lifecycle or root-disposition results.",
+    "The full G4 endpoint remains unexecuted. G4 timing and lifecycle capture are source-complete, but owner-operation counts remain incomplete and no endpoint convergence or target validation follows from this review.",
+    "The G4 endpoint must remain gated until the existing runtime-owner snapshots are added and verified on an exact corrected source; quality07's current owner-work record is incomplete even though its field placement is correct.",
+    "Physical dispatch remains conditional on final quality receipts and complementary QA reconciliation. The raw lint commands are failures until their exact-source warning inventory is reconciled under the package quality rules.",
+    "Any source change after tree 8bca6357 requires bounded same-reviewer verification of affected numerical and observation seams."
+  ],
+  "disposition": {
+    "quality07_source_correctness": "PASS_STATIC_NUMERICAL; OBSERVATION_FIX_REQUIRED",
+    "quality04_findings": "TYPE_CFG_AND_PLACEMENT_CLOSED; OWNER_WORK_COMPLETENESS_OPEN",
+    "numerical_and_science_contract_parity": "PASS_STATIC",
+    "finite_seven_physical_execution_readiness": "CONDITIONAL_ON_FINAL_QUALITY_AND_QA",
+    "g4_endpoint_readiness": "HOLD_PENDING_RUNTIME_OWNER_COUNT_FIX_THEN_FINITE_SEVEN_RESULTS_AND_FINAL_DUAL_READINESS",
+    "production_activation_release": false,
+    "status": "FINITE_SEVEN_CONDITIONAL; G4_OBSERVATION_FIX_REQUIRED"
+  }
+}

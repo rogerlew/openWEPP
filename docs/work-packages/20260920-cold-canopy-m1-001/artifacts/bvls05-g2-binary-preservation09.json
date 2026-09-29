@@ -1,0 +1,8 @@
+{
+  "evidence_class": "Ran: exact corrected G2 release binary copied to durable storage and independently rehashed",
+  "source": "/tmp/openwepp-cold-canopy-m1-bvls05-g2-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+  "preserved": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls05-g2-release09-20260929/openwepp_land_surface_energy-d48ff3e2c6b93487",
+  "sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+  "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+  "no_physical_execution": true
+}

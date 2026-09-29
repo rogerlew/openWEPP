@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Static: complete source-bearing comparison of Ran strict lint logs; not a strict lint PASS",
+  "baseline": "g4-rank-analytic-lint04",
+  "candidate": "bvls05-quality-analytic-lint06",
+  "argv_identical": true,
+  "normalization": "Line/column and numeric diagnostic/suggestion gutters and first-occurrence-only lint-enablement notes; diagnostic headers, locations and source-bearing content remain unchanged",
+  "baseline_count": 262,
+  "candidate_count": 268,
+  "matched_count": 262,
+  "introduced": [
+    "error: function `m1_trust_region_full_residual_root_predicate_for_test` is never used\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:LINE:COL\n|\nLINE | pub(crate) fn m1_trust_region_full_residual_root_predicate_for_test<P: Clone>(\n|               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+    "error: function `bvls05_captured_g4_input` is never used\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE |     fn bvls05_captured_g4_input() -> (M1TrustRegionSubproblemInput, Vec<Vec<f64>>) {\n|        ^^^^^^^^^^^^^^^^^^^^^^^^",
+    "error: this argument is passed by value, but not consumed in the function body\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE |     masks: FaceMaskContext<'_>,\n|            ^^^^^^^^^^^^^^^^^^^\n|\nhelp: or consider marking this type as `Copy`\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE | struct FaceMaskContext<'a> {\n| ^^^^^^^^^^^^^^^^^^^^^^^^^^\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_pass_by_value\nhelp: consider taking a reference instead\n|\nLINE |     masks: &FaceMaskContext<'_>,\n|            +",
+    "error: the loop variable `col` is used to index `step`\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE |     for col in 0..N {\n|                ^^^^\n|\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop\nhelp: consider using an iterator and enumerate()\n|\nLINE -     for col in 0..N {\nLINE +     for (col, <item>) in step.iter().enumerate().take(N) {\n|",
+    "error: the loop variable `row` is used to index `raw`\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE |         for row in 0..21 {\n|                    ^^^^^\n|\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop\nhelp: consider using an iterator and enumerate()\n|\nLINE -         for row in 0..21 {\nLINE +         for (row, <item>) in raw.iter().enumerate().take(21) {\n|",
+    "error: the loop variable `coordinate` is used to index `raw_jacobian`\n--> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n|\nLINE |         for coordinate in 0..21 {\n|                           ^^^^^\n|\n      = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop\nhelp: consider using an iterator and enumerate()\n|\nLINE -         for coordinate in 0..21 {\nLINE +         for (coordinate, <item>) in raw_jacobian.iter_mut().enumerate() {\n|"
+  ],
+  "removed": [],
+  "baseline_stderr_sha256": "ac4d44859a4854e1b16443fd11e780a4c515b0cacf48ef1898051d6b05a2dc27",
+  "candidate_stderr_sha256": "f8a54645a1f667102133993d79c14b8f2ec8acfb3a178d91ac79354a764727c7"
+}

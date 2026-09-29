@@ -1,0 +1,99 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-g4-readiness.v1",
+  "reviewer": "interface_correctness",
+  "role": "independent numerical correctness reviewer",
+  "evidence_class": "Static review of seven recorded physical-control receipts, their frozen assertion source, custody index and the prospective sole-G4 plan. The reviewer ran no Rust build, test, physical control, solver, replay or G4 endpoint.",
+  "findings": [],
+  "reviewed_identity": {
+    "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+    "release_binary": "/tmp/openwepp-cold-canopy-m1-bvls05-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "release_binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+    "independent_binary_hash_check": "MATCH",
+    "source_readiness": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-correctness-readiness08.json",
+      "sha256": "749e13beacbbdddc378d8e6440fb3d6d22ff08261395e930b5442241742f1e4d"
+    }
+  },
+  "finite_seven_results": {
+    "index": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-physical-results01.json",
+    "index_sha256": "2b0a248047cfef6aeba7c6f6e6f2b5315499d48d79707d362c50a365f4159908",
+    "plan": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-physical-run-plan02.json",
+    "plan_sha256": "06983dacb49fba670cc7907bb1256498f2de849c7f4a4601c1385ac4c8a0d222",
+    "result": "PASS_7_OF_7",
+    "custody": "Every receipt records the exact source tree and release binary, source_unchanged=true, binary_unchanged=true, automatic_retries=0, physical=true, exit_code=0 and no timeout. Each exact selector ran as one test with 408 skipped and no broad filter.",
+    "cases": [
+      {
+        "id": "BVLS05-A01",
+        "receipt_sha256": "a7febcfb0cc9d0917ae50773393a7bc04041b08c44cd81e21469f701178b4bb5",
+        "stderr_sha256": "f2b93c3445436550c860eeee4f52ca0f601167c8400fa61e7136e5f6a146e968",
+        "assertion_result": "Actual canonical full-wet natural assembly has 21 raw/weighted rows, holds exactly columns 1 and 2, retains ordered original columns other than 1 and 2, preserves both nonzero drainage columns 5 and 11, reconstructs every weighted entry from raw/normalizer/scale bits, and preserves full-versus-reduced objective and norm bits."
+      },
+      {
+        "id": "BVLS05-A02",
+        "receipt_sha256": "a5b3058286251698bf16db872f9c4d8a37bffc09ab589efa69899d46dcdce322",
+        "stderr_sha256": "8800931a8323a2df091cdecbabb39f7f4ba8f5b29cb271cc15d705a486563689",
+        "assertion_result": "Actual six-role provenance is [upper/lower sun, shade, stem] with exact structural-area and wet-fraction bits. Each held decision equals the complete formula/zero-column/current-free certificate; the structural-zero upper-sun role is excluded."
+      },
+      {
+        "id": "BVLS05-A03",
+        "receipt_sha256": "cad116a2f40f48c67cd5ac44e447a76bbc565fabb3135316131bc26ecfe6f192",
+        "stderr_sha256": "eadb41106979f6473a708ef9b24ad1b9d21be09cf10323d6b53fee55705325a4",
+        "assertion_result": "Both M=Cliq/2 and M=next_down(Cliq) produce 0<fwet<1, empty holds and exact 6 role, 252 entry and 21 mask work; no near-full tolerance admission occurs."
+      },
+      {
+        "id": "BVLS05-A04",
+        "receipt_sha256": "0df7634e44c164a84e985b12a111ad5d43f965c8b91ab5871e0ed545da413907",
+        "stderr_sha256": "7ee0a3cb9b2cfda6b9fe12e9cdabd5b0d116530759a69e027fc4fab4b37d119d",
+        "assertion_result": "The actual structural-zero upper-sun anchor retains its ordinary identity row, is not BVLS05-held, and completes the expected empty-certificate work."
+      },
+      {
+        "id": "BVLS05-L01",
+        "receipt_sha256": "54e0207c59228b79cd8801a8c89012f2257a708c6d440066dd1909d681709f42",
+        "stderr_sha256": "d57de0d0ca6b172243235265165cc01f61a48d48b73ec83f0727769fbf2bb8ec",
+        "assertion_result": "The prescribed selected direction yields upper Mixed/Drainage and lower Ice/Drainage. Initial natural, selected and dry new-base assemblies are fresh; identical-J retry preserves raw-J/base bits and held mask, performs zero role/column rescans and exactly one 21-mask join. Counts are two natural assemblies including new base, one selected assembly and three raw-J assemblies; input/trial remain unchanged."
+      },
+      {
+        "id": "BVLS05-L02",
+        "receipt_sha256": "ba528eb380d12f5436319d40d52f6309d76193ed739b9fa9c77b79f0b59e7a13",
+        "stderr_sha256": "65d5a74511f1a5fad9d2d58ed1abb3dd50fcccd015ed7de5f791fe2000ee88c9",
+        "assertion_result": "Full-to-half-capacity uses two actual evaluator entries and one domain check, produces finite 21 residuals and positive finite normalizers, remains a nonroot without an acceptance claim, recomputes 0<fwet<1, changes residual bits and admits no inherited hold on the fresh dry assembly."
+      },
+      {
+        "id": "BVLS05-L03",
+        "receipt_sha256": "e84741cbd3c5af44f1e643c4306943d54b2e933f4b1420c0987a5a9aebb4a1cd",
+        "stderr_sha256": "00d13ebdf05504fe9e60deb2780baccd5510fceafaedfdc49ebf7d7ff30075cf",
+        "assertion_result": "Half-to-full-capacity uses the same actual evaluator/domain/full-residual path, recomputes exact fwet=1 without a root-acceptance claim, starts from an empty hold and certifies exactly columns 1 and 2 only on the subsequent fresh full assembly."
+      }
+    ]
+  },
+  "g4_binding": {
+    "plan": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-g4-plan02.json",
+    "plan_sha256": "11627fba8d6f11f2015caf0abc974cad71954d03eaa49194d9dfac6987e8575f",
+    "selector": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+    "profile": "release",
+    "planned_executions": 1,
+    "timeout_seconds": 180,
+    "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+    "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+    "protected_source": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-g4-protected-source08.json",
+      "sha256": "95aeccc9d4652b28c33f802b3787070ea95a58750e1ad2e1a9dc3ab8ea8d8867",
+      "result": "The retained input, trial, forcing/topology helpers, canonical capacity preparation, endpoint test and required assertions are byte-identical to original G4."
+    },
+    "required_outcome": "The unchanged assertion requires canonical upper M=Cliq,H=+0,D=+0; one natural and one selected assembly; one predictor and one final selected-side probe; finite nonnegative drainage directions; selected M/H/D/capacity/duration identity; and unchanged input/trial. Passing reduced Stage1 alone is insufficient.",
+    "observations": "G4_PROPOSAL_COST retains separate initialization and transition timing. SHIFTED_FACE_ATTRIBUTION_CAPTURE records complete reached lifecycle plus pre/post existing runtime owner counters; budget null is explicitly unscoped. Overlapping ledgers are not summed.",
+    "negative_stop": "A source-conforming numerical or physical negative ends the fixed effort. Preserve first result; no retry, seed/side/stencil/rank/tolerance/predicate change or assertion weakening."
+  },
+  "residual_risk_and_missing_tests": [
+    "The sole G4 endpoint has not executed under BVLS05; readiness is not a prediction of success.",
+    "G2, G3, G6, native harness and target slots remain gated exactly as stated in plan02. No production or method acceptance follows from G4 readiness."
+  ],
+  "disposition": {
+    "finite_seven_actual_evidence": "PASS",
+    "sole_g4_correctness_readiness": "READY",
+    "complementary_qa_readiness": "ORCHESTRATOR_PRE_DISPATCH_CONDITION",
+    "g4_execution_limit": "ONE_EXACT_RELEASE_EXECUTION_WITH_180_SECOND_BOUND",
+    "production_activation_release": false,
+    "status": "NO_CORRECTNESS_BLOCKER_TO_SOLE_G4_DISPATCH"
+  }
+}

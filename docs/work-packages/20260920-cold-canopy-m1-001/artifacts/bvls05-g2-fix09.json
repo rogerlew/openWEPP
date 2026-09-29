@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Static: exact observation-only source delta; no physical execution",
+  "before_tree": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+  "after_tree": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+  "changed_files": [
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+  ],
+  "patch": "bvls05-g2-fix09-from08.patch",
+  "patch_sha256": "0763c478d31b6a5da8464e68b63d920f57d3e1323f257e729fb18f184de958ab",
+  "intent": "Correct independently proven G2 owner-counter join; retain predictor/direct entry distinction, all original assertions and inputs, with additive owner assertions at both existing wrapper consumers. No evaluator/controller/numerical body or feature/manifest change.",
+  "validation": "Affected final-source focused debug/release120, analytic103, inventories, format/default, strict three-profile source-bearing inherited-lint reconciliation; one corrected exact G2 after dual readiness; remaining G6 separately gated by its reviewed result. No G4/finite7 replay.",
+  "preserved_source": "bvls05-terminal08-recovery.json",
+  "preserved_binary": "bvls05-g4-binary-preservation08.json",
+  "prior_failure": "bvls05-conditional-g2-01.json"
+}

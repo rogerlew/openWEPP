@@ -1,0 +1,100 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0284]: type annotations needed for `[f64; _]`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1791:9
+     |
+1791 |       let step = std::array::from_fn(|column| {
+     |  _________^^^^___-
+1792 | |         (!inspection.held[column])
+1793 | |             .then_some((column + 1) as f64)
+1794 | |             .unwrap_or(0.0)
+1795 | |     });
+     | |______- type must be known at this point
+     |
+note: required by a const generic parameter in `std::array::from_fn`
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/array/mod.rs:109:0
+help: consider giving `step` an explicit type, where the value of const parameter `N` is specified
+     |
+1791 |     let step: [_; N] = std::array::from_fn(|column| {
+     |             ++++++++
+
+error[E0284]: type annotations needed for `[f64; _]`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1791:9
+     |
+1791 |     let step = std::array::from_fn(|column| {
+     |         ^^^^
+...
+1804 |                     .zip(&step)
+     |                      --- type must be known at this point
+     |
+     = note: required for `&[f64; _]` to implement `IntoIterator`
+help: consider giving `step` an explicit type, where the value of const parameter `N` is specified
+     |
+1791 |     let step: [_; N] = std::array::from_fn(|column| {
+     |             ++++++++
+
+error[E0284]: type annotations needed for `[f64; _]`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1791:9
+     |
+1791 |     let step = std::array::from_fn(|column| {
+     |         ^^^^
+...
+1804 |                     .zip(&step)
+     |                      --- type must be known at this point
+     |
+     = note: required for `&[f64; _]` to implement `IntoIterator`
+note: required by a bound in `std::iter::Iterator::zip`
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/iter/traits/iterator.rs:626:4
+help: consider giving `step` an explicit type, where the value of const parameter `N` is specified
+     |
+1791 |     let step: [_; N] = std::array::from_fn(|column| {
+     |             ++++++++
+
+error[E0284]: type annotations needed for `[f64; _]`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1791:9
+     |
+1791 |     let step = std::array::from_fn(|column| {
+     |         ^^^^
+...
+1818 |                     .map(|&column| row[column] * step[column])
+     |                                                  ------------ type must be known at this point
+     |
+     = note: required for `[f64; _]` to implement `std::ops::Index<usize>`
+help: consider giving `step` an explicit type, where the value of const parameter `N` is specified
+     |
+1791 |     let step: [_; N] = std::array::from_fn(|column| {
+     |             ++++++++
+
+error[E0284]: type annotations needed for `[f64; _]`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1791:9
+     |
+1791 |     let step = std::array::from_fn(|column| {
+     |         ^^^^
+...
+1829 |         .map(|&column| step[column] * step[column])
+     |                        ------------ type must be known at this point
+     |
+     = note: required for `[f64; _]` to implement `std::ops::Index<usize>`
+help: consider giving `step` an explicit type, where the value of const parameter `N` is specified
+     |
+1791 |     let step: [_; N] = std::array::from_fn(|column| {
+     |             ++++++++
+
+error[E0284]: type annotations needed for `[f64; _]`
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1791:9
+     |
+1791 |     let step = std::array::from_fn(|column| {
+     |         ^^^^
+...
+1829 |         .map(|&column| step[column] * step[column])
+     |                                       ------------ type must be known at this point
+     |
+     = note: required for `[f64; _]` to implement `std::ops::Index<usize>`
+help: consider giving `step` an explicit type, where the value of const parameter `N` is specified
+     |
+1791 |     let step: [_; N] = std::array::from_fn(|column| {
+     |             ++++++++
+
+For more information about this error, try `rustc --explain E0284`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 6 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-controller-stage,m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

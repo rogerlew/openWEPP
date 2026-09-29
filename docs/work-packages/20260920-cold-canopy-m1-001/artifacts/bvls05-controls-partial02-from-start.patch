@@ -1,0 +1,610 @@
+--- a/crates/openwepp-land-surface-energy/src/lib.rs
++++ b/crates/openwepp-land-surface-energy/src/lib.rs
+@@ -204,6 +204,18 @@
+     // substitute a requested outcome or alter any frozen cap.
+     pub(crate) completed_jacobi_sweeps: u8,
+     pub(crate) completed_face_pivots: u8,
++    /// BVLS-05 control-only provenance.  The unchanged body does not consume it.
++    pub(crate) bvls05_provenance: Option<M1TrustRegionBvls05TestProvenance>,
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug)]
++pub(crate) struct M1TrustRegionBvls05TestProvenance {
++    pub(crate) role_columns: [usize; 6],
++    pub(crate) structural_areas: [f64; 6],
++    pub(crate) wet_fractions: [f64; 6],
++    pub(crate) initial_free: [bool; 6],
++    pub(crate) physical_current_free: [bool; 6],
+ }
+ 
+ #[cfg(test)]
+@@ -443,6 +455,18 @@
+     pub(crate) whole_kkt_guard_events: u64,
+     pub(crate) upward_enclosure_operations: u64,
+     pub(crate) upward_enclosure_guard_events: u64,
++    /// BVLS-05 semantic role joins attempted/completed by test-only controls.
++    pub(crate) bvls05_role_joins_attempted: u32,
++    pub(crate) bvls05_role_joins_completed: u32,
++    /// BVLS-05 raw/weighted column-entry tests attempted/completed.
++    pub(crate) bvls05_column_entry_tests_attempted: u32,
++    pub(crate) bvls05_column_entry_tests_completed: u32,
++    /// BVLS-05 held-mask joins attempted/completed.
++    pub(crate) bvls05_mask_joins_attempted: u32,
++    pub(crate) bvls05_mask_joins_completed: u32,
++    /// BVLS-05 held base-coordinate copies attempted/completed.
++    pub(crate) bvls05_held_base_copies_attempted: u32,
++    pub(crate) bvls05_held_base_copies_completed: u32,
+ }
+ 
+ #[cfg(test)]
+@@ -469,6 +493,14 @@
+         self.whole_kkt_guard_events += other.whole_kkt_guard_events;
+         self.upward_enclosure_operations += other.upward_enclosure_operations;
+         self.upward_enclosure_guard_events += other.upward_enclosure_guard_events;
++        self.bvls05_role_joins_attempted += other.bvls05_role_joins_attempted;
++        self.bvls05_role_joins_completed += other.bvls05_role_joins_completed;
++        self.bvls05_column_entry_tests_attempted += other.bvls05_column_entry_tests_attempted;
++        self.bvls05_column_entry_tests_completed += other.bvls05_column_entry_tests_completed;
++        self.bvls05_mask_joins_attempted += other.bvls05_mask_joins_attempted;
++        self.bvls05_mask_joins_completed += other.bvls05_mask_joins_completed;
++        self.bvls05_held_base_copies_attempted += other.bvls05_held_base_copies_attempted;
++        self.bvls05_held_base_copies_completed += other.bvls05_held_base_copies_completed;
+     }
+ }
+ 
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -262,7 +262,8 @@
+     };
+     use crate::{
+         M1TrustRegionCorrectionPosition, M1TrustRegionRefinementGuardStage,
+-        M1TrustRegionRefinementReason,
++        M1TrustRegionRefinementReason, M1TrustRegionRefusalKind, M1TrustRegionSubproblemInput,
++        M1TrustRegionTestWorkState,
+     };
+     use serde_json::Value;
+ 
+@@ -4070,6 +4071,14 @@
+         whole_kkt_guard_events: state.refinement_work.whole_kkt_guard_events,
+         upward_enclosure_operations: state.refinement_work.upward_enclosure_operations,
+         upward_enclosure_guard_events: state.refinement_work.upward_enclosure_guard_events,
++        bvls05_role_joins_attempted: 0,
++        bvls05_role_joins_completed: 0,
++        bvls05_column_entry_tests_attempted: 0,
++        bvls05_column_entry_tests_completed: 0,
++        bvls05_mask_joins_attempted: 0,
++        bvls05_mask_joins_completed: 0,
++        bvls05_held_base_copies_attempted: 0,
++        bvls05_held_base_copies_completed: 0,
+     }
+ }
+ 
+@@ -4850,6 +4859,103 @@
+         }
+     }
+     columns
++}
++
++// BVLS-05 control scaffolding.  This test-only certificate observes already
++// assembled operands; it is deliberately not called by the numerical body.
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++enum Bvls05Role {
++    SunLeaf,
++    ShadeLeaf,
++    DryStem,
++    Other,
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy, Debug)]
++struct Bvls05RoleInput {
++    role: Bvls05Role,
++    column: usize,
++    structural_area: f64,
++    wet_fraction: f64,
++    initial_free: bool,
++    physical_current_free: bool,
++}
++
++#[cfg(test)]
++#[derive(Clone, Debug, Default)]
++struct Bvls05CertificateObservation {
++    held: [bool; 21],
++    work: super::M1TrustRegionWorkObservation,
++}
++
++#[cfg(test)]
++fn bvls05_certificate_for_test(
++    roles: &[Bvls05RoleInput],
++    raw: &[[f64; 21]; 21],
++    weighted: &[Vec<f64>],
++) -> Bvls05CertificateObservation {
++    let mut observed = Bvls05CertificateObservation::default();
++    for input in roles {
++        observed.work.bvls05_role_joins_attempted += 1;
++        observed.work.bvls05_role_joins_completed += 1;
++        let dry_temperature = matches!(
++            input.role,
++            Bvls05Role::SunLeaf | Bvls05Role::ShadeLeaf | Bvls05Role::DryStem
++        );
++        let effective_dry_area = input.structural_area * (1.0 - input.wet_fraction);
++        let eligible_prefix = dry_temperature
++            && input.structural_area.is_finite()
++            && input.structural_area > 0.0
++            && input.wet_fraction.to_bits() == 1.0_f64.to_bits()
++            && effective_dry_area == 0.0
++            && input.initial_free
++            && input.physical_current_free;
++        if !eligible_prefix || input.column >= 21 || weighted.len() != 21 {
++            continue;
++        }
++        let mut zero = true;
++        for row in 0..21 {
++            observed.work.bvls05_column_entry_tests_attempted += 2;
++            let Some(weighted_entry) = weighted
++                .get(row)
++                .and_then(|values| values.get(input.column))
++            else {
++                zero = false;
++                break;
++            };
++            if raw[row][input.column] != 0.0 || *weighted_entry != 0.0 {
++                zero = false;
++            }
++            observed.work.bvls05_column_entry_tests_completed += 2;
++        }
++        observed.work.bvls05_mask_joins_attempted += 1;
++        if zero {
++            observed.held[input.column] = true;
++            observed.work.bvls05_mask_joins_completed += 1;
++        }
++    }
++    observed
++}
++
++#[cfg(test)]
++fn bvls05_scatter_held_for_test(
++    base: [f64; 21],
++    held: [bool; 21],
++    work: &mut super::M1TrustRegionWorkObservation,
++) -> ([f64; 21], [f64; 21]) {
++    let mut step = [0.0; 21];
++    let mut candidate = base;
++    for coordinate in 0..21 {
++        if held[coordinate] {
++            work.bvls05_held_base_copies_attempted += 1;
++            step[coordinate] = 0.0;
++            candidate[coordinate] = base[coordinate];
++            work.bvls05_held_base_copies_completed += 1;
++        }
++    }
++    (step, candidate)
+ }
+ 
+ struct FaceSolution {
+@@ -11580,4 +11686,422 @@
+             );
+         }
+     }
+-}
++
++    fn bvls05_captured_g4_input() -> (M1TrustRegionSubproblemInput, Vec<Vec<f64>>) {
++        const G4_CAPTURE: &str = include_str!(concat!(
++            env!("CARGO_MANIFEST_DIR"),
++            "/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/g4-rank-capture.json"
++        ));
++        let capture: serde_json::Value =
++            serde_json::from_str(G4_CAPTURE).expect("preserved G4 capture");
++        let face = &capture["face_capture"];
++        let core = capture["base_core_operands"]
++            .as_array()
++            .expect("captured core operands");
++        let bit = |value: &serde_json::Value| {
++            super::refinement_capture_bit(value).expect("captured binary64")
++        };
++        let upper_areas = core[0]["structural_areas_m2_m2_tile"]
++            .as_array()
++            .expect("upper areas");
++        let lower_areas = core[1]["structural_areas_m2_m2_tile"]
++            .as_array()
++            .expect("lower areas");
++        let upper_wet = bit(&core[0]["wet_fraction"]);
++        let lower_wet = bit(&core[1]["wet_fraction"]);
++        let provenance = crate::M1TrustRegionBvls05TestProvenance {
++            role_columns: [0, 1, 2, 6, 7, 8],
++            structural_areas: [
++                bit(&upper_areas[0]),
++                bit(&upper_areas[1]),
++                bit(&upper_areas[2]),
++                bit(&lower_areas[0]),
++                bit(&lower_areas[1]),
++                bit(&lower_areas[2]),
++            ],
++            wet_fractions: [
++                upper_wet, upper_wet, upper_wet, lower_wet, lower_wet, lower_wet,
++            ],
++            initial_free: [true; 6],
++            physical_current_free: [true; 6],
++        };
++        let weighted = face["weighted_matrix"]
++            .as_array()
++            .expect("captured weighted rows")
++            .iter()
++            .map(|row| {
++                super::refinement_capture_vector(row)
++                    .expect("captured weighted row")
++                    .to_vec()
++            })
++            .collect::<Vec<_>>();
++        (
++            M1TrustRegionSubproblemInput {
++                raw_residual: super::refinement_capture_vector(&face["raw_residual"])
++                    .expect("captured raw residual"),
++                raw_jacobian: super::refinement_capture_matrix(&face["raw_jacobian"])
++                    .expect("captured raw Jacobian"),
++                normalizers: super::refinement_capture_vector(&face["normalizers"])
++                    .expect("captured normalizers"),
++                scales: super::refinement_capture_vector(&face["scales"]).expect("captured scales"),
++                lower: super::refinement_capture_vector(&face["lower"]).expect("captured lower"),
++                upper: super::refinement_capture_vector(&face["upper"]).expect("captured upper"),
++                initial_radius: super::refinement_capture_bit(&face["initial_radius"])
++                    .expect("captured radius"),
++                base: super::refinement_capture_vector(&face["base"]).expect("captured base"),
++                test_work: M1TrustRegionTestWorkState {
++                    bvls05_provenance: Some(provenance),
++                    ..M1TrustRegionTestWorkState::default()
++                },
++            },
++            weighted,
++        )
++    }
++
++    fn bvls05_diagonal_input() -> M1TrustRegionSubproblemInput {
++        let mut raw_jacobian = [[0.0; 21]; 21];
++        for coordinate in 0..21 {
++            if coordinate != 1 && coordinate != 2 {
++                raw_jacobian[coordinate][coordinate] = 1.0;
++            }
++        }
++        M1TrustRegionSubproblemInput {
++            raw_residual: [0.0; 21],
++            raw_jacobian,
++            normalizers: [1.0; 21],
++            scales: [1.0; 21],
++            lower: [-2.0; 21],
++            upper: [2.0; 21],
++            initial_radius: 8.0,
++            base: [0.0; 21],
++            test_work: M1TrustRegionTestWorkState {
++                bvls05_provenance: Some(bvls05_provenance()),
++                ..M1TrustRegionTestWorkState::default()
++            },
++        }
++    }
++
++    fn bvls05_provenance() -> crate::M1TrustRegionBvls05TestProvenance {
++        crate::M1TrustRegionBvls05TestProvenance {
++            role_columns: [0, 1, 2, 3, 4, 5],
++            structural_areas: [0.0, 1.0, 1.0, 1.0, 1.0, 1.0],
++            wet_fractions: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5],
++            initial_free: [true; 6],
++            physical_current_free: [true; 6],
++        }
++    }
++
++    fn bvls05_roles(input: &M1TrustRegionSubproblemInput) -> [super::Bvls05RoleInput; 6] {
++        let provenance = input
++            .test_work
++            .bvls05_provenance
++            .expect("BVLS05 test provenance");
++        [
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::SunLeaf,
++                column: provenance.role_columns[0],
++                structural_area: provenance.structural_areas[0],
++                wet_fraction: provenance.wet_fractions[0],
++                initial_free: provenance.initial_free[0],
++                physical_current_free: provenance.physical_current_free[0],
++            },
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::ShadeLeaf,
++                column: provenance.role_columns[1],
++                structural_area: provenance.structural_areas[1],
++                wet_fraction: provenance.wet_fractions[1],
++                initial_free: provenance.initial_free[1],
++                physical_current_free: provenance.physical_current_free[1],
++            },
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::DryStem,
++                column: provenance.role_columns[2],
++                structural_area: provenance.structural_areas[2],
++                wet_fraction: provenance.wet_fractions[2],
++                initial_free: provenance.initial_free[2],
++                physical_current_free: provenance.physical_current_free[2],
++            },
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::SunLeaf,
++                column: provenance.role_columns[3],
++                structural_area: provenance.structural_areas[3],
++                wet_fraction: provenance.wet_fractions[3],
++                initial_free: provenance.initial_free[3],
++                physical_current_free: provenance.physical_current_free[3],
++            },
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::ShadeLeaf,
++                column: provenance.role_columns[4],
++                structural_area: provenance.structural_areas[4],
++                wet_fraction: provenance.wet_fractions[4],
++                initial_free: provenance.initial_free[4],
++                physical_current_free: provenance.physical_current_free[4],
++            },
++            super::Bvls05RoleInput {
++                role: super::Bvls05Role::DryStem,
++                column: provenance.role_columns[5],
++                structural_area: provenance.structural_areas[5],
++                wet_fraction: provenance.wet_fractions[5],
++                initial_free: provenance.initial_free[5],
++                physical_current_free: provenance.physical_current_free[5],
++            },
++        ]
++    }
++
++    fn bvls05_weighted(raw: &[[f64; 21]; 21]) -> Vec<Vec<f64>> {
++        raw.iter().map(|row| row.to_vec()).collect()
++    }
++
++    fn bvls05_full_h(raw: &[[f64; 21]; 21], f: [f64; 21], p: [f64; 21], lambda: f64) -> [f64; 21] {
++        let mut residual = f;
++        for row in 0..21 {
++            for column in 0..21 {
++                residual[row] += raw[row][column] * p[column];
++            }
++        }
++        let mut h = [0.0; 21];
++        for column in 0..21 {
++            for row in 0..21 {
++                h[column] += raw[row][column] * residual[row];
++            }
++            h[column] += lambda * p[column];
++        }
++        h
++    }
++
++    #[cfg(feature = "m1-trust-region-physical-stage")]
++    #[test]
++    fn m1_trust_region_bvls05_expected_red_g4_full_wet_hold() {
++        let (input, weighted) = bvls05_captured_g4_input();
++        let certificate = super::bvls05_certificate_for_test(
++            &bvls05_roles(&input),
++            &input.raw_jacobian,
++            &weighted,
++        );
++        assert_eq!(certificate.held[1..3], [true, true]);
++        assert!(!certificate.held[19]);
++        let scope = super::m1_face_pivot_capture_begin_for_test();
++        let refusal = super::solve_subproblem(&input)
++            .expect_err("expected-red: unchanged body reaches its first-face rank refusal");
++        let capture = super::m1_face_pivot_capture_take_for_test().expect("first-face capture");
++        drop(scope);
++        assert_eq!(refusal.kind, M1TrustRegionRefusalKind::RankDeficient);
++        assert_eq!(capture.raw_jacobian, input.raw_jacobian);
++        assert_eq!(capture.weighted_residual.len(), 21, "full f is retained");
++        assert_eq!(capture.weighted_matrix.len(), 21, "full A is retained");
++        let captured = capture.refusal.expect("captured rank refusal");
++        assert_eq!(
++            captured.free_ids.len(),
++            19,
++            "expected-red: unchanged first face still has 21 free IDs"
++        );
++        assert_eq!(captured.free_ids.last(), Some(&20));
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_column_guard_red() {
++        let mut input = bvls05_diagonal_input();
++        input.raw_jacobian[0][1] = 1.0;
++        let mut roles = bvls05_roles(&input);
++        roles[3].role = super::Bvls05Role::Other;
++        let certificate = super::bvls05_certificate_for_test(
++            &roles,
++            &input.raw_jacobian,
++            &bvls05_weighted(&input.raw_jacobian),
++        );
++        assert!(super::prepare_subproblem(&input).is_ok());
++        assert!(!certificate.held[1]);
++        assert!(certificate.held[2]);
++        let mut weighted = bvls05_weighted(&input.raw_jacobian);
++        weighted[0][2] = 1.0;
++        let weighted_rejection = super::bvls05_certificate_for_test(
++            &bvls05_roles(&input),
++            &input.raw_jacobian,
++            &weighted,
++        );
++        assert!(!weighted_rejection.held[2]);
++        assert!(certificate.work.bvls05_role_joins_attempted > 0);
++        let mut nonfinite_normalizer = input.clone();
++        nonfinite_normalizer.normalizers[0] = f64::NAN;
++        assert_eq!(
++            super::prepare_subproblem(&nonfinite_normalizer)
++                .err()
++                .expect("nonfinite normalizer retains preparation owner")
++                .kind,
++            M1TrustRegionRefusalKind::SvdNonFinite
++        );
++        let mut nonfinite_scale = input;
++        nonfinite_scale.scales[0] = f64::NAN;
++        assert_eq!(
++            super::prepare_subproblem(&nonfinite_scale)
++                .err()
++                .expect("nonfinite scale retains preparation owner")
++                .kind,
++            M1TrustRegionRefusalKind::SvdNonFinite
++        );
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_fixed_bound_active_precedence_red() {
++        let input = bvls05_diagonal_input();
++        let weighted = bvls05_weighted(&input.raw_jacobian);
++        let mut roles = bvls05_roles(&input);
++        roles[1].initial_free = false;
++        roles[2].physical_current_free = false;
++        let certificate =
++            super::bvls05_certificate_for_test(&roles, &input.raw_jacobian, &weighted);
++        assert!(!certificate.held[1]);
++        assert!(!certificate.held[2]);
++        let mut bound_free = bvls05_roles(&input);
++        bound_free[1].initial_free = true;
++        bound_free[1].physical_current_free = true;
++        let certificate =
++            super::bvls05_certificate_for_test(&bound_free, &input.raw_jacobian, &weighted);
++        assert!(certificate.held[1]);
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_remaining_rank_refusal_red() {
++        let retained = [
++            0usize, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
++        ];
++        let mut reduced = vec![vec![0.0_f64; 19]; 21];
++        for (slot, original) in retained.iter().enumerate() {
++            reduced[*original][slot] = 1.0;
++        }
++        for row in 0..21 {
++            reduced[row][1] = reduced[row][0];
++        }
++        let mut sweeps = 0;
++        assert_eq!(
++            super::jacobi_factor(reduced, &retained, 0, &mut sweeps).err(),
++            Some("rank deficient")
++        );
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_nonempty_hold_zero_lambda_refinement() {
++        let mut input = bvls05_diagonal_input();
++        for coordinate in 0..21 {
++            if coordinate != 1 && coordinate != 2 {
++                input.raw_residual[coordinate] = -1.0;
++            }
++        }
++        let mut expected_p = [0.0_f64; 21];
++        for coordinate in 0..21 {
++            if coordinate != 1 && coordinate != 2 {
++                expected_p[coordinate] = 1.0;
++            }
++        }
++        assert_eq!(expected_p[1].to_bits(), 0.0f64.to_bits());
++        assert_eq!(expected_p[2].to_bits(), 0.0f64.to_bits());
++        assert_eq!(expected_p.iter().filter(|value| **value == 1.0).count(), 19);
++        assert_eq!(
++            bvls05_full_h(&input.raw_jacobian, input.raw_residual, expected_p, 0.0),
++            [0.0; 21]
++        );
++        let result = super::solve_subproblem(&input)
++            .expect("expected-red: zero-lambda held refinement requires body consumption");
++        assert_eq!(result.scaled_step, expected_p);
++        assert_eq!(result.lambda.to_bits(), 0.0f64.to_bits());
++        assert_eq!(result.final_residual, [0.0; 21]);
++        assert_eq!(result.final_h, [0.0; 21]);
++        assert_eq!(
++            result
++                .optimality_observation
++                .expect("full KKT")
++                .coordinates
++                .len(),
++            21
++        );
++        assert_eq!(result.entered_svd_factorizations, 1);
++        assert_eq!(result.work.bvls05_role_joins_attempted, 6);
++        assert_eq!(result.work.bvls05_column_entry_tests_attempted, 84);
++        assert_eq!(result.work.bvls05_held_base_copies_completed, 2);
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_nonempty_hold_positive_lambda_refinement() {
++        let mut input = bvls05_diagonal_input();
++        input.raw_residual[0] = -1.0;
++        input.initial_radius = 0.5;
++        let mut expected_p = [0.0_f64; 21];
++        expected_p[0] = 0.5;
++        assert_eq!(expected_p[1].to_bits(), 0.0f64.to_bits());
++        assert_eq!(expected_p[2].to_bits(), 0.0f64.to_bits());
++        assert_eq!(expected_p[0].to_bits(), 0.5f64.to_bits());
++        assert_eq!(
++            bvls05_full_h(&input.raw_jacobian, input.raw_residual, expected_p, 1.0),
++            [0.0; 21]
++        );
++        let result = super::solve_subproblem(&input)
++            .expect("expected-red: positive-lambda held refinement requires body consumption");
++        assert_eq!(result.scaled_step, expected_p);
++        assert_eq!(result.lambda.to_bits(), 1.0f64.to_bits());
++        assert_eq!(
++            result.final_residual,
++            [
++                -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
++                0.0, 0.0, 0.0, 0.0, 0.0
++            ]
++        );
++        assert_eq!(result.final_h, [0.0; 21]);
++        assert_eq!(
++            result
++                .optimality_observation
++                .expect("full KKT")
++                .coordinates
++                .len(),
++            21
++        );
++        assert_eq!(result.entered_svd_factorizations, 1);
++        assert_eq!(result.work.bvls05_role_joins_attempted, 6);
++        assert_eq!(result.work.bvls05_column_entry_tests_attempted, 84);
++        assert_eq!(result.work.bvls05_held_base_copies_completed, 2);
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_default_empty_regression() {
++        let mut input = bvls05_diagonal_input();
++        input.test_work.bvls05_provenance = None;
++        input.raw_jacobian[1][1] = 1.0;
++        input.raw_jacobian[2][2] = 1.0;
++        let certificate = super::bvls05_certificate_for_test(
++            &[],
++            &input.raw_jacobian,
++            &bvls05_weighted(&input.raw_jacobian),
++        );
++        assert_eq!(certificate.held, [false; 21]);
++        assert_eq!(
++            certificate.work,
++            crate::M1TrustRegionWorkObservation::default()
++        );
++        let result =
++            super::solve_subproblem(&input).expect("default-empty old route remains solvable");
++        assert_eq!(result.scaled_step, [0.0; 21]);
++    }
++
++    #[test]
++    fn m1_trust_region_bvls05_accounting_caps() {
++        let input = bvls05_diagonal_input();
++        let certificate = super::bvls05_certificate_for_test(
++            &bvls05_roles(&input),
++            &input.raw_jacobian,
++            &bvls05_weighted(&input.raw_jacobian),
++        );
++        assert_eq!(certificate.work.bvls05_role_joins_attempted, 6);
++        assert_eq!(certificate.work.bvls05_column_entry_tests_attempted, 84);
++        assert!(certificate.work.bvls05_mask_joins_attempted <= 6);
++        let mut base = input.base;
++        base[1] = f64::from_bits(0x4009_21fb_5444_2d18);
++        base[2] = f64::from_bits(0xc005_bf0a_8b14_5769);
++        let mut work = certificate.work.clone();
++        let (step, candidate) =
++            super::bvls05_scatter_held_for_test(base, certificate.held, &mut work);
++        assert_eq!(step[1].to_bits(), 0.0f64.to_bits());
++        assert_eq!(step[2].to_bits(), 0.0f64.to_bits());
++        assert_eq!(candidate[1].to_bits(), base[1].to_bits());
++        assert_eq!(candidate[2].to_bits(), base[2].to_bits());
++        assert_eq!(work.bvls05_held_base_copies_completed, 2);
++    }
++}

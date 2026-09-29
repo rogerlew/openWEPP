@@ -1,0 +1,27 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-policy.v4",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static bounded rebind review only. QA ran no numerical, Rust, or physical command.",
+  "reviewed_custody": {
+    "prior_qa_policy03_sha256": "ff45071f0d4a9f31eda44bfdd8a755f6a882e8dab745ce5aaec63f110f4859ee",
+    "plan04": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan04.json",
+    "plan04_sha256": "3c4c5e1647377e8e99d1de5c1080d553c8c734b67fc139ca3c4278cf3bff2654",
+    "numerical_methods_sha256": "dd1e7c3b7b09a3a08c4134405d94a12ae689d9a6ab351efd2a4ba520d1b232e1",
+    "starting_source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6"
+  },
+  "findings": [
+    {
+      "severity": "high-blocker",
+      "location": "bvls05-control-plan04.json: analytic_refinement_fixture.matrix and analytic_refinement_fixture.factor",
+      "title": "The plan defines two incompatible B representations for the same refinement fixture.",
+      "evidence": "matrix correctly defines full raw A as 21x21 and B as embedded rectangular 21x19. The adjacent factor field still says `B=I19`. Without an explicit distinct reduced-coordinate symbol, the fixture is ambiguous about the candidate factor's row cardinality and defeats the intended 21-row/full-KKT versus 19-free-factor discrimination.",
+      "required_fix": "Rename the reduced identity explicitly (for example `B_R=I19`) and state that the candidate's B is the embedded 21x19 matrix, or replace the factor text with the unambiguous rectangular representation. Rebind this QA review after that text-only correction."
+    }
+  ],
+  "verified_narrow_changes": [
+    "plan04 otherwise makes held columns and held p values canonical +0 only, while retaining produced retained-zero bits",
+    "L01 now freezes a full 21-coordinate direction with only upper H=-1 and specifies upper Mixed/Drainage plus lower Ice/Drainage",
+    "numerical authority only advances the control-plan pointer from plan03 to plan04"
+  ],
+  "disposition": "BLOCKED_PENDING_FIXTURE_NAMING_CORRECTION. No controls-before-body release follows from this artifact."
+}

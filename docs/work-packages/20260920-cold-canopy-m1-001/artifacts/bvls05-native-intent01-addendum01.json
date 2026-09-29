@@ -1,0 +1,28 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05-native-intent-addendum.v1",
+  "evidence_class": "Static dependency trace only; no edit, compilation, or numerical execution",
+  "purpose": "Narrow the native facade compilation question to symbols reached by one physical adapter controller run, without claiming a full textual-gate count is minimal.",
+  "required_symbol_seams": [
+    {"path":"crates/openwepp-land-surface-energy/src/lib.rs","symbol":"m1_trust_region_controller and m1_trust_region_controller_interface module declarations","reason":"currently omitted in a dependency because their gate requires cfg(test)."},
+    {"path":"crates/openwepp-land-surface-energy/src/lib.rs","symbol":"M1TrustRegionSubproblemInput, M1TrustRegionSubproblemObservation, M1TrustRegionSubproblemRefusal, M1TrustRegionWorkObservation","reason":"controller solve_proposal transports these private types and they are test-gated."},
+    {"path":"crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs","symbol":"M1PhysicalTrustRegionAdapter and M1PhysicalTrustRegionPayload","reason":"the facade must instantiate the actual adapter from the already-built input/trial."},
+    {"path":"crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs","symbol":"impl M1TrustRegionControllerEvaluator for M1PhysicalTrustRegionAdapter","reason":"the same controller body reaches raw Jacobian, selected probe, hydraulics, materialization, and provenance through this implementation."},
+    {"path":"crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs","symbol":"m1_trust_region_physical_adapter_run_outcome_for_test and m1_trust_region_physical_adapter_finalize_run_for_test","reason":"the actual adapter run owns budget scope, controller-run capture, and accepted/refused outcome conversion."},
+    {"path":"crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs","symbol":"M1TrustRegionControllerEvaluator, M1TrustRegionControllerEvaluation, M1TrustRegionControllerRun","reason":"controller and adapter share these operands and run outcome types."},
+    {"path":"crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs","symbol":"FoundationState::initialize, FoundationState::solve_proposal, m1_trust_region_controller_run_for_test","reason":"this is the single controller path; solve_proposal calls Stage1 with the certificate cache."},
+    {"path":"crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs","symbol":"solve_subproblem_with_certificate and M1TrustRegionBvls05Certificate","reason":"actual Stage1 factor/refinement and certificate reuse are invoked from controller solve_proposal."},
+    {"path":"crates/openwepp-land-surface-energy/src/lib.rs and m1_coupled.rs","symbol":"M1PhysicalBudgetOperation, m1_physical_budget_scope_for_test, m1_physical_budget_observation_for_test","reason":"actual core/Jacobian/factor/materialization entry accounting is reached by the adapter run."},
+    {"path":"crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs","symbol":"RealM1ProviderCaller::prepare_fixed_sequence_support and ordinal diagnostic hook","reason":"the existing native caller owns authentic input construction and must arm, but not reconstruct, the native-input handoff."}
+  ],
+  "must_remain_excluded": [
+    "m1_coupled_tests.rs fixture constructors, JSON fixture parsing, and all test selectors; the facade consumes only the caller's input and inner canonical trial.",
+    "stage2 analytic Fixture and M1TrustRegionWitnessPath controls; these do not establish native physical trajectories.",
+    "G2 poison scopes, BVLS05 inspection-only helpers, selected-retry controls, diagnostic JSON serialization, and any target/caller publication path."
+  ],
+  "unknowns_requiring_compile_proof": [
+    "Which subset of cfg(test) support types can be moved behind a new harness feature without causing test-only capture helper or lint closure failures.",
+    "Whether budget/capture code can be represented by one compact facade observation without exposing raw adapter/controller types.",
+    "Whether the existing native ordinal input reaches any required G3 physical witness; no source evidence establishes full-no-update or first-valid replacement."
+  ],
+  "feature_constraint": "The harness feature must be distinct from orchestrator enabling m1-trust-region-physical-stage on its dependency, because that feature unification can enumerate/replay physical selectors. The intended dependency feature must expose only one hidden facade and preserve default dispatch."
+}

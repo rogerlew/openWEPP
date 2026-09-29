@@ -1,0 +1,33 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-lint-multiplicity.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static inspection of supplied raw lint stderr, source manifests, and comparison02. QA ran no lint or source command.",
+  "receipt": "bvls05-functional-all-lint03.json",
+  "comparison": "bvls05-functional-all-lint03-comparison02.json",
+  "source_tree_sha256": "99bf7161a5c5f381ed3d6e931e60f490af58ad64a5f4f287803da6dfde410abf",
+  "source_unchanged": true,
+  "finding": {
+    "severity": "accepted-inherited-multiplicity",
+    "lint": "clippy::large_types_passed_by_value",
+    "location": "crates/openwepp-land-surface-energy/src/solver_litter_open.rs:164:16",
+    "content": "V3OpenVapor (360 byte) passed by value",
+    "baseline_occurrences": 1,
+    "candidate_occurrences": 2,
+    "candidate_stderr_lines": [895, 1779],
+    "baseline_source_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac",
+    "candidate_source_sha256": "9a79463aeecc7cd81fc1489b0e99022c1262262afe07f696cb1e513276f73eac",
+    "basis": "The normalized diagnostic text is exactly the same as the accepted baseline finding, both candidate occurrences identify the same unchanged source location/content, and both baseline/candidate manifests bind solver_litter_open.rs to the same SHA256. The second candidate occurrence is therefore a target/multiplicity repeat of inherited lint debt, not a source-introduced diagnostic."
+  },
+  "classification_rules": {
+    "allowed": "A final source-bearing reconciliation may classify this one surplus occurrence as inherited duplicate only while preserving raw baseline=1 and candidate=2 multiplicities, raw stderr references, exact normalized content, and unchanged file hashes.",
+    "not_allowed": "Do not remove, suppress, deduplicate, or report this finding as a strict-lint pass. Do not apply this classification to any other surplus without the same occurrence/content/source proof."
+  },
+  "overall_lint_status": {
+    "baseline_count": 238,
+    "candidate_count": 263,
+    "matched_count": 238,
+    "surplus_count": 25,
+    "strict_lint_exit_code": 101,
+    "disposition": "Strict lint remains FAIL. This record classifies one multiplicity-only inherited surplus; the remaining 24 surplus diagnostics require their own final source-bearing reconciliation and repair/disposition."
+  }
+}

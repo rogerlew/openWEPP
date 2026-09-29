@@ -1,0 +1,13 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-g2-failure-addendum.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static correction to the source-path explanation; no command or calculation was run.",
+  "supersedes_explanation_only": "bvls05-qa-g2-failure01.json remains immutable and its defect classification/hold disposition remain in force.",
+  "corrected_source_proof": {
+    "predictor_delta": "m1_coupled.rs:3535-3547 snapshots the low-level selected_probe_entries counter, records its delta into observation.predictor_selected_probe_entries at 3544-3546, and only then maps assembled error at 3547. Therefore the actual predictor entry is retained even on this error path.",
+    "generic_adapter_counter": "m1_coupled.rs:3681 increments observation.selected_side_probe_entries before calling selected_side_probe, but this adapter method is not reached because the poison occurs inside the selected-Jacobian predictor probe.",
+    "capture_alignment": "The frozen failure capture correctly reports predictor/raw-Jacobian reached behavior while its generic selected_side_probe_entries field is zero. The failed G2 assertion conflated these distinct owner fields."
+  },
+  "narrow_corrected_scope": "Eligible repair is limited to the G2 wrapper/capture reporting the already-recorded actual predictor entry count separately from the direct adapter selected_side_probe_entries count, with clear non-duplicating field semantics. It must preserve the first failed receipt, fixture, poison/error precedence, radius/base/phase checks, and no-materialization guarantee.",
+  "classification": "Still an observation/owner-field mapping defect, not a source-conforming numerical negative. No unchanged rerun and no G6 dispatch is authorized until corrected source passes renewed review/readiness."
+}

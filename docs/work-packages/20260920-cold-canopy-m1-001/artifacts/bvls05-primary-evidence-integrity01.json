@@ -1,0 +1,128 @@
+{
+  "evidence_class": "Ran: primary physical receipt and raw log hash verification only; no numerical replay",
+  "receipts": [
+    {
+      "receipt": "bvls05-g4-physical01.json",
+      "sha256": "ef8bf6e949449717948d9149e9018c2045bee173ff37bd3f2544eccb2fbb3c12",
+      "exit_code": 0,
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-conditional-g2-01.json",
+      "sha256": "007556b23b4e3f3d3bb7b5baac306e0290da381081051905737e2cead1f75761",
+      "exit_code": 100,
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-conditional-g2-corrected01.json",
+      "sha256": "a64151a98c4b5beb551e7ee7f234e37a4ce2d7ccd17d84ed68545c6a19fd114f",
+      "exit_code": 0,
+      "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+      "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-physical-a01-01.json",
+      "sha256": "a7febcfb0cc9d0917ae50773393a7bc04041b08c44cd81e21469f701178b4bb5",
+      "exit_code": 0,
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-physical-a02-01.json",
+      "sha256": "a5b3058286251698bf16db872f9c4d8a37bffc09ab589efa69899d46dcdce322",
+      "exit_code": 0,
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-physical-a03-01.json",
+      "sha256": "cad116a2f40f48c67cd5ac44e447a76bbc565fabb3135316131bc26ecfe6f192",
+      "exit_code": 0,
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-physical-a04-01.json",
+      "sha256": "0df7634e44c164a84e985b12a111ad5d43f965c8b91ab5871e0ed545da413907",
+      "exit_code": 0,
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-physical-l01-01.json",
+      "sha256": "54e0207c59228b79cd8801a8c89012f2257a708c6d440066dd1909d681709f42",
+      "exit_code": 0,
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-physical-l02-01.json",
+      "sha256": "ba528eb380d12f5436319d40d52f6309d76193ed739b9fa9c77b79f0b59e7a13",
+      "exit_code": 0,
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-physical-l03-01.json",
+      "sha256": "e84741cbd3c5af44f1e643c4306943d54b2e933f4b1420c0987a5a9aebb4a1cd",
+      "exit_code": 0,
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-conditional-g6-core-01.json",
+      "sha256": "47e81eea66f6c81106399f4223b327d204111e2c3e2e288298b1ffa2fdd2f670",
+      "exit_code": 0,
+      "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+      "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-conditional-g6-raw-j-01.json",
+      "sha256": "140b3f7451e9d3760428c23dbf326f66b4a8949da141d928b720dbecaf9b8d28",
+      "exit_code": 0,
+      "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+      "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-conditional-g6-hydraulic-01.json",
+      "sha256": "7f917460495987258923eaaee901bf6019038d6916be5beacf4854358b0c8d03",
+      "exit_code": 0,
+      "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+      "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-conditional-g6-factor-01.json",
+      "sha256": "f353dd24578b66124f2fe40216884ab63a133209c7bcb11726850159cde058ce",
+      "exit_code": 0,
+      "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+      "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+      "raw_log_hashes_verified": true
+    },
+    {
+      "receipt": "bvls05-conditional-g6-materialization-01.json",
+      "sha256": "e2503caea21d1de5157289ef5f0ffb28052245062e02e354fdd219d89e67ee3b",
+      "exit_code": 0,
+      "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+      "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+      "raw_log_hashes_verified": true
+    }
+  ],
+  "physical_commands": 15,
+  "expected_preserved_failure": "bvls05-conditional-g2-01",
+  "note": "G6 factor is prospectively labeled seeded analytic actualowner despite physicalcommand containment. All other classifications remain in individual plans/reviews."
+}

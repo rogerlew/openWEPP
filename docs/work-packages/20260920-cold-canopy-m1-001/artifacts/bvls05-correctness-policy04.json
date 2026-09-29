@@ -1,0 +1,72 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-policy-fix-review.v3",
+  "reviewer": "interface_correctness",
+  "role": "same-reviewer independent correctness bounded-diff verification",
+  "evidence_class": "Static bounded review only. No Rust build, test, physical assembly, physical trial, solver, replay, or result-bearing execution was run by this reviewer.",
+  "reviewed_files": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan04.json",
+      "sha256": "3c4c5e1647377e8e99d1de5c1080d553c8c734b67fc139ca3c4278cf3bff2654"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "sha256": "dd1e7c3b7b09a3a08c4134405d94a12ae689d9a6ab351efd2a4ba520d1b232e1"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan03.json",
+      "sha256": "fbeab47e64dd9c29e06967e329166560cf4ebfa70d1df3b4dac021e3ca51cd6d"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-correctness-policy03.json",
+      "sha256": "2b6054a40e9320ca6de872c629d0f2dc04620079866113d88d2e810c2756a0c1"
+    }
+  ],
+  "fix_verification": [
+    {
+      "finding": "L01 complete direct selected-side operands",
+      "status": "CLOSED",
+      "evidence": "Plan04 freezes the full 21-coordinate direction as +0 except upper H=-1, expects upper Mixed/Drainage, freezes lower M/H/D bits and zero direction with lower Ice/Drainage, invokes the selected seam without the G4 predictor, and preserves the 1 natural/1 selected/0 retry/1 new-base assembly counts."
+    },
+    {
+      "finding": "21-by-19 rectangular analytic factor",
+      "status": "PARTIAL",
+      "evidence": "The matrix field now correctly defines B[r,k]=1 iff r==retained_original_indices[k], but the factor field still states B=I19."
+    },
+    {
+      "finding": "held-only canonical +0 semantics",
+      "status": "PARTIAL",
+      "evidence": "The zero_semantics field correctly limits canonical +0 to held columns/steps and says retained bits come from unchanged arithmetic, but the R06 expected field still requires every retained/held zero coordinate to be +0."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "medium-blocker",
+      "title": "The frozen fixture still contains a dimensionally contradictory factor declaration",
+      "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan04.json:31",
+      "evidence": "The matrix is correctly declared 21-by-19, while the separate factor string still says B=I19. V is I19; B is the rectangular embedded identity.",
+      "required_fix": "Replace the stale factor string with the exact 21-by-19 embedded-B formula or an unambiguous reference to the matrix field; retain V=I19, sigma=[1;19], order=[0..18], and the retained free IDs."
+    },
+    {
+      "severity": "medium-blocker",
+      "title": "R06 still makes retained +0 a required outcome",
+      "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan04.json:48",
+      "evidence": "R06 says every other retained/held coordinate is +0, despite the corrected fixture rule that only held D uses canonical +0 and retained zero bits must be observed from unchanged arithmetic.",
+      "required_fix": "Require +0 only for held coordinates. For other retained coordinates, assert the independently derived bits produced by unchanged BVLS04 arithmetic without normalization."
+    }
+  ],
+  "accepted_unchanged_scope": [
+    "All policy01-policy03 findings other than these two stale plan strings remain closed.",
+    "R05/R06 route feasibility and lambda mathematics remain accepted.",
+    "L01 direct selected-side lifecycle operands and counts are accepted.",
+    "The numerical contract's pointer to plan04 and preservation of plans01/02/03 are correct.",
+    "Body, non-target physical controls, G4 endpoint, targets, and production activation remain gated."
+  ],
+  "disposition": {
+    "controls_scaffold_release": false,
+    "behavioral_expected_red_execution_release": false,
+    "rust_body_release": false,
+    "physical_control_or_endpoint_release": false,
+    "status": "BLOCKED_ON_TWO_STALE_PLAN_CLAUSES",
+    "same_reviewer_fix_verification_required": true
+  }
+}

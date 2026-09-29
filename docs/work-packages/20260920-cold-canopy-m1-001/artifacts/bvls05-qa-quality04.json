@@ -1,0 +1,44 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-quality-readiness.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static frozen-source and prospective-plan review only. QA ran no lint, build, test, physical assembly, solver, or endpoint command.",
+  "frozen_source": {
+    "tree_sha256": "bfa6cef8c07e66db13d814a8f157989d8bfb5d46b59cdf22b60856018eaca303",
+    "entry_count": 764,
+    "source_diff": "bvls05-quality04-source-diff.json",
+    "patch": "bvls05-quality04-from-start.patch"
+  },
+  "findings": [
+    {
+      "severity": "high-blocker",
+      "location": "bvls05-quality-debug04.json; crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5813,5850-5851,12287",
+      "title": "quality04 does not compile, so none of its selected controls ran.",
+      "evidence": "The exact-source debug receipt exits 101 with five compiler errors, including incompatible observation return types in Stage1. The analytic lint receipt also cannot resolve the physical-only inspection type and RefinementScratchGlobalSnapshot/owner_snapshot_before under its declared feature set.",
+      "required_fix": "Restore feature-correct cfg boundaries and the intended observation types, then preserve this failed receipt and rerun all affected exact-source inventories before any test or physical command."
+    },
+    {
+      "severity": "high-blocker",
+      "location": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2894 and m1_trust_region_natural_tangent_for_test",
+      "title": "G4 owner-work serialization is attached to the wrong wrapper and calls a private test helper.",
+      "evidence": "The compiler reports private m1_physical_budget_json access at the selected-side wrapper location. Static inspection places SHIFTED_FACE_ATTRIBUTION_CAPTURE in m1_trust_region_natural_tangent_for_test, while the new G4_PROPOSAL_COST serialization was added to the selected-side path. That cannot support the planned sole natural-tangent G4 evidence.",
+      "required_fix": "Place the ownership/cost serialization at the natural-tangent G4 wrapper, use an accessible test-only serializer, and ensure it records the declared observer fields without changing the endpoint path."
+    }
+  ],
+  "static_scope_review": {
+    "delta": "The functional03-to-quality04 changes are lint-style/control helper adjustments, cfg tightening, and test-only G4 owner-work/capture serialization. They do not alter the adopted BVLS05 operands, solver cutoff/fallback, original G4 fixture/assertion, physical equation, manifest, dependency, or public/default dispatch.",
+    "confinement": "The physical adapter, assembly inspection, provenance, trial/lifecycle observations, and G4 capture serialization remain gated by cfg(test) plus the private physical-stage feature. The timing record distinguishes initialization, transition-model interval, clock sampling, and test observer cost; it contains no speed or physical-success claim.",
+    "prior_controls": "The central scatter/comment fixes and plan06/lineage01 functional controls accepted in QA functional03 remain present. No accepted control was weakened in the reviewed source."
+  },
+  "physical_readiness_plan_review": {
+    "seven_case_plan": "bvls05-physical-run-plan01.json names seven individual release libtest selectors, each exact/no broad filter/no retry with a 180-second bound, frozen operands, first-result preservation, and an explicit all-seven-pass/dual-review barrier before G4. It excludes target slots and stopped historical endpoints.",
+    "g4_plan": "bvls05-g4-plan01.json preserves one unchanged release G4 selector and a 180-second bound after final source/binary inventory, two independent readiness reviews, and actual seven-case evidence review. It keeps numerical/physical refusal binding and stops the fixed effort on a conforming negative.",
+    "claims_boundary": "Owner-work/capture fields may support custody and overlapping-work accounting only. They cannot be added into a unique-work total or used for a performance, seasonal, watershed, physical-success, production, or M1 qualification claim."
+  },
+  "missing_quality_evidence": [
+    "Exact quality04 debug/release focused controls, default and feature inventories, rustfmt, and release binary/source manifests. quality04 debug compilation failed; no controls ran.",
+    "All three exact quality04 strict-lint receipts and source-bearing baseline/candidate reconciliations. The prior multiplicity classification is limited to its named unchanged-file duplicate and does not waive other findings.",
+    "Final direct-consumer/reachability proof, exact supplemental source/binary/argv bindings for the seven commands, and independent final correctness readiness.",
+    "No seven-case physical receipt or G4 endpoint receipt exists."
+  ],
+  "disposition": "BLOCKED: quality04 source fails compilation across declared feature configurations, and its G4 cost hook is not on the planned natural-tangent path. Preserve the failed receipts; correct only the named mechanical/ownership defects on a new frozen source and rerun quality evidence. Physical execution remains unreleased."
+}

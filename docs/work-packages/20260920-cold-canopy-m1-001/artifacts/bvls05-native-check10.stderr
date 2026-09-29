@@ -1,0 +1,3840 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0432]: unresolved imports `super::M1TrustRegionBallEndpoint`, `super::M1TrustRegionBallObservation`, `super::M1TrustRegionCorrectionPosition`, `super::M1TrustRegionJacobiInput`, `super::M1TrustRegionJacobiObservation`, `super::M1TrustRegionJacobiPair`, `super::M1TrustRegionLambdaEvaluation`, `super::M1TrustRegionRefinementGuardStage`, `super::M1TrustRegionRefinementReason`, `super::M1TrustRegionRefusalKind`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:12:5
+    |
+ 12 |     M1TrustRegionBallEndpoint, M1TrustRegionBallObservation, M1TrustRegionCorrectionPosition,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionCorrectionPosition` in the root
+    |     |                          |
+    |     |                          no `M1TrustRegionBallObservation` in the root
+    |     no `M1TrustRegionBallEndpoint` in the root
+ 13 |     M1TrustRegionJacobiInput, M1TrustRegionJacobiObservation, M1TrustRegionJacobiPair,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionJacobiPair` in the root
+    |     |                         |
+    |     |                         no `M1TrustRegionJacobiObservation` in the root
+    |     no `M1TrustRegionJacobiInput` in the root
+ 14 |     M1TrustRegionLambdaEvaluation, M1TrustRegionRefinementGuardStage,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionRefinementGuardStage` in the root
+    |     |
+    |     no `M1TrustRegionLambdaEvaluation` in the root
+ 15 |     M1TrustRegionRefinementReason, M1TrustRegionRefusalKind,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionRefusalKind` in the root
+    |     |
+    |     no `M1TrustRegionRefinementReason` in the root
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:256:19
+    |
+254 | #[cfg(test)]
+    |       ---- the item is gated here
+255 | #[derive(Clone, Copy, Debug)]
+256 | pub(crate) struct M1TrustRegionBallEndpoint {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:268:19
+    |
+266 | #[cfg(test)]
+    |       ---- the item is gated here
+267 | #[derive(Clone, Debug)]
+268 | pub(crate) struct M1TrustRegionBallObservation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:525:17
+    |
+523 | #[cfg(test)]
+    |       ---- the item is gated here
+524 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+525 | pub(crate) enum M1TrustRegionCorrectionPosition {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:296:19
+    |
+294 | #[cfg(test)]
+    |       ---- the item is gated here
+295 | #[derive(Clone, Copy, Debug)]
+296 | pub(crate) struct M1TrustRegionJacobiInput {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:303:19
+    |
+301 | #[cfg(test)]
+    |       ---- the item is gated here
+302 | #[derive(Clone, Debug)]
+303 | pub(crate) struct M1TrustRegionJacobiObservation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:319:19
+    |
+317 | #[cfg(test)]
+    |       ---- the item is gated here
+318 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+319 | pub(crate) struct M1TrustRegionJacobiPair {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:288:19
+    |
+286 | #[cfg(test)]
+    |       ---- the item is gated here
+287 | #[derive(Clone, Copy, Debug)]
+288 | pub(crate) struct M1TrustRegionLambdaEvaluation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:532:17
+    |
+530 | #[cfg(test)]
+    |       ---- the item is gated here
+531 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+532 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+    |
+507 | #[cfg(test)]
+    |       ---- the item is gated here
+508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+509 | pub(crate) enum M1TrustRegionRefinementReason {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:235:17
+    |
+233 | #[cfg(test)]
+    |       ---- the item is gated here
+234 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+235 | pub(crate) enum M1TrustRegionRefusalKind {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0432]: unresolved imports `super::M1TrustRegionMeritInput`, `super::M1TrustRegionMeritObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:17:13
+    |
+ 17 | use super::{M1TrustRegionMeritInput, M1TrustRegionMeritObservation};
+    |             ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionMeritObservation` in the root
+    |             |
+    |             no `M1TrustRegionMeritInput` in the root
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:223:19
+    |
+221 | #[cfg(test)]
+    |       ---- the item is gated here
+222 | #[derive(Clone, Copy, Debug)]
+223 | pub(crate) struct M1TrustRegionMeritInput {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:343:19
+    |
+341 | #[cfg(test)]
+    |       ---- the item is gated here
+342 | #[derive(Clone, Copy, Debug)]
+343 | pub(crate) struct M1TrustRegionMeritObservation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionTestWorkState` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:302:26
+    |
+302 |                 ..super::M1TrustRegionTestWorkState::default()
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionTestWorkState` in the crate root
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:201:19
+    |
+199 | #[cfg(test)]
+    |       ---- the item is gated here
+200 | #[derive(Clone, Copy, Debug, Default)]
+201 | pub(crate) struct M1TrustRegionTestWorkState {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionWorkObservation` in `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:338:26
+    |
+338 |             work: super::M1TrustRegionWorkObservation::default(),
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWorkObservation` in the crate root
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+    |
+429 | #[cfg(test)]
+    |       ---- the item is gated here
+430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+431 | pub(crate) struct M1TrustRegionWorkObservation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionWorkObservation` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1282:60
+     |
+1282 |             evaluator.observe_controller_accounting(super::M1TrustRegionWorkObservation::default());
+     |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWorkObservation` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+     |
+ 429 | #[cfg(test)]
+     |       ---- the item is gated here
+ 430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+ 431 | pub(crate) struct M1TrustRegionWorkObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionWorkObservation` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1520:60
+     |
+1520 |             evaluator.observe_controller_accounting(super::M1TrustRegionWorkObservation::default());
+     |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWorkObservation` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+     |
+ 429 | #[cfg(test)]
+     |       ---- the item is gated here
+ 430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+ 431 | pub(crate) struct M1TrustRegionWorkObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1542:52
+     |
+1542 |                     terminal_refusal = Some(super::M1TrustRegionRefusalKind::WorkCap);
+     |                                                    ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:235:17
+     |
+ 233 | #[cfg(test)]
+     |       ---- the item is gated here
+ 234 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 235 | pub(crate) enum M1TrustRegionRefusalKind {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1559:48
+     |
+1559 |                 terminal_refusal = Some(super::M1TrustRegionRefusalKind::RadiusExhausted);
+     |                                                ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:235:17
+     |
+ 233 | #[cfg(test)]
+     |       ---- the item is gated here
+ 234 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 235 | pub(crate) enum M1TrustRegionRefusalKind {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionControllerOperation` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1646:39
+     |
+1646 |             refused_operation: super::M1TrustRegionControllerOperation::ProposalCore,
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionControllerOperation` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:177:17
+     |
+ 169 |     test,
+     |     ---- the item is gated here
+...
+ 177 | pub(crate) enum M1TrustRegionControllerOperation {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefusalKind` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1647:42
+     |
+1647 |             numeric_refusal: Some(super::M1TrustRegionRefusalKind::WorkCap),
+     |                                          ^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefusalKind` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:235:17
+     |
+ 233 | #[cfg(test)]
+     |       ---- the item is gated here
+ 234 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 235 | pub(crate) enum M1TrustRegionRefusalKind {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionControllerOperation` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1654:39
+     |
+1654 |             refused_operation: super::M1TrustRegionControllerOperation::ProposalCore,
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionControllerOperation` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:177:17
+     |
+ 169 |     test,
+     |     ---- the item is gated here
+...
+ 177 | pub(crate) enum M1TrustRegionControllerOperation {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionWorkObservation` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3707:33
+     |
+3707 |             bvls05_work: super::M1TrustRegionWorkObservation::default(),
+     |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionWorkObservation` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+     |
+ 429 | #[cfg(test)]
+     |       ---- the item is gated here
+ 430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+ 431 | pub(crate) struct M1TrustRegionWorkObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionOptimalityClass` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4744:20
+     |
+4744 |             super::M1TrustRegionOptimalityClass::Fixed
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionOptimalityClass` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:363:17
+     |
+ 361 | #[cfg(test)]
+     |       ---- the item is gated here
+ 362 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 363 | pub(crate) enum M1TrustRegionOptimalityClass {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionOptimalityClass` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4758:24
+     |
+4758 |                 super::M1TrustRegionOptimalityClass::ReleaseLower
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionOptimalityClass` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:363:17
+     |
+ 361 | #[cfg(test)]
+     |       ---- the item is gated here
+ 362 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 363 | pub(crate) enum M1TrustRegionOptimalityClass {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionOptimalityClass` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4760:24
+     |
+4760 |                 super::M1TrustRegionOptimalityClass::RetainLower
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionOptimalityClass` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:363:17
+     |
+ 361 | #[cfg(test)]
+     |       ---- the item is gated here
+ 362 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 363 | pub(crate) enum M1TrustRegionOptimalityClass {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionOptimalityClass` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4775:24
+     |
+4775 |                 super::M1TrustRegionOptimalityClass::ReleaseUpper
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionOptimalityClass` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:363:17
+     |
+ 361 | #[cfg(test)]
+     |       ---- the item is gated here
+ 362 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 363 | pub(crate) enum M1TrustRegionOptimalityClass {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionOptimalityClass` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4777:24
+     |
+4777 |                 super::M1TrustRegionOptimalityClass::RetainUpper
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionOptimalityClass` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:363:17
+     |
+ 361 | #[cfg(test)]
+     |       ---- the item is gated here
+ 362 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 363 | pub(crate) enum M1TrustRegionOptimalityClass {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionOptimalityClass` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4780:20
+     |
+4780 |             super::M1TrustRegionOptimalityClass::FreePass
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionOptimalityClass` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:363:17
+     |
+ 361 | #[cfg(test)]
+     |       ---- the item is gated here
+ 362 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 363 | pub(crate) enum M1TrustRegionOptimalityClass {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionOptimalityClass` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4783:20
+     |
+4783 |             super::M1TrustRegionOptimalityClass::FreeRefuse
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionOptimalityClass` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:363:17
+     |
+ 361 | #[cfg(test)]
+     |       ---- the item is gated here
+ 362 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 363 | pub(crate) enum M1TrustRegionOptimalityClass {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6803:16
+     |
+6803 |         super::M1TrustRegionRefinementReason::NonfiniteOperand => "refinement_nonfinite_operand",
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6804:16
+     |
+6804 |         super::M1TrustRegionRefinementReason::SplitterOverflow => "refinement_splitter_overflow",
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6805:16
+     |
+6805 |         super::M1TrustRegionRefinementReason::UnderflowToZero => "refinement_underflow_to_zero",
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6806:16
+     |
+6806 |         super::M1TrustRegionRefinementReason::SubnormalIntermediate => {
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6809:16
+     |
+6809 |         super::M1TrustRegionRefinementReason::FactorOutput => "refinement_factor_output",
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6810:16
+     |
+6810 |         super::M1TrustRegionRefinementReason::CoordinateUpdate => "refinement_coordinate_update",
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6811:16
+     |
+6811 |         super::M1TrustRegionRefinementReason::ActiveValue => "refinement_active_value",
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6812:16
+     |
+6812 |         super::M1TrustRegionRefinementReason::ScratchBox => "refinement_scratch_box",
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6813:16
+     |
+6813 |         super::M1TrustRegionRefinementReason::ScratchRadius => "refinement_scratch_radius",
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6814:16
+     |
+6814 |         super::M1TrustRegionRefinementReason::FinalBox => "refinement_final_box",
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6815:16
+     |
+6815 |         super::M1TrustRegionRefinementReason::FinalRadius => "refinement_final_radius",
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementGuardStage` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6849:48
+     |
+6849 |     let reason = if site.guard_stage == super::M1TrustRegionRefinementGuardStage::ActiveEquality {
+     |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementGuardStage` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:532:17
+     |
+ 530 | #[cfg(test)]
+     |       ---- the item is gated here
+ 531 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 532 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6850:16
+     |
+6850 |         super::M1TrustRegionRefinementReason::ActiveValue
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6854:24
+     |
+6854 |                 super::M1TrustRegionRefinementReason::NonfiniteOperand
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6857:24
+     |
+6857 |                 super::M1TrustRegionRefinementReason::SplitterOverflow
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6860:24
+     |
+6860 |                 super::M1TrustRegionRefinementReason::UnderflowToZero
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionRefinementReason` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6863:24
+     |
+6863 |                 super::M1TrustRegionRefinementReason::SubnormalIntermediate
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionRefinementReason` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionKktAction` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9037:20
+     |
+9037 |             super::M1TrustRegionKktAction::ActivateLower
+     |                    ^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionKktAction` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:352:17
+     |
+ 350 | #[cfg(test)]
+     |       ---- the item is gated here
+ 351 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 352 | pub(crate) enum M1TrustRegionKktAction {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionKktAction` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9039:20
+     |
+9039 |             super::M1TrustRegionKktAction::ActivateUpper
+     |                    ^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionKktAction` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:352:17
+     |
+ 350 | #[cfg(test)]
+     |       ---- the item is gated here
+ 351 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 352 | pub(crate) enum M1TrustRegionKktAction {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionKktAction` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9175:24
+     |
+9175 |                 super::M1TrustRegionKktAction::ReleaseLower
+     |                        ^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionKktAction` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:352:17
+     |
+ 350 | #[cfg(test)]
+     |       ---- the item is gated here
+ 351 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 352 | pub(crate) enum M1TrustRegionKktAction {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionKktAction` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9177:24
+     |
+9177 |                 super::M1TrustRegionKktAction::ReleaseUpper
+     |                        ^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionKktAction` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:352:17
+     |
+ 350 | #[cfg(test)]
+     |       ---- the item is gated here
+ 351 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 352 | pub(crate) enum M1TrustRegionKktAction {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find `M1TrustRegionKktAction` in `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9241:24
+     |
+9241 |         action: super::M1TrustRegionKktAction::Return,
+     |                        ^^^^^^^^^^^^^^^^^^^^^^ could not find `M1TrustRegionKktAction` in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:352:17
+     |
+ 350 | #[cfg(test)]
+     |       ---- the item is gated here
+ 351 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 352 | pub(crate) enum M1TrustRegionKktAction {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:104:27
+    |
+104 |     Subproblem(Box<super::M1TrustRegionSubproblemRefusal>),
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+    |
+581 | #[cfg(test)]
+    |       ---- the item is gated here
+582 | #[derive(Clone, Debug)]
+583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionWorkObservation` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:162:18
+    |
+162 |     work: super::M1TrustRegionWorkObservation,
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+    |
+429 | #[cfg(test)]
+    |       ---- the item is gated here
+430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+431 | pub(crate) struct M1TrustRegionWorkObservation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemObservation` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:187:36
+    |
+187 |     pub(crate) observation: super::M1TrustRegionSubproblemObservation,
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:402:19
+    |
+400 | #[cfg(test)]
+    |       ---- the item is gated here
+401 | #[derive(Clone, Debug)]
+402 | pub(crate) struct M1TrustRegionSubproblemObservation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:289:42
+    |
+289 |     fn subproblem_input(&self) -> super::M1TrustRegionSubproblemInput {
+    |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+    |
+185 | #[cfg(test)]
+    |       ---- the item is gated here
+186 | #[derive(Clone, Debug)]
+187 | pub(crate) struct M1TrustRegionSubproblemInput {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionSubproblemInput` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:290:16
+    |
+290 |         super::M1TrustRegionSubproblemInput {
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+    |
+185 | #[cfg(test)]
+    |       ---- the item is gated here
+186 | #[derive(Clone, Debug)]
+187 | pub(crate) struct M1TrustRegionSubproblemInput {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionTestWorkState` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:299:31
+    |
+299 |             test_work: super::M1TrustRegionTestWorkState {
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:201:19
+    |
+199 | #[cfg(test)]
+    |       ---- the item is gated here
+200 | #[derive(Clone, Copy, Debug, Default)]
+201 | pub(crate) struct M1TrustRegionTestWorkState {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `solve_subproblem_with_certificate` in module `super::m1_trust_region_stage1`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:362:64
+     |
+ 362 |         let observation = match super::m1_trust_region_stage1::solve_subproblem_with_certificate(
+     |                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super::m1_trust_region_stage1`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9324:15
+     |
+9323 | #[cfg(test)]
+     |       ---- the item is gated here
+9324 | pub(crate) fn solve_subproblem_with_certificate(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_governed_step_components_pass_for_trust_region` in module `super::solver`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:524:34
+    |
+524 |             pass: super::solver::m1_governed_step_components_pass_for_trust_region(
+    |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super::solver`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:557:15
+    |
+550 |     test,
+    |     ---- the item is gated here
+...
+557 | pub(crate) fn m1_governed_step_components_pass_for_trust_region(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionWorkObservation` in the crate root
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:170:63
+    |
+170 |     fn observe_controller_accounting(&mut self, _work: crate::M1TrustRegionWorkObservation) {}
+    |                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+    |
+429 | #[cfg(test)]
+    |       ---- the item is gated here
+430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+431 | pub(crate) struct M1TrustRegionWorkObservation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemObservation` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:194:43
+    |
+194 |     pub(super) stage1_observation: super::M1TrustRegionSubproblemObservation,
+    |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:402:19
+    |
+400 | #[cfg(test)]
+    |       ---- the item is gated here
+401 | #[derive(Clone, Debug)]
+402 | pub(crate) struct M1TrustRegionSubproblemObservation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionWorkObservation` in the crate root
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:211:29
+    |
+211 |     pub(crate) work: crate::M1TrustRegionWorkObservation,
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+    |
+429 | #[cfg(test)]
+    |       ---- the item is gated here
+430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+431 | pub(crate) struct M1TrustRegionWorkObservation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionRefusalKind` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:217:48
+    |
+217 |     pub(crate) terminal_refusal: Option<super::M1TrustRegionRefusalKind>,
+    |                                                ^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:235:17
+    |
+233 | #[cfg(test)]
+    |       ---- the item is gated here
+234 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+235 | pub(crate) enum M1TrustRegionRefusalKind {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionControllerOperation` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:225:42
+    |
+225 |     pub(super) refused_operation: super::M1TrustRegionControllerOperation,
+    |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:177:17
+    |
+169 |     test,
+    |     ---- the item is gated here
+...
+177 | pub(crate) enum M1TrustRegionControllerOperation {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionRefusalKind` in module `super`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:226:47
+    |
+226 |     pub(super) numeric_refusal: Option<super::M1TrustRegionRefusalKind>,
+    |                                               ^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+    |
+note: found an item that was configured out
+   --> crates/openwepp-land-surface-energy/src/lib.rs:235:17
+    |
+233 | #[cfg(test)]
+    |       ---- the item is gated here
+234 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+235 | pub(crate) enum M1TrustRegionRefusalKind {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionRefusalKind` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2451:20
+     |
+2451 |     Refused(crate::M1TrustRegionRefusalKind),
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:235:17
+     |
+ 233 | #[cfg(test)]
+     |       ---- the item is gated here
+ 234 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 235 | pub(crate) enum M1TrustRegionRefusalKind {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionBvls05TestProvenance` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2460:45
+     |
+2460 |     last_assembly_provenance: Option<crate::M1TrustRegionBvls05TestProvenance>,
+     |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:213:19
+     |
+ 211 | #[cfg(test)]
+     |       ---- the item is gated here
+ 212 | #[derive(Clone, Copy, Debug)]
+ 213 | pub(crate) struct M1TrustRegionBvls05TestProvenance {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1PhysicalBudgetSnapshot` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2573:47
+     |
+2573 |     pub(crate) budget_snapshot: Option<crate::M1PhysicalBudgetSnapshot>,
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:31:12
+     |
+  29 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+  30 | #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+  31 | pub struct M1PhysicalBudgetSnapshot {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1PhysicalTrustRegionControllerRunObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2574:39
+     |
+2574 |     pub(crate) controller_run: Option<M1PhysicalTrustRegionControllerRunObservation>,
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2689:19
+     |
+2687 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+2688 | #[derive(Clone, Copy, Debug, PartialEq)]
+2689 | pub(crate) struct M1PhysicalTrustRegionControllerRunObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: you might be missing a type parameter
+     |
+2553 | pub(crate) struct M1PhysicalTrustRegionAdapterObservation<M1PhysicalTrustRegionControllerRunObservation> {
+     |                                                          +++++++++++++++++++++++++++++++++++++++++++++++
+
+error[E0425]: cannot find type `M1TrustRegionWorkObservation` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2575:50
+     |
+2575 |     pub(crate) controller_accounting: Vec<crate::M1TrustRegionWorkObservation>,
+     |                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+     |
+ 429 | #[cfg(test)]
+     |       ---- the item is gated here
+ 430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+ 431 | pub(crate) struct M1TrustRegionWorkObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_physical_budget_scope_for_test` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3091:24
+     |
+3091 |     let scope = crate::m1_physical_budget_scope_for_test();
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:64:15
+     |
+  63 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+  64 | pub(crate) fn m1_physical_budget_scope_for_test() -> M1PhysicalBudgetScope {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1PhysicalTrustRegionControllerRunObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3095:51
+     |
+2553 | pub(crate) struct M1PhysicalTrustRegionAdapterObservation {
+     | --------------------------------------------------------- similarly named struct `M1PhysicalTrustRegionAdapterObservation` defined here
+...
+3095 |         adapter.observation.controller_run = Some(M1PhysicalTrustRegionControllerRunObservation {
+     |                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2689:19
+     |
+2687 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+2688 | #[derive(Clone, Copy, Debug, PartialEq)]
+2689 | pub(crate) struct M1PhysicalTrustRegionControllerRunObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: a struct with a similar name exists
+     |
+3095 -         adapter.observation.controller_run = Some(M1PhysicalTrustRegionControllerRunObservation {
+3095 +         adapter.observation.controller_run = Some(M1PhysicalTrustRegionAdapterObservation {
+     |
+
+error[E0425]: cannot find function `m1_physical_budget_observation_for_test` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3115:50
+     |
+3115 |     adapter.observation.budget_snapshot = crate::m1_physical_budget_observation_for_test();
+     |                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:74:15
+     |
+  73 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+  74 | pub(crate) fn m1_physical_budget_observation_for_test() -> Option<M1PhysicalBudgetSnapshot> {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionRefusalKind` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3128:41
+     |
+3128 |     pub terminal_refusal: Option<crate::M1TrustRegionRefusalKind>,
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:235:17
+     |
+ 233 | #[cfg(test)]
+     |       ---- the item is gated here
+ 234 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 235 | pub(crate) enum M1TrustRegionRefusalKind {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_enabled_for_test` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3675:23
+     |
+3675 |             if crate::m1_face_pivot_capture_enabled_for_test() {
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:155:43
+     |
+ 153 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+ 154 | pub(crate) use m1_trust_region_stage1::{
+ 155 |     m1_face_pivot_capture_begin_for_test, m1_face_pivot_capture_enabled_for_test,
+     |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find function `m1_face_pivot_capture_enabled_for_test` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3689:19
+     |
+3689 |         if crate::m1_face_pivot_capture_enabled_for_test() {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:155:43
+     |
+ 153 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+ 154 | pub(crate) use m1_trust_region_stage1::{
+ 155 |     m1_face_pivot_capture_begin_for_test, m1_face_pivot_capture_enabled_for_test,
+     |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionWorkObservation` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3779:62
+     |
+3779 |     fn observe_controller_accounting(&mut self, work: crate::M1TrustRegionWorkObservation) {
+     |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in the crate root
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+     |
+ 429 | #[cfg(test)]
+     |       ---- the item is gated here
+ 430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+ 431 | pub(crate) struct M1TrustRegionWorkObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2583:41
+     |
+2583 |     fn absorb_dot2(&mut self, counters: RefinementDot2Counters) {
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2716:17
+     |
+2716 | ) -> Result<(), RefinementDot2Reason> {
+     |                 ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+2713 | fn bvls04_normal_or_signed_zero<RefinementDot2Reason>(
+     |                                ++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2732:17
+     |
+2732 | ) -> Result<(), RefinementDot2Reason> {
+     |                 ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+2727 | fn bvls04_product_guard<RefinementDot2Reason>(
+     |                        ++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2880:17
+     |
+2880 | ) -> Result<(), RefinementDot2Reason> {
+     |                 ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+2875 | fn bvls04_validate_ordinary_defect_input<RefinementDot2Reason>(
+     |                                         ++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2896:18
+     |
+2896 | ) -> Result<(), (RefinementDot2Reason, M1TrustRegionRefinementGuardStage)> {
+     |                  ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+2891 | fn bvls04_add_shift<RefinementDot2Reason>(
+     |                    ++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2920:23
+     |
+2920 | ) -> Result<Vec<f64>, RefinementDot2Refusal> {
+     |                       ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+2913 | fn bvls04_ordinary_defect<RefinementDot2Refusal>(
+     |                          +++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2937 | /         fail!(
+2938 | |             reason,
+2939 | |             M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+2940 | |             None,
+2941 | |             None,
+2942 | |             None
+2943 | |         );
+     | |_________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2949 | /                 fail!(
+2950 | |                     reason,
+2951 | |                     M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+2952 | |                     Some(refinement_face_index(row)),
+2953 | |                     Some(refinement_face_index(slot)),
+2954 | |                     Some(refinement_face_index(free[slot]))
+2955 | |                 );
+     | |_________________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2958 | /                 fail!(
+2959 | |                     reason,
+2960 | |                     M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+2961 | |                     Some(refinement_face_index(row)),
+2962 | |                     Some(refinement_face_index(slot)),
+2963 | |                     Some(refinement_face_index(free[slot]))
+2964 | |                 );
+     | |_________________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2971 | /                 fail!(
+2972 | |                     reason,
+2973 | |                     M1TrustRegionRefinementGuardStage::PrimaryProduct,
+2974 | |                     Some(refinement_face_index(row)),
+2975 | |                     Some(refinement_face_index(slot)),
+2976 | |                     Some(refinement_face_index(free[slot]))
+2977 | |                 );
+     | |_________________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2982 | /                 fail!(
+2983 | |                     reason,
+2984 | |                     M1TrustRegionRefinementGuardStage::Accumulation,
+2985 | |                     Some(refinement_face_index(row)),
+2986 | |                     Some(refinement_face_index(slot)),
+2987 | |                     Some(refinement_face_index(free[slot]))
+2988 | |                 );
+     | |_________________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2923:24
+     |
+2923 |               return Err(RefinementDot2Refusal {
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+2994 | /             fail!(
+2995 | |                 reason,
+2996 | |                 guard_stage,
+2997 | |                 None,
+2998 | |                 Some(refinement_face_index(slot)),
+2999 | |                 Some(refinement_face_index(free[slot]))
+3000 | |             );
+     | |_____________- in this macro invocation
+     |
+     = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3049:25
+     |
+3049 | ) -> Result<(f64, f64), RefinementDot2Reason> {
+     |                         ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+3045 | fn bvls04_ordered_norm<RefinementDot2Reason>(
+     |                       ++++++++++++++++++++++
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3634:13
+     |
+3634 | ) -> super::M1TrustRegionSubproblemRefusal {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3635:12
+     |
+3635 |     super::M1TrustRegionSubproblemRefusal {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionWorkObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3646:31
+     |
+3646 |         work: Box::new(super::M1TrustRegionWorkObservation {
+     |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+     |
+ 429 | #[cfg(test)]
+     |       ---- the item is gated here
+ 430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+ 431 | pub(crate) struct M1TrustRegionWorkObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionWorkObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3683:25
+     |
+3683 |     bvls05_work: super::M1TrustRegionWorkObservation,
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+     |
+ 429 | #[cfg(test)]
+     |       ---- the item is gated here
+ 430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+ 431 | pub(crate) struct M1TrustRegionWorkObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionKktEvent` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3684:24
+     |
+3684 |     events: Vec<super::M1TrustRegionKktEvent>,
+     |                        ^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:328:19
+     |
+ 326 | #[cfg(test)]
+     |       ---- the item is gated here
+ 327 | #[derive(Clone, Debug)]
+ 328 | pub(crate) struct M1TrustRegionKktEvent {
+     |                   ^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3694:27
+     |
+3694 |     fn new(input: &super::M1TrustRegionSubproblemInput) -> Self {
+     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4083:13
+     |
+4083 | ) -> super::M1TrustRegionSubproblemRefusal {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionWorkObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4096:62
+     |
+4096 | fn state_work_observation(state: &SubproblemState) -> super::M1TrustRegionWorkObservation {
+     |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+     |
+ 429 | #[cfg(test)]
+     |       ---- the item is gated here
+ 430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+ 431 | pub(crate) struct M1TrustRegionWorkObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionWorkObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4097:12
+     |
+4097 |     super::M1TrustRegionWorkObservation {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:431:19
+     |
+ 429 | #[cfg(test)]
+     |       ---- the item is gated here
+ 430 | #[derive(Clone, Debug, Default, Eq, PartialEq)]
+ 431 | pub(crate) struct M1TrustRegionWorkObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4135:13
+     |
+4135 | ) -> super::M1TrustRegionSubproblemRefusal {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionOptimalityObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4675:25
+     |
+4675 |     observation: super::M1TrustRegionOptimalityObservation,
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3126:1
+     |
+3126 | pub struct M1TrustRegionNativeHarnessObservation {
+     | ------------------------------------------------ similarly named struct `M1TrustRegionNativeHarnessObservation` defined here
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:394:19
+     |
+ 392 | #[cfg(test)]
+     |       ---- the item is gated here
+ 393 | #[derive(Clone, Debug)]
+ 394 | pub(crate) struct M1TrustRegionOptimalityObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: a struct with a similar name exists
+     |
+4675 -     observation: super::M1TrustRegionOptimalityObservation,
+4675 +     observation: super::M1TrustRegionNativeHarnessObservation,
+     |
+
+error[E0425]: cannot find type `M1TrustRegionOptimalityObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4682:25
+     |
+4682 |     observation: super::M1TrustRegionOptimalityObservation,
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3126:1
+     |
+3126 | pub struct M1TrustRegionNativeHarnessObservation {
+     | ------------------------------------------------ similarly named struct `M1TrustRegionNativeHarnessObservation` defined here
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:394:19
+     |
+ 392 | #[cfg(test)]
+     |       ---- the item is gated here
+ 393 | #[derive(Clone, Debug)]
+ 394 | pub(crate) struct M1TrustRegionOptimalityObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: a struct with a similar name exists
+     |
+4682 -     observation: super::M1TrustRegionOptimalityObservation,
+4682 +     observation: super::M1TrustRegionNativeHarnessObservation,
+     |
+
+error[E0425]: cannot find type `M1TrustRegionOptimalityReleaseObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4694:20
+     |
+4694 | ) -> Option<super::M1TrustRegionOptimalityReleaseObservation> {
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3126:1
+     |
+3126 | pub struct M1TrustRegionNativeHarnessObservation {
+     | ------------------------------------------------ similarly named struct `M1TrustRegionNativeHarnessObservation` defined here
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:385:19
+     |
+ 383 | #[cfg(test)]
+     |       ---- the item is gated here
+ 384 | #[derive(Clone, Copy, Debug)]
+ 385 | pub(crate) struct M1TrustRegionOptimalityReleaseObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: a struct with a similar name exists
+     |
+4694 - ) -> Option<super::M1TrustRegionOptimalityReleaseObservation> {
+4694 + ) -> Option<super::M1TrustRegionNativeHarnessObservation> {
+     |
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionOptimalityReleaseObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4708:16
+     |
+4708 |         super::M1TrustRegionOptimalityReleaseObservation {
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3126:1
+     |
+3126 | pub struct M1TrustRegionNativeHarnessObservation {
+     | ------------------------------------------------ similarly named struct `M1TrustRegionNativeHarnessObservation` defined here
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:385:19
+     |
+ 383 | #[cfg(test)]
+     |       ---- the item is gated here
+ 384 | #[derive(Clone, Copy, Debug)]
+ 385 | pub(crate) struct M1TrustRegionOptimalityReleaseObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: a struct with a similar name exists
+     |
+4708 -         super::M1TrustRegionOptimalityReleaseObservation {
+4708 +         super::M1TrustRegionNativeHarnessObservation {
+     |
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionOptimalityCoordinateObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4791:33
+     |
+4791 |         coordinates.push(super::M1TrustRegionOptimalityCoordinateObservation {
+     |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:375:19
+     |
+ 373 | #[cfg(test)]
+     |       ---- the item is gated here
+ 374 | #[derive(Clone, Copy, Debug)]
+ 375 | pub(crate) struct M1TrustRegionOptimalityCoordinateObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionOptimalityObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4803:29
+     |
+4803 |         observation: super::M1TrustRegionOptimalityObservation {
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3126:1
+     |
+3126 | pub struct M1TrustRegionNativeHarnessObservation {
+     | ------------------------------------------------ similarly named struct `M1TrustRegionNativeHarnessObservation` defined here
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:394:19
+     |
+ 392 | #[cfg(test)]
+     |       ---- the item is gated here
+ 393 | #[derive(Clone, Debug)]
+ 394 | pub(crate) struct M1TrustRegionOptimalityObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: a struct with a similar name exists
+     |
+4803 -         observation: super::M1TrustRegionOptimalityObservation {
+4803 +         observation: super::M1TrustRegionNativeHarnessObservation {
+     |
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4812:20
+     |
+4812 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4813:44
+     |
+4813 | ) -> Result<PreparedSubproblem, Box<super::M1TrustRegionSubproblemRefusal>> {
+     |                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4898:20
+     |
+4898 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4911:40
+     |
+4911 | fn raw_jacobian_columns(input: &super::M1TrustRegionSubproblemInput) -> [[f64; 21]; 21] {
+     |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5162:20
+     |
+5162 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5165:34
+     |
+5165 | ) -> Result<FaceSolution, super::M1TrustRegionSubproblemRefusal> {
+     |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `RefinementObservationTrace` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5717:13
+     |
+5717 |     trace: &RefinementObservationTrace,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+     |
+help: a struct with a similar name exists
+     |
+5717 -     trace: &RefinementObservationTrace,
+5717 +     trace: &RefinementObservationMasks,
+     |
+
+error[E0425]: cannot find type `RefinementObservationRefusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5719:39
+     |
+5719 | ) -> Result<(Vec<u64>, Vec<u64>), Box<RefinementObservationRefusal>> {
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+     |
+help: a struct with a similar name exists
+     |
+5719 - ) -> Result<(Vec<u64>, Vec<u64>), Box<RefinementObservationRefusal>> {
+5719 + ) -> Result<(Vec<u64>, Vec<u64>), Box<RefinementObservationMasks>> {
+     |
+help: you might be missing a type parameter
+     |
+5716 | fn refinement_required_observation_residual_bits<RefinementObservationRefusal>(
+     |                                                 ++++++++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementObservationTrace` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5746:13
+     |
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+...
+5746 |     trace: &RefinementObservationTrace,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+5746 -     trace: &RefinementObservationTrace,
+5746 +     trace: &RefinementObservationMasks,
+     |
+
+error[E0425]: cannot find type `M1TrustRegionOptimalityObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5762:25
+     |
+5762 |     optimality: &super::M1TrustRegionOptimalityObservation,
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3126:1
+     |
+3126 | pub struct M1TrustRegionNativeHarnessObservation {
+     | ------------------------------------------------ similarly named struct `M1TrustRegionNativeHarnessObservation` defined here
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:394:19
+     |
+ 392 | #[cfg(test)]
+     |       ---- the item is gated here
+ 393 | #[derive(Clone, Debug)]
+ 394 | pub(crate) struct M1TrustRegionOptimalityObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: a struct with a similar name exists
+     |
+5762 -     optimality: &super::M1TrustRegionOptimalityObservation,
+5762 +     optimality: &super::M1TrustRegionNativeHarnessObservation,
+     |
+
+error[E0425]: cannot find type `RefinementObservationTrace` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5797:13
+     |
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+...
+5797 |     trace: &RefinementObservationTrace,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+5797 -     trace: &RefinementObservationTrace,
+5797 +     trace: &RefinementObservationMasks,
+     |
+
+error[E0425]: cannot find type `RefinementObservationTrace` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5814:13
+     |
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+...
+5814 |     trace: &RefinementObservationTrace,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+5814 -     trace: &RefinementObservationTrace,
+5814 +     trace: &RefinementObservationMasks,
+     |
+
+error[E0425]: cannot find type `RefinementObservationRefusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5816:52
+     |
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+...
+5816 | ) -> Result<RefinementRequiredObservationBits, Box<RefinementObservationRefusal>> {
+     |                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+5816 - ) -> Result<RefinementRequiredObservationBits, Box<RefinementObservationRefusal>> {
+5816 + ) -> Result<RefinementRequiredObservationBits, Box<RefinementObservationMasks>> {
+     |
+help: you might be missing a type parameter
+     |
+5813 | fn refinement_observation_required_bits<RefinementObservationRefusal>(
+     |                                        ++++++++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementRetainedFaceObservationContext` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5824:14
+     |
+5811 | type RefinementRequiredObservationBits = (([u64; 21], [u64; 21]), (Vec<u64>, Vec<u64>));
+     | ---------------------------------------------------------------------------------------- similarly named type alias `RefinementRequiredObservationBits` defined here
+...
+5824 |     context: RefinementRetainedFaceObservationContext<'_>,
+     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a type alias with a similar name exists
+     |
+5824 -     context: RefinementRetainedFaceObservationContext<'_>,
+5824 +     context: RefinementRequiredObservationBits<'_>,
+     |
+
+error[E0425]: cannot find type `RefinementRetainedFaceObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5825:13
+     |
+5811 | type RefinementRequiredObservationBits = (([u64; 21], [u64; 21]), (Vec<u64>, Vec<u64>));
+     | ---------------------------------------------------------------------------------------- similarly named type alias `RefinementRequiredObservationBits` defined here
+...
+5825 | ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationRefusal>> {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a type alias with a similar name exists
+     |
+5825 - ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationRefusal>> {
+5825 + ) -> Result<RefinementRequiredObservationBits, Box<RefinementObservationRefusal>> {
+     |
+help: you might be missing a type parameter
+     |
+5823 | fn refinement_build_retained_face_observation<RefinementRetainedFaceObservation>(
+     |                                              +++++++++++++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementObservationRefusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5825:52
+     |
+5734 | struct RefinementObservationMasks {
+     | --------------------------------- similarly named struct `RefinementObservationMasks` defined here
+...
+5825 | ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationRefusal>> {
+     |                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a struct with a similar name exists
+     |
+5825 - ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationRefusal>> {
+5825 + ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationMasks>> {
+     |
+help: you might be missing a type parameter
+     |
+5823 | fn refinement_build_retained_face_observation<RefinementObservationRefusal>(
+     |                                              ++++++++++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementRetainedFaceObservationContext` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5826:9
+     |
+5811 | type RefinementRequiredObservationBits = (([u64; 21], [u64; 21]), (Vec<u64>, Vec<u64>));
+     | ---------------------------------------------------------------------------------------- similarly named type alias `RefinementRequiredObservationBits` defined here
+...
+5826 |     let RefinementRetainedFaceObservationContext {
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a type alias with a similar name exists
+     |
+5826 -     let RefinementRetainedFaceObservationContext {
+5826 +     let RefinementRequiredObservationBits {
+     |
+
+error[E0422]: cannot find struct, variant or union type `RefinementRetainedFaceObservation` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5853:8
+     |
+5811 | type RefinementRequiredObservationBits = (([u64; 21], [u64; 21]), (Vec<u64>, Vec<u64>));
+     | ---------------------------------------------------------------------------------------- similarly named type alias `RefinementRequiredObservationBits` defined here
+...
+5853 |     Ok(RefinementRetainedFaceObservation {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a type alias with a similar name exists
+     |
+5853 -     Ok(RefinementRetainedFaceObservation {
+5853 +     Ok(RefinementRequiredObservationBits {
+     |
+
+error[E0425]: cannot find type `M1TrustRegionCorrectionPosition` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6778:40
+     |
+6778 |     correction_position: Option<super::M1TrustRegionCorrectionPosition>,
+     |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:525:17
+     |
+ 523 | #[cfg(test)]
+     |       ---- the item is gated here
+ 524 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 525 | pub(crate) enum M1TrustRegionCorrectionPosition {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionRefinementGuardStage` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6779:25
+     |
+6779 |     guard_stage: super::M1TrustRegionRefinementGuardStage,
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:532:17
+     |
+ 530 | #[cfg(test)]
+     |       ---- the item is gated here
+ 531 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 532 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionRefinementReason` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6791:20
+     |
+6791 |     reason: super::M1TrustRegionRefinementReason,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:509:17
+     |
+ 507 | #[cfg(test)]
+     |       ---- the item is gated here
+ 508 | #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ 509 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6793:13
+     |
+6793 | ) -> super::M1TrustRegionSubproblemRefusal {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionRefinementFailureMetadata` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6823:47
+     |
+6823 |     refusal.refinement = Some(Box::new(super::M1TrustRegionRefinementFailureMetadata {
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:565:19
+     |
+ 563 | #[cfg(test)]
+     |       ---- the item is gated here
+ 564 | #[derive(Clone, Debug)]
+ 565 | pub(crate) struct M1TrustRegionRefinementFailureMetadata {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6847:13
+     |
+6847 |     reason: RefinementDot2Reason,
+     |             ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6848:13
+     |
+6848 | ) -> super::M1TrustRegionSubproblemRefusal {
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6948:13
+     |
+6948 | ) -> Result<RefinementDot2Counters, RefinementDot2Refusal> {
+     |             ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+6943 | fn refinement_active_admit<RefinementDot2Counters>(
+     |                           ++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6948:37
+     |
+6948 | ) -> Result<RefinementDot2Counters, RefinementDot2Refusal> {
+     |                                     ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+6943 | fn refinement_active_admit<RefinementDot2Refusal>(
+     |                           +++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6952:24
+     |
+6952 |             return Err(RefinementDot2Refusal {
+     |                        ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6969:24
+     |
+6969 |             return Err(RefinementDot2Refusal {
+     |                        ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7014:25
+     |
+7014 | ) -> Result<([f64; 21], RefinementDot2Counters), RefinementDot2Refusal> {
+     |                         ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+7011 | fn refinement_first_residual<RefinementDot2Counters>(
+     |                             ++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7014:50
+     |
+7014 | ) -> Result<([f64; 21], RefinementDot2Counters), RefinementDot2Refusal> {
+     |                                                  ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+7011 | fn refinement_first_residual<RefinementDot2Refusal>(
+     |                             +++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7017:65
+     |
+7017 |         |reason, guard_stage, row, term, coordinate, counters: &RefinementDot2Counters| {
+     |                                                                 ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7018:13
+     |
+7018 |             RefinementDot2Refusal {
+     |             ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7107:25
+     |
+7107 | ) -> Result<([f64; 21], RefinementDot2Counters), RefinementDot2Refusal> {
+     |                         ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+7104 | fn refinement_second_residual<RefinementDot2Counters>(
+     |                              ++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7107:50
+     |
+7107 | ) -> Result<([f64; 21], RefinementDot2Counters), RefinementDot2Refusal> {
+     |                                                  ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+help: you might be missing a type parameter
+     |
+7104 | fn refinement_second_residual<RefinementDot2Refusal>(
+     |                              +++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7130:28
+     |
+7130 |                 return Err(RefinementDot2Refusal {
+     |                            ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7154:24
+     |
+7154 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7211:20
+     |
+7211 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7215:31
+     |
+7215 | ) -> Result<[f64; 21], super::M1TrustRegionSubproblemRefusal> {
+     |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7246:20
+     |
+7246 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7251:24
+     |
+7251 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7346:24
+     |
+7346 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7365:20
+     |
+7365 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7371:39
+     |
+7371 | ) -> Result<Option<[f64; 21]>, super::M1TrustRegionSubproblemRefusal> {
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7384:51
+     |
+7384 |                 state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |                                                   ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7466:20
+     |
+7466 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7471:31
+     |
+7471 | ) -> Result<[f64; 21], super::M1TrustRegionSubproblemRefusal> {
+     |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7481:47
+     |
+7481 |             state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7508:20
+     |
+7508 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7515:24
+     |
+7515 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7550:20
+     |
+7550 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7557:30
+     |
+7557 | ) -> Result<Vec<f64>, super::M1TrustRegionSubproblemRefusal> {
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7646:20
+     |
+7646 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7653:30
+     |
+7653 | ) -> Result<Vec<f64>, super::M1TrustRegionSubproblemRefusal> {
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7743:20
+     |
+7743 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7749:39
+     |
+7749 | ) -> Result<RefinementScratch, super::M1TrustRegionSubproblemRefusal> {
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7781:20
+     |
+7781 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7838:20
+     |
+7838 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7844:24
+     |
+7844 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7853:47
+     |
+7853 |             state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7880:20
+     |
+7880 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7886:26
+     |
+7886 | ) -> Result<bool, super::M1TrustRegionSubproblemRefusal> {
+     |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7923:20
+     |
+7923 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7930:24
+     |
+7930 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7994:20
+     |
+7994 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8000:24
+     |
+8000 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8074:20
+     |
+8074 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8081:26
+     |
+8081 | ) -> Result<bool, super::M1TrustRegionSubproblemRefusal> {
+     |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8163:20
+     |
+8163 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8169:31
+     |
+8169 | ) -> Result<[f64; 21], super::M1TrustRegionSubproblemRefusal> {
+     |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8180:47
+     |
+8180 |             state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8216:20
+     |
+8216 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8223:31
+     |
+8223 | ) -> Result<[f64; 21], super::M1TrustRegionSubproblemRefusal> {
+     |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8273:20
+     |
+8273 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8279:24
+     |
+8279 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8284:47
+     |
+8284 |             state.refinement_work.absorb_dot2(RefinementDot2Counters {
+     |                                               ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8330:20
+     |
+8330 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8336:32
+     |
+8336 | ) -> Result<(f64, f64), super::M1TrustRegionSubproblemRefusal> {
+     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8395:20
+     |
+8395 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8401:32
+     |
+8401 | ) -> Result<(f64, f64), super::M1TrustRegionSubproblemRefusal> {
+     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8476:20
+     |
+8476 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8482:24
+     |
+8482 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8509:20
+     |
+8509 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8515:24
+     |
+8515 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8566:20
+     |
+8566 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8572:24
+     |
+8572 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8659:20
+     |
+8659 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8665:24
+     |
+8665 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8767:20
+     |
+8767 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8771:24
+     |
+8771 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8844:20
+     |
+8844 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8848:39
+     |
+8848 | ) -> Result<Option<[f64; 21]>, super::M1TrustRegionSubproblemRefusal> {
+     |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8870:20
+     |
+8870 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8874:24
+     |
+8874 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8946:20
+     |
+8946 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8950:24
+     |
+8950 | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8967:26
+     |
+8967 | ) -> Result<bool, super::M1TrustRegionSubproblemRefusal> {
+     |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionKktEvent` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9035:30
+     |
+9035 |     state.events.push(super::M1TrustRegionKktEvent {
+     |                              ^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:328:19
+     |
+ 326 | #[cfg(test)]
+     |       ---- the item is gated here
+ 327 | #[derive(Clone, Debug)]
+ 328 | pub(crate) struct M1TrustRegionKktEvent {
+     |                   ^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9066:42
+     |
+9066 | ) -> Result<KktTransitionOutcome, super::M1TrustRegionSubproblemRefusal> {
+     |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9134:42
+     |
+9134 | ) -> Result<KktTransitionOutcome, super::M1TrustRegionSubproblemRefusal> {
+     |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionKktEvent` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9173:34
+     |
+9173 |         state.events.push(super::M1TrustRegionKktEvent {
+     |                                  ^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:328:19
+     |
+ 326 | #[cfg(test)]
+     |       ---- the item is gated here
+ 327 | #[derive(Clone, Debug)]
+ 328 | pub(crate) struct M1TrustRegionKktEvent {
+     |                   ^^^^^^^^^^^^^^^^^^^^^
+
+error[E0422]: cannot find struct, variant or union type `M1TrustRegionKktEvent` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9240:30
+     |
+9240 |     state.events.push(super::M1TrustRegionKktEvent {
+     |                              ^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:328:19
+     |
+ 326 | #[cfg(test)]
+     |       ---- the item is gated here
+ 327 | #[derive(Clone, Debug)]
+ 328 | pub(crate) struct M1TrustRegionKktEvent {
+     |                   ^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9313:20
+     |
+9313 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9314:20
+     |
+9314 | ) -> Result<super::M1TrustRegionSubproblemObservation, super::M1TrustRegionSubproblemRefusal> {
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:402:19
+     |
+ 400 | #[cfg(test)]
+     |       ---- the item is gated here
+ 401 | #[derive(Clone, Debug)]
+ 402 | pub(crate) struct M1TrustRegionSubproblemObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9314:63
+     |
+9314 | ) -> Result<super::M1TrustRegionSubproblemObservation, super::M1TrustRegionSubproblemRefusal> {
+     |                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemInput` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9406:20
+     |
+9406 |     input: &super::M1TrustRegionSubproblemInput,
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:187:19
+     |
+ 185 | #[cfg(test)]
+     |       ---- the item is gated here
+ 186 | #[derive(Clone, Debug)]
+ 187 | pub(crate) struct M1TrustRegionSubproblemInput {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemObservation` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9407:20
+     |
+9407 | ) -> Result<super::M1TrustRegionSubproblemObservation, super::M1TrustRegionSubproblemRefusal> {
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:402:19
+     |
+ 400 | #[cfg(test)]
+     |       ---- the item is gated here
+ 401 | #[derive(Clone, Debug)]
+ 402 | pub(crate) struct M1TrustRegionSubproblemObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `M1TrustRegionSubproblemRefusal` in module `super`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9407:63
+     |
+9407 | ) -> Result<super::M1TrustRegionSubproblemObservation, super::M1TrustRegionSubproblemRefusal> {
+     |                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `super`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/lib.rs:583:19
+     |
+ 581 | #[cfg(test)]
+     |       ---- the item is gated here
+ 582 | #[derive(Clone, Debug)]
+ 583 | pub(crate) struct M1TrustRegionSubproblemRefusal {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0425]: cannot find type `RefinementDot2Observation` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10946:13
+      |
+10946 | ) -> Result<RefinementDot2Observation, RefinementDot2Refusal> {
+      |             ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: you might be missing a type parameter
+      |
+10943 | fn m1_trust_region_refinement_dot2_for_test<RefinementDot2Observation>(
+      |                                            +++++++++++++++++++++++++++
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10946:40
+      |
+10946 | ) -> Result<RefinementDot2Observation, RefinementDot2Refusal> {
+      |                                        ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: you might be missing a type parameter
+      |
+10943 | fn m1_trust_region_refinement_dot2_for_test<RefinementDot2Refusal>(
+      |                                            +++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Observation` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11003:8
+      |
+11003 |     Ok(RefinementDot2Observation {
+      |        ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11020:23
+      |
+11020 | ) -> Result<Vec<f64>, RefinementDot2Refusal> {
+      |                       ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+      |
+help: you might be missing a type parameter
+      |
+11013 | fn bvls04_dot2_defect<RefinementDot2Refusal>(
+      |                      +++++++++++++++++++++++
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11027:24
+      |
+11027 |             return Err(RefinementDot2Refusal {
+      |                        ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11049:34
+      |
+11049 |                 work.absorb_dot2(RefinementDot2Counters {
+      |                                  ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Counters` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11060:34
+      |
+11060 |                 work.absorb_dot2(RefinementDot2Counters {
+      |                                  ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11068:28
+      |
+11068 |                 return Err(RefinementDot2Refusal {
+      |                            ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0609]: no field `bvls05_certificate` on type `&mut FoundationState<P, Phase>`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:364:23
+    |
+364 |             &mut self.bvls05_certificate,
+    |                       ^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `current`, `radius`, `budget`, `raw_jacobian`, `natural_phase` ... and 10 others
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3146:13
+     |
+3145 |         .map_err(|error| match error {
+     |                                ----- this expression has type `M1TrustRegionControllerError<M1PhysicalTrustRegionAdapterOwnError>`
+3146 |             M1PhysicalTrustRegionAdapterOwnError::Coupled(error) => *error,
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `M1TrustRegionControllerError<...>`, found `M1PhysicalTrustRegionAdapterOwnError`
+     |
+     = note: expected enum `M1TrustRegionControllerError<M1PhysicalTrustRegionAdapterOwnError>`
+                found enum `M1PhysicalTrustRegionAdapterOwnError`
+help: try wrapping the pattern in `m1_trust_region_controller::M1TrustRegionControllerError::Own`
+     |
+3146 |             m1_trust_region_controller::M1TrustRegionControllerError::Own(M1PhysicalTrustRegionAdapterOwnError::Coupled(error)) => *error,
+     |             ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++                                                    +
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3147:13
+     |
+3145 |         .map_err(|error| match error {
+     |                                ----- this expression has type `M1TrustRegionControllerError<M1PhysicalTrustRegionAdapterOwnError>`
+3146 |             M1PhysicalTrustRegionAdapterOwnError::Coupled(error) => *error,
+3147 |             M1PhysicalTrustRegionAdapterOwnError::IncompleteScope => domain_error(),
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `M1TrustRegionControllerError<...>`, found `M1PhysicalTrustRegionAdapterOwnError`
+...
+3346 |     IncompleteScope,
+     |     --------------- unit variant defined here
+     |
+     = note: expected enum `M1TrustRegionControllerError<M1PhysicalTrustRegionAdapterOwnError>`
+                found enum `M1PhysicalTrustRegionAdapterOwnError`
+help: try wrapping the pattern in `m1_trust_region_controller::M1TrustRegionControllerError::Own`
+     |
+3147 |             m1_trust_region_controller::M1TrustRegionControllerError::Own(M1PhysicalTrustRegionAdapterOwnError::IncompleteScope) => domain_error(),
+     |             ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++                                                     +
+
+error[E0425]: cannot find function `bvls05_assembly_provenance` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3490:46
+     |
+3490 |         self.last_assembly_provenance = Some(bvls05_assembly_provenance(&self.input, &core));
+     |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3382:4
+     |
+3381 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+3382 | fn bvls05_assembly_provenance(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0609]: no field `liquid_mass_kg_m2` on type `&CoreOccupancy`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3516:50
+     |
+3516 |                     liquid_mass_kg_m2: occupancy.liquid_mass_kg_m2,
+     |                                                  ^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `sun`, `shade`, `wet_temperature_k`, `wet_fraction`, `wet_vapor` ... and 9 others
+
+error[E0425]: cannot find function `bvls05_assembly_provenance` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3576:54
+     |
+3576 |                 self.last_assembly_provenance = Some(bvls05_assembly_provenance(
+     |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3382:4
+     |
+3381 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+3382 | fn bvls05_assembly_provenance(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0609]: no field `selected_probe_entries` on type `Ref<'_, M1LoopActivityObservation>`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3593:67
+     |
+3593 |             M1_RUNTIME_ACTIVITY.with(|activity| activity.borrow().selected_probe_entries);
+     |                                                                   ^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `complete_evaluator_entries`, `hydraulic_entries`, `actual_hydraulic_entries`, `trial_entries`, `materialization_entries` ... and 25 others
+
+error[E0609]: no field `selected_probe_entries` on type `Ref<'_, M1LoopActivityObservation>`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3600:67
+     |
+3600 |             M1_RUNTIME_ACTIVITY.with(|activity| activity.borrow().selected_probe_entries);
+     |                                                                   ^^^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `complete_evaluator_entries`, `hydraulic_entries`, `actual_hydraulic_entries`, `trial_entries`, `materialization_entries` ... and 25 others
+
+error[E0425]: cannot find function `bvls05_assembly_provenance` in this scope
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3606:18
+     |
+3606 |             Some(bvls05_assembly_provenance(&self.input, &assembly_core));
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3382:4
+     |
+3381 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |           ---- the item is gated here
+3382 | fn bvls05_assembly_provenance(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2719:20
+     |
+2719 |         return Err(RefinementDot2Reason::NonfiniteOperand);
+     |                    ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2722:20
+     |
+2722 |         return Err(RefinementDot2Reason::SubnormalIntermediate);
+     |                    ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2735:20
+     |
+2735 |         return Err(RefinementDot2Reason::UnderflowToZero);
+     |                    ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2886:20
+     |
+2886 |         return Err(RefinementDot2Reason::NonfiniteOperand);
+     |                    ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3054:24
+     |
+3054 |             return Err(RefinementDot2Reason::NonfiniteOperand);
+     |                        ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0689]: can't call method `is_nan` on ambiguous numeric type `{float}`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4872:30
+     |
+4872 |         if scaled_lower[col].is_nan()
+     |                              ^^^^^^
+
+error[E0689]: can't call method `is_nan` on ambiguous numeric type `{float}`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4873:34
+     |
+4873 |             || scaled_upper[col].is_nan()
+     |                                  ^^^^^^
+
+error[E0689]: can't call method `is_finite` on ambiguous numeric type `{float}`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4875:68
+     |
+4875 |             || (input.lower[col].is_finite() && !scaled_lower[col].is_finite())
+     |                                                                    ^^^^^^^^^
+
+error[E0689]: can't call method `is_finite` on ambiguous numeric type `{float}`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4876:68
+     |
+4876 |             || (input.upper[col].is_finite() && !scaled_upper[col].is_finite())
+     |                                                                    ^^^^^^^^^
+
+error[E0689]: can't call method `is_finite` on ambiguous numeric type `{float}`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4904:28
+     |
+4904 |         if !candidate[col].is_finite() {
+     |                            ^^^^^^^^^
+
+error[E0425]: cannot find function `refinement_observation_refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5723:28
+     |
+5723 |               .ok_or_else(|| refinement_observation_refusal("refinement_r0_missing", state))?
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5745 | / fn refinement_observation_masks(
+5746 | |     trace: &RefinementObservationTrace,
+5747 | |     lower: [bool; 21],
+5748 | |     upper: [bool; 21],
+...    |
+5759 | | }
+     | |_- similarly named function `refinement_observation_masks` defined here
+     |
+help: a function with a similar name exists
+     |
+5723 -             .ok_or_else(|| refinement_observation_refusal("refinement_r0_missing", state))?
+5723 +             .ok_or_else(|| refinement_observation_masks("refinement_r0_missing", state))?
+     |
+
+error[E0425]: cannot find function `refinement_observation_refusal` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5728:28
+     |
+5728 |               .ok_or_else(|| refinement_observation_refusal("refinement_residual1_missing", state))?
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+5745 | / fn refinement_observation_masks(
+5746 | |     trace: &RefinementObservationTrace,
+5747 | |     lower: [bool; 21],
+5748 | |     upper: [bool; 21],
+...    |
+5759 | | }
+     | |_- similarly named function `refinement_observation_masks` defined here
+     |
+help: a function with a similar name exists
+     |
+5728 -             .ok_or_else(|| refinement_observation_refusal("refinement_residual1_missing", state))?
+5728 +             .ok_or_else(|| refinement_observation_masks("refinement_residual1_missing", state))?
+     |
+
+error[E0425]: cannot find function `refinement_class_name` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5783:26
+     |
+5783 |             .map(|value| refinement_class_name(value.class).to_owned())
+     |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_required_observation_live_state_bits` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5818:9
+     |
+5716 | / fn refinement_required_observation_residual_bits(
+5717 | |     trace: &RefinementObservationTrace,
+5718 | |     state: &SubproblemState,
+5719 | | ) -> Result<(Vec<u64>, Vec<u64>), Box<RefinementObservationRefusal>> {
+...    |
+5731 | |     ))
+5732 | | }
+     | |_- similarly named function `refinement_required_observation_residual_bits` defined here
+...
+5818 |           refinement_required_observation_live_state_bits(trace, state)?,
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+5818 -         refinement_required_observation_live_state_bits(trace, state)?,
+5818 +         refinement_required_observation_residual_bits(trace, state)?,
+     |
+
+error[E0425]: cannot find function `refinement_retained_face_trace_bits` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5844:22
+     |
+5844 |     let trace_bits = refinement_retained_face_trace_bits(&trace, p2, state)?;
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6949:24
+     |
+6949 |     let mut counters = RefinementDot2Counters::default();
+     |                        ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6951:30
+     |
+6951 |         if let Err(reason) = refinement_dot2_guard(p[column], &mut counters) {
+     |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6970:25
+     |
+6970 |                 reason: RefinementDot2Reason::NonfiniteOperand,
+     |                         ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7015:24
+     |
+7015 |     let mut counters = RefinementDot2Counters::default();
+     |                        ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7032:30
+     |
+7032 |         if let Err(reason) = refinement_dot2_guard(prepared.weighted_residual[row], &mut counters) {
+     |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7045:17
+     |
+7045 |                 refinement_dot2_guard(prepared.weighted_matrix[row][column], &mut counters)
+     |                 ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7056:34
+     |
+7056 |             if let Err(reason) = refinement_dot2_guard(step, &mut counters) {
+     |                                  ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_mul` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7067:17
+     |
+7067 |                 refinement_dot2_mul(prepared.weighted_matrix[row][column], step, &mut counters)
+     |                 ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7078:19
+     |
+6901 | / fn refinement_box_admit(
+6902 | |     prepared: &PreparedSubproblem,
+6903 | |     p: &[f64; 21],
+6904 | |     free_ids: Option<&[usize]>,
+...    |
+6933 | |     None
+6934 | | }
+     | |_- similarly named function `refinement_box_admit` defined here
+...
+7078 |               sum = refinement_dot2_add(sum, product, &mut counters).map_err(|reason| {
+     |                     ^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+7078 -             sum = refinement_dot2_add(sum, product, &mut counters).map_err(|reason| {
+7078 +             sum = refinement_box_admit(sum, product, &mut counters).map_err(|reason| {
+     |
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7089:25
+     |
+6901 | / fn refinement_box_admit(
+6902 | |     prepared: &PreparedSubproblem,
+6903 | |     p: &[f64; 21],
+6904 | |     free_ids: Option<&[usize]>,
+...    |
+6933 | |     None
+6934 | | }
+     | |_- similarly named function `refinement_box_admit` defined here
+...
+7089 |           residual[row] = refinement_dot2_add(prepared.weighted_residual[row], sum, &mut counters)
+     |                           ^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+7089 -         residual[row] = refinement_dot2_add(prepared.weighted_residual[row], sum, &mut counters)
+7089 +         residual[row] = refinement_box_admit(prepared.weighted_residual[row], sum, &mut counters)
+     |
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7109:24
+     |
+7109 |     let mut counters = RefinementDot2Counters::default();
+     |                        ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7538:31
+     |
+7538 |     let mut factor_counters = RefinementDot2Counters::default();
+     |                               ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7540:12
+     |
+7540 |         if refinement_dot2_guard(value, &mut factor_counters).is_err() {
+     |            ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7752:28
+     |
+7752 |         let mut counters = RefinementDot2Counters::default();
+     |                            ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7756:23
+     |
+6901 | / fn refinement_box_admit(
+6902 | |     prepared: &PreparedSubproblem,
+6903 | |     p: &[f64; 21],
+6904 | |     free_ids: Option<&[usize]>,
+...    |
+6933 | |     None
+6934 | | }
+     | |_- similarly named function `refinement_box_admit` defined here
+...
+7756 |           let updated = refinement_dot2_add(left, right, &mut counters);
+     |                         ^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+7756 -         let updated = refinement_dot2_add(left, right, &mut counters);
+7756 +         let updated = refinement_box_admit(left, right, &mut counters);
+     |
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8226:28
+     |
+8226 |         let mut counters = RefinementDot2Counters::default();
+     |                            ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8227:23
+     |
+6901 | / fn refinement_box_admit(
+6902 | |     prepared: &PreparedSubproblem,
+6903 | |     p: &[f64; 21],
+6904 | |     free_ids: Option<&[usize]>,
+...    |
+6933 | |     None
+6934 | | }
+     | |_- similarly named function `refinement_box_admit` defined here
+...
+8227 |           let updated = refinement_dot2_add(p2[column], delta1[slot], &mut counters);
+     |                         ^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+8227 -         let updated = refinement_dot2_add(p2[column], delta1[slot], &mut counters);
+8227 +         let updated = refinement_box_admit(p2[column], delta1[slot], &mut counters);
+     |
+
+error[E0433]: cannot find type `RefinementDot2Counters` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10947:24
+      |
+10947 |     let mut counters = RefinementDot2Counters::default();
+      |                        ^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Counters`
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10949:30
+      |
+10949 |         if let Err(reason) = refinement_dot2_guard(value, &mut counters) {
+      |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10950:24
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10950 |               return Err(refinement_dot2_refusal(
+      |                          ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10950 -             return Err(refinement_dot2_refusal(
+10950 +             return Err(refinement_metadata_refusal(
+      |
+
+error[E0425]: cannot find function `refinement_dot2_guard` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10959:30
+      |
+10959 |         if let Err(reason) = refinement_dot2_guard(value, &mut counters) {
+      |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10960:24
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10960 |               return Err(refinement_dot2_refusal(
+      |                          ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10960 -             return Err(refinement_dot2_refusal(
+10960 +             return Err(refinement_metadata_refusal(
+      |
+
+error[E0425]: cannot find function `refinement_dot2_two_product` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10969:9
+      |
+10969 |         refinement_dot2_two_product(terms[0], weights[0], &mut counters).map_err(|failure| {
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10970:13
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10970 |               refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(0))
+      |               ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10970 -             refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(0))
+10970 +             refinement_metadata_refusal(counters, failure.reason, failure.guard_stage, Some(0))
+      |
+
+error[E0425]: cannot find function `refinement_dot2_two_product` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10974:28
+      |
+10974 |         let (head, tail) = refinement_dot2_two_product(terms[index], weights[index], &mut counters)
+      |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10976:17
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10976 |                   refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10976 -                 refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+10976 +                 refinement_metadata_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+      |
+
+error[E0425]: cannot find function `refinement_dot2_two_sum` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10978:40
+      |
+10978 |         let (next_partial, sum_tail) = refinement_dot2_two_sum(partial, head, &mut counters)
+      |                                        ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10980:17
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10980 |                   refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10980 -                 refinement_dot2_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+10980 +                 refinement_metadata_refusal(counters, failure.reason, failure.guard_stage, Some(index))
+      |
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10984:13
+      |
+ 6901 | / fn refinement_box_admit(
+ 6902 | |     prepared: &PreparedSubproblem,
+ 6903 | |     p: &[f64; 21],
+ 6904 | |     free_ids: Option<&[usize]>,
+...     |
+ 6933 | |     None
+ 6934 | | }
+      | |_- similarly named function `refinement_box_admit` defined here
+...
+10984 |               refinement_dot2_add(sum_tail, tail, &mut counters).map_err(|reason| {
+      |               ^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10984 -             refinement_dot2_add(sum_tail, tail, &mut counters).map_err(|reason| {
+10984 +             refinement_box_admit(sum_tail, tail, &mut counters).map_err(|reason| {
+      |
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10985:17
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10985 |                   refinement_dot2_refusal(
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10985 -                 refinement_dot2_refusal(
+10985 +                 refinement_metadata_refusal(
+      |
+
+error[E0425]: cannot find function `refinement_dot2_add` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10992:24
+      |
+ 6901 | / fn refinement_box_admit(
+ 6902 | |     prepared: &PreparedSubproblem,
+ 6903 | |     p: &[f64; 21],
+ 6904 | |     free_ids: Option<&[usize]>,
+...     |
+ 6933 | |     None
+ 6934 | | }
+      | |_- similarly named function `refinement_box_admit` defined here
+...
+10992 |           compensation = refinement_dot2_add(compensation, sum_tail_plus_tail, &mut counters)
+      |                          ^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10992 -         compensation = refinement_dot2_add(compensation, sum_tail_plus_tail, &mut counters)
+10992 +         compensation = refinement_box_admit(compensation, sum_tail_plus_tail, &mut counters)
+      |
+
+error[E0425]: cannot find function `refinement_dot2_refusal` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:10994:17
+      |
+ 6786 | / fn refinement_metadata_refusal(
+ 6787 | |     state: &SubproblemState,
+ 6788 | |     raw_max: f64,
+ 6789 | |     solution: &FaceSolution,
+...     |
+ 6838 | |     refusal
+ 6839 | | }
+      | |_- similarly named function `refinement_metadata_refusal` defined here
+...
+10994 |                   refinement_dot2_refusal(
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^
+      |
+help: a function with a similar name exists
+      |
+10994 -                 refinement_dot2_refusal(
+10994 +                 refinement_metadata_refusal(
+      |
+
+error[E0425]: cannot find function `refinement_dot2_final_add` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11002:17
+      |
+11002 |     let value = refinement_dot2_final_add(partial, compensation, &mut counters)?;
+      |                 ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+     --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11028:25
+      |
+11028 |                 reason: RefinementDot2Reason::NonfiniteOperand,
+      |                         ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+warning: unused variable: `evaluator`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:409:53
+    |
+409 |     fn replace_assembly_for_bvls05<E, V>(&mut self, evaluator: &V, raw_jacobian: &[[f64; 21]; 21])
+    |                                                     ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_evaluator`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6862:13
+     |
+6862 |             RefinementDot2Reason::SubnormalIntermediate => {
+     |             ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6853:13
+     |
+6853 |             RefinementDot2Reason::NonfiniteOperand => {
+     |             ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6856:13
+     |
+6856 |             RefinementDot2Reason::SplitterOverflow => {
+     |             ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6859:13
+     |
+6859 |             RefinementDot2Reason::UnderflowToZero => {
+     |             ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+
+Some errors have detailed explanations: E0308, E0422, E0425, E0432, E0433, E0609, E0689.
+For more information about an error, try `rustc --explain E0308`.
+warning: `openwepp-land-surface-energy` (lib) generated 1 warning
+error: could not compile `openwepp-land-surface-energy` (lib) due to 274 previous errors; 1 warning emitted

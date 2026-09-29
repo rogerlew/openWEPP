@@ -1,0 +1,15 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `release` profile [optimized] target(s) in 0.03s
+────────────
+ Nextest run ID af35dabc-7c2b-478d-b89f-4b25dccff42d with nextest profile: default
+    Starting 1 test across 1 binary (408 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_bvls05_role_universe_actual_assembly ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 408 filtered out; finished in 0.00s
+
+
+────────────
+     Summary [   0.006s] 1 test run: 1 passed, 408 skipped

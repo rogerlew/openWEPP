@@ -1,0 +1,111 @@
+{
+  "evidence_class": "Ran: independent correctness review of the one authorized corrected G2 verification; Static: exact readiness review of the five remaining G6 cases",
+  "reviewer": "/root/interface_correctness",
+  "identity": {
+    "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+    "binary": "/tmp/openwepp-cold-canopy-m1-bvls05-g2-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "binary_sha256_recorded_and_read_back": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+    "selector": "m1_coupled_tests::m1_trust_region_retained_selected_side_wrapper_returns_own_mh_guard"
+  },
+  "reviewed_evidence": {
+    "bvls05-conditional-g2-results01.json": "c38916e09024f3bb7a8fc74d9f9d2782fde0388097d9b16e14953bc1c6830d28",
+    "bvls05-conditional-g2-corrected01.json": "a64151a98c4b5beb551e7ee7f234e37a4ce2d7ccd17d84ed68545c6a19fd114f",
+    "bvls05-conditional-g2-corrected01.stderr": "e2df17f08d3d86ce005945770ee63f2db98f05c024f3b77caaaaf8076e92c805",
+    "bvls05-conditional-g2-corrected01-capture.json": "555bc1d960c4a5bfb9aae9720a5390524c63da1f7899369ba9f1d8486d972b79",
+    "bvls05-conditional-plan02.json": "834224ed1fec1b89314968b56647dd12179fc44fec2102df489a67fd799a599a",
+    "bvls05-correctness-g2-failure01.json": "d4ad4b97a959729ced188b90f455a1bff4b16a7705851c3c2eec184440b150c3",
+    "bvls05-correctness-g2-fix01.json": "261633673fbdf3b27d7e863384883cb7fefb768ba09d4ad9f7a73ff4293580da"
+  },
+  "findings": [],
+  "corrected_g2_result": {
+    "disposition": "PASS",
+    "execution": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 408,
+      "exit_code": 0,
+      "elapsed_seconds": 9.748603727202863,
+      "timed_out": false,
+      "automatic_retries": 0,
+      "source_unchanged": true,
+      "binary_unchanged": true,
+      "observer_base_unchanged": true,
+      "pinned_files_unchanged": true,
+      "support_links_unchanged": true
+    },
+    "capture_binding": {
+      "stderr_payload_count": 1,
+      "parsed_capture_structurally_equal_to_verbatim_stderr_payload": true,
+      "all_fields_common_with_preserved_failed_capture_equal": true,
+      "reviewed_semantic_delta": "selected_side_probe_entries changed from the prior direct-only zero to aggregate one, with additive predictor_selected_side_probe_entries=1 and direct_selected_side_probe_entries=0"
+    },
+    "owning_path": {
+      "typed_error_asserted_by_test": "VEG-E-142 at M1Stage::MhConsistency",
+      "predictor_selected_side_probe_entries": 1,
+      "direct_selected_side_probe_entries": 0,
+      "selected_side_probe_entries_aggregate": 1,
+      "selected_side_probes_completed": 0,
+      "poison_events": "armed, probe entered, applied, core entered, scope restored",
+      "pre_poison_coordinate3": "finite and positive",
+      "poisoned_coordinate3_bits": 9227875636482146304,
+      "poisoned_coordinate3_meaning": "-f64::MIN_POSITIVE",
+      "interpretation": "The selected predictor Jacobian entered the actual low-level owning probe and canonical core. The intended typed error prevented completion and the later direct adapter probe, exactly matching the frozen precedence."
+    },
+    "state_and_downstream_custody": {
+      "radius_unchanged": true,
+      "base_unchanged": true,
+      "selected_phase_unchanged": true,
+      "controller_materializations": 0,
+      "adapter_materialization_entries": 0,
+      "trial_domain_checks": 0,
+      "current_evaluations": 1,
+      "current_hydraulics": "Pending",
+      "protected_input_unchanged": true,
+      "protected_trial_unchanged": true,
+      "poison_scope_restored": true,
+      "controller_stage1_calls": 1,
+      "full_assertion_tail_executed": "The test passed after the former line-6405 failure, so all retained poison, downstream, work, restoration and custody assertions executed."
+    },
+    "corrected_verification_rule": "Satisfied. The original failure and source remain preserved; this was the single reviewed correction of an independently demonstrated recording defect, with no fixture, selector, input, poison, predicate, method, tolerance or numerical-path change."
+  },
+  "five_g6_readiness": {
+    "disposition": "READY",
+    "evidence_status": "unexecuted prospective cases",
+    "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+    "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+    "selectors": [
+      "m1_coupled_tests::m1_trust_region_physical_budget_core_cap_control_reaches_actual_owner",
+      "m1_coupled_tests::m1_trust_region_physical_budget_raw_jacobian_cap_control_reaches_actual_owner",
+      "m1_coupled_tests::m1_trust_region_physical_budget_hydraulic_cap_control_reaches_actual_owner",
+      "m1_coupled_tests::m1_trust_region_physical_budget_stage1_factorization_cap_reaches_actual_face",
+      "m1_coupled_tests::m1_trust_region_physical_budget_materialization_cap_reaches_actual_owner"
+    ],
+    "inventory_binding": "Each exact selector occurs once in the frozen 409-test release inventory.",
+    "plan_equivalence": "All five G6 case dictionaries are identical to conditional-plan01 after target-directory normalization. Selector order, exact argv, expected selected count, input lineage, paired controls, labels and assertions are unchanged; plan02 only rebinds source, binary and target custody after cut09.",
+    "execution_protocol": {
+      "order": "core, raw Jacobian, hydraulic, Stage1 factorization, materialization",
+      "profile": "release",
+      "expected_selected_case_count_each": 1,
+      "planned_executions_each": 1,
+      "bound_seconds_each": 180,
+      "negative_stop": "An expected owning refusal is the negative control's PASS. An unexpected source-conforming numerical refusal before the intended branch stops all remaining physical/numerical work. Do not alter seed, input, method or retry into PASS. An affected correction is allowed only for a separately demonstrated implementation or recording defect, preserving the first source and result."
+    },
+    "scope": [
+      "The corrected G2 slot is spent and must not be repeated.",
+      "G1, G5 and G4 are not repeated.",
+      "The Stage1 factorization case remains an analytic seeded actual owner rather than a natural physical trajectory.",
+      "No G6 outcome is inferred from source readiness or G2 PASS."
+    ]
+  },
+  "residual_risk_and_missing_tests": [
+    "All five G6 cases remain unexecuted; READY authorizes only their exact bounded commands and does not predict PASS.",
+    "The same negative-stop rule can terminate the batch before later owners are reached.",
+    "No broader production, target, scale, cycle/restart or M1 acceptance follows from G2 PASS or G6 readiness."
+  ],
+  "approval": {
+    "corrected_g2": "PASS",
+    "five_g6": "READY",
+    "production_activation": false,
+    "status": "NO_CORRECTNESS_BLOCKER_TO_EXACT_FIVE_G6_DISPATCH"
+  }
+}

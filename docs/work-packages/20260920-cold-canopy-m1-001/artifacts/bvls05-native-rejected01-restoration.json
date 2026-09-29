@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Ran: full764-entry source equality after rejected duplicatecapture draft restoration, no numericalexecution",
+  "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+  "source_matches_recovery09": true,
+  "reason": "Rejected draft duplicated existing complete input/seed observation and did not connect trust-region body. No compile or result-bearing run.",
+  "draft_patches": [
+    {
+      "path": "bvls05-native-rejected01-lse-Cargo.patch",
+      "sha256": "e4838fae9a20dbe8ddf570acfe7fd7e9eee112cb2bcd7bb47ee01decd93ce640"
+    },
+    {
+      "path": "bvls05-native-rejected01-m1_coupled.patch",
+      "sha256": "538b912713303de7218bde3e9b3f83598ed5b0917b8a1f1bfeb2023b656d6392"
+    },
+    {
+      "path": "bvls05-native-rejected01-orch-Cargo.patch",
+      "sha256": "e0bb8d6feb8316853a59e16a998aa11ce0418720d562c39561b6c21142366c9c"
+    },
+    {
+      "path": "bvls05-native-rejected01-provider.patch",
+      "sha256": "9f0ddcaeb3579a0deee62310313e97df06c25ae82c5ffab1a4f6b17ff4a32643"
+    }
+  ],
+  "exact_base": "bvls05-terminal09-recovery.json",
+  "author": "/root/bvls05_writer"
+}

@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Ran: exact old/new no-provenance empty-mask full Debug payload comparison",
+  "baseline": "bvls05-empty-old-body-baseline.json",
+  "candidate": "bvls05-body-analytic-debug01.stderr",
+  "candidate_sha256": "86a1418ddecb66169f765948aede0075451c79e54c8396ffebabc24cdd8416a9",
+  "equal_fields": [
+    "positive_debug",
+    "zero_debug"
+  ],
+  "all_fields_equal": true
+}

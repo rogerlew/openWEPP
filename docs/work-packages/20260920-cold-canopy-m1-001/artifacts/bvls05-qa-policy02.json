@@ -1,0 +1,79 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-policy.v2",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static revised-policy/control review only. QA ran no Rust build, test, physical assembly, solver, replay, or numerical calculation.",
+  "reviewed_custody": {
+    "starting_main": "d7ad407e956e3ecea716db6744f4fd2bbe14ed61",
+    "detached_source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+    "detached_source_entries": 764,
+    "prior_correctness_policy": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-correctness-policy01.json",
+      "sha256": "d0f85b8d2b7f272609e3798c89ee02003a16ef7fc0306de93530f827a0e8bb71"
+    },
+    "control_plan": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan02.json",
+      "sha256": "7d86ab6c8631245b342778ec8d6376d244d881db22c462f8ae2c52b08455a19b"
+    },
+    "numerical_authority": {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "sha256": "95672de2e07a448688ddf41335b95d8ff0bb90c084ba028673a7f344542244f0"
+    },
+    "lse_entrypoint": {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+      "contract_version": 40,
+      "sha256": "c80270ba93bd702d67b5260bd0ce1074113b190c016ba98591f6d84ff5f19b47"
+    },
+    "binding_index": {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md",
+      "sha256": "2192bf6a2234e1b7738a0ac4b7815ecc2e268df9a19f914168ec18afbf494606"
+    },
+    "vegetation": {
+      "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "contract_version": 38,
+      "sha256": "9289b21afae8420be74b61abd3a939778a6ca990b5d95d0d6b53f28d265dfeac"
+    }
+  },
+  "findings": [
+    {
+      "severity": "high-blocker",
+      "location": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md, BVLS-05 reduction paragraph",
+      "title": "The amended authority still gives two incompatible definitions of a held face's free set.",
+      "evidence": "The corrected face-admission paragraph defines D as certified AND initial_free AND state.free, and plan02 correctly defines face_free as existing state.free intersected with complement(D). The later normative reduction text nevertheless says the face free set is physically nonfixed coordinates minus D. A currently lower/upper-active coordinate is physically nonfixed but absent state.free, so the latter phrase could reintroduce exactly the active-coordinate ambiguity that the preceding correction and BVLS05-R03 reject.",
+      "required_fix": "Replace that later definition with `state.free intersect complement(D)` (or an unambiguous equivalent), while preserving initial_free/lower_active/upper_active and the full 21-coordinate KKT statement. Re-review the one-line authority correction before controls execute."
+    },
+    {
+      "severity": "high-blocker",
+      "location": "bvls05-control-plan02.json: BVLS05-R05 and BVLS05-R06",
+      "title": "The nonempty-held BVLS03/BVLS04 refinement controls do not freeze operands that force their declared routes.",
+      "evidence": "R05/R06 name C01's retained system and name zero versus positive lambda, but give no independently declared RHS, radius, p0, or factor operands that make those routes reachable. They could therefore become a result-dependent G4 path or merely inject a candidate-produced factor, neither of which proves held cardinality at refinement joins.",
+      "required_fix": "Freeze compact independent formula-defined 19-column diagonal-plus-two-held-zero test operands, including RHS, bounds/radius, p0 and factor data, that deterministically exercise zero-lambda and positive-lambda routing. Preserve C01 as the real retained-rank case rather than using it to search for refinement results."
+    },
+    {
+      "severity": "high-blocker",
+      "location": "bvls05-control-plan02.json: BVLS05-L02",
+      "title": "The full-to-dry trial declares an accepted candidate without frozen evidence that it is admissible.",
+      "evidence": "L02 says a formula-derived accepted candidate moves M below Cliq but does not declare the exact mass/other operands, the acceptance path, or an expected non-result-bearing disposition. That leaves a physical acceptance outcome to be discovered after the body changes, contrary to the frozen non-target control requirement.",
+      "required_fix": "Freeze exact formula-derived trial operands and either an independently established admissibility/expected disposition or a controlled evaluator seam that proves wet/dry recomputation without claiming an unproven accepted physical candidate."
+    },
+    {
+      "severity": "medium-blocker",
+      "location": "bvls05-control-plan02.json: BVLS05-R07",
+      "title": "The empty-held regression does not require a provenance scan that reaches empty D.",
+      "evidence": "R07 requires bit-identical routing and zero added mask/scatter/factor work, but it can pass via an empty-mask shortcut before role/column eligibility is evaluated. It would not prove that a failed ordinary eligibility predicate produces D empty while preserving the original BVLS03/BVLS04 path.",
+      "required_fix": "Require an explicit semantic-role/area/wetness/raw-and-weighted-column eligibility scan yielding D empty, assert its bounded scan work, then prove bit-identical BVLS03/BVLS04 numerical routing with no mask/scatter/factor delta."
+    }
+  ],
+  "verified_closure": {
+    "prior_blockers_addressed_in_plan02": [
+      "closed semantic six-role universe with upper/lower sun, shade, and dry-stem joins",
+      "explicit initially-fixed, bound-but-current-free, and lower/upper-active precedence in R03",
+      "15 named selectors with honest data-only, non-target physical-assembly, non-target physical-trial, and sole later endpoint classes",
+      "expected-red R01 requires behavioral failure without missing-symbol/stub escape",
+      "rank-19 retained oracle, 19-entry factor/free/order assertions, and all-21 KKT/scatter requirements",
+      "natural/selected/same-J/new-base lifecycle seams, dry-to-full trial coverage, and fixed per-assembly accounting limits",
+      "LSE v40 entrypoint/change-log and BVLS05 binding-index exposure; vegetation metadata v38 agrees with its change log"
+    ],
+    "future_body_gates_remain": "Controls-before-body remain blocked by the four listed defects. After their correction and re-review, source-bound expected-red evidence, implementation review, quality/inventory/format/default receipts, source-bearing lint reconciliation, and renewed readiness remain required before the G4 endpoint."
+  },
+  "disposition": "BLOCKED_PENDING_AUTHORITY_AND_FINITE-CONTROL_FIXES. No Rust/body, expected-red, non-target assembly, or physical endpoint release follows from this review."
+}

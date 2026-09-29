@@ -1,0 +1,25 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0284]: type annotations needed for `[Bvls05RoleInput; _]`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4968:9
+     |
+4968 |       let roles = std::array::from_fn(|slot| Bvls05RoleInput {
+     |  _________^^^^^___-
+4969 | |         role: kinds[slot],
+4970 | |         column: provenance.role_columns[slot],
+4971 | |         structural_area: provenance.structural_areas[slot],
+...    |
+4974 | |         physical_current_free: state.free[provenance.role_columns[slot]],
+4975 | |     });
+     | |______- type must be known at this point
+     |
+note: required by a const generic parameter in `std::array::from_fn`
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/array/mod.rs:109:0
+help: consider giving `roles` an explicit type, where the value of const parameter `N` is specified
+     |
+4968 |     let roles: [_; N] = std::array::from_fn(|slot| Bvls05RoleInput {
+     |              ++++++++
+
+For more information about this error, try `rustc --explain E0284`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-controller-stage,m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

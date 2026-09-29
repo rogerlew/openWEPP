@@ -1,0 +1,80 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-policy-controls-release.v1",
+  "reviewer": "interface_correctness",
+  "role": "same-reviewer independent correctness final policy fix verification",
+  "evidence_class": "Static parsed-diff and canonical-pointer review only. No Rust build, test, physical assembly, physical trial, solver, replay, or result-bearing execution was run by this reviewer.",
+  "reviewed_files": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan05.json",
+      "sha256": "0697ddc894667648f3dc247cf3d2e1b2b4d6f993ef3b7e33f89243d9b792f6f3"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "sha256": "a9a3caaeb7e68b03ae324540572fcb299e1f8467412fb199c9d6a167e818aba0"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan04.json",
+      "sha256": "3c4c5e1647377e8e99d1de5c1080d553c8c734b67fc139ca3c4278cf3bff2654"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-correctness-policy04.json",
+      "sha256": "93f08a91fa7afcfa7245359d0c380d42e9b7b59a5f219abfc99a37afe36a46dc"
+    }
+  ],
+  "bounded_parsed_diff": [
+    {
+      "path": "preserves",
+      "change": "Added bvls05-control-plan04.json; plans01-04 are retained."
+    },
+    {
+      "path": "analytic_refinement_fixture.factor",
+      "change": "Replaced literal B=I19 with the exact 21-row by 19-column embedded identity B[r,k]=1 iff r==retained_original_indices[k]; V remains I19 with sigma/order/free IDs unchanged."
+    },
+    {
+      "path": "cases[BVLS05-R06].expected",
+      "change": "Requires p1=p2=p0 mathematically, p[0]=0.5, canonical +0 only for held coordinates, and independently derived unchanged-arithmetic bits for other retained zeros."
+    }
+  ],
+  "fix_verification": [
+    {
+      "finding": "dimensionally contradictory factor declaration",
+      "status": "CLOSED",
+      "evidence": "Both matrix and factor fields now define the same 21-by-19 embedded B; only V is I19."
+    },
+    {
+      "finding": "retained-coordinate +0 overconstraint",
+      "status": "CLOSED",
+      "evidence": "R06 now applies canonical +0 only to held coordinates and observes retained zero bits from unchanged BVLS04 arithmetic without normalization."
+    },
+    {
+      "finding": "canonical control-plan pointer",
+      "status": "CLOSED",
+      "evidence": "The numerical-methods authority points to bvls05-control-plan05.json; plan05 explicitly preserves plans01-04."
+    }
+  ],
+  "accepted_policy_and_controls": [
+    "All findings in bvls05-correctness-policy01 through policy04 are closed for policy/control design.",
+    "The six semantic role joins, exact-wet/exact-zero certificate, fixed/active/free precedence, assembly-owned D lifetime, full 21-row/KKT/scatter behavior, retained-column rank refusal, and mask reactivation lifecycle are coherent.",
+    "R05 and R06 have deterministic independently checkable analytic operands for the zero- and positive-lambda refinement routes.",
+    "L01 directly exercises prescribed upper Mixed/Drainage and lower Ice/Drainage selection without running the G4 predictor; L02/L03 are evaluator recomputation controls with no acceptance premise.",
+    "Dedicated BVLS05 attempted/completed work counters preserve existing refinement/KKT/enclosure taxonomy and caps, including distinct default-empty and inspected-empty paths.",
+    "The frozen 15-selector inventory separates pre-body analytic controls, reviewed-body non-target physical assemblies/trials, and the sole later G4 endpoint."
+  ],
+  "findings": [],
+  "residual_risk_and_next_gate": [
+    "This review accepts policy and frozen control design only; it does not prove that the controls scaffold implements these predicates or that the unchanged body fails behaviorally.",
+    "The authored minimal declarations/adapters and all eight pre-body selectors require exact-source review before result-bearing expected-red execution.",
+    "Numerical body implementation remains prohibited until the behavioral expected-red controls fail for the intended missing hold behavior rather than compilation, missing symbols, or a stub.",
+    "Non-target physical assemblies/trials, the G4 endpoint, targets, production/default API, and M1 acceptance remain gated."
+  ],
+  "disposition": {
+    "policy_and_frozen_control_design": "PASS",
+    "controls_scaffold_authoring_release": true,
+    "behavioral_expected_red_execution_release": false,
+    "rust_numerical_body_release": false,
+    "non_target_physical_control_release": false,
+    "g4_endpoint_release": false,
+    "production_activation_release": false,
+    "status": "CONTROLS_SCAFFOLD_ONLY_RELEASED_PENDING_SOURCE_REVIEW"
+  }
+}

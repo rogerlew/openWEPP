@@ -1,0 +1,53 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-controls.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static frozen-source review only. QA ran no compile, test, solver, physical assembly, or numerical calculation.",
+  "frozen_source": {
+    "tree_sha256": "9eaf10b0a8a1068d02b544d3a303b63c6786aa00780a34094d26cab9c8f27410",
+    "entry_count": 764,
+    "source_diff": "bvls05-controls01-source-diff.json",
+    "source_diff_sha256": "df7dcb9def065fb06bdd4e412f906e9c4f92966a3293c3beb001713bd4ca5aa8",
+    "patch": "bvls05-controls01-from-start.patch",
+    "patch_sha256": "e947b62e445c2fddd9f081fb0b3919b5db34fa2d1f7f15231b93c7725e4051a2",
+    "changed_files": [
+      "crates/openwepp-land-surface-energy/src/lib.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "high-blocker",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:m1_trust_region_bvls05_expected_red_g4_full_wet_hold",
+      "title": "R01 encodes the historical rank refusal as the required result, so it cannot pass after the intended body consumes the hold.",
+      "evidence": "The test calls solve_subproblem(...).expect_err, then requires RankDeficient and a refusal capture. A correct BVLS05 body is intended to pass the initial held 21-by-19 face; it will return Ok and fail before the capture/21-row assertions. This is not an expected-red assertion that can transition to the planned post-body behavior.",
+      "required_fix": "Capture and assert the reached first-face operands independently of later Ok/Err, then make the pre-body rank refusal and the post-body held-face result explicit separate phases or controls. Do not require RankDeficient in the green body-control path."
+    },
+    {
+      "severity": "high-blocker",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:m1_trust_region_bvls05_nonempty_hold_zero_lambda_refinement and m1_trust_region_bvls05_nonempty_hold_positive_lambda_refinement",
+      "title": "R05/R06 do not implement plan05's required refinement-join and reconstruction assertions.",
+      "evidence": "They assert only the final scaled step/lambda/residual/h, a 21-entry KKT length, one factorization, and a subset of BVLS05 work. They do not assert p0/p1/p2 held +0 bits, the 19 free_ids/factor/order cardinality at every join, held base-coordinate bit reconstruction through the body, or the specified full KKT held h/cbar/tau/class contribution. Those omissions can allow an incorrectly scattered/reduced face to satisfy the final-vector checks.",
+      "required_fix": "Expose or record the real returned refinement/face observations and assert all plan05 R05/R06 joins, including 19-entry ordering, p0/p1/p2 held values, full 21-coordinate KKT fields, and reconstructed held base bits."
+    },
+    {
+      "severity": "medium-blocker",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs: BVLS05-R02/R03/R07/W01 controls",
+      "title": "Dedicated work accounting is only partially asserted and does not yet demonstrate plan05's default-versus-inspected additive contract.",
+      "evidence": "The scaffold defines and absorb-adds dedicated test-only counters, which is appropriate. The controls mainly check role attempts and column attempts, one held-copy completion, or a less-than bound for mask joins. They omit exact completed counterparts, held-copy attempts, exact mask deltas, and post-solve additive deltas. R07 checks a helper with empty roles but does not compare its body-path numerical/result observation to retained BVLS03/BVLS04 vectors.",
+      "required_fix": "Assert exact attempted/completed deltas for all four dedicated counter families in inspected and default-empty cases, plus their additive composition with returned work; prove R07's no-provenance body path preserves the retained routing/result observations and has zero BVLS05 deltas."
+    },
+    {
+      "severity": "high-blocker",
+      "location": "g4-rank-controls compile inventory01 (reported by executor; source cut above unchanged)",
+      "title": "The supplied controls source has not reached a runnable expected-red gate.",
+      "evidence": "The executor reports compile inventory01 failed with 20 mechanical errors. This is not an expected-red result and supplies no test readiness evidence.",
+      "required_fix": "Correct the mechanical compile failures, preserve the failed receipt, and rerun the exact controls inventory/selection on an exact new source manifest after the assertion-scope fixes above."
+    }
+  ],
+  "verified_positive_scope": {
+    "private_confinement": "Added BVLS05 provenance, certificate, scatter helper, counters, and test fixtures are cfg(test)/crate-private; no default/public dispatch is introduced.",
+    "body_isolation": "The certificate is explicitly test-only and static call inspection finds no numerical-body consumption. This scaffold therefore does not itself implement or authorize the BVLS05 numerical method.",
+    "selector_inventory": "All eight plan05 pre-body selector names are present, but their assertion coverage and compilation are insufficient for execution."
+  },
+  "disposition": "BLOCKED: do not run the expected-red controls gate on this source. Body/G4 remain gated; this review neither executes nor releases a numerical change."
+}

@@ -1,0 +1,112 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-body-review.v1",
+  "reviewer": "interface_correctness",
+  "role": "independent numerical-body correctness review",
+  "evidence_class": "Static review of the immutable 764-entry body01 source plus review of recorded analytic run receipts. The reviewer ran no Rust build, test, physical assembly, solver, replay, or target command.",
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "id": "BVLS05-BODY-SCATTER-DUPLICATION",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4992",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9216"
+      ],
+      "finding": "Held-coordinate scatter is implemented twice: the W01 control helper and the solver return path each independently set p_D=+0, copy base_D, and increment attempted/completed work. The helper can keep passing if the owning body loop later changes, and the current analytic fixtures exercise only cardinality two. This is contract-sensitive duplication across the control/runtime seam.",
+      "required_fix": "Centralize the held-only step/candidate scatter and its work accounting in one test-build numerical helper used by both the owning solver path and W01. Preserve supplied non-held bits and keep attempted/completed increments paired around each actual held copy."
+    },
+    {
+      "severity": "LOW",
+      "id": "BVLS05-BODY-STALE-ISOLATION-COMMENTS",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/lib.rs:207",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4875"
+      ],
+      "finding": "Two comments still state that the unchanged numerical body does not consume BVLS05 provenance and that the certificate helper is deliberately not called by the numerical body. Body01 now consumes the provenance and calls that helper through bvls05_admit_for_input. The cfg(test) isolation is real, but the source claims are false.",
+      "required_fix": "Describe this as test-build experimental numerical ownership and distinguish the pure control calls from the owning solve call. Do not imply that the body is unchanged or that certificate derivation is observation-only."
+    }
+  ],
+  "reviewed_identity": {
+    "immutable_review_copy": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls05-body01-review-20260929",
+    "source_tree_sha256": "0861d858f67a9c3281243373ee70da9a2ab0b365db0f8cf2c6557f0e44223f39",
+    "tree_entries": 764,
+    "files": [
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+        "sha256": "818e26f1634bab3a50aa36756668725ee2d2839443dcb3615efd425e58459626"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+        "sha256": "ed55140a28a8a513665bf53b531775d96966222f03c58bf154a83f0eb8ff48b0"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs",
+        "sha256": "86d2e727becf3495cf5f82a0daf880c873e3dc3434fdf7cb1143a91a840c3493"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+        "sha256": "390cfe00c78d16b06173353e45b6b21393298236b7ba1050caac8919ccffcd75"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+        "sha256": "ff6e8bc6313bfc6e0a198148fc6119f7ef7d10332c28eee0b6c12d48e6ca4c99"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-body01-source-diff.json",
+        "sha256": "044983df0ef916dbb76287260b557d37d5d4311f1c7d378ff5172acd4081d509"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-body01-from-start.patch",
+        "sha256": "0a86d65c8f73a042adec9ce19150ec8cea50e8ac9b9009862079b92e9375361c"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan06.json",
+        "sha256": "a73b72f62aab8116b04fd18b0e53c72727586fd2331023e527d7ac3b8838c3e8"
+      }
+    ]
+  },
+  "accepted_numerical_behavior": [
+    "Preparation finite/normalizer/scale guards run before certificate derivation. Eligibility then requires one of the six semantic dry-temperature roles, finite positive structural area, exact wet_fraction=1, exact zero effective dry area, and every raw and weighted column entry equal to IEEE zero of either sign.",
+    "The physical adapter maps upper roles to coordinates 0/1/2 and lower roles to 6/7/8 from actual assembly Core operands. Selected-J assembly stores provenance from the selected assembly result rather than the stale base Core.",
+    "D is admitted once before the first face from initial/current physical freedom, stored separately from lower/upper/free masks, and reused unchanged for every later face in that subproblem.",
+    "prepare_face retains all 21 residual rows and selects ascending free AND not-held columns. Rank threshold, Jacobi factor, ball solve, crossing, physical active masks and release behavior otherwise remain on the existing path.",
+    "BVLS04 positive-lambda structural validation compares the solution against state.free minus held. Refinement p0/p1/p2 starts from the full state, updates only ordered retained free IDs, and keeps held coordinates at canonical +0 without another factorization.",
+    "KKT and upward-enclosure evaluation remain full 21-coordinate operations. Held coordinates remain physical-free and receive no exemption; their exact zero column and +0 step yield the ordinary FreePass decision.",
+    "The controller caches only the stable held mask across identical-J radius retries, charges a face-mask join for each face, and invalidates the certificate after selected reassembly and every admitted new-base reassembly. Natural, selected and new-base provenance is refreshed from the assembly owner.",
+    "First certificate derivation charges six role joins and 252 entry tests; identical-J reuse omits those scans while repeated face joins and candidate held copies remain charged. Refusal observations copy the reached BVLS05 work ledger.",
+    "All new numerical ownership is cfg(test) inside the already test-only M1 experiment. Default/production library paths and public API are not activated."
+  ],
+  "recorded_validation_review": {
+    "inventory": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-body-inventory06.json",
+      "sha256": "ed55c7fd97ccd140ec924b11d529dc7d1d107b13cfb38355b8841ef86d8bb267",
+      "result": "PASS: 402 inventory entries on exact source; source and support unchanged."
+    },
+    "analytic_suite": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-body-analytic-debug01.json",
+      "sha256": "669fd1fe5dba1e789a6a229c1fb58d5a9dfd923cfbcc6d3ca78f08468c154e6a",
+      "result": "PASS: 120/120 focused analytic/controller/observer selectors, including the exact eight BVLS05 controls; 282 skipped; no physical input execution."
+    },
+    "default_empty_comparison": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-body-empty-comparison01.json",
+      "sha256": "268369b14266e611a828f8ea90b85ad80999344bfc4c16d416dbcb938392e113",
+      "result": "PASS: zero- and positive-lambda no-provenance full Debug payloads, including work observations, exactly equal the retained old-body baseline."
+    }
+  },
+  "residual_risk_and_missing_tests": [
+    "The two bounded source findings require same-reviewer fix verification on a new immutable source identity before physical-control execution readiness.",
+    "The seven plan06 physical assembly/trial controls have not been reviewed or executed. Actual natural/selected/new-base provenance, same-J retry reuse, partial/near-full/structural-zero exclusions, drainage/capacity participation and evaluator disposition remain unproven at the physical seam.",
+    "No timing evidence, sole G4 endpoint result, target validation, production activation or full package acceptance follows from the analytic pass."
+  ],
+  "disposition": {
+    "numerical_method_and_lifecycle_design": "PASS_WITH_BOUNDED_SOURCE_FIXES",
+    "body01_source_correctness": "CONDITIONAL",
+    "bounded_source_fix_release": true,
+    "analytic_controls": "PASS_RECORDED",
+    "physical_control_authoring_release": true,
+    "physical_control_execution_release": false,
+    "g4_endpoint_release": false,
+    "production_activation_release": false,
+    "same_reviewer_fix_verification_required": true,
+    "status": "CONDITIONAL_PENDING_SCATTER_CENTRALIZATION_AND_COMMENT_CORRECTION"
+  }
+}

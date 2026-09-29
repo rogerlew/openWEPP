@@ -1,0 +1,150 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-controls-source-review.v1",
+  "reviewer": "interface_correctness",
+  "role": "same-reviewer independent correctness review of the pre-body controls scaffold",
+  "evidence_class": "Static source, patch, preserved-capture, and accepted-plan review only. This reviewer ran no Rust build, test, physical assembly, physical trial, solver, replay, or result-bearing execution.",
+  "reviewed_identity": {
+    "tree_sha256": "9eaf10b0a8a1068d02b544d3a303b63c6786aa00780a34094d26cab9c8f27410",
+    "tree_entries": 764,
+    "files": [
+      {
+        "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+        "sha256": "818e26f1634bab3a50aa36756668725ee2d2839443dcb3615efd425e58459626"
+      },
+      {
+        "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+        "sha256": "241bd430b627b83f8e44b6e91783a715d0c3e3b69ff4e69fed995612b25c9125"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-controls01-source-diff.json",
+        "sha256": "df7dcb9def065fb06bdd4e412f906e9c4f92966a3293c3beb001713bd4ca5aa8"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-controls01-from-start.patch",
+        "sha256": "e947b62e445c2fddd9f081fb0b3919b5db34fa2d1f7f15231b93c7725e4051a2"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan05.json",
+        "sha256": "0697ddc894667648f3dc247cf3d2e1b2b4d6f993ef3b7e33f89243d9b792f6f3"
+      },
+      {
+        "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-correctness-policy05.json",
+        "sha256": "30608c2d72680792758f66269e849d6ae9e7c759dee2ef6aabc5a7a3be092e67"
+      }
+    ]
+  },
+  "scope_reconciliation": {
+    "changed_rust_files": [
+      "crates/openwepp-land-surface-energy/src/lib.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+    ],
+    "observed_body_status": "The existing numerical body is unchanged apart from test metadata plumbing, observation-counter fields and zero initialization/absorption. The controls do not yet consume an admitted held set in the numerical body.",
+    "compile_status": "The parent reported that the inventory compile stopped on 20 mechanical errors before tests, including missing imports, PreparedSubproblem Debug-dependent expect_err calls, and ambiguous floating-point array types. That report is not reviewer-run evidence and does not satisfy the behavioral expected-red gate."
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "id": "BVLS05-CONTROL-R01-TERMINAL-OUTCOME",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11837"
+      ],
+      "finding": "R01 requires solve_subproblem to return RankDeficient and reads only capture.refusal. A correct BVLS05 body is supposed to remove the two held columns and continue, so this expected-red control becomes permanently incompatible with the intended passing behavior.",
+      "required_fix": "Make terminal Result independent of the first-face assertion: retain and record the later Ok or typed Err, but do not require RankDeficient. Select the earliest actual face event and assert its ordered free_ids are exactly the retained 19. Existing capture.operations solution.free_ids may be used when an operation is emitted; capture.refusal.free_ids may be the fallback only when no operation exists. The control must prove that the chosen record is the first face, rather than silently accepting a later pivot/refinement face. Add only a narrow observation field to the existing face capture if current chronology cannot prove this."
+    },
+    {
+      "severity": "HIGH",
+      "id": "BVLS05-CONTROL-G4-PROVENANCE",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11697",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11751",
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/g4-rank-capture.json"
+      ],
+      "finding": "The captured-G4 helper attaches the synthetic diagonal-fixture provenance [0,1,2,3,4,5] and synthetic areas/wet fractions. The real upper role coordinates are 0,1,2 and lower role coordinates are 6,7,8; the preserved capture also records distinct physical areas and lower wet fraction. R01 can therefore appear to certify the intended roles while joining the wrong lower coordinates and invented physical operands.",
+      "required_fix": "Construct the G4 test provenance from the preserved capture's actual semantic role mapping and base_core_operands. Keep the diagonal analytic fixture's synthetic provenance separate. The certificate must assert the exact effective-dry-area formula result is zero in addition to positive finite structural area and exact wet_fraction==1, and must never infer role from a convenient coordinate slot."
+    },
+    {
+      "severity": "HIGH",
+      "id": "BVLS05-CONTROL-R03-LIFETIME-KKT",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11903"
+      ],
+      "finding": "R03 toggles two certificate booleans only. It does not place a coordinate at a real lower or upper active bound, distinguish initial physical-free from current physical-free masks, demonstrate that admitted D remains assembly-held across face changes, demonstrate that ordinary non-held active coordinates still release normally, or exercise the full 21-coordinate KKT/scatter result.",
+      "required_fix": "Drive the actual state and masks for the fixed, base-at-bound-but-free, lower-active, upper-active, held-across-pivot/refinement, and ordinary-active-release cases. Assert D is admitted once from initial/current physical freedom, remains excluded from reduced face freedom without repopulation, and is scattered back as held +0/base before the full 21-coordinate KKT observation."
+    },
+    {
+      "severity": "HIGH",
+      "id": "BVLS05-CONTROL-R05-R06-TRACE-CUSTODY",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5187",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5389",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5612",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11936",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11975"
+      ],
+      "finding": "R05/R06 check only the terminal step, lambda, full KKT length, one factor count, and a few aggregate counters. They do not establish that p0, p1 and p2 each keep held coordinates at canonical +0, that every refinement solve/factor uses the ordered 19 retained coordinates, or that the full 21-coordinate reconstruction happens only after reduced refinement.",
+      "required_fix": "Reuse RefinementRetainedFaceObservation and refinement_retained_face_trace_bits/refinement_build_retained_face_observation. Assert p0_bits, p1_bits and p2_bits at held coordinates are +0; assert the retained free_ids/factor order is the exact ordered 19 at each refinement join; assert the retained bits otherwise follow unchanged arithmetic; then assert final 21-coordinate scatter/KKT. Do not create a parallel trace framework or recompute the numerical path in the control."
+    },
+    {
+      "severity": "MEDIUM",
+      "id": "BVLS05-CONTROL-R04-CONFOUNDED-RANK",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11927"
+      ],
+      "finding": "R04 duplicates retained column 3 from column 0 but invokes the old full 21-column solver. Its existing RankDeficient result is already caused by the two intended zero held columns, so the test cannot attribute refusal to a dependency in the retained 19-column matrix.",
+      "required_fix": "Build the accepted 21-by-19 embedded reduced matrix explicitly, introduce the retained-column dependency there, and call the existing Jacobi factor primitive directly. Assert its owning rank refusal and retained ordering. This is the already-authorized analytic necessary control, not a new production SVD or solver path."
+    },
+    {
+      "severity": "MEDIUM",
+      "id": "BVLS05-CONTROL-R02-CONFOUNDED-ROLE-GUARD",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:11869"
+      ],
+      "finding": "The unexpected-role branch changes roles[3] to Other, but that entry is already partial-wet and has a nonzero diagonal column. The test therefore cannot show that role eligibility alone rejects an otherwise eligible, completely zero column.",
+      "required_fix": "Give the Other case positive finite area, exact wetness, initial/current physical freedom, and raw and weighted all-zero entries. Keep raw-nonzero, weighted-nonzero, nonfinite normalizer, and nonfinite scale cases isolated so each guard owner is independently attributable."
+    },
+    {
+      "severity": "MEDIUM",
+      "id": "BVLS05-CONTROL-W01-ACCOUNTING-INCOMPLETE",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4893",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:12037",
+        "crates/openwepp-land-surface-energy/src/lib.rs:459"
+      ],
+      "finding": "The certificate increments mask joins only for prefix-eligible roles, and W01 accepts mask_joins<=6 while checking only 6 role joins, 84 entry tests, and 2 held copies. It does not establish the accepted plan's complete per-assembly attempted/completed maxima, the distinction between no-provenance default-empty and inspected-but-ineligible empty, refusal accounting, 19-column factor work versus 21-coordinate KKT/scatter work, or absence of double counting/cap changes.",
+      "required_fix": "Make the dedicated BVLS05 counters reflect their declared owners and assert exact attempted/completed counts for all required joins/scans, including the plan maxima 6 role joins, 252 raw/weighted/guard entry checks, 21 mask joins, and 21 scatter joins where applicable. Separate no-provenance zero-work from inspected-empty charged work and test refusal snapshots. Preserve existing refinement, KKT and enclosure caps and taxonomy."
+    },
+    {
+      "severity": "MEDIUM",
+      "id": "BVLS05-CONTROL-R07-REGRESSION-COVERAGE",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:12016"
+      ],
+      "finding": "R07 covers only a zero-residual, zero-lambda default-empty solve. It does not demonstrate the accepted plan's positive-lambda D-empty BVLS04 route, bit-identical retained vectors, unchanged observer fields, or unchanged work accounting.",
+      "required_fix": "Retain the no-provenance zero-work shortcut control and add the prescribed positive-lambda D-empty route. Compare p0/p1/p2, ordered free/factor data, result bits, observer fields, and work against the retained BVLS04 behavior."
+    }
+  ],
+  "accepted_scaffold_elements": [
+    "The source diff is confined to the two declared Rust files.",
+    "Dedicated attempted/completed BVLS05 observation fields and absorb logic are preferable to charging unrelated refinement/KKT/enclosure counters.",
+    "The helper keeps held step coordinates at +0 and copies held candidate coordinates from the base without adding numerical arithmetic.",
+    "The zero- and positive-lambda analytic fixtures retain the accepted plan's deterministic terminal operands and full 21-coordinate KKT expectations.",
+    "The no-provenance default-empty path is explicitly represented and can remain zero-work.",
+    "No passing scaffold stub or production/public activation was observed in this static cut."
+  ],
+  "residual_risk_and_missing_evidence": [
+    "Compilation is currently unavailable because the first inventory compile stopped on mechanical errors; those errors must be repaired without changing accepted policy or numerical behavior.",
+    "No expected-red selector has executed, so intended pass/fail behavior, capture chronology, counter values, and absence of hidden physical work remain unproven.",
+    "After the bounded scaffold fixes, the same reviewer must compare the exact source and confirm that R01 fails only because the body still retains 21 first-face columns, R05/R06 fail only because the body has not consumed D, and the other controls pass for their intended predicates.",
+    "Numerical body edits, non-target physical controls, the G4 endpoint, targets, and production/default activation remain gated."
+  ],
+  "disposition": {
+    "controls_scaffold_source_correctness": "BLOCKED",
+    "mechanical_compile_fix_release": true,
+    "bounded_controls_fix_release": true,
+    "behavioral_expected_red_execution_release": false,
+    "rust_numerical_body_release": false,
+    "physical_execution_release": false,
+    "same_reviewer_fix_verification_required": true,
+    "status": "BLOCKED_PENDING_BOUNDED_CONTROLS_CORRECTION_AND_COMPILE"
+  }
+}

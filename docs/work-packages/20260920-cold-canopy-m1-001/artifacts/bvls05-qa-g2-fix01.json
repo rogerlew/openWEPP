@@ -1,0 +1,38 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-g2-fix.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static cut09 source/plan review plus inspection of supplied Ran quality receipts. QA ran no command or physical verification.",
+  "frozen_binding": {
+    "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+    "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+    "quality_summary": "bvls05-quality-summary09.json",
+    "recovery": "bvls05-terminal09-recovery.json"
+  },
+  "findings": [],
+  "fix_review": {
+    "field_semantics": "The wrapper now reports the already-recorded predictor-Jacobian probe count and the direct adapter selected_side_probe count separately, then forms the checked additive total. This matches the failure01 addendum: predictor=1 and direct=0 on the intended terminal error path.",
+    "test_strength": "Both existing G2 controls assert total=1, predictor=1, direct=0, retaining error precedence, radius/base/phase, poison, no-materialization, and untouched-input assertions. This prevents an accidental replacement of one owner field by the other or double counting.",
+    "scope": "The patch is confined to private cfg(test)+physical-stage observation structure/wrapper and its existing assertions. No numerical body, solver policy, production/default surface, canonical authority/schema/unit, fixture, selector, or physical predicate changed. No Critical trigger is introduced."
+  },
+  "quality": {
+    "debug_release_analytic": "PASS: 120 debug, 120 release, and 103 analytic selected controls.",
+    "default_format_inventories": "PASS: default check and rustfmt; inventories debug=409/release=409/analytic=359.",
+    "lint": "All/combined/analytic source-bearing reconciliations retain exact baseline/candidate/matched counts 238/238/238, 238/238/238, and 262/262/262 respectively, with zero introduced/removed diagnostics. Strict exit 101 remains inherited only.",
+    "parity": "Old-body empty payload is exact in all three profiles."
+  },
+  "corrected_g2_readiness": {
+    "plan": "bvls05-conditional-plan02.json",
+    "status": "QA READY for corrected G2 only, subject to the separately required correctness disposition.",
+    "command": "One exact release selector on the cut09 binary, 180-second bound, no retry/broad filter.",
+    "first_result": "bvls05-conditional-g2-01.json is preserved as the prior observation-mapping failure; it is not recast as a numerical negative."
+  },
+  "five_g6": "HOLD. plan02 correctly requires independent review of the actual corrected-G2 result before any of the five G6 commands; its numerical-stop rule and all G3/native/target exclusions remain binding.",
+  "non_blocking_follow_up": [
+    "Retain the explicit predictor/direct names in future capture schemas; the separated fields make terminal-error telemetry reviewable."
+  ],
+  "missing_evidence": [
+    "Corrected G2 physical result is absent.",
+    "Five G6, G3/native harness, and target evidence remain absent."
+  ],
+  "disposition": "QA PASS for the narrow cut09 observation fix and QA READY for exactly one corrected G2 command."
+}

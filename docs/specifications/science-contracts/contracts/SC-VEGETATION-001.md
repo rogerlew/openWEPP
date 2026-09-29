@@ -4,7 +4,7 @@ title: Native Vegetation State and Cross-Domain Boundary Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + forest ecohydrology/hydrology reviewer
-contract_version: 37
+contract_version: 38
 producer_scope:
   - Native vegetation configuration/runtime separation and stratum topology
   - Stage A potential response and Stage C vegetation finalization boundaries
@@ -13,7 +13,7 @@ producer_scope:
 consumer_scope:
   - Native management, land-surface energy, soil hydrology, snow/frost, residue/biogeochemistry, and hillslope orchestration
 evidence_level: static
-last_reviewed: 2026-09-22
+last_reviewed: 2026-09-29
 supersedes: []
 superseded_by: []
 ---
@@ -2286,6 +2286,7 @@ calibration, identifiability, empirical validity, or transferability.
 
 | Date | Version | Author | Change |
 |---|---:|---|---|
+| 2026-09-29 | 38 | Codex | Added the prospective detached `COLD-CANOPY-M1-TR-SVD-BVLS-05` cross-reference: fully wet, positive-structural-area dry leaf/stem step holds require role-proven exact raw/weighted zero columns; no physical equation, dark-sun identity, wetness/phase law, acceptance predicate, or production authority changes. |
 | 2026-09-25 | 37 | Codex | Added the detached `COLD-CANOPY-M1-TR-SVD-BVLS-02` cross-reference only: `01` remains historical evidence and `02` can supersede its diagnostic numerical policy only after its named independent correctness and QA reviews; primal vegetation/capacity law, production representation, accepted-state predicates, and production HOLD remain unchanged. |
 | 2026-08-26 | 29 | Codex | Preserved exact V9 generation-host provenance and admitted a one-object SHA-256 provider-equivalence verification route requiring known-answer, remaining-runtime, protected-byte, and complete-output equality proofs. |
 | 2026-08-17 | 13 | Codex | Admitted prospective `OPENWEPP_C3_WOODY_V9` with exact V8 science/runtime import, exact identity-only migration, and content-addressed non-Rust oracle runtime and serialization; preserved V1--V8 bytes. |
@@ -3240,6 +3241,24 @@ event. One selected physical regime has one algorithm: eliminate only exact
 dark-sun identities while retaining reconstructed full residuals/guards; reject
 nonconvergence without physics fallback. All residual/closure predicates retain
 `1e-6 J m^-2` energy reconstruction and exact identity/phase/receipt checks.
+
+#### BVLS-05 fully-wet structural-null numerical cross-reference
+
+The detached `COLD-CANOPY-M1-TR-SVD-BVLS-05` numerical representation does not
+extend this physical dark-sun elimination rule. A positive-structural-area dry
+leaf/stem temperature may be held only as a current linearized *step*
+direction when the existing diagnosed `fwet` is exactly one, its resulting
+effective dry area is exactly zero, and the owning LSE assembly proves its
+complete raw and weighted Jacobian columns are IEEE-754 zero after ordinary
+guards. The role comes from existing component/occupancy preparation; no
+coordinate number, rank result, small-value threshold, fixture, or result
+selects it. Structural-zero-area anchors remain their existing distinct rule.
+This exception neither removes a vegetation residual nor fixes a physical
+temperature: every candidate recomputes `fwet`, wet/dry physics, and all 21
+residuals, so reappearing dry area reactivates the ordinary temperature
+coordinate at the next assembly. The canonical wetness formula, M/H phase and
+capacity selection, centered mass stencil, drainage law, conservation, and
+accepted-state predicates are unchanged.
 
 Only diagnosed liquid may be released after the coupled solve, with exact
 occupancy/tile/support, `hl`, temperature, and one area conversion. Existing

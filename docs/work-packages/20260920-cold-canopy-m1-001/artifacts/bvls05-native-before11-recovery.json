@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Ran: independent reconstruction and764entry verification of the exact before-Check11 source; not compiler result acceptance",
+  "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls05-native-before11-20260929",
+  "source_tree_sha256": "0354c6f702c743a37531ce6e9cee01e683a28d238ae84a54a130441c93ac0ba1",
+  "base": "/home/roger/openwepp-experiments/cold-canopy-m1-g4-rank-reconstruction-20260929",
+  "base_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+  "patch": "bvls05-native11-from-start.patch",
+  "patch_sha256": "f99ce3f531203acca24258a340a0f10096a1fec395f24da47f9fa543843c1a92",
+  "all_entry_hashes_equal": true,
+  "invalid_compile_receipt": "bvls05-native-check11.json"
+}

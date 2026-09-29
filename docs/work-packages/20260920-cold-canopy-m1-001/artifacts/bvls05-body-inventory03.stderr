@@ -1,0 +1,53 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0609]: no field `leaf_area_m2_m2_tile` on type `solver::M1ZeroParLeafState`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3396:27
+     |
+3396 |                 upper.sun.leaf_area_m2_m2_tile,
+     |                           ^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `beta`, `internal_specific_humidity_kg_kg`, `conductance_m_s`, `ci_pa`, `gross_assimilation_umol_co2_m2_leaf_s` ... and 4 others
+
+error[E0609]: no field `leaf_area_m2_m2_tile` on type `solver::M1ZeroParLeafState`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3397:29
+     |
+3397 |                 upper.shade.leaf_area_m2_m2_tile,
+     |                             ^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `beta`, `internal_specific_humidity_kg_kg`, `conductance_m_s`, `ci_pa`, `gross_assimilation_umol_co2_m2_leaf_s` ... and 4 others
+
+error[E0609]: no field `stem_area_m2_m2_tile` on type `&CoreOccupancy`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3398:23
+     |
+3398 |                 upper.stem_area_m2_m2_tile,
+     |                       ^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `sun`, `shade`, `wet_temperature_k`, `wet_fraction`, `liquid_mass_kg_m2` ... and 10 others
+
+error[E0609]: no field `leaf_area_m2_m2_tile` on type `solver::M1ZeroParLeafState`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3399:27
+     |
+3399 |                 lower.sun.leaf_area_m2_m2_tile,
+     |                           ^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `beta`, `internal_specific_humidity_kg_kg`, `conductance_m_s`, `ci_pa`, `gross_assimilation_umol_co2_m2_leaf_s` ... and 4 others
+
+error[E0609]: no field `leaf_area_m2_m2_tile` on type `solver::M1ZeroParLeafState`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3400:29
+     |
+3400 |                 lower.shade.leaf_area_m2_m2_tile,
+     |                             ^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `beta`, `internal_specific_humidity_kg_kg`, `conductance_m_s`, `ci_pa`, `gross_assimilation_umol_co2_m2_leaf_s` ... and 4 others
+
+error[E0609]: no field `stem_area_m2_m2_tile` on type `&CoreOccupancy`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3401:23
+     |
+3401 |                 lower.stem_area_m2_m2_tile,
+     |                       ^^^^^^^^^^^^^^^^^^^^ unknown field
+     |
+     = note: available fields are: `sun`, `shade`, `wet_temperature_k`, `wet_fraction`, `liquid_mass_kg_m2` ... and 10 others
+
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 6 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-controller-stage,m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

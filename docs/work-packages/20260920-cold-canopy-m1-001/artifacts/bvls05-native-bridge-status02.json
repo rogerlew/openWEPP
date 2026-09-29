@@ -1,0 +1,9 @@
+{
+  "evidence_class": "Preservation-only wrapper: malformed historical writer status retained verbatim; no implementation or validation credit",
+  "historical_writer": "/root/native_bridge_writer",
+  "raw_note": "bvls05-native-bridge-status02.raw.txt",
+  "raw_note_sha256": "613768d592a8ce463714aa33285c32b95f2502642a6f9927db21ac80d16106d0",
+  "parse_failure": "Missing commas in remaining_acceptance array; duplicated statements preserved without reinterpretation in raw note",
+  "controlling_disposition": "bvls05-native-integrity-incident01.json",
+  "status": "NATIVE_STOPPED_UNACCEPTED; Check11 INVALID_SOURCE_CHANGED; accepted source restored per bvls05-native-integrity-restoration01.json"
+}

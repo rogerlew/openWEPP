@@ -1,0 +1,123 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-readiness.v1",
+  "reviewer": "interface_correctness",
+  "role": "independent numerical correctness reviewer",
+  "evidence_class": "Static review of the exact frozen observational08 source and 07-to-08 delta, plus read-only inspection of recorded source-bound quality, inventory and recovery evidence. The reviewer ran no Rust build, test, physical control, solver, replay or G4 endpoint.",
+  "findings": [],
+  "reviewed_identity": {
+    "source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+    "tree_entries": 764,
+    "independent_entry_check": "All 764 live source entries matched the quality08 manifest hashes.",
+    "manifest": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-quality08-source-diff.json",
+      "sha256": "e054deec0c26b71a31bbe7b0d47c1805c0030af6ae45315f3e8935fce310a542"
+    },
+    "patch": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-quality08-from-start.patch",
+      "sha256": "872c4ed6663700fa4b697439fe189cae15499917f1102a7225bcf20821e296e7"
+    },
+    "changed_file_hashes": {
+      "crates/openwepp-land-surface-energy/src/lib.rs": "40b7539964698c6c354054be55d0f83709d9433fad8e92e545a932d752162f5b",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "677b66c4921a1b3340b09bc75f879a929d1f6a191b82c42c4500802f2684fd19",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "1c0c3c7f6bddd1dcca128499ddd5c6dab583b91d7e3f2eca56985b7a1fa4e918",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs": "86d2e727becf3495cf5f82a0daf880c873e3dc3434fdf7cb1143a91a840c3493",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "b6a160ebbef1e450713de037cb27b94e5ddf23f3cabab4a38c4223008caebdd9",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "ea9a53eadffc11edc00e0db492fbc363c0784e94bda4e64c86c7e38c663a1651"
+    }
+  },
+  "quality07_owner_accounting_closure": {
+    "finding": "BVLS05-QUALITY07-G4-RUNTIME-OWNER-COUNTS",
+    "status": "CLOSED_STATIC",
+    "evidence": [
+      "The 07-to-08 source delta changes only m1_physical_runtime_json visibility and the G4 natural-tangent wrapper's observation snapshots and labels. All numerical/controller/Stage1 bodies and predicates are byte-identical to quality07.",
+      "runtime_before is copied after adapter construction and face-capture setup but before the controller helper. runtime_after is copied immediately after the helper returns, including its typed-error path, and before face-capture extraction. Both copies occur outside the controller's initialization and proposal timers.",
+      "The existing helper clones the thread-local M1_RUNTIME_ACTIVITY projection. It performs no reset, subtraction, evaluator, core, Jacobian, phase, hydraulic, materializer, factorization or solver operation.",
+      "complete_evaluator_entries is incremented at every core() owner entry, including raw-Jacobian finite-difference and selected-probe core calls. hydraulic_entries counts hydraulic_potentials owner entries; actual_hydraulic_entries counts each solve_m1_full_supply_hydraulics entry; materialization_entries counts actual materializer entries. Trial, legacy assembly and linear-dimension fields remain available in the same projection.",
+      "The record labels the snapshot interval as initialization plus transition and states that ledgers overlap and must not be summed. The budget field is explicitly labeled unscoped and null rather than being used as work evidence. Existing adapter assembly/probe counters and controller_work remain complementary."
+    ],
+    "numerical_effect": "NONE"
+  },
+  "reused_accepted_scope": [
+    "Policy06 scientific eligibility, mask lifetime, full-21 KKT and dedicated work-accounting decisions remain unchanged.",
+    "Controls04, body01, physical-controls01 A01-A04, functional03 L01-L03/G4 lifecycle, and quality07 numerical/type/cfg findings remain accepted for unchanged bytes and seams.",
+    "No duplicated numerical algorithm, fallback, changed clamp/guard precedence, changed unit conversion, changed phase/root predicate, or broadened public/default dispatch is introduced by observational08."
+  ],
+  "recorded_quality_evidence": {
+    "summary08": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-quality-summary08.json",
+      "sha256": "c1123502762b109569f0f9b1694b5da79c6119f5bd26e9aafa603bd94cabed07",
+      "result": "Exact terminal08 index: debug/release 120/120 each, analytic-only 103/103, inventories 409/409/359, default and format PASS, and strict-lint populations reconciled with zero introduced or removed."
+    },
+    "affected_debug08": {
+      "receipt_sha256": "1956a56eb3799c7e10a181c2b8e08798a15fab396471d81f91c5ca1de4471c41",
+      "result": "PASS: 120/120 selected affected tests on exact source; source unchanged."
+    },
+    "affected_release08": {
+      "receipt_sha256": "1d3e3479d81c83790ac4df064daaa89bde0818c399f97584d0cf686c379f07d9",
+      "result": "PASS: 120/120 selected affected tests on exact source; source unchanged."
+    },
+    "inventories08": {
+      "debug_receipt_sha256": "deadf1fcb6edc6ee1d0ad087467379155cad9652f2f7a2f2877157682b1cb027",
+      "release_receipt_sha256": "5f6c617fa81cd5d9693fa188e91ce6f411da22829c1f4d724090c1e79551afff",
+      "analytic_receipt_sha256": "086ea8cf37d91003b2838c64912e5c20336bfb00b2f29104ce9e9c5899e91548",
+      "result": "PASS compile/list: 409 debug, 409 release and 359 analytic tests. Each of the seven plan01 physical selectors appears exactly once in both all-required-feature inventories. Inventory executes no test or physics."
+    },
+    "format_and_default08": {
+      "format_receipt_sha256": "3e801f99ddc33e6bb546e716c4f076bd9480d3387cb1432fe0929c9aca15a459",
+      "default_receipt_sha256": "c326ea2663000652e39f87e10cc09f0e75d3c86bdf655d106b324a0712a06aee",
+      "result": "PASS on exact source."
+    },
+    "strict_lint_reconciliation08": {
+      "combined_comparison_sha256": "001c3f355688b4532dff12ef56f2ad78ea6b421028efaf7706ca56fb599e7c79",
+      "analytic_comparison_sha256": "0c0f19d048cb977d3aa8c3412f51f859445c9eb78ae8ef24d258cbc8d44218bd",
+      "all_feature_comparison_sha256": "2b8b7f6e98d216f1d5e70a39bbb6f16f063fec3564bdbb8cbfb69cd1d57dcc47",
+      "result": "Raw -D warnings commands remain strict failures. Source-bearing comparisons report exact baseline populations 238/262/238 with zero introduced and zero removed diagnostics; this is inherited-warning reconciliation, not a strict lint PASS."
+    },
+    "empty_mask_parity08": {
+      "receipt_sha256": "eea6daa5b7ffa6280c5cb73b26030fd43f78b4deee498721be5e1b2378f4dba2",
+      "result": "Exact old-body empty-mask Debug/work parity retained on terminal08."
+    }
+  },
+  "recovery": {
+    "receipt": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-terminal08-recovery.json",
+    "receipt_sha256": "e381eb3d8d26af6c24d9f80a78710c17512fda87dc9e834f14553e1652c1a731",
+    "reconstruction": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls05-reconstruction08-20260929",
+    "result": "All 764 reconstruction entry hashes equal the frozen runtime and runtime source remained unchanged.",
+    "archive": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-terminal08-source.tar.gz",
+    "archive_sha256": "75a4ee2ff1d39956a064b4296e118416a86de9c48f184466a015c442b9ec5403"
+  },
+  "finite_seven_protocol": {
+    "plan": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-physical-run-plan02.json",
+    "plan_sha256": "06983dacb49fba670cc7907bb1256498f2de849c7f4a4601c1385ac4c8a0d222",
+    "canonical_control_plan_sha256": "a73b72f62aab8116b04fd18b0e53c72727586fd2331023e527d7ac3b8838c3e8",
+    "lineage_sha256": "8c662b82b8cc30062b1e46d1a8cbcdbdcd933766b13b75190f7fcd3fc5061198",
+    "source_binary_argv_binding": {
+      "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+      "release_binary": "/tmp/openwepp-cold-canopy-m1-bvls05-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+      "release_binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+      "independent_binary_hash_check": "MATCH",
+      "argv": "Seven individually labeled exact-single-selector nextest release commands in plan02; each selector occurs exactly once in the 409-entry release inventory."
+    },
+    "scientific_disposition": "READY",
+    "orchestrator_conditions_before_dispatch": [
+      "Obtain complementary QA readiness on the exact terminal08 tree, binary and plan02 binding.",
+      "Confirm each 180-second supported command bound fits the adopted deadline/reserve and preserve the one planned execution per case with no broad filter or retry."
+    ],
+    "stop_rule": "Preserve and classify the first result. An unexpected failure does not authorize operand, assertion, predicate or result-driven tuning."
+  },
+  "residual_risk_and_missing_tests": [
+    "None of the seven non-target physical controls has executed on terminal08. Static readiness does not predict their physical result.",
+    "G4 has not executed under BVLS05. It remains gated on all seven physical controls passing, independent review of their exact evidence, and a separately frozen exact G4 release binding with dual readiness.",
+    "G2, G3, G6, native harness, target slots, production activation and main Rust adoption remain outside this readiness disposition."
+  ],
+  "disposition": {
+    "terminal08_source_correctness": "PASS_STATIC",
+    "quality07_owner_accounting_finding": "CLOSED",
+    "finite_seven_scientific_release": "READY",
+    "complementary_qa_and_deadline_check": "ORCHESTRATOR_PRE_DISPATCH_CONDITION",
+    "g4_endpoint_release": "HOLD_PENDING_SEVEN_PASS_AND_DUAL_EVIDENCE_REVIEW",
+    "production_activation_release": false,
+    "status": "NO_CORRECTNESS_SOURCE_BLOCKER_ON_TERMINAL08"
+  }
+}

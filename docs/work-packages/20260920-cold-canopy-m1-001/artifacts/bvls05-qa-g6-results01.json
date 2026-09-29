@@ -1,0 +1,27 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-g6-results.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Inspection of supplied Ran G6 receipts/index. QA ran no command or calculation.",
+  "findings": [],
+  "binding": {
+    "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+    "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+    "plan": "bvls05-conditional-plan02.json",
+    "index": "bvls05-conditional-g6-results01.json"
+  },
+  "results": {
+    "status": "PASS: five exact planned release selectors each ran once, 1 passed/408 skipped, exit=0, timed_out=false, source_unchanged=true, and binary_unchanged=true. No retry or capture substitution occurred.",
+    "physical_adapter_controls": "G6 core, raw-Jacobian, hydraulic, and materialization are physical-adapter actual-owner cap controls. The materialization case asserts the canonical baseline accepted core and independent closure before second denial; it is not a trust-region root qualification.",
+    "analytic_control": "G6 factor is the separately classified seeded analytic actual Stage1-owner control. It is not a natural physical trajectory and cannot support one.",
+    "evidence_limit": "No JSON captures were emitted; the evidence is the frozen test assertions plus each first-run receipt. Command durations are not performance evidence."
+  },
+  "held_state": {
+    "g3_native": "G3 physical and native harness remain incomplete and held.",
+    "targets": "All target slots remain unspent and separately gated.",
+    "production": "This package remains a private experimental validation; the results do not establish production/M1 acceptance."
+  },
+  "non_blocking_follow_up": [
+    "Keep the index classification explicit whenever a seeded analytic owner control is reported alongside physical-adapter controls."
+  ],
+  "disposition": "QA PASS for all five G6 first-run results. No additional physical work is authorized by this artifact."
+}

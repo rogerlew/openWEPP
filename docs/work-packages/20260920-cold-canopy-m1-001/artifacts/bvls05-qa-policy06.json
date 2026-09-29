@@ -1,0 +1,24 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-policy-accounting.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static bounded accounting-unit comparison only. QA ran no Rust audit, build, test, numerical, or physical command.",
+  "reviewed_custody": {
+    "plan05_sha256": "0697ddc894667648f3dc247cf3d2e1b2b4d6f993ef3b7e33f89243d9b792f6f3",
+    "plan06": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan06.json",
+    "plan06_sha256": "a73b72f62aab8116b04fd18b0e53c72727586fd2331023e527d7ac3b8838c3e8",
+    "numerical_methods_sha256": "ba0dba474ee78f5efde530f9e0764d9899b684cf98675d6609228cfcfd7ee2c1",
+    "correctness_policy06_sha256": "7ce76d24865d9a767b53c2f6f2a354f9dfa1609ae2688c14db22069346fc0f75",
+    "prior_controls_block_sha256": "ed40947700235455b8cd104d9772d1038f776e26deea0b69775b43283d4e5ab0"
+  },
+  "findings": [],
+  "verification": {
+    "bounded_diff": "Plan06 preserves plan05 and changes only work_observation labels/rules: per_occurrence maxima, their occurrence owners, and the identical-J retry rule. The 15 cases, selectors, operands, and expected dispositions remain unchanged.",
+    "canonical_agreement": "The authority now consistently charges six role joins and 252 raw/weighted entry tests per actual-J certificate derivation; up to 21 mask joins per face/state initialization; and up to 21 held base copies per entered candidate, including rejected proposals.",
+    "retry_semantics": "Identical-J retry reuses the admitted certificate without rescans while repeated face-mask application and reconstruction work remain counted. This corrects the former misleading per-assembly interpretation without changing a cap, counter family, factorization, or numerical policy.",
+    "preserved_gate": "This accounting clarification does not resolve the expected-red/source assertion and compile findings in bvls05-qa-controls01.json."
+  },
+  "nonblocking_follow_up": [
+    "At the next source review, require concrete attempted/completed evidence for fresh certificates, inspected empty masks, identical-J retry joins, and entered rejected-candidate copies."
+  ],
+  "disposition": "QA PASS for the prospective accounting-unit clarification and bounded controls correction only. Behavioral expected-red execution, Rust numerical body release, non-target physical controls, the G4 endpoint, and M1 acceptance remain blocked by the existing controls review."
+}

@@ -1,0 +1,61 @@
+{
+  "evidence_class": "Static: prospective sole G4 protocol, not dispatch authorization until readiness",
+  "method": "COLD-CANOPY-M1-TR-SVD-BVLS-05",
+  "selector": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+  "profile": "release",
+  "timeout_seconds": 180,
+  "planned_executions": 1,
+  "fixture": "Unchanged retained_phase_control_input(), trial(), original assert_retained_phase_capacity_tie; canonical capacity owning helper; upper M=Cliq,H=+0,D=+0, every other coordinate/forcing unchanged",
+  "preconditions": [
+    "Frozen final source/release binary and exact libtest inventory",
+    "Both independent final quality/source readiness reviews",
+    "All seven non-target controls pass on same source; actual evidence independently reviewed",
+    "Full180second bound fits before20:58UTC"
+  ],
+  "observations": [
+    "G4_PROPOSAL_COST: measured actual transition_model interval; initialization and clock query/samples separated; build and serialization excluded; actual observer/counter hook cost included",
+    "SHIFTED_FACE_ATTRIBUTION_CAPTURE: complete raw/weighted matrix and phase/full-direction custody at actual reached events, exact held/provenance/cache lifecycle and all existing owning work",
+    "Typed numerical or physical refusal unchanged; exact endpoint assertions remain binding"
+  ],
+  "cost_limits": [
+    "CPU quantized process ticks; zero ticks means unresolved below tick resolution, not zero CPU",
+    "Overlapping counter categories not summed as unique work",
+    "No old/new speedup claim or seasonal/watershed qualification from one endpoint"
+  ],
+  "negative_stop": "A source-conforming numerical negative ends fixed effort; no other seed/side/stencil/rank/tolerance/predicate change or extra experiment. Corrected verification only after independently demonstrated implementation/recording deviation, preserving first source/result.",
+  "conditional_continuation": "Only after G4 and prerequisites pass: existing unrun reviewed G2, fiveG6, G3 physical/harness within fixed envelope. Target prefix/baseline/treatment/repeat slots remain unspent and separately gated.",
+  "final_binding": "Supplement exact source/binary/argv before dispatch; no physical result has been observed",
+  "source_tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+  "binary": "/tmp/openwepp-cold-canopy-m1-bvls05-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+  "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+  "label": "bvls05-g4-physical01",
+  "argv": [
+    "nix",
+    "develop",
+    "/workdir/openWEPP",
+    "--command",
+    "env",
+    "CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-bvls05-target",
+    "CARGO_BUILD_JOBS=2",
+    "cargo",
+    "nextest",
+    "run",
+    "--release",
+    "-p",
+    "openwepp-land-surface-energy",
+    "--lib",
+    "--features",
+    "m1-trust-region-controller-stage,m1-trust-region-analytic-stage,m1-trust-region-physical-stage",
+    "-E",
+    "test(=m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model)",
+    "--no-fail-fast",
+    "--success-output",
+    "immediate",
+    "--failure-output",
+    "immediate"
+  ],
+  "release_inventory": "bvls05-quality-release-inventory08.json",
+  "recovery": "bvls05-terminal08-recovery.json",
+  "protected_g4_source": "bvls05-g4-protected-source08.json",
+  "status": "Frozen command and custody; NOT RELEASED until finite7 and dual result/readiness review"
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-functional.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static frozen-source review plus supplied inventory receipt only. QA ran no test, build, solver, physical assembly, numerical calculation, or replay.",
+  "frozen_source": {
+    "tree_sha256": "99bf7161a5c5f381ed3d6e931e60f490af58ad64a5f4f287803da6dfde410abf",
+    "entry_count": 764,
+    "source_diff": "bvls05-functional03-source-diff.json",
+    "patch": "bvls05-functional03-from-start.patch",
+    "stage1_sha256": "a1cd1ee7bc13b49cc94c8f58a748de55fb7c0d1de15a161bc1c5cbc0bd6c4927"
+  },
+  "findings": [],
+  "fix_verification": {
+    "central_scatter": "The former W01-only helper is now bvls05_scatter_held and is used both by W01 and the owning solve return path. It preserves non-held supplied bits, sets only held p entries to +0, restores only held candidate entries from base, and pairs attempted/completed increments for each copy.",
+    "comments": "The private work-state comment now correctly describes cfg(test) experimental provenance as consumed by the numerical body. The old non-consuming/observation-only claim is absent from the reviewed paths."
+  },
+  "functional_controls": {
+    "A01": "The G4 full-wet assembly control asserts all21 raw/weighted rows, exactly held columns1/2, retained ids including original19, nonzero retained physical columns, weighted-matrix construction, and held-objective identity.",
+    "A02_A04": "Role-universe control binds actual six-role provenance and frozen wet/area bits. A03 uses the frozen capacity/2 and next-down partial-wet operands for inspected-empty work. A04 follows lineage01: it reuses capacity/2, asserts the structural-zero anchor identity/absence from D, and retains inspected role/column work. It does not make the false full-wet-whole-mask-empty claim.",
+    "L01_L03": "The selected-retry control distinguishes natural, selected, retry, and new-base assemblies; reuse has zero rescan work but the required mask join, while fresh assemblies rescan. The full-to-dry and dry-to-full controls recompute finite evaluator outputs and assert fresh assembly certificates without an acceptance claim.",
+    "timing_and_capture": "New physical-stage observations retain masks, certificate/counter fields and input/trial custody. Timing output is explicitly an observation with CPU unresolved/test-trace overhead; the source makes no performance or physical-success assertion."
+  },
+  "scope_and_validation": {
+    "cfg_confinement": "The changed lib/controller/interface/Stage1/coupled-test paths remain private cfg(test), with physical adapter controls feature-gated. No manifest, dependency, public/default dispatch, physical equation, original G4 input/assertion, or production activation change appears in this frozen diff.",
+    "inventory": "bvls05-physical-inventory08.json records exit 0 in 11.457062 seconds on this exact source, with source and observer base unchanged. It is compilation/inventory evidence only.",
+    "classification": "The experiment remains within the isolated private scope accepted by bvls05-qa-validation-scope02.json. Terminal source/diff/consumer proof must be repeated after final quality corrections."
+  },
+  "missing_evidence": [
+    "Exact-source analytic/debug/release/default/feature/format and three source-bearing lint reconciliations are still pending for the final quality cut.",
+    "The seven named physical controls, physical readiness evidence, and the sole G4 endpoint are not run. No timing output can qualify physical cost or success.",
+    "Independent final correctness review and QA readiness review remain required before any physical dispatch."
+  ],
+  "disposition": "STATIC PASS / SCIENTIFIC-EVIDENCE CONDITIONAL: no additional source defect found in functional03. It closes QA body01's scatter/comment findings and provides adequate source controls for the planned non-target physical control phase, subject to final quality, custody, readiness, and independent review. It does not release physical execution, G4, production activation, or M1 qualification."
+}

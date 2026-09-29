@@ -1,0 +1,57 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-readiness.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static frozen-source/plan review plus inspection of supplied Ran receipts. QA ran no build, lint, test, solver, physical assembly, or endpoint command.",
+  "frozen_source": {
+    "tree_sha256": "7e16f57ab5e667b43d7e76902cb81ea542f444170864e68e3df26e06949a5a8e",
+    "entry_count": 764,
+    "source_diff": "bvls05-quality08-source-diff.json",
+    "terminal_recovery": "bvls05-terminal08-recovery.json",
+    "recovery_result": "All 764 entry hashes and archive bytes equal; archive_sha256=75a4ee2ff1d39956a064b4296e118416a86de9c48f184466a015c442b9ec5403."
+  },
+  "findings": [],
+  "source_scope_and_fix_closure": {
+    "quality04_defects": "Closed. debug08, release08, default08, both inventories, and rustfmt pass on the frozen source; the quality04 cfg and wrong-wrapper compile defects do not recur.",
+    "quality08_delta": "The reviewed added runtime JSON helper is pub(crate) and physical-feature-gated. Its direct uses are the physical test observation path and the cfg(test)+physical-stage natural-tangent wrapper. Before/after snapshots are labeled outside proposal timing; the helper exports actual hydraulic-entry counts rather than treating the current_hydraulics enum as a count.",
+    "confinement": "The six changed files remain within the private test/feature experiment boundary. No default/public production reachability, canonical authority/schema/unit byte change, or new science claim was found in this QA scope. The prior A0/schema/unit evidence remains reusable as reported."
+  },
+  "quality_receipts": {
+    "debug08": "PASS: 120 selected controls passed; receipt source unchanged.",
+    "release08": "PASS: 120 selected controls passed; receipt source unchanged.",
+    "analytic_only08": "PASS: 103 selected analytic controls passed; receipt source unchanged.",
+    "default08": "PASS: default-feature cargo check; receipt source unchanged.",
+    "format08": "PASS: rustfmt --check for all six touched files; receipt source unchanged.",
+    "inventories": "PASS: debug=409, release=409, analytic=359. Each of the seven finite-control selectors and the separate G4 selector occurs exactly once in the release inventory."
+  },
+  "lint_reconciliation": {
+    "all_features": "Source-bearing comparison02: identical argv, baseline=238, candidate=238, matched=238, introduced=0, removed=0.",
+    "combined": "Source-bearing comparison02: identical argv, baseline=238, candidate=238, matched=238, introduced=0, removed=0.",
+    "analytic": "Source-bearing comparison02: identical argv, baseline=262, candidate=262, matched=262, introduced=0, removed=0.",
+    "disposition": "Each strict Clippy command still exits 101 only for its exact inherited baseline. This is a no-new-diagnostic reconciliation, not a Clippy PASS or waiver."
+  },
+  "finite_seven_plan": {
+    "plan": "bvls05-physical-run-plan02.json",
+    "plan_sha256": "06983dacb49fba670cc7907bb1256498f2de849c7f4a4601c1385ac4c8a0d222",
+    "binary": "/tmp/openwepp-cold-canopy-m1-bvls05-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "binary_sha256": "b5b5a1e7b1b4f5241f38a46e123de5a44b0d4e4c41afee2485b75f53a4b9aead",
+    "binding": "All seven are individually labeled exact-single-selector release nextest commands on the frozen source/binary, each with a 180-second bound, no broad filter or automatic retry. The plan preserves first results and requires independent classification before any corrected execution.",
+    "membership": "BVLS05-A01/A02/A03/A04/L01/L02/L03 each has exactly one release-inventory member.",
+    "qa_disposition": "READY for the finite seven controls, subject to the separately required correctness readiness."
+  },
+  "g4": {
+    "plan": "bvls05-g4-plan02.json",
+    "plan_sha256": "11627fba8d6f11f2015caf0abc974cad71954d03eaa49194d9dfac6987e8575f",
+    "protected_source": "bvls05-g4-protected-source08.json",
+    "protected_source_sha256": "95aeccc9d4652b28c33f802b3787070ea95a58750e1ad2e1a9dc3ab8ea8d8867",
+    "status": "NOT READY / NOT RELEASED. It remains one exact release selector with a 180-second bound, but requires seven actual same-source PASS receipts and their independent evidence review, plus both final readiness reviews."
+  },
+  "missing_evidence": [
+    "The seven finite physical-control executions and their preserved first-result receipts have not occurred.",
+    "Independent correctness final readiness remains a separate required disposition; this artifact supplies only secondary QA readiness.",
+    "G4 actual result evidence is absent and remains conditional on the seven reviewed PASS results."
+  ],
+  "non_blocking_follow_up": [
+    "Keep the explicit runtime counter labels and non-additive-category wording in future capture changes; it prevents misleading aggregate-work claims."
+  ],
+  "disposition": "QA PASS for finite-seven readiness on the exact frozen source/binary/argv binding. No physical command was run by QA. G4 is expressly held."
+}

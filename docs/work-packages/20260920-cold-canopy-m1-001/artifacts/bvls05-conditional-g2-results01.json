@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: one independently justified corrected G2 verification, original failure preserved",
+  "receipt": "bvls05-conditional-g2-corrected01.json",
+  "result": "PASS",
+  "passed": 1,
+  "skipped": 408,
+  "elapsed_seconds": 9.748603727202863,
+  "source_tree_sha256": "04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b",
+  "binary_sha256": "42388917015060a04de67b23b497354cbb9f2797f8b7efd05247ed39d6827b1a",
+  "source_unchanged": true,
+  "binary_unchanged": true,
+  "capture": "bvls05-conditional-g2-corrected01-capture.json",
+  "capture_sha256": "555bc1d960c4a5bfb9aae9720a5390524c63da1f7899369ba9f1d8486d972b79",
+  "original_failed_result": "bvls05-conditional-g2-01.json",
+  "reached_owner": "VEG-E-142/MhConsistency; existing full test assertions PASS, predictor entered1/direct0/completed0",
+  "remaining_g6": "NOT RUN, awaiting same independent reviewers of this result"
+}

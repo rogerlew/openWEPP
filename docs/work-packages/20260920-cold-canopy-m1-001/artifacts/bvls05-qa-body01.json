@@ -1,0 +1,57 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.qa-body.v1",
+  "reviewer": "interface_qa",
+  "evidence_class": "Static immutable-source review plus inspection of supplied Ran receipts. QA ran no build, test, solver, physical assembly, numerical calculation, or replay.",
+  "immutable_source": {
+    "checkout": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls05-body01-review-20260929",
+    "tree_sha256": "0861d858f67a9c3281243373ee70da9a2ab0b365db0f8cf2c6557f0e44223f39",
+    "entry_count": 764,
+    "source_diff": "bvls05-body01-source-diff.json",
+    "changed_files": [
+      "crates/openwepp-land-surface-energy/src/lib.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "medium-blocker",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs: bvls05_scatter_held_for_test and solve_subproblem_with_certificate return path",
+      "title": "Held-coordinate scatter and paired work accounting are duplicated across the W01 helper and owning solve path.",
+      "evidence": "Both loops independently zero held p entries, restore held candidate entries from base, and increment attempted/completed counters. The existing controls use two held coordinates, so a future divergence in loop bounds, bit preservation, or counter ordering can pass the helper test while changing the numerical return path.",
+      "required_fix": "Centralize the held-only scatter and paired counter increments in one cfg(test) helper called by W01 and the owning return path. Preserve supplied non-held bits and the pair of increments around each actual held copy."
+    },
+    {
+      "severity": "low-blocker",
+      "location": "crates/openwepp-land-surface-energy/src/lib.rs and crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs: stale BVLS05 isolation comments",
+      "title": "Comments describe a non-consuming numerical body although body01 now consumes private provenance through bvls05_admit_for_input.",
+      "evidence": "The code is correctly test-confined, but the obsolete wording makes the dataflow and ownership misleading for a future maintainer.",
+      "required_fix": "Update comments to describe test-build experimental numerical ownership and distinguish pure control calls from the owning solve call."
+    }
+  ],
+  "verified_scope_and_custody": {
+    "cfg_confinement": "The added provenance, certificate, work counters, controller cache, adapter provenance capture, and solve-with-certificate path are cfg(test), with physical adapter portions additionally gated by the private physical-stage feature. No public/default production dispatch or manifest/dependency change is present in this immutable cut.",
+    "direct_consumers": "The controller passes private provenance/certificate only under cfg(test); the interface default returns None; and the private physical adapter supplies assembly provenance only under cfg(test)+physical-stage. This matches the bounded experimental classification, not production activation.",
+    "inventory": "bvls05-body-inventory06.json is manifest-bound to this exact tree, exit 0 in 6.242057 seconds, with source and observer base unchanged; it records the 402-test inventory.",
+    "analytic_controls": "bvls05-body-analytic-debug01.json is manifest-bound to this exact tree, exit 0 in 4.082208 seconds, source/observer unchanged. Its receipt reports 120 selected deduplicated Stage1/direct-consumer controls passing and 282 skipped.",
+    "default_empty": "bvls05-body-empty-comparison01.json binds the candidate stderr to the pre-body baseline and reports exact equality for both complete zero and positive Debug payloads. This supports only the declared no-provenance parity case."
+  },
+  "validation_classification": {
+    "status": "bounded private experiment remains noncritical on this immutable cut",
+    "reason": "The direct consumer graph remains private cfg(test), and no physical equation, original G4 input/assertion, public/default dispatch, dependency, authority-suite binding, or production solver path changed.",
+    "terminal_condition": "Reapply the reachability/diff proof to the later frozen fix cut. Any production/shared/default/public or unknown reachability, or a protected physical/authority/dependency change, triggers the escalation stated in bvls05-qa-validation-scope02.json."
+  },
+  "physical_control_lineage01": {
+    "disposition": "PASS as a prospective control-lineage clarification only.",
+    "evidence": "A04 reuses the frozen A03 partial-wet upper (M,H,D)=(Cliq/2,+0,+0) operands and all other original bits. That is the appropriate inspected-empty witness: at full wetness other positive-area roles may legitimately enter D, so a whole-mask-empty expectation would be false. The structural-zero anchor remains excluded in either assembly.",
+    "required_claim_boundary": "The later A04 receipt must assert zero structural area, unchanged anchored raw-J identity, anchor absence from held D, and nonzero inspected role/column work. This clarification creates no new case, seed, predicate, physical run, or release."
+  },
+  "missing_evidence": [
+    "A frozen post-fix source manifest/diff and same-reviewer verification of centralized scatter and corrected comments.",
+    "The separate seven physical controls, their final readiness, and the sole G4 endpoint remain unrun and gated.",
+    "Terminal format/default/feature/release/lint reconciliation and final direct-consumer proof remain pending."
+  ],
+  "disposition": "CONDITIONAL/BLOCKED for body01: recorded analytic/default evidence is valid, but the two bounded source fixes must be made and reviewed on a new frozen cut. Physical-control authoring may continue under its separate readiness gate; physical execution, G4, production activation, and M1 qualification remain unreleased."
+}

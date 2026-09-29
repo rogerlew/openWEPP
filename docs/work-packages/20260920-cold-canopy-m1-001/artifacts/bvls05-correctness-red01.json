@@ -1,0 +1,107 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls05.correctness-expected-red-review.v1",
+  "reviewer": "interface_correctness",
+  "role": "same-reviewer verification of the pre-body expected-red execution",
+  "evidence_class": "Ran evidence reviewed from exact recorded receipts and outputs. The reviewer did not rerun Rust, physical assembly, solver, or replay commands.",
+  "reviewed_identity": {
+    "source_tree_sha256": "1c72fea10aafecc1ce862094f3bd46246bbbc006c122e83877ed7f478bc2d1d4",
+    "controls_inventory_receipt": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-controls-inventory05.json",
+      "sha256": "69cbc9d2d3add22f430c301f39f8f726f4b0bab1b7198bd29e4a0c0f19a73632"
+    },
+    "expected_red_receipt": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-expected-red01.json",
+      "sha256": "f6c83274dac62008cd6f1c18ddc89ee940a0e529cb26697e3bb1190d35e9836f"
+    },
+    "expected_red_stderr": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-expected-red01.stderr",
+      "sha256": "04e7a027e2455b359e810a15015d31eea9ca001dc235bfb31d09cf93a3a9f2fc"
+    },
+    "empty_body_baseline": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-empty-old-body-baseline.json",
+      "sha256": "bab03df69c8b0569ee812862aef805d20a17456edc9efea02040fb91d1d9bc7d"
+    },
+    "control_plan": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-control-plan06.json",
+      "sha256": "a73b72f62aab8116b04fd18b0e53c72727586fd2331023e527d7ac3b8838c3e8"
+    }
+  },
+  "inventory_verification": {
+    "status": "PASS",
+    "exit_code": 0,
+    "elapsed_seconds": 5.031700031366199,
+    "total_tests": 402,
+    "planned_bvls05_selectors": 8,
+    "extra_bvls05_selectors": 0,
+    "source_unchanged": true,
+    "pinned_files_unchanged": true
+  },
+  "expected_red_verification": {
+    "status": "EXPECTED_RED_VALID",
+    "exit_code": 100,
+    "timed_out": false,
+    "elapsed_seconds": 0.6185439610853791,
+    "tests_run": 8,
+    "passed": 5,
+    "failed": 3,
+    "skipped": 394,
+    "source_unchanged": true,
+    "observer_base_unchanged": true,
+    "pinned_files_unchanged": true,
+    "support_links_unchanged": true
+  },
+  "passed_controls": [
+    "m1_trust_region_bvls05_accounting_caps",
+    "m1_trust_region_bvls05_column_guard_red",
+    "m1_trust_region_bvls05_default_empty_regression",
+    "m1_trust_region_bvls05_fixed_bound_active_precedence_red",
+    "m1_trust_region_bvls05_remaining_rank_refusal_red"
+  ],
+  "expected_failures": [
+    {
+      "selector": "m1_trust_region_bvls05_expected_red_g4_full_wet_hold",
+      "status": "VALID_EXPECTED_RED",
+      "observed": "The reached first face retained 21 free IDs while the accepted certificate requires the ordered 19; the dedicated hold-cardinality assertion failed 21 versus 19.",
+      "attribution": "The unchanged body has not admitted the certified structural-null directions. Failure is not compilation, missing symbol, stub, endpoint, or terminal-outcome coupling."
+    },
+    {
+      "selector": "m1_trust_region_bvls05_nonempty_hold_zero_lambda_refinement",
+      "status": "VALID_EXPECTED_RED",
+      "observed": "The unchanged full-column solve returned typed RankDeficient on the first factorization with zero completed pivots and no refinement entry/work.",
+      "attribution": "The body reached the intended analytic fixture but attempted the unreduced zero-column system before the planned 19-coordinate refinement custody."
+    },
+    {
+      "selector": "m1_trust_region_bvls05_nonempty_hold_positive_lambda_refinement",
+      "status": "VALID_EXPECTED_RED",
+      "observed": "The unchanged full-column solve returned typed RankDeficient on the first factorization with zero completed pivots and no refinement entry/work.",
+      "attribution": "The body reached the intended positive-lambda fixture but attempted the unreduced zero-column system before BVLS04 refinement."
+    }
+  ],
+  "baseline_binding": {
+    "status": "PASS",
+    "marker_occurrences_in_stderr": 1,
+    "extracted_payload_bytes": 17360,
+    "payload_matches_artifact_baseline_object": true,
+    "artifact_source_tree_matches_run": true,
+    "artifact_stderr_sha256_matches_run": true,
+    "canonical_baseline_object_sha256": "b53cfd2e89020be64c417c546cb5695e1dfbd538e8234311aaf451d96eb0be3e",
+    "positive_debug_sha256": "dd6b892c6d08428c0581ef50a0388a88f17ab8dee791988cb688ad457248dd3b",
+    "zero_debug_sha256": "a3657663b0fd517ea1a1bef66f2ce571f3b6eee4b4195d8503c2f319518aaaa9",
+    "requirement": "After body implementation, compare the newly emitted baseline object exactly against this retained object; candidate output alone is not an oracle."
+  },
+  "findings": [],
+  "residual_risk_and_next_gate": [
+    "The red evidence proves the intended missing hold consumption only; it does not validate the forthcoming implementation.",
+    "Numerical implementation must centralize certificate derivation and stable D ownership in the existing solver path, preserve error/guard precedence, use the current retained factor/refinement routines, and avoid a duplicate solver or fallback.",
+    "After implementation, exact-source correctness review and the eight controls must pass, including exact comparison of the default-empty baseline, before reviewed-body or physical controls are released.",
+    "Non-target physical controls, the sole G4 endpoint and production/default activation remain gated."
+  ],
+  "disposition": {
+    "pre_body_expected_red_gate": "PASS",
+    "numerical_implementation_release": true,
+    "reviewed_body_control_execution_release": false,
+    "physical_execution_release": false,
+    "production_activation_release": false,
+    "status": "NUMERICAL_IMPLEMENTATION_RELEASED_EXACT_BODY_REVIEW_REQUIRED"
+  }
+}
