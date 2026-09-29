@@ -1,0 +1,37 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: field `entered_materializations` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:220:16
+    |
+212 | pub(crate) struct M1TrustRegionTerminalOwnErrorObservation<E, Phase> {
+    |                   ---------------------------------------- field in this struct
+...
+220 |     pub(crate) entered_materializations: u8,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple fields are never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2435:16
+     |
+2432 | pub(crate) struct M1TrustRegionTrialDomainPoisonObservation {
+     |                   ----------------------------------------- fields in this struct
+...
+2435 |     pub(crate) base_raw_jacobian: [[f64; 21]; 21],
+     |                ^^^^^^^^^^^^^^^^^
+2436 |     pub(crate) retained_raw_jacobian: [[f64; 21]; 21],
+     |                ^^^^^^^^^^^^^^^^^^^^^
+2437 |     pub(crate) base_normalizers: [f64; 21],
+     |                ^^^^^^^^^^^^^^^^
+2438 |     pub(crate) retained_normalizers: [f64; 21],
+     |                ^^^^^^^^^^^^^^^^^^^^
+2439 |     pub(crate) base_selection: [M1PhaseJoinSelection; 2],
+     |                ^^^^^^^^^^^^^^
+2440 |     pub(crate) retained_selection: [M1PhaseJoinSelection; 2],
+     |                ^^^^^^^^^^^^^^^^^^
+...
+2456 |     pub(crate) disposition:
+     |                ^^^^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.00s

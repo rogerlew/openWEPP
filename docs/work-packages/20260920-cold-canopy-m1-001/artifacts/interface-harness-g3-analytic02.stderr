@@ -1,0 +1,81 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0432]: unresolved import `m1_trust_region_controller::m1_trust_region_controller_natural_tangent_for_test`
+    --> crates/openwepp-land-surface-energy/src/lib.rs:47:5
+     |
+  47 |     m1_trust_region_controller_natural_tangent_for_test, m1_trust_region_controller_run_for_test,
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_controller_natural_tangent_for_test` in `m1_trust_region_controller`
+     |
+note: found an item that was configured out
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1471:15
+     |
+1470 | #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+     |                 ------------------------------------------ the item is gated behind the `m1-trust-region-physical-stage` feature
+1471 | pub(crate) fn m1_trust_region_controller_natural_tangent_for_test<E, P, Phase, V>(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: a similar name exists in the module
+     |
+  47 -     m1_trust_region_controller_natural_tangent_for_test, m1_trust_region_controller_run_for_test,
+  47 +     m1_trust_region_controller_transition_for_test, m1_trust_region_controller_run_for_test,
+     |
+
+warning: unused import: `M1Stage`
+ --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8:88
+  |
+8 | use openwepp_vegetation::cold_canopy_m1::{M1CapacityBranch, M1Phase, M1PhaseReservoir, M1Stage};
+  |                                                                                        ^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `M1TrustRegionWitnessPath` and `M1_GOVERNED_STEP_NORMS`
+   --> crates/openwepp-land-surface-energy/src/lib.rs:155:5
+    |
+155 |     M1_GOVERNED_STEP_NORMS, M1TrustRegionWitnessPath,
+    |     ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `m1_trust_region_stage2_controls::m1_trust_region_witness_thresholds_for_test`
+   --> crates/openwepp-land-surface-energy/src/lib.rs:174:16
+    |
+174 | pub(crate) use m1_trust_region_stage2_controls::m1_trust_region_witness_thresholds_for_test;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `current_max`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:552:9
+    |
+552 |         current_max: f64,
+    |         ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_current_max`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3984:5
+     |
+3984 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: variable does not need to be mutable
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6052:13
+     |
+6052 |         Err(mut refusal) => {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `solution`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8813:5
+     |
+8813 |     solution: &FaceSolution,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_solution`
+
+warning: unused variable: `prepared`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8814:5
+     |
+8814 |     prepared: &PreparedSubproblem,
+     |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_prepared`
+
+For more information about this error, try `rustc --explain E0432`.
+warning: `openwepp-land-surface-energy` (lib test) generated 8 warnings
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error; 8 warnings emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage` exited with code 101

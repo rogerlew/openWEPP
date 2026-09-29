@@ -1,0 +1,50 @@
+{
+  "schema": "openwepp.interface-harness-qa-readiness.v1",
+  "reviewer": "/root/interface_qa",
+  "evidence_class": "Static: independent QA/evidence inspection of supplied exact-source receipts and plan. No build, test, numerical, candidate, physical, or replay command was run.",
+  "source_tree_sha256": "858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85",
+  "source_entries": 764,
+  "scope": "QA readiness for the proposed nine individually bounded release commands. This review does not replace independent correctness review and does not dispatch a command.",
+  "identity": {
+    "plan": "interface-harness-physical-plan01.json",
+    "plan_source_manifest": "interface-harness-all-features-analytic-release01-source.json",
+    "release_binary": "/tmp/openwepp-cold-canopy-m1-interface-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "release_binary_sha256": "2fda6ef922a345ad3a780ef9c7b5fb144445b899bbbd804e4af07dccebaf2118",
+    "direct_binary_sha256_match": true,
+    "input_hashes": {
+      "original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+      "radiation-reference-m1.json": "b92985388719f4a59406c2b8f3a5e03d3af2a2f35c99617926c20aeed284b47e"
+    },
+    "direct_input_hashes_match_plan": true
+  },
+  "quality_and_inventory": {
+    "format_receipt": "interface-harness-format01.json",
+    "format_scope": "all six touched interface files",
+    "default_receipt": "interface-harness-default-check01.json",
+    "all_feature_debug_receipt": "interface-harness-all-features-analytic-debug01.json",
+    "all_feature_release_receipt": "interface-harness-all-features-analytic-release01.json",
+    "all_feature_debug_result": "56 passed, 336 skipped",
+    "all_feature_release_result": "56 passed, 336 skipped",
+    "all_feature_inventory_receipts": ["interface-harness-all-features-inventory03.json", "interface-harness-all-features-release-inventory01.json"],
+    "inventory_total": 392,
+    "inventory_nonignored_matches": 386,
+    "lint_reconciliation": "interface-harness-qa-lint-reconciliation01.json",
+    "lint_population": "combined 238; analytic 262; all-three-feature 238; no introduced diagnostic block",
+    "default_warnings": "five inherited warnings remain recorded; this check is not a strict-lint PASS"
+  },
+  "physical_plan_review": {
+    "case_count": 9,
+    "exact_selector_membership": "Each of g1, g5, g4, g2, g6-core, g6-raw-j, g6-hydraulic, g6-factor, and g6-materialization appears exactly once and is listed in both debug and release all-feature inventories.",
+    "bounds": "Every planned command is release, enables controller/analytic/physical features, selects one named case, and declares the full 180-second bound.",
+    "terminal_execution_policy": "One terminal execution per case; unexpected source-conforming numerical refusal stops remaining physical work. No seed, input, or method tuning is authorized.",
+    "paired_controls": "The plan names source/input lineage and paired controls per case. G6 remains explicitly limited to five seeded typed shared-owner guards; it is not represented as general physical success.",
+    "spent_endpoint": "The accepted standalone domain endpoint is explicitly excluded and is not replayed.",
+    "holds": "G3 physical witnesses, target prefix/baseline/treatment/corrected-repeat, broader authority qualification, and retained composite duplicate operations remain HOLD or excluded."
+  },
+  "findings": [],
+  "non_blocking_debt_or_followups": [
+    "The inventories contain 392 cases in total, of which 386 are nonignored filter matches; the plan's nine exact selectors are individually verified as matches.",
+    "The planned physical commands require newly recorded source/support receipts at dispatch; this plan is prospective evidence and not a result receipt."
+  ],
+  "qa_verdict": "QA READY for the declared nine-command plan, conditional on the distinct independent correctness readiness verdict and dispatch-time recorder preflight. No physical execution has occurred or is authorized by this QA record."
+}

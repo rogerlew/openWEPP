@@ -1,0 +1,98 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: unused imports: `M1TrustRegionWitnessPath` and `M1_GOVERNED_STEP_NORMS`
+   --> crates/openwepp-land-surface-energy/src/lib.rs:155:5
+    |
+155 |     M1_GOVERNED_STEP_NORMS, M1TrustRegionWitnessPath,
+    |     ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `m1_trust_region_stage2_controls::m1_trust_region_witness_thresholds_for_test`
+   --> crates/openwepp-land-surface-energy/src/lib.rs:174:16
+    |
+174 | pub(crate) use m1_trust_region_stage2_controls::m1_trust_region_witness_thresholds_for_test;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `entered_materializations` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:220:16
+    |
+212 | pub(crate) struct M1TrustRegionTerminalOwnErrorObservation<E, Phase> {
+    |                   ---------------------------------------- field in this struct
+...
+220 |     pub(crate) entered_materializations: u8,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `m1_trust_region_controller_natural_tangent_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1471:15
+     |
+1471 | pub(crate) fn m1_trust_region_controller_natural_tangent_for_test<E, P, Phase, V>(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: enum `M1TrustRegionWitnessPath` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:15:17
+   |
+15 | pub(crate) enum M1TrustRegionWitnessPath {
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `M1TrustRegionWitnessThresholds` is never constructed
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:32:19
+   |
+32 | pub(crate) struct M1TrustRegionWitnessThresholds {
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `governed_norms` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:172:16
+    |
+154 | pub(crate) struct M1TrustRegionControllerTransition {
+    |                   --------------------------------- field in this struct
+...
+172 |     pub(super) governed_norms: Option<[f64; M1_GOVERNED_STEP_NORMS]>,
+    |                ^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionControllerTransition` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: multiple fields are never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2450:16
+     |
+2447 | pub(crate) struct M1TrustRegionTrialDomainPoisonObservation {
+     |                   ----------------------------------------- fields in this struct
+...
+2450 |     pub(crate) base_raw_jacobian: [[f64; 21]; 21],
+     |                ^^^^^^^^^^^^^^^^^
+2451 |     pub(crate) retained_raw_jacobian: [[f64; 21]; 21],
+     |                ^^^^^^^^^^^^^^^^^^^^^
+2452 |     pub(crate) base_normalizers: [f64; 21],
+     |                ^^^^^^^^^^^^^^^^
+2453 |     pub(crate) retained_normalizers: [f64; 21],
+     |                ^^^^^^^^^^^^^^^^^^^^
+2454 |     pub(crate) base_selection: [M1PhaseJoinSelection; 2],
+     |                ^^^^^^^^^^^^^^
+2455 |     pub(crate) retained_selection: [M1PhaseJoinSelection; 2],
+     |                ^^^^^^^^^^^^^^^^^^
+...
+2471 |     pub(crate) disposition:
+     |                ^^^^^^^^^^^
+
+warning: struct `M1TrustRegionNaturalTangentObservation` is never constructed
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2500:19
+     |
+2500 | pub(crate) struct M1TrustRegionNaturalTangentObservation {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_natural_tangent_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2834:15
+     |
+2834 | pub(crate) fn m1_trust_region_natural_tangent_for_test(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_witness_thresholds_for_test` is never used
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:908:15
+    |
+908 | pub(crate) fn m1_trust_region_witness_thresholds_for_test(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 11 warnings (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.49s

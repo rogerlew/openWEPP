@@ -1,0 +1,69 @@
+{
+  "schema": "interface-harness-correctness-readiness-v1",
+  "reviewer": "/root/interface_correctness",
+  "reviewed_at_utc": "2026-09-29T12:44:37Z",
+  "evidence_class": "Static: independent source, authority, plan, inventory, hash, and recorded-receipt review. No build, test, numerical, physical, replay, or target command was run by this reviewer.",
+  "plan": "interface-harness-physical-plan01.json",
+  "source_identity": {
+    "manifest": "interface-harness-all-features-analytic-release01-source.json",
+    "tree_sha256": "858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85",
+    "current_manifest_entry_mismatches": 0,
+    "reviewed_changed_files": {
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "17dd2d887f2ce3ee64e4415f105c02a6e975f19df8892c6035760bc9445df43e",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "a1f98fbcb3e73186835db989e018e01a22c56a91f7cb90e335d9bdce6ab0d753",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "fa2186cd24e71a94bb1059c46e334f9ea591ed71989e1fc517178521b5fcd1f5"
+    }
+  },
+  "build_and_input_identity": {
+    "release_binary": "/tmp/openwepp-cold-canopy-m1-interface-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "release_binary_sha256_verified": "2fda6ef922a345ad3a780ef9c7b5fb144445b899bbbd804e4af07dccebaf2118",
+    "original_input_sha256_verified": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+    "radiation_input_sha256_verified": "b92985388719f4a59406c2b8f3a5e03d3af2a2f35c99617926c20aeed284b47e"
+  },
+  "findings": [],
+  "source_review": {
+    "final_delta_from_prior_accepted_fix_cut": "The only substantive controller change after tree 5be7c120e72d7b3d88bf68d9d5642acf419226783be01b34545cde26b3093ffd extracts GovernedStep::norms and merit_rejected_transition. It preserves the same four governed operands, merit fields, candidate maximum, base_before, zero materializations, and shrink_transition call. Other reviewed changes are test-fixture/assertion consolidation and rustfmt of the already accepted G4 projection.",
+    "g1": "Dedicated wrapper asserts the actual injected coordinate-5 poison, trial-domain entry, exact shrink, absent merit/install/materialization, retained Jacobian/normalizers/phase, scope restoration, and input/trial custody.",
+    "g2": "Dedicated wrapper retains the prospectively frozen H=+0 tie, actual validated representable selected-side probe, post-validation mass poison, canonical VEG-E-142 MhConsistency cause, unchanged radius/base/phase/input/trial, zero controller and adapter materializations, pending hydraulics, exact entry/poison milestones, and actual Stage1 work.",
+    "g4": "Dedicated wrapper shares the retained assertion helper and proves prepared M equals canonical capacity with exact +0 H/D, final owner selection operands equal preparation, canonical mass/enthalpy inverse, exact dt*D == capacity-liquid_mass tie, one natural plus one selected assembly, predictor/final selected probes, both drainage columns, final direction, and custody.",
+    "g5": "Dedicated wrapper shares the retained assertion helper and proves one natural assembly, no selected assembly, no predictor selected probe, one final selected probe, finite actual raw Jacobian/final direction, and custody.",
+    "g6": "The five planned owner cases complement the already passed typed seeded shared-guard controls. Each reaches the existing real owner, asserts the last admission/next denial and typed snapshot or owning guard precedence, and restores scoped state. The controller-50, dominated proposal-21 RadiusExhausted, and G7 two-face workload mappings remain covered by the recorded analytic suite rather than invented physical cap claims.",
+    "duplicate_composites": "Excluding the retained physical composites avoids repeated physical operations without weakening acceptance: G4/G5 use the same assertion helpers, G1/G2 dedicated cases carry equivalent assertions, and G6 pairs the passed shared-guard composite with all five actual-owner cases. The composites remain compiled and enumerated."
+  },
+  "plan_review": {
+    "inventory": "interface-harness-all-features-release-inventory01.stdout",
+    "inventory_total": 392,
+    "inventory_unique": true,
+    "planned_case_count": 9,
+    "each_exact_selector_count": 1,
+    "case_order": [
+      "g1",
+      "g5",
+      "g4",
+      "g2",
+      "g6-core",
+      "g6-raw-j",
+      "g6-hydraulic",
+      "g6-factor",
+      "g6-materialization"
+    ],
+    "command_posture": "All nine commands are release, all-three-feature, exact-selector nextest invocations with a declared 180-second full bound and one terminal execution per case.",
+    "negative_and_stop_semantics": "G2's exact owning VEG-E-142 and the G6 cap refusals are intended negative-control outcomes. An unexpected source-conforming numerical refusal before an intended branch in any case stops the remaining physical experiment; no input, seed, timestep, tolerance, or method tuning is permitted. A rerun is limited to an independently demonstrated implementation or recording deviation.",
+    "exclusions": "The spent standalone domain endpoint and duplicate physical composites are correctly excluded. G3 physical-adapter witness acceptance, private native harness work, target prefix/baseline/treatment, and broader physical qualification remain HOLD and receive no credit from this dispatch."
+  },
+  "recorded_qualification_review": {
+    "debug_analytic_shared_controls": "56/56 PASS, 336 skipped, exact source unchanged",
+    "release_analytic_shared_controls": "56/56 PASS, 336 skipped, exact source unchanged",
+    "format": "PASS on all six changed Rust files",
+    "default_library_check": "PASS with inherited warnings",
+    "lint_reconciliation": "238 combined, 262 analytic, 238 all-three-feature diagnostics; zero introduced blocks; strict inherited lint remains exit 101"
+  },
+  "residual_risk_and_missing_tests": [
+    "All nine planned physical cases are unexecuted; source readiness does not predict numerical success or replace their terminal receipts.",
+    "G3 actual physical-adapter witness acceptance remains HOLD, and the plan correctly assigns it no physical target.",
+    "The native private harness and reserved comparison remain unimplemented and unspent; this review does not qualify target execution, production adoption, full A0/A1/A3, complete-parent, cycle/restart, or scale obligations.",
+    "Dispatch remains contingent on distinct QA readiness and source/binary/input identity staying exact."
+  ],
+  "verdict": "READY_FOR_PLANNED_NINE_CASE_PHYSICAL_DISPATCH",
+  "approval_scope": "Correctness readiness only for the exact source, release binary, inputs, selectors, order, bounds, and stop policy in interface-harness-physical-plan01.json. No blocker or missing required assertion was found."
+}

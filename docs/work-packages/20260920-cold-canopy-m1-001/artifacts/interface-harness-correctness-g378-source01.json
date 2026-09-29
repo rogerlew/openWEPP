@@ -1,0 +1,13 @@
+{
+  "reviewer": "/root/interface_correctness",
+  "evidence_class": "Static and read-only Ran-record review",
+  "source": "reviewer message 2026-09-29",
+  "source_tree_sha256": "f3908fde4f14957880d5fe060d5378a9c5476ecbd8e5c02ab3d2cb2d02247cfa",
+  "finding": "No blocking correctness findings G3/G5/G7/G8; prior G3 assertions and G5 actual-entry observation findings closed.",
+  "ran_record": "interface-harness-analytic-g378-01.json: 3/3 PASS source unchanged, reviewed not rerun",
+  "holds": [
+    "G3 physical-adapter witness obligation",
+    "G5 physical execution",
+    "full-feature physical qualification"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "schema": "openwepp.interface-harness-qa-terminal.v1",
+  "reviewer": "/root/interface_qa",
+  "evidence_class": "Static: independent QA/evidence inspection of supplied terminal physical receipts and recovery receipt. No build, test, numerical, candidate, physical, or replay command was run.",
+  "source_tree_sha256": "858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85",
+  "source_entries": 764,
+  "release_binary_sha256": "2fda6ef922a345ad3a780ef9c7b5fb144445b899bbbd804e4af07dccebaf2118",
+  "scope": "Custody and execution-disposition QA for the three dispatched interface-harness cases. Correctness classification of the g4 numerical refusal remains assigned to the distinct correctness reviewer.",
+  "executed_cases": [
+    {
+      "receipt": "interface-harness-physical-g1-01.json",
+      "selector": "m1_coupled_tests::m1_trust_region_retained_domain_wrapper_uses_actual_guard_and_custody",
+      "result": "PASS 1/1; 391 filtered",
+      "elapsed_seconds": 9.847353571094573
+    },
+    {
+      "receipt": "interface-harness-physical-g5-01.json",
+      "selector": "m1_coupled_tests::m1_trust_region_retained_natural_tangent_uses_actual_model",
+      "result": "PASS 1/1; 391 filtered",
+      "elapsed_seconds": 1.7222395678982139,
+      "observed_custody": "one natural assembly, zero selected assemblies/predictor probes, one final probe, zero materialization, input and trial unchanged"
+    },
+    {
+      "receipt": "interface-harness-physical-g4-01.json",
+      "selector": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+      "result": "FAIL 1/1; RankDeficient before selected assembly/probes/materialization",
+      "elapsed_seconds": 0.5682046837173402,
+      "observed_custody": "one Stage1 call and factorization, seven completed Jacobi sweeps, zero completed face pivots, zero selected assemblies, zero probes, zero trial-domain checks, zero materializations; input and trial unchanged"
+    }
+  ],
+  "receipt_identity": {
+    "all_three_same_source": true,
+    "all_three_same_release_binary": true,
+    "all_three_bind_original_and_radiation_reference_hashes": true,
+    "all_three_declared_physical": true,
+    "all_three_timeout_seconds": 180,
+    "all_three_automatic_retries": 0,
+    "all_three_report_source_binary_pins_and_support_links_unchanged": true
+  },
+  "stop_disposition": {
+    "g4_is_first_failed_planned_case": true,
+    "remaining_planned_cases_not_dispatched": ["g2", "g6-core", "g6-raw-j", "g6-hydraulic", "g6-factor", "g6-materialization"],
+    "scoped_receipt_inventory": "Only physical-g1-01, physical-g5-01, and physical-g4-01 receipts exist for this plan.",
+    "no_retry_or_tuning_evidenced": true,
+    "assessment": "The evidence is consistent with the plan's numerical-stop policy. This QA review does not decide whether the observed RankDeficient refusal is source-conforming; that correctness determination remains open."
+  },
+  "recovery": {
+    "receipt": "interface-harness-controls-recovery01.json",
+    "archive": "interface-harness-controls-source.tar.gz",
+    "archive_sha256": "c0b45795bf93cd3ada97b8f5b6ec8f5c5c494a8185816a2f01dea09bc7500d17",
+    "archive_direct_hash_match": true,
+    "fresh_extraction_entries": 764,
+    "fresh_extraction_tree_sha256": "858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85",
+    "all_entries_identical": true
+  },
+  "holds_and_unspent_scope": [
+    "g2 and all five g6 cases were not run.",
+    "g3 physical witness, native harness qualification, target prefix/baseline/treatment/corrected-repeat slots, and broader M1 authority remain incomplete or HOLD.",
+    "The spent standalone domain endpoint was not replayed.",
+    "Inherited lint remains reconciled population evidence, not a strict lint PASS."
+  ],
+  "findings": [],
+  "qa_verdict": "QA PASS for exact receipt, stop, and recovery custody. Interface-harness execution is PARTIAL/INCOMPLETE because g4 failed and six planned cases remain unexecuted; no broader M1 or target qualification is claimed."
+}

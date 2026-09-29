@@ -1,0 +1,24 @@
+{
+  "evidence_class": "Static: independent source/authority review; no Rust/numerical/replay runs",
+  "reviewer": "/root/interface_correctness",
+  "verdict": "HOLD pending exact writer cut and controls",
+  "findings": [
+    {
+      "severity": "High",
+      "finding": "Group2 must not bypass exact-tie gate; actual tied base and representable factor-built selected-side probe before test-only mutation required."
+    },
+    {
+      "severity": "High",
+      "finding": "Adapter maps UnrepresentableProbe and InconsistentFinalSet to domain_error VEG-E-142; this must not qualify. Group2 must prove ControllerError::Own(AdapterOwnError::Coupled(...)) carrying canonical MhConsistency from ordered probe validation/core."
+    },
+    {
+      "severity": "Medium",
+      "finding": "Group1 needs applied candidate bits, guard/refusal/shrink disposition, bitwise base/trial custody, absent reduction/merit, no evaluation/install/materialization and scope restoration before Result inspection."
+    },
+    {
+      "severity": "Medium",
+      "finding": "selected_side_probes increments only after success; failed entry/applied/typed-error milestones required."
+    }
+  ],
+  "action": "Root accepts; writer instructed to preserve tie gate, use frozen contract-derived tied preparation, strengthen observation; no physical dispatch."
+}

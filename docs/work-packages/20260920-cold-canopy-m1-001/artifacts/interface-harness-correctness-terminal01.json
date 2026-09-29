@@ -1,0 +1,166 @@
+{
+  "schema": "interface-harness-correctness-terminal-v1",
+  "reviewer": "/root/interface_correctness",
+  "reviewed_at_utc": "2026-09-29T12:47:53Z",
+  "evidence_class": "Static: independent source, authority, hash, plan, and recorded physical-result review. This reviewer ran no build, test, numerical, physical, replay, harness, or target command.",
+  "findings": [
+    {
+      "severity": "High",
+      "status": "OPEN acceptance blocker",
+      "finding": "G4 was an intended positive physical connection and did not reach its required phase/capacity-tie evidence. The actual first Stage1 solve returned typed RankDeficient before directional phase selection, selected assembly, predictor/final selected-side probes, trial-domain checking, or materialization. Consequently the runtime assertions for exact selected M/H/D/capacity/duration operands, both raw drainage columns, and the final governed direction remain unmet.",
+      "evidence": [
+        "interface-harness-physical-g4-01.json",
+        "interface-harness-physical-g4-01.stderr",
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs"
+      ]
+    }
+  ],
+  "classification": {
+    "g4_result": "VALID SOURCE-CONFORMING NUMERICAL REFUSAL; TERMINAL NEGATIVE EXPERIMENT RESULT",
+    "not_physical_success": true,
+    "not_an_expected_negative_control_pass": true,
+    "implementation_deviation_demonstrated": false,
+    "recording_deviation_demonstrated": false,
+    "corrected_rerun_authorized": false,
+    "reasoning": [
+      "The frozen wrapper derives upper capacity through the canonical zero-direction phase_join_selections call, clones trial(), and changes only upper M to that capacity and upper H/D to exact +0 before invoking the same physical natural-tangent/controller seam used by G5.",
+      "The recorded chronology matches the source: initialization completes one natural raw-J assembly; transition_model enters phase_model; proposal_model invokes the first shared Stage1 solve; that solve returns typed RankDeficient before any predictor direction or selected-side operation exists.",
+      "The error-safe SHIFTED_FACE_ATTRIBUTION_CAPTURE is emitted before result propagation and retains the exact typed refusal, one completed natural assembly, one Stage1 call, one entered factorization, seven Jacobi sweeps, zero completed faces, zero refinement, zero selected assemblies/probes, zero trial-domain/materialization entries, and unchanged input/trial.",
+      "The positive G5 run on the same source and binary reaches its natural model and final selected-side probe, so the recorder and common natural-tangent interface are executable. That does not convert the distinct tied G4 operand system into a success.",
+      "No source, binary, input, method, seed, tolerance, or preparation discrepancy is evidenced. The observed rank deficiency is therefore not a qualifying implementation/recording defect for a corrected repeat."
+    ]
+  },
+  "physical_case_disposition": [
+    {
+      "group": "g1",
+      "selector": "m1_coupled_tests::m1_trust_region_retained_domain_wrapper_uses_actual_guard_and_custody",
+      "disposition": "PASS 1/1",
+      "claim": "Actual injected domain guard, shrink, work, and custody assertions passed."
+    },
+    {
+      "group": "g5",
+      "selector": "m1_coupled_tests::m1_trust_region_retained_natural_tangent_uses_actual_model",
+      "disposition": "PASS 1/1",
+      "claim": "Actual natural assembly and required final selected-side probe assertions passed."
+    },
+    {
+      "group": "g4",
+      "selector": "m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model",
+      "disposition": "FAIL 0/1: typed RankDeficient at first Stage1 solve",
+      "claim": "Valid source-conforming refusal only; G4 physical success and its downstream assertions remain unmet."
+    },
+    {
+      "group": "g2",
+      "disposition": "NOT RUN due numerical stop"
+    },
+    {
+      "group": "g6-core",
+      "disposition": "NOT RUN due numerical stop"
+    },
+    {
+      "group": "g6-raw-j",
+      "disposition": "NOT RUN due numerical stop"
+    },
+    {
+      "group": "g6-hydraulic",
+      "disposition": "NOT RUN due numerical stop"
+    },
+    {
+      "group": "g6-factor",
+      "disposition": "NOT RUN due numerical stop"
+    },
+    {
+      "group": "g6-materialization",
+      "disposition": "NOT RUN due numerical stop"
+    }
+  ],
+  "stop_review": {
+    "plan": "interface-harness-physical-plan01.json",
+    "plan_sha256": "848fd6c7af5098c7442524e87ad5183fa664b28fa8687f9d27367a914be69177",
+    "plan_rule": "Unexpected source-conforming numerical refusal stops remaining physical experiment; preserve exact result, no input/seed/method tuning. Corrected rerun only independently demonstrated implementation/recording deviation.",
+    "root_action": "STOPPED after G4; G2 and all five G6 owner cases were not dispatched.",
+    "correctness_disposition": "PASS: stopping immediately and declining a retry applies the prospective numerical-stop rule exactly. Any change to tie preparation or another run of G4 based on this outcome would be outcome-driven tuning and is not authorized."
+  },
+  "exact_identity": {
+    "source_tree_sha256": "858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85",
+    "current_source_manifest_entry_mismatches": 0,
+    "release_binary": "/tmp/openwepp-cold-canopy-m1-interface-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "release_binary_sha256": "2fda6ef922a345ad3a780ef9c7b5fb144445b899bbbd804e4af07dccebaf2118",
+    "original_input_sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+    "radiation_input_sha256": "b92985388719f4a59406c2b8f3a5e03d3af2a2f35c99617926c20aeed284b47e",
+    "source_unchanged_all_three_cases": true,
+    "binary_unchanged_all_three_cases": true,
+    "automatic_retries_all_three_cases": 0
+  },
+  "exact_artifact_bytes": {
+    "interface-harness-physical-g1-01.json": {
+      "bytes": 129023,
+      "sha256": "6149c41954c1c7089fa1db29e51b91117e4f2e54fd6ddb76bca60b67f5fa4a09"
+    },
+    "interface-harness-physical-g1-01-source.json": {
+      "bytes": 112005,
+      "sha256": "053b599bc4d39b00154c89b4434fa0fbda1b42dd2096f3515d74f8c1f5cd7fd5"
+    },
+    "interface-harness-physical-g1-01.stderr": {
+      "bytes": 2887,
+      "sha256": "f5b301cd745e72406256bd95376a3ae71912b67393906a1dafe39572eb2c9dbc"
+    },
+    "interface-harness-physical-g5-01.json": {
+      "bytes": 129002,
+      "sha256": "d4c375867fcd0ab0b7799265fedcb2bd59fafabab5302bb0601319f21e9cd131"
+    },
+    "interface-harness-physical-g5-01-source.json": {
+      "bytes": 112005,
+      "sha256": "e3b226ccc29ebe8952fdbeafd9e0e035464dc26c87cda2be0640c0aaf8071434"
+    },
+    "interface-harness-physical-g5-01.stderr": {
+      "bytes": 1680,
+      "sha256": "2ea5dbcf4df90e411646fae40f9b7f5af883a483fc98c801afc974750b047e82"
+    },
+    "interface-harness-physical-g4-01.json": {
+      "bytes": 129010,
+      "sha256": "756828262a811e7b797b7bf58c00d061708abdd8c4b0975aae8695e1868a72bc"
+    },
+    "interface-harness-physical-g4-01-source.json": {
+      "bytes": 112005,
+      "sha256": "3fcbc57bd569c787205c242a3a42ad0875ce3fcb9d908fc705b77ae323de55a2"
+    },
+    "interface-harness-physical-g4-01.stdout": {
+      "bytes": 204,
+      "sha256": "2e2011002c0a5afbb2d3b781d81a81354283f27317c9fa62365a8afdb88b8244"
+    },
+    "interface-harness-physical-g4-01.stderr": {
+      "bytes": 4428,
+      "sha256": "d58fe4eea45190911f5bd63cd4bdc49810672da69d8264a04ef60bd508630bed"
+    },
+    "interface-harness-physical-g4-01.resources": {
+      "bytes": 1223,
+      "sha256": "b363d19fc9badd61481eb4aee8dd3c02ae7e473f452c1edc68bf8ce17cf3594d"
+    }
+  },
+  "recovery_custody": {
+    "receipt": "interface-harness-controls-recovery01.json",
+    "receipt_sha256": "d7ac729ca8ebcc65d52e0488192830150365b7e75c23ab72debe157c0f1eca2f",
+    "archive": "interface-harness-controls-source.tar.gz",
+    "archive_bytes": 4088333,
+    "archive_sha256": "c0b45795bf93cd3ada97b8f5b6ec8f5c5c494a8185816a2f01dea09bc7500d17",
+    "fresh_extraction_all_764_entries_identical": true,
+    "main_rust_adopted": false
+  },
+  "complementary_review_scope": {
+    "correctness": "This review owns source/authority parity, numerical and typed-error classification, owner chronology, required-assertion reachability, and whether a rerun condition exists.",
+    "qa": "Distinct QA owns independent command/selector/bound and artifact-integrity reconciliation, confirms no undeclared execution or drift, and verifies terminal evidence completeness. QA does not convert this typed refusal into G4 success.",
+    "shared_boundary": "Both roles must preserve exact source/binary/input custody, no retry, and the remaining HOLDs; their reviews are complementary rather than transferable."
+  },
+  "residual_risk_and_missing_tests": [
+    "G4 physical phase/capacity-tie acceptance is not demonstrated.",
+    "G2 and all five G6 physical-owner cases remain unexecuted because the valid stop precluded them; their analytic/shared-guard evidence is not physical success.",
+    "G3 actual physical-adapter witness acceptance remains HOLD.",
+    "The private native harness is unimplemented; all target prefix, baseline, treatment, and corrected-repeat slots remain unspent.",
+    "Broader A0/A1/A3, complete-parent/late-rejection, material/BGC, cycle/restart, scale, and release obligations remain HOLD."
+  ],
+  "verdict": "TERMINAL HOLD: G1 AND G5 PASS; G4 SOURCE-CONFORMING RANK-DEFICIENT REFUSAL; STOP VALID; NO RETRY BASIS",
+  "approval_statement": "No correctness blocker exists in the recording or application of the numerical stop. The interface/physical milestone is not approved as complete because G4 failed its intended positive path and G2/G6 were not run."
+}

@@ -1,0 +1,8 @@
+{
+  "reviewer": "/root/interface_correctness",
+  "evidence_class": "Static and read-only Ran-record review",
+  "source": "reviewer message 2026-09-29",
+  "finding": "Five typed seeded shared-entry guards plus real controller50 supported; 21 is dominated RadiusExhausted alternative;22 is G7 factorization workload, not cap.",
+  "claim_boundary": "Must retain paired physical-owner tests and current physical evidence obligation; direct shared guards not physical success.",
+  "runs": "none"
+}

@@ -1,0 +1,43 @@
+{
+  "evidence_class": "Ran: terminal receipt/custody audit; conservative prospective closing charge",
+  "anchor_utc": "2026-09-29T11:32:00+00:00",
+  "ledger_recorded_utc": "2026-09-29T12:50:13.998387+00:00",
+  "fixed_work_cutoff_utc": "2026-09-29T15:02:00+00:00",
+  "fixed_hard_deadline_utc": "2026-09-29T15:32:00+00:00",
+  "carry_charged_seconds": "403746.393795",
+  "new_grant_seconds": "14400",
+  "fixed_ceiling_seconds": "418146.393795",
+  "actual_elapsed_at_record_seconds": "4693.998387",
+  "conservative_closing_reservation_seconds": "1800",
+  "resumed_charged_seconds": "6494",
+  "cumulative_charged_seconds": "410240.393795",
+  "unused_ceiling_seconds": "7906.000000",
+  "conservative_charge_covers_through_utc": "2026-09-29T13:20:14+00:00",
+  "accounting": "Concurrent elapsed work and waits charged once from initial reading anchor; no summing child/task/command times; rounded elapsed plus full1800-second closing reservation retained without refund. If actual close exceeds coverage, charge greater actual consumption. Fixed original cutoffs not moved. No old254-second balance added.",
+  "physical_plan_cases": 9,
+  "physical_cases_executed": 3,
+  "physical_passes": [
+    "g1",
+    "g5"
+  ],
+  "physical_valid_negative": "g4 RankDeficient before intended positive phase model",
+  "remaining_physical_not_run": [
+    "g2",
+    "g6-core",
+    "g6-raw-j",
+    "g6-hydraulic",
+    "g6-factor",
+    "g6-materialization"
+  ],
+  "physical_retries": 0,
+  "target_slot_consumption": {
+    "native_prefix": 0,
+    "release_baseline": 0,
+    "release_bvls04_treatment": 0,
+    "conditional_corrected_target_repeat": 0
+  },
+  "disposition": "PARTIAL / terminal numerical HOLD; no resumed numerical work authorized by unused time or unspent slots",
+  "source_tree_sha256": "858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85",
+  "source_archive_sha256": "c0b45795bf93cd3ada97b8f5b6ec8f5c5c494a8185816a2f01dea09bc7500d17",
+  "release_binary_sha256": "2fda6ef922a345ad3a780ef9c7b5fb144445b899bbbd804e4af07dccebaf2118"
+}

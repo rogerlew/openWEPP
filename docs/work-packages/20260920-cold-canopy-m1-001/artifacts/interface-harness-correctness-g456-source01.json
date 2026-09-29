@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Static",
+  "reviewer": "/root/interface_correctness",
+  "source_tree_sha256": "89e438ff5bb01caf8d4f7de4f797ac8d9f1eb1cf0b102b2f6a75bb54fc284c4b",
+  "findings": [
+    "G4 missing raw exact tie proof",
+    "G2 controller materializations logged but not asserted"
+  ],
+  "ready_source_only": [
+    "G1",
+    "G5"
+  ],
+  "G6": "Shared entry guards only; physical owner tests still required",
+  "runs": "none"
+}

@@ -1,0 +1,17 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `release` profile [optimized] target(s) in 0.03s
+────────────
+ Nextest run ID f78b070b-7c5c-43eb-85ea-0324bac3d815 with nextest profile: default
+    Starting 1 test across 1 binary (391 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_retained_natural_tangent_uses_actual_model ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 391 filtered out; finished in 0.00s
+
+  stderr ───
+    SHIFTED_FACE_ATTRIBUTION_CAPTURE {"completed_assemblies":1,"control":"retained-phase-observation","controller_work":{"bvls04_dot2_free_gradients":20,"bvls04_dot2_residual_rows":21,"bvls04_factor_applications":2,"bvls04_ordered_norms":6,"bvls04_positive_entries":2,"completed_face_pivots":1,"coordinate_update_operations":40,"entered_svd_factorizations":2,"factor_application_operations":4240,"first_residual_operations":903,"refinement_attempted_entries":1,"refinement_denied_entries":0,"refinement_guard_events":106628,"refinement_scalar_operations":37691,"second_dot2_operations":22263,"stage1_calls":1,"total_jacobi_sweeps":14,"upward_enclosure_guard_events":67427,"upward_enclosure_operations":8162,"whole_kkt_guard_events":5503,"whole_kkt_operations":1827},"final_probe_entries":1,"input_unchanged":true,"materialization_entries":0,"natural_assembly_attempts":1,"predictor_probe_entries":0,"schema":"m1-shifted-face-attribution-v1","selected_assembly_attempts":0,"trial_domain_checks":0,"trial_unchanged":true,"typed_error_debug":null}
+
+────────────
+     Summary [   0.009s] 1 test run: 1 passed, 391 skipped

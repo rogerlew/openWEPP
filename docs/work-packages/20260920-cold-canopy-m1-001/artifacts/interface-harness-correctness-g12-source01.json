@@ -1,0 +1,12 @@
+{
+  "evidence_class": "Static independent correctness review; no execution",
+  "reviewer": "/root/interface_correctness",
+  "source_receipt": "interface-harness-g12-compile01-source.json",
+  "group1": "Substantive prior findings cleared; actual existing producer/mutation/guard/shrink/custody/restoration correctly projected",
+  "group2": "HOLD: actual pre/post poison probe operands and unreached downstream/work facts missing; legitimate tied sequence otherwise preserved",
+  "fix_requirements": [
+    "Expose actual pre-poison probe and poisoned coordinate3 bits",
+    "Assert trial_domain_checks0, current_evaluations1, pending hydraulics, no install/backtracking/shrink/materialization, actual controller work/accounting"
+  ],
+  "execution": "NOT RUN; compiler references separate"
+}

@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Static: independent read/hash; no Rust/physical/replay",
+  "reviewer": "/root/interface_correctness",
+  "source": "04d1784aa8c0c1eb2c7a4f63a7411b984c1c4b46f42405e9f01fecbffeff6625",
+  "verdict": "HOLD",
+  "findings": [
+    "G2 fields inserted into DomainPoisonObservation duplicate fields; SelectedSideErrorObservation lacks initializer/test fields. Cannot compile.",
+    "Error-safe capture omits actual preprobe/poison bits, trial-domain/hydraulic values and actual controller work; length insufficient."
+  ],
+  "accepted_unchanged": "Actual canonical tied probe validation/side checks precede capture then mutation/core; exact owning error and in-memory downstream assertions retained."
+}

@@ -1,0 +1,72 @@
+{
+  "schema": "openwepp.interface-harness-qa-lint-reconciliation.v1",
+  "reviewer": "/root/interface_qa",
+  "evidence_class": "Static: independent source-bearing reconciliation of supplied strict-lint stderr logs; no Rust, numerical, candidate, or physical command was run.",
+  "source_tree_sha256": "858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85",
+  "source_entries": 764,
+  "scope": "Current interface-harness lint evidence only. This is not physical readiness, correctness acceptance, or a strict-lint PASS.",
+  "raw_pair_custody": {
+    "pairing_rule": "For every unmatched normalized block, pair baseline and candidate by identical diagnostic heading, source path, and occurrence order. The raw stderr files below retain the complete source text, carets, suggestions, and locations for each pair.",
+    "combined": {
+      "baseline": "bvls04-resumption-terminal-combined-lint02.stderr",
+      "baseline_sha256": "2226d0a984c22fc8cd86219f168a9d280e2d089caa533f39ec1717ae887153b6",
+      "candidate": "interface-harness-combined-lint03.stderr",
+      "candidate_sha256": "34e9cdf330dca3f91446428a6cca61b54b5ef9b49f267fa16916c4d29dfc6c13"
+    },
+    "analytic": {
+      "baseline": "bvls04-resumption-terminal-analytic-lint02.stderr",
+      "baseline_sha256": "2442df12a5d5a233203fa1641de737f3f08d26295d0e9b1ba8003d725aa4ae46",
+      "candidate": "interface-harness-analytic-lint02.stderr",
+      "candidate_sha256": "2a7faeadfd12062697968d422214c3cab7093d3c9c03ad10a39fe460351319a5"
+    }
+  },
+  "normalization": "Line/column, numeric gutters, and diagnostic left-gutter indentation only; source text remains in the retained raw pair files.",
+  "combined": {
+    "argv_identical_to_baseline": true,
+    "feature_set": "m1-trust-region-analytic-stage,m1-trust-region-physical-stage",
+    "baseline_count": 238,
+    "candidate_count": 238,
+    "exact_normalized_matches": 217,
+    "paired_nonidentical_inherited_blocks": 21,
+    "introduced_blocks": 0,
+    "removed_blocks": 0,
+    "paired_groups": [
+      {"path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs", "heading": "unnecessary closure used to substitute value for Option::None", "count": 4},
+      {"path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs", "heading": "this function could have a #[must_use] attribute", "count": 9},
+      {"path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs", "heading": "casting f64 to u128 may truncate the value", "count": 1},
+      {"path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs", "heading": "casting f64 to u128 may lose the sign of the value", "count": 1},
+      {"path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs", "heading": "consider adding a semicolon to the last statement for consistent formatting", "count": 2},
+      {"path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs", "heading": "these match arms have identical bodies", "count": 1},
+      {"path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs", "heading": "the loop variable row is used to index norm_control", "count": 1},
+      {"path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs", "heading": "the loop variable index is used to index matrix", "count": 1},
+      {"path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs", "heading": "these match arms have identical bodies", "count": 1}
+    ],
+    "verdict": "No introduced or removed combined-feature diagnostic block. The 21 nonidentical blocks are paired inherited diagnostics with changed source locations, suggestion line numbers, or gutters retained in raw pair custody."
+  },
+  "analytic": {
+    "argv_identical_to_baseline": true,
+    "feature_set": "m1-trust-region-analytic-stage",
+    "baseline_count": 262,
+    "candidate_count": 262,
+    "exact_normalized_matches": 240,
+    "paired_nonidentical_inherited_blocks": 21,
+    "source_specific_reconciled_change": {
+      "baseline": "GovernedStep fields temperature, humidity, hydraulic, beta, and ci are never read",
+      "candidate": "GovernedStep field ci is never read",
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "assessment": "The current source consumes temperature, humidity, hydraulic, and beta in the retained face-pivot observation projection; ci alone remains unused in analytic-only compilation. This narrows an inherited dead-field diagnostic and does not introduce a diagnostic block."
+    },
+    "introduced_blocks": 0,
+    "removed_blocks": 0,
+    "paired_groups_match_combined": true,
+    "verdict": "No introduced or removed analytic-only diagnostic block. The one source-specific changed block is a narrowed inherited GovernedStep dead-field diagnostic; the retained raw pair supports the disposition."
+  },
+  "all_features": {
+    "candidate": "interface-harness-all-features-lint02",
+    "feature_set": "m1-trust-region-controller-stage,m1-trust-region-analytic-stage,m1-trust-region-physical-stage",
+    "candidate_count": 238,
+    "comparison": "interface-harness-all-features-lint02-comparison.json",
+    "verdict": "The all-three-feature lint population equals the reconciled combined population. Its argv deliberately differs by controller-stage and therefore is not claimed argv-identical to the combined baseline."
+  },
+  "qa_verdict": "PASS for current lint-population reconciliation only: no actual introduced lint diagnostic is evidenced. Strict lint remains exit 101 with inherited populations, and all remaining interface, correctness, gate, and physical-readiness obligations remain open."
+}

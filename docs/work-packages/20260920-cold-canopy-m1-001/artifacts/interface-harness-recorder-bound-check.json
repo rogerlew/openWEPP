@@ -1,0 +1,32 @@
+{
+  "evidence_class": "Ran: pure existing bound function; no command dispatched",
+  "deadline": "2026-09-29T15:32:00+00:00",
+  "checks": [
+    {
+      "case": "physical180",
+      "expected_allowed": true,
+      "actual_allowed": true
+    },
+    {
+      "case": "physical181",
+      "expected_allowed": false,
+      "actual_allowed": false
+    },
+    {
+      "case": "reserve",
+      "expected_allowed": false,
+      "actual_allowed": false
+    },
+    {
+      "case": "critical900",
+      "expected_allowed": true,
+      "actual_allowed": true
+    },
+    {
+      "case": "wrongcritical",
+      "expected_allowed": false,
+      "actual_allowed": false
+    }
+  ],
+  "change": "Deadline literal only; no recorder policy change"
+}

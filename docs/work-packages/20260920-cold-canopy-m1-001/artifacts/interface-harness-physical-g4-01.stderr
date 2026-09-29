@@ -1,0 +1,29 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `release` profile [optimized] target(s) in 0.03s
+────────────
+ Nextest run ID 2142dc5f-2d29-4926-97c8-2bca6239f7f8 with nextest profile: default
+    Starting 1 test across 1 binary (391 tests skipped)
+        FAIL [   0.004s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model
+  stdout ───
+
+    running 1 test
+    test m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model ... FAILED
+
+    failures:
+
+    failures:
+        m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 391 filtered out; finished in 0.00s
+
+  stderr ───
+    SHIFTED_FACE_ATTRIBUTION_CAPTURE {"completed_assemblies":1,"control":"retained-phase-observation","controller_work":{"bvls04_dot2_free_gradients":0,"bvls04_dot2_residual_rows":0,"bvls04_factor_applications":0,"bvls04_ordered_norms":0,"bvls04_positive_entries":0,"completed_face_pivots":0,"coordinate_update_operations":0,"entered_svd_factorizations":1,"factor_application_operations":0,"first_residual_operations":0,"refinement_attempted_entries":0,"refinement_denied_entries":0,"refinement_guard_events":0,"refinement_scalar_operations":0,"second_dot2_operations":0,"stage1_calls":1,"total_jacobi_sweeps":7,"upward_enclosure_guard_events":0,"upward_enclosure_operations":0,"whole_kkt_guard_events":0,"whole_kkt_operations":0},"final_probe_entries":0,"input_unchanged":true,"materialization_entries":0,"natural_assembly_attempts":1,"predictor_probe_entries":0,"schema":"m1-shifted-face-attribution-v1","selected_assembly_attempts":0,"trial_domain_checks":0,"trial_unchanged":true,"typed_error_debug":"Subproblem(M1TrustRegionSubproblemRefusal { kind: RankDeficient, optimality_reason: None, optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 23920.26581216423, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 0, refinement_guard_events: 0, refinement_attempted_entries: 0, refinement_denied_entries: 0, bvls04_positive_entries: 0, bvls04_factor_applications: 0, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 0, first_residual_operations: 0, second_dot2_operations: 0, factor_application_operations: 0, coordinate_update_operations: 0, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0 }, refinement: None, budget_refusal: None })"}
+
+    thread 'm1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model' (1400390) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:1773:10:
+    frozen capacity/phase tie must reach its real phase model: Subproblem(M1TrustRegionSubproblemRefusal { kind: RankDeficient, optimality_reason: None, optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 23920.26581216423, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 0, refinement_guard_events: 0, refinement_attempted_entries: 0, refinement_denied_entries: 0, bvls04_positive_entries: 0, bvls04_factor_applications: 0, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 0, first_residual_operations: 0, second_dot2_operations: 0, factor_application_operations: 0, coordinate_update_operations: 0, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0 }, refinement: None, budget_refusal: None })
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.006s] 1 test run: 0 passed, 1 failed, 391 skipped
+        FAIL [   0.004s] (1/1) openwepp-land-surface-energy m1_coupled_tests::m1_trust_region_retained_phase_capacity_tie_uses_actual_model
+error: test run failed

@@ -1,0 +1,21 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: field `entered_materializations` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:220:16
+    |
+212 | pub(crate) struct M1TrustRegionTerminalOwnErrorObservation<E, Phase> {
+    |                   ---------------------------------------- field in this struct
+...
+220 |     pub(crate) entered_materializations: u8,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `trust_controller_fixture` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:4721:15
+     |
+4721 | pub(super) fn trust_controller_fixture() -> (M1CoupledColumnInput, M1CoupledColumnTrial) {
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.56s

@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Ran: archive creation and independent fresh extraction/hash comparison; no simulation",
+  "source_tree_sha256": "858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85",
+  "source_entries": 764,
+  "archive": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/interface-harness-controls-source.tar.gz",
+  "archive_sha256": "c0b45795bf93cd3ada97b8f5b6ec8f5c5c494a8185816a2f01dea09bc7500d17",
+  "archive_bytes": 4088333,
+  "recovery_path": "/tmp/openwepp-interface-controls-recovery-9nsppfl7",
+  "all_entries_identical": true,
+  "deleted_entries": [],
+  "support_links": "Rebind only the already-declared exact support links in interface-harness-all-features-analytic-release01-support.json; verify hashed support before any run.",
+  "main_rust_adopted": false
+}

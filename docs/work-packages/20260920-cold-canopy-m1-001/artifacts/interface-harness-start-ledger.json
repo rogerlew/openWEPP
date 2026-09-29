@@ -1,0 +1,20 @@
+{
+  "evidence_class": "Ran: resumed byte verification; prospective fixed allowance",
+  "carry_charged_seconds": "403746.393795",
+  "new_grant_seconds": "14400",
+  "fixed_ceiling_seconds": "418146.393795",
+  "first_reading_anchor_utc": "2026-09-29T11:32:00+00:00",
+  "command_completion_cutoff_utc": "2026-09-29T15:02:00+00:00",
+  "hard_deadline_utc": "2026-09-29T15:32:00+00:00",
+  "protected_reserve_seconds": 1800,
+  "source_entries": 764,
+  "source_tree_sha256": "3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21",
+  "all_entries_verified": true,
+  "starting_main": "87f0447e7e5b0bc2486f1e7ce43fca7e46f0e6be",
+  "later_receipt_scan": "Final resumption ledger and later publication inspected once; no greater charge. No old254 balance or closing-charge refund.",
+  "authorization_sha256": "1db9d12e6a734e28db3c8e5b6889ae9189924a64fb159e761d88bd924637be4a",
+  "unrelated_dirty_files": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  }
+}

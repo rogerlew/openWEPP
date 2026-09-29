@@ -1,5 +1,319 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Interface and private harness continuation — adopted 2026-09-29
+
+**Disposition: PARTIAL — terminal numerical HOLD.** G1/G5 physical PASS; G4
+source-conforming RankDeficient stops the experiment. All eight groups now have
+callable bindings, but required physical paths and the native harness remain incomplete.
+No target arm ran and no main Rust adoption occurred.
+
+Owner adopted `/tmp/openwepp_cold_canopy_m1_interface_harness_completion_authorization.md`.
+Starting main is `87f0447e7e5b0bc2486f1e7ce43fca7e46f0e6be`. Ran: all764 detached
+source/configuration entries match the accepted `3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21`
+manifest before mutation; no recovery overlay. Accepted BVLS04, Dot2, observer,
+inherited-lint reviews and historical failures remain evidence for their source.
+
+[Fixed ledger](artifacts/interface-harness-start-ledger.json) carries403746.393795 s,
+adds14400 s and fixes ceiling418146.393795 s. First reading is conservatively
+anchored11:32:00UTC; work cutoff15:02:00UTC, hard deadline15:32:00UTC, with1800 s
+protected for independent disposition/preservation/publication. Concurrent elapsed
+work/waits count once; no254-second carry, refunded reserve or re-anchoring.
+
+Intent: bind all eight retained private groups to real owning operations, starting
+with domain wrapper and selected-side VEG-E-142; complete full-feature executable
+inventory/harness and continue the reserved comparison only if all prerequisites
+pass and fit. Private controller/physical adapter/tests, minimal private feature
+wiring, existing recorder observation and scoped package/evidence are the only
+write surfaces. Stage1 arithmetic, method BVLS04/zero-lambda BVLS03, physical inputs,
+seeds, tolerances, production/default dispatch, dependencies and authority stay frozen.
+No main Rust adoption or unrelated-file edits. Preserve all unmet requirements.
+
+Controls precede corresponding bodies, reusing adequate expected-red evidence.
+Before each new physical case root will name selectors/count/input lineage/paired
+controls/full180-second bound and distinct correctness/QA readiness. The spent
+standalone domain endpoint is excluded. Necessary debug/release/analytic physical
+compatibility, full-feature compilation/enumeration, format/default/selected-feature
+and same-command lint run on final source. Reconcile inherited238 combined and262
+analytic populations by source, with no introduced/ambiguous lint accepted.
+Private noncritical posture is conditional on actual reachability; applicable
+A0/A1/A3, conservation and Critical requirements remain binding. No scientific
+negative is retried through seed/method/input tuning. Target prefix, release baseline,
+treatment and conditional corrected-repeat slots remain unspent and unreplenished.
+
+Root owns integration/commands/recording/publication. `/root/interface_writer` is
+sole source writer; `/root/interface_correctness` owns independent correctness;
+distinct QA is established before physical readiness. At most two children, no
+nested agents or reviewer-to-author conversion. Reassess after two unsuccessful
+corrections or60charged minutes; explicit independence/integrity/time/numerical/
+policy stops remain binding. Full09/A1/A3/strict-lint, material/BGC, complete-parent/
+late-rejection, cycle/restart, scale and broader M1 obligations remain HOLD.
+
+Static: independent correctness `/root/interface_correctness` blocked the initial
+G2 no-tie-probe forcing proposal before execution. Canonical selected-side admission
+requires an exact M/H or capacity tie and a representable probe passing side checks;
+an owning error from a forced no-tie core call would not discharge that obligation.
+Writer was directed to retain the gate and freeze any contract-derived tie setup
+before measurement. No physical run or numerical result occurred. Group1 wrapper
+work continues. Recorder changes only the fixed deadline literal; five direct
+existing bound-function checks pass ([receipt](artifacts/interface-harness-recorder-bound-check.json)).
+
+G2 prospective preparation is frozen before implementation/execution: clone the
+original `trial()` and set only upper H coordinate4 to exact+0.0; upper M0.018>0
+and D+0.0 remain unchanged. SC-VEGETATION-001 M/H inverse selects the liquid H=0
+join. The actual factor-built probe must pass existing validation/side checks;
+only then the test scope mutates probe M coordinate3 to `-f64::MIN_POSITIVE`
+immediately before canonical core. This is an injected owning-error control, not
+natural occurrence. No outcome-driven preparation change is allowed. [Preparation
+review findings](artifacts/interface-harness-correctness-preparation01.json) remain
+open until same-reviewer verification; in particular a numeric phase failure
+misclassified as VEG-E-142 cannot satisfy G2.
+
+Static QA `/root/interface_qa` independently accepts starting ledger/custody and
+deadline-only recorder change. It observes expected active-writer drift in the
+three assigned private files and blocks physical readiness pending a frozen current
+source, affected gates, source-bearing lint reconciliation and distinct reviews.
+G2 tie/probe/applied/owning-error/custody must be demonstrated; no historical pass
+transfers. Prior release executable was directly rehashed equal to `b55744fa...`;
+new builds use separate `/tmp/openwepp-cold-canopy-m1-interface-target`, preserving
+the prior frozen target. Both independent reviewer routes are available and remain
+assigned for same-reviewer fix verification. No physical case or target slot ran.
+
+Ran: [G1/G2 compile01](artifacts/interface-harness-g12-compile01.json) fails with
+four mechanical compiler errors: nonexistent controller materialization-counter
+field and three direct accesses to private trial coordinates. No tests execute.
+Exact failed source/patch retained; writer corrects references without changing
+physics or control operands. Independent correctness reviews substantive changes.
+New planned terminal physical selectors are
+`m1_coupled_tests::m1_trust_region_retained_domain_wrapper_uses_actual_guard_and_custody`
+and `m1_coupled_tests::m1_trust_region_retained_selected_side_wrapper_returns_own_mh_guard`,
+one case each, original input fixture plus the prospectively frozen G2 tie trial,
+180s maximum each. These are integration controls, not replay of the spent standalone
+endpoint; neither is launched before controls/quality and dual source/manifest review.
+Remaining six groups retain their operations in the historical map; wrapper/control
+implementation proceeds within the same allowance, without synthetic physical claims.
+
+Ran: [compile02](artifacts/interface-harness-g12-compile02.json) passes and enumerates
+exactly the two new wrapper selectors in a383-test combined-feature binary; no test
+executes. Same correctness accepts G1 source connection and retains two G2 evidence
+findings (actual pre/post probe operands and downstream/work custody). Writer adds
+those fields/assertions; probe mass is checked as actual finite positive output,
+not falsely assumed equal to the0.018 base after directional displacement.
+
+Writer continues G3–8 under the accepted operation mapping. Obsolete untyped cap
+limits become typed operation inputs to real owner/controller guards; seeded sweep/
+pivot controls retain their explicit seeded scope. Any retained physical-adapter
+requirement remains physical; analytic shared-operation evidence cannot substitute.
+No full-feature compilation or harness/target qualification is claimed yet.
+
+Internal execution reassessment: original writer completed G1/G2 but repeatedly
+returned G3 mapping without body. Root reassigned the bounded G3 implementation to
+`/root/harness_writer`, preserving prior edits. Runtime then rejected same-correctness
+resumption with `agent thread limit reached`; replacement writer was immediately
+interrupted. One bounded recovery after releasing that slot successfully resumed
+original `/root/interface_correctness`; original QA also acknowledged availability.
+No nested workaround or reviewer conversion occurred. Current source is frozen for
+those read-only reviews; authoring resumes after explicit slot release. No numerical
+or physical execution occurred during route recovery; fixed allowance unchanged.
+
+QA feature clarification: compile02 does prove the dedicated physical-stage G1/G2
+wrappers compile/list exactly2. It does not compile the distinct controller-stage
+all-group composite. Final all-required-feature evidence includes controller,
+analytic and physical stages together, plus same-command inherited-lint modes.
+
+Ran: [G1–3 compile03](artifacts/interface-harness-g123-compile03.json) fails on one
+recording-layer type error: work observation lacks direct Serialize. Source unchanged
+through command; writer uses existing work JSON mapper. No test executes. Six private
+files now differ from accepted source: prior three plus lib, controller_interface,
+and stage2_controls. G3 new connection is analytic shared-controller evidence only;
+its physical acceptance requirement remains unmet. Independent correctness checks
+actual base/installed operands, finite boundaries, replacement chronology and refusal
+custody; current code is not accepted on compilation or source count alone.
+
+Ran: [compile04](artifacts/interface-harness-g1235-compile04.json) passes combined
+analytic/physical compilation on frozen source, with introduced warnings still open.
+G5 now reports actual owning assembly/probe counters, not phase-event inference.
+Dedicated analytic G3 control was then added. Preparation01 was rejected before
+launch for manifest timeout mismatch (no command executed). [Analytic02](artifacts/interface-harness-g3-analytic02.json)
+fails compilation: a physical-only natural-tangent export was exposed in analytic-only
+mode. No tests execute; correction is feature-local export/import wiring, not a
+numerical/input change. All physical selectors remain unspent and gated.
+
+Ran: [analytic03](artifacts/interface-harness-g3-analytic03.json) executes1 new
+witness-interface test and FAILS on absent terminal-state observation. This is the
+independently identified recording defect, not a numerical refusal. Reassessment:
+root temporarily took exclusive source custody and inserted the same existing
+observation callback at the actual run helper return/error boundary (two lines),
+without math/input/threshold changes. [Analytic04](artifacts/interface-harness-g3-analytic04.json)
+then PASS1/1,349skipped on unchanged frozen source. It exercises the three analytic
+witness paths; physical witness acceptance remains HOLD. Same correctness verifies
+root's small coordinating fix and affected G2/G3/G5 evidence. Source ownership
+returned to the writer for the real radius-interface binding.
+
+Ran: [G7 analytic01](artifacts/interface-harness-g7-analytic01.json) PASS1/1,
+350skipped, with source unchanged. The dedicated interface test reads actual eleven-
+proposal shrink chronology and terminal retained state from the shared analytic
+controller; this does not claim an original60 physical trajectory. G8 implementation
+is assigned directly in the existing test module to reuse its operand builders;
+no parallel numerical implementation or fixture reconstruction is authorized.
+
+Ran: [analytic G3/G7/G8 controls](artifacts/interface-harness-analytic-g378-01.json)
+PASS3/3,383skipped, unchanged source. G3 now asserts actual accepted residuals/norms,
+exact dispositions and installed/retained-base custody; G8 calls real numerical
+operand/seeded-cap and post-bisection ball operations. Same correctness review open.
+
+G4 prospective physical control setup, frozen before body/execution: use original
+input/trial and read upper liquid capacity from canonical `phase_join_selections`
+with zero direction; set control trial upper M to that capacity, H=+0, D=+0.
+This establishes both exact liquid H=0 and `dt*D=Cliq-ml=0` ties using owning operands.
+All other coordinates and forcing stay fixed. Its real controller proposal must
+supply actual assembly/probe counts, both raw D columns and governed direction;
+a prior source-conforming failure ends this case without seed/method tuning.
+No physical call has been made. Root owns these small interface corrections and
+bindings; writer performs read-only G6 cap extraction, no concurrent source writer.
+
+G3/G5/G7/G8 source cut `f3908fde4f14957880d5fe060d5378a9c5476ecbd8e5c02ab3d2cb2d02247cfa`:
+independent correctness found no blockers; read-only receipt review confirms3/3
+analytic tests pass, source unchanged. G3 physical-adapter witness acceptance and
+G5 physical execution remain HOLD. Root resumes sole source ownership after the
+bounded G4 writer attempt made no changes (incorrect path); no concurrent writer.
+
+G4 now prepares the frozen upper capacity/H=0/D=0 tie via canonical phase selection,
+then invokes the same actual initialize/phase-model seam as G5. Both return actual
+assembly/probe counts, raw-J and final selected direction; shared retained and new
+dedicated assertions inspect both drainage columns and custody. Controller work is
+observed before return/error. These are source bindings, not physical PASSes.
+
+G6 independent static reconciliation: five typed `M1PhysicalBudgetOperation` variants
+bind the existing shared entry guard, seeded at cap-1, last allowed and next denied
+entry, actual refusal snapshot and scope restoration. Seeds are explicit control
+operands, not reported work. Paired owning tests remain the existing
+`m1_trust_region_physical_budget_{core,raw_jacobian,hydraulic}_cap_control_reaches_actual_owner`,
+`m1_trust_region_physical_budget_stage1_factorization_cap_reaches_actual_face`, and
+`m1_trust_region_physical_budget_materialization_cap_reaches_actual_owner`.
+Shared-guard PASS cannot discharge current physical-owner execution. Controller50
+uses the existing real analytic long-progress run. The obsolete21 WorkCap oracle
+is reconciled to the existing but currently dominated RadiusExhausted proposal limb:
+starting radius1 and quartering terminate at11; no independent21-limb execution
+claimed. The obsolete22 WorkCap oracle is actual G7 two-face factorization workload,
+not a separate enforced cap. Correctness explicitly approved this mapping, with
+physical qualification still pending; no guard or terminal kind was invented.
+
+60-minute integration reassessment: all-required-feature compile02 PASS enumerates392
+tests, including retained composites and dedicated bindings; compile01 failed only
+on the work-cap helper module qualifier. Source unchanged in both receipts. Remaining
+work is quality, physical readiness/execution, physical witness obligation and harness.
+Continue within the same fixed envelope; no target slot consumed. Current quality
+loops are supported source/interface corrections, not physical/numerical retries.
+
+Correctness on tree89e438ff identified two pre-dispatch evidence gaps: G4 must assert
+actual exact tie operands rather than pre-gate counts, and G2 must enforce returned
+controller materialization count. Root added raw prepared and selected M/H/D/capacity/
+duration operands with canonical inverse in the test, and returned/asserted the actual
+controller count. No seed/method change. Same-command combined lint01 has244 blocks
+versus238 inherited; analytic268 versus262. Three new unused reexports narrowed to
+their actual controller consumer (no test hidden); two new float-array assertions now
+use exact bit custody. Four governed norms are projected once in the private transition
+rather than repeatedly destructured; no arithmetic/acceptance change. Same-reviewer fix
+verification and final lint/inventory remain required; strict inherited lint is not PASS.
+
+Ran final source `858c53892cdf529e51e6591a02e57f0c8e9c3b4f55541c14fac3882cbb551d85`:
+all-required-feature debug and release each56/56 analytic/shared-guard controls PASS
+(336 skipped), both source unchanged. Debug/release inventories each392 tests;
+retained composites compile and are enumerated, not presumed executed. All six
+changed-file format checks PASS including physical adapter; default library check
+PASS with inherited warnings. [QA source-bearing lint reconciliation](artifacts/interface-harness-qa-lint-reconciliation01.json)
+retains238 combined,262 analytic and238 all-three-feature diagnostics, zero introduced;
+strict lint remains exit101. The analytic `GovernedStep` unused-field diagnostic now
+contains onlyci because four norms are actually observed; QA preserves the raw pair.
+
+[Physical plan](artifacts/interface-harness-physical-plan01.json) prospectively names
+nine one-case release commands, each full180s: G1 domain wrapper, G5 natural tangent,
+G4 phase/capacity tie, G2 selected-side own-error, then the five actual G6 owner cap
+controls. Input lineage, paired controls, exact392-member inventory, native release
+binary hash and numerical-stop boundaries are frozen in the plan. Distinct same-route
+correctness and QA readiness are pending; no physical case has yet run. Spent standalone
+domain and duplicate composite physical executions are excluded; their individual
+assertions remain compiled/shared or explicitly equivalent. No physical PASS inferred
+from56 analytic controls. Release binary is `openwepp_land_surface_energy-d48ff3e2c6b93487`,
+SHA256 `2fda6ef922a345ad3a780ef9c7b5fb144445b899bbbd804e4af07dccebaf2118`.
+
+Private harness reachability was independently inspected: dependency-local cfg(test)
+prevents orchestrator from invoking the LSE private treatment. Smallest supported route
+is one hidden existing-test-support entry with minimal internal feature wiring and a
+single shared canonical-seed owner, called at actual native provider construction;
+JSON reconstruction and duplicate numerical source are forbidden. No such harness
+has been implemented or dispatched in this cut. G3 actual physical-adapter root-path
+acceptance and all original target prerequisites remain HOLD; target slots unspent.
+
+### Terminal integration results — partial, numerical stop
+
+Both [correctness readiness](artifacts/interface-harness-correctness-readiness01.json)
+and [QA readiness](artifacts/interface-harness-qa-readiness01.json) cleared the exact
+nine-case plan before dispatch. Ran: [G1](artifacts/interface-harness-physical-g1-01.json)
+PASS1/1, [G5](artifacts/interface-harness-physical-g5-01.json) PASS1/1, then
+[G4](artifacts/interface-harness-physical-g4-01.json) FAIL1/1 with actual typed
+`RankDeficient` during the first Stage1 subproblem. One natural assembly completed,
+one factorization entered and seven Jacobi sweeps completed; selected assembly,
+predictor/final probes, trial-domain evaluation, materialization and refinement were
+not reached. Input/trial custody held. This is not the intended positive G4 result.
+Root stopped all remaining physical/numerical work immediately, without changing
+source, inputs, seed, method or expected outcome and without retrying. All three
+receipts bind the frozen source/binary/input; no timeout, auto-retry or custody mismatch.
+
+| Group | Actual binding and current disposition |
+| --- | --- |
+| G1 domain | Existing real candidate poison/guard/shrink/custody wrapper; new dedicated release PASS1/1. Spent standalone endpoint not replayed. |
+| G2 selected-side own error | Real validated selected probe injection and typed owning VEG-E-142; source reviewed, physical case NOT RUN after G4 stop. |
+| G3 witness paths | Real analytic installed/full-no-update/first-valid replacement with21 raw/normalizer and four governed operands; debug/release PASS. Required physical-adapter paths remain HOLD. |
+| G4 phase/capacity tie | Canonical frozen tie preparation, actual assemblies/probes/raw-J/direction observations; positive physical control FAILS early with RankDeficient. Later obligations not reached. |
+| G5 natural tangent | Actual natural/selected assembly and final-probe observation; release PASS1/1: natural1, selected0, predictor0, final1. |
+| G6 caps | Five typed seeded shared-entry guards and real controller50 analytic control PASS; physical-owner cases all NOT RUN.21/22 reconciled above, no manufactured cap. |
+| G7 exhaustion | Actual analytic11-proposal trace to radius2^-22 and retained state; debug/release PASS, no physical trajectory qualification inferred. |
+| G8 controlled assembly | Actual Stage1 controlled operands/seeded work and six typed refusals; debug/release PASS, no error factory. |
+
+Full-feature source/build inventory is complete for this cut, not full physical
+qualification. Retained physical composite selectors themselves were not run; their
+required positive paths remain unmet where the dedicated cases are held/failed.
+Six planned physical cases remain unspent (G2 and five G6 owner cases). Canonical target
+prefix, release baseline, BVLS04 treatment and corrected-repeat slots are all unspent
+and unreplenished. The private native-input comparison harness is NOT IMPLEMENTED;
+no native support1 input/seed was captured and no target arm was invoked. A source-
+conforming negative terminates this experiment; unused slots are not retry permission.
+
+Current cost evidence is only the injected G1 non-target transition:3.596653ms
+instrumented proposal wall,0.152102ms initialization, CPU zero ticks at10ms resolution
+(unresolved); counters overlap and are not summed. No support1 solver cost, speedup,
+OFE-day/watershed or scale claim. Prior3.212710ms and BVLS03 observations retain their
+separate source/input/binary identities. G4 refusal reports actual first-subproblem
+work before all intended physical downstream milestones.
+
+[QA terminal review](artifacts/interface-harness-qa-terminal01.json) confirms custody,
+three-case consumption, six-case stop and exact recovery, with overall PARTIAL /
+INCOMPLETE. [Same-correctness terminal review](artifacts/interface-harness-correctness-terminal01.json)
+classifies G4 as a source-conforming valid negative, with no implementation/recording
+deviation or rerun basis.
+[Recovery](artifacts/interface-harness-controls-recovery01.json) preserves all764
+source/configuration entries in `interface-harness-controls-source.tar.gz` (SHA256
+`c0b45795bf93cd3ada97b8f5b6ec8f5c5c494a8185816a2f01dea09bc7500d17`); fresh extraction
+has zero mismatches. Only six detached private-interface files differ from the accepted
+starting source; Stage1 arithmetic and dependencies are unchanged. Main Rust and both
+unrelated dirty files remain byte-identical to turn start. This is no production/M1
+acceptance: historical full09/A1/A3/strict-lint, material/BGC, complete-parent/late-
+rejection, cycle/restart, conservation acceptance and scale obligations remain HOLD.
+
+[Final conservative ledger](artifacts/interface-harness-final-ledger.json) carries
+403746.393795s, charges 6494s for this continuation including the full1800s closing
+reservation, and records cumulative **410240.393795s** against ceiling418146.393795s.
+Unspent ceiling7906.000000s is not new numerical/run permission. Concurrent work
+and waits count once, no old254s or closing-charge refund. Scoped package/evidence,
+deadline-only recorder change and exact detached recovery are prepared for publication
+on authorized main; unrelated dirty/untracked work is excluded.
+
+Publication check: authored package/recorder/JSON diff whitespace checks PASS. The
+whole staged diff reports whitespace carried literally inside generated recovery
+patch payloads; those immutable evidence bytes are preserved rather than reformatted.
+No source/test/physical command was repeated for this packaging check.
+
 ## BVLS-04 independence resumption — adopted 2026-09-29
 
 **BVLS-04 completion milestone PASS; broader M1/interface qualification remains HOLD.**

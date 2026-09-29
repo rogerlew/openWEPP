@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Static independent correctness; no execution",
+  "reviewer": "/root/interface_correctness",
+  "verdict": "HOLD",
+  "findings": [
+    "G3 run helper misses actual terminal-state callback; refusal wrapper expects unset state.",
+    "G3 needs both actual base/accepted and candidate operands, exact root/accepted dispositions and installed versus retained-base/firsteligible semantics.",
+    "G2 error-safe capture missing preprobe/poison bits,trialdomain and hydraulic values despite success result fields.",
+    "Refusal custody must use same fixture start; repeated116 finite-boundary transitions across3paths are redundant."
+  ],
+  "source_identity": "Compile03 is historical frozen cut; subsequent mechanical edits are not its validation source. Fresh manifest at next freeze required.",
+  "scope": "Private test/controller interfaces only, G3 physical adapter acceptance remains unmet"
+}
