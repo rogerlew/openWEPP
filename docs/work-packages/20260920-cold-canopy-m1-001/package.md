@@ -150,8 +150,9 @@ custody, single-capture limits, claim boundaries and preservation for publicatio
 including the full conservative closing allocation, leaving 3681 seconds below
 the unchanged ceiling; coverage extends through 17:25:25 UTC without refund.
 Unused time does not authorize more physical execution or a numerical correction.
-Exact source and reviewed evidence are locally preserved; scoped publication is
-being completed on authorized main.
+Exact source and reviewed evidence were [published and verified](artifacts/g4-rank-publication01.json)
+on authorized main in payload commit `a43b22e4b8281965944597e4d27c66626b3ccff1`; fetched archive
+bytes match the recovery hash. Publication completed within the charged closing coverage.
 
 ## Interface and private harness continuation — adopted 2026-09-29
 

@@ -1,0 +1,25 @@
+{
+  "evidence_class": "Ran: scoped commit/push, direct remote-head and fetched archive-byte verification",
+  "payload_commit": "a43b22e4b8281965944597e4d27c66626b3ccff1",
+  "remote": "origin",
+  "branch": "main",
+  "verified_remote_head": "a43b22e4b8281965944597e4d27c66626b3ccff1",
+  "verified_utc": "2026-09-29T16:59:25.617126+00:00",
+  "source_tree_sha256": "2d67a9bb338c9b4dcb683c35f86bfe0c8cf1bce251d6b6821643a9e36ba8b1d6",
+  "archive_sha256": "1e7395de7e8aece4b985aed3677a335ad3f1f7219e5ab134133b98b5086c5aad",
+  "fetched_archive_all_bytes_hash_match": true,
+  "scope": "Package, diagnostic evidence, deadline-only recorder update and detached source recovery; no main Rust adoption",
+  "final_ledger": "g4-rank-final-ledger.json",
+  "cumulative_charged_seconds": "414465.393795",
+  "within_conservative_closing_coverage": true,
+  "independent_reviews": [
+    "g4-rank-correctness-terminal01.json",
+    "g4-rank-qa-terminal01.json"
+  ],
+  "disposition": "G4 attribution COMPLETE, exact rank19; original physical FAIL/G4 acceptance HOLD; no additional physical or target execution",
+  "unrelated_dirty_files": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  },
+  "authored_whitespace_json_python_checks": "PASS; generated literal logs/patches preserved unchanged"
+}
