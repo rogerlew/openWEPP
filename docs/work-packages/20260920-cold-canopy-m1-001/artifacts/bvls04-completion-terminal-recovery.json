@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Ran: archive creation, fresh extraction and exact hash comparison of every canonical source/configuration entry; final source is compile-failed and NOT validated",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "source_tree_sha256": "6b308c88538d5c050457caff029f776121235b43dd998fbece3cd230b4d69099",
+  "source_manifest": "bvls04-completion-extraction-debug01-source.json",
+  "source_entries": 764,
+  "changed_from_corrected_terminal": [
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+  ],
+  "archive": "bvls04-completion-terminal-unvalidated-source.tar.gz",
+  "archive_sha256": "d545ffbd18d599dcd325dc7178cb4e76f8067959b55df2185339ab44cbe2b4a1",
+  "reconstructed_root": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-completion-unvalidated-reconstruction-20260929",
+  "reconstructed_every_entry_equal": true,
+  "validation": "bvls04-completion-extraction-debug01 exited101 at compilation with7errors; no tests executed",
+  "external_support_scope": "Archive excludes external toolchain and symlinked input distribution;639 support files and links are separately bound by command support record",
+  "recorded_utc": "2026-09-29T06:57:50.205308+00:00"
+}

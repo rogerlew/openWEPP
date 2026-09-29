@@ -1,0 +1,9 @@
+{
+  "evidence_class": "Ran: host clock metadata only; no candidate, physics or warm-up execution",
+  "recorded_utc": "2026-09-29T06:38:04.470685+00:00",
+  "platform": "Linux-7.0.0-29-generic-x86_64-with-glibc2.42",
+  "monotonic_implementation": "clock_gettime(CLOCK_MONOTONIC)",
+  "nominal_resolution_seconds": 1e-09,
+  "process_ticks_per_second": 100,
+  "scope": "Nominal metadata, not empirical Rust Instant accuracy; CPU less than one tick is unresolved, not zero cost"
+}

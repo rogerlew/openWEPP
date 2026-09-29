@@ -1,0 +1,31 @@
+{
+  "evidence_class": "Static exact-diff/custody reconciliation; no final numerical acceptance",
+  "recorded_utc": "2026-09-29T07:01:45.169130+00:00",
+  "source_tree_sha256": "6b308c88538d5c050457caff029f776121235b43dd998fbece3cd230b4d69099",
+  "changed_source_files": {
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": {
+      "before": "30e65beb4a6b6a8f735922d4b7a93e4cb3efda3123d90a8ed6faea189949b9ea",
+      "after": "85328751a0b27e02bc144e795bf21b351d29fafb09115c7ed583580753dcb9f8"
+    },
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": {
+      "before": "0b615ea9e8e1b112624ccf60fbdd06f967170ba2d62a0f39ae759f54a41640c7",
+      "after": "825a799a6c357a6ca9ca8e91f96eb244e43e46da0e22f09cfab7f63d31c93c1a"
+    },
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": {
+      "before": "d8a8a76596db357367d4c0bcaea14043df4d8d7cac1a1d0bc9f18d091b85a3b1",
+      "after": "f696e0480c490c8c19866b972718c655e8fbab9d540509326ed44efc79d0fdd9"
+    }
+  },
+  "cargo_manifests_and_lockfiles_unchanged": 26,
+  "source_entries": 764,
+  "authority_numerical_methods_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea",
+  "unrelated_dirty_hashes_unchanged": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  },
+  "main_scope": "package record, recorder deadline only, command/review/ledger evidence and exact detached recovery; no main Rust adoption",
+  "remaining": "compile errors7; all four introduced lint dispositions unresolved; endpoint milestones incomplete; required changed-source correctness review unavailable; post-edit release/analytic/default/selectedfeature/lint NOT RUN",
+  "endpoint_launched": false,
+  "conditional_downstream_runs": 0,
+  "qa_custody_review": "bvls04-completion-qa-terminal-custody01.json"
+}

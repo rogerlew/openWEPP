@@ -1,0 +1,87 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Finished `release` profile [optimized] target(s) in 0.03s
+────────────
+ Nextest run ID 549d1961-82f2-4ca0-8de7-51fb82f0fcd0 with nextest profile: default
+    Starting 10 tests across 1 binary (370 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_analytic_shift_is_shared_operation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_independent_scalar_guard_and_exact_bound ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_m4_factor_order_changes_binary64_accumulation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_negative_zero_uses_unchanged_bvls03_seam ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_nonsymmetric_factor_order_and_coordinate_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_operands_norms_and_bvls02_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.02s
+
+
+────────────
+     Summary [   0.026s] 10 tests run: 10 passed, 370 skipped

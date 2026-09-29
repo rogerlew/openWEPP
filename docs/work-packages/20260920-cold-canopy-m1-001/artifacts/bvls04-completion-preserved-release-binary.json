@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Static: release executable identity after preserved-source10/10 and before any subsequent build",
+  "recorded_utc": "2026-09-29T06:40:36.480265+00:00",
+  "receipt": "bvls04-completion-preserved-release01.json",
+  "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+  "binary": "/tmp/openwepp-cold-canopy-m1-bvls04-target/release/deps/openwepp_land_surface_energy-10aca69a9ab3b145",
+  "bytes": 9869280,
+  "mtime_ns": 1790663796861834976,
+  "sha256": "2bedd6661bca2f31c5b860d154b7f3798f4e3700bc84ae54558b2f3e8e4ec496"
+}

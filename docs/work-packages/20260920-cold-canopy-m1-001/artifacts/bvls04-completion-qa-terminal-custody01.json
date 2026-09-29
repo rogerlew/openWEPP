@@ -1,0 +1,79 @@
+{
+  "reviewer": "/root/completion_qa",
+  "review_type": "independent QA/evidence terminal custody review",
+  "evidence_class": "Static: primary custody records, source/archive hashes, command receipts, support manifest, package disposition, and actual unrelated-work hashes; no Rust or physical command executed by reviewer",
+  "scope": "Publication custody only for the halted BVLS-04 completion attempt. This review does not approve the detached Rust source, repair the compile failure, replay tests, or assess numerical correctness.",
+  "reviewed_source_tree_sha256": "6b308c88538d5c050457caff029f776121235b43dd998fbece3cd230b4d69099",
+  "findings": [
+    {
+      "id": "BVLS04-COMPLETION-QA-CUSTODY-001",
+      "severity": "high",
+      "location": "artifacts/bvls04-completion-extraction-debug01.stderr",
+      "finding": "The final detached source is compile-failed: the exact terminal receipt exits 101 with seven Rust compiler errors, and no tests execute.",
+      "evidence": "The receipt is bound to source 6b308c885... and reports source/pinned files/support links unchanged. The package records this as unvalidated and does not transfer any test, lint, endpoint, timing, or M1-readiness claim.",
+      "required_disposition": "Preserve as INCOMPLETE/HOLD only. Do not publish it as validated source, release evidence, endpoint evidence, or production adoption."
+    },
+    {
+      "id": "BVLS04-COMPLETION-QA-CUSTODY-002",
+      "severity": "high",
+      "location": "artifacts/bvls04-completion-independence-stop.json",
+      "finding": "Required independent correctness review was unavailable after the recorded bounded reactivation attempts; the stop record correctly ends implementation and physical execution.",
+      "evidence": "The record preserves each thread-limit outcome, names the indispensable-independence stop, records no endpoint launch, and does not claim reviewer substitution or approval of changed source.",
+      "required_disposition": "The next execution requires restored independent-review capacity and fresh review of any source correction."
+    }
+  ],
+  "custody_verification": {
+    "terminal_manifest": {
+      "entries": 764,
+      "recomputed_tree_sha256": "6b308c88538d5c050457caff029f776121235b43dd998fbece3cd230b4d69099",
+      "current_source_entries_hash_checked": "764/764 pass",
+      "fresh_reconstruction_entries_hash_checked": "764/764 pass"
+    },
+    "terminal_archive": {
+      "path": "artifacts/bvls04-completion-terminal-unvalidated-source.tar.gz",
+      "sha256": "d545ffbd18d599dcd325dc7178cb4e76f8067959b55df2185339ab44cbe2b4a1",
+      "recovery_record": "artifacts/bvls04-completion-terminal-recovery.json",
+      "reconstructed_every_entry_equal": true
+    },
+    "command_and_support": {
+      "receipt": "artifacts/bvls04-completion-extraction-debug01.json",
+      "exit_code": 101,
+      "compiler_errors": 7,
+      "tests_executed": 0,
+      "support_files": 639,
+      "support_links": 7,
+      "source_pinned_and_links_unchanged": true
+    },
+    "preserved_predecessor": {
+      "last_validated_corrected_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "archive_sha256": "8d096e90ed6fd2c906e75d6bf8c70c02a215e37d48d76884cff82a65fd75aa8e",
+      "scope": "historical corrected-source custody only; no result transfers to 6b308c885..."
+    },
+    "unrelated_dirty_work": {
+      "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+      "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082",
+      "result": "matches completion start ledger"
+    },
+    "recorder": "The reviewed recorder change remains deadline-only: 2026-09-29T05:11:00Z to 2026-09-29T08:32:00Z."
+    ,"final_ledger": {
+      "path": "artifacts/bvls04-completion-final-ledger.json",
+      "carry_charged_seconds": "396800.393795",
+      "grant_seconds": "7200",
+      "fixed_ceiling_seconds": "404000.393795",
+      "closing_started_utc": "2026-09-29T06:56:58+00:00",
+      "elapsed_before_closing_seconds": "1498.0",
+      "conservative_closing_charge_seconds": "1800",
+      "conservative_closing_charged_through_utc": "2026-09-29T07:26:58+00:00",
+      "session_charged_seconds": "3298.0",
+      "cumulative_charged_seconds": "400098.393795",
+      "unspent_balance_seconds": "3902.000000",
+      "claim_review": "PASS: arithmetic reconciles carry plus current session charge to the stated cumulative total and ceiling balance. The full protected closing charge is retained without refund, deadline reset, or wait deduction. Package wording correctly identifies the independence stop rather than budget exhaustion."
+    }
+  },
+  "non_blocking_debt_or_followups": [
+    "A later authorized continuation must correct the seven compiler errors, complete lint/format/control evidence, re-prove private feature reachability and source-bearing lint comparison, and obtain both independent reviews before the single original endpoint command.",
+    "Final ledger and publication receipts remain parent-owned closing evidence and must preserve the terminal source identity and incomplete disposition."
+  ],
+  "package_disposition_check": "PASS: the completion section accurately states the explicit independence stop, compile failure, unvalidated archive, no endpoint launch, no main Rust adoption, unchanged historical holds, and requirements for any successor work.",
+  "verdict": "QA approves bounded preservation/publication of the reviewed custody records and unvalidated archive as INCOMPLETE/HOLD evidence only. It does not approve the final source, compiler result, lint, tests, endpoint, runtime behavior, performance, release, or M1 readiness."
+}

@@ -1,0 +1,104 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0308]: `?` operator has incompatible types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5308:9
+     |
+5308 | /         trace.live_state_entry.ok_or_else(|| {
+5309 | |             refinement_observation_refusal("refinement_observation_missing", state)
+5310 | |         })?,
+     | |___________^ expected `u64`, found `[u64; 21]`
+     |
+     = note: `?` operator cannot convert from `[u64; 21]` to `u64`
+
+error[E0308]: `?` operator has incompatible types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5311:9
+     |
+5311 | /         trace.live_state_exit.ok_or_else(|| {
+5312 | |             refinement_observation_refusal("refinement_observation_missing", state)
+5313 | |         })?,
+     | |___________^ expected `u64`, found `[u64; 21]`
+     |
+     = note: `?` operator cannot convert from `[u64; 21]` to `u64`
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5440:50
+     |
+5440 |         refinement_optimality_observation_fields(optimality);
+     |         ---------------------------------------- ^^^^^^^^^^ expected `&M1TrustRegionOptimalityObservation`, found `M1TrustRegionOptimalityObservation`
+     |         |
+     |         arguments to this function are incorrect
+     |
+note: function defined here
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5359:4
+     |
+5359 | fn refinement_optimality_observation_fields(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+5360 |     optimality: &super::M1TrustRegionOptimalityObservation,
+     |     ------------------------------------------------------
+help: consider borrowing here
+     |
+5440 |         refinement_optimality_observation_fields(&optimality);
+     |                                                  +
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5444:9
+     |
+5444 |         live_state_bits_entry,
+     |         ^^^^^^^^^^^^^^^^^^^^^ expected `[u64; 21]`, found `u64`
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5445:9
+     |
+5445 |         live_state_bits_exit,
+     |         ^^^^^^^^^^^^^^^^^^^^ expected `[u64; 21]`, found `u64`
+
+error[E0507]: cannot move out of `trace.h0` which is behind a shared reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5400:9
+     |
+5400 | /         trace
+5401 | |             .h0
+     | |               ^
+     | |               |
+     | |_______________help: consider calling `.as_ref()` or `.as_mut()` to borrow the type's contents
+     |                 move occurs because `trace.h0` has type `std::option::Option<Vec<f64>>`, which does not implement the `Copy` trait
+5402 |               .map(|values| values.iter().map(|value| value.to_bits()).collect()),
+     |                ------------------------------------------------------------------ `trace.h0` moved due to this method call
+     |
+note: `std::option::Option::<T>::map` takes ownership of the receiver `self`, which moves `trace.h0`
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/option.rs:1160:27
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+     |
+5400 ~         <std::option::Option<Vec<f64>> as Clone>::clone(&trace
+5401 ~             .h0)
+     |
+help: consider cloning the value if the performance cost is acceptable
+     |
+5401 |             .h0.clone()
+     |                ++++++++
+
+error[E0507]: cannot move out of `trace.h1` which is behind a shared reference
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5403:9
+     |
+5403 | /         trace
+5404 | |             .h1
+     | |               ^
+     | |               |
+     | |_______________help: consider calling `.as_ref()` or `.as_mut()` to borrow the type's contents
+     |                 move occurs because `trace.h1` has type `std::option::Option<Vec<f64>>`, which does not implement the `Copy` trait
+5405 |               .map(|values| values.iter().map(|value| value.to_bits()).collect()),
+     |                ------------------------------------------------------------------ `trace.h1` moved due to this method call
+     |
+help: you can `clone` the value and consume it, but this might not be your desired behavior
+     |
+5403 ~         <std::option::Option<Vec<f64>> as Clone>::clone(&trace
+5404 ~             .h1)
+     |
+help: consider cloning the value if the performance cost is acceptable
+     |
+5404 |             .h1.clone()
+     |                ++++++++
+
+Some errors have detailed explanations: E0308, E0507.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 7 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

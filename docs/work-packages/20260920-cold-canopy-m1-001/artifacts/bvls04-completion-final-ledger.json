@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Conservative charged-time ledger; concurrent elapsed work and waits counted once",
+  "carry_charged_seconds": "396800.393795",
+  "grant_seconds": "7200",
+  "fixed_ceiling_seconds": "404000.393795",
+  "first_reading_anchor_utc": "2026-09-29T06:32:00+00:00",
+  "command_completion_cutoff_utc": "2026-09-29T08:02:00+00:00",
+  "hard_deadline_utc": "2026-09-29T08:32:00+00:00",
+  "closing_started_utc": "2026-09-29T06:56:58+00:00",
+  "closing_start_evidence": "Parent observed06:56:58Z after collecting compile failure and indispensable reviewer unavailability; subsequent scope is custody review/preservation/publication only",
+  "elapsed_before_closing_seconds": "1498.0",
+  "conservative_closing_charge_seconds": "1800",
+  "conservative_closing_charged_through_utc": "2026-09-29T07:26:58+00:00",
+  "minimum_required_closing_reserve_seconds": "1800",
+  "session_charged_seconds": "3298.0",
+  "cumulative_charged_seconds": "400098.393795",
+  "unspent_balance_seconds": "3902.000000",
+  "refunds": "none; full prior charge and this conservative closing component remain charged; no wait deduction or deadline reset",
+  "disposition": "BLOCKED/INCOMPLETE at indispensable-independence stop; preserved-source release10/10 PASS; final source compile FAIL7errors; lint unresolved; physical/domain/timing and conditional downstream NOT RUN",
+  "recorded_utc": "2026-09-29T06:59:48.620603+00:00"
+}

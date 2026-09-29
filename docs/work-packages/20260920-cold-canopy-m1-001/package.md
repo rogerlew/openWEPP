@@ -1,6 +1,124 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## BVLS-04 completion continuation — adopted 2026-09-29
 
+**BLOCKED / INCOMPLETE at the indispensable-independence stop.** The preserved
+corrected source passed release **10/10**. The subsequent extraction cut fails
+compilation with **7 errors**, has no executed tests or terminal lint clearance,
+and is explicitly unvalidated. **Physical domain endpoint NOT RUN; no launch
+attempt, proposal timing, physical work outcome or numerical refusal exists.**
+
+Owner adopted `/tmp/openwepp_cold_canopy_m1_bvls04_completion_authorization.md`
+(SHA256 `14f81dc982fa076e4ccd35093f24c66cd16bb1fac2c84143222ee7d8590f4af6`).
+Starting main is `565108bbf557d93016417168dec6547b22a6b5ec`. Actual detached
+source was verified as all764 canonical entries of
+`1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087` before edits.
+All recorded release support bytes matched. The fixed carry is396800.393795 s;
+the later-receipt scan found no greater carry and refunds none of the prior
+conservative closing charge. Grant7200 s, fixed ceiling404000.393795 s.
+Conservative first-reading anchor06:32:00Z on2026-09-29 fixes command-completion
+cutoff08:02:00Z and hard deadline08:32:00Z. Concurrent elapsed work and waits count
+once, with at least1800 s reserved for independent disposition/preservation.
+See [start ledger](artifacts/bvls04-completion-start-ledger.json).
+
+Prospective intent was unchanged corrected-source release verification, four private
+helper extractions preserving numerical/guard/work/observer order, minimal endpoint
+observation completion, exact-source controls/quality and distinct correctness/QA
+clearance, then one unchanged real-domain release run. Conditional eight-interface,
+18-reference, harness and target work retained all original prerequisites. No new
+numerical method, tolerance, fallback, target arm, public API, dependency or production
+adoption was authorized. Existing M1/full09/A1/A3/strict-lint and other HOLDs remain.
+
+Ran: [release inventory](artifacts/bvls04-completion-release-list01.json) selects
+exactly10 BVLS04 expected-red controls, no endpoint/target.
+[Preserved-source release](artifacts/bvls04-completion-preserved-release01.json)
+passes10/10,370skipped, on unchanged1ab1d087… source and supports. Executable
+`openwepp_land_surface_energy-10aca69a9ab3b145` has SHA256
+`2bedd6661bca2f31c5b860d154b7f3798f4e3700bc84ae54558b2f3e8e4ec496`
+([identity](artifacts/bvls04-completion-preserved-release-binary.json)).
+This result does not transfer to the subsequently modified source.
+
+Writer `/root/completion_writer` owned the three detached Stage1/controller/test
+files. It repeatedly returned incomplete extractions without an external blocker.
+Parent preserved [the partial cut](artifacts/bvls04-completion-writer01-unvalidated.json),
+attempted a replacement once, and received a runtime thread-limit refusal. A single
+completed-thread interruption did not free it. Parent used narrower completed helper
+assignments with the same writer, never a reviewer-to-author conversion or nested
+workaround. After authoring ended, parent took exclusive ownership for a small
+retained-observer context-unpacking edit and rustfmt. No allowance was reset.
+
+Ran: [post-extraction compatibility](artifacts/bvls04-completion-extraction-debug01.json)
+exits101 at compilation after3.530858 s; **zero tests execute**. The seven diagnostics
+are five E0308 type mismatches and two E0507 borrow/move errors in the new retained-face
+observation helpers. [Full stderr](artifacts/bvls04-completion-extraction-debug01.stderr)
+retains every diagnostic. This is an implementation failure, not numerical refusal.
+No post-edit release, analytic, default/feature, lint or endpoint run follows.
+The four long-function findings are **UNRESOLVED**: extraction work exists, but no
+terminal compiler/lint evidence establishes removal. Inherited strict populations
+238 combined and262 analytic remain FAIL with their prior source-bearing comparisons;
+no baseline waiver, suppression or count-only inheritance is claimed.
+
+Static: distinct correctness `/root/completion_correctness` provided
+[prerequisite review](artifacts/bvls04-completion-correctness-prerequisite01.json).
+It found a second ordinary solver call used only for mutation-scope restoration,
+missing actual milestones/error/work reporting, initialization-work ambiguity,
+CPU quantization and discarded-predictor/overlap gaps. Parent accepted a direct
+non-solving restoration assertion in place of the extra call, preserving the
+restoration obligation before result unwrap. Remaining observer gaps are not closed.
+Correctness explicitly corrected its initial source attribution: “one observed_result”
+belongs to preceding BVLS03 text; the current adopted basis is section4's
+“Wrapping the single existing invocation must not add physics, a warm-up or a replay.”
+No successor policy or weakened numerical/domain predicate was adopted.
+
+Static: independent QA `/root/completion_qa` recomputed the initial764-entry identity,
+checked every reconstructed byte, recovery archive and preserved release/binary,
+verified deadline-only recorder change and accepted source-specific lint inheritance.
+Its mutable-cut review retained unresolved long helpers and identified that a scope
+flag is not proof of actual injection; shrink disposition is not owning-domain-guard
+proof. It did not approve final source, physical execution or M1 readiness.
+
+The required correctness reviewer could not be reactivated: the runtime returned
+`agent thread limit reached`, including after both other children had completed.
+[Stop record](artifacts/bvls04-completion-independence-stop.json) retains those outcomes.
+The explicit indispensable-independence stop ends implementation and numerical work;
+no further activation retry, new agent framework, policy tuning or endpoint dispatch.
+Accepted predecessor numerical-core review cannot independently accept these new edits.
+
+Final detached source is
+**6b308c88538d5c050457caff029f776121235b43dd998fbece3cd230b4d69099**,764 entries,
+changed only in Stage1/controller/m1_coupled_tests relative to1ab1d087….
+[Recovery](artifacts/bvls04-completion-terminal-recovery.json) proves fresh extraction
+and equality of every entry from the [explicitly unvalidated archive](artifacts/bvls04-completion-terminal-unvalidated-source.tar.gz),
+SHA256 `d545ffbd18d599dcd325dc7178cb4e76f8067959b55df2185339ab44cbe2b4a1`.
+Archive custody does not make this compile-failed source usable. External toolchain,
+configuration links and inputs remain separately bound by the639-file support record.
+The last successful source remains the preserved corrected terminal1ab1d087… archive.
+No main Rust was adopted; unrelated dirty/untracked work and all prior failures remain.
+
+Next authorized execution requires a functioning author route and both independent
+reviewers, correction of the seven compiler errors and remaining observer gaps,
+exact-terminal controls/lint/source-manifest clearance, and only then the original
+single planned domain run. A conforming pre-injection numerical refusal still ends
+numerical work. Conditional interfaces, held references, harness and target slots
+remain unspent, unreplenished and NOT RUN. No physical timing/speedup or logical-work
+figure from earlier source is transferred to this cut.
+
+[Final conservative ledger](artifacts/bvls04-completion-final-ledger.json) charges
+1498 elapsed seconds before closing plus the full1800-second protected closing
+component through07:26:58Z, without refund if publication finishes earlier.
+New charge3298 s; cumulative **400098.393795 /404000.393795 s**;
+**3902 s** remains under the original08:32Z deadline. This stop is independence-
+limited, not budget exhaustion or a scientific impossibility. The unused balance
+does not reset the clock or override the stop. Publication status follows after
+QA custody disposition and remote verification.
+
+[Terminal independent QA custody review](artifacts/bvls04-completion-qa-terminal-custody01.json)
+approves preservation/publication only as INCOMPLETE/HOLD evidence, confirms final
+764/764 source/reconstruction matches,639 support files,7 support links, failed
+compile/no tests, unchanged unrelated work, and conservative ledger arithmetic.
+It does not approve source correctness or execution. [Final reconciliation](artifacts/bvls04-completion-final-custody.json)
+finds all26 Cargo manifests/lockfiles unchanged and the canonical numerical-methods
+SHA256 unchanged at1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea.
 
 ## Fixed-shift runtime refinement — adopted 2026-09-29
 

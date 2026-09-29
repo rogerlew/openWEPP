@@ -1,0 +1,82 @@
+{
+  "schema": "openwepp.bvls04-completion-correctness-prerequisite01.v1",
+  "reviewer": "/root/completion_correctness",
+  "evidence_class": "Static independent correctness prerequisite review; reviewer ran no Rust, numerical, prototype, candidate, reference, domain, or physical-endpoint command.",
+  "scope": "Adopted BVLS-04 completion intent, deadline-only recorder change, accepted terminal numerical-core evidence reuse, preserved corrected source identity, and pre-edit endpoint observation/readiness conditions. The writer's later helper/observer cut is outside this prerequisite artifact and requires same-review verification at a stable source identity.",
+  "reviewed_authorization": {
+    "path": "/tmp/openwepp_cold_canopy_m1_bvls04_completion_authorization.md",
+    "sha256": "14f81dc982fa076e4ccd35093f24c66cd16bb1fac2c84143222ee7d8590f4af6",
+    "corrected_attribution": "The binding single-invocation wording is authorization line 65: Wrapping the single existing invocation must not add physics, a warm-up or a replay. This reviewer withdraws an earlier unsupported quotation claiming the authorization literally said No ordinary-positive replay. The numerical-methods one-observed-result wording at lines 930-932 belongs the preceding BVLS-03 section and is not cited as direct BVLS-04 authority. Current BVLS-04 authority at lines 1138-1155 instead binds injection order, first canonical numerical-refusal disposition, actual Result milestones, timing, and refused/discarded work."
+  },
+  "starting_source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "entries": 764,
+    "tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+    "stage1_sha256": "d8a8a76596db357367d4c0bcaea14043df4d8d7cac1a1d0bc9f18d091b85a3b1",
+    "controller_sha256": "0b615ea9e8e1b112624ccf60fbdd06f967170ba2d62a0f39ae759f54a41640c7",
+    "stage2_controls_sha256": "5d39caeaee2cd23266632fe2472e7423128b247ed9f8ca5ca1591c24163e307e",
+    "identity_evidence": "The parent-owned release-list receipt bound 764 entries and tree 1ab1d087 with source_unchanged=true. The reviewer independently hashed the three named source files."
+  },
+  "accepted_reuse": {
+    "artifact": "shifted-runtime-correctness-terminal-fix01.json",
+    "disposition": "Reuse accepted for unchanged numerical-core claims at the verified 1ab1d087 source. Any helper or observer source change reopens only affected ordering, reachability, error/work, and source-manifest claims.",
+    "preserved_release_evidence": "Parent-owned bvls04-completion-preserved-release01 records PASS 10/10 at exact source tree 1ab1d087; this reviewer inspected the receipt and did not run it."
+  },
+  "recorder_and_package": {
+    "finding": "No blocker in the adopted record or recorder-only change.",
+    "evidence": "The recorder diff changes only DEADLINE from 2026-09-29T05:11:00Z to 2026-09-29T08:32:00Z. The package records command cutoff 08:02:00Z, hard deadline 08:32:00Z, fixed 1800-second reserve, unchanged physical bounds, preserved prior HOLDs, and sole-writer/reviewer separation."
+  },
+  "findings": [
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-001",
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:5463",
+      "finding": "The starting endpoint test invokes a second ordinary controller transition after the intended domain-refusal observation.",
+      "evidence": "The second m1_trust_region_controller_transition_for_test call is a numerical/physics invocation used only to prove mutation-scope restoration. It conflicts with adopted authorization line 65, which binds wrapping the single existing invocation without adding physics, warm-up, or replay.",
+      "required_fix": "Replace the second transition with direct non-solving state proof that the domain-mutation RAII scope restored its prior state. Preserve the restoration invariant rather than deleting it, and preserve trial preparation, forcing, seed, negative-drainage predicate, and Stage1-before-injection order. This is a source-discovered pre-endpoint deviation, not an outcome-driven rerun."
+    },
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-002",
+      "severity": "high",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:971",
+      "finding": "The starting observer does not report enough real milestones or typed error identity to distinguish numerical preparation refusal from injection and owning-domain refusal.",
+      "evidence": "It sets proposal_entered=true before transition_model and emits only result=typed_error on any post-initialization error. It does not separately establish proposal/Stage1 completion, negative-drainage injection application, owning trial-domain guard reach/refusal, or the concrete error variant and subproblem/refinement metadata. Initialization errors likewise omit concrete error identity.",
+      "required_fix": "Emit seam-derived milestones for initialization, proposal/Stage1 entry and completion, injection application, domain-guard reach/refusal, and controller return. Pre-injection errors must leave injection/domain/downstream milestones explicitly unreached. Emit the concrete typed controller error and available subproblem/refinement metadata without altering error precedence."
+    },
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-003",
+      "severity": "medium",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:971",
+      "finding": "Initialization-error work needs a truthful split between controller Stage1 work and physical initialization activity.",
+      "evidence": "FoundationState::initialize creates state.work only after evaluator initial entry, phase selection, and raw-Jacobian assembly succeed. Therefore default M1TrustRegionWorkObservation is truthful on initialization Err only as controller/Stage1/refinement work. Evaluator/core/phase/Jacobian activity may already have occurred and cannot be described as total zero work.",
+      "required_fix": "Label the default object as controller/Stage1 work and separately report existing adapter/runtime/budget initialization observations or explicitly mark them partial/unavailable. Do not infer total zero initialization work. Post-initialization preparation failures must report the accumulated state.work."
+    },
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-004",
+      "severity": "medium",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:987",
+      "finding": "A zero /proc/self/stat tick delta is presently representable as a resolved zero CPU cost.",
+      "evidence": "Process CPU is tick-quantized. cpu_delta_ticks=0 with cpu_delta_error=null does not establish zero cost, while the adopted authorization explicitly says unresolved CPU is not zero cost.",
+      "required_fix": "Report source, frequency and 1/frequency resolution; retain raw samples; expose resolved seconds only when supported. A zero delta must be marked below-resolution/unresolved rather than measured zero. Keep setup, getconf, CPU sampling, serialization, and build outside the monotonic proposal entry-to-return wall interval."
+    },
+    {
+      "id": "COMPLETION-CORRECTNESS-PREREQ-005",
+      "severity": "medium",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1023",
+      "finding": "The endpoint record lacks explicit discarded-predictor status and overlap semantics required for actual-work interpretation.",
+      "evidence": "Existing work JSON exposes positive entries, factor applications, Dot2 rows/free gradients, scalar/guard categories and denials, but the cost record does not identify whether a predictor existed and was discarded, nor warn that refinement and whole-KKT/enclosure counters overlap.",
+      "required_fix": "Report predictor existence/discard only after the corresponding milestone, leave it unreached on pre-injection refusal, keep reservation bounds separate from actual work, and never sum overlapping refinement plus whole-KKT/enclosure categories into a false unique total."
+    }
+  ],
+  "private_reachability": {
+    "starting_state": "Supported: endpoint controller/helper seams are cfg(all(test, feature = m1-trust-region-physical-stage)); m1_coupled_tests is cfg(test); Cargo documents the feature as private physical-adapter controls.",
+    "terminal_requirement": "Re-prove this exact cfg/dependency/reachability state after helper and observer edits."
+  },
+  "residual_risk_and_missing_tests": [
+    "No stable helper/observer terminal diff or final 764-entry manifest was available for this prerequisite review.",
+    "Same-review verification must compare every extraction against the accepted source for arithmetic parenthesization, traversal, signed zero, guard/error precedence, short-circuiting, charge/reservation/denial order, mutation points, and refusal observer reachability.",
+    "The replacement non-solving scope-restoration assertion must be exercised and must not weaken the former restoration invariant.",
+    "Actual endpoint execution remains prohibited until exact-source correctness and QA clearance plus required controls and quality evidence pass."
+  ],
+  "verdict": "PREREQUISITE HOLD: preserved numerical-core reuse, package intent, deadline-only recorder change, and preserved release evidence are acceptable. The endpoint observer is not ready until findings 001-005 are corrected and verified on a stable final source cut."
+}
