@@ -1,0 +1,68 @@
+{
+  "evidence_class": "Ran: remote main verified and critical source/review/result/ledger blobs independently fetched into fresh bare object store",
+  "commit": "b09ceb002b464e9205f28de2f59ce10594ccc917",
+  "remote_main": "b09ceb002b464e9205f28de2f59ce10594ccc917",
+  "remote": "https://github.com/rogerlew/openWEPP",
+  "verified_utc": "2026-09-29T20:45:53.043561+00:00",
+  "fresh_remote_fetch_repository": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls05-publication-fetch-20260929",
+  "verified_files": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-terminal08-source.tar.gz",
+      "sha256": "75a4ee2ff1d39956a064b4296e118416a86de9c48f184466a015c442b9ec5403",
+      "remote_bytes": 4103613
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-terminal09-source.tar.gz",
+      "sha256": "8c8bb484098c98abb19147fe158bfad3522a5efd8115bb6f31249fcc40a292ad",
+      "remote_bytes": 4103807
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-native-terminal12-source.tar.gz",
+      "sha256": "29252a46361e792e9c6be33dda43a1ee3418c3f15c2fc53fa95d553a7768330f",
+      "remote_bytes": 4104388
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-native-before11-recovery.json",
+      "sha256": "8deed60c5fe5a89855abbddb413581c19b2943f6edd0ca278082b474d1b9cf40",
+      "remote_bytes": 754
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-native11-from-start.patch",
+      "sha256": "f99ce3f531203acca24258a340a0f10096a1fec395f24da47f9fa543843c1a92",
+      "remote_bytes": 122508
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-final-ledger.json",
+      "sha256": "6c30d36109a7221dfa9f7ba17dc82983878f31a07abfc44f5f2e182d93ea0d4b",
+      "remote_bytes": 1827
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-correctness-terminal01.json",
+      "sha256": "57cff18e7a35da1fcaea8d2edfa3267d3084de9b7a470f4ec83bcc1259a86dfe",
+      "remote_bytes": 8004
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-qa-terminal01.json",
+      "sha256": "fe09d1495aaf5d03c82f66815999385bd468f504575f3583bc3d1afea9d8d55f",
+      "remote_bytes": 3168
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-g4-results01.json",
+      "sha256": "fa1b16b69d82d5cd231be4c58e7e4a1123eb3a24255781e8b3e5418d60773aa2",
+      "remote_bytes": 4634
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-conditional-g2-results01.json",
+      "sha256": "c38916e09024f3bb7a8fc74d9f9d2782fde0388097d9b16e14953bc1c6830d28",
+      "remote_bytes": 910
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/bvls05-conditional-g6-results01.json",
+      "sha256": "a3f464c452d8469dc33b48c994756814b88fee1b3285d93b20efa871a307dd04",
+      "remote_bytes": 2850
+    }
+  ],
+  "scope": "Scoped four contracts, package/BVLS05 evidence/recovery and recorder only; no mainRust adoption. Acceptedcheckpoint cut09, nativecandidate unaccepted; integritySTOP and targetsHOLD unchanged.",
+  "binary_custody": "Actual G4 and correctedG2 release binaries remain separately preserved locally; source/build identities are published, binary bytes are not claimed remotely published.",
+  "ledger": "bvls05-final-ledger.json; full closing allocation retained, no refund"
+}

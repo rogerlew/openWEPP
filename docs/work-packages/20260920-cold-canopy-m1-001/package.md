@@ -80,9 +80,13 @@ including all elapsed work/waits once and the full 1800-second closing allocatio
 **427743.393795 cumulative seconds**, with 1122 seconds below the fixed ceiling.
 Charged closing coverage ends 21:09:18 UTC; fixed work cutoff 20:58 and hard
 deadline 21:28 remain unchanged. No refund or old-balance addition. The unused
-allowance does not lift the integrity stop. Scoped publication of the reviewed
-contracts, package/evidence and exact accepted/pending recovery is authorized;
-remote verification remains the final closing action.
+allowance does not lift the integrity stop. Published reviewed contracts, package/evidence and exact accepted/pending
+recovery in commit `b09ceb002b464e9205f28de2f59ce10594ccc917`. The
+[publication receipt](artifacts/bvls05-final-publication.json) verifies remote
+main and independently fetches the three source archives and key result,
+review, ledger and before-check11 recovery blobs into a fresh object store.
+Actual release executables remain preserved locally with published source/build
+identities. Publication does not upgrade the partial disposition or any HOLD.
 
 ### BVLS-05 execution history
 

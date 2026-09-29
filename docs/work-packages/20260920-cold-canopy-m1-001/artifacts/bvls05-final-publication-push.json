@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Ran: authorized scoped Git publication only; no numericalexecution",
+  "commit": "b09ceb002b464e9205f28de2f59ce10594ccc917",
+  "argv": [
+    "git",
+    "push",
+    "origin",
+    "HEAD:main"
+  ],
+  "start_utc": "2026-09-29T20:44:41.653779+00:00",
+  "elapsed_seconds": 9.68419877300039,
+  "exit_code": 0
+}
