@@ -62,6 +62,14 @@ reserve/wait. Subsequent work is review/custody/publication only. Main Rust and
 unrelated dirty/staged/untracked work remain outside this publication.
 
 
+Published reviewed evidence/recovery in commit
+`4e121ad73a531842a169fcf92e5415444feefeb4` to already-authorized`origin/main`;
+remote ref equality was verified. [Publication custody](artifacts/bvls04-resumption-publication.json)
+rehashes the exact terminal source and both unrelated dirty files unchanged.
+Only scoped evidence, this record and the deadline-only recorder were committed;
+no main Rust adoption. This closing publication note does not alter source,
+qualification, command permissions or the conservative charged ledger.
+
 Owner adopted `/tmp/openwepp_cold_canopy_m1_bvls04_independence_resumption_authorization.md`.
 Starting main is6ffd4b957f717568dc07fbcf5bfb6e7720b22597; actual detached bytes match
 all764 entries of6b308c88538d5c050457caff029f776121235b43dd998fbece3cd230b4d69099.

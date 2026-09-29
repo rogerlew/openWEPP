@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: scoped evidence commit and push, remote ref verification, terminal source rehash and unrelated dirty-file preservation check",
+  "evidence_commit": "4e121ad73a531842a169fcf92e5415444feefeb4",
+  "remote": "origin",
+  "branch": "main",
+  "verified_remote_head": "4e121ad73a531842a169fcf92e5415444feefeb4",
+  "source_tree_sha256": "3ea886808f5cfbbc4c495352d733c83146e08354826c12f3caf027f258bebf21",
+  "source_entries": 764,
+  "source_unchanged_after_publication": true,
+  "unrelated_dirty_files_preserved": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  },
+  "publication_scope": "127 files: scoped bvls04-resumption evidence/recovery, package record and deadline-only recorder; no main Rust staged or committed",
+  "ledger": "bvls04-resumption-final-ledger.json",
+  "recorded_utc": "2026-09-29T11:14:35.997805+00:00"
+}
