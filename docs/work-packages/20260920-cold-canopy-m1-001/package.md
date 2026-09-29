@@ -120,6 +120,11 @@ It does not approve source correctness or execution. [Final reconciliation](arti
 finds all26 Cargo manifests/lockfiles unchanged and the canonical numerical-methods
 SHA256 unchanged at1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea.
 
+Scoped evidence and exact unvalidated detached recovery were **published to authorized
+main at `92fbc7a2ed8b1488879de11092a6a491b275fb43`**, with remote ref and archive object verification
+([publication receipt](artifacts/bvls04-completion-publication01.json)). This publishes
+BLOCKED/INCOMPLETE evidence only, not accepted source or runtime behavior.
+
 ## Fixed-shift runtime refinement — adopted 2026-09-29
 
 Owner adopted `/tmp/openwepp_cold_canopy_m1_shifted_runtime_refinement_authorization.md`

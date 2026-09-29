@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Ran: authorized scoped Git publication and remote ref/object identity verification; no runtime release",
+  "evidence_commit": "92fbc7a2ed8b1488879de11092a6a491b275fb43",
+  "remote_ref": "92fbc7a2ed8b1488879de11092a6a491b275fb43\trefs/heads/main",
+  "push_exit": 0,
+  "archive_committed_sha256": "d545ffbd18d599dcd325dc7178cb4e76f8067959b55df2185339ab44cbe2b4a1",
+  "archive_uses_lfs": false,
+  "source_tree_sha256": "6b308c88538d5c050457caff029f776121235b43dd998fbece3cd230b4d69099",
+  "verified_utc": "2026-09-29T07:02:54.016250+00:00",
+  "disposition": "BLOCKED/INCOMPLETE evidence and exact compile-failed unvalidated detached recovery only; no main Rust adoption or physical endpoint outcome"
+}
