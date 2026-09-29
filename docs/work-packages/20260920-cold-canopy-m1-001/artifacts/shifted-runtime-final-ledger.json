@@ -1,0 +1,20 @@
+{
+  "evidence_class": "Conservative charged-time ledger; concurrent elapsed work and waits counted once",
+  "carry_charged_seconds": "382400.393795",
+  "grant_seconds": "14400",
+  "fixed_ceiling_seconds": "396800.393795",
+  "first_reading_anchor_utc": "2026-09-29T01:11:00+00:00",
+  "command_completion_cutoff_utc": "2026-09-29T04:41:00+00:00",
+  "hard_deadline_utc": "2026-09-29T05:11:00+00:00",
+  "closing_started_utc": "2026-09-29T04:40:51+00:00",
+  "closing_start_evidence": "Parent clock tool observed04:40:51Z after final command collection; ensuing work restricted to disposition/preservation/publication",
+  "elapsed_before_closing_seconds": "12591.0",
+  "conservative_closing_charge_seconds": "1809.0",
+  "minimum_required_closing_reserve_seconds": "1800",
+  "session_charged_seconds": "14400.0",
+  "cumulative_charged_seconds": "396800.393795",
+  "unspent_balance_seconds": "0.000000",
+  "refunds": "none; conservative closing charge remains charged even if publication finishes early",
+  "disposition": "INCOMPLETE/HOLD: four introduced long-function lint findings, corrected-source release verification NOT RUN because supported bound did not fit, physical domain/cost and conditional downstream NOT RUN",
+  "recorded_utc": "2026-09-29T04:41:20.621764+00:00"
+}

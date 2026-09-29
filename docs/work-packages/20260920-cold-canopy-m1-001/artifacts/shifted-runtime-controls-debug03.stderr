@@ -1,0 +1,62 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find value `lambda` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2245:55
+     |
+2245 |     if let Err(reason) = bvls04_normal_or_signed_zero(lambda, work) {
+     |                                                       ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `lambda` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2262:21
+     |
+2262 |         let shift = lambda * p[free[slot]];
+     |                     ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `lambda` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2263:51
+     |
+2263 | ...   if let Err(reason) = bvls04_product_guard(lambda, p[free[slot]], shift, work) { fail!(reason, M1TrustRegionRefinementGuardSt...
+     |                                                 ^^^^^^ not found in this scope
+
+error[E0061]: this function takes 5 arguments but 6 arguments were supplied
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2411:13
+     |
+2411 |     let h = bvls04_ordinary_defect(&factor, &residual, &p, &input.free_ids, input.lambda, &mut work).map_err(|_| "analytic shifted...
+     |             ^^^^^^^^^^^^^^^^^^^^^^                                          ------------ unexpected argument #5 of type `f64`
+     |
+note: function defined here
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2230:4
+     |
+2230 | fn bvls04_ordinary_defect(
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+help: remove the extra argument
+     |
+2411 -     let h = bvls04_ordinary_defect(&factor, &residual, &p, &input.free_ids, input.lambda, &mut work).map_err(|_| "analytic shifted defect")?;
+2411 +     let h = bvls04_ordinary_defect(&factor, &residual, &p, &input.free_ids, &mut work).map_err(|_| "analytic shifted defect")?;
+     |
+
+error[E0061]: this function takes 5 arguments but 6 arguments were supplied
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6054:18
+     |
+6054 |         let h0 = bvls04_ordinary_defect(
+     |                  ^^^^^^^^^^^^^^^^^^^^^^
+...
+6059 |             solution.trace.lambda,
+     |             --------------------- unexpected argument #5 of type `f64`
+     |
+note: function defined here
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2230:4
+     |
+2230 | fn bvls04_ordinary_defect(
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+help: remove the extra argument
+     |
+6058 -             &solution.free_ids,
+6059 -             solution.trace.lambda,
+6058 +             &solution.free_ids,
+     |
+
+Some errors have detailed explanations: E0061, E0425.
+For more information about an error, try `rustc --explain E0061`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 5 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

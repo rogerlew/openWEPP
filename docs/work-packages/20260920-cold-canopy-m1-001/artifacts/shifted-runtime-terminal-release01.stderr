@@ -1,0 +1,104 @@
+waiting for another Nix process to finish fetching input 'git+file:///workdir/openWEPP'...
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `release` profile [optimized] target(s) in 1m 30s
+────────────
+ Nextest run ID 807146f3-eef8-4edc-815d-d9334fdc9e09 with nextest profile: default
+    Starting 10 tests across 1 binary (370 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_analytic_shift_is_shared_operation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_nonsymmetric_factor_order_and_coordinate_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_m4_factor_order_changes_binary64_accumulation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_negative_zero_uses_unchanged_bvls03_seam ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_independent_scalar_guard_and_exact_bound ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_operands_norms_and_bvls02_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.01s
+
+
+        FAIL [   0.020s] (10/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix' (921280) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:611:17:
+    assertion `left == right` failed
+      left: None
+     right: Some(4607182418800014096)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.021s] 10 tests run: 9 passed, 1 failed, 370 skipped
+        FAIL [   0.020s] (10/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix
+error: test run failed

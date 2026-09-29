@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Static: immutable selected-file source copy for same-review fix assessment; no compilation or execution",
+  "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-cut02-20260929",
+  "files": {
+    "m1_trust_region_stage1.rs": "9d3fdb5b5cf4398ff4a43cc4102f1f04ff8bc0835fa0f4a6d09e03788253c4da",
+    "lib.rs": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "m1_trust_region_controller.rs": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e"
+  },
+  "archive_sha256": "70c65185f22bdbf5547438bab38323cb06193dcbb8e1d3f77911092d8c0f0285"
+}

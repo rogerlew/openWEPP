@@ -1,0 +1,72 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-order-oracle.v1",
+  "evidence": {
+    "class": "Ran: independent fixed four-dimensional IEEE-754 binary64 scalar calculation only; no Rust, prototype, captured-face, candidate, reference, or physical replay",
+    "source": "shifted-runtime-correctness-order-oracle.py",
+    "source_sha256": "3e13728b2a0cb23521d724e5df0a074018906ca3a0f400bbf1226825e160f525"
+  },
+  "fixture": {
+    "v": [
+      [0.5, 0.5, 0.5, 0.5],
+      [-0.5, 0.5, 0.5, -0.5],
+      [0.5, -0.5, 0.5, -0.5],
+      [-0.5, -0.5, 0.5, 0.5]
+    ],
+    "sigma": [1.0, 2.0, 3.0, 4.0],
+    "lambda": 0.5,
+    "h_free": [1.0, 2.0, 4.0, 8.0],
+    "h_semantics": "complete shifted defect at the retained shifted-inverse input",
+    "free_ids": [3, 1, 0, 2],
+    "factor_order": [2, 0, 3, 1]
+  },
+  "assumptions": [
+    "V rows are free slots in free_ids order and columns are raw spectral positions",
+    "t_j accumulates free slots in ascending slot order",
+    "z_j uses raw sigma[j] and lambda",
+    "delta rows accumulate raw spectral positions through factor_order and then apply unary negation",
+    "V is exactly orthogonal in binary64 because every entry is plus or minus 0.5, and V is nonsymmetric"
+  ],
+  "actual": {
+    "t_bits": [
+      "c004000000000000",
+      "c012000000000000",
+      "401e000000000000",
+      "3ff8000000000000"
+    ],
+    "denominator_bits": [
+      "3ff8000000000000",
+      "4012000000000000",
+      "4023000000000000",
+      "4030800000000000"
+    ],
+    "z_bits": [
+      "bffaaaaaaaaaaaab",
+      "bff0000000000000",
+      "3fe9435e50d79436",
+      "3fb745d1745d1746"
+    ],
+    "delta_free_slot_bits": [
+      "3fec949e6af90f1c",
+      "bfe5d7fcbbd0a352",
+      "bf9054eccf69bf70",
+      "bffc605b752e231d"
+    ],
+    "delta_coordinate_bits_for_coordinates_0_to_3": [
+      "bf9054eccf69bf70",
+      "bfe5d7fcbbd0a352",
+      "bffc605b752e231d",
+      "3fec949e6af90f1c"
+    ]
+  },
+  "independent_test_side_counterfactual": {
+    "ascending_raw_order": [0, 1, 2, 3],
+    "delta_free_slot_bits": [
+      "3fec949e6af90f1d",
+      "bfe5d7fcbbd0a352",
+      "bf9054eccf69bf74",
+      "bffc605b752e231e"
+    ],
+    "differs_from_factor_order": true,
+    "use": "Freeze these bits only in the test to prove the actual result is not ascending raw order; do not expose or calculate this counterfactual in the runtime accessor"
+  }
+}

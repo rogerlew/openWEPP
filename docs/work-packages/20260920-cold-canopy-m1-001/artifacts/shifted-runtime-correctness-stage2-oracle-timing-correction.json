@@ -1,0 +1,9 @@
+{
+  "schema": "openwepp.shifted-runtime-correctness-stage2-oracle-timing-correction.v1",
+  "recorded_at_utc": "2026-09-29T04:25:12Z",
+  "corrects_artifact": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-stage2-oracle.json",
+  "corrected_artifact_sha256": "1ee5a94d3af3821e794f0e0eec60ffc473bcb0a7335feaf91f9dac65fd1caa69",
+  "field": "execution_receipt.wall_time_seconds_observed",
+  "correction": "The value 1.58e-06 is the orchestration tool's returned boundary metadata. It is not a measured or qualified analytic calculation duration and must not support any performance claim.",
+  "custody": "The corrected artifact remains byte-identical at its pinned SHA; this separate note does not alter its derived values, script identity, command, exit status, or source identity."
+}

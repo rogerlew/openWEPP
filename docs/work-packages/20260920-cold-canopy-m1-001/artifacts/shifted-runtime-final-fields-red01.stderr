@@ -1,0 +1,405 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0432]: unresolved imports `super::m1_trust_region_bvls04_poison_for_test`, `super::m1_trust_region_bvls03_signed_zero_for_test`, `super::m1_trust_region_bvls04_work_boundary_for_test`, `super::M1TrustRegionBvls04Poison`, `super::M1TrustRegionBvls04Reservation`, `super::M1TrustRegionBvls04ReservationOwner`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:137:9
+    |
+137 |         m1_trust_region_bvls04_poison_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_poison_for_test` in `m1_trust_region_stage1`
+138 |         m1_trust_region_bvls04_shifted_inverse_for_test,
+139 |         m1_trust_region_bvls03_signed_zero_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls03_signed_zero_for_test` in `m1_trust_region_stage1`
+140 |         m1_trust_region_bvls04_work_boundary_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_work_boundary_for_test` in `m1_trust_region_stage1`
+141 |         m1_trust_region_refinement_retained_face_for_test,
+142 |         M1TrustRegionBvls04AnalyticInput, M1TrustRegionBvls04Poison,
+    |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionBvls04Poison` in `m1_trust_region_stage1`
+143 |         M1TrustRegionBvls04Reservation, M1TrustRegionBvls04ReservationOwner,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionBvls04ReservationOwner` in `m1_trust_region_stage1`
+    |         |
+    |         no `M1TrustRegionBvls04Reservation` in `m1_trust_region_stage1`
+    |
+help: a similar name exists in the module
+    |
+137 -         m1_trust_region_bvls04_poison_for_test,
+137 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+139 -         m1_trust_region_bvls03_signed_zero_for_test,
+139 +         m1_trust_region_bvls04_shifted_inverse_for_test,
+    |
+help: a similar name exists in the module
+    |
+140 -         m1_trust_region_bvls04_work_boundary_for_test,
+140 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+143 -         M1TrustRegionBvls04Reservation, M1TrustRegionBvls04ReservationOwner,
+143 +         M1TrustRegionBallObservation, M1TrustRegionBvls04ReservationOwner,
+    |
+help: a similar name exists in the module
+    |
+143 -         M1TrustRegionBvls04Reservation, M1TrustRegionBvls04ReservationOwner,
+143 +         M1TrustRegionBvls04Reservation, M1TrustRegionBallObservation,
+    |
+
+error: cannot find macro `fail` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2161:9
+     |
+2161 |         fail!(RefinementDot2Reason::NonfiniteOperand, M1TrustRegionRefinementGuardStage::ResidualSourceTerm, None, None, None);
+     |         ^^^^
+     |
+     = help: have you added the `#[macro_use]` on the module/import?
+
+error: cannot find macro `fail` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2167:17
+     |
+2167 | ...   fail!(RefinementDot2Reason::NonfiniteOperand, M1TrustRegionRefinementGuardStage::ResidualSourceTerm, Some(refinement_face_in...
+     |       ^^^^
+     |
+     = help: have you added the `#[macro_use]` on the module/import?
+
+error: cannot find macro `fail` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2172:17
+     |
+2172 | ...   fail!(RefinementDot2Reason::UnderflowToZero, M1TrustRegionRefinementGuardStage::PrimaryProduct, Some(refinement_face_index(r...
+     |       ^^^^
+     |
+     = help: have you added the `#[macro_use]` on the module/import?
+
+error: cannot find macro `fail` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2177:17
+     |
+2177 | ...   fail!(RefinementDot2Reason::NonfiniteOperand, M1TrustRegionRefinementGuardStage::Accumulation, Some(refinement_face_index(ro...
+     |       ^^^^
+     |
+     = help: have you added the `#[macro_use]` on the module/import?
+
+error: cannot find macro `fail` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2181:13
+     |
+2181 | ...   fail!(RefinementDot2Reason::NonfiniteOperand, M1TrustRegionRefinementGuardStage::ResidualSourceWeight, None, Some(refinement...
+     |       ^^^^
+     |
+     = help: have you added the `#[macro_use]` on the module/import?
+
+error: cannot find macro `fail` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2186:13
+     |
+2186 | ...   fail!(RefinementDot2Reason::UnderflowToZero, M1TrustRegionRefinementGuardStage::PrimaryProduct, None, Some(refinement_face_i...
+     |       ^^^^
+     |
+     = help: have you added the `#[macro_use]` on the module/import?
+
+error: cannot find macro `fail` in this scope
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2191:13
+     |
+2191 | ...   fail!(RefinementDot2Reason::NonfiniteOperand, M1TrustRegionRefinementGuardStage::Accumulation, None, Some(refinement_face_in...
+     |       ^^^^
+     |
+     = help: have you added the `#[macro_use]` on the module/import?
+
+warning: unused macro definition: `fail`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1934:18
+     |
+1934 |     macro_rules! fail { ($reason:expr, $stage:expr, $row:expr, $term:expr, $coordinate:expr) => { return Err(RefinementDot2Refusal...
+     |                  ^^^^
+     |
+     = note: `#[warn(unused_macros)]` (part of `#[warn(unused)]`) on by default
+
+error[E0609]: no field `residual1_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:89:29
+   |
+89 |         assert_eq!(observed.residual1_bits, bits(&certificate["candidate_intermediates"]["correction2_residual_bits"]));
+   |                             ^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 55 others
+
+error[E0609]: no field `r0_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:90:29
+   |
+90 |         assert_eq!(observed.r0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+   |                             ^^^^^^^ unknown field
+   |
+help: a field with a similar name exists
+   |
+90 -         assert_eq!(observed.r0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+90 +         assert_eq!(observed.p0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+   |
+
+error[E0609]: no field `final_residual_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:91:29
+   |
+91 |         assert_eq!(observed.final_residual_bits, bits(&certificate["points"]["compensated_correction_2"]["residual_bits"]));
+   |                             ^^^^^^^^^^^^^^^^^^^ unknown field
+   |
+help: a field with a similar name exists
+   |
+91 -         assert_eq!(observed.final_residual_bits, bits(&certificate["points"]["compensated_correction_2"]["residual_bits"]));
+91 +         assert_eq!(observed.dot2_residual_bits, bits(&certificate["points"]["compensated_correction_2"]["residual_bits"]));
+   |
+
+error[E0609]: no field `final_gradient_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:92:29
+   |
+92 |         assert_eq!(observed.final_gradient_bits, bits(&certificate["points"]["compensated_correction_2"]["gradient_bits"]));
+   |                             ^^^^^^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 55 others
+
+error[E0609]: no field `final_lambda_p_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:93:29
+   |
+93 |         assert_eq!(observed.final_lambda_p_bits, bits(&certificate["points"]["compensated_correction_2"]["lambda_p_bits"]));
+   |                             ^^^^^^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 55 others
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1951:20
+     |
+1951 |         return Err("invalid lambda input");
+     |                --- ^^^^^^^^^^^^^^^^^^^^^^ expected `RefinementDot2Refusal`, found `&str`
+     |                |
+     |                arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1951:16
+     |
+1951 |         return Err("invalid lambda input");
+     |                ^^^^----------------------^
+     |                    |
+     |                    this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1966:32
+     |
+1966 |                     return Err("nonfinite A_free V product");
+     |                            --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `RefinementDot2Refusal`, found `&str`
+     |                            |
+     |                            arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1966:28
+     |
+1966 |                     return Err("nonfinite A_free V product");
+     |                            ^^^^----------------------------^
+     |                                |
+     |                                this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1972:32
+     |
+1972 |                     return Err("nonfinite A_free V sum");
+     |                            --- ^^^^^^^^^^^^^^^^^^^^^^^^ expected `RefinementDot2Refusal`, found `&str`
+     |                            |
+     |                            arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1972:28
+     |
+1972 |                     return Err("nonfinite A_free V sum");
+     |                            ^^^^------------------------^
+     |                                |
+     |                                this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1979:28
+     |
+1979 |                 return Err("nonfinite U");
+     |                        --- ^^^^^^^^^^^^^ expected `RefinementDot2Refusal`, found `&str`
+     |                        |
+     |                        arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1979:24
+     |
+1979 |                 return Err("nonfinite U");
+     |                        ^^^^-------------^
+     |                            |
+     |                            this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1985:28
+     |
+1985 |                 return Err("nonfinite Uty product");
+     |                        --- ^^^^^^^^^^^^^^^^^^^^^^^ expected `RefinementDot2Refusal`, found `&str`
+     |                        |
+     |                        arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1985:24
+     |
+1985 |                 return Err("nonfinite Uty product");
+     |                        ^^^^-----------------------^
+     |                            |
+     |                            this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1991:28
+     |
+1991 |                 return Err("nonfinite Uty sum");
+     |                        --- ^^^^^^^^^^^^^^^^^^^ expected `RefinementDot2Refusal`, found `&str`
+     |                        |
+     |                        arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1991:24
+     |
+1991 |                 return Err("nonfinite Uty sum");
+     |                        ^^^^-------------------^
+     |                            |
+     |                            this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2007:24
+     |
+2007 |             return Err("nonfinite lambda coefficient");
+     |                    --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `RefinementDot2Refusal`, found `&str`
+     |                    |
+     |                    arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2007:20
+     |
+2007 |             return Err("nonfinite lambda coefficient");
+     |                    ^^^^------------------------------^
+     |                        |
+     |                        this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2020:28
+     |
+2020 |                 return Err("nonfinite V product");
+     |                        --- ^^^^^^^^^^^^^^^^^^^^^ expected `RefinementDot2Refusal`, found `&str`
+     |                        |
+     |                        arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2020:24
+     |
+2020 |                 return Err("nonfinite V product");
+     |                        ^^^^---------------------^
+     |                            |
+     |                            this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+
+error[E0308]: mismatched types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2026:28
+     |
+2026 |                 return Err("nonfinite V sum");
+     |                        --- ^^^^^^^^^^^^^^^^^ expected `RefinementDot2Refusal`, found `&str`
+     |                        |
+     |                        arguments to this enum variant are incorrect
+     |
+help: the type constructed contains `&'static str` due to the type of the argument passed
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2026:24
+     |
+2026 |                 return Err("nonfinite V sum");
+     |                        ^^^^-----------------^
+     |                            |
+     |                            this argument influences the type of `Err`
+note: tuple variant defined here
+    --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/result.rs:566:4
+
+error[E0609]: no field `guard_stage` on type `&str`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5778:241
+     |
+5778 | ...onCorrectionPosition::First), guard_stage: refusal.guard_stage, row: refusal.row, term: refusal.term, coordinate: refusal.coord...
+     |                                                       ^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `row` on type `&str`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5778:267
+     |
+5778 | ...First), guard_stage: refusal.guard_stage, row: refusal.row, term: refusal.term, coordinate: refusal.coordinate, scratch_box_fea...
+     |                                                           ^^^ unknown field
+
+error[E0609]: no field `term` on type `&str`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5778:286
+     |
+5778 | ... refusal.guard_stage, row: refusal.row, term: refusal.term, coordinate: refusal.coordinate, scratch_box_feasible: None }, refus...
+     |                                                          ^^^^ unknown field
+
+error[E0609]: no field `coordinate` on type `&str`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5778:312
+     |
+5778 | ...fusal.row, term: refusal.term, coordinate: refusal.coordinate, scratch_box_feasible: None }, refusal.reason))?;
+     |                                                       ^^^^^^^^^^ unknown field
+
+error[E0609]: no field `reason` on type `&str`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5778:362
+     |
+5778 | ...al.coordinate, scratch_box_feasible: None }, refusal.reason))?;
+     |                                                         ^^^^^^ unknown field
+
+error[E0308]: `if` and `else` have incompatible types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5786:9
+     |
+5765 |        let delta0 = if solution.trace.lambda > 0.0 {
+     |  ___________________-
+5766 | |          let h0 = bvls04_ordinary_defect(
+5767 | |              factor,
+5768 | |              &residual0,
+...    |
+5779 | |/         bvls04_shifted_inverse(
+5780 | ||                 factor,
+5781 | ||                 &h0,
+5782 | ||                 solution.trace.lambda,
+5783 | ||                 &mut state.refinement_work,
+5784 | ||             )
+     | ||_____________- expected because of this
+5785 | |      } else {
+5786 | |          lambda_step(factor, &residual0, 0.0, Some(&mut state.refinement_work))
+     | |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Result<Vec<f64>, &str>`, found `Result<Vec<f64>, RefinementDot2Refusal>`
+5787 | |      };
+     | |______- `if` and `else` have incompatible types
+     |
+     = note: expected enum `Result<_, &str>`
+                found enum `Result<_, RefinementDot2Refusal>`
+
+error[E0308]: `if` and `else` have incompatible types
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5967:9
+     |
+5931 |        let delta1 = if solution.trace.lambda > 0.0 {
+     |  ___________________-
+5932 | |          let h1 = bvls04_dot2_defect(
+5933 | |              factor,
+5934 | |              &residual1,
+...    |
+5960 | |/         bvls04_shifted_inverse(
+5961 | ||             factor,
+5962 | ||             &h1,
+5963 | ||             solution.trace.lambda,
+5964 | ||             &mut state.refinement_work,
+5965 | ||         )
+     | ||_________- expected because of this
+5966 | |      } else {
+5967 | |          lambda_step(factor, &residual1, 0.0, Some(&mut state.refinement_work))
+     | |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Result<Vec<f64>, &str>`, found `Result<Vec<f64>, RefinementDot2Refusal>`
+5968 | |      };
+     | |______- `if` and `else` have incompatible types
+     |
+     = note: expected enum `Result<_, &str>`
+                found enum `Result<_, RefinementDot2Refusal>`
+
+Some errors have detailed explanations: E0308, E0432, E0609.
+For more information about an error, try `rustc --explain E0308`.
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 29 previous errors; 1 warning emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

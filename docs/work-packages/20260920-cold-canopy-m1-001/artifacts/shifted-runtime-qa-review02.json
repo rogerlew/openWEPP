@@ -1,0 +1,31 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-qa-review.v1",
+  "reviewer": "secondary QA/evidence reviewer",
+  "evidence_class": "Static: same-reviewer read/hash verification only; no Rust command, numerical reconstruction, physical replay, or target execution",
+  "scope": "Verification of QA-BLOCK-01 and QA-BLOCK-02 from shifted-runtime-qa-review01.json against the revised prospective BVLS-04 authority, design, and controls. This is a prospective policy approval only; the later source/manifest/recorder and executed-evidence review remains required.",
+  "reviewed": {
+    "authority_path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "authority_sha256": "dd7e715022903860d22c033427e291a0eaf6557e9b10a1760931eff01a8ccd47",
+    "design_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-bvls04-design.md",
+    "design_sha256": "88b1d28e67a41df9f71645b3407be2e0913dc5029137fb7d741e93550dd6646c",
+    "controls_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-bvls04-controls.json",
+    "controls_sha256": "e83f6cdeac56947e896d0696828e24b247b1fc52bef63556afe4f964b05c7fb6"
+  },
+  "fix_verification": [
+    {
+      "finding": "QA-BLOCK-01",
+      "result": "PASS",
+      "evidence": "The authority now maps p1 lower/upper box refusal to ScratchBox with ScratchBoxLower/ScratchBoxUpper, correction position First, and coordinate. The design repeats the carrier boundary, and controls require the exact reason/stage/position/coordinate distinction alongside no-fallthrough behavior."
+    },
+    {
+      "finding": "QA-BLOCK-02",
+      "result": "PASS",
+      "evidence": "The synchronized documents now reserve three recomputed reduced norms and four explicit p2 gap/tolerance scalar operations. K04 is 70,276 at m=21; G04 is a documented conservative 211,236 upper bound with explicit selector/structure, scan, and radius/gap components. The authority requires observed monotonic seam counts not exceed the reservation, and controls retain refusal-before-excess-work." 
+    }
+  ],
+  "non_blocking_followups": [
+    "Before the post-body physical endpoint, perform the assigned same-reviewer source/manifest/evidence review, including the recorder correction's exact path, schema delta, output identity, and test mapping.",
+    "Execution evidence must distinguish original-radius, remaining-radius, and final gap/closeness outcomes, and retain the historical observation bytes and unreached downstream assertions if an earlier numerical refusal occurs."
+  ],
+  "verdict": "PROSPECTIVE QA APPROVED FOR THE AUTHORIZED DETACHED BODY STAGE. The two prior QA blockers are resolved in the frozen policy/control set. This approval does not approve main-worktree Rust, a physical replay, target work, production activation, or a final package disposition."
+}

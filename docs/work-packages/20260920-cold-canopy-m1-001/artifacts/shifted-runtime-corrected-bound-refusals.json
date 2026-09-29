@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Ran: recorder admission checks only; rejected commands did not launch",
+  "recorded_utc": "2026-09-29T04:39:53.751402+00:00",
+  "rejections": [
+    {
+      "labels": [
+        "shifted-runtime-corrected-compat01",
+        "shifted-runtime-corrected-release01",
+        "shifted-runtime-corrected-analytic01",
+        "shifted-runtime-corrected-combined-lint01",
+        "shifted-runtime-corrected-default01",
+        "shifted-runtime-corrected-format-check01"
+      ],
+      "declared_timeout_seconds": 140,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    },
+    {
+      "labels": [
+        "shifted-runtime-corrected-release02"
+      ],
+      "declared_timeout_seconds": 100,
+      "reason": "Full declared command bound cannot fit before review/preservation reserve"
+    }
+  ],
+  "disposition": "No shortened release attempt selected: prior measured incremental release command required91.065275s and that full supported bound no longer fits; corrected-source release verification remains NOT RUN. Short debug/analytic/lint/format/default validators use declared limits based on their prior measured durations, without moving the deadline."
+}

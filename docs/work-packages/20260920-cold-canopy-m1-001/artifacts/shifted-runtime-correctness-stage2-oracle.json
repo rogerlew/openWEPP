@@ -1,0 +1,135 @@
+{
+  "execution_receipt": {
+    "candidate_code_loaded": false,
+    "candidate_command_run": false,
+    "command": ".venv/bin/python docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-stage2-oracle.py",
+    "executed_at_utc": "2026-09-29T04:15:09Z",
+    "exit_code": 0,
+    "fixture_source_path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs",
+    "fixture_source_sha256": "127c07049696c9de16b9fb8004dea03eb822f463bfd95eddaa180830ab5a177f",
+    "script_sha256": "879a4bce660a19091a802cc3cea604f9e1f37dab918d78d612b37f3016703066",
+    "wall_time_seconds_observed": 1.58e-06
+  },
+  "fixture": {
+    "dimension": 21,
+    "factor_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "radius_bits": "3fd0000000000000",
+    "sigma": [
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000",
+      "4000000000000000"
+    ],
+    "v": "I_21",
+    "weighted_matrix": "2*I_21",
+    "weighted_residual_first_two": [
+      "bff3333333333333",
+      "bff0000000000000"
+    ]
+  },
+  "intermediates_first_two": {
+    "delta0": [
+      "bc747c63fe7efc90",
+      "bc747c63fe7efc90"
+    ],
+    "delta1": [
+      "3c293aff81a28914",
+      "3c5fa337f3d6f092"
+    ],
+    "h0": [
+      "3cb0000000000000",
+      "3cb0000000000000"
+    ],
+    "h1_dot2": [
+      "bc63b4a385c1ac00",
+      "bc98b5b12175b9e0"
+    ],
+    "lambda": [
+      "4020fe2812a529f8"
+    ],
+    "p0": [
+      "3fc89544cafec8ad",
+      "3fc47c63fe7efc90"
+    ],
+    "p1": [
+      "3fc89544cafec8ac",
+      "3fc47c63fe7efc8f"
+    ],
+    "p2": [
+      "3fc89544cafec8ac",
+      "3fc47c63fe7efc8f"
+    ],
+    "r0": [
+      "bfea1bc400e70210",
+      "bfe5c1ce00c081b8"
+    ],
+    "r1_dot2": [
+      "bfea1bc400e70210",
+      "bfe5c1ce00c081b8"
+    ]
+  },
+  "mapping": {
+    "assertion_sites": [
+      "m1_trust_region_stage2_controls.rs:1927",
+      "m1_trust_region_stage2_controls.rs:1963"
+    ],
+    "event_mapping": "Only phase_quarter_selected_step coordinates 0 and 1 change; preserve both full event-vector assertions and all other entries.",
+    "new_bvls04_bits": [
+      "3fc89544cafec8ac",
+      "3fc47c63fe7efc8f"
+    ],
+    "new_decimal_roundtrip": [
+      "0.19205531989934366",
+      "0.1600460999161197"
+    ],
+    "old_expected_bits": [
+      "3fc89544cafec8ad",
+      "3fc47c63fe7efc90"
+    ],
+    "ulp_change": [
+      -1,
+      -1
+    ]
+  },
+  "method": "standalone analytic IEEE-754 binary64 transcription; no candidate import or output",
+  "schema": "openwepp.shifted-runtime-correctness-stage2-oracle.v1"
+}

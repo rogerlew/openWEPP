@@ -1,0 +1,18 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error: this file contains an unclosed delimiter
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9702:3
+     |
+ 664 | fn m1_trust_region_bvls04_poison_for_test(poison:M1TrustRegionBvls04Poison)->Result<(),M1TrustRegionBvls04PoisonObservation>{
+     |                                                                                                                             - unclosed delimiter
+ 665 |  let capture:serde_json::Value=serde_json::from_str(include_str!(concat!(env!("CARGO_MANIFEST_DIR"),"/../../docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-face-observed-capture.json"))).unwrap();
+ 666 |  let face=&capture["face_capture"]; let (input,prepared,mut state,mut solution)=refinement_solve_captured_face(face).unwrap(); let before=state.p.map(f64::to_bits); let kkt_before=BVLS04_KKT_ENTRIES.with(Cell::get); let refusal={let...
+     |                                                                                                                                                                                                                                     - this delimiter might not be properly closed...
+ 667 | }
+     | - ...as it matches this but it has different indentation
+...
+9702 | }
+     |  ^
+
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 1 previous error
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

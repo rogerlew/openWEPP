@@ -1,0 +1,36 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-control-semantics-qa.v1",
+  "evidence_class": "Static prospective control-scope review; no source edit, compilation, candidate, oracle, or physical execution by QA",
+  "frozen_source": {
+    "tree_sha256": "716d84a61559b619b659e4c0079dbf8a025995e763264adc5283f45206abb683",
+    "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:78-125"
+  },
+  "proposed_narrow_change": [
+    {
+      "assertion": "observed.g0_bits == original full-21 gradient bits",
+      "assessment": "Remove. It is an initial diagnostic assertion outside the BVLS-04 required captured p0/two-correction/final-02 contract set."
+    },
+    {
+      "assertion": "observed.lambda_p0_bits == ordinary-correction-1 lambda_p bits",
+      "assessment": "Remove. Its label and compared point disagree: it purports to identify p0 but reads the p1 certificate field, so it cannot serve as a stable p0 invariant."
+    }
+  ],
+  "required_coverage_retained": {
+    "authority": "numerical-methods.md:1111-1128 requires captured p0, both defects/deltas/updates, active bits, final all-coordinate BVLS-02 fields, recomputed radius checks, analytic discriminators, refusal/isolation/no-fallthrough, and preservation controls.",
+    "controls": [
+      "p0 plus p1/p2 bits",
+      "both free defects and deltas",
+      "final h/Cbar/tau and active-mask/unchanged-factor checks",
+      "original/remaining radius, final full/reduced norms, gap/tolerance, two-correction and actual-work assertions",
+      "separate analytic, zero-branch, typed refusal, work-boundary, scratch-isolation, and later real-controller controls"
+    ],
+    "condition": "Final body review must confirm the implemented control names and green assertions retain these requirements; this review does not accept a substitution that omits any contract-required final-02 field."
+  },
+  "critical_test_semantics": {
+    "classification": "This removes two never-compiled expected-red scaffolding assertions whose operands do not faithfully state the claimed invariant. It does not alter an existing passing required case, the preserved BVLS-03 physical-success assertion, fixtures, external bindings, lane coverage, or an authority-suite selector.",
+    "conclusion": "On the evidence available, this is a test-oracle correction rather than Critical test weakening. It remains noncritical only while the final diff is limited to these two assertions and all required coverage above is retained.",
+    "escalation": "Treat it as Critical/test weakening if final implementation removes a required control, changes fixture/external-suite bindings, alters an existing passing physical-success assertion, or cannot show final all-coordinate BVLS-02 coverage."
+  },
+  "uncertainty": "The body has not compiled and no green control inventory exists, so actual coverage cannot yet be validated. The conclusion is limited to the proposed two-line removal and the frozen authority wording.",
+  "verdict": "PROSPECTIVE NARROW CONTROL CORRECTION ACCEPTABLE, subject to final source/manifest/control review. No body, control, or physical release follows."
+}

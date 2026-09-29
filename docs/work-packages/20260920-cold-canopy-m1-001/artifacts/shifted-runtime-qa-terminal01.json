@@ -1,0 +1,35 @@
+{
+  "schema": "openwepp.shifted-runtime-qa-terminal01.v1",
+  "evidence_class": "Static terminal-source, source-map, support-pin, and recorded-log review only. No Rust, candidate, physical, oracle, or source command was run by this reviewer.",
+  "terminal_source": {
+    "review_manifest": "shifted-runtime-terminal-review-source.json",
+    "review_manifest_sha256": "33cb5ff40d4c810cddc5cdaf1b22386a43f9cf4d7f54c023713bf67eac8fa32b",
+    "stage1_sha256": "f9de794fb2f2b0d5bb4b1d75b1d56a4c2c7f50ca33cd32c699eaf5b24251fdf1",
+    "terminal_execution_tree_sha256": "2f98edc3169f0e194e149903da24dd523d7991d506de94caa3c70410ae01a4fa",
+    "full_source_entries": 764,
+    "changed_from_initial_entries": ["crates/openwepp-land-surface-energy/src/lib.rs", "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs", "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs", "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs", "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs"],
+    "manifest_dependency_result": "PASS: all 26 Cargo.toml/Cargo.lock entries match the initial 764-entry source map."
+  },
+  "reachability": {
+    "result": "PASS for the isolated experiment: lib.rs retains #[cfg(test)] for m1_trust_region_stage1; physical-stage reexports remain additionally test-gated.",
+    "classification": "private/noncritical for the recorded five-file test-only diff only; this does not activate M1 or production behavior."
+  },
+  "support_custody": {
+    "result": "Terminal receipts pin original stage2 oracle JSON SHA 1ee5a94d3af3821e794f0e0eec60ffc473bcb0a7335feaf91f9dac65fd1caa69, its script SHA 879a4bce660a19091a802cc3cea604f9e1f37dab918d78d612b37f3016703066, and separate timing-correction SHA ec7672f4dd09bb9edcd5cc0122f40040c64d265908db0dea60db072c37c4e28a.",
+    "limitation": "The disclosed historical transient oracle mutation remains a custody limitation for interim runs. The correction separates the unsupported timing field; neither artifact supplies CPU/cost evidence."
+  },
+  "recorded_terminal_status_at_review": [
+    {"receipt": "terminal-analytic01", "result": "exit 0", "scope": "analytic selected controls only"},
+    {"receipt": "terminal-default01", "result": "exit 0", "scope": "default compile/reachability only"},
+    {"receipt": "terminal-compat01", "result": "exit 100", "scope": "not 135/135 PASS; its log stops at pre-existing clippy -D warnings in unrelated LSE files"},
+    {"receipt": "terminal-combined-lint01", "result": "exit 101", "scope": "strict lint remains non-passing; exact inherited/introduced reconciliation is still required"},
+    {"receipt": "terminal-release01", "result": "pending at this review", "scope": "no result credited"}
+  ],
+  "findings": [
+    {"id": "QA-TERMINAL-001", "severity": "high", "status": "blocking", "paths": ["shifted-runtime-terminal-compat01.stdout", "shifted-runtime-terminal-combined-lint01.stderr"], "finding": "Terminal compatibility did not reach its claimed 135-test result: it exited 100 during clippy -D warnings. Terminal combined lint exited 101. The raw outputs show unrelated inherited warning blocks; without a terminal source-specific reconciliation, neither receipt is a quality pass.", "required_disposition": "Record the actual compatibility outcome and complete exact terminal diagnostic attribution. Do not call the four/other warning blocks harmless solely from prior source hashes; all introduced or ambiguous findings block."},
+    {"id": "QA-TERMINAL-002", "severity": "high", "status": "blocking release", "paths": ["shifted-runtime-terminal-review-source.json"], "finding": "No physical endpoint was run and no CPU/cost measurement exists. Pending/release-control receipts cannot be credited before their final recorded exit and source/support custody are reviewed.", "required_disposition": "Preserve physical endpoint and performance as NOT RUN."
+    }
+  ],
+  "preserved_holds": "Historical M1 A1/C-023 and A3 closure holds remain distinct from this private non-target experiment and do not independently trigger the conditional full workspace run. They remain required for M1/runtime release.",
+  "verdict": "NO endpoint, source-release, or quality approval at this review point. Terminal source/manifest/cfg custody is acceptable; terminal quality and execution disposition remain incomplete or failing."
+}

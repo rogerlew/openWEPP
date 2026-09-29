@@ -1,0 +1,32 @@
+{
+  "schema": "cold-canopy-m1-shifted-runtime-correctness-policy-approval/v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "role": "independent correctness/authority reviewer; no authorship",
+  "recorded_utc": "2026-09-29T01:32:17Z",
+  "evidence_class": "Static: same-reviewer verification of the sole fix02 ownership correction in synchronized authority, design and controls. Ran: read-only SHA-256 and source-text searches only; no body, Rust, physical, candidate, reference, or historical replay.",
+  "reviewed": {
+    "authority_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea",
+    "design_sha256": "47df16d599b2a4940e37c20e4340ed48e5b9d239727e6d5a8576550a463caad5",
+    "controls_sha256": "68e9e72f724a7a2b4f708fe6dad8335790a88dca65d7678a9e1256cd30d2c1ee",
+    "prior_reviews": [
+      "shifted-runtime-correctness-policy-draft01.json",
+      "shifted-runtime-correctness-policy-fix01.json",
+      "shifted-runtime-correctness-policy-fix02.json"
+    ]
+  },
+  "fix_verification": {
+    "finding": "SHIFTED-RUNTIME-CORRECTNESS-008",
+    "status": "RESOLVED",
+    "evidence": "Signed zero selects unchanged BVLS-03. Nonfinite/negative lambda never selects BVLS-04 and remains on unchanged BVLS-02 crossing/KKT flow. Nonfinite ball arithmetic retains TrustRegionSvdNonFinite; invalid lambda reaching KKT retains TrustRegionOptimalityIndeterminate with optimality_nonfinite or optimality_negative_lambda; TrustRegionLambdaBracket remains limited to failure to establish a feasible positive upper bracket. Authority, design and controls agree."
+  },
+  "findings": [],
+  "approval_scope": "Prospective approval of the exact BVLS-04 policy, decision/error precedence, operation ordering, factor joins, p0/p1/p2 two-radius rules, typed metadata design, finite scalar/guard reservation, controls plan and detached private source scope. This approval permits the parent-staged corresponding expected-red controls and body work only.",
+  "residual_risk_and_missing_evidence": [
+    "No Rust body or expected-red/green control has been reviewed or executed in this approval.",
+    "The body must preserve shared Dot2 primitive reuse and justify or centralize any substantial duplicated numerical logic.",
+    "The same reviewer must inspect changed source, exact operation/count implementation, typed refusal reachability, retained-face results, fixes and independent retained-operand reconstruction before a physical command.",
+    "Private cfg/dependency reachability, debug/release controls, exact source/manifest equality, applicable compatibility/format/lint/docs and A0/A1/A3/Critical-trigger requirements remain pending.",
+    "The separately gated release-mode domain-refusal endpoint, downstream interface work, target arms and M1 acceptance remain unapproved and unexecuted here. Domain FAIL and M1 HOLD remain unchanged."
+  ],
+  "verdict": "APPROVED prospectively for staged BVLS-04 expected-red and body work on the exact reviewed authority/design/control identities. No correctness blocker remains in the prospective policy. This is not body acceptance, physical-path acceptance, M1 acceptance or production activation."
+}

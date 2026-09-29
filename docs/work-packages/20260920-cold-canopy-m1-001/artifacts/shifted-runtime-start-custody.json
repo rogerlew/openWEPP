@@ -1,0 +1,17 @@
+{
+  "evidence_class": "Ran: actual detached snapshot matches all retained entry hashes and prototype dependencies hashed; no recovery overlay",
+  "source_tree_sha256": "cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8",
+  "source_entries": 764,
+  "dependencies": {
+    "shifted-face-observed-capture.json": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+    "shifted-refinement-author.py": "5d94d3c259f5f6412db124764612a3ab4cd2a9a57fdd3e6acd223f46c7809993",
+    "shifted-refinement-author-results.json": "5b51bd7df2c9d7c58743e6728b5d68c67c21a770460ccd608941b78cf3536b45",
+    "shifted-refinement-correctness-result.json": "0d9d9c14c96559b2da2d52029714c60542f8e7e15a43144afaa8dd8e805fbe49",
+    "shifted-refinement-author-receipt.json": "8450d4460148b5a9dfa064ed943803d90024e6626de2c041cdae7f0b6c319e8a",
+    "shifted-refinement-correctness-receipt.json": "548a420ce0ee0cac05076e0704f6466f386266df0144ba000e545a3d1d93a972",
+    "shifted-refinement-protocol.json": "45cc5715b799cd44423a60b0bbcc1daf4395c4b597ce044ac8387a72609f6885",
+    "shifted-refinement-correctness-review.json": "ada0cefc3d42141084571b1b3eb435a06fc9d9195e2d506b512d02e85ab75ca8",
+    "shifted-refinement-qa-review01.json": "267c81c54a5e5be8dbfa2381a5a07f2f9536240af73ace88f5da73ba20c76c36",
+    "shifted-observer-recovery.json": "c082ac6a05ee356d01bc3c56af7d13d633d6d83f580dfb3403736410a9530339"
+  }
+}

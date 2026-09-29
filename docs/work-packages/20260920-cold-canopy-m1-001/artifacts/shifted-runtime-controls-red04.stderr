@@ -1,0 +1,32 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling serde_core v1.0.228
+   Compiling quote v1.0.45
+   Compiling autocfg v1.5.1
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.117
+   Compiling zmij v1.0.21
+   Compiling serde_derive v1.0.228
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling syn v3.0.3
+   Compiling serde_json v1.0.150
+   Compiling thiserror-impl v2.0.20
+   Compiling serde v1.0.228
+error: couldn't read `/tmp/openwepp-cold-canopy-m1-target/debug/build/serde-0e5f270b9c36b272/out/private.rs`: No such file or directory (os error 2)
+   --> /workdir/.cache/openwepp/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:260:9
+    |
+260 |         include!(concat!(env!("OUT_DIR"), "/private.rs"));
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+264 | crate_root!();
+    | ------------- in this macro invocation
+    |
+    = note: this error originates in the macro `include` which comes from the expansion of the macro `crate_root` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: could not compile `serde` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

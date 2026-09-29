@@ -1,0 +1,96 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-correctness-core-preflight.v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "evidence_class": "Static: independent correctness inspection of the immutable core-review source cut; no Rust build/test, oracle, retained-prototype, candidate/reference, or physical replay was run by this reviewer",
+  "reviewed": {
+    "review_copy": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929",
+    "cut_identity": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-core-review-cut01.json",
+    "stage1_sha256": "f2dc5532d4563e8191eff42ccf095a6e80d6f07a358db2c695ac9c4d3dfd4762",
+    "lib_sha256": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "controller_sha256": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e",
+    "authority": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "authority_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea",
+    "design_sha256": "47df16d599b2a4940e37c20e4340ed48e5b9d239727e6d5a8576550a463caad5",
+    "controls_sha256": "b6004784a89b883f075ffdf091f29a96f99cb6099760532bbd8d00c7856180d2",
+    "scope": "Core Stage1, private taxonomy surface, and controller propagation only. This is not executable-tree, physical-path, M1, or production-activation approval."
+  },
+  "findings": [
+    {
+      "id": "C04-CORE-001",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929/m1_trust_region_stage1.rs:5614",
+      "finding": "The first shifted defect uses the wrong q operand. refinement_p0 assembles p0 by installing the face step into free coordinates, but refinement_apply_first_factor passes &state.p to bvls04_ordinary_defect at lines 5632-5638. The required first defect is B^T(f+A*p0)+lambda*q0, so every free shift term can be wrong whenever p0 differs from the live pre-face state.",
+      "required_change": "Pass p0, or its free q0 view in free_ids order, into the first ordinary defect. Keep residual0 formed from the same p0. Do not read live state.p for the lambda*q0 term."
+    },
+    {
+      "id": "C04-CORE-002",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929/m1_trust_region_stage1.rs:1913",
+      "finding": "The shared reservation still computes the BVLS-03 requirement, 12,306+88m^2+138m+39,816+1,827+129 and 3K+213+2m, for every branch. refinement_reserve_work calls it for positive BVLS-04. At m=21 this reserves 95,784/287,607 instead of the adopted K04/G04 70,276/211,236, incorrectly denying positive faces that fit the unchanged caps and contradicting the exact-cap controls.",
+      "required_change": "Select the exact formula by category: preserve the current formula and behavior byte-for-byte for lambda == 0.0 BVLS-03, and use K04(m)=12306+597m+8m^2+39816+1827+129+(6m+3)+4 and G04(m)=3*K04(m)+324+4m only for finite positive BVLS-04. Keep both global caps unchanged and update the shared test observation to report the selected requirement."
+    },
+    {
+      "id": "C04-CORE-003",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929/m1_trust_region_stage1.rs:5872",
+      "finding": "Positive p1 and p2 checks violate the frozen owning-error precedence. p1 scans the box in refinement_prepare_first_scratch before refinement_active_admit; p2 scans the box at lines 6098-6115 before its active/finite scan. With simultaneous faults, ScratchBox or FinalBox owns an error that must be ActiveValue/ActiveFinite or ActiveEquality first. The p1 box scan is also duplicated at line 5904 with an uncharged expect solely to recover coordinate/stage.",
+      "required_change": "For positive BVLS-04 only, run the ascending-coordinate active/finite scan before the original-box scan at p1 and p2. Return the single charged p1 box result for metadata instead of rescanning. Then retain full-original-radius before reduced-remaining-radius. Leave the zero-lambda BVLS-03 scratch exception and its existing precedence unchanged."
+    },
+    {
+      "id": "C04-CORE-004",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929/m1_trust_region_stage1.rs:2028",
+      "finding": "The new ordinary defect, shifted inverse, and ordered norm implement three divergent partial scalar guards and erase required typed ownership. They generally detect nonfinite values and product-to-zero, but omit nonzero-subnormal source/product/accumulation checks at several stages, including ordinary sources/sums, shifted V/h sources and transpose/inverse sums, sigma and sigma-square, and ordered-norm sources/accumulation/output. Both first and second callers collapse all ordinary/inverse errors to FactorOutput/FactorApplicationOutput, although ordinary source/product/sum failures must retain NonfiniteOperand, UnderflowToZero, or SubnormalIntermediate with ResidualSourceTerm through Accumulation; only denominator/division/inverse-output failures own FactorOutput.",
+      "required_change": "Use one shared finite-normal-or-signed-zero guard and a typed failure carrier that preserves reason and exact stage. Guard each required source and arithmetic result, including nonzero subnormal and nonzero-product-to-zero cases. Map ordinary failures through the existing refinement reason/stage taxonomy, and map only shifted denominator/division/inverse-output failures to FactorOutput/FactorApplicationOutput. Centralize this guard logic rather than retaining the three inconsistent copies."
+    },
+    {
+      "id": "C04-CORE-005",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929/m1_trust_region_stage1.rs:6248",
+      "finding": "Finite-positive category structure is incomplete and not charged at its owning entry. The precheck validates only broad matrix/vector lengths and free-id range; it does not establish factor.order as a permutation, free_ids uniqueness/required ordering, or all step/radius structure before correction arithmetic. Invalid order is discovered later inside the inverse after h0 arithmetic and is misreported as FactorApplicationOutput. The positive-entry counter is incremented only inside refinement_eligible_p0 after this precheck, and the selector/structure checks are absent from the guard ledger.",
+      "required_change": "At finite-positive category entry, increment the positive category counter, charge every selector/structure guard, and validate all required factor/free-id/order/step/radius structure before p0/correction arithmetic. Any mismatch must terminate as FactorOutput/P0AssemblyEquality. Start reservation accounting early enough that these charged eligibility guards participate in the K04/G04 seam."
+    },
+    {
+      "id": "C04-CORE-006",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929/m1_trust_region_stage1.rs:6203",
+      "finding": "The final gap/tolerance arithmetic is neither domain-guarded nor fully charged. gap, geometric_tolerance, epsilon_scale, the scaled epsilon term, and tolerance can silently become nonfinite/subnormal; the two max operations are uncharged; and one guard event covers the combined gap<0 or gap>tolerance predicate. Authority reserves four ordered scalar operations plus max and separate gap/closeness comparisons and requires terminal guarded arithmetic.",
+      "required_change": "Compute exactly gap=remaining-reduced, a=2^-40*remaining, b0=64*epsilon, b=b0*max(1,remaining), then tolerance=max(a,b), preserving that order. Guard every source/result and charge both max comparisons, the nonnegative-gap predicate, and the upper-closeness predicate separately. Preserve FinalRadius/FinalRadiusCloseness for geometric predicate failures and the owning typed domain reason/stage for arithmetic-domain failures."
+    },
+    {
+      "id": "C04-CORE-007",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929/m1_trust_region_stage1.rs:5033",
+      "finding": "The private taxonomy added M1TrustRegionRefinementReason::ScratchBox in lib.rs:475, but refinement_metadata_refusal has no ScratchBox match arm. This makes the reviewed source nonexhaustive and prevents compilation.",
+      "required_change": "Add the canonical ScratchBox stable-text mapping in the existing refinement metadata formatter without creating a parallel error/reporting path."
+    },
+    {
+      "id": "C04-CORE-008",
+      "severity": "medium",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929/m1_trust_region_stage1.rs:5547",
+      "finding": "The BVLS-04 summary counters do not consistently count attempted or refused owning operations. bvls04_ordered_norms increments only after a successful norm, and bvls04_factor_applications increments before h0/h1 construction even when no inverse application is attempted. This conflicts with the adopted requirement to record every attempted or refused operation at its owning entry and makes refusal observations misleading.",
+      "required_change": "Increment each ordered-norm counter at norm entry so a refused norm counts. Increment each factor-application counter immediately before entering the retained shifted inverse, including an inverse that later refuses, but not when defect construction refuses before the inverse. Apply the same semantics to test trace counters."
+    }
+  ],
+  "accepted_static_portions": [
+    "The top-level selector uses finite lambda>0 for BVLS-04, lambda==0.0 for the existing BVLS-03 route, and lets negative/nonfinite lambda continue to unchanged BVLS-02 crossing/KKT ownership.",
+    "The retained shifted inverse traverses raw spectral indices through factor.order, forms each transpose sum in ascending free-slot order, stores z at raw j, accumulates each output in factor.order, and applies a final unary negation. The raw-join and ordering structure is correct apart from the domain/taxonomy finding.",
+    "The second residual uses the required 22-term Dot2 grouping [f,A] dot [1,p1], and the second free defect uses [B column,lambda] dot [r1,p1 coordinate].",
+    "p0 uses active/finite before original-box and recomputes full coordinate and reduced free norms; p1 and p2 recompute both norm classes. Once the precedence issue is fixed, the distinct original and remaining radius ownership is structurally present.",
+    "Exactly two corrections are wired, p2 is installed into the retained face, and the existing post-refinement crossing/KKT path remains the acceptance owner. No third correction, refactor, or lambda change is visible in the reviewed cut.",
+    "The controller absorbs either success or refusal work and propagates a subproblem refusal terminally without a numerical fallback.",
+    "The reviewed Stage1 module is cfg(test), and the controller/interface are cfg(all(test, one of the named trust-region stage features)); this cut is private experimental/test reachability, not production activation."
+  ],
+  "control_assertion_correction": {
+    "status": "approved",
+    "evidence": "In the frozen controls, stage1.rs:91 requests a full initial g0 that the BVLS-04 ordinary first defect does not compute, and stage1.rs:92 compares a field named lambda_p0 against the certificate's ordinary_correction_1 lambda_p_bits, which is lambda*p1. Manufacturing either full vector before branch arithmetic would add unreserved duplicate KKT/accessor math.",
+    "required_change": "Remove g0_bits and lambda_p0_bits from the retained-face expected-red observation/assertions. Retain actual r0/residual1 observations; free h0/h1, delta0/delta1, p0/p1/p2; both defect groupings and updates; and the existing full final residual/gradient/lambda*p/h/Cbar/tau KKT assertions. No expected oracle regeneration is required."
+  },
+  "residual_risk_and_missing_evidence": [
+    "This immutable copy was not compiled. Parent-reported body-build01 (not run by this reviewer) exited 101 with six errors, including missing observation/poison/signed-zero/reservation interfaces and the nonexhaustive ScratchBox match. A corrected stable cut and successful focused compile remain required.",
+    "No executable-tree behavior, green expected-red controls, work-cap discrimination, retained-face bit comparison, error-precedence controls, physical endpoint, candidate/reference replay, or production reachability was established by this static review.",
+    "The signed-zero BVLS-03 branch must remain exactly on its existing arithmetic, scratch exception, reservation, counters, and refusal precedence while fixes are restricted to the finite-positive BVLS-04 branch.",
+    "Same-reviewer fix verification is required for these findings. Accepted portions above may be reused if their lines do not change materially."
+  ],
+  "verdict": "NO-GO for core body acceptance at this cut. Findings C04-CORE-001 through C04-CORE-007 are correctness/authority blockers; C04-CORE-008 is a required observation-accounting correction. The narrow g0/lambda_p0 control assertion removal is approved. This verdict does not alter prior prospective policy or expected-red control-design approval."
+}

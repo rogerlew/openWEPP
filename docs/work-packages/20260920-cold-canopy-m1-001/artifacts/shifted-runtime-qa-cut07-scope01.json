@@ -1,0 +1,58 @@
+{
+  "schema": "openwepp.shifted-runtime-qa-cut07-scope01.v1",
+  "evidence_class": "Static review of immutable cut07 archive, manifest, and recorded receipts. No command was run and no source, authority, or support file was edited by this reviewer.",
+  "cut": {
+    "manifest": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-release-review-cut07.json",
+    "manifest_sha256": "fedc3c33b85a3a53af35acbcc4bcfe19e3300aadb20094ae4e1cb22901b1ce38",
+    "archive_sha256": "1fd0729c62668c7c7eef3dee5da107b113cfe98023749ee7fc7224f052562343",
+    "stage1_sha256": "74a76999f932ddcf14076329f52746b17344c5d79fe4462019b3290653a09f3e",
+    "lib_sha256": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "controller_sha256": "0b615ea9e8e1b112624ccf60fbdd06f967170ba2d62a0f39ae759f54a41640c7",
+    "coupled_tests_sha256": "30e65beb4a6b6a8f735922d4b7a93e4cb3efda3123d90a8ed6faea189949b9ea",
+    "stage2_controls_sha256": "5d39caeaee2cd23266632fe2472e7423128b247ed9f8ca5ca1591c24163e307e"
+  },
+  "findings": [
+    {
+      "id": "QA-CUT07-SCOPE-001",
+      "severity": "high",
+      "status": "blocking release",
+      "paths": ["m1_trust_region_stage1.rs", "lib.rs"],
+      "finding": "The cut07 archive does prove a private test surface: lib.rs:133-134 declares m1_trust_region_stage1 under #[cfg(test)], and the module's BVLS04 controls/helpers are therefore absent from normal production compilation. It does not prove the final package manifest/dependency surface, because Cargo.toml/Cargo.lock are not members of the immutable cut07 archive.",
+      "required_disposition": "Treat private/noncritical classification as provisional until the final exact-head manifest and dependency diff are reviewed. Any manifest, production consumer, or cfg-boundary drift requires conservative reclassification and applicable gates."
+    },
+    {
+      "id": "QA-CUT07-SCOPE-002",
+      "severity": "medium",
+      "status": "blocking clean-custody claim",
+      "paths": ["docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-stage2-oracle.json"],
+      "finding": "A disclosed transient mutation occurred while commands were running, followed by byte-exact restoration to SHA 1ee5a94d3af3821e794f0e0eec60ffc473bcb0a7335feaf91f9dac65fd1caa69. The later receipt pin sets match that restored byte hash, and this JSON is not compiled Rust input; however, start/end pin equality cannot establish uninterrupted support custody during the earlier commands.",
+      "required_disposition": "Do not describe interim runs as clean continuous-support evidence. Retain the disclosure and use fresh final-source receipts after support is frozen; the oracle can support the two-bit rationale only, never runtime-cost evidence."
+    },
+    {
+      "id": "QA-CUT07-SCOPE-003",
+      "severity": "high",
+      "status": "blocking release",
+      "paths": ["docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-release-cut07-fix01.json"],
+      "finding": "The independent correctness review leaves CUT07-CORRECTNESS-001 open: physical bounds that are distinct but collapse after scaling are misclassified as fixed by the positive structure validator. This is a production-structure defect despite the test-only entry surface.",
+      "required_disposition": "Resolve and independently re-review the fixed classification, including a positive-lambda control for the scaled-collapse case, before any source or release decision."
+    }
+  ],
+  "receipt_scope": {
+    "compat_debug02": {"sha256": "9cf2858da499da6aac8655a9331b3922f5cd3694f1260a8d32440086fc611234", "source_tree_sha256": "c5165eb9055f2ca438aa507b8db3f72b13a9b30c368814647e4c56cfcbd2726c", "result": "PASS 135/135", "limitation": "physical=true feature compatibility selector explicitly excludes real_candidate_domain_refusal_shrinks_retained_base; it is not the domain endpoint."},
+    "analytic01": {"sha256": "c70c1f7180b139c9a7bee26f4e332a50be3fc653867c9e337213729d9f1e3bb9", "source_tree_sha256": "c5165eb9055f2ca438aa507b8db3f72b13a9b30c368814647e4c56cfcbd2726c", "result": "PASS 49/49"},
+    "default_check01": {"sha256": "c4b1d5fd212fbb1945bf96bab29481104ea8bda786d5983c6e8f79bd85f6e0e8", "source_tree_sha256": "c5165eb9055f2ca438aa507b8db3f72b13a9b30c368814647e4c56cfcbd2726c", "result": "PASS"},
+    "combined_lint02": {"sha256": "da68a50be98a256e47bfd17f6d0381dfa5416a0ebec9d5175a3739faa5c43a63", "source_tree_sha256": "c5165eb9055f2ca438aa507b8db3f72b13a9b30c368814647e4c56cfcbd2726c", "result": "exit 101; 254 diagnostics = 238 inherited + 16 introduced", "limitation": "not lint-qualified"}
+  },
+  "authority_and_gate_applicability": {
+    "A0": "The already-run unchanged-authority admission/units evidence remains documentation authority evidence only. It does not establish detached runtime behavior.",
+    "A1": "Not waived. The current static cfg proof supports test-only reachability, but final source/manifest review must re-evaluate runtime authority obligations if any consumer or boundary changes.",
+    "A3": "Not waived and not interchangeable with numerical controls. No new external constitutive suite result is presented by this review; apply A3 according to final impact and its authority, not the test selector label.",
+    "Critical": "Provisional private/noncritical classification is supported only for the archived cfg(test) body. It does not relax correctness, lint, formatting, clippy -D warnings, test, deny, interface-hold, domain, physical, or release requirements.",
+    "held_interfaces": "All eight held interface groups / 18 references remain HOLD. No real-domain endpoint, candidate/reference replay, comparator campaign, or release-control result is established here."
+  },
+  "non_blocking_follow_ups": [
+    "After the correctness repair freezes, bind all terminal receipts to one final source and frozen support set, then assess exact changed paths and manifest/dependency diff.",
+    "The lint delta improved from 67 to 16 introduced findings but remains an actionable developer-ergonomics and gate failure."
+  ],
+  "verdict": "NO SOURCE OR RELEASE APPROVAL. Cut07 establishes test-only static reachability but has a correctness blocker, incomplete support custody for interim commands, no manifest proof, remaining lint debt, and no domain/release evidence."
+}

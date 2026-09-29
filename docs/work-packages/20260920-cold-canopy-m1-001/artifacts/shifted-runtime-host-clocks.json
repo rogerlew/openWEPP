@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: host clock metadata only; no candidate, solver, warm-up or physical replay",
+  "recorded_utc": "2026-09-29T02:32:15.062173+00:00",
+  "platform": "Linux-7.0.0-29-generic-x86_64-with-glibc2.42",
+  "python_monotonic": {
+    "implementation": "clock_gettime(CLOCK_MONOTONIC)",
+    "nominal_resolution_seconds": 1e-09,
+    "monotonic": true,
+    "adjustable": false
+  },
+  "linux_clock_monotonic_nominal_resolution_seconds": 1e-09,
+  "process_ticks_per_second": 100,
+  "scope": "Nominal host metadata, not an empirical Rust Instant precision or timing accuracy claim. Actual proposal interval and process samples remain pending."
+}

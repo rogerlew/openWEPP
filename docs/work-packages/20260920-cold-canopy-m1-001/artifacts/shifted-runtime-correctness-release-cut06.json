@@ -1,0 +1,91 @@
+{
+  "schema": "openwepp.shifted-runtime-correctness-release-cut06.v1",
+  "evidence_class": "Static review of immutable cut06 plus parent-supplied, hash-bound execution artifacts; reviewer ran no Rust, numerical, prototype, reference, candidate, or physical command.",
+  "reviewed_at_utc": "2026-09-29T04:11:34Z",
+  "cut": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut06-20260929",
+    "manifest": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-release-review-cut06.json",
+    "stage1_sha256": "a7cfa6f6ab967d35e29e4168e29e22fb4b09edc3b8c9e87e7e9c3fa85b00a164",
+    "lib_sha256": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "controller_sha256": "0b615ea9e8e1b112624ccf60fbdd06f967170ba2d62a0f39ae759f54a41640c7",
+    "m1_coupled_tests_sha256": "30e65beb4a6b6a8f735922d4b7a93e4cb3efda3123d90a8ed6faea189949b9ea"
+  },
+  "resolved_prior_findings": [
+    {
+      "id": "CONTROL-BODY-FIX01-001",
+      "disposition": "resolved",
+      "evidence": "The two half-radius literals are explicitly typed 0.5_f64 at m1_trust_region_stage1.rs:7404 and :7809."
+    },
+    {
+      "id": "CONTROL-BODY-FIX01-002",
+      "disposition": "resolved",
+      "evidence": "The positive-only selector at m1_trust_region_stage1.rs:7976-7997 charges refinement_work.guard() before bvls04_positive_entries. The positive structure prefix is 53+3m guards and remains below the authority reservation 64+4m. The zero branch does not take this selector."
+    }
+  ],
+  "supplied_execution": [
+    {
+      "artifact": "shifted-runtime-controls-debug08.json",
+      "result": "PASS",
+      "detail": "10/10 selected BVLS04 controls passed in the parent-supplied pre-selector/pre-physical-observation debug08 source custody. Its source hashes differ from cut06, so this result does not by itself establish cut06. Executed by parent, not this reviewer."
+    },
+    {
+      "artifact": "shifted-runtime-compat-debug01.json",
+      "result": "FAIL",
+      "detail": "129/135 passed; six failures attributed below. Executed by parent, not this reviewer."
+    }
+  ],
+  "findings": [
+    {
+      "id": "CUT06-CORRECTNESS-001",
+      "severity": "high",
+      "classification": "implementation error",
+      "status": "blocking",
+      "paths": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut06-20260929/m1_trust_region_stage1.rs:8019",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut06-20260929/m1_coupled_tests.rs:824"
+      ],
+      "finding": "refinement_validate_bvls04_positive_structure requires free+lower_active+upper_active == 1 for every one of 21 coordinates. SC-LANDSURFACEENERGY-001 numerical-methods states that lower==upper coordinates are fixed and outside lower-active, upper-active, and free tests. The unchanged two-coordinate fixtures correctly encode the other 19 fixed coordinates with all three masks false. The validator therefore refuses valid positive faces at P0AssemblyEquality.",
+      "observed_failures": [
+        "m1_trust_region_exact_bound_starts_move_only_inward_and_preserve_start",
+        "m1_trust_region_drainage_bound_uses_current_plus_step_and_retains_both_columns",
+        "m1_trust_region_subproblem_uses_raw_jacobian_not_scalar_damping"
+      ],
+      "exact_required_change": "For each coordinate, admit mask sum 0 exactly when prepared.scaled_lower[coordinate] == prepared.scaled_upper[coordinate], and require mask sum 1 for non-fixed coordinates; still reject overlap, missing ownership of a non-fixed coordinate, and any fixed coordinate marked active/free. Keep the checks and guard accounting; do not alter the three tests or manufacture active ownership for fixed coordinates."
+    },
+    {
+      "id": "CUT06-CORRECTNESS-002",
+      "severity": "medium",
+      "classification": "implementation metadata and unchanged-03 regression",
+      "status": "blocking until corrected and rerun",
+      "paths": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut06-20260929/m1_trust_region_stage1.rs:10637",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut06-20260929/m1_trust_region_stage1.rs:10928"
+      ],
+      "finding": "Cut06 replaced the predecessor's computed free-coordinate first-scratch feasibility with `let p1_box_feasible = true` at line 8150. The retained zero-lambda fixture explicitly has p1_free_box_violation=true, and unchanged BVLS-03 permits that private scratch while carrying the actual false feasibility fact into later refusal metadata. The observed Some(true) is therefore production metadata drift, not a stale assertion.",
+      "exact_required_change": "Restore the predecessor's actual free-coordinate scratch-box observation and pass that boolean through zero-lambda active/radius/second-position/final refusal metadata while preserving the unchanged BVLS-03 exception (do not refuse merely because its private p1 is outside the free box). For positive lambda, retain the new all-coordinate p1 box check and its ScratchBox refusal; after that full check passes, subsequent positive metadata may carry true. Remove the literal true and do not weaken the existing Some(false) control assertion. Avoid adding a duplicate zero-branch scan or changing zero-branch work counts/precedence."
+    },
+    {
+      "id": "CUT06-CORRECTNESS-003",
+      "severity": "medium",
+      "classification": "canonical-policy negative compatibility delta",
+      "status": "blocking until exact expectations are reconciled and rerun",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1927",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs:1963"
+      ],
+      "finding": "Both Stage2 failures retain the complete event chronology, refusal behavior, assembly count, and selected tangent. Only the final positive-multiplier retry step changes, from [0.19205531989934368, 0.16004609991611973] to [0.19205531989934366, 0.1600460999161197]. BVLS-04 intentionally replaces positive-multiplier correction arithmetic while leaving zero lambda unchanged, so these are expected exact-bit compatibility negatives rather than controller drift.",
+      "exact_required_change": "Keep the full exact event-vector assertions. Independently bind the two new components to the approved positive-multiplier BVLS-04 operands/order, then update only those expected binary64 values in both controls and rerun them. Do not weaken to tolerances, drop events, or accept values solely because the candidate emitted them."
+    }
+  ],
+  "physical_timing_observation": {
+    "static_disposition": "no numerical-change blocker found",
+    "evidence": "The controller change is cfg(test)+m1-trust-region-physical-stage only. It retains FoundationState::initialize, transition_model, transition_after_model, controller accounting, and returned Result; added Instant/CPU sampling and JSON emission bracket the proposal without entering candidate arithmetic. The m1_coupled_tests physical case retains ORIGINAL, trial(), conditions(), topology_binding(), exact candidate/radius/base/error/accounting assertions and adds attribution output.",
+    "limitation": "No physical endpoint/timing execution is reviewed or qualified here. Timing values, physical success, and release performance remain missing evidence."
+  },
+  "residual_risk_and_missing_tests": [
+    "compat-debug01 is red and cannot support release until the fixed-coordinate faces pass, the scratch metadata control is corrected, and both exact Stage2 vectors pass with independently justified BVLS-04 bits.",
+    "debug08 establishes selected private controls only; it does not replace compatibility rerun or physical endpoint evidence.",
+    "No physical run, endpoint qualification, candidate/reference replay, comparator campaign, or performance conclusion is provided."
+  ],
+  "verdict": "NO APPROVAL for physical or source release at cut06. The two prior cut05 blockers are resolved, but CUT06-CORRECTNESS-001 is a production implementation blocker and CUT06-CORRECTNESS-002/003 leave required controls red."
+}

@@ -1,0 +1,80 @@
+{
+  "schema": "openwepp.shifted-runtime-correctness-terminal-fix01.v1",
+  "evidence_class": "Static same-review of immutable corrected terminal source plus parent-owned hash-bound command receipts; reviewer ran no Rust, numerical, prototype, candidate, reference, domain, or physical-endpoint command.",
+  "reviewed_at_utc": "2026-09-29T04:41:14Z",
+  "source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-terminal-corrected-review-20260929",
+    "manifest": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-terminal-corrected-review-source.json",
+    "stage1_sha256": "d8a8a76596db357367d4c0bcaea14043df4d8d7cac1a1d0bc9f18d091b85a3b1",
+    "controller_sha256": "0b615ea9e8e1b112624ccf60fbdd06f967170ba2d62a0f39ae759f54a41640c7",
+    "stage2_controls_sha256": "5d39caeaee2cd23266632fe2472e7423128b247ed9f8ca5ca1591c24163e307e",
+    "recovered_tree_entries": 764,
+    "recovered_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087"
+  },
+  "findings": [],
+  "resolved": [
+    {
+      "id": "TERMINAL-CORRECTNESS-001",
+      "status": "resolved",
+      "evidence": "The corrected source records full-norm trace immediately after the full helper, and records reduced norm plus remaining radius inside refinement_final_reduced_radius after the ordered norm/test radius selection but before the existing charged comparison. P2ReducedRadiusExcess therefore carries actual full/reduced observations into its refusal. The norm arithmetic, poison selection, one comparison guard, strict comparison, refusal type/stage, and reduced-radius metadata are unchanged. Discarding the successful helper's returned free_norm2 at the caller changes no operation."
+    },
+    {
+      "id": "CUT08-CORRECTNESS-001",
+      "status": "resolved and retained",
+      "evidence": "Step length remains charged and checked between factor.order length and factor.order permutation validation."
+    },
+    {
+      "id": "numerical-core",
+      "status": "no static blocker",
+      "evidence": "Across the corrected terminal source and prior same-review findings, positive eligibility, physical fixed-bound classification, original matrix ownership, two correction arithmetic/order, radius precedence, typed refusal mappings, unchanged zero-BVLS03 ordering/accounting, work reservations, and Stage2 exact bits have no remaining identified correctness defect."
+    }
+  ],
+  "parent_owned_execution": [
+    {
+      "artifact": "shifted-runtime-corrected-compat02.json",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "result": "PASS",
+      "detail": "135/135 selected compatibility tests passed; source_unchanged=true. The recorder marks the feature-enabled command physical=true, but this is not a qualified physical endpoint run."
+    },
+    {
+      "artifact": "shifted-runtime-corrected-analytic02.json",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "result": "PASS",
+      "detail": "49/49 analytic tests passed; source_unchanged=true."
+    },
+    {
+      "artifact": "shifted-runtime-corrected-default02.json",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "result": "PASS",
+      "detail": "Default cargo check completed with exit0 and source_unchanged=true."
+    },
+    {
+      "artifact": "shifted-runtime-corrected-format-check02.json",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "result": "PASS",
+      "detail": "Format check completed with exit0 and source_unchanged=true."
+    },
+    {
+      "artifact": "shifted-runtime-corrected-analytic-lint02.json",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "result": "FAIL",
+      "detail": "Exit101. Parent reports four remaining package-scope long-function findings; broad stderr also reports inherited lint failures. Quality gate remains red."
+    },
+    {
+      "artifact": "shifted-runtime-terminal-release01.json",
+      "source_tree_sha256": "2f98edc3169f0e194e149903da24dd523d7991d506de94caa3c70410ae01a4fa",
+      "result": "FAIL_PRE_FIX",
+      "detail": "9/10 passed; the sole failure is the missing p2 reduced-norm refusal observation fixed afterward. This receipt does not establish the corrected source."
+    }
+  ],
+  "missing_evidence": [
+    "Corrected release-control execution was NOT RUN: parent reports proposed 140-second and then 100-second commands were rejected by the remaining-time admission bound before launch. No corrected release result exists.",
+    "Physical endpoint execution and qualification were never run.",
+    "Domain/candidate/reference replay was not assigned or run for the corrected source.",
+    "Lint remains red; four relevant long-function findings remain according to parent.",
+    "The prior pre-fix release failure and earlier failed cut/review artifacts remain historical evidence and are not overwritten."
+  ],
+  "core_correctness_disposition": "STATIC CORE CLEARANCE: no remaining identified numerical-core blocker in the corrected immutable source, supported by corrected compatibility 135/135 and analytic 49/49 receipts.",
+  "overall_disposition": "INCOMPLETE / HOLD. Static core correctness is clear, but corrected release controls are unrun, lint is red, and physical endpoint/domain qualification is absent. This is an experimental recovery state, not accepted release evidence.",
+  "publication_posture": "Publication may truthfully describe the reviewed experimental recovery with this HOLD and missing-evidence list. It must not claim accepted, release-qualified, domain-qualified, or physically qualified behavior."
+}

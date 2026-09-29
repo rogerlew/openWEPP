@@ -1,0 +1,13 @@
+{
+  "evidence_class": "Static: immutable selected source copy for parallel correctness core review; not an executable recovery tree",
+  "recorded_utc": "2026-09-29T02:23:32.612323+00:00",
+  "active_source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "review_copy": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929",
+  "files": {
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "f2dc5532d4563e8191eff42ccf095a6e80d6f07a358db2c695ac9c4d3dfd4762",
+    "crates/openwepp-land-surface-energy/src/lib.rs": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e"
+  },
+  "selected_source_archive": "shifted-runtime-core-review-cut01.tar.gz",
+  "selected_source_archive_sha256": "3a9017c2cf2befe3af5e1a956d6cbf775c80ee2d6adc658ac8898c5cfbc3a190"
+}

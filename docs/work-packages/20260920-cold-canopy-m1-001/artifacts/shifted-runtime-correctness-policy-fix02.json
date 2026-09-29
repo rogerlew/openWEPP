@@ -1,0 +1,33 @@
+{
+  "schema": "cold-canopy-m1-shifted-runtime-correctness-fix-review/v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "recorded_utc": "2026-09-29T01:30:35Z",
+  "evidence_class": "Static: same-reviewer inspection of final frozen BVLS-04 authority/design/controls against accepted BVLS-02/03 authority and actual detached Stage1 error precedence. Ran: read-only SHA-256, source search and integer-bound checks only; no body, Rust, physical, candidate, reference, or historical replay.",
+  "reviewed": {
+    "authority_sha256": "dd7e715022903860d22c033427e291a0eaf6557e9b10a1760931eff01a8ccd47",
+    "design_sha256": "88b1d28e67a41df9f71645b3407be2e0913dc5029137fb7d741e93550dd6646c",
+    "controls_sha256": "e83f6cdeac56947e896d0696828e24b247b1fc52bef63556afe4f964b05c7fb6",
+    "prior_review": "shifted-runtime-correctness-policy-fix01.json"
+  },
+  "verified_fixes": [
+    "The decision table now makes signed-zero select unchanged BVLS-03 and makes p0 box infeasibility the sole positive-lambda crossing outcome; structural, active, finite and radius inconsistencies are terminal.",
+    "p0, p1 and p2 recompute full and reduced norms in explicit coordinate/free_ids order, including final square roots.",
+    "K04 now includes three full norms, three reduced norms and four explicit p2 gap/tolerance operations. K04(20)=69,345 and K04(21)=70,276 are correct.",
+    "G04 is truthfully identified as a conservative upper bound. G04(20)=208,439, G04(21)=211,236, and the 43-face maxima 3,021,868/9,083,148 are arithmetically correct and below unchanged caps. Mixed 03/04 faces remain bounded by the larger inherited 03 per-face reservation.",
+    "The existing metadata carrier now has explicit ScratchBox and p0/scratch/final full-versus-reduced radius stages; p1 box carries correction position First and coordinate."
+  ],
+  "findings": [
+    {
+      "id": "SHIFTED-RUNTIME-CORRECTNESS-008",
+      "severity": "high",
+      "location": "numerical-methods.md:963-966; shifted-runtime-bvls04-design.md:30-35; shifted-runtime-bvls04-controls.json eligibility; detached m1_trust_region_stage1.rs:1741-1760 and 2741-2750",
+      "finding": "The frozen decision table incorrectly assigns nonfinite or negative lambda to TrustRegionLambdaBracket. In the unchanged solver, LambdaBracket owns failure to establish a feasible positive upper bracket. BVLS-02 explicitly owns a negative lambda as TrustRegionOptimalityIndeterminate/optimality_negative_lambda and a nonfinite KKT lambda as TrustRegionOptimalityIndeterminate/optimality_nonfinite when KKT is reached; nonfinite arithmetic during the ball solve is SvdNonFinite. Reclassifying those values before crossing/KKT changes existing error and control-flow precedence.",
+      "required_change": "Replace the LambdaBracket sentence in authority, design and controls. State that nonfinite/negative lambda never selects 04 and remains on unchanged 02 control flow: pre-completion nonfinite ball arithmetic retains SvdNonFinite; if an invalid completed-face lambda reaches KKT, the unchanged optimality owner returns optimality_nonfinite or optimality_negative_lambda. Do not intercept an otherwise box-crossing candidate solely to manufacture a bracket refusal."
+    }
+  ],
+  "residual_risk_and_future_evidence": [
+    "After this wording-only owner correction, same-reviewer verification is sufficient for prospective body release; no other policy blocker was found in these frozen bytes.",
+    "Expected-red controls, reviewed body, private-cfg reachability, independent retained-operand reconstruction, debug/release evidence and the separately gated domain endpoint remain future requirements and are not approved by this policy review."
+  ],
+  "verdict": "NO-GO for body release on these exact bytes solely because the lambda owner contradicts accepted BVLS-02 and actual Stage1 precedence. All prior selector, radius, work-bound and typed-metadata findings are otherwise resolved."
+}

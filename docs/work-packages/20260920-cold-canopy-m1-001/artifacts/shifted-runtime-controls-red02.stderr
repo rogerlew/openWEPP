@@ -1,0 +1,205 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0432]: unresolved imports `super::m1_trust_region_bvls04_analytic_for_test`, `super::m1_trust_region_bvls04_poison_for_test`, `super::m1_trust_region_bvls04_retained_for_test`, `super::m1_trust_region_bvls04_work_cap_for_test`, `super::M1TrustRegionBvls04AnalyticInput`, `super::M1TrustRegionBvls04Poison`, `super::M1TrustRegionBvls04RetainedObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:122:9
+    |
+122 |         m1_trust_region_bvls04_analytic_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_analytic_for_test` in `m1_trust_region_stage1`
+123 |         m1_trust_region_bvls04_poison_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_poison_for_test` in `m1_trust_region_stage1`
+124 |         m1_trust_region_bvls04_retained_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_retained_for_test` in `m1_trust_region_stage1`
+125 |         m1_trust_region_bvls04_work_cap_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_work_cap_for_test` in `m1_trust_region_stage1`
+126 |         M1TrustRegionBvls04AnalyticInput, M1TrustRegionBvls04Poison,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionBvls04Poison` in `m1_trust_region_stage1`
+    |         |
+    |         no `M1TrustRegionBvls04AnalyticInput` in `m1_trust_region_stage1`
+127 |         M1TrustRegionBvls04RetainedObservation,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionBvls04RetainedObservation` in `m1_trust_region_stage1`
+    |
+help: a similar name exists in the module
+    |
+122 -         m1_trust_region_bvls04_analytic_for_test,
+122 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+123 -         m1_trust_region_bvls04_poison_for_test,
+123 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+124 -         m1_trust_region_bvls04_retained_for_test,
+124 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+125 -         m1_trust_region_bvls04_work_cap_for_test,
+125 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+127 -         M1TrustRegionBvls04RetainedObservation,
+127 +         M1TrustRegionBallObservation,
+    |
+
+error[E0609]: no field `h0_free_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:80:29
+   |
+80 |         assert_eq!(observed.h0_free_bits, bits(&certificate["candidate_intermediates"]["correction1_h_free_bits"]));
+   |                             ^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `h1_free_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:81:29
+   |
+81 |         assert_eq!(observed.h1_free_bits, bits(&certificate["candidate_intermediates"]["correction2_h_free_bits"]));
+   |                             ^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `residual1_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:82:29
+   |
+82 |         assert_eq!(observed.residual1_bits, bits(&certificate["candidate_intermediates"]["correction2_residual_bits"]));
+   |                             ^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `r0_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:83:29
+   |
+83 |         assert_eq!(observed.r0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+   |                             ^^^^^^^ unknown field
+   |
+help: a field with a similar name exists
+   |
+83 -         assert_eq!(observed.r0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+83 +         assert_eq!(observed.p0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+   |
+
+error[E0609]: no field `g0_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:84:29
+   |
+84 |         assert_eq!(observed.g0_bits, bits(&certificate["points"]["original"]["gradient_bits"]));
+   |                             ^^^^^^^ unknown field
+   |
+help: a field with a similar name exists
+   |
+84 -         assert_eq!(observed.g0_bits, bits(&certificate["points"]["original"]["gradient_bits"]));
+84 +         assert_eq!(observed.p0_bits, bits(&certificate["points"]["original"]["gradient_bits"]));
+   |
+
+error[E0609]: no field `lambda_p0_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:85:29
+   |
+85 |         assert_eq!(observed.lambda_p0_bits, bits(&certificate["points"]["ordinary_correction_1"]["lambda_p_bits"]));
+   |                             ^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0599]: no variant or associated item named `ScratchBox` found for enum `M1TrustRegionRefinementReason` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:189:84
+    |
+189 | ...egionRefinementReason::ScratchBox, M1TrustRegionRefinementGuardStage::ScratchBoxLower, M1TrustRegionCorrectionPosition::First),
+    |                           ^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementReason`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:452:1
+    |
+452 | pub(crate) enum M1TrustRegionRefinementReason {
+    | --------------------------------------------- variant or associated item `ScratchBox` not found for this enum
+
+error[E0599]: no variant or associated item named `ScratchBoxLower` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:189:131
+    |
+189 | ...nementGuardStage::ScratchBoxLower, M1TrustRegionCorrectionPosition::First),
+    |                      ^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `ScratchBoxLower` not found for this enum
+
+error[E0599]: no variant or associated item named `ScratchBox` found for enum `M1TrustRegionRefinementReason` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:190:84
+    |
+190 | ...egionRefinementReason::ScratchBox, M1TrustRegionRefinementGuardStage::ScratchBoxUpper, M1TrustRegionCorrectionPosition::First),
+    |                           ^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementReason`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:452:1
+    |
+452 | pub(crate) enum M1TrustRegionRefinementReason {
+    | --------------------------------------------- variant or associated item `ScratchBox` not found for this enum
+
+error[E0599]: no variant or associated item named `ScratchBoxUpper` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:190:131
+    |
+190 | ...nementGuardStage::ScratchBoxUpper, M1TrustRegionCorrectionPosition::First),
+    |                      ^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `ScratchBoxUpper` not found for this enum
+
+error[E0599]: no variant or associated item named `ScratchFullRadius` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:191:146
+    |
+191 | ...ementGuardStage::ScratchFullRadius, M1TrustRegionCorrectionPosition::First),
+    |                     ^^^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `ScratchFullRadius` not found for this enum
+
+error[E0599]: no variant or associated item named `ScratchReducedRadius` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:192:149
+    |
+192 | ...mentGuardStage::ScratchReducedRadius, M1TrustRegionCorrectionPosition::First),
+    |                    ^^^^^^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `ScratchReducedRadius` not found for this enum
+
+error[E0599]: no variant or associated item named `FinalFullRadius` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:193:146
+    |
+193 | ...nementGuardStage::FinalFullRadius, M1TrustRegionCorrectionPosition::Second),
+    |                      ^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `FinalFullRadius` not found for this enum
+
+error[E0599]: no variant or associated item named `FinalReducedRadius` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:194:149
+    |
+194 | ...ementGuardStage::FinalReducedRadius, M1TrustRegionCorrectionPosition::Second),
+    |                     ^^^^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `FinalReducedRadius` not found for this enum
+
+error[E0599]: no variant or associated item named `FinalRadiusCloseness` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:195:140
+    |
+195 | ...mentGuardStage::FinalRadiusCloseness, M1TrustRegionCorrectionPosition::Second),
+    |                    ^^^^^^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `FinalRadiusCloseness` not found for this enum
+
+Some errors have detailed explanations: E0432, E0599, E0609.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 16 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

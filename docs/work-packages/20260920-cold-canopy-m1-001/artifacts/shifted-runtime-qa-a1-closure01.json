@@ -1,0 +1,14 @@
+{
+  "schema": "openwepp.shifted-runtime-qa-a1-closure01.v1",
+  "evidence_class": "Static targeted authority and receipt extraction only; no command run.",
+  "finding": {
+    "severity": "high",
+    "status": "HOLD / not actionable within this private BVLS04 increment",
+    "authority": "SC-LANDSURFACEENERGY-001/water-vapor.md#OBL-LANDSURFACEENERGY-C-023; correctness-authority-model.md:31-43, 139-158; testing-and-gate-strategy.md:118, 143-149, 215-232",
+    "required_A1_closure": "For M1 implementation/release, contract C-023 requires phase, cap, empty, init, restart, rollback, two-occupancy custody, and affine-integrity vectors, with the named contract-derived expected-red vectors and a real receiver test. The detailed cold-canopy amendment additionally requires source-pinned saturation boundary/derivative vectors, independent M/H reconstruction, wrong-phase and receiver poisons, weighted two-occupancy receipt, late rollback, cooling/warming/lower-join and capacity-tie vectors, finite/binary64 cases, and final-direction failure proof with no candidate/receiver/mutation.",
+    "actual_missing_suite": "The authoritative full A1-bearing workspace command is the retained parent-execution-required-full-09 argv: `nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-target CARGO_BUILD_JOBS=2 cargo nextest run --workspace --profile full --no-fail-fast`. Its only retained result is source 423dbab, 302 failures (including 19/26 in land_surface_energy_balance_authority_contract, 7/22 in surface_liquid_hydrology_custody_authority_contract, 7/29 in vegetation_boundary_authority_contract) and a SIGTERM; it cannot close A1 for a later source.",
+    "scope_of_current_passes": "BVLS04 release controls, compat-debug02, analytic01, default-check01, and the private test-only cfg proof exercise bounded numerical controls. They do not execute the C-023 real-receiver/two-occupancy/restart/rollback authority vectors and therefore cannot substitute for the full A1 closure.",
+    "A3": "C-023 separately requires A3 source-byte/join-derivative vectors. No new external constitutive process family is touched by the five-file test-only diff, so this increment does not add an A3 run; the existing M1 A3 closure remains HOLD rather than waived."
+  },
+  "verdict": "The concrete A1 gap is the unpassed full C-023 authority closure, not an omitted BVLS04 unit selector. It remains outside this nonproduction increment's executed scope and blocks M1/runtime release."
+}

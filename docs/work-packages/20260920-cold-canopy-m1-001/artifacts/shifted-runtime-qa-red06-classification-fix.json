@@ -1,0 +1,12 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-red06-custody-qa.v1",
+  "evidence_class": "Static same-review classification verification; no source edit, compilation, candidate, oracle, or physical run",
+  "reviewed_package_location": "docs/work-packages/20260920-cold-canopy-m1-001/package.md:265-281",
+  "finding": "The reporting-classification finding in shifted-runtime-qa-red06-custody.json",
+  "fix_verification": {
+    "result": "PASS",
+    "evidence": "The package now labels the receipt 'final-field mixed compiler failure', records the intended absent final-field assertions and the 29 unintended compile errors, identifies the accidental lambda_step typed-error replacement, states that it is not a clean expected-red or body-validation pass, preserves the failed source/patch, and requires later compiling controls to establish final-field predicates independently."
+  },
+  "preserved_raw_finding": "red01 remains mixed compiler-failure evidence; no test executed and no clean expected-red, body, or physical validation claim is created.",
+  "verdict": "CLASSIFICATION FIX VERIFIED. No source or runtime approval is implied."
+}

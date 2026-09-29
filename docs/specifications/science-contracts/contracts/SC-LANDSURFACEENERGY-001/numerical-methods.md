@@ -940,6 +940,221 @@ materializer/input/accepted-coordinate identity, independent reservoir closure,
 and whole-solve work. A source-conforming refusal is a negative disposition,
 not authority to retune this method or retry into success.
 
+### COLD-CANOPY-M1-TR-SVD-BVLS-04 shifted positive-multiplier compensated-refinement amendment
+
+**Status: OWNER-ADOPTED prospective experimental authority; independent
+correctness and QA review are required before any body release.**  This is one
+bounded composite numerical method with `02` and `03`; it is not a second
+solver, an attempt under `02` followed by a failure rescue, or authority to
+repair the multiplier bracket.  It extends only the positive-multiplier case.
+`03` remains the sole zero-multiplier branch, including its eligibility,
+arithmetic, scratch exception, controls, historical results, and refusal
+semantics.  The fixed-factor prototype evidence is limited to the one captured
+face named in `shifted-refinement-protocol.json`, capture SHA-256
+`946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb`,
+and accepted Dot2 SHA-256
+`78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0`.
+It supports this operation order and does not establish arbitrary-input
+properties, a secular-root enclosure, exact complementarity, physical success,
+or production activation.
+
+Apply this frozen decision table before `02` optimality/release:
+
+1. `lambda == 0.0`, including either signed zero, selects unchanged `03`.
+2. Nonfinite or negative lambda never selects `04` and retains unchanged
+   `02` flow, including crossing before KKT where applicable. Nonfinite ball
+   arithmetic retains `TrustRegionSvdNonFinite`; invalid lambda reaching KKT
+   retains `TrustRegionOptimalityIndeterminate` with `optimality_nonfinite` or
+   `optimality_negative_lambda`. `TrustRegionLambdaBracket` remains limited
+   to failure to establish a feasible positive upper bracket. Do not intercept
+   crossing to manufacture a bracket refusal. Incomplete/rank-refused/nonfinite
+   face construction retains its pre-existing SVD owner.
+3. A completed finite rank-admitted face with finite strictly-positive `lambda`
+   is the only `04` category; a radius-active point is included. Missing or
+   mismatched factor, free-id, order, step, or radius structure is terminal
+   `TrustRegionRefinementIndeterminate` with
+   `FactorOutput`/`P0AssemblyEquality`.
+4. Assemble `p0`. Active-bit mismatch is terminal `ActiveValue`/`ActiveEquality`
+   and nonfinite coordinate/norm arithmetic is terminal
+   `NonfiniteOperand`/`ActiveFinite` or `OrderedNorm`. Only an otherwise-valid
+   p0 free-coordinate original-box infeasibility takes unchanged `02` crossing.
+   It is the sole positive category outcome that enters crossing.
+5. A p0 full/original-radius or free/remaining-radius/ball inconsistency is
+   terminal `FinalRadius` with `P0FullRadius` or `P0ReducedRadius`; it neither
+   becomes ineligibility nor reaches crossing/KKT/release.
+6. After this category and p0 decision select `04`, unsupported ordinary or
+   Dot2 EFT arithmetic is terminal under the typed refinement refusal. It never
+   falls through to `02`.
+
+Do not select by a prior refusal, fixture identity, coordinate/value pattern,
+iteration count, or optimality outcome, and never enter after `02` has failed.
+
+Let `A,f` be the original weighted matrix and residual, `B` the factor's free
+columns, `q` the free coordinates, and `p` the full step.  Preserve the actual
+positive `lambda`, `V`, `sigma`, raw spectral joins, `factor.order`, masks, and
+active bits.  The free defect is
+
+`h_free = B^T (f + A*p) + lambda*q`.
+
+For the retained shifted inverse, traverse spectral positions through
+`factor.order`; retain raw `V[:,j]` and `sigma[j]` joins, while rows of `V`
+remain free positions in `free_ids` order.  For each raw `j`, sum free positions
+in ascending order for `t_j`, form
+`z_j = t_j / (sigma[j]*sigma[j] + lambda)`, then sum in `factor.order` for each
+free output and apply the final unary negation:
+
+`delta_i = - sum_j V[i,j] * z_j; q_next_i = q_i + delta_i`.
+
+Do not sort, transpose, remap raw `z` by traversal position, form/factor
+`B^T B`, refactor, alter lambda, use FMA/fast-math/BLAS/reassociation, add a
+precision path, or make a third correction.  Products, additions, square,
+shift addition, division, negation, and update retain the independently tested
+binary64 grouping.
+
+Perform exactly two positions on every eligible face.  At `p0`, form the full
+ordinary ordered binary64 shifted defect and apply the retained shifted inverse
+to free coordinates only, producing private `p1`.  At `p1`, form each residual
+with the admitted non-FMA Dot2 on
+`[f_row,A_row,0,...,A_row,20]` and `[1,p1_0,...,p1_20]`.  Round that residual
+to binary64 before the second level.  Form every free gradient-plus-shift with
+Dot2 on `[A_0,j,...,A_20,j,lambda]` and `[r1_0,...,r1_20,p1_j]`, apply the same
+shifted inverse, and update free coordinates only to `p2`.  Dot2 retains the
+`03` TwoSum/Split/TwoProduct primitive, its non-FMA order, and its finite,
+normal-or-signed-zero admission rules.
+
+At each position guard source operands, ordinary products/sums or every Dot2
+primitive stage, shifted denominator, division/inverse output, and coordinate
+update.  A nonzero product rounded to zero, nonzero subnormal, NaN, infinity,
+overflow, invalid division, or nonfinite update is terminal.  Preserve prior
+initial owning-error precedence; eligibility checks themselves are attempted
+and charged before selection, and an earlier owning failure retains its kind.
+A selected-branch failure reuses `M1TrustRegionRefinementFailureMetadata`:
+ordinary/Dot2 source and EFT failures use its existing
+`NonfiniteOperand`/`SplitterOverflow`/`UnderflowToZero`/`SubnormalIntermediate`
+reasons and `ResidualSourceTerm` through `Accumulation` stages; shifted
+denominator, division, and inverse output use `FactorOutput` with
+`FactorApplicationOutput`; update uses `CoordinateUpdate`; active mismatch uses
+`ActiveValue` with `ActiveEquality`; p1 radius uses `ScratchRadius` with
+`ScratchFullRadius` or `ScratchReducedRadius`; p2 box uses `FinalBox` with
+`FinalBoxLower`/`FinalBoxUpper`; and p2 full/free/nonnegative-gap/closeness
+uses `FinalRadius` with `FinalFullRadius`, `FinalReducedRadius`, or
+`FinalRadiusCloseness`. Add only the following private existing-taxonomy
+variants: reason `ScratchBox`, stages `ScratchBoxLower`, `ScratchBoxUpper`,
+`P0FullRadius`, `P0ReducedRadius`, `ScratchFullRadius`,
+`ScratchReducedRadius`, `FinalFullRadius`, `FinalReducedRadius`, and
+`FinalRadiusCloseness`. A p1 box failure uses `ScratchBox`, the applicable
+scratch-box stage, correction position `First`, and the failing coordinate. It
+records correction position,
+row/term/coordinate, masks, lambda, original trust radius, and reduced face
+radius without creating another reporting framework. It
+does not fall through to an unrefined `p0`/`p1`, crossing, `02` KKT, evaluator,
+hydraulics, nonlinear merit/admission, materialization, receipt, or owner state.
+
+Every full norm is recomputed by ascending coordinate squares and ascending
+accumulation over coordinates `0..20`, followed by its final square root; every
+reduced norm is recomputed by ascending slot traversal of `free_ids`, followed
+by its final square root, never by `LambdaTrace` or a bracket endpoint. `p0`
+recomputes both norms after assembly. `p1` is private scratch.
+In ascending coordinate order, check active-bit preservation and finite/EFT
+admission, then original box feasibility, then full norm at most original
+radius, then free norm at most remaining radius. It is not installed as face or
+nonlinear state and need not pass final stationarity or radius closeness. A
+scratch box/ball/domain failure refuses without clipping or recovery. Only the
+second Dot2 defect/inverse may consume `p1`. The `03` zero-lambda scratch
+exception is unchanged.
+
+For `p2`, in ascending coordinate order require exact active-bit preservation
+and finite/EFT admission, then original-box feasibility, then full norm at most
+`original_radius`, then reduced norm at most `remaining_radius`, then a
+nonnegative `remaining_radius-reduced_norm` gap, and finally
+
+`0 <= remaining_radius - reduced_norm <= max(2^-40 * remaining_radius, 64 * epsilon * max(1, remaining_radius))`.
+
+The original and remaining radii are separate owning inputs; controls must use
+unequal radii.  Final failure is terminal with no radius normalization, new
+multiplier search, tolerance increase, retained reference lambda, return of an
+earlier point, or additional correction.  On success, run the unchanged
+all-coordinate ordered `02` residual/gradient/`lambda*p`/`h`/`Cbar`/`tau`
+assessment and its existing active-release/free-return logic.  The correction
+does not replace `02` acceptance or create a nonlinear accepted update.
+
+For `m` free coordinates at `N=21`, the new topology before acceptance checks
+is `12,306 + 597*m + 8*m^2` scalar operations: 27,446 at `m=20` and 28,371 at
+`m=21`.  The second correction alone is 23,963 at `m=20`, not the total.
+Existing KKT/enclosure, norms, comparisons, guards, and observations remain
+separately accounted so overlapping whole-solve counters are not added into a
+false unique total. Reserve before excess selected-branch work
+`K04(m)=12,306+597m+8m^2+39,816+1,827+129+(6m+3)+4` scalar/upward operations:
+69,345 at `m=20` and 70,276 at `m=21`. The terms after the correction topology
+are, respectively, unchanged enclosure, unchanged KKT, three full norms, three
+recomputed reduced norms, and four p2 operations in this fixed order:
+`gap=remaining-reduced`, `a=2^-40*remaining`, `b0=64*epsilon`,
+`b=b0*max(1,remaining)`; the `max` and predicate comparisons are guards.
+Reserve `G04(m)=3*K04(m)+324+4m` guard events. This is a conservative seam
+upper bound, not an exact event count: at most `64+4m` factor/order/free-id and
+selector checks; three active/finite and original-box scans at
+`3*(21+21+42)=252`; and 8 p0/p1 full/reduced plus p2 full/reduced/gap/closeness
+comparisons. Controls must show observed monotonic seam counts do not exceed
+the reservation. Thus it is 208,439 at `m=20` and 211,236 at `m=21`. An
+`04`-only sequence of 43 faces costs at most 3,021,868 scalar/upward operations
+and 9,083,148 guard events. A mixed `03`/`04` sequence remains bounded by the
+existing `03` maxima, 4,118,712 and 12,367,101, because `03`'s 95,784/287,607
+per-face reservation exceeds `04`'s 70,276/211,236. Do not alter either cap.
+These limits remain within unchanged caps
+4,118,712 and 12,367,101. Increment and record attempted category/eligibility,
+denied entry, and every attempted or refused operation at its owning entry. Do
+not raise evaluator, Jacobian, hydraulic, factorization, face/pivot, nonlinear,
+materialization, scalar, or guard caps.
+
+#### Contract-derived 04 controls and release conditions
+
+Before body release, independent correctness and QA review the exact
+eligibility, operation ordering, factor joins, two-radius scratch/final policy,
+typed-error precedence, work reservation, and source scope.  Expected-red then
+green controls must independently reproduce the captured `p0`, both defects,
+deltas, updates, active bits, final `02` fields, and recomputed radius checks
+without supplying expected output arrays to the calculation.  They must also
+include a nonzero-lambda analytic case that detects omitted `lambda*q`,
+nonsymmetric factor orientation/order, free/active joins, unchanged zero-lambda
+`03` selection, unequal original/reduced radii, and a point inside a ball but
+outside radius closeness.
+
+Controls must exercise actual `p1`/`p2` box, ball, domain, denominator,
+division/update, and work-cap refusals; prove no third correction, no fallthrough
+to unrefined acceptance, active-bit and caller/owner restoration, scratch
+isolation from physical/phase/hydraulic/merit/materialization hooks, and
+preservation of existing analytic, physical-error, phase, custody, and
+zero-branch controls.  Expected values need independently derived operands;
+neither duplicate candidate arithmetic nor an invented error factory qualifies.
+The minimal detached write surfaces remain
+`m1_trust_region_stage1.rs` (branch, primitive reuse, reservation and radius
+checks), `m1_trust_region_controller.rs` (refusal propagation/capture only),
+`lib.rs` (test seams only), and `m1_coupled_tests.rs` (real-controller and
+scope controls).  Main-worktree Rust is outside this amendment.
+
+Only after reviewed body controls and exact source/manifest assessment may one
+release-mode non-target physical replay run
+`m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base`.
+It retains the original `trial()` preparation, forcing, seed, proposed mutation,
+and Stage1-then-negative-drainage injection order.  Its required endpoint is a
+real shifted numerical proposal followed by the owning domain refusal, radius
+shrink, and retained base/J/normalizers/phase/caller state.  A first canonical
+numerical refusal records downstream assertions as unexecuted and ends method
+search; a valid numerical negative never authorizes a replay.  The historical
+pre-injection FAIL remains preserved.
+
+Its observation helper must report the actual `Result` milestone/status for the
+run, not an inherited `unreached_after_Stage1_typed_refusal` literal.  Preserve
+the historical capture bytes and all original preparation, forcing, seed,
+mutation, injection and assertions.  Time exactly actual solver/proposal
+entry-to-return with monotonic wall and available process CPU clocks; report
+clock source/resolution and keep setup/build/observer serialization outside that
+kernel interval where possible.  Record actual positive-refinement entries,
+retained-factor applications, Dot2 residual rows and free gradients through the
+existing work observation, including refused/discarded work.  A domain-refusal
+endpoint is control-path cost only, never a seasonal, target, or throughput
+claim.
+
 ### Contract-derived experiment controls
 
 Independent expected values, never the candidate helper, must cover: an

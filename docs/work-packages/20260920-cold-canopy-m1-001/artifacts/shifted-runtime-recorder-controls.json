@@ -1,0 +1,27 @@
+{
+  "evidence_class": "Ran: pure declared-bound controls; no physical or numerical execution",
+  "deadline_utc": "2026-09-29T05:11:00+00:00",
+  "cases": [
+    {
+      "case": "physical180",
+      "accepted": true
+    },
+    {
+      "case": "physical181",
+      "accepted": false
+    },
+    {
+      "case": "reserve",
+      "accepted": false
+    },
+    {
+      "case": "nonphysical_fit",
+      "accepted": true
+    },
+    {
+      "case": "nonphysical_over",
+      "accepted": false
+    }
+  ],
+  "recorder_sha256": "9149a430e9c866470c2afe730ae112b4632dacfea00744033cbc1761d4081b35"
+}

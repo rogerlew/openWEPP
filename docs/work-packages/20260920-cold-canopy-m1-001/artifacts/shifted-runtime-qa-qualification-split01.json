@@ -1,0 +1,27 @@
+{
+  "schema": "openwepp.shifted-runtime-qa-qualification-split01.v1",
+  "evidence_class": "Static qualification-scope clarification; no command run and no authority waived.",
+  "qualification_table": [
+    {
+      "scope": "Current detached BVLS04 non-target physical-domain experiment",
+      "authority_and_obligation": "SC-LANDSURFACEENERGY-001 numerical-methods BVLS04 clauses; touched numerical invariants, typed guards/errors, exact operand/order controls, private cfg/manifest/dependency proof, source review, quality gates, and the one expressly authorized non-target domain endpoint.",
+      "required_before_endpoint": "Frozen final source/support custody; correctness and QA approval; repaired new controls and compatibility; format, default/feature reachability, introduced-lint disposition, applicable docs/source checks; release-control receipt and exact manifest review. The isolated endpoint must retain its declared refusal/closure/accounting assertions and is not a general M1 acceptance run.",
+      "status": "Immediate and binding. Current quality/correctness/review evidence must be evaluated at one final source hash before the planned endpoint."
+    },
+    {
+      "scope": "Historical full M1 / C-023 A1 closure",
+      "authority_and_obligation": "OBL-LANDSURFACEENERGY-C-023: M1 phase/cap/empty/init/restart/rollback/two-occupancy custody and affine-integrity vectors, expected-red vectors, and real receiver test; full workspace A1 authority execution.",
+      "required_before_endpoint": "Not a prerequisite created by the private, cfg(test) BVLS04 diff. The historical full09 result remains failed/HOLD and cannot support a runtime or M1-release claim.",
+      "status": "Preserved HOLD. Do not launch the conditional 900-second workspace command solely because this historical hold exists; it remains required for M1/runtime release or if scope reaches those production/process obligations."
+    },
+    {
+      "scope": "Historical M1 A3 constitutive closure",
+      "authority_and_obligation": "C-023 source-byte/join-derivative vectors and the applicable external constitutive suites for touched M1 process families.",
+      "required_before_endpoint": "No new constitutive formula, process family, production equation, receiver, cohort, manifest, or dependency changed in the verified five-file private diff. Therefore no additional A3 suite is selected for this bounded endpoint.",
+      "status": "Preserved HOLD, not waived. It remains required for M1/runtime release or any future constitutive/process-family change."
+    }
+  ],
+  "noncritical_basis": "The 764-entry manifest comparison finds only five LSE source/test-control files changed; all 26 Cargo manifests/lockfiles match. lib.rs imports Stage1 only under #[cfg(test)], with physical-stage reexports also test-gated. This supports noncritical classification for the isolated experiment only.",
+  "release_boundary": "A successful planned non-target domain run may qualify only its declared BVLS04 physical-domain evidence. It cannot retroactively accept historical M1 A1/A3 holds, activate M1, publish production behavior, or substitute for real receiver/full-workspace closure.",
+  "verdict": "No authority waiver and no 900-second escalation trigger arise solely from the preserved historical M1 holds. Current BVLS04 immediate controls and final review remain mandatory before its one authorized endpoint."
+}

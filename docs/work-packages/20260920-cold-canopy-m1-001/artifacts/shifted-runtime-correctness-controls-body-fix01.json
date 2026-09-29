@@ -1,0 +1,104 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-correctness-controls-body-fix01.v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "evidence_class": "Static: same-reviewer verification of immutable cut05 against the remaining findings in correctness-core-fix02, correctness-controls-body01, and correctness-matrix-attribution01. Parent debug06/debug07 records are supplied execution evidence. This reviewer ran no Rust, numerical, prototype, candidate/reference, or physical command.",
+  "reviewed": {
+    "review_copy": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut05-20260929",
+    "manifest": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-controls-review-cut05.json",
+    "stage1_sha256": "1d7c5c63939f8d3f254d09bc7df5df9ac53a549a6da93624eb8c4d873dbf2f80",
+    "lib_sha256": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "controller_sha256": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e",
+    "archive_sha256": "44b96d22adced84f315a22069adea67fb342ffbebdcb0a42836dc80710baae59",
+    "prior_reviews": [
+      "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-core-fix02.json",
+      "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-controls-body01.json",
+      "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-matrix-attribution01.json"
+    ]
+  },
+  "findings": [
+    {
+      "id": "C04-CONTROL-FIX01-NEW-001",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut05-20260929/m1_trust_region_stage1.rs:7404-7408,7809-7813",
+      "finding": "The immutable cut does not compile as a test target. Both fixed-radius poison branches bind `let value = 0.5` and then call `value.to_bits()` before Rust can resolve the float type. The parent-owned debug07 record is source-bound to this exact stage1 SHA and ended exit 101 with E0689 at lines 7408 and 7813. The earlier parent debug06 10/10 PASS is bound to stage1 SHA e8f9043b..., not this cut05 SHA, and cannot establish cut05 execution.",
+      "required_change": "Change both bindings to an explicit binary64 value, for example `let value = 0.5_f64;`, without changing the injected bits or comparison. Freeze the replacement source and rerun the same parent-owned nonphysical control selection."
+    },
+    {
+      "id": "C04-CORE-005-REMAINING-03",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut05-20260929/m1_trust_region_stage1.rs:7976-7998,8092-8094",
+      "finding": "The revised positive structure validator now fits the authority allowance, but the positive selector remains uncharged. The reservation baseline is captured before refinement_validate_bvls04_positive_structure. Its `lambda.is_finite() && lambda > 0.0` selection at line 7976 enters the positive category and increments bvls04_positive_entries without an owning guard event. This leaves the prior requirement to charge the selector unresolved, even though all subsequent structure checks are charged.",
+      "required_change": "At the start of the finite-positive block, charge one owning selector guard before incrementing the positive category. Keep it inside the positive block so either signed zero retains unchanged BVLS-03 work. The present structure count is 52+3m; with this selector charge it is 53+3m, which remains within the authorized 64+4m allowance for every m in 1..=21."
+    }
+  ],
+  "fix_verification": [
+    {
+      "id": "C04-CORE-004-REMAINING-02",
+      "status": "resolved",
+      "evidence": "bvls04_ordinary_defect reports rejected lambda at ResidualSourceTerm, while the p coordinate remains ResidualSourceWeight and the lambda*p product remains PrimaryProduct."
+    },
+    {
+      "id": "C04-CORE-005-REMAINING-02",
+      "status": "partially_resolved",
+      "evidence": "factor.a and factor.b are both validated as 21-by-m using one paired row-shape guard; each active/free mask partition uses one joint guard; v, sigma, order, step, free ids, order permutation, and finite-positive radius remain checked. The resulting charged structure count is 52+3m and fits 64+4m. The selector charge remains open as C04-CORE-005-REMAINING-03."
+    },
+    {
+      "id": "C04-MATRIX-ATTRIBUTION-001",
+      "status": "resolved",
+      "evidence": "Both bvls04_ordinary_defect and bvls04_dot2_defect use factor.a for original free-column shape checks and every gradient source/product/term. factor.b remains the rotated Jacobi workspace. The analytic identity fixture now populates factor.a. Full first and second residuals retain prepared.weighted_matrix."
+    },
+    {
+      "id": "C04-CONTROL-BODY-001",
+      "status": "resolved",
+      "evidence": "The poison wrapper is structurally closed and formatted. Its current compile is blocked only by the two explicit float bindings identified as the new finding above."
+    },
+    {
+      "id": "C04-CONTROL-BODY-002",
+      "status": "resolved_subject_to_compile",
+      "evidence": "Both reduced-radius hooks use the predetermined exact binary64 radius 0.5 rather than a function of the computed norm, remove the meaningless selector, update the actual refusal metadata to that same radius, and compare the actual recomputed p1/p2 reduced-norm bits with the independent certificate. The source needs the explicit f64 annotation in the new compile finding."
+    },
+    {
+      "id": "C04-CONTROL-BODY-003",
+      "status": "resolved",
+      "evidence": "The renamed defensive inverse-output hook selects an actual output slot, injects +infinity into local sum only after all accumulation guards, executes the production unary negation, records the actual output-check entry as selected slot/-infinity, and reaches the production final output guard. The control explicitly states that finite unary negation cannot naturally overflow and does not claim admitted-input reachability."
+    },
+    {
+      "id": "C04-CONTROL-BODY-004",
+      "status": "resolved",
+      "evidence": "Bvls04PoisonScope saves and restores poison, consumed state, KKT counter, output event, and mutation site, and the helper asserts restoration after Drop. It invokes the actual retained-face caller that could proceed to KKT, derives reached_stage from returned refusal metadata, and measures actual KKT entries. Under the physical-stage feature, owner snapshots are the actual scratch-global snapshot rather than a duplicate local p array."
+    },
+    {
+      "id": "C04-CONTROL-BODY-005",
+      "status": "resolved",
+      "evidence": "Denominator and division hooks match the requested raw spectral j; defensive inverse output matches output i; coordinate-update poison matches the requested full coordinate and asserts refusal metadata coordinate; full-norm/box/closeness hooks retain their coordinate checks; scalar-radius hooks no longer carry false selectors. An unconsumed requested hook fails the wrapper."
+    },
+    {
+      "id": "C04-CONTROL-BODY-006",
+      "status": "resolved_subject_to_compile",
+      "evidence": "The retained observation carries the complete state_work_observation, and the m=20 retained control asserts actual refinement_guard_events <= 208,439 alongside scalar <=69,345. The exact m=21 scalar-only, guard-only, and exact-cap boundary controls remain."
+    },
+    {
+      "id": "C04-CONTROL-BODY-007",
+      "status": "resolved_subject_to_compile",
+      "evidence": "The signed-zero observation carries and compares the complete M1TrustRegionWorkObservation for +0.0 and -0.0, covering total scalar/guard, coordinate update, KKT, enclosure, and all other work fields, while requiring nonzero BVLS-03 entries and zero BVLS-04 entries."
+    }
+  ],
+  "supplied_execution_evidence": [
+    {
+      "record": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-controls-debug06.json",
+      "source_sha256": "e8f9043b0d99eba5d3fb3667c4f178d981366152874d560afc6faed61d74e80b",
+      "result": "10/10 selected controls passed, but this is not the immutable cut05 source."
+    },
+    {
+      "record": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-controls-debug07.json",
+      "source_sha256": "1d7c5c63939f8d3f254d09bc7df5df9ac53a549a6da93624eb8c4d873dbf2f80",
+      "result": "exit 101 during compilation with E0689 at the two 0.5/to_bits bindings; no cut05 tests executed."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "After the two narrow source fixes, the same immutable-source selected controls must compile and pass; cut05 itself has no executable result.",
+    "Physical timing and the required physical endpoint remain unimplemented/held and are outside this static control-body verdict.",
+    "No candidate/reference replay, physical replay, M1 release, production activation, or package closure is approved by this artifact."
+  ],
+  "verdict": "NOT APPROVED ON CUT05. All matrix and control-body findings are statically resolved or resolved subject to compiling the corrected fixed-radius bindings. Two concrete blockers remain: the exact cut does not compile, and the positive selector still lacks its owning guard charge. Apply only those narrow changes and return the immutable replacement for same-review verification."
+}

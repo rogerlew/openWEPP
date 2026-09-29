@@ -1,0 +1,50 @@
+{
+  "schema": "openwepp.shifted-runtime-correctness-release-cut07-fix01.v1",
+  "evidence_class": "Static same-review of immutable cut07; no Rust, numerical, prototype, candidate, reference, or physical command run by reviewer.",
+  "reviewed_at_utc": "2026-09-29T04:18:55Z",
+  "cut": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut07-20260929",
+    "manifest": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-release-review-cut07.json",
+    "stage1_sha256": "74a76999f932ddcf14076329f52746b17344c5d79fe4462019b3290653a09f3e",
+    "stage2_controls_sha256": "5d39caeaee2cd23266632fe2472e7423128b247ed9f8ca5ca1591c24163e307e"
+  },
+  "resolved": [
+    {
+      "id": "CUT06-CORRECTNESS-002",
+      "status": "resolved statically",
+      "evidence": "Cut07 removes the literal true. For lambda==0, refinement_prepare_first_scratch performs exactly one predecessor-style free_ids box scan before refinement_active_admit, charges it, preserves false without refusing, and propagates Some(actual) through active/radius/second/final metadata. For lambda>0, prepare does not scan; active retains precedence, then exactly one all-coordinate scan owns ScratchBox refusal and successful downstream metadata is true."
+    },
+    {
+      "id": "CUT06-CORRECTNESS-003",
+      "status": "resolved statically; execution pending",
+      "evidence": "phase_quarter_selected_step now uses bits 3fc89544cafec8ac and 3fc47c63fe7efc8f at lines1645-1646, exactly matching independent artifact shifted-runtime-correctness-stage2-oracle.json SHA 1ee5a94d3af3821e794f0e0eec60ffc473bcb0a7335feaf91f9dac65fd1caa69. Both full event-vector assertions remain."
+    },
+    {
+      "id": "helper-extractions",
+      "status": "no arithmetic/order drift found",
+      "evidence": "Shifted-inverse and ordinary-defect validation extractions preserve guard order/count and error mapping. enumerate/take replacements traverse the same m entries in the same order; arithmetic statements are unchanged. Boxing the test-only work-boundary Err and style changes do not alter production numerics."
+    }
+  ],
+  "findings": [
+    {
+      "id": "CUT07-CORRECTNESS-001",
+      "severity": "high",
+      "classification": "production structure-validator contract mismatch",
+      "status": "blocking",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut07-20260929/m1_trust_region_stage1.rs:8051",
+      "finding": "The revised expected mask count is based on scaled_lower != scaled_upper. Canonical fixed classification is exact physical lower == upper. The existing control at lines9450-9482 proves physically distinct adjacent bounds can collapse to equal scaled binary64 values and must remain free. A valid positive-lambda face with that condition would be rejected as P0AssemblyEquality.",
+      "exact_required_change": "Use exact input bounds in the already-validated input: expected_count = usize::from(input.lower[coordinate].partial_cmp(&input.upper[coordinate]) != Some(std::cmp::Ordering::Equal)). Keep mask_count and the one charged guard. Do not use scaled equality or tolerance. Add or retain a positive-lambda structure control covering physically distinct bounds that collapse when scaled, because the existing zero-lambda control does not enter this validator."
+    }
+  ],
+  "pending_parent_evidence": [
+    "compat-debug02",
+    "releasecontrols01",
+    "combinedlint02"
+  ],
+  "timing_receipt_note": "The oracle result's 1.58e-06 wall_time_seconds_observed is tool boundary metadata, not a qualified calculation-time measurement. The pinned oracle result is intentionally left byte-identical at SHA 1ee5a94d3af3821e794f0e0eec60ffc473bcb0a7335feaf91f9dac65fd1caa69; clarification should be a separate correction artifact after running manifests finish.",
+  "residual_risk_and_missing_tests": [
+    "Cut07 remains blocked by CUT07-CORRECTNESS-001 and by the three pending parent-owned command results.",
+    "No physical endpoint or timing qualification is supplied."
+  ],
+  "verdict": "NO APPROVAL for cut07 release. Zero-BVLS03 restoration and Stage2 exact-bit correction are statically acceptable; physical-bound fixed classification remains wrong in the positive structure validator."
+}

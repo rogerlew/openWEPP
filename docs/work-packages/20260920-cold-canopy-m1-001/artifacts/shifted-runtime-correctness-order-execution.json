@@ -1,0 +1,26 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-order-oracle-execution.v1",
+  "evidence_class": "Ran: independent fixed m=4 IEEE-754 binary64 scalar oracle only",
+  "command": [
+    ".venv/bin/python",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-order-oracle.py"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "assigned_wall_bound_seconds": 30,
+  "tool_yield_bound_seconds": 10,
+  "tool_reported_wall_seconds": 0.1,
+  "start_utc": "unobserved",
+  "end_utc": "unobserved",
+  "exit_code": 0,
+  "source": "shifted-runtime-correctness-order-oracle.py",
+  "source_sha256": "3e13728b2a0cb23521d724e5df0a074018906ca3a0f400bbf1226825e160f525",
+  "result": "shifted-runtime-correctness-order-result.json",
+  "result_sha256": "b653f4f225fcfe80098ee4d0fbbb1294fda74efe38cfa2a3c7eca32b9166a847",
+  "scope_exclusions": [
+    "no Rust execution",
+    "no captured-face prototype replay",
+    "no candidate or reference replay",
+    "no physical execution"
+  ],
+  "automatic_retries": 0
+}

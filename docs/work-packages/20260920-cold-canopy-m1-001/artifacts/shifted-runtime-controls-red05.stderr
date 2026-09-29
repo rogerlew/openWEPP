@@ -1,0 +1,451 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling serde_core v1.0.228
+   Compiling typenum v1.20.0
+   Compiling autocfg v1.5.1
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.117
+   Compiling serde v1.0.228
+   Compiling zmij v1.0.21
+   Compiling serde_derive v1.0.228
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling syn v3.0.3
+   Compiling thiserror v2.0.20
+   Compiling serde_json v1.0.150
+   Compiling thiserror-impl v2.0.20
+   Compiling digest v0.10.7
+   Compiling num-integer v0.1.46
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.0
+   Compiling cfg-if v1.0.4
+   Compiling cpufeatures v0.2.17
+   Compiling sha2 v0.10.9
+   Compiling num-bigint v0.4.6
+   Compiling openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-sim-contract)
+   Compiling openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-unit-boundary)
+   Compiling base64 v0.22.1
+   Compiling openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-coupled-time)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-kernel-contract)
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0432]: unresolved imports `super::m1_trust_region_bvls04_analytic_for_test`, `super::m1_trust_region_bvls04_poison_for_test`, `super::m1_trust_region_bvls04_shifted_inverse_for_test`, `super::m1_trust_region_bvls03_signed_zero_for_test`, `super::m1_trust_region_bvls04_work_boundary_for_test`, `super::M1TrustRegionBvls04AnalyticInput`, `super::M1TrustRegionBvls04Poison`, `super::M1TrustRegionBvls04Reservation`, `super::M1TrustRegionBvls04ReservationOwner`, `super::M1TrustRegionBvls04ShiftedInverseInput`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:134:9
+    |
+134 |         m1_trust_region_bvls04_analytic_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_analytic_for_test` in `m1_trust_region_stage1`
+135 |         m1_trust_region_bvls04_poison_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_poison_for_test` in `m1_trust_region_stage1`
+136 |         m1_trust_region_bvls04_shifted_inverse_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_shifted_inverse_for_test` in `m1_trust_region_stage1`
+137 |         m1_trust_region_bvls03_signed_zero_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls03_signed_zero_for_test` in `m1_trust_region_stage1`
+138 |         m1_trust_region_bvls04_work_boundary_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_work_boundary_for_test` in `m1_trust_region_stage1`
+139 |         m1_trust_region_refinement_retained_face_for_test,
+140 |         M1TrustRegionBvls04AnalyticInput, M1TrustRegionBvls04Poison,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionBvls04Poison` in `m1_trust_region_stage1`
+    |         |
+    |         no `M1TrustRegionBvls04AnalyticInput` in `m1_trust_region_stage1`
+141 |         M1TrustRegionBvls04Reservation, M1TrustRegionBvls04ReservationOwner,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionBvls04ReservationOwner` in `m1_trust_region_stage1`
+    |         |
+    |         no `M1TrustRegionBvls04Reservation` in `m1_trust_region_stage1`
+142 |         M1TrustRegionBvls04ShiftedInverseInput, RefinementRetainedFaceObservation,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionBvls04ShiftedInverseInput` in `m1_trust_region_stage1`
+    |
+help: a similar name exists in the module
+    |
+134 -         m1_trust_region_bvls04_analytic_for_test,
+134 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+135 -         m1_trust_region_bvls04_poison_for_test,
+135 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+136 -         m1_trust_region_bvls04_shifted_inverse_for_test,
+136 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+137 -         m1_trust_region_bvls03_signed_zero_for_test,
+137 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+138 -         m1_trust_region_bvls04_work_boundary_for_test,
+138 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+141 -         M1TrustRegionBvls04Reservation, M1TrustRegionBvls04ReservationOwner,
+141 +         M1TrustRegionBallObservation, M1TrustRegionBvls04ReservationOwner,
+    |
+help: a similar name exists in the module
+    |
+141 -         M1TrustRegionBvls04Reservation, M1TrustRegionBvls04ReservationOwner,
+141 +         M1TrustRegionBvls04Reservation, M1TrustRegionBallObservation,
+    |
+
+error[E0609]: no field `h0_free_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:87:29
+   |
+87 |         assert_eq!(observed.h0_free_bits, bits(&certificate["candidate_intermediates"]["correction1_h_free_bits"]));
+   |                             ^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `h1_free_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:88:29
+   |
+88 |         assert_eq!(observed.h1_free_bits, bits(&certificate["candidate_intermediates"]["correction2_h_free_bits"]));
+   |                             ^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `residual1_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:89:29
+   |
+89 |         assert_eq!(observed.residual1_bits, bits(&certificate["candidate_intermediates"]["correction2_residual_bits"]));
+   |                             ^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `r0_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:90:29
+   |
+90 |         assert_eq!(observed.r0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+   |                             ^^^^^^^ unknown field
+   |
+help: a field with a similar name exists
+   |
+90 -         assert_eq!(observed.r0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+90 +         assert_eq!(observed.p0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+   |
+
+error[E0609]: no field `g0_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:91:29
+   |
+91 |         assert_eq!(observed.g0_bits, bits(&certificate["points"]["original"]["gradient_bits"]));
+   |                             ^^^^^^^ unknown field
+   |
+help: a field with a similar name exists
+   |
+91 -         assert_eq!(observed.g0_bits, bits(&certificate["points"]["original"]["gradient_bits"]));
+91 +         assert_eq!(observed.p0_bits, bits(&certificate["points"]["original"]["gradient_bits"]));
+   |
+
+error[E0609]: no field `lambda_p0_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:92:29
+   |
+92 |         assert_eq!(observed.lambda_p0_bits, bits(&certificate["points"]["ordinary_correction_1"]["lambda_p_bits"]));
+   |                             ^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p2_full_norm2_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:115:29
+    |
+115 |         assert_eq!(observed.p2_full_norm2_bits, bit(&final_point["full_norm2_ordered_bits"]));
+    |                             ^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p2_reduced_norm2_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:116:29
+    |
+116 |         assert_eq!(observed.p2_reduced_norm2_bits, bit(&final_point["reduced_norm2_ordered_bits"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `original_radius_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:117:29
+    |
+117 |         assert_eq!(observed.original_radius_bits, bit(&final_point["original_radius"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `remaining_radius_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:118:29
+    |
+118 |         assert_eq!(observed.remaining_radius_bits, bit(&final_point["remaining_face_radius"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `radius_gap_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:119:29
+    |
+119 |         assert_eq!(observed.radius_gap_bits, bit(&final_point["radius_gap_ordered"]));
+    |                             ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `radius_tolerance_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:120:29
+    |
+120 |         assert_eq!(observed.radius_tolerance_bits, bit(&final_point["radius_tolerance"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `factor_applications` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:241:29
+    |
+241 |         assert_eq!(observed.factor_applications, 2);
+    |                             ^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+help: a field with a similar name exists
+    |
+241 -         assert_eq!(observed.factor_applications, 2);
+241 +         assert_eq!(observed.factor_application_count, 2);
+    |
+
+error[E0609]: no field `active_coordinate` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:249:29
+    |
+249 |         assert_eq!(observed.active_coordinate, 11);
+    |                             ^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p0_full_norm2_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:252:29
+    |
+252 |         assert_eq!(observed.p0_full_norm2_bits, bit(&p0["full_norm2_ordered_bits"]));
+    |                             ^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p0_full_norm_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:253:29
+    |
+253 |         assert_eq!(observed.p0_full_norm_bits, bit(&p0["full_norm_ordered"]));
+    |                             ^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p0_reduced_norm2_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:254:29
+    |
+254 |         assert_eq!(observed.p0_reduced_norm2_bits, bit(&p0["reduced_norm2_ordered_bits"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p0_reduced_norm_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:255:29
+    |
+255 |         assert_eq!(observed.p0_reduced_norm_bits, bit(&p0["reduced_norm_ordered"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p1_full_norm2_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:256:29
+    |
+256 |         assert_eq!(observed.p1_full_norm2_bits, bit(&p1["full_norm2_ordered_bits"]));
+    |                             ^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p1_full_norm_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:257:29
+    |
+257 |         assert_eq!(observed.p1_full_norm_bits, bit(&p1["full_norm_ordered"]));
+    |                             ^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p1_reduced_norm2_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:258:29
+    |
+258 |         assert_eq!(observed.p1_reduced_norm2_bits, bit(&p1["reduced_norm2_ordered_bits"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p1_reduced_norm_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:259:29
+    |
+259 |         assert_eq!(observed.p1_reduced_norm_bits, bit(&p1["reduced_norm_ordered"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p2_full_norm2_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:260:29
+    |
+260 |         assert_eq!(observed.p2_full_norm2_bits, bit(&p2["full_norm2_ordered_bits"]));
+    |                             ^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p2_full_norm_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:261:29
+    |
+261 |         assert_eq!(observed.p2_full_norm_bits, bit(&p2["full_norm_ordered"]));
+    |                             ^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p2_reduced_norm2_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:262:29
+    |
+262 |         assert_eq!(observed.p2_reduced_norm2_bits, bit(&p2["reduced_norm2_ordered_bits"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `p2_reduced_norm_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:263:29
+    |
+263 |         assert_eq!(observed.p2_reduced_norm_bits, bit(&p2["reduced_norm_ordered"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `original_radius_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:264:29
+    |
+264 |         assert_eq!(observed.original_radius_bits, bit(&p2["original_radius"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `remaining_radius_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:265:29
+    |
+265 |         assert_eq!(observed.remaining_radius_bits, bit(&p2["remaining_face_radius"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `radius_gap_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:266:29
+    |
+266 |         assert_eq!(observed.radius_gap_bits, bit(&p2["radius_gap_ordered"]));
+    |                             ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0609]: no field `radius_tolerance_bits` on type `RefinementRetainedFaceObservation`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:267:29
+    |
+267 |         assert_eq!(observed.radius_tolerance_bits, bit(&p2["radius_tolerance"]));
+    |                             ^^^^^^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 35 others
+
+error[E0599]: no variant or associated item named `ScratchBox` found for enum `M1TrustRegionRefinementReason` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:290:90
+    |
+290 | ...egionRefinementReason::ScratchBox, M1TrustRegionRefinementGuardStage::ScratchBoxLower, M1TrustRegionCorrectionPosition::First),
+    |                           ^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementReason`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:452:1
+    |
+452 | pub(crate) enum M1TrustRegionRefinementReason {
+    | --------------------------------------------- variant or associated item `ScratchBox` not found for this enum
+
+error[E0599]: no variant or associated item named `ScratchBoxLower` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:290:137
+    |
+290 | ...nementGuardStage::ScratchBoxLower, M1TrustRegionCorrectionPosition::First),
+    |                      ^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `ScratchBoxLower` not found for this enum
+
+error[E0599]: no variant or associated item named `ScratchBox` found for enum `M1TrustRegionRefinementReason` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:291:90
+    |
+291 | ...egionRefinementReason::ScratchBox, M1TrustRegionRefinementGuardStage::ScratchBoxUpper, M1TrustRegionCorrectionPosition::First),
+    |                           ^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementReason`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:452:1
+    |
+452 | pub(crate) enum M1TrustRegionRefinementReason {
+    | --------------------------------------------- variant or associated item `ScratchBox` not found for this enum
+
+error[E0599]: no variant or associated item named `ScratchBoxUpper` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:291:137
+    |
+291 | ...nementGuardStage::ScratchBoxUpper, M1TrustRegionCorrectionPosition::First),
+    |                      ^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `ScratchBoxUpper` not found for this enum
+
+error[E0599]: no variant or associated item named `ScratchFullRadius` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:292:153
+    |
+292 | ...ementGuardStage::ScratchFullRadius, M1TrustRegionCorrectionPosition::First),
+    |                     ^^^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `ScratchFullRadius` not found for this enum
+
+error[E0599]: no variant or associated item named `ScratchReducedRadius` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:293:152
+    |
+293 | ...mentGuardStage::ScratchReducedRadius, M1TrustRegionCorrectionPosition::First),
+    |                    ^^^^^^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `ScratchReducedRadius` not found for this enum
+
+error[E0599]: no variant or associated item named `FinalFullRadius` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:294:153
+    |
+294 | ...nementGuardStage::FinalFullRadius, M1TrustRegionCorrectionPosition::Second),
+    |                      ^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `FinalFullRadius` not found for this enum
+
+error[E0599]: no variant or associated item named `FinalReducedRadius` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:295:150
+    |
+295 | ...ementGuardStage::FinalReducedRadius, M1TrustRegionCorrectionPosition::Second),
+    |                     ^^^^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `FinalReducedRadius` not found for this enum
+
+error[E0599]: no variant or associated item named `FinalRadiusCloseness` found for enum `M1TrustRegionRefinementGuardStage` in the current scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:296:142
+    |
+296 | ...mentGuardStage::FinalRadiusCloseness, M1TrustRegionCorrectionPosition::Second),
+    |                    ^^^^^^^^^^^^^^^^^^^^ variant or associated item not found in `M1TrustRegionRefinementGuardStage`
+    |
+   ::: crates/openwepp-land-surface-energy/src/lib.rs:474:1
+    |
+474 | pub(crate) enum M1TrustRegionRefinementGuardStage {
+    | ------------------------------------------------- variant or associated item `FinalRadiusCloseness` not found for this enum
+
+Some errors have detailed explanations: E0432, E0599, E0609.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 40 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

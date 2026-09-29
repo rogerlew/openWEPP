@@ -1,6 +1,559 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
 
+
+## Fixed-shift runtime refinement — adopted 2026-09-29
+
+Owner adopted `/tmp/openwepp_cold_canopy_m1_shifted_runtime_refinement_authorization.md`
+by directing execution. Starting publication is `8cbd56fb830d470fe8e9f0e867bbb23f65949f60`.
+Status: **INCOMPLETE / HOLD at the fixed command cutoff. BVLS-04 is implemented in the private detached source; final debug/analytic controls pass, four introduced lint findings remain, final release verification and physical domain execution are NOT RUN. Historical domain FAIL and M1 HOLD remain.**
+The completed offline prototype and every prior source-specific result remain historical evidence.
+
+Final corrected source is **1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087**,
+764 canonical entries. [Recovery](artifacts/shifted-runtime-terminal-corrected-recovery.json)
+verifies every entry after fresh extraction of
+[the exact archive](artifacts/shifted-runtime-terminal-corrected-source.tar.gz)
+(SHA256 `8d096e90ed6fd2c906e75d6bf8c70c02a215e37d48d76884cff82a65fd75aa8e`).
+The recovered source equals the final debug/analytic/default/format/lint source;
+external toolchain and execution inputs remain separately pinned by each support record.
+
+| Final corrected-source requirement | Outcome |
+| --- | --- |
+| Debug compatibility, including all10 BVLS04 controls | **135/135 PASS** ([receipt](artifacts/shifted-runtime-corrected-compat02.json)) |
+| Analytic-only Stage2 controls | **49/49 PASS** ([receipt](artifacts/shifted-runtime-corrected-analytic02.json)) |
+| Default library compile / five-file formatting | **PASS / PASS** ([compile](artifacts/shifted-runtime-corrected-default02.json), [format](artifacts/shifted-runtime-corrected-format-check02.json)); compile is not a test workflow |
+| Strict combined / analytic lint | **FAIL**:242=238 inherited+4 introduced;266=262 inherited+4 introduced ([combined](artifacts/shifted-runtime-corrected-combined-lint02-comparison.json), [analytic reconciliation](artifacts/shifted-runtime-corrected-analytic-lint02-inherited-reconciliation.json)) |
+| Corrected-source release controls | **NOT RUN**: supported declared bound no longer fit ([admission refusals](artifacts/shifted-runtime-corrected-bound-refusals.json)) |
+| Unchanged real candidate-domain-refusal endpoint / proposal wall or CPU cost | **NOT RUN / UNMEASURED**; no endpoint launch was attempted |
+| Eight interface groups,18 held references, private harness and target arms | **NOT RUN**; conditional launch prerequisites remain unmet |
+
+Open lint findings are `refinement_build_retained_face_observation` (129 lines),
+`refinement_eligible_p0` (206), `refinement_check_first_scratch` (239), and
+`refinement_finalize_candidate` (194). No suppression, baseline edit, tolerance
+change or numerical fallback was introduced. Closing work cannot implement these
+remaining refactors or spend another run allowance.
+
+[Same-review correctness](artifacts/shifted-runtime-correctness-terminal-fix01.json)
+provides **static numerical-core clearance**, including the final observation fix;
+[distinct QA](artifacts/shifted-runtime-qa-terminal-corrected02.json), with its
+[final wording/lint addendum](artifacts/shifted-runtime-qa-terminal-corrected03-addendum.json), approves only
+preservation/publication as incomplete experimental evidence. Neither approves
+quality, corrected release, the physical endpoint, production activation or M1.
+Prior cut07 release10/10 PASS remains source-specific. The later pre-fix terminal
+cut failed134/135 debug and9/10 release because a moved observation was unreachable
+on reduced-radius refusal; that failed cut, logs and recovery remain intact.
+The final observation-only repair passes debug controls, but its release result
+cannot be inferred from either predecessor.
+
+**BVLS04 policy remains exactly the approved fixed-shift, two-correction method**:
+ordinary full shifted defect, then two-level non-FMA Dot2 defect; retained factors
+and actual computed positive lambda; feasible private p1; recomputed p2 norms and
+closeness; unchanged all-coordinate BVLS02 acceptance; exact zero03 branch preserved.
+Logical arithmetic is27446 at m20 and28371 at m21, with23963 only the additional
+second correction at m20. Full reserved scalar/guard envelopes remain69345/208439
+at m20 and70276/211236 at m21 under unchanged global caps. These are logical work
+bounds and control evidence, **not physical timing or throughput**.
+
+[Final ledger](artifacts/shifted-runtime-final-ledger.json) charges the full14400-second
+allowance:12591 elapsed seconds plus1809 conservative closing seconds. Cumulative
+charge is **396800.393795 /396800.393795 s**, balance **0**. Closing began at the
+observed04:40:51Z, preserving at least1800 seconds through05:11Z; no reserve refund,
+re-anchoring, old-balance stacking or additional source execution is permitted.
+The remaining work needs subsequent owner authorization; this record does not
+create it. [Final custody](artifacts/shifted-runtime-final-custody.json) reconciles final receipts,
+recovery, links and unrelated work. Publication status is recorded below after
+remote verification.
+
+
+[Start ledger](artifacts/shifted-runtime-start-ledger.json) carries **382400.393795 s**;
+one later-receipt scan found no greater charge. New allowance **14400 s**, fixed
+ceiling **396800.393795 s**. Conservative first-reading anchor **2026-09-29T01:11:00Z**
+fixes command-completion cutoff **04:41:00Z** and hard deadline **05:11:00Z**.
+Reserve at least1800 seconds; count concurrent elapsed work and waits once, with
+no old-balance stacking, reserve refund or re-anchoring. Every command must fit
+its full bound plus reserve; physical bounds remain180 seconds, with only the
+established conditional900-second Critical command exception.
+
+Intent: prospectively freeze and independently review **COLD-CANOPY-M1-TR-SVD-BVLS-04**,
+then stage corresponding controls before private detached runtime bodies. Retain
+03's exact zero branch. For eligible completed positive-lambda faces, use the
+actual retained V/sigma/order and computed shift for exactly two corrections:
+ordinary full shifted defect, then two-level guarded non-FMA Dot2 shifted defect.
+Private p1 must preserve active bits, original box and original/reduced balls;
+p2 additionally passes newly recomputed radius closeness and unchanged all-coordinate
+BVLS-02 assessment. No fallback, new shift/factorization, third correction or tuning.
+Derive full scalar/guard reservations under unchanged caps before body release.
+
+Serial implementation writers owned the experimental numerical-method amendment
+and detached Stage1/controller/test seams. `/root/shifted_runtime_implementation`
+produced the last helper packet; parent made the final small observation-only
+integration repair after all source commands completed. Source is now frozen.
+Parent owns this record, ledger, recorder and publication.
+Distinct correctness and QA reviewers assess policy before bodies, then their
+changed source/evidence scopes; correctness owns assigned independent calculations,
+QA reads/hashes only. At most two concurrent children, no nested agents or reviewer
+conversion. Historical reviewer conversations are unavailable; reuse accepted
+findings and reopen only new policy/runtime/custody claims.
+
+Selected validation: authority/control review; corresponding expected-red controls;
+debug/release retained-face, analytic, order/join, radius, guard, work-cap and actual
+scratch-isolation controls; affected compatibility/format/default/feature/lint/docs
+checks; source/manifest/reachability and touched A0/A1/A3 assessment; independent
+numerical reconstruction from retained certificates. The existing source/configuration
+specific noncritical inherited-lint policy is prospective, subject to proved private
+cfg/dependency/reachability; new or ambiguous findings block. Critical triggers retain
+full correctness requirements. No protected fixture/authority-suite weakening.
+
+After bodies, assigned controls and distinct source/manifest reviews pass, execute
+one release replay of the unchanged `m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base`
+using its original trial preparation and injection order, recording proposal-entry
+wall/process CPU and actual work. A conforming numerical refusal before the intended
+injection stops numerical policy search and leaves downstream assertions unexecuted.
+Only an independently shown implementation/recording defect permits a correction replay.
+No ordinary-positive replay, support-1 arm or hidden warm-up is released.
+
+After domain-path PASS, continue the existing eight interface groups,18 references
+and private harness within this allowance; target slots keep all prior prerequisites.
+Main Rust, dependencies, physics, seeds/tolerances, branch and owner progression are
+excluded. Preserve unrelated work and all failed cuts. Scoped reviewed authority,
+package/evidence, recorder and exact detached recovery publication to authorized main
+remains permitted. Internal reassessment after two unsuccessful corrections or60
+charged minutes grants no extra time. Mandatory owner/time/integrity/independence/
+out-of-envelope and completed-disposition stops remain binding.
+
+
+
+Ran: [starting custody](artifacts/shifted-runtime-start-custody.json) verifies the
+active detached tree against every captured entry: **764 entries, cff19cd8…9cf8**.
+Generated build files are excluded by the existing reviewed snapshot; no recovery
+copy was overlaid or made the development tree. All628 preceding physical support
+files still match except the explicitly changed method draft and recorder deadline.
+[Recorder bound controls](artifacts/shifted-runtime-recorder-controls.json) pass5/5;
+only the fixed deadline changes, with reserve and physical-cap behavior retained.
+
+Static: initial parent and independent correctness review find the policy draft
+not ready for bodies: full scalar/guard reservation is missing, EFT admission could
+be interpreted as an eligibility escape, and norm/error-stage ordering is underspecified.
+The sole writer is correcting these within the adopted method. No numerical body,
+Rust command, physical replay or target command has run. The prospective review
+boundary remains closed until both distinct reviews accept the corrected policy.
+
+
+
+Internal preparation reassessment **CONTINUE**, 2026-09-29T01:26Z: two draft
+reviews retain concrete, bounded specification defects rather than a numerical
+negative. [Correctness draft01](artifacts/shifted-runtime-correctness-policy-draft01.json),
+[same-review fix01](artifacts/shifted-runtime-correctness-policy-fix01.json), and
+[QA review01](artifacts/shifted-runtime-qa-review01.json) agree that p0 norm reuse,
+p2 closeness arithmetic, guard reservation derivation, selector outcomes and p1
+box/radius metadata must be explicit. Same writer owns the synchronized correction;
+same reviewers verify it. The fixed clock and all run slots remain unchanged.
+
+
+
+Prospective **BVLS-04 policy APPROVED** by distinct
+[correctness](artifacts/shifted-runtime-correctness-policy-approved.json) and
+[QA](artifacts/shifted-runtime-qa-review03.json), authority SHA256
+`1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea`.
+Parent's final small coordinating correction preserves invalid-lambda02 ownership:
+nonfinite ball arithmetic remains SvdNonFinite, invalid lambda at KKT remains
+OptimalityIndeterminate, and LambdaBracket remains absent-positive-bracket only.
+The actual two-correction topology remains27446 operations at m20; full04
+reservation is K04=70276/G04=211236 at m21. Mixed03/04 faces retain the larger
+03 bounds and unchanged total caps4118712/12367101. All three corrected full/free
+norm checks and final closeness work are explicit; no multiplier repair is claimed.
+
+The [frozen design](artifacts/shifted-runtime-bvls04-design.md) is review evidence,
+not another live package record; [controls plan](artifacts/shifted-runtime-bvls04-controls.json)
+will bind actual test names. Parent released the sole writer for grouped expected-red
+controls and minimal test seams only. Numerical bodies await recorded red evidence.
+All Rust commands remain explicitly parent-assigned; physical endpoint and target
+slots remain unreleased. Same reviewers retain later body/source/evidence scopes.
+
+
+
+Ran: [selection-red01](artifacts/shifted-runtime-selection-red01.json) executes
+**3 tests,0 pass,3 expected fail,370 skipped**, exit100 in19.337968 seconds including
+build, source `820670c634e3cc7f81306a86d41bad595d5d1df27dc950ff57303fc722a7edcf`. Each fails the real positive-lambda
+selector (`bvls02` versus required `refine`); source/base/support custody remains
+unchanged. These three tests only establish selector red evidence. Their preliminary
+broad names and certificate self-checks do not establish arithmetic, unequal radii,
+refusal, work or isolation controls. Parent identified that coverage gap and retained
+body HOLD, assigning the same writer actual shared-operation controls and independent
+certificate assertions before corresponding bodies. No physical command ran.
+
+
+
+Ran: [controls-red02](artifacts/shifted-runtime-controls-red02.json) stops at
+compilation with16 absent interface/variant/field errors, exit101 after11.404029
+seconds, source `b70e5cd01e70fc4f8942f463e71807b605d28979d87a13f0f374e512dd6c05eb`, source/base unchanged. No test
+execution or physical result is claimed. The grouped tests precede numerical
+bodies, but parent preflight identifies misleading future accessor/oracle fields,
+possible free-order oracle mismatch and insufficient independent cap/guard cases.
+Same correctness reviewer is checking these concrete controls before body release;
+compile-red alone does not qualify the test design. The writer retains exclusive
+source ownership while the parent owns command/source freezes.
+
+
+
+Ran: [controls-red03](artifacts/shifted-runtime-controls-red03.json) stops at
+23 missing interface/variant/field compile errors, exit101 in11.365158 seconds;
+source/base unchanged, no tests or physical endpoint executed. The independent
+[synthetic order oracle](artifacts/shifted-runtime-correctness-order-result.json)
+and [execution receipt](artifacts/shifted-runtime-correctness-order-execution.json)
+derive a four-coordinate orthogonal nonsymmetric factor example whose nondefault
+order differs in3 output slots. This is a new small synthetic control calculation,
+not a captured-prototype replay or multiplier search.
+
+Internal control-preparation reassessment **CONTINUE with reassignment**, 2026-09-29T01:56Z.
+Two successive control revisions still fail concrete [same-review requirements](artifacts/shifted-runtime-correctness-controls-fix01.json):
+caller-supplied expected admission, unauthorized denominator stage, zero-argument
+retained loader/incomplete norm checks, and missing signed-zero03 discrimination.
+`/root/shifted_runtime_writer` is stopped. `/root/shifted_runtime_implementation`
+is now the sole source writer, assigned those exact corrections before bodies.
+This is implementation-capacity management, not method search or a renewed allowance.
+Same correctness/QA reviewers retain their independence; no reviewer becomes an author.
+All three red cuts remain recoverable from their source-bound recorder patches.
+
+
+
+Static: [same-review control approval](artifacts/shifted-runtime-correctness-controls-approved.json)
+accepts the corrected control design at Stage1 `d7896c10…3133f47`, with actual
+operations still to be verified in body review. Signed-zero uses the accepted03
+capture; unequal-radius guards, independent ordered inverse bits and test-side
+certificate comparisons remain required.
+
+Ran: [controls-red04](artifacts/shifted-runtime-controls-red04.json) is an
+**infrastructure build failure**, not an expected control result: serde generated
+`private.rs` was absent (15.120916 s). No body edits occurred. A fresh disposable
+build target `/tmp/openwepp-cold-canopy-m1-bvls04-target` resolves that cache issue.
+[Controls-red05](artifacts/shifted-runtime-controls-red05.json) reaches the frozen
+candidate and fails compilation with40 missing future-interface/variant/field
+errors in30.227990 s. No tests execute. Both source/support postchecks pass;
+source `4ee879f5…470fdf` is retained by each receipt and full patch. Parent released
+the sole replacement writer for numerical bodies only after inspecting red05.
+No physical endpoint, ordinary-positive or target slot has run.
+
+
+Ran: [authority admission](artifacts/shifted-runtime-authority-admission.json)
+reports **A0_ADMITTED,49 contracts** and owning directory schema/profile **PASS,
+21 documents** on unchanged approved method bytes. Its `science_surfaces=0`
+reflects no main Rust change; this does not certify the detached numerical body,
+physical closure or A1/A3 runtime behavior. The method diff adds215 lines and
+removes none of the preceding03 authority. Scoped whitespace checks pass.
+[QA custody preparation](artifacts/shifted-runtime-qa-preimplementation-custody.json)
+accepts only red04/red05 classification and preserved source/support; final
+body reachability, diagnostics and runtime evidence remain outstanding.
+
+
+Source-custody check after the writer's unnecessary implementation pause:
+reconstructing Stage1 directly from red05's complete new-file patch reproduces
+`d7896c10…3133f47`. Current `58197d88…acdf5ef8` differs by only a three-line
+comment ([exact comparison](artifacts/shifted-runtime-body-start-residual-diff.patch));
+no numerical body was lost and no Rust command ran. The same writer resumed the
+approved positive branch; absence of that branch in the old03 implementation is
+its assignment, not a stop condition.
+
+At the60-minute charged reassessment boundary, **CONTINUE**: independent policy
+and control-design reviews are complete, true expected-red compilation is bound
+to unchanged recoverable source, and the only build-cache failure is resolved.
+The concrete next action is the shared fixed-shift implementation followed by
+recorded debug/release controls and same-reviewer body assessment. No physical
+numerical result or out-of-envelope method request exists. The deadline remains
+05:11Z with04:41Z command cutoff and no renewed allowance; if implementation
+cannot reach launch requirements, preserve incomplete status rather than run an
+unqualified physical endpoint.
+
+
+Bounded implementation reassessment **CONTINUE with writer reassignment**,02:16Z:
+the replacement writer repeatedly returned smaller partial edits despite two
+explicit complete arithmetic/work/trace assignments. Its positive dispatch,
+ordinary/Dot2 defect separation and radius scaffolding are preserved, uncompiled
+and unqualified. `/root/shifted_runtime_implementation` is stopped;
+`/root/shifted_runtime_finish` is the sole writer for the concrete guarded
+arithmetic/work/trace increment. [Source custody](artifacts/shifted-runtime-arithmetic-writer-reassignment.json)
+records the intermediate files. This is a demonstrated execution-capacity issue,
+not a scientific negative, changed policy or deadline extension. Same independent
+reviewers remain unchanged; no reviewer is converted to an author.
+
+
+Ran: [intermediate body-build01](artifacts/shifted-runtime-body-build01.json)
+returns exit101 in17.427297 s, with source/support unchanged. Six compile errors
+remain: absent poison/signed-zero/reservation interfaces, four unconnected
+observation fields, and the new ScratchBox reason match arm. No test executes.
+The core calculation is under same-reviewer static preflight using an immutable
+[selected-file copy](artifacts/shifted-runtime-core-review-cut01.json); it is not
+an executable recovery tree. Tool thread capacity requires serializing this
+correctness review with further writer work; both original reviewers remain available.
+
+The correctness reviewer approved a narrow control correction: retain actual r0
+and compensated residual1 observations, but remove the obsolete full initial g0
+assertion and the misnamed lambda_p0 assertion that compared against lambda*p1.
+The latter is a semantic fixture error; satisfying either through a new accessor
+calculation would violate the actual-operation observation requirement. Both
+free shifted defects/deltas, all p0/p1/p2 coordinates, and final all-coordinate
+02 residual/gradient/lambda*p/h/Cbar/tau assertions remain required. No numerical
+oracle is regenerated and no physical-success assertion is changed.
+
+
+Static: [core correctness preflight](artifacts/shifted-runtime-correctness-core-preflight.json)
+is **NO-GO** with seven concrete core fixes plus attempted-counter placement:
+p0 rather than live-state q, K04/G04 reservation, positive active/finite-before-box
+precedence, complete typed normal/underflow guards, charged structural validation,
+guarded gap/tolerance operations, and ScratchBox formatting. Accepted portions
+are factor/order joins, second-position Dot2 grouping, exactly two corrections,
+terminal controller propagation and private cfg reachability. Same writer owns
+all corrections; no physical launch is released.
+
+[QA scope01](artifacts/shifted-runtime-qa-body-scope01.json) initially misread
+absence of a feature gate as production reachability. Its independent
+[same-review correction](artifacts/shifted-runtime-qa-body-scope02-cfg-fix.json)
+withdraws that claim: `lib.rs` imports Stage1 under `#[cfg(test)]`. External A3
+constitutive authority is distinct from numerical contract controls. QA also
+[accepts the two new-scaffold assertion corrections](artifacts/shifted-runtime-qa-control-semantics01.json)
+conditional on complete required coverage; no established test/fixture/authority
+lane is weakened. The numerical and behavior checks remain outstanding.
+
+Ran: [scoped authority units](artifacts/shifted-runtime-authority-units.json)
+PASS with zero findings. [Host clock metadata](artifacts/shifted-runtime-host-clocks.json)
+records nominal Linux CLOCK_MONOTONIC1 ns and process ticks100 Hz only; no solver,
+warm-up, physical timing or empirical Rust Instant accuracy is claimed.
+
+
+Ran: [final-field mixed compiler failure](artifacts/shifted-runtime-final-fields-red01.json)
+returns exit101 in17.181558 s, source/support unchanged. The new final residual,
+gradient and lambda*p assertions name deliberately absent observation fields;
+classifications use the existing independent certificate. This strengthens the
+previous incomplete final-field coverage before observation wiring. The command
+also exposes unintended implementation errors (29 total compile errors), notably
+a typed-error replacement applied to old `lambda_step` rather than only
+`bvls04_ordinary_defect`. It is **not** a clean expected-red or body-validation
+pass. The writer is restoring the complete old helper from the immutable reviewed
+source and correcting the new helper's local error carrier. No test or physical
+endpoint executes; the failed exact source and patch are retained.
+
+Static: [QA red06 custody](artifacts/shifted-runtime-qa-red06-custody.json)
+confirms the old `lambda_step` function is byte-identical to the immutable review
+copy after restoration. The entire body remains unvalidated. Its classification
+warning is resolved by the explicit mixed-failure statement above; subsequent
+compiling controls must establish the final-field predicates independently.
+
+Static: continued same-writer corrections at02:57Z preserve actual ordered-norm
+error reasons at all six p0/p1/p2 callers and move attempted norm/inverse counts
+to their owning operation entries. These changes are not yet compiled or independently
+accepted. Parent found two new adapter defects: inverse intermediates were recomputed
+in the accessor, and the analytic seam calculated the shift outside the shared body.
+The same writer is replacing those with producer-site observations and the shared
+ordinary-defect operation. Required retained final-field wiring, signed-zero,
+poison, work-reservation and physical timing seams remain incomplete. Physical
+replay stays held; no canonical numerical result has yet occurred on04.
+
+Static: [immutable core cut02](artifacts/shifted-runtime-core-review-cut02.json)
+(Stage1 `9d3fdb5b…53c4da`) receives same-review **NO-GO** in
+[core fix01](artifacts/shifted-runtime-correctness-core-fix01.json). The wrong p0
+shift operand and ScratchBox formatter are resolved; shared inverse observation
+and analytic-defect routing now avoid accessor arithmetic. Remaining concrete
+blockers are structure guards outside the reservation snapshot, incomplete
+lambda/sigma and closeness arithmetic guards, incomplete all-coordinate scratch
+box/structure checks, and first-inverse/trace counters. Missing context field,
+class label mismatch and stale commented duplicate code also require correction.
+The writer retains these exact in-scope fixes. No compilation or physical release
+is implied by source progress. [QA classification fix](artifacts/shifted-runtime-qa-red06-classification-fix.json)
+accepts the mixed-red reporting correction only.
+
+Internal implementation reassessment **CONTINUE**,03:06Z: independent core
+fix review identifies bounded code deviations under unchanged approved policy,
+with several fixes already verified. The writer acknowledged premature partial
+returns rather than tool/runtime unavailability; focused tasks have since
+completed producer observations and signed-zero plumbing. Continue with shared
+reservation/refusal seams and the named same-review corrections. Deadline,
+reserve and physical/target slots remain unchanged; no science tuning is authorized.
+
+Static: [core cut03](artifacts/shifted-runtime-core-review-cut03.json) and
+[same-review core fix02](artifacts/shifted-runtime-correctness-core-fix02.json)
+resolve all assigned core findings except selector/structure guard-bound compliance
+(including factor.a shape) and lambda source-stage ownership. Correctness has not
+approved the body or physical release. Work-boundary snapshots were subsequently
+changed from literal counts to the existing physical/global snapshots; this later
+seam still awaits execution/review. The writer is implementing the frozen11-case
+operand-refusal matrix at actual arithmetic/vector guard sites. No new oracle,
+method, cap or physical preparation change is authorized.
+
+Ran: [controls debug01](artifacts/shifted-runtime-controls-debug01.json) stops
+at an unclosed delimiter in the new poison wrapper, exit101 in9.847214 s.
+Source/base/support custody is unchanged; **zero tests execute**. The failed
+cut is retained, including [selected source cut04](artifacts/shifted-runtime-controls-review-cut04.json).
+Parent additionally found incomplete wrapper owner snapshots and observation
+restoration. These are assigned code corrections, not a numerical negative or
+physical result; the same correctness reviewer assesses the new control bodies.
+
+Ran: [debug02](artifacts/shifted-runtime-controls-debug02.json) and
+[debug03](artifacts/shifted-runtime-controls-debug03.json) remain compile failures
+(17.123603 s and9.004744 s), with source/support unchanged and no tests executed.
+Debug02 exposed array-copy/observer ownership errors and an accidental KKT-result
+field; debug03 exposed an accidental ordinary-defect parameter removal during
+that fix. Parent verified the KKT result structure restored exactly to cut01;
+the writer restored the scoped ordinary lambda parameter. These are preserved
+implementation failures, not expected-red successes or numerical results.
+
+Static: [control-body review01](artifacts/shifted-runtime-correctness-controls-body01.json)
+retains **NO-GO** for the frozen cut04 wrapper/refusal seams, coordinate selectors,
+reduced-radius operand provenance, actual final inverse-output guard coverage,
+caller fallthrough evidence, and missing full guard/signed-zero work assertions.
+Subsequent wrapper fixes resolve syntax and improve restoration/owner observations,
+but same-review verification and executed controls remain required. Parent accepts
+that candidate-derived poison thresholds must be replaced by fixed operands with
+matching metadata; the intended physical endpoint and its inputs remain unchanged.
+
+Ran: [debug04](artifacts/shifted-runtime-controls-debug04.json) compiles and
+executes **10 controls:5 PASS,5 FAIL,370 skipped**, exit100 in26.052696 s,
+source/base/support unchanged. Four retained-face controls stop at actual p1
+ScratchFullRadius; the refusal matrix also reaches that earlier stage. Analytic
+shift/order and signed-zero/exact-prefix controls execute successfully within
+their current assertion scope. Parent static attribution suspects use of rotated
+`factor.b` for the first defect where original `factor.a` owns the free matrix;
+same correctness reviewer is independently checking this before correction.
+This is not a physical run or acceptance of the incomplete control coverage.
+
+Internal reassessment **CONTINUE with independent failure attribution**,03:29Z:
+compiler corrections have reached executable controls; the retained failure has
+a concrete possible operand-ownership deviation. Freeze that evidence and verify
+the attribution; do not relax radius predicates, change lambda, rerun the Python
+prototype, or treat a conforming numerical negative as correction authorization.
+
+Static: [independent matrix attribution](artifacts/shifted-runtime-correctness-matrix-attribution01.json)
+confirms debug04 is an implementation failure: Jacobi `factor.a` preserves the
+original free matrix while `factor.b` has undergone316 rotations. Both new
+ordinary and Dot2 gradients read the rotated field incorrectly. Same-policy
+correction to original `factor.a`, including the analytic identity setup, is
+independently approved. Residuals, retained inverse, lambda, radius/tolerances,
+oracles and original physical inputs remain unchanged. All separate control-body
+findings remain open; this attribution does not release a physical command.
+
+Ran: [debug05](artifacts/shifted-runtime-controls-debug05.json) executes
+**10 controls:9 PASS,1 FAIL,370 skipped**, exit100 in13.207689 s. Retained
+p0/two corrections/final certificate and norm assertions now match after the
+original-matrix correction. The remaining38306-versus27446 count double-includes
+10860 second-gradient Dot2 operations in the factor bucket; the scalar operation
+sequence itself is unchanged. [Full-work red01](artifacts/shifted-runtime-full-work-red01.json)
+stages stronger actual guard/full signed-zero work assertions but remains mixed
+compiler-failure evidence (11.658262 s): three absent-field errors plus a mutability
+mistake in the accounting fix. No physical command has run.
+
+Ran: [debug06](artifacts/shifted-runtime-controls-debug06.json) executes
+**10/10 PASS,370 skipped**, exit0 in14.566774 s, source/base/support unchanged.
+The retained two-correction arithmetic partition now totals27446 without the
+second-gradient overlap; the full guard bound and full signed-zero work equality
+assertions pass. This is the first green debug cut, not physical release:
+control-body review findings on poison provenance/ownership/selector semantics
+remain binding. [Output-guard clarification](artifacts/shifted-runtime-correctness-output-guard-clarification.json)
+permits explicit defensive invariant coverage with actual final-negation/output
+check events, because finite unary negation cannot naturally overflow. It does
+not claim valid finite-source reachability or authorize a numerical fallback.
+
+Ran: [debug07](artifacts/shifted-runtime-controls-debug07.json) found two ambiguous
+floating-literal types; no tests executed. Explicit f64 annotations resolve these;
+[debug08](artifacts/shifted-runtime-controls-debug08.json) passes **10/10**, with370
+skipped. [Same-review controls fix01](artifacts/shifted-runtime-correctness-controls-body-fix01.json)
+resolves earlier core/matrix/control findings, retaining the positive-selector guard
+and those literal annotations as the remaining exact fixes. The selector guard is
+now counted only on the positive branch (53+3m within64+4m); zero03 remains unchanged.
+
+Static: parent serialized small observation/compiler integration after writer
+partial returns, retaining independent review. [Release review cut06](artifacts/shifted-runtime-release-review-cut06.json)
+adds actual proposal-entry-to-return wall/process CPU observation to the unchanged
+named domain helper, including error returns. Setup and clock samples are separately
+reported; opt-in capture/counter overhead remains included and is explicitly labeled.
+The original physical trial, injection order and success assertions remain required.
+[Format02](artifacts/shifted-runtime-format02.json) is an intentional source-mutating
+formatter run, not a numerical validation or unchanged-source claim.
+
+Ran: [compatibility debug01](artifacts/shifted-runtime-compat-debug01.json) executes
+**135 tests:129 PASS,6 FAIL,245 skipped**. Failures include positive-branch structural
+admission, old scratch metadata, and exact selected-retry step bits; same correctness
+review is attributing these before any oracle change. No required assertion is
+weakened. [Combined strict lint01](artifacts/shifted-runtime-combined-lint01.json)
+returns305 source-bearing diagnostics. [Exact same-command comparison](artifacts/shifted-runtime-combined-lint01-comparison.json)
+matches all238 inherited diagnostics and identifies67 introduced diagnostics;
+these block qualification. Narrow mechanical cleanup has started. Domain replay,
+release qualification and conditional downstream work remain **NOT RUN**.
+
+Static: [correctness cut06](artifacts/shifted-runtime-correctness-release-cut06.json)
+finds a concrete fixed-coordinate mask-admission bug. Its initial scratch-oracle
+classification was corrected after parent identified an unconditional true
+metadata value and displaced zero03 box observation. The old Some(false) control
+is retained; restore zero03's actual free-box observation, ordering and accounting.
+Positive04 retains active-before-full-box refusal. The two exact Stage2 retry
+values require independent derivation before replacement; all event assertions
+remain intact. The timing observer is statically within scope, not physically
+qualified. Reviewer timestamp/debug08 source attribution corrections are explicit
+in the corrected review artifact. Same-review fix verification remains required.
+
+Ran: [independent Stage2 oracle](artifacts/shifted-runtime-correctness-stage2-oracle.json)
+derives the two quarter-step components from the unchanged analytic fixture and
+approved two-correction arithmetic, without importing or executing the candidate.
+The exact replacements are3fc89544cafec8ac and3fc47c63fe7efc8f; full event vectors
+remain asserted. Its receipt's1.58e-06 wall-time field is unsupported and supplies
+**no timing evidence**. Reviewer reported a brief metadata edit followed by exact
+restoration during interim commands; before/after support hashes match, but a
+continuous-support claim is not made. Final-source qualification requires fresh
+checks after all source/support changes and independent custody assessment.
+
+Ran on [cut07](artifacts/shifted-runtime-release-review-cut07.json):
+[compatibility debug02](artifacts/shifted-runtime-compat-debug02.json) passes135/135;
+[analytic01](artifacts/shifted-runtime-analytic01.json) passes49/49;
+[release controls01](artifacts/shifted-runtime-controls-release01.json) passes10/10
+in143.047769 seconds including compilation, not physical proposal cost;
+[default check01](artifacts/shifted-runtime-default-check01.json) compiles the default
+library, not a test workflow. [Combined lint02](artifacts/shifted-runtime-combined-lint02-comparison.json)
+retains238 exact inherited findings and16 introduced findings. Analytic lint has
+277 findings:257 exact inherited plus5 individually reconciled inherited findings,
+leaving15 introduced ([explicit reconciliation](artifacts/shifted-runtime-analytic-lint01-inherited-reconciliation.json)).
+No lint suppression or baseline rewrite is used; introduced findings still block.
+
+Static: [same-review cut07 fix01](artifacts/shifted-runtime-correctness-release-cut07-fix01.json)
+accepts zero03 observation/order restoration and exact Stage2 values, but identifies
+that fixed-coordinate ownership must use original physical input bounds, not scaled
+bounds that may collapse. That precise admission correction and cohesive lint
+helper extractions are in progress. [QA cut06 custody](artifacts/shifted-runtime-qa-cut06-custody01.json)
+and [QA cut07 scope](artifacts/shifted-runtime-qa-cut07-scope01.json) retain their
+negative/provisional scopes; source/manifest and applicable-trigger assessment
+continues. None of these interim passes qualifies the physical endpoint.
+
+Ran: [compatibility debug03](artifacts/shifted-runtime-compat-debug03.json) and
+[debug04](artifacts/shifted-runtime-compat-debug04.json) each pass135/135 after
+further cohesive extraction. Combined strict lint reduces to9 then7 introduced
+findings ([lint03](artifacts/shifted-runtime-combined-lint03-comparison.json),
+[lint04](artifacts/shifted-runtime-combined-lint04-comparison.json)); all238 inherited
+findings match exactly. Seven long-function findings remain blocking, without
+suppression. [Correctness cut08](artifacts/shifted-runtime-correctness-release-cut08.json)
+accepts physical input-bound classification and most extractions, but requires
+restoring step-length validation before factor-order scanning. That exact ordering
+repair is in debug04; independent final fix verification remains required.
+
+Static: [QA manifest addendum](artifacts/shifted-runtime-qa-cut07-manifest-addendum01.json)
+verifies all26 Cargo manifests/lockfiles unchanged across the764-entry source maps;
+only five private LSE source/control files changed. [QA qualification split](artifacts/shifted-runtime-qa-qualification-split01.json)
+distinguishes current BVLS04 launch requirements from preserved historical
+M1/C-023/A1/A3 holds: the private non-target experiment does not trigger the900-second
+workspace command solely from those historical holds. [Oracle timing correction](artifacts/shifted-runtime-correctness-stage2-oracle-timing-correction.json)
+withdraws the unsupported duration as performance evidence while preserving its
+original result bytes. New commands pin this clarification as additional support.
+
+Final disposition reconciliation: main tracked changes are the approved215-line
+numerical-method amendment, the recorder deadline, and this package record, plus
+session evidence/recovery artifacts. Detached Rust changes are confined to the five
+reviewed LSE files. All26 Cargo manifests/lockfiles remain unchanged; no production
+reachability, dependencies, scientific process formula, authority-suite binding,
+cohort fixture or main Rust adoption changed. The two pre-existing dirty main Rust
+files retain their starting hashes, and unrelated untracked work is preserved.
+Current A0 document admission and unit checks passed in their stated scopes;
+private touched numerical/guard/custody controls have the final results above.
+Historical C-023/full09/A1/A3 and material/BGC/restart/cycle/receiver/performance holds
+remain unresolved. The private scope does not newly trigger the900-second Critical
+command, dependency `cargo deny`, external-authority anti-evasion checks or a
+coverage campaign. No new all-feature/held18-symbol qualification is claimed.
+
 ## Fixed-factor shifted refinement prototype — adopted 2026-09-28
 
 Owner adopted `/tmp/openwepp_cold_canopy_m1_shifted_refinement_prototype_authorization.md`

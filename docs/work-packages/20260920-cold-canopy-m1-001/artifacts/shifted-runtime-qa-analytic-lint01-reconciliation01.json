@@ -1,0 +1,18 @@
+{
+  "schema": "openwepp.shifted-runtime-qa-analytic-lint01-reconciliation01.v1",
+  "evidence_class": "Static review of the recorded source-specific reconciliation and receipt; no lint or source command run by this reviewer.",
+  "finding": null,
+  "reviewed": {
+    "reconciliation": {"path": "shifted-runtime-analytic-lint01-inherited-reconciliation.json", "sha256": "b8765839b76adf808f4ebe4a1a9f8b5ca87f8f8c8682967e246c5f6f94f6d83e"},
+    "receipt": {"path": "shifted-runtime-analytic-lint01.json", "sha256": "ab3bb3b45b492f066f4ef06de205cac7997dec539bba914532f7edf1e9772992", "source_tree_sha256": "c5165eb9055f2ca438aa507b8db3f72b13a9b30c368814647e4c56cfcbd2726c", "exit_code": 101},
+    "source_receipt": {"path": "shifted-runtime-analytic-lint01-source.json", "sha256": "d1b92c9c7f95b153979f95483ed06fbadd781dc7feef0b5d25ebcd799ebceab8"}
+  },
+  "assessment": {
+    "source_specificity": "PASS. The reconciliation applies to the same c5165e source tree and same analytic-only clippy argv. Its 257 exact matches plus five manually evidenced source-specific inherited warnings account for 262 inherited diagnostics.",
+    "manual_pairs": "The five pairs are bounded to one reduced unread-field warning, three line-gutter relocation-only warnings, and one unchanged unread pair with an added read lambda_bits context. They do not change the baseline fingerprint or suppress diagnostics.",
+    "introduced": "15 diagnostics remain genuinely introduced for analytic-lint01. They remain blocking; this is not a strict-lint pass.",
+    "physical_delta": "combined-lint02 has 16 introduced findings because its broader feature context additionally reports the physical-only populated capture function. The analytic reconciliation cannot classify that physical-only diagnostic and does not reduce the combined-lint02 release obligation."
+  },
+  "non_blocking_follow_ups": ["Preserve raw comparison artifacts beside this reconciliation.", "Run and attribute terminal lint only after final source/support freeze."],
+  "verdict": "QA PASS for the limited source-specific inherited classification; NO lint qualification or release approval."
+}

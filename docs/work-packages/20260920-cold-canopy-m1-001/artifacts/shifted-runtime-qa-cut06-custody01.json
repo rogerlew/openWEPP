@@ -1,0 +1,56 @@
+{
+  "schema": "openwepp.shifted-runtime-qa-cut06-custody01.v1",
+  "evidence_class": "Static receipt, source, hash, and script inspection only. This reviewer ran no Rust, candidate, oracle, physical, or numerical command and made no source or authority edit.",
+  "authority": {
+    "numerical_methods_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea",
+    "run_recorded_py_sha256": "9149a430e9c866470c2afe730ae112b4632dacfea00744033cbc1761d4081b35"
+  },
+  "reviewed_artifacts": {
+    "controls_debug07": {"sha256": "f9b915f7a9094372c0def4fb64f93671037a26bf8bf0e809b37e8035b6a8887b", "exit_code": 101, "source_tree_sha256": "6d43a0126851224232431a3becc915e597523ce0bc1a49ce5697d0315e7435db", "classification": "compile failure: two ambiguous f64 literals"},
+    "controls_debug08": {"sha256": "6e758d994809102dd442b9f18863a80e9c8023e732f8b21992890bfb76bc9c5e", "exit_code": 0, "source_tree_sha256": "d2ddd0d77deb8621159234b880717c9de2535dfd1e8b64997e3bf68810ba9548", "classification": "10 selected controls passed; 370 skipped; not final-source evidence"},
+    "compat_debug01": {"sha256": "8219a49291f3677284b703543de5a4617c52fdf9d3fe448f006665845cc32b07", "exit_code": 100, "source_tree_sha256": "533fccc6af34e066a335dff69f939ff4f0f34357d0100f6ff80d365e5c9093c6", "classification": "129 of 135 passed; six failed"},
+    "combined_lint01": {"sha256": "80ad2214ea0c7228c01404e12006ac864a318f5fe62594cf14edb936c77ee05c", "exit_code": 101, "source_tree_sha256": "533fccc6af34e066a335dff69f939ff4f0f34357d0100f6ff80d365e5c9093c6", "classification": "305 source-bearing diagnostics"},
+    "correctness_cut06": {"sha256": "03c3d04dc0d7402445c7d0238d38dea1f5c29cfb445d81296f058111950c9c88", "status": "three correctness blockers remain open; it explicitly distinguishes debug08 source from cut06"},
+    "stage2_oracle_script": {"sha256": "879a4bce660a19091a802cc3cea604f9e1f37dab918d78d612b37f3016703066"},
+    "stage2_oracle_result": {"sha256": "1ee5a94d3af3821e794f0e0eec60ffc473bcb0a7335feaf91f9dac65fd1caa69"}
+  },
+  "findings": [
+    {
+      "id": "QA-CUT06-CUSTODY-001",
+      "severity": "high",
+      "status": "blocking",
+      "paths": ["docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-combined-lint01.json", "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-combined-lint01-comparison.json"],
+      "finding": "The same-command comparison records 305 candidate diagnostics against 238 inherited diagnostics and 67 introduced diagnostics, with no removals. The command is identical, but this mutable intermediate source is not lint-qualified.",
+      "required_disposition": "Repair the introduced findings and record the required terminal lint/gates at the final frozen source. Do not carry forward the inherited 238 as a pass or use debug08 as a substitute."
+    },
+    {
+      "id": "QA-CUT06-CUSTODY-002",
+      "severity": "high",
+      "status": "blocking evidence correction",
+      "paths": ["docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-stage2-oracle.py", "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-stage2-oracle.json"],
+      "finding": "The oracle result reports wall_time_seconds_observed=1.58e-06, but the hash-bound Python script imports no timing facility and contains no timing boundary. The reported value is therefore unattributable to the documented computation.",
+      "required_disposition": "Remove or relabel that field as unattributed before reuse. The artifact remains usable only for its two independently reconstructed binary64 bits; it provides no cost or performance evidence. Domain cost remains NOT RUN."
+    },
+    {
+      "id": "QA-CUT06-CUSTODY-003",
+      "severity": "medium",
+      "status": "blocking release interpretation",
+      "paths": ["docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-compat-debug01.json"],
+      "finding": "The compatibility receipt sets physical=true and enables the physical-stage feature, while its selector expressly excludes real_candidate_domain_refusal_shrinks_retained_base. Thus it is a compatibility execution with six failures, not the planned real-domain physical endpoint or release control.",
+      "required_disposition": "Preserve the actual receipt metadata and describe it as non-endpoint compatibility evidence. Do not claim that no physical-feature test was selected, and do not use it for physical release, domain replay, or timing qualification."
+    }
+  ],
+  "static_scope": {
+    "cfg_reachability": "Previously verified body entry remains #[cfg(test)]; this review found no new frozen final manifest or source diff. Production reachability and dependency preservation require exact final-source review.",
+    "a0": "Canonical authority admission and units were previously passed for the unchanged authority, but those documentation checks do not establish detached runtime behavior.",
+    "a1": "No A1 runtime authority conclusion follows from the intermediate cfg(test) receipts. Reassess on the final source if test-only boundaries, manifests, or consumers change.",
+    "a3": "A3 is an external constitutive-authority obligation, not a synonym for numerical controls. No new external constitutive result is supplied here; the numerical/invariant controls remain binding.",
+    "critical": "Private/noncritical treatment remains conditional on cfg(test)-only reachability and an unchanged final dependency/manifest surface. The current 67 introduced lint findings and mutable source prevent qualification.",
+    "held_interfaces": "The package's eight held interface groups and 18 references remain HOLD. No release control, domain replay, candidate/reference run, comparator campaign, or physical endpoint is evidenced."
+  },
+  "non_blocking_follow_ups": [
+    "At final freeze, reconcile exact changed paths, manifest, cfg boundaries, required A0/A1/A3 applicability, formatting, clippy -D warnings, test, and deny results against that one source hash.",
+    "Keep the independent Stage2 oracle's two-bit mapping bound to both full-vector assertions; do not infer runtime performance from it."
+  ],
+  "verdict": "NO SOURCE OR RELEASE APPROVAL. Static custody is recorded; final-source review is still required after the writer freezes the tree and correctness blockers are resolved."
+}

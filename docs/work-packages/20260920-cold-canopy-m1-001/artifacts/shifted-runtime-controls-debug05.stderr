@@ -1,0 +1,206 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:54
+    |
+640 | enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpd...
+    |                                  ------------------- ^^^^^
+    |                                  |
+    |                                  field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(()), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:80
+    |
+640 | enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpd...
+    |                                                              ----------------- ^^^^^
+    |                                                              |
+    |                                                              field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(()), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:111
+    |
+640 | ...verflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1...
+    |                                              ---------------------- ^^^^^
+    |                                              |
+    |                                              field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(()), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:145
+    |
+640 | ...(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfin...
+    |                                            ------------------------- ^^^^^
+    |                                            |
+    |                                            field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(()), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:241
+    |
+640 | ...erBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize)...
+    |                                              --------------------- ^^^^^
+    |                                              |
+    |                                              field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(()), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:299
+    |
+640 | ...xcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |                                              --------------------- ^^^^^
+    |                                              |
+    |                                              field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(()), P2ClosenessGap(usize) }
+    |
+
+warning: fields `factor_order` and `free_ids` are never read
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2362:5
+     |
+2356 | struct M1TrustRegionBvls04InverseObservation {
+     |        ------------------------------------- fields in this struct
+...
+2362 |     factor_order: Vec<usize>,
+     |     ^^^^^^^^^^^^
+2363 |     free_ids: Vec<usize>,
+     |     ^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 7 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.26s
+────────────
+ Nextest run ID 51ea89cd-03d5-4923-927c-1e53f70fc14c with nextest profile: default
+    Starting 10 tests across 1 binary (370 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_nonsymmetric_factor_order_and_coordinate_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_analytic_shift_is_shared_operation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_independent_scalar_guard_and_exact_bound ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_m4_factor_order_changes_binary64_accumulation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_negative_zero_uses_unchanged_bvls03_seam ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.01s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_operands_norms_and_bvls02_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.04s
+
+
+        FAIL [   0.042s] ( 7/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation' (835752) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:136:9:
+    assertion `left == right` failed
+      left: 38306
+     right: 27446
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.04s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.28s
+
+
+────────────
+     Summary [   0.287s] 10 tests run: 9 passed, 1 failed, 370 skipped
+        FAIL [   0.042s] ( 7/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation
+error: test run failed

@@ -1,0 +1,111 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0432]: unresolved imports `super::m1_trust_region_bvls04_poison_for_test`, `super::m1_trust_region_bvls03_signed_zero_for_test`, `super::m1_trust_region_bvls04_work_boundary_for_test`, `super::M1TrustRegionBvls04Poison`, `super::M1TrustRegionBvls04Reservation`, `super::M1TrustRegionBvls04ReservationOwner`
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:135:9
+    |
+135 |         m1_trust_region_bvls04_poison_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_poison_for_test` in `m1_trust_region_stage1`
+136 |         m1_trust_region_bvls04_shifted_inverse_for_test,
+137 |         m1_trust_region_bvls03_signed_zero_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls03_signed_zero_for_test` in `m1_trust_region_stage1`
+138 |         m1_trust_region_bvls04_work_boundary_for_test,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `m1_trust_region_bvls04_work_boundary_for_test` in `m1_trust_region_stage1`
+139 |         m1_trust_region_refinement_retained_face_for_test,
+140 |         M1TrustRegionBvls04AnalyticInput, M1TrustRegionBvls04Poison,
+    |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionBvls04Poison` in `m1_trust_region_stage1`
+141 |         M1TrustRegionBvls04Reservation, M1TrustRegionBvls04ReservationOwner,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `M1TrustRegionBvls04ReservationOwner` in `m1_trust_region_stage1`
+    |         |
+    |         no `M1TrustRegionBvls04Reservation` in `m1_trust_region_stage1`
+    |
+help: a similar name exists in the module
+    |
+135 -         m1_trust_region_bvls04_poison_for_test,
+135 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+137 -         m1_trust_region_bvls03_signed_zero_for_test,
+137 +         m1_trust_region_bvls04_shifted_inverse_for_test,
+    |
+help: a similar name exists in the module
+    |
+138 -         m1_trust_region_bvls04_work_boundary_for_test,
+138 +         m1_trust_region_bvls02_outcome_for_test,
+    |
+help: a similar name exists in the module
+    |
+141 -         M1TrustRegionBvls04Reservation, M1TrustRegionBvls04ReservationOwner,
+141 +         M1TrustRegionBallObservation, M1TrustRegionBvls04ReservationOwner,
+    |
+help: a similar name exists in the module
+    |
+141 -         M1TrustRegionBvls04Reservation, M1TrustRegionBvls04ReservationOwner,
+141 +         M1TrustRegionBvls04Reservation, M1TrustRegionBallObservation,
+    |
+
+error[E0609]: no field `residual1_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:89:29
+   |
+89 |         assert_eq!(observed.residual1_bits, bits(&certificate["candidate_intermediates"]["correction2_residual_bits"]));
+   |                             ^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 55 others
+
+error[E0609]: no field `r0_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:90:29
+   |
+90 |         assert_eq!(observed.r0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+   |                             ^^^^^^^ unknown field
+   |
+help: a field with a similar name exists
+   |
+90 -         assert_eq!(observed.r0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+90 +         assert_eq!(observed.p0_bits, bits(&certificate["points"]["original"]["residual_bits"]));
+   |
+
+error[E0609]: no field `g0_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:91:29
+   |
+91 |         assert_eq!(observed.g0_bits, bits(&certificate["points"]["original"]["gradient_bits"]));
+   |                             ^^^^^^^ unknown field
+   |
+help: a field with a similar name exists
+   |
+91 -         assert_eq!(observed.g0_bits, bits(&certificate["points"]["original"]["gradient_bits"]));
+91 +         assert_eq!(observed.p0_bits, bits(&certificate["points"]["original"]["gradient_bits"]));
+   |
+
+error[E0609]: no field `lambda_p0_bits` on type `RefinementRetainedFaceObservation`
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:92:29
+   |
+92 |         assert_eq!(observed.lambda_p0_bits, bits(&certificate["points"]["ordinary_correction_1"]["lambda_p_bits"]));
+   |                             ^^^^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `live_state_bits_entry`, `live_state_bits_exit`, `p0_bits`, `delta0_free_bits`, `p1_bits` ... and 55 others
+
+error[E0004]: non-exhaustive patterns: `M1TrustRegionRefinementReason::ScratchBox` not covered
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5166:29
+     |
+5166 |     let reason_text = match reason {
+     |                             ^^^^^^ pattern `M1TrustRegionRefinementReason::ScratchBox` not covered
+     |
+note: `M1TrustRegionRefinementReason` defined here
+    --> crates/openwepp-land-surface-energy/src/lib.rs:467:17
+     |
+ 467 | pub(crate) enum M1TrustRegionRefinementReason {
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+ 475 |     ScratchBox,
+     |     ---------- not covered
+     = note: the matched value is of type `M1TrustRegionRefinementReason`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown
+     |
+5178 ~         super::M1TrustRegionRefinementReason::FinalRadius => "refinement_final_radius",
+5179 ~         M1TrustRegionRefinementReason::ScratchBox => todo!(),
+     |
+
+Some errors have detailed explanations: E0004, E0432, E0609.
+For more information about an error, try `rustc --explain E0004`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 6 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

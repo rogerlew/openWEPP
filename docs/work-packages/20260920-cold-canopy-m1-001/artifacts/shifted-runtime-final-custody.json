@@ -1,0 +1,52 @@
+{
+  "evidence_class": "Ran: final preservation/custody checks only; no new numerical execution during closing reserve",
+  "recorded_utc": "2026-09-29T04:44:12.456725+00:00",
+  "corrected_source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+  "corrected_archive_sha256": "8d096e90ed6fd2c906e75d6bf8c70c02a215e37d48d76884cff82a65fd75aa8e",
+  "all_claimed_final_receipts_match_recovery": true,
+  "receipts": [
+    {
+      "label": "shifted-runtime-corrected-compat02",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "source_unchanged": true,
+      "exit_code": 0
+    },
+    {
+      "label": "shifted-runtime-corrected-analytic02",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "source_unchanged": true,
+      "exit_code": 0
+    },
+    {
+      "label": "shifted-runtime-corrected-default02",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "source_unchanged": true,
+      "exit_code": 0
+    },
+    {
+      "label": "shifted-runtime-corrected-format-check02",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "source_unchanged": true,
+      "exit_code": 0
+    },
+    {
+      "label": "shifted-runtime-corrected-combined-lint02",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "source_unchanged": true,
+      "exit_code": 101
+    },
+    {
+      "label": "shifted-runtime-corrected-analytic-lint02",
+      "source_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+      "source_unchanged": true,
+      "exit_code": 101
+    }
+  ],
+  "current_section_links_valid": true,
+  "session_json_valid": true,
+  "unrelated_dirty_sha256": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  },
+  "publication_scope": "approved authority amendment, recorder deadline, one package record, shifted-runtime session evidence and exact detached recovery; no main Rust adoption"
+}

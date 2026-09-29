@@ -1,0 +1,12 @@
+--- red05
++++ current
+@@ -2000,6 +2000,9 @@
+     Ok(step)
+ }
+ 
++// BVLS-04 deliberately retains the Jacobi V/sigma/order produced for this
++// face.  Unlike BVLS-03's pseudoinverse residual correction above, this is
++// the fixed positive-multiplier inverse -V diag(1/(sigma^2+lambda)) V^T h.
+ fn lambda_norm(
+     step: &[f64],
+     mut refinement_work: Option<&mut RefinementWorkLedger>,

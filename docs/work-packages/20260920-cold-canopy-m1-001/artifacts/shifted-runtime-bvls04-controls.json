@@ -1,0 +1,164 @@
+{
+  "schema": "openwepp.cold-canopy-m1.bvls04-controls-plan.v1",
+  "status": "EXPECTED_RED_CONTROLS_CORRECTED_PENDING_SAME_REVIEW",
+  "scope": "Prospective BVLS-04 positive-lambda two-correction controller amendment only; no command has been authorized or run by this artifact.",
+  "source": {
+    "canonical_mutable_tree": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "retained_tree_identity": "cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8",
+    "entry_manifest": "shifted-face-capture01-source.json",
+    "entry_count": 764,
+    "verification": "parent-recorded snapshot verifies all 764 capture01 entries as cff19cd; generated targets are excluded; recovery tree is not the mutable source"
+  },
+  "admitted_inputs": {
+    "capture_sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+    "dot2_sha256": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0",
+    "positive_lambda": "actual completed finite rank-admitted face lambda only; no offline reference lambda"
+  },
+  "eligibility": [
+    "completed finite rank-admitted BVLS-02 face",
+    "signed-zero lambda selects unchanged BVLS-03; only finite positive lambda is BVLS-04 category",
+    "nonfinite/negative lambda never selects04 and retains unchanged02 crossing/KKT flow and owning SvdNonFinite or OptimalityIndeterminate error; LambdaBracket remains limited to failure to establish a feasible positive upper bracket; incomplete/rank-refused/nonfinite face retains its existing SVD owner; ordinary p0 free-coordinate original-box crossing alone follows unchanged BVLS-02 crossing; active, structural, nonfinite, full-radius, and reduced-radius inconsistencies take named terminal owners",
+    "retained factor/free_ids/order exist",
+    "p0/p1/p2 full norms recompute in ascending coordinate order followed by final square root and reduced norms recompute in free_ids order followed by final square root; p2 computes gap, 2^-40 term, 64*epsilon, and scaled-epsilon term before nonnegative-gap and upper-closeness guards; EFT arithmetic is guarded after selection and cannot become an eligibility escape",
+    "selection occurs before BVLS-02 KKT/release and never after a prior refusal"
+  ],
+  "prohibited": [
+    "new factorization or B-transpose-B formation",
+    "changed lambda or offline reference lambda",
+    "FMA, fast-math, reassociation, BLAS reduction, sorting, transpose/remap error, high precision path",
+    "p1 installation, clipping, normalization, tolerance relaxation, retry, or third correction",
+    "fallback from a refinement refusal to BVLS-02 or an unrefined result",
+    "cap increases or new per-scalar allocation"
+  ],
+  "required_controls": [
+    {
+      "id": "captured-face-reproduction",
+      "asserts": [
+        "p0/h0/delta0/p1/r1/h1/delta1/p2 bits",
+        "active bits",
+        "unchanged BVLS-02 fields",
+        "recomputed full and reduced radii"
+      ],
+      "oracle_rule": "calculation inputs exclude expected output arrays"
+    },
+    {
+      "id": "positive-lambda-analytic-discriminator",
+      "asserts": [
+        "lambda*q omission detected",
+        "nonsymmetric V orientation/order",
+        "free/active joins",
+        "zero-lambda BVLS-03 remains selected",
+        "signed -0.0 enters the unchanged real BVLS-03 seam and preserves its result and operation counters",
+        "unequal original and remaining radii",
+        "inside ball but outside closeness refuses"
+      ]
+    },
+    {
+      "id": "scratch-final-refusals",
+      "asserts": [
+        "p1 lower/upper box returns ScratchBox with ScratchBoxLower/ScratchBoxUpper, position First and coordinate",
+        "p1/p2 full/reduced/closeness stages remain typed-distinct",
+        "p1/p2 ball/domain/denominator/division/update paths",
+        "no third correction",
+        "no unrefined fallthrough",
+        "typed error precedence",
+        "active/caller/owner restoration",
+        "shared K04/G04 m=21 reservation computes 70276/211236 from actual capacities and free count before excess work; scalar and guard denials report their owning cap"
+      ]
+    },
+    {
+      "id": "isolation-and-preservation",
+      "asserts": [
+        "p1 cannot reach phase, evaluator, hydraulics, merit, materializer, receipt or owner",
+        "existing analytic/physical/phase/custody and zero-branch predicates remain unchanged"
+      ]
+    },
+    {
+      "id": "post-body-domain-endpoint",
+      "name": "m1_coupled_tests::m1_trust_region_physical_adapter_real_candidate_domain_refusal_shrinks_retained_base",
+      "precondition": "both reviews, body controls, and exact source/manifest assessment pass",
+      "asserts": [
+        "real shifted proposal",
+        "post-Stage1 negative-drainage injection",
+        "owning domain refusal",
+        "radius shrink",
+        "base/J/normalizers/phase/caller retained",
+        "actual Result milestone/status rather than inherited unreached literal",
+        "monotonic proposal-entry-to-return wall and available process-CPU timing",
+        "positive-refinement entries, factor applications, Dot2 rows and gradients including refused work"
+      ],
+      "first_numerical_refusal": "record downstream assertions unexecuted; do not retry"
+    }
+  ],
+  "work": {
+    "two_correction_operations": "12306 + 597*m + 8*m^2",
+    "m20": 27446,
+    "m21": 28371,
+    "complete_scalar_reservation": "K04(m)=12306+597*m+8*m^2+39816+1827+129+(6*m+3)+4; terms are corrections, enclosure, KKT, three full norms, three reduced norms, p2 gap/2^-40/64epsilon/scaled-epsilon",
+    "complete_guard_reservation": "G04(m)=3*K04(m)+324+4*m; conservative upper bound with at most 64+4*m selector/structure, 252 active/finite/box scans, and 8 radius/gap comparisons",
+    "m21_complete_scalar": 70276,
+    "m21_complete_guard": 211236,
+    "43_bvls04_only_scalar": 3021868,
+    "43_bvls04_only_guard": 9083148,
+    "mixed_43_bound": "existing BVLS-03 caps 4118712 scalar/upward and 12367101 guards; BVLS-03 per-face reservation exceeds BVLS-04",
+    "reservation": "existing monotonic scalar/guard ledger; charge eligibility, attempted and denied work at owning entry; existing caps suffice without change"
+  },
+  "write_surfaces_after_release": [
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+    "crates/openwepp-land-surface-energy/src/lib.rs",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+  ],
+  "review_requirements": [
+    "independent correctness: reconstruction and policy/operation review",
+    "independent QA: custody/scope/control and staging review",
+    "same reviewers verify fixes before body release"
+  ],
+  "expected_red_test_mapping": [
+    {
+      "control": "retained positive actual operands and final BVLS02",
+      "test": "m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate",
+      "execution": "capture-only candidate input; external certificate compared in test"
+    },
+    {
+      "control": "actual ordered p2 norms/radii/gap/tolerance and measured work",
+      "test": "m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation",
+      "execution": "actual bits compared to external certificate; correction partition 27446 and K04(m20) upper bound"
+    },
+    {
+      "control": "captured p0/p1/p2 ordered norms and final radii",
+      "test": "m1_trust_region_refinement_bvls04_expected_red_retained_operands_norms_and_bvls02_join",
+      "execution": "only decoded capture enters the calculation; test-side certificate compares each actual ordered sum-of-squares and post-sqrt norm, and p2 original/remaining radius, gap, and tolerance bits"
+    },
+    {
+      "control": "shared analytic shifted gradient",
+      "test": "m1_trust_region_refinement_bvls04_expected_red_analytic_shift_is_shared_operation",
+      "execution": "unshifted g [-1,0], lambda1, q[1,0] yields actual shifted [+0,+0]; the retained inverse's unary negation yields free-slot delta [-0,-0]"
+    },
+    {
+      "control": "nonsymmetric factor/free ordering",
+      "test": "m1_trust_region_refinement_bvls04_expected_red_nonsymmetric_factor_order_and_coordinate_join",
+      "execution": "reviewer supplied t/z/delta binary64 values; generic m/order test seam"
+    },
+    {
+      "control": "reachable real operand p1/p2 arithmetic guards",
+      "test": "m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix",
+      "execution": "mutated operand bits and reached stage required; denominator/division/inverse use FactorOutput/FactorApplicationOutput and update uses CoordinateUpdate/CoordinateUpdate; no enum-to-error factory"
+    },
+    {
+      "control": "independent work boundaries and scratch isolation",
+      "test": "m1_trust_region_refinement_bvls04_expected_red_independent_scalar_guard_and_exact_bound",
+      "execution": "only actual scalar capacity, guard capacity, and m=21 free count enter the helper; shared K04/G04 produces 70276/211236, the one-under denial reports its owning cap, and exact capacity records category entry plus real ledger/scratch deltas"
+    },
+    {
+      "control": "signed-negative-zero BVLS-03 retention",
+      "test": "m1_trust_region_refinement_bvls04_expected_red_negative_zero_uses_unchanged_bvls03_seam",
+      "execution": "the existing accepted BVLS-03 zero-lambda capture, not a positive face with substituted lambda, enters the unchanged seam with -0.0; its result bits and operation counters are compared with +0.0, BVLS-03 entry is positive, and BVLS-04 entry remains zero"
+    },
+    {
+      "control": "m4 nondefault factor.order rounding discriminator",
+      "test": "m1_trust_region_refinement_bvls04_expected_red_m4_factor_order_changes_binary64_accumulation",
+      "execution": "complete shifted defect input to shared inverse only; reviewer independent m4 binary64 oracle; raw-order counterfactual literals remain test-side"
+    }
+  ]
+}

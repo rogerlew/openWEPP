@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Ran: one later-receipt charge scan and fixed-clock arithmetic; no numerical execution",
+  "base_commit": "8cbd56fb830d470fe8e9f0e867bbb23f65949f60",
+  "first_reading_anchor_utc": "2026-09-29T01:11:00Z",
+  "carry_charged_seconds": 382400.393795,
+  "new_allowance_seconds": 14400,
+  "cumulative_ceiling_seconds": 396800.393795,
+  "hard_deadline_utc": "2026-09-29T05:11:00Z",
+  "command_completion_cutoff_utc": "2026-09-29T04:41:00Z",
+  "closing_reserve_seconds": 1800,
+  "greater_later_receipts": [],
+  "wait_deduction_seconds": 0,
+  "prior_closing_reserve_reclaimed_seconds": 0,
+  "unrelated_dirty_hashes": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  }
+}

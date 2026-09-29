@@ -1,0 +1,30 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-debug-custody-qa.v1",
+  "evidence_class": "Static: recorded receipt/log/hash review only; no Rust command, candidate, oracle, or physical run by QA",
+  "authority_and_recorder": {
+    "authority_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea",
+    "recorder_sha256": "9149a430e9c866470c2afe730ae112b4632dacfea00744033cbc1761d4081b35"
+  },
+  "receipt_summary": [
+    {"id":"debug01","exit":101,"elapsed_seconds":9.847214268054813,"tree":"b8b5cd86c569c5e38e852e0e1633672fc8ad8483a02940c43b1e6ab52d510bd3","classification":"unclosed-delimiter compile failure; zero tests"},
+    {"id":"debug02","exit":101,"elapsed_seconds":17.123602678999305,"tree":"9575c229da09396368690b97622610c38bb18aa2d75b1dafd9080b9890cdf6f6","classification":"implementation compile failure; zero tests"},
+    {"id":"debug03","exit":101,"elapsed_seconds":9.004743600729853,"tree":"66dde120022f7b81038dd12f80e83ea5379c952b64fea50379302a42cdc6abc3","classification":"ordinary-defect signature regression compile failure; zero tests"},
+    {"id":"debug04","exit":100,"elapsed_seconds":26.052695996128023,"tree":"a509d0816f82c2945e0b2f4422d12c79323f741b41a5e86b7625eaae83cf6f8f","classification":"10 selected: 5 pass, 5 fail, 370 skipped"},
+    {"id":"debug05","exit":100,"elapsed_seconds":13.207688829861581,"tree":"ccdf07ed69f3a4f8878b3e6e4b27b9a38a12507bd3a9f3e70b929ed803d8568e","classification":"10 selected: 9 pass, 1 fail, 370 skipped; remaining failure is the double-counted work assertion"},
+    {"id":"debug06","exit":0,"elapsed_seconds":14.56677433103323,"tree":"e8b926e861c2ce87849e7e032336bec6beeb3bcc4ba1bc007ebc3139fa18ee03","classification":"10 selected: 10 pass, 370 skipped"},
+    {"id":"full-work-red01","exit":101,"elapsed_seconds":11.65826172195375,"tree":"943110cd460b0bb924bef3eec6da84887c2721cd80adccc80d4fca9419f8cabc","classification":"mixed compiler failure: three intentionally absent full-work fields plus one accidental immutable-binding error; zero tests"}
+  ],
+  "custody_checks": {
+    "all_receipts": "Each receipt records source_unchanged, pinned_files_unchanged, support_links_unchanged, physical=false, and automatic_retries=0.",
+    "selector_scope": "The recorded command selects the BVLS-04 lib-test filter only; no physical endpoint selector or target selector appears in these receipts.",
+    "spent_positive": "No physical selector ran and no target/positive physical slot was spent by these debug/full-work-red receipts.",
+    "main_worktree": "Current main Rust diff is limited to the two pre-existing dirty files crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs and tests/integration/advisory_linter_authority_contract.rs; no BVLS-04 main Rust adoption is evidenced."
+  },
+  "findings": [],
+  "limitations": [
+    "Debug06 validates only its ten selected test controls on its frozen source; debug05's nine-pass count is a distinct prior source and not part of debug06's result.",
+    "The independent correctness control-body NO-GO findings and all required source/body, work-accounting, lint, fixture, and physical-endpoint reviews remain open.",
+    "Full-work-red01 remains mixed compiler-failure evidence and cannot establish its intended assertions."
+  ],
+  "verdict": "DEBUG RECEIPT CUSTODY PASS. The records support the stated counts and non-physical scope, but do not support body release, physical release, or numerical acceptance."
+}

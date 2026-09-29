@@ -1,0 +1,40 @@
+{
+  "schema": "openwepp.shifted-runtime-qa-terminal-corrected02.v1",
+  "evidence_class": "Static review of corrected immutable source/recovery manifests and recorded receipts only. No command was run and no source, authority, or support file was edited by this reviewer.",
+  "corrected_custody": {
+    "review_manifest": "shifted-runtime-terminal-corrected-review-source.json",
+    "review_manifest_sha256": "089954f6e8867502231c6c9b31fbdab90fe4c56270667512e8017ef213eb161f",
+    "stage1_sha256": "d8a8a76596db357367d4c0bcaea14043df4d8d7cac1a1d0bc9f18d091b85a3b1",
+    "full_tree_sha256": "1ab1d087b2bf4e9f7235c7aba3ff94e43d8cbfbd948344f3a9088420a6a03087",
+    "recovery": "shifted-runtime-terminal-corrected-recovery.json",
+    "recovery_sha256": "1018d7fbb0881586955ae96107c080f43687f62db8eda6b35f80cfa55379d865",
+    "source_entries": 764,
+    "reconstructed_every_entry_equal": true,
+    "archive_sha256": "8d096e90ed6fd2c906e75d6bf8c70c02a215e37d48d76884cff82a65fd75aa8e",
+    "manifest_dependency_scope": "All Cargo manifests/lockfile remain unchanged from the initial 764-entry map; only the five previously identified LSE test/control files differ. The cfg(test) private reachability determination remains applicable."
+  },
+  "corrected_receipt_status": [
+    {"receipt": "shifted-runtime-corrected-compat02.json", "sha256": "ee4e42b2078bf599eca89a916b0227a76ee6817d7e4e517d0798018848579940", "result": "PASS 135/135", "limitation": "physical-feature compatibility selector, not the real-domain endpoint"},
+    {"receipt": "shifted-runtime-corrected-analytic02.json", "sha256": "3e73a411a9a571bf3abdf3bd0e5aadcc1d28bfc4d0326cbb5b8e61d267a091cf", "result": "PASS 49/49"},
+    {"receipt": "shifted-runtime-corrected-default02.json", "result": "PASS"},
+    {"receipt": "shifted-runtime-corrected-format-check02.json", "result": "PASS"},
+    {"receipt": "shifted-runtime-corrected-combined-lint02.json", "sha256": "748641530529159ecb1c5fb217f55b2681a3e64e371b0204ac3d53db811ce14a", "result": "exit 101; 242 diagnostics = 238 exact inherited + four introduced too_many_lines diagnostics"},
+    {"receipt": "corrected release endpoint", "result": "NOT RUN: recorder refused the 140 then 100-second allocation before launch"},
+    {"receipt": "physical domain endpoint / CPU cost", "result": "NEVER RUN"}
+  ],
+  "corrections_to_prior_qa_terminal01": {
+    "terminal-compat01": "Actual result was 134/135 FAIL, not a pre-test-inventory stop.",
+    "terminal-release01": "Actual result was 9/10 FAIL due to the recording regression, not pending.",
+    "preservation": "Those raw failed receipts remain historical evidence and are not overwritten by corrected-pass receipts."
+  },
+  "findings": [
+    {"id": "QA-TERMINAL-CORRECTED-001", "severity": "high", "status": "blocking endpoint/release", "paths": ["crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"], "finding": "Four introduced clippy::too_many_lines diagnostics remain at 129, 206, 239, and 194 lines. The combined source-bearing comparison exactly matches all 238 inherited diagnostics and identifies these four as introduced.", "required_disposition": "Keep quality INCOMPLETE/HOLD. The corrected passing controls do not qualify lint or permit physical endpoint/release."},
+    {"id": "QA-TERMINAL-CORRECTED-002", "severity": "high", "status": "blocking endpoint/release", "paths": ["shifted-runtime-corrected-release01-support.json", "shifted-runtime-corrected-release02-support.json"], "finding": "The planned release/domain allocation was refused before launch. No physical endpoint, candidate/reference result, CPU timing, or cost measurement exists.", "required_disposition": "State physical/domain/performance evidence as NOT RUN; do not infer it from compat02 or controls."}
+  ],
+  "publication_custody_assessment": {
+    "acceptable_scope": "The corrected recovery archive, source map, pass/fail receipts, raw failed predecessor receipts, lint comparison, oracle-timing correction, and qualification-split evidence may be published as an incomplete experimental record.",
+    "required_truthfulness": "Publication must retain all failed cuts and explicitly say final result is HOLD/INCOMPLETE, physical endpoint NEVER RUN, CPU cost unavailable, release controls refused before launch, four introduced lint findings remain, and historical M1 A1/A3 holds are preserved.",
+    "prohibited_claims": ["source or runtime release", "physical success", "performance/cost result", "M1 activation or A1/A3 closure", "lint qualification"]
+  },
+  "verdict": "QA approves preservation/publication of the bounded experimental evidence only, with the stated HOLD disposition. No source, endpoint, physical, quality, or runtime-release approval."
+}

@@ -1,0 +1,9 @@
+{
+  "evidence_class": "Static: intermediate source custody before bounded writer reassignment; no compile or numerical result",
+  "recorded_utc": "2026-09-29T02:15:51.908690+00:00",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+  "files": {
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "d766ff9bcf0f4e833a3b158cb3c8caedde90174cb60a38426f6ee00f984b37df",
+    "crates/openwepp-land-surface-energy/src/lib.rs": "c68ab6e71c5436b6156e42ba237668f9660d866ac92141f19d6e6e90d211fb7b"
+  }
+}

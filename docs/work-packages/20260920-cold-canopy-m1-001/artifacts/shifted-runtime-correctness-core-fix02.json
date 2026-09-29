@@ -1,0 +1,94 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-correctness-core-fix02.v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "evidence_class": "Static: same-reviewer assessment of immutable cut03 against only the open core-fix01 findings; no Rust command, numerical execution, oracle, retained-prototype, candidate/reference, or physical replay was performed",
+  "reviewed": {
+    "review_copy": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-cut03-20260929",
+    "manifest": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-core-review-cut03.json",
+    "stage1_sha256": "c12f69f4044723ff47b9560671ad7673b55143b1978e454f2b236f8423351c98",
+    "lib_sha256": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "controller_sha256": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e",
+    "prior_review": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-correctness-core-fix01.json",
+    "authority_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea"
+  },
+  "findings": [
+    {
+      "id": "C04-CORE-005-REMAINING-02",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-cut03-20260929/m1_trust_region_stage1.rs:6582",
+      "finding": "The positive baseline now correctly precedes structure guards, and free_ids/masks/order/step/radius are substantially validated. The structure/budget proof is still incomplete in three concrete ways. First, the finite-positive selector comparisons themselves are not charged. Second, JacobiFactor.a is part of the retained factor but its 21-by-m shape is not validated, while b, v, sigma, and order are. Third, the implemented validator charges 72+3m guard events before p0 (m range 1, free length 1, free ids m, mask partition 42, b shape 22, v shape 1+m, sigma/order/step lengths 3, order permutation m, radius 2). This exceeds the authority's at-most 64+4m selector/structure allowance for m=1 through 7 even before charging the missing selector and factor.a checks, so G04 is not a conservative bound over the full authorized 1<=m<=21 domain.",
+      "required_change": "Charge the positive selector at its owning entry, validate factor.a as 21-by-m, and consolidate logically atomic structure predicates so the actual charged selector/structure count is at most 64+4m for every m in 1..=21. Keep the baseline before all those charges and preserve the zero-lambda BVLS-03 path without added work. Record or statically demonstrate the resulting count formula before control execution."
+    },
+    {
+      "id": "C04-CORE-004-REMAINING-02",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-cut03-20260929/m1_trust_region_stage1.rs:2201",
+      "finding": "The newly added ordinary lambda source guard reports ResidualSourceWeight. In the frozen augmented convention, lambda is the source term and q is the source weight: the second defect explicitly uses terms[21]=lambda and weights[21]=p[coordinate]. The first ordinary defect already reports p[free[slot]] as ResidualSourceWeight, so reporting lambda with the same stage makes first- and second-position taxonomy inconsistent.",
+      "required_change": "Report a rejected ordinary lambda source as ResidualSourceTerm. Retain p/q as ResidualSourceWeight and the product as PrimaryProduct. Place the lambda source check at its ordered use before lambda*q if simultaneous-failure precedence is meant to follow the declared ordinary B^T residual then shift order."
+    }
+  ],
+  "verified_fixes": [
+    {
+      "id": "C04-CORE-002-005-REMAINING",
+      "status": "partially_resolved",
+      "evidence": "refinement_bvls04_positive_eligibility_prefix captures scalar/guard baselines before positive structure validation and carries them through p0 into the selected K04/G04 reservation. This resolves the prior exact-cap double-counting mechanism. The remaining selector/structure bound defect is listed above."
+    },
+    {
+      "id": "C04-CORE-004-REMAINING",
+      "status": "partially_resolved",
+      "evidence": "Positive lambda and each raw sigma are now admitted through the shared normal-or-signed-zero guard before their inverse arithmetic. Ordinary lambda is also guarded, but its source-stage mapping remains wrong as listed above."
+    },
+    {
+      "id": "C04-CORE-003-REMAINING",
+      "status": "resolved",
+      "evidence": "Finite-positive p1 now performs one charged all-coordinate original-box scan after active/finite admission. The zero branch retains its pre-existing free-coordinate scratch scan."
+    },
+    {
+      "id": "C04-CORE-005-REMAINING",
+      "status": "partially_resolved",
+      "evidence": "m bounds, canonical free_ids agreement with state.free, active/free partition, factor b/v/sigma/order, step length, order permutation, and finite-positive remaining radius are checked before p0 with individual ledger charges. Factor.a, selector charging, and the 64+4m bound remain open."
+    },
+    {
+      "id": "C04-CORE-006-REMAINING",
+      "status": "resolved",
+      "evidence": "The final four-operation grouping is preserved. Radius, reduced norm, gap, a, b0, b, and tolerance use the shared typed domain guards; max, nonnegative-gap, and upper-closeness predicates are separately charged; arithmetic failure retains FinalRadiusCloseness metadata while geometric failures retain FinalRadius."
+    },
+    {
+      "id": "C04-CORE-008-REMAINING",
+      "status": "resolved",
+      "evidence": "Both positive inverse counters and test trace identities increment immediately before the shared inverse call, after successful defect construction. Zero-branch trace increments remain at the unchanged lambda_step entry. Ordered norms continue to count at entry."
+    },
+    {
+      "id": "C04-FIX01-NEW-001",
+      "status": "resolved",
+      "evidence": "RefinementRetainedFaceObservationContext now declares and carries the actual retained lambda used by its builder."
+    },
+    {
+      "id": "C04-FIX01-NEW-002",
+      "status": "resolved",
+      "evidence": "The test-side certificate adapter maps every internal class label to the exact certificate label while preserving the complete final class assertion."
+    },
+    {
+      "id": "C04-FIX01-NEW-003",
+      "status": "resolved",
+      "evidence": "The commented duplicate first-factor implementation is removed; one executable implementation owns its arithmetic, counters, and refusal mapping."
+    },
+    {
+      "id": "SIGNED-ZERO-ENTRY-UNITS",
+      "status": "resolved",
+      "evidence": "The signed-zero observation now reports actual refinement_attempted_entries as BVLS-03 entries after requiring zero BVLS-04 entries, rather than subtracting a category count from factor-application count. The positive structure validator is conditional and performs no extra work for either signed zero."
+    }
+  ],
+  "accepted_static_core": [
+    "Correction one still forms residual0 and lambda*q0 from the same p0; correction two retains the required two-level Dot2 grouping.",
+    "The shared shifted inverse retains raw factor.order joins, ascending free-slot transpose sums, raw-j z storage, factor.order output accumulation, and final unary negation.",
+    "p0/p1/p2 active, box, full-original-radius, reduced-remaining-radius, and final closeness ordering is now structurally aligned, subject only to the two findings above.",
+    "The K04/G04 branch formula, unchanged global caps, exactly two corrections, terminal refusal propagation, unchanged final KKT owner, and private cfg(test) reachability remain as previously accepted."
+  ],
+  "excluded_known_incomplete_evidence": [
+    "The work-test snapshot fields and poison interface were explicitly known incomplete and were not restated or assessed in this core fix review.",
+    "Compilation, green controls, retained-face numerical comparison, and work-boundary execution remain parent-owned and were not run here.",
+    "No physical-path, candidate/reference, M1, production, or release approval is granted."
+  ],
+  "verdict": "NOT YET APPROVED. All prior core-fix01 items except C04-CORE-005 selector/structure accounting and C04-CORE-004 ordinary lambda source-stage mapping are resolved on cut03. Resolve these two concrete blockers, then return the changed stable cut for narrow same-review verification."
+}

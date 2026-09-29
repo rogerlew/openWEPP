@@ -1,0 +1,82 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-correctness-matrix-attribution01.v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "evidence_class": "Static: independent matrix-ownership attribution using the frozen mutable Rust source, retained capture, author source/result, correctness source/result, and supplied parent debug04 logs. No Rust, numerical, prototype, candidate/reference, or physical command was run by this reviewer.",
+  "reviewed": {
+    "rust_source": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "rust_source_sha256": "21f530d909f7c4aa9eb72ceca442094298909a8f71f45acf92b0cfb88c7eb9b9",
+    "debug04_source_manifest": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-controls-debug04-source.json",
+    "debug04_receipt": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-controls-debug04.json",
+    "debug04_stdout": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-controls-debug04.stdout",
+    "debug04_stderr": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-controls-debug04.stderr",
+    "capture_sha256": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+    "author_source_sha256": "5d94d3c259f5f6412db124764612a3ab4cd2a9a57fdd3e6acd223f46c7809993",
+    "author_result_sha256": "5b51bd7df2c9d7c58743e6728b5d68c67c21a770460ccd608941b78cf3536b45",
+    "correctness_source_sha256": "34e07597b29cf97d5bd3920a5c954e5c32aaf59376ed453ec1e0a0826fd75d28",
+    "correctness_result_sha256": "0d9d9c14c96559b2da2d52029714c60542f8e7e15a43144afaa8dd8e805fbe49",
+    "authority": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:992"
+  },
+  "findings": [
+    {
+      "id": "C04-MATRIX-ATTRIBUTION-001",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2230-2267,8771-8831",
+      "finding": "Both positive-multiplier correction gradients use factor.b[row][slot]. factor.b is the Jacobi-rotated matrix, but the contract requires the original weighted A/free-column B in h_free = B^T(f+A*p)+lambda*q at both positions. The first defect therefore generates the wrong h0, delta0, and p1; the second Dot2 gradient would likewise generate the wrong h1 after the first-position failure is corrected.",
+      "attribution": "This is an implementation failure, not a retained-certificate or expected-value failure. It explains debug04 reaching one correction and then refusing ScratchFullRadius: the incorrect rotated-matrix h0 produces a materially different p1 before the scratch norm check. The second wrong join is currently masked by that earlier terminal refusal.",
+      "required_change": "Use factor.a[row][slot] for every original free-column source operand in bvls04_ordinary_defect and bvls04_dot2_defect, including shape/source guards, products, and Dot2 term construction. Preserve factor.v, factor.sigma, factor.order, and the shifted inverse unchanged."
+    }
+  ],
+  "ownership_proof": [
+    {
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4055-4080,2632-2639",
+      "evidence": "solve_face passes face.matrix to jacobi_factor. jacobi_factor immediately clones that input into a before any rotation. Thus factor.a owns the original 21-by-m weighted free-column matrix assembled for the face."
+    },
+    {
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2657-2728",
+      "evidence": "Jacobi sweeps rotate only local b and v; the returned factor retains untouched a and rotated b. The retained capture confirms a != b, 316 rotated pair visits, rotations=316, and sweeps=7."
+    },
+    {
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1884-1890,2015-2032",
+      "evidence": "The source's own JacobiFactor comment identifies a as the input matrix and b as rotated columns. The existing lambda_step reconstructs U with factor.a * factor.v / sigma, independently confirming that a is the original matrix owner."
+    },
+    {
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5666-5799",
+      "evidence": "The full first residual and second Dot2 residual already use prepared.weighted_matrix, the original weighted A. Only the subsequent free-gradient joins incorrectly switch to rotated factor.b."
+    },
+    {
+      "location": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-author.py:103-111,127-145,433-449",
+      "evidence": "The frozen author reconstructs both ordinary and Dot2 gradients from the original captured weighted_matrix columns. It verifies factor.a equals those original free columns before producing the retained h0/h1/p1/p2 results."
+    },
+    {
+      "location": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-refinement-correctness.py:202-219,578-602",
+      "evidence": "The independent correctness reconstruction separately uses the original captured weighted_matrix for both gradients and matches all retained author intermediate and point bits according to shifted-refinement-correctness-result.json."
+    }
+  ],
+  "authorized_correction_scope": {
+    "status": "APPROVED FOR SAME-POLICY SOURCE CORRECTION",
+    "changes": [
+      "Change both positive correction-gradient matrix joins from factor.b to factor.a, with corresponding factor.a shape/source guards and refusal coordinates/stages preserved.",
+      "Update m1_trust_region_bvls04_analytic_for_test so its identity original free-column fixture populates factor.a rather than factor.b. The inverse-only helper need not populate either matrix because it exercises only V/sigma/order/h.",
+      "Keep the residual builders on prepared.weighted_matrix and keep all shifted-inverse arithmetic and ordering unchanged."
+    ],
+    "validation_required_after_fix": [
+      "Static verification that neither positive defect reads factor.b and that factor.b remains confined to Jacobi/singular-value ownership where intended.",
+      "Parent-owned rerun of the same nonphysical debug control selection against an immutable replacement source manifest.",
+      "Bit equality of retained h0, delta0, p1, h1, delta1, and p2 with the independent certificate before any physical replay."
+    ]
+  },
+  "supplied_debug04_attribution": {
+    "receipt_exit_code": 100,
+    "tests": 10,
+    "passed": 5,
+    "failed": 5,
+    "common_retained_failure": "ScratchRadius / ScratchFullRadius after exactly one factor application and before second Dot2 work",
+    "classification": "implementation matrix-join failure; no evidence supports changing the retained certificate or authority"
+  },
+  "nonwaiver": [
+    "This bounded attribution does not waive or resolve any of the seven findings in shifted-runtime-correctness-controls-body01.json.",
+    "The two previously open core blockers remain independently subject to their own fix review unless a later immutable cut proves them resolved.",
+    "No physical replay occurred or is authorized by this attribution artifact."
+  ],
+  "verdict": "CONFIRMED. factor.a is the original free-column matrix owner and factor.b is the rotated Jacobi workspace. Both defect joins must use factor.a. The narrow same-policy correction, including the analytic identity fixture adjustment, is prospectively approved for authoring; the corrected source still requires immutable-source and nonphysical control review."
+}

@@ -1,0 +1,23 @@
+{
+  "evidence_class": "Ran: science authority admission and owning contract-directory schema/profile validation; no Rust or physical workflow",
+  "start_utc": "2026-09-29T02:08:31.884832+00:00",
+  "argv": [
+    "bash",
+    "tools/release/check_science_contract_admission.sh",
+    "--base-ref",
+    "8cbd56fb830d470fe8e9f0e867bbb23f65949f60",
+    "--worktree"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "bound_seconds": 180,
+  "exit_code": 0,
+  "elapsed_seconds": 0.4951858390122652,
+  "authority_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea",
+  "authority_unchanged": true,
+  "schema": {
+    "status": "PASS",
+    "documents": 21
+  },
+  "stdout_sha256": "d3aafbcf7f7b7eae60d9392e72279181ebc7c2863b9ba0968a94cc30867bf337",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

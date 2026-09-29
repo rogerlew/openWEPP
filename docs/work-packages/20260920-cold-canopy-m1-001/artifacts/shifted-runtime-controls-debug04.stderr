@@ -1,0 +1,254 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:54
+    |
+640 | enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpd...
+    |                                  ------------------- ^^^^^
+    |                                  |
+    |                                  field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(()), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:80
+    |
+640 | enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpd...
+    |                                                              ----------------- ^^^^^
+    |                                                              |
+    |                                                              field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(()), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:111
+    |
+640 | ...verflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1...
+    |                                              ---------------------- ^^^^^
+    |                                              |
+    |                                              field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(()), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:145
+    |
+640 | ...(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfin...
+    |                                            ------------------------- ^^^^^
+    |                                            |
+    |                                            field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(()), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:241
+    |
+640 | ...erBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize)...
+    |                                              --------------------- ^^^^^
+    |                                              |
+    |                                              field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(()), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |
+
+warning: field `0` is never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:640:299
+    |
+640 | ...xcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+    |                                              --------------------- ^^^^^
+    |                                              |
+    |                                              field in this variant
+    |
+    = note: `M1TrustRegionBvls04Poison` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+640 - enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(usize), P2ClosenessGap(usize) }
+640 + enum M1TrustRegionBvls04Poison { DenominatorOverflow(usize), DivisionNonfinite(usize), InverseOutputNonfinite(usize), CoordinateUpdateNonfinite(usize), P1LowerBox(usize), P1UpperBox(usize), P1FullNormNonfinite(usize), P1ReducedRadiusExcess(usize), P2FullNormNonfinite(usize), P2ReducedRadiusExcess(()), P2ClosenessGap(usize) }
+    |
+
+warning: fields `factor_order` and `free_ids` are never read
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2362:5
+     |
+2356 | struct M1TrustRegionBvls04InverseObservation {
+     |        ------------------------------------- fields in this struct
+...
+2362 |     factor_order: Vec<usize>,
+     |     ^^^^^^^^^^^^
+2363 |     free_ids: Vec<usize>,
+     |     ^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 7 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.18s
+────────────
+ Nextest run ID d21b1667-cd97-4ea7-a7f9-4a3c8ef16c5a with nextest profile: default
+    Starting 10 tests across 1 binary (370 tests skipped)
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_m4_factor_order_changes_binary64_accumulation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_independent_scalar_guard_and_exact_bound ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_nonsymmetric_factor_order_and_coordinate_join ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_analytic_shift_is_shared_operation ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_negative_zero_uses_unchanged_bvls03_seam ... ok
+
+    test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.01s
+
+
+        FAIL [   0.039s] ( 6/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join' (830511) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:87:14:
+    expected-red: retained positive face must complete BVLS-04: RefinementObservationRefusal { reason: "refinement_scratch_radius", refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 5962417150275328.0, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3610, refinement_guard_events: 6582, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2560, coordinate_update_operations: 20, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0 }, returned_step: None, bvls02_fallback_calls: 0, materialization_calls: 0, physical_evaluator_calls: 0, hook_log: [], owner_snapshot_before: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], owner_snapshot_after: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], live_state_bits_before: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], live_state_bits_after: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], required_scalar_operations: 69345, required_guard_events: 208439, attempted_entries_before: 0, attempted_entries_after: 1, denied_entries_before: 0, denied_entries_after: 0, corrections: 1, dot2_operations: 0, factor_applications: 1, denied_entry_executed_scalar_operations: 3526, denied_entry_executed_guard_events: 6239, prior_eligibility_scalar_operations: 84, prior_eligibility_guard_events: 343, global_before: None, global_after: None, budget_before: Some(M1PhysicalBudgetSnapshot { core_attempted: 7, core: 7, raw_jacobian_attempted: 0, raw_jacobian: 0, hydraulic_attempted: 0, hydraulic: 0, stage1_factorization_attempted: 0, stage1_factorization: 0, materialization_attempted: 0, materialization: 0 }), budget_after: Some(M1PhysicalBudgetSnapshot { core_attempted: 7, core: 7, raw_jacobian_attempted: 0, raw_jacobian: 0, hydraulic_attempted: 0, hydraulic: 0, stage1_factorization_attempted: 0, stage1_factorization: 0, materialization_attempted: 0, materialization: 0 }) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.039s] ( 7/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate' (830516) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:87:14:
+    expected-red: retained positive face must complete BVLS-04: RefinementObservationRefusal { reason: "refinement_scratch_radius", refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 5962417150275328.0, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3610, refinement_guard_events: 6582, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2560, coordinate_update_operations: 20, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0 }, returned_step: None, bvls02_fallback_calls: 0, materialization_calls: 0, physical_evaluator_calls: 0, hook_log: [], owner_snapshot_before: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], owner_snapshot_after: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], live_state_bits_before: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], live_state_bits_after: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], required_scalar_operations: 69345, required_guard_events: 208439, attempted_entries_before: 0, attempted_entries_after: 1, denied_entries_before: 0, denied_entries_after: 0, corrections: 1, dot2_operations: 0, factor_applications: 1, denied_entry_executed_scalar_operations: 3526, denied_entry_executed_guard_events: 6239, prior_eligibility_scalar_operations: 84, prior_eligibility_guard_events: 343, global_before: None, global_after: None, budget_before: Some(M1PhysicalBudgetSnapshot { core_attempted: 7, core: 7, raw_jacobian_attempted: 0, raw_jacobian: 0, hydraulic_attempted: 0, hydraulic: 0, stage1_factorization_attempted: 0, stage1_factorization: 0, materialization_attempted: 0, materialization: 0 }), budget_after: Some(M1PhysicalBudgetSnapshot { core_attempted: 7, core: 7, raw_jacobian_attempted: 0, raw_jacobian: 0, hydraulic_attempted: 0, hydraulic: 0, stage1_factorization_attempted: 0, stage1_factorization: 0, materialization_attempted: 0, materialization: 0 }) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.039s] ( 8/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_operands_norms_and_bvls02_join
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_operands_norms_and_bvls02_join ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_operands_norms_and_bvls02_join
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_operands_norms_and_bvls02_join' (830514) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:191:14:
+    expected-red: retained positive face must complete BVLS-04: RefinementObservationRefusal { reason: "refinement_scratch_radius", refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 5962417150275328.0, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3610, refinement_guard_events: 6582, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2560, coordinate_update_operations: 20, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0 }, returned_step: None, bvls02_fallback_calls: 0, materialization_calls: 0, physical_evaluator_calls: 0, hook_log: [], owner_snapshot_before: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], owner_snapshot_after: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], live_state_bits_before: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], live_state_bits_after: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], required_scalar_operations: 69345, required_guard_events: 208439, attempted_entries_before: 0, attempted_entries_after: 1, denied_entries_before: 0, denied_entries_after: 0, corrections: 1, dot2_operations: 0, factor_applications: 1, denied_entry_executed_scalar_operations: 3526, denied_entry_executed_guard_events: 6239, prior_eligibility_scalar_operations: 84, prior_eligibility_guard_events: 343, global_before: None, global_after: None, budget_before: Some(M1PhysicalBudgetSnapshot { core_attempted: 7, core: 7, raw_jacobian_attempted: 0, raw_jacobian: 0, hydraulic_attempted: 0, hydraulic: 0, stage1_factorization_attempted: 0, stage1_factorization: 0, materialization_attempted: 0, materialization: 0 }), budget_after: Some(M1PhysicalBudgetSnapshot { core_attempted: 7, core: 7, raw_jacobian_attempted: 0, raw_jacobian: 0, hydraulic_attempted: 0, hydraulic: 0, stage1_factorization_attempted: 0, stage1_factorization: 0, materialization_attempted: 0, materialization: 0 }) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.044s] ( 9/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation' (830520) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:87:14:
+    expected-red: retained positive face must complete BVLS-04: RefinementObservationRefusal { reason: "refinement_scratch_radius", refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 5962417150275328.0, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3610, refinement_guard_events: 6582, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2560, coordinate_update_operations: 20, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0 }, returned_step: None, bvls02_fallback_calls: 0, materialization_calls: 0, physical_evaluator_calls: 0, hook_log: [], owner_snapshot_before: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], owner_snapshot_after: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], live_state_bits_before: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], live_state_bits_after: [4562397848034123298, 4599404955464840636, 4585122612685222557, 4595920902591564646, 13776439389872135570, 4575560304541959852, 4559556574267019440, 4596025686364532523, 4582055840181070107, 4593945021310737043, 4590903023079648944, 0, 13829604668633738345, 4580733051541496715, 4539009757950349858, 0, 0, 0, 0, 0, 0], required_scalar_operations: 69345, required_guard_events: 208439, attempted_entries_before: 0, attempted_entries_after: 1, denied_entries_before: 0, denied_entries_after: 0, corrections: 1, dot2_operations: 0, factor_applications: 1, denied_entry_executed_scalar_operations: 3526, denied_entry_executed_guard_events: 6239, prior_eligibility_scalar_operations: 84, prior_eligibility_guard_events: 343, global_before: None, global_after: None, budget_before: Some(M1PhysicalBudgetSnapshot { core_attempted: 7, core: 7, raw_jacobian_attempted: 0, raw_jacobian: 0, hydraulic_attempted: 0, hydraulic: 0, stage1_factorization_attempted: 0, stage1_factorization: 0, materialization_attempted: 0, materialization: 0 }), budget_after: Some(M1PhysicalBudgetSnapshot { core_attempted: 7, core: 7, raw_jacobian_attempted: 0, raw_jacobian: 0, hydraulic_attempted: 0, hydraulic: 0, stage1_factorization_attempted: 0, stage1_factorization: 0, materialization_attempted: 0, materialization: 0 }) }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.116s] (10/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.11s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix' (830517) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:320:13:
+    assertion `left == right` failed
+      left: ScratchFullRadius
+     right: ScratchReducedRadius
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.117s] 10 tests run: 5 passed, 5 failed, 370 skipped
+        FAIL [   0.039s] ( 6/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join
+        FAIL [   0.039s] ( 7/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate
+        FAIL [   0.039s] ( 8/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_operands_norms_and_bvls02_join
+        FAIL [   0.044s] ( 9/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation
+        FAIL [   0.116s] (10/10) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_future_body_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_reachable_operand_guard_matrix
+error: test run failed

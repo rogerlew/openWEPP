@@ -1,0 +1,28 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-qa-review.v1",
+  "reviewer": "secondary QA/evidence reviewer",
+  "evidence_class": "Static: same-reviewer narrow delta read/hash verification only; no Rust command, numerical reconstruction, physical replay, or target execution",
+  "scope": "Narrow verification of the post-QA02 invalid-lambda decision-table correction. QA-BLOCK-01 and QA-BLOCK-02 are rechecked only for drift caused by this delta.",
+  "reviewed": {
+    "authority_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea",
+    "design_sha256": "47df16d599b2a4940e37c20e4340ed48e5b9d239727e6d5a8576550a463caad5",
+    "controls_sha256": "68e9e72f724a7a2b4f708fe6dad8335790a88dca65d7678a9e1256cd30d2c1ee"
+  },
+  "findings": [],
+  "fix_verification": [
+    {
+      "item": "invalid-lambda ownership",
+      "result": "PASS",
+      "evidence": "All three documents consistently state that signed zero remains BVLS-03; nonfinite or negative lambda never selects BVLS-04 and follows unchanged BVLS-02 crossing/KKT. Nonfinite ball arithmetic remains TrustRegionSvdNonFinite, invalid lambda at KKT remains TrustRegionOptimalityIndeterminate with its stable token, and TrustRegionLambdaBracket is limited to failure to establish a feasible positive upper bracket."
+    },
+    {
+      "item": "prior QA02 resolutions",
+      "result": "PASS",
+      "evidence": "ScratchBox mapping and the K04/G04 three-reduced-norm plus explicit p2-gap reservation remain unchanged and synchronized."
+    }
+  ],
+  "non_blocking_followups": [
+    "The later source/manifest/control review must map this decision table to actual invalid-lambda, nonfinite-ball, and failed-positive-bracket controls before any physical endpoint."
+  ],
+  "verdict": "PROSPECTIVE QA APPROVAL RETAINED for the authorized detached body stage. No body, replay, target work, or production activation is approved by this delta review."
+}

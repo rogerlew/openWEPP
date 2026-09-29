@@ -1,0 +1,31 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-red06-custody-qa.v1",
+  "evidence_class": "Static: receipt/stdout/stderr/package and named lambda_step restoration comparison only; no Rust command, candidate, oracle, or physical run",
+  "receipt": {
+    "path": "artifacts/shifted-runtime-final-fields-red01.json",
+    "sha256": "ca090c2a0103c028c9d7f096ef687cd12911fad49e73a12607424871edf1dc11",
+    "source_tree_sha256": "e8f96dfd1fbe6e300c24a42e71221cc7c0e565558d60e67159dd1dc3a72737f3",
+    "exit_code": 101,
+    "elapsed_seconds": 17.18155831983313,
+    "source_unchanged": true,
+    "pinned_files_unchanged": true,
+    "support_links_unchanged": true,
+    "tests_executed": 0,
+    "stderr_sha256": "72a9f84c9a3cc4f858b72698e245a48c0be83557b0b499f98cd1cc53115c52eb"
+  },
+  "finding": {
+    "severity": "blocking for interpreting red01 as a clean expected-red result",
+    "evidence": "The intended absent final-observation-field errors are present, but stderr also contains unintended macro-scope failures and Result error-type mismatches within lambda_step. Package text at package.md:265-269 describes only the deliberate absent fields. Therefore red01 is mixed compiler-failure evidence, not a clean expected-red proof for final-field coverage.",
+    "required_disposition": "Preserve red01 unchanged as mixed failure evidence. A later compiling/re-run control receipt must separately establish the intended final-field predicates after the accidental lambda_step failure is corrected; it must not relabel red01 as a clean expected-red pass."
+  },
+  "lambda_step_restoration": {
+    "immutable_reference": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-core-review-20260929/m1_trust_region_stage1.rs",
+    "current_mutable": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "reference_file_sha256": "f2dc5532d4563e8191eff42ccf095a6e80d6f07a358db2c695ac9c4d3dfd4762",
+    "current_file_sha256": "b5afad796eeb2186c276deb1bfd06cc54b9d169bba0b47ebe953b0f5b8cd7786",
+    "compared_function_slices": "current lines 1931-2027; immutable lines 1920-2016",
+    "function_slice_sha256": "d73bad041dbb1f8bf451af3a97964445a158cf7d741ac0046f3dea889bfa0e69",
+    "result": "PASS: exact byte comparison of the named lambda_step function slices is identical. Whole-file hashes differ and were not treated as a whole-body correctness review."
+  },
+  "verdict": "CUSTODY PASS WITH MIXED-RED CLASSIFICATION. Prior policy/control approvals retain their existing scope. This artifact approves neither body correctness, controls, nor physical execution."
+}

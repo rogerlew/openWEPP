@@ -1,0 +1,65 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-preimplementation-qa.v1",
+  "evidence_class": "Static: receipt/content/hash review only; no command was run or rerun by QA",
+  "authority_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea",
+  "scope": "Frozen detached preimplementation baseline for the BVLS-04 replacement body. This is not a source/body review or a validation verdict.",
+  "detached_source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "preimplementation_tree_sha256": "4ee879f5caeff1c6b39ad9061a0f4b380bf82027346d5c757692f61971470fdf",
+    "red_receipt_source_unchanged": true,
+    "entry_manifest_count": 764,
+    "body_status": "not built at either red receipt; red05 fails because declared future test interfaces are absent from the frozen source"
+  },
+  "receipts": [
+    {
+      "label": "shifted-runtime-controls-red04",
+      "path": "artifacts/shifted-runtime-controls-red04.json",
+      "exit_code": 101,
+      "elapsed_seconds": 15.120915594976395,
+      "failure": "infrastructure failure: missing generated serde private.rs in the disposable target directory",
+      "candidate_evidence": false,
+      "retries": 0,
+      "pins_and_support_unchanged": true
+    },
+    {
+      "label": "shifted-runtime-controls-red05",
+      "path": "artifacts/shifted-runtime-controls-red05.json",
+      "exit_code": 101,
+      "elapsed_seconds": 30.227989682927728,
+      "failure": "40 frozen-source compile errors from missing BVLS-04 cfg(test) imports/types/fields; this is expected-red body-not-yet-built evidence, not a numerical result",
+      "candidate_evidence": false,
+      "retries": 0,
+      "pins_and_support_unchanged": true
+    }
+  ],
+  "frozen_expected_red_command": "nix develop /workdir/openWEPP --command env CARGO_TARGET_DIR=/tmp/openwepp-cold-canopy-m1-bvls04-target CARGO_BUILD_JOBS=2 cargo nextest run -p openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage -E 'test(m1_trust_region_refinement_bvls04_expected_red_)' --no-fail-fast --success-output immediate --failure-output immediate",
+  "scope_and_reachability": {
+    "planned_rust_surfaces": [
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "crates/openwepp-land-surface-energy/src/lib.rs",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+    ],
+    "cfg_obligation": "BVLS-04 seams must remain cfg(test)-only where declared; final review must inspect the actual cfg/dependency/reachability graph rather than infer it from red05's missing imports.",
+    "manifest_obligation": "Cargo manifests/lock, resolver/toolchain, features, and dependencies were not changed or reviewed in this preparation artifact; any change escalates the inherited-lint classification and validation scope."
+  },
+  "lint_baseline": {
+    "combined_feature_population": 238,
+    "analytic_only_population": 262,
+    "status": "historical, source/configuration-specific inherited populations only; no current same-command lint result exists for the 4ee879 preimplementation tree and neither population is a waiver",
+    "required_comparison": "after body controls compile, compare exact same-command diagnostics and file contexts; introduced or ambiguous diagnostics block the private/noncritical classification"
+  },
+  "required_later_checks": {
+    "documentation_schema_placeholder_assurance": "Run only the exact package-bound documentation/schema/typed-placeholder/assurance commands selected against the final body diff; this preparation found no frozen final command/receipt for them and does not fabricate one.",
+    "A0_A1_A3": "Applicable touched A0/A1/A3 structural, unit, typed-guard and contract-derived controls remain required by the package and authority. They are NOT RUN here and must be bound to the final source/test manifest.",
+    "critical": "Current private/noncritical treatment is conditional on proven cfg/dependency/reachability. Any public/runtime/schema/shared-primitive, dependency/resolver/toolchain/global-feature, required-test/authority, or ambiguous impact invokes the existing Critical qualification; inherited lint never waives it.",
+    "physical_endpoint": "Only after body controls plus distinct source/manifest review pass may the one named non-target domain-refusal replay be considered; red04/red05 do not authorize it."
+  },
+  "findings": [],
+  "missing_evidence": [
+    "No replacement-body diff, final source manifest, or compiled cfg/reachability evidence exists at this frozen cut.",
+    "No final same-command combined or analytic-only lint attribution exists for the 4ee879 tree.",
+    "No final documentation/schema/placeholder/assurance command selection or receipt is available at this preparation boundary."
+  ],
+  "verdict": "PREIMPLEMENTATION CUSTODY PASS. The two retained red receipts are correctly classified as infrastructure/expected-red compile evidence and do not constitute candidate execution. Final same-reviewer source/manifest/evidence QA is still required before the physical endpoint."
+}

@@ -1,0 +1,49 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-qa-review.v1",
+  "reviewer": "secondary QA/evidence reviewer",
+  "evidence_class": "Static: read/hash review only; no Rust command, numerical reconstruction, physical replay, or target execution",
+  "scope": "Prospective COLD-CANOPY-M1-TR-SVD-BVLS-04 authority draft, detached-source custody, control discriminators, finite-budget/staging claims, and preservation of prior results. This review is independent of the author and does not replace the assigned correctness reconstruction.",
+  "reviewed": {
+    "authority_path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "authority_sha256": "6e88b0d7d95f46224ad95a24c2b7f20e4be099529a2896ffd9576b12433d4dab",
+    "design_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-bvls04-design.md",
+    "design_sha256": "a81eee7947e1e5321edcf90e2af0f2b73c1d937495b9d6e006b98ab79d5a9973",
+    "controls_path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-bvls04-controls.json",
+    "controls_sha256": "3b776265d912106ec84cf300640c3170da765a5ee34d1a3a653b721a616d7550",
+    "retained_detached_tree": "cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8",
+    "retained_detached_entries": 764,
+    "hashed_dependencies": {
+      "shifted-face-observed-capture.json": "946d090bbb6ccfcb71eceb6c860fb784041ce6958891358361e44aa1ef136ecb",
+      "dot2-primitive.py": "78260c2e48572a231f9e1dca7bfaa6ab50d3befa81dbfe5f7f56a41f5abc75f0",
+      "shifted-refinement-protocol.json": "45cc5715b799cd44423a60b0bbcc1daf4395c4b597ce044ac8387a72609f6885"
+    }
+  },
+  "findings": [
+    {
+      "id": "QA-BLOCK-01",
+      "severity": "blocking",
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1014",
+      "evidence": "The selected-branch error mapping names p1 radius as ScratchRadius and p2 box as FinalBox, while the required p1 original-box check at lines 1029-1034 has no stated reason/stage mapping. The controls require p1/p2 box refusal but therefore cannot prove that p1 box failure is distinguishable from p1 radius or p2 final-box failure.",
+      "required_fix": "Specify the stable existing reason/stage for p1 lower and upper box failures, retain correction-position/coordinate metadata, and add a control assertion for that exact mapping and no-fallthrough behavior."
+    },
+    {
+      "id": "QA-BLOCK-02",
+      "severity": "blocking",
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1058",
+      "evidence": "The reservation prose states only two extra reduced-norm calculations although the ordered gates require reduced/free norms at p0, p1, and p2; the final p2 closeness computation is also not explicitly included in the stated scalar reservation. The same incomplete formula is reproduced in design.md and controls.json. A cap claim cannot be approved while the declared charged work and required gates disagree.",
+      "required_fix": "Reconcile the complete scalar and guard reservation with every declared p0/p1/p2 full/free norm and p2 closeness operation, update all three prospective documents together, and bind work-cap controls to the corrected reservation and refusal-before-excess-work behavior."
+    }
+  ],
+  "non_blocking_followups": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-bvls04-design.md:102",
+      "item": "When the recorder correction is staged, include its exact source path, output-schema delta, source hash, and fixture/observation identity in the later same-reviewer source/manifest/evidence review. The prospective Rust write-surface list intentionally does not substitute for this recorder scope."
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-bvls04-controls.json:32",
+      "item": "At implementation review, map each declared control to its actual test name and mode. Retain separately observable original-radius, remaining-radius, and closeness outcomes; a combined radius-pass assertion would not discriminate the required order."
+    }
+  ],
+  "preserved_evidence": "The draft confines 04 to finite rank-admitted positive-lambda faces before 02, keeps EFT failure after selection, preserves 03 zero-lambda behavior and historical evidence, prohibits fallback/third correction/tuning, and names a single post-body non-target domain-refusal endpoint. The custody record and the three cited prototype dependencies matched their recorded SHA-256 identities. No main Rust mutation was reviewed or authorized by this artifact.",
+  "verdict": "NOT APPROVED FOR BODY RELEASE. Resolve QA-BLOCK-01 and QA-BLOCK-02 in the authoritative amendment and synchronized frozen design/controls, then return the changed hashes for same-reviewer QA verification. After body work, this reviewer still requires the assigned source/manifest/evidence review before the physical endpoint."
+}

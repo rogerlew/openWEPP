@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Static: immutable selected source for same-review core/control fixes; debug07 parent recorded command in progress",
+  "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut05-20260929",
+  "files": {
+    "m1_trust_region_stage1.rs": "1d7c5c63939f8d3f254d09bc7df5df9ac53a549a6da93624eb8c4d873dbf2f80",
+    "lib.rs": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "m1_trust_region_controller.rs": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e"
+  },
+  "archive_sha256": "44b96d22adced84f315a22069adea67fb342ffbebdcb0a42836dc80710baae59"
+}

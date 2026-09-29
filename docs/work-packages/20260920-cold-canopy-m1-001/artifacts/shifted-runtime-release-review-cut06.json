@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Static: selected immutable source for physical observation/counter custody review; actual physical execution held",
+  "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut06-20260929",
+  "files": {
+    "m1_trust_region_stage1.rs": "a7cfa6f6ab967d35e29e4168e29e22fb4b09edc3b8c9e87e7e9c3fa85b00a164",
+    "lib.rs": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "m1_trust_region_controller.rs": "0b615ea9e8e1b112624ccf60fbdd06f967170ba2d62a0f39ae759f54a41640c7",
+    "m1_coupled_tests.rs": "30e65beb4a6b6a8f735922d4b7a93e4cb3efda3123d90a8ed6faea189949b9ea"
+  },
+  "archive_sha256": "bea14bfcbee9f0992815449ae719f5868c95bc0a23d2d13b91f2c52e46f84311"
+}

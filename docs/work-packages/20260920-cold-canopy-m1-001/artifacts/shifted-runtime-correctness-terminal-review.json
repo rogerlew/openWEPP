@@ -1,0 +1,69 @@
+{
+  "schema": "openwepp.shifted-runtime-correctness-terminal-review.v1",
+  "evidence_class": "Static same-review of immutable terminal source copy; reviewer ran no Rust, numerical, prototype, candidate, reference, domain, or physical command.",
+  "reviewed_at_utc": "2026-09-29T04:36:41Z",
+  "source": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-terminal-review-20260929",
+    "manifest": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-terminal-review-source.json",
+    "stage1_sha256": "f9de794fb2f2b0d5bb4b1d75b1d56a4c2c7f50ca33cd32c699eaf5b24251fdf1",
+    "controller_sha256": "0b615ea9e8e1b112624ccf60fbdd06f967170ba2d62a0f39ae759f54a41640c7",
+    "stage2_controls_sha256": "5d39caeaee2cd23266632fe2472e7423128b247ed9f8ca5ca1591c24163e307e"
+  },
+  "findings": [
+    {
+      "id": "TERMINAL-CORRECTNESS-001",
+      "severity": "high",
+      "classification": "required control observation regression",
+      "status": "blocking overall acceptance",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-terminal-review-20260929/m1_trust_region_stage1.rs:7939",
+      "finding": "The p2 reduced-radius extraction moved the full/reduced norm and remaining-radius trace write after refinement_final_reduced_radius returns. On P2ReducedRadiusExcess, the helper returns Err at FinalReducedRadius before that write. Cut08 recorded these actual values before the comparison/refusal, and the terminal poison-matrix assertion still requires refusal.p2_reduced_norm_bits to equal the independent certificate. The frozen terminal source therefore loses required actual observation on this refusal.",
+      "exact_required_change": "Preserve the numerical order and one comparison guard. Record p2 full/reduced norms and remaining radius after both norms and the test-only radius selection are known but before the charged `free_norm > reduced_radius` comparison can return. One valid extraction is to pass full norms into refinement_final_reduced_radius and perform the existing trace write immediately before its guard/comparison; then remove the caller's post-return write. Do not manufacture the norm in the refusal or weaken the assertion."
+    }
+  ],
+  "resolved": [
+    {
+      "id": "CUT08-CORRECTNESS-001",
+      "status": "resolved",
+      "evidence": "The helper now charges/checks factor.order length, then charges/checks trace.step length, then scans order entries; caller charges radius afterward. This exactly restores the approved malformed-structure precedence and guard order."
+    },
+    {
+      "id": "physical-bound-classification",
+      "status": "resolved",
+      "evidence": "Exact validated physical input bounds continue to own fixed/nonfixed mask count."
+    },
+    {
+      "id": "signed-zero-helper",
+      "status": "clear",
+      "evidence": "Test-only extraction retains natural-zero admission before assigning the requested signed zero and preserves typed refusal."
+    },
+    {
+      "id": "observation-and-fixture-helpers",
+      "status": "clear except TERMINAL-CORRECTNESS-001",
+      "evidence": "Poison assertion extraction, populated refusal fixture, and work-boundary fixture preserve values and do not feed expected values into production calculations."
+    },
+    {
+      "id": "second-factor-tuple",
+      "status": "clear",
+      "evidence": "Bundling p1 reference and feasibility bool changes no arithmetic, guard, or metadata operation."
+    }
+  ],
+  "core_correctness": {
+    "disposition": "Production numerical arithmetic/order statically clear for reviewed terminal delta",
+    "limits": "This statement does not clear the required control observation seam in TERMINAL-CORRECTNESS-001, execution evidence, domain behavior, physical endpoint behavior, performance, or release."
+  },
+  "quality": {
+    "disposition": "HOLD",
+    "reason": "Parent reports four long-function lint findings remain; their exact lint05 output was not supplied or executed in this review."
+  },
+  "execution": {
+    "terminal_compatibility": "RUNNING/PENDING parent-owned result",
+    "release_controls": "RUNNING/PENDING parent-owned result",
+    "analytic_default": "RUNNING/PENDING parent-owned result",
+    "combined_lint": "RUNNING/PENDING parent-owned result",
+    "domain": "NOT RUN",
+    "physical_endpoint": "NOT RUN"
+  },
+  "custody": "The immutable terminal copy and manifest were read. Existing pinned support/oracle/review artifacts were not mutated. No clean-continuous-custody claim is made across previously disclosed transient support drift.",
+  "publication_posture": "A truthful experimental recovery review may be published only with this HOLD and missing-evidence status; it is not an accepted or physically qualified release.",
+  "verdict": "OVERALL HOLD. Production numerical math in the reviewed terminal delta is statically clear, but the p2 reduced-radius refusal observation is broken, parent commands are pending, four quality findings reportedly remain, and domain/physical execution has not run."
+}

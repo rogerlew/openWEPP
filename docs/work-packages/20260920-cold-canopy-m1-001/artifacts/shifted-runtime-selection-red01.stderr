@@ -1,0 +1,75 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.80s
+────────────
+ Nextest run ID 63e0a5bd-d070-43db-ac6c-f0306acd31ef with nextest profile: default
+    Starting 3 tests across 1 binary (370 tests skipped)
+        FAIL [   0.033s] (1/3) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 372 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation' (699667) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:57:9:
+    assertion `left == right` failed: expected-red: finite rank-admitted positive lambda must select BVLS-04 before BVLS-02
+      left: "bvls02"
+     right: "refine"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.034s] (2/3) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 372 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join' (699668) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:57:9:
+    assertion `left == right` failed: expected-red: finite rank-admitted positive lambda must select BVLS-04 before BVLS-02
+      left: "bvls02"
+     right: "refine"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.038s] (3/3) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate
+  stdout ───
+
+    running 1 test
+    test m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate ... FAILED
+
+    failures:
+
+    failures:
+        m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 372 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'm1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate' (699669) panicked at crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:57:9:
+    assertion `left == right` failed: expected-red: finite rank-admitted positive lambda must select BVLS-04 before BVLS-02
+      left: "bvls02"
+     right: "refine"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.040s] 3 tests run: 0 passed, 3 failed, 370 skipped
+        FAIL [   0.033s] (1/3) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation
+        FAIL [   0.034s] (2/3) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_shift_orientation_order_and_free_active_join
+        FAIL [   0.038s] (3/3) openwepp-land-surface-energy m1_trust_region_stage1::bvls04_expected_red_controls::m1_trust_region_refinement_bvls04_expected_red_retained_positive_face_certificate
+error: test run failed

@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: scoped canonical LSE authority unit registry/provenance checks; no detached runtime or physical workflow",
+  "argv": [
+    ".venv/bin/python",
+    "tools/release/check_sc_unit_compliance.py",
+    "--path",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md",
+    "--format",
+    "json"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "exit_code": 0,
+  "elapsed_seconds": 0.19751544576138258,
+  "recorded_utc": "2026-09-29T02:19:37.417294+00:00",
+  "authority_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea"
+}

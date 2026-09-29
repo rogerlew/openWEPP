@@ -1,0 +1,69 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-correctness-controls-preflight.v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "evidence_class": [
+    "Static: reviewed only the frozen expected-red Stage1 test module and frozen controls plan; no Rust command, candidate body, prototype, reference, or physical replay was run",
+    "Ran: independent two-dimensional IEEE-754 binary64 arithmetic only, using the authority-prescribed product/add/divide/negate grouping"
+  ],
+  "reviewed": {
+    "detached_stage1": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "detached_stage1_sha256": "d24fabb7483c0c20e86389a21c8d57e1b618dbfee777dfbd28b0edc8688ddfb5",
+    "expected_red_lines": "25-238",
+    "controls_plan": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-bvls04-controls.json",
+    "controls_plan_sha256": "0cbe945661a4caf89827a853de372b974f546fd3b551d1e72b5b76e14ef04d08",
+    "authority": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md#COLD-CANOPY-M1-TR-SVD-BVLS-04"
+  },
+  "verdict": "NOT_APPROVED_FOR_BODY",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "C04-CONTROL-001",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:149",
+      "finding": "The analytic helper contract is ambiguous and exposes expected/alternate arithmetic. With h interpreted as the authority's complete shifted defect, h=[-2,0], lambda=1, q=[1,0] cannot produce asserted zero; with h interpreted as the unshifted gradient it produces [-1,0], not zero. Fields h0_bits_expected, h1_bits_expected, ordinary_defect_without_lambda_q, delta_with_transposed_v, delta_in_ascending_order, and certificate_* invite the calculation/accessor to manufacture expected answers or duplicate prohibited arithmetic.",
+      "required_change": "Define the analytic input as an unshifted defect g=B^T(f+A*p), set g=[-1,0], lambda=1, q=[1,0], and assert the one actual shared shifted-defect result is [0,0]. Keep all expected and deliberately-wrong values test-side. Remove every *_expected/certificate output and every alternate-calculation output. The runtime helper may expose actual operands, actual intermediates, actual results, and counters only; it must enter the same shared product/sum/shift/inverse operations as the body and must not form B^T B. Retained-certificate comparison must continue to load the external certificate in the test and pass only the captured input to the calculation. Remove the redundant zero-argument retained helper or make it accept the capture without loading expected data."
+    },
+    {
+      "severity": "high",
+      "id": "C04-CONTROL-002",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:163",
+      "finding": "The nonsymmetric oracle has free-slot and coordinate order reversed and its first rational expression is not bit-identical to the required grouped binary64 calculation. The input also omits factor.order, so it cannot prove traversal through a non-default order.",
+      "independent_oracle": {
+        "input_semantics": "V rows are free slots [coordinate 1, coordinate 0]; h is in those free slots; raw spectral columns are 0,1",
+        "t_bits": ["c024000000000000", "c034000000000000"],
+        "z_bits": ["bff1c71c71c71c72", "bff6db6db6db6db7"],
+        "delta_free_slot_bits": ["bfde79e79e79e7a2", "3ffbefbefbefbefc"],
+        "delta_free_slot_values": [-0.4761904761904764, 1.746031746031746],
+        "delta_coordinate_order_bits": ["3ffbefbefbefbefc", "bfde79e79e79e7a2"],
+        "note": "The test's [110/63,-10/21] is coordinate order, not free-slot order; the expression -10.0/21.0 has bits bfde79e79e79e79e and therefore cannot be used for exact equality to the grouped result bfde79e79e79e7a2."
+      },
+      "required_change": "Assert test-side u64 bit literals for actual t, z, and delta in free-slot order. Assert the coordinate join separately at coordinates [1,0]. Add factor.order to the analytic input and exercise a non-default order with operands whose binary64 accumulation changes when traversed in raw order, so the test distinguishes factor.order from 0..m. Do not return a transposed-V or ascending-order counterfactual from the helper."
+    },
+    {
+      "severity": "high",
+      "id": "C04-CONTROL-003",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:187",
+      "finding": "P1ReducedNormNonfinite and P2ReducedNormNonfinite are unreachable through the required guard order when the full and reduced norms inspect the same actual vector: a nonfinite free coordinate is already rejected by the preceding full norm. An enum-to-error poison helper could therefore become the invented error factory prohibited by the authority.",
+      "required_change": "Delete those two nonfinite reduced-norm cases. Replace them with reachable finite reduced-radius violations: use unequal original and remaining radii and a finite p1/p2 whose full norm is at most original_radius while its recomputed free norm exceeds remaining_radius; assert ScratchRadius/ScratchReducedRadius/First and FinalRadius/FinalReducedRadius/Second. Retain separate actual full-norm nonfinite cases. Every poison helper must mutate a documented real operand at the named seam and then invoke the shared guard path; record the mutated operand bits and reached operation/stage, and prohibit enum-to-error matching. Add actual denominator overflow/nonfinite and division underflow or nonfinite inverse/update operands through the shared arithmetic, because the required finite positive lambda makes a mathematical zero denominator unavailable."
+    },
+    {
+      "severity": "high",
+      "id": "C04-CONTROL-004",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:209",
+      "finding": "Passing both reservations one below their bounds cannot discriminate scalar-cap ownership from guard-cap ownership, and literal zero hook assertions can pass without observing operations. The exact-cap admission boundary is also absent.",
+      "required_change": "Use three cases: scalar=70275 with guard capacity sufficient; guard=211235 with scalar capacity sufficient; and exact scalar=70276/guard=211236 admitted through branch entry. For every denial assert before/after deltas from the real monotonic ledger and hook snapshots: attempted and owning denied counter each +1, executed scalar/guard/factor/Dot2 deltas zero, phase/evaluator/hydraulic/materialization deltas zero, and owner/budget snapshots unchanged. Do not assert globally initialized literal zeros. The admitted boundary must observe actual category entry without requiring a physical replay."
+    },
+    {
+      "severity": "medium",
+      "id": "C04-CONTROL-005",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:134",
+      "finding": "Boolean fields box_feasible/full_ball_feasible/reduced_ball_feasible/radius_gap_within_tolerance can self-certify the implementation and do not prove the prescribed recomputation/order.",
+      "required_change": "Expose only actual p vectors, masks, original/remaining radii, ordered full/reduced norm bits, gap/tolerance operand bits, reached guard stages, and operation counters. Compare them in tests to external certificate values or independent test-side literals. Preserve the existing captured-face test as the primary external-certificate control."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "No candidate body exists, so shared-operation reachability, absence of duplicate accessor math, exact guard precedence, and actual counter deltas remain future source-review obligations.",
+    "The current controls still need distinct reachable p1/p2 box, full-radius, reduced-radius, closeness, source-domain, denominator, division/inverse-output, update, and no-third-correction cases routed through shared body operations.",
+    "Signed -0.0 must enter the pre-existing BVLS-03 function and compare its actual result/counters with the unchanged BVLS-03 control; a helper-selected string alone is insufficient."
+  ],
+  "approval": "No prospective control approval. Resolve C04-CONTROL-001 through C04-CONTROL-004 before authorizing body work; C04-CONTROL-005 must be resolved before controls can qualify green evidence."
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-body-scope-qa.v1",
+  "evidence_class": "Static: frozen-source, manifest, cfg, and receipt review only; QA ran no command, candidate, numerical oracle, or physical replay",
+  "authority_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea",
+  "receipt": {
+    "path": "artifacts/shifted-runtime-body-build01.json",
+    "source_tree_sha256": "716d84a61559b619b659e4c0079dbf8a025995e763264adc5283f45206abb683",
+    "exit_code": 101,
+    "elapsed_seconds": 17.42729735188186,
+    "tests_executed": 0,
+    "classification": "incomplete compile-only intermediate; six compiler errors, so it is neither a control result nor a body-validation pass"
+  },
+  "exact_changed_paths_since_red05": [
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "red05_sha256": "d7896c10f9c06af818bf7bc734b5a2752e674e7b69a5655e96529c4fa3133f47",
+      "body01_sha256": "ff88cac5efb1f490f3643af71e0e9b6d3479b53a9e7eb38fee509ac1f5915ad5"
+    },
+    {
+      "path": "crates/openwepp-land-surface-energy/src/lib.rs",
+      "red05_sha256": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c",
+      "body01_sha256": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9"
+    }
+  ],
+  "unchanged_confirmed_paths": [
+    {
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "sha256": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e"
+    }
+  ],
+  "cfg_dependency_reachability": {
+    "production_stage1_module": "lib.rs imports m1_trust_region_stage1 without a feature gate; BVLS-04 production helper code is therefore runtime-reachable if selected by the Stage1 decision path.",
+    "test_scaffolding": "The new observation/test structs and explicit analytic helpers are cfg(test); physical capture uses cfg(all(test, feature = m1-trust-region-physical-stage)). The selected red command compiles with both analytic and physical-stage features.",
+    "manifest": "The LSE feature declarations are empty feature flags. No Cargo.toml/Cargo.lock change was identified in the red05-to-body01 source-manifest comparison; a final manifest comparison is still required.",
+    "work_propagation": "lib.rs adds five BVLS-04 actual-work fields to M1TrustRegionWorkObservation and absorb(); stage1 records entries, retained-factor applications, Dot2 residual/free-gradient attempts, and ordered norms. Controller source is unchanged and passes its existing work object to evaluator observation. Final review must prove every selected/refused path observes the fields and no reservation is reported as actual work."
+  },
+  "intermediate_compile_findings": [
+    {
+      "severity": "blocking for control execution, expected at this frozen intermediate",
+      "path": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "evidence": "Expected-red tests import three not-yet-defined helpers and three not-yet-defined BVLS-04 types, request absent retained-observation fields, and the new ScratchBox enum variant lacks a refusal-text match arm."
+    }
+  ],
+  "applicability": {
+    "A0": "Main-document authority admission is already recorded PASS for the unchanged canonical authority only. Detached runtime A0-relevant typed/error/work-guard behavior requires final-source review and executed controls.",
+    "A1": "Applicable: runtime-reachable Stage1 behavior, controller observation boundary, fixture/cfg reachability, and final source/manifest scope require A1 assessment. Not established by the canonical documentation check.",
+    "A3": "Applicable: the changed operation/error/work surface requires final contract-derived controls, error precedence, scratch isolation, and no-fallthrough evidence. Not established by this compile failure.",
+    "critical": "Current private/noncritical classification remains conditional. Public API/schema/shared primitive, dependency/resolver/toolchain/global feature, authority/required-test weakening, or ambiguous reachability escalates to Critical qualification. No such change is proven or ruled out by this incomplete body cut."
+  },
+  "remaining_required_evidence": [
+    "A compiling final body/control cut with actual expected-red then green results in both required modes.",
+    "Final exact source manifest/diff, Cargo manifest/lock comparison, cfg reachability and closed-fixture/assurance mapping.",
+    "Same-command lint attribution against the retained 238 combined-feature and 262 analytic-only populations, with introduced/ambiguous diagnostics blocking.",
+    "Final documentation/schema/placeholder/assurance checks bound to the actual changed source, plus applicable detached A0/A1/A3 controls.",
+    "Only then, the separately authorized non-target physical domain-refusal endpoint; no approval for it is supplied here."
+  ],
+  "verdict": "INTERMEDIATE BODY SCOPE RECORDED; NOT APPROVED FOR CONTROL OR PHYSICAL EXECUTION. This static artifact reuses prior authority-admission/unit facts only within their canonical-main-document scope and does not treat them as detached runtime validation."
+}

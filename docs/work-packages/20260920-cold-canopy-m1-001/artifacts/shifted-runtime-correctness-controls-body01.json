@@ -1,0 +1,79 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-correctness-controls-body01.v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "evidence_class": "Static: independent review of the immutable cut04 control seams. The parent-reported parser failure is identified as supplied execution evidence; this reviewer ran no Rust, numerical, prototype, candidate/reference, or physical command.",
+  "reviewed": {
+    "review_copy": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut04-20260929",
+    "manifest": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-controls-review-cut04.json",
+    "stage1_sha256": "00e4e6321fdd08c6411723bd207826711e674ecbe2e8aee79cf4c50cf408c964",
+    "lib_sha256": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "controller_sha256": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e",
+    "archive_sha256": "56ced10828f00bd4108bbb0bb0f2bdbf5f76d15b2833a62da21a2803a7463c13",
+    "authority": "/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1025",
+    "authority_sha256": "1d53bc0290f8c825e5f0e51ab54f7d3ac44929229b92105622ff143c0e5847ea"
+  },
+  "findings": [
+    {
+      "id": "C04-CONTROL-BODY-001",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut04-20260929/m1_trust_region_stage1.rs:664",
+      "finding": "The poison wrapper in the frozen cut is syntactically unclosed. The parent reports controls-debug01 stopped at this parser failure, so none of the new controls executed. This is supplied parent evidence, not a command run by this reviewer.",
+      "required_change": "Close and format the wrapper, then return the stable replacement cut and its parser/compile result. No green or behavioral claim can be based on cut04."
+    },
+    {
+      "id": "C04-CONTROL-BODY-002",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut04-20260929/m1_trust_region_stage1.rs:6368,6602",
+      "finding": "Both reduced-radius poison hooks compute a new threshold as 0.25 times the just-computed free norm. That is duplicate candidate-dependent arithmetic and an invented refusal factory, which the authority explicitly disallows. It also makes the observation inconsistent: mutated_operand_bits describes this synthetic threshold while refusal metadata still records solution.radius as the reduced face radius. These controls therefore do not establish an actual p1 or p2 comparison against an independently fixed remaining-radius operand.",
+      "required_change": "Inject a predetermined finite normal remaining-radius operand before the owning comparison, independent of the computed norm, and carry that exact operand through both the comparison and refusal metadata. Assert its bits and the actual recomputed free-norm bits. Do not derive the injected radius from free_norm or duplicate the tested comparison arithmetic."
+    },
+    {
+      "id": "C04-CONTROL-BODY-003",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut04-20260929/m1_trust_region_stage1.rs:2210",
+      "finding": "InverseOutputNonfinite substitutes f64::MAX and 2.0 inside a V*z product. Their multiplication overflows and is rejected by bvls04_product_guard at line 2213, before the inverse accumulation and final unary-negation/output guard at lines 2217-2225. The test's shared FactorApplicationOutput label cannot distinguish this earlier product failure, so the named inverse-output obligation remains unexercised.",
+      "required_change": "Use finite normal injected operands that pass every preceding source/product/sum guard and cause the actual final inverse output check to refuse, or add precise internal operation identity that proves the final-output check was reached. Keep expected reason/stage mapping, but do not relabel a product overflow as inverse-output coverage."
+    },
+    {
+      "id": "C04-CONTROL-BODY-004",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut04-20260929/m1_trust_region_stage1.rs:646-666",
+      "finding": "Poison provenance and restoration are self-reported or incomplete. BVLS04_POISON_CONSUMED stores the expected guard stage at injection and reached_stage reads that value, so the assertion at line 326 does not independently establish where the owning refusal occurred. Bvls04PoisonScope restores only BVLS04_POISON, discarding the prior consumed state; BVLS04_KKT_ENTRIES is monotonic and unscoped. owner_snapshot_before/after duplicate the local state.p arrays already exposed as live_state_bits and do not observe a distinct caller/owner state. The fallback count calls refine_face_before_crossing directly and therefore cannot observe a caller fallthrough transition beyond that helper. Together these seams do not prove caller/owner restoration or terminal no-fallthrough as claimed by lines 322-326.",
+      "required_change": "Make the scope save and restore poison, consumption, and any counter state on every return. Record only hook identity and actual mutated operand data at consumption; derive reached stage from the returned actual refusal metadata or a separately emitted owning-operation event. Replace the duplicate owner snapshots with an actual distinct caller/owner snapshot, or rename/remove that assertion and prove owner restoration at the real caller seam. Measure fallthrough at a seam that could actually enter crossing/KKT, while preserving a direct-helper control for local state isolation if useful."
+    },
+    {
+      "id": "C04-CONTROL-BODY-005",
+      "severity": "medium",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut04-20260929/m1_trust_region_stage1.rs:639,2170,2194,2210,6279,6368,6602",
+      "finding": "Six poison variants accept a usize selector but ignore it: denominator overflow, division nonfinite, inverse-output nonfinite, coordinate-update nonfinite, and both reduced-radius excess hooks. For example coordinate_update_nonfinite(13) mutates the first traversed update, while the control never asserts refusal.metadata.coordinate. The apparent coordinate-specific control therefore does not demonstrate the requested raw spectral/free-coordinate join or coordinate metadata.",
+      "required_change": "Honor each selector at the relevant raw j, free slot, or full coordinate and assert the actual metadata coordinate where applicable. If an operation has no coordinate identity, remove the misleading selector and record the actual raw/slot identity separately. Ensure an out-of-range selector fails the test rather than silently leaving an unconsumed hook."
+    },
+    {
+      "id": "C04-CONTROL-BODY-006",
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut04-20260929/m1_trust_region_stage1.rs:125-140,4269-4327",
+      "finding": "The retained m=20 control asserts only refinement_scalar_operations <= 69,345. RefinementRetainedFaceObservation does not expose refinement_guard_events, so no control shows the observed positive seam guard count stays within the required G04(20)=208,439 reservation. The exact m=21 boundary test establishes admission arithmetic at the prefix, but it does not replace the authority's observed full-seam monotonic bound obligation.",
+      "required_change": "Expose the actual final state.refinement_work.guard_events in RefinementRetainedFaceObservation and assert it is at most 208,439 for the retained m=20 face, alongside the existing scalar assertion. Preserve the exact m=21 prefix denial/admission controls."
+    },
+    {
+      "id": "C04-CONTROL-BODY-007",
+      "severity": "medium",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut04-20260929/m1_trust_region_stage1.rs:285-300,4813-4831",
+      "finding": "The signed-zero seam correctly requires actual BVLS-03 entries and zero BVLS-04 entries, but its equality check covers only result bits, factor-application count, first-residual operations, and second-Dot2 operations. The retained observation already owns scalar, coordinate-update, whole-KKT, and enclosure counters; omitting them leaves the claimed unchanged BVLS-03 work path only partially tested.",
+      "required_change": "Carry and compare the actual total scalar and guard events and the coordinate-update, whole-KKT, and upward-enclosure operation/guard counters for +0.0 versus -0.0. Continue requiring nonzero BVLS-03 entries and zero BVLS-04 entries, with no positive-branch structure or reservation work."
+    }
+  ],
+  "verified_scope": [
+    "The two m=21 work-boundary cases use the shared bvls04_required_work and actual positive eligibility/reservation prefix; they independently deny scalar-only and guard-only one-under capacity and admit exact capacity without entering factor, Dot2, inverse, or update work.",
+    "Under the physical-stage cfg, the work boundary captures the actual scratch-global and budget snapshots and asserts equality; phase, evaluator, hydraulic, and materialization deltas are also read from the actual shared global snapshot.",
+    "The p1 lower/upper box and p1/p2 full-norm hooks mutate operands consumed by the actual shared box/norm paths. P2ClosenessGap mutates the actual candidate before the ordinary final checks. Coordinate update uses the actual checked shared addition, subject to the selector/provenance finding above.",
+    "Retained-face observations carry actual trace values for p0/p1/p2, both defects, both deltas, all six full/reduced norm-square and norm results, unequal original/remaining radii, gap/tolerance, masks, and unchanged final KKT fields. Expected values remain external certificate data rather than accessor-computed expected arrays.",
+    "The signed-zero helper uses an accepted zero-lambda capture, injects the requested signed zero into the actual retained path, requires positive attempted BVLS-03 entry count and zero BVLS-04 entries, and compares result bits. Its remaining counter coverage is finding C04-CONTROL-BODY-007."
+  ],
+  "residual_risk_and_missing_evidence": [
+    "The two core blockers from shifted-runtime-correctness-core-fix02.json (positive selector/structure accounting and ordinary-lambda source-stage mapping) were explicitly excluded from this seam review and remain open independently.",
+    "Cut04 has no executable control evidence because the parent-reported parser failure stopped controls-debug01. Compilation, corrected green controls, retained numerical comparison, and work-bound execution remain required after a stable replacement cut.",
+    "No physical replay, candidate/reference replay, M1 release, production activation, or package closure is approved by this artifact."
+  ],
+  "verdict": "NOT APPROVED. Cut04 does contain real shared-operation and work-prefix seams, but findings C04-CONTROL-BODY-001 through 007 prevent the controls from establishing compilability, independently owned radius operands, final inverse-output coverage, trustworthy stage/owner restoration, complete guard-bound evidence, and unchanged signed-zero work."
+}

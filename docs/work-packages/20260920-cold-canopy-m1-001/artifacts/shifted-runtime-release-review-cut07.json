@@ -1,0 +1,12 @@
+{
+  "evidence_class": "Static: selected immutable corrected source for same-review verification; no physical run",
+  "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut07-20260929",
+  "files": {
+    "m1_trust_region_stage1.rs": "74a76999f932ddcf14076329f52746b17344c5d79fe4462019b3290653a09f3e",
+    "lib.rs": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "m1_trust_region_controller.rs": "0b615ea9e8e1b112624ccf60fbdd06f967170ba2d62a0f39ae759f54a41640c7",
+    "m1_coupled_tests.rs": "30e65beb4a6b6a8f735922d4b7a93e4cb3efda3123d90a8ed6faea189949b9ea",
+    "m1_trust_region_stage2_controls.rs": "5d39caeaee2cd23266632fe2472e7423128b247ed9f8ca5ca1591c24163e307e"
+  },
+  "archive_sha256": "1fd0729c62668c7c7eef3dee5da107b113cfe98023749ee7fc7224f052562343"
+}

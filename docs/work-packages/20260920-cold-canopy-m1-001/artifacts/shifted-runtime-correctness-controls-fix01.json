@@ -1,0 +1,53 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-correctness-controls-fix-review.v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "evidence_class": "Static: reviewed frozen expected-red controls only; reused the previously derived m=4 oracle without rerunning it; no Rust, prototype, candidate, reference, or physical replay was run",
+  "reviewed": {
+    "stage1_sha256": "45fc133dc9944a5a86ab20f433b6042792dcc4c555ae2bc23fa4b59d7bf211eb",
+    "controls_plan_sha256": "97e2eb41ced527289cf70dd9a1fcdb4b8f86f33244bccaca10ea5807d81e9b83",
+    "scope": "m1_trust_region_stage1.rs lines 25-275 and corrected expected-red mapping only"
+  },
+  "verdict": "NOT_APPROVED_FOR_BODY",
+  "resolved": [
+    "The shifted-gradient input now states unshifted-gradient semantics and does not carry expected outputs.",
+    "The two-dimensional free-slot and coordinate joins use the independently derived bits.",
+    "The m=4 exact-orthogonal nonsymmetric fixture proves non-default factor.order through a test-side ascending-order counterfactual.",
+    "Reduced-radius failures are now finite and reachable after the preceding full-radius guard.",
+    "Scalar and guard capacities are separated, and isolation assertions use before/after deltas."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "C04-CONTROL-FIX-001",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:243",
+      "finding": "M1TrustRegionBvls04Reservation still contains admits, so each test supplies the expected decision to the calculation. This permits a canned helper and prevents the exact-bound case from proving the shared reservation comparison.",
+      "required_change": "Remove admits. Supply only scalar_capacity, guard_capacity, and an actual m=21 context or free_count=21. Invoke the shared K04/G04 reservation calculation and comparison. Assert observed required_scalar=70276, required_guards=211236, the owning cap for each one-under denial, attempted/denied deltas, and category_entry_delta=1 for exact capacity. Keep factor/Dot2/update deltas zero only as observation of stopping immediately after admitted entry, not as the admission decision."
+    },
+    {
+      "severity": "high",
+      "id": "C04-CONTROL-FIX-002",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:226",
+      "finding": "The denominator control requests NonfiniteOperand/ShiftedDenominator, but the adopted authority maps shifted denominator, division, and inverse-output failures to FactorOutput/FactorApplicationOutput and authorizes no ShiftedDenominator stage.",
+      "required_change": "Change denominator overflow to FactorOutput/FactorApplicationOutput. Add a distinct reachable division or inverse-output case with the same mapping. Split inverse_update_nonfinite into an inverse-output case and an actual coordinate-update failure; the latter must assert CoordinateUpdate/CoordinateUpdate. Do not add ShiftedDenominator to the enum."
+    },
+    {
+      "severity": "high",
+      "id": "C04-CONTROL-FIX-003",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:194",
+      "finding": "The retained helper still accepts no captured input, and p0/p1/p2 norm evidence is reduced to nonzero predicates. That neither excludes hidden fixture/certificate loading nor proves all prescribed ordered squares, accumulations, and final square roots.",
+      "required_change": "Delete the zero-argument retained helper or pass it the decoded capture only. Fold these assertions into retained_positive_result where practical. Compare actual p0, p1, and p2 full and reduced ordered sum-of-squares bits and their post-sqrt norm bits against each corresponding external certificate point, along with original/remaining radius and p2 gap/tolerance bits. Keep the certificate solely in the test."
+    },
+    {
+      "severity": "medium",
+      "id": "C04-CONTROL-FIX-004",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:132",
+      "finding": "The frozen expected-red block contains no signed -0.0 selection control, despite the adopted release condition requiring unchanged BVLS-03 selection and behavior.",
+      "required_change": "Add a signed -0.0 input that enters the existing real BVLS-03 seam and compare actual result bits and counters to its unchanged bound control. A selector string or synthetic branch response is insufficient. This finding can be closed by citing an already-bound existing control only if it explicitly supplies -0.0 at the same pre-02 selection seam and asserts unchanged BVLS-03 result/counters."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "Candidate helper implementations do not exist, so same-operation reuse, absence of duplicated accessor arithmetic, actual poison mutation reachability, and actual counter charging remain mandatory body-source review items.",
+    "The corrected m=4 oracle values are accepted and need no further numerical change."
+  ],
+  "approval": "No prospective control approval until C04-CONTROL-FIX-001 through C04-CONTROL-FIX-003 are corrected and C04-CONTROL-FIX-004 is implemented or satisfied by an exact existing bound control."
+}

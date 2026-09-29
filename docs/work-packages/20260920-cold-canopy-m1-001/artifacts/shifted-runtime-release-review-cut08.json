@@ -1,0 +1,12 @@
+{
+  "evidence_class": "Static: selected immutable partially lint-corrected source; no physical release",
+  "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut08-20260929",
+  "files": {
+    "m1_trust_region_stage1.rs": "7c4d72f144952d7a928d9c3fd2033363c86c0f980902267fff2505b5fa6b5306",
+    "lib.rs": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "m1_trust_region_controller.rs": "0b615ea9e8e1b112624ccf60fbdd06f967170ba2d62a0f39ae759f54a41640c7",
+    "m1_coupled_tests.rs": "30e65beb4a6b6a8f735922d4b7a93e4cb3efda3123d90a8ed6faea189949b9ea",
+    "m1_trust_region_stage2_controls.rs": "5d39caeaee2cd23266632fe2472e7423128b247ed9f8ca5ca1591c24163e307e"
+  },
+  "archive_sha256": "8d5f1dca46067c48d76e962b412eac2ed0a8ee66c183e6d7c944cdfe8037b203"
+}

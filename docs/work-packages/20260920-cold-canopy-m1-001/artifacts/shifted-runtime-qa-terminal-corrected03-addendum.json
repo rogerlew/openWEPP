@@ -1,0 +1,17 @@
+{
+  "schema": "openwepp.shifted-runtime-qa-terminal-corrected03-addendum.v1",
+  "evidence_class": "Static correction and reconciliation review only; no command run and no source/support mutation.",
+  "correction_to_terminal_corrected02": {
+    "superseded_wording": "planned release/domain allocation was refused before launch",
+    "corrected_fact": "Only the corrected release-control allocations (140 seconds, then 100 seconds) were refused by the recorder before launch. The physical-domain endpoint was held by unresolved quality/review status; it was never launch-attempted and recorder admission was never requested for it.",
+    "unchanged_disposition": "Both release-control execution and physical-domain execution remain NOT RUN; no CPU or cost evidence exists."
+  },
+  "analytic_lint_reconciliation": {
+    "artifact": "shifted-runtime-corrected-analytic-lint02-inherited-reconciliation.json",
+    "sha256": "b17c172916ee959e1dd6927ddc776cb9f33174946068299346d0c1bba51b1b6a",
+    "result": "PASS for limited attribution: 257 exact plus five source-specific manual inherited pairs account for 262 inherited diagnostics; four too_many_lines diagnostics are introduced.",
+    "manual_pairs": "Same pattern previously reviewed: one narrowed unread-field warning, three diagnostic-gutter relocations, and one unchanged unread-field pair with read lambda_bits context.",
+    "quality_disposition": "No strict lint pass. The four introduced complexity diagnostics remain blocking."
+  },
+  "verdict": "This addendum corrects terminology and verifies lint attribution. The terminal evidence remains publishable only as incomplete/HOLD experimental evidence, with no endpoint or release approval."
+}

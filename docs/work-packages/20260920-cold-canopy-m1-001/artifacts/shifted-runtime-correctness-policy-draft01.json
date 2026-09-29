@@ -1,0 +1,63 @@
+{
+  "schema": "cold-canopy-m1-shifted-runtime-correctness-review/v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "role": "independent correctness/authority reviewer; no authorship",
+  "recorded_utc": "2026-09-29T01:19:32Z",
+  "evidence_class": "Static: adopted authorization, current package top, role-review/testing/numerical-solver guidance, BVLS-01/02/03 authority, current BVLS-04 draft, detached Stage1/controller/lib/test source, and accepted prototype protocol/results/reviews inspected. Ran: read-only diff, source search, JSON extraction, and SHA-256 commands only; no Rust, physical, candidate, reference, or historical replay.",
+  "scope": "Prospective BVLS-04 policy eligibility, arithmetic/order, radius and error precedence, finite work reservation, detached private-cfg reachability, and future validation obligations before any body release.",
+  "reviewed_identity": {
+    "authorization": "/tmp/openwepp_cold_canopy_m1_shifted_runtime_refinement_authorization.md",
+    "canonical_draft": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+    "canonical_draft_sha256": "468f8565654f54ff06db31d4a5d0a671bd396c9ae30f574fec4c3cf8ea2c74a0",
+    "detached_source_tree": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920",
+    "detached_tree_custody": "Parent reports accepted recorder snapshot shifted-runtime-start-custody.json: 764 entries, cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8; reviewer did not independently reconstruct the tree.",
+    "stage1_sha256": "2171320c19fdc6f623d5843002ba2c89343b42ebe2dcc226d57536df641db13e",
+    "controller_sha256": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e",
+    "lib_sha256": "3ea02cc56fbbc4bd711d49ff54aa1d5066bfae5f57ddb4d373d6b643058f962c",
+    "coupled_tests_sha256": "4498dd228ba0b90da28670607d980e535c322aea1fad7e3ab80ba59df1605d65"
+  },
+  "current_observations": [
+    "The detached Stage1 implementation calls refinement after solve_face and before crossing/KKT. Its accepted BVLS-03 selector tests lambda==0, assembled box/active bits, and a strict full-radius interior condition. The positive-lambda path currently has no pre-crossing assembled full-radius or exact-active-bit gate.",
+    "The detached Stage1 module and refinement types are cfg(test); the controller is cfg(all(test, private feature)); the private Cargo features are empty. This bounds present reachability to crate test targets and prevents dependency builds from enabling cfg(test).",
+    "The accepted offline prototype independently supports one captured positive-lambda face, exact V/sigma/order joins, the two-correction bit results, and the unchanged BVLS-02 assessment. It explicitly does not support the runtime narrow bracket as an exact secular-root enclosure or arbitrary-input/runtime activation.",
+    "The draft's core candidate scalar formula is arithmetically consistent: 12,306+597m+8m^2 gives 27,446 at m=20 and 28,371 at m=21. Its K04 formula gives 69,300 at m=20 and 70,229 at m=21, both below the inherited per-face K03 maximum 95,784."
+  ],
+  "findings": [
+    {
+      "id": "SHIFTED-RUNTIME-CORRECTNESS-001",
+      "severity": "high",
+      "location": "numerical-methods.md:961-972; detached m1_trust_region_stage1.rs:4892-4975 and 5968-5971",
+      "finding": "The positive-branch eligibility and owning-error map is not yet exact. The draft says the face has already passed 'existing' box, active-bit, full/original-radius and reduced/free-radius checks, but the actual positive-lambda path does not perform all of those checks before crossing. It then sends a failed predicate to unchanged crossing or an owning error without naming which outcome owns box infeasibility, active mismatch, full-radius failure, reduced-radius/ball inconsistency, missing factor/order, or nonfinite norm arithmetic.",
+      "risk": "An implementation can silently classify a numerical/domain inconsistency as ineligibility and enter unchanged BVLS-02, or can replace the intended crossing behavior with a terminal refinement error. Either changes solver semantics and error precedence.",
+      "required_fix": "Freeze the ordered decision table before tests/body: zero lambda selects unchanged 03; finite positive lambda is the only 04 category; ordinary box crossing remains unchanged 02 crossing; every structural, active-bit, norm, ball, factor/order, and nonfinite inconsistency has one named owning refusal. State when 04 becomes selected and retain the new sentence that EFT-domain failure after selection is terminal with no 02 fallthrough."
+    },
+    {
+      "id": "SHIFTED-RUNTIME-CORRECTNESS-002",
+      "severity": "high",
+      "location": "numerical-methods.md:1024-1059",
+      "finding": "The radius arithmetic and reservation are not yet independently reproducible from the prose. K04 charges three full 21-coordinate norms and two extra reduced norms, which implies reuse of the existing LambdaTrace reduced p0 result, but the eligibility paragraph does not say that. It does not freeze the p1 check order or the reduced-norm traversal. G04 gives a seam term 238+2m without itemizing it. The stated m=20 guard value is also arithmetically wrong: 3*69,300+238+40 = 208,178, not 208,138.",
+      "risk": "A body can recompute or reuse a different p0 quantity, check the wrong radius first, traverse free coordinates differently, under-reserve guards, or publish internally inconsistent exact-bound evidence.",
+      "required_fix": "State exactly which p0 norm/gap/tolerance values are reused and which are recomputed; require full norms in ascending 0..20 order and reduced norms in free_ids order; freeze p1 precedence (active/domain, box, full radius, reduced radius) and p2 precedence (active/domain, box, full radius, reduced radius, nonnegative gap, upper closeness). Itemize the scalar and seam-guard terms, correct the m=20 value, and retain proof that a mixed 03/04 sequence of at most 43 faces remains within the unchanged global caps."
+    },
+    {
+      "id": "SHIFTED-RUNTIME-CORRECTNESS-003",
+      "severity": "medium",
+      "location": "numerical-methods.md:1007-1022; detached lib.rs:452-519",
+      "finding": "The draft now lists stable bvls04_* tokens, but it does not bind them to the existing typed reason enum and guard-stage metadata. The current private taxonomy has generic FactorOutput, CoordinateUpdate, ScratchRadius, FinalBox and FinalRadius reasons and no denominator, division, reduced-radius, or closeness guard stages.",
+      "risk": "Different body paths can collapse into misleading reasons, create unreachable variants, or report a string that disagrees with the typed metadata.",
+      "required_fix": "Define one exact reason/guard-stage mapping for every listed bvls04_* token, including correction position and coordinate applicability, before expected-red tests. Extend the existing private taxonomy only where needed; do not create a parallel reporting framework."
+    }
+  ],
+  "resolved_during_review": [
+    "The draft now states that EFT-domain admission is not an eligibility selector and that unsupported arithmetic after positive-branch selection is terminal; this resolves the most direct fallback ambiguity, subject to the complete decision table in finding 001.",
+    "The draft now supplies K04/G04 formulas and stable bvls04_* metadata tokens; findings 002 and 003 retain only the missing derivation/mapping and the m=20 arithmetic defect."
+  ],
+  "future_evidence_requirements": [
+    "No body release until findings 001-003 are amended and this same reviewer verifies the changed policy bytes.",
+    "Expected-red controls must precede each corresponding body seam and must exercise the real selector, p1/p2 checks, typed metadata, denial-before-excess-work, unchanged zero-lambda03 path, and no-fallback behavior.",
+    "Body review must compare exact arithmetic order and factor joins against the accepted prototype without calling author expected-answer code, inspect substantial duplicated Rust logic, and require central primitive reuse or explicit numerical justification.",
+    "Private reachability must be rechecked after the terminal diff. Applicable validation includes no-default and all-feature test-target compilation, focused debug and release controls, static module/feature/reverse-dependency scan, and exact source/manifest equality. This observation does not waive package-selected compatibility, format, lint, docs, A0/A1/A3, or Critical-trigger checks.",
+    "The assigned later correctness scope still requires an independent reconstruction from retained operands and the reviewed implementation. No physical/candidate/reference replay has been performed by this reviewer at this stage."
+  ],
+  "verdict": "NO-GO for BVLS-04 body release at this draft. The composite-method shape, fixed-shift operation order, and candidate scalar topology are prospectively supportable, but the exact selector/error table, radius order, guard derivation, and typed metadata mapping remain blocking authority defects. Domain FAIL and M1 HOLD remain unchanged."
+}

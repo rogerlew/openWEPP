@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Static: source-bearing diagnostic comparison of actual executed same-command strict lint logs; not a strict lint pass",
+  "baseline": "completion-domain-combined-lint02",
+  "candidate": "shifted-runtime-corrected-combined-lint02",
+  "argv_identical": true,
+  "normalization": "Only line/column and numeric gutters; full content otherwise retained",
+  "baseline_count": 238,
+  "candidate_count": 242,
+  "matched_count": 238,
+  "introduced": [
+    "error: this function has too many lines (129/100)\n    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n     |\nLINE | / fn refinement_build_retained_face_observation(\nLINE | |     context: RefinementRetainedFaceObservationContext<'_>,\nLINE | | ) -> Result<RefinementRetainedFaceObservation, Box<RefinementObservationRefusal>> {\n     | |_________________________________________________________________________________^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines",
+    "error: this function has too many lines (206/100)\n    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n     |\nLINE | / fn refinement_eligible_p0(\nLINE | |     input: &super::M1TrustRegionSubproblemInput,\nLINE | |     prepared: &PreparedSubproblem,\nLINE | |     state: &mut SubproblemState,\n...    |\nLINE | |     reservation_guards_before: u64,\nLINE | | ) -> Result<Option<[f64; 21]>, super::M1TrustRegionSubproblemRefusal> {\n     | |_____________________________________________________________________^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines",
+    "error: this function has too many lines (239/100)\n    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n     |\nLINE | / fn refinement_check_first_scratch(\nLINE | |     input: &super::M1TrustRegionSubproblemInput,\nLINE | |     prepared: &PreparedSubproblem,\nLINE | |     state: &mut SubproblemState,\n...    |\nLINE | |     p1_box_feasible: Option<bool>,\nLINE | | ) -> Result<bool, super::M1TrustRegionSubproblemRefusal> {\n     | |________________________________________________________^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines",
+    "error: this function has too many lines (194/100)\n    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:LINE:COL\n     |\nLINE | / fn refinement_finalize_candidate(\nLINE | |     input: &super::M1TrustRegionSubproblemInput,\nLINE | |     prepared: &PreparedSubproblem,\nLINE | |     state: &mut SubproblemState,\n...    |\nLINE | |     p1_box_feasible: bool,\nLINE | | ) -> Result<(), super::M1TrustRegionSubproblemRefusal> {\n     | |______________________________________________________^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines"
+  ],
+  "removed": [],
+  "baseline_stderr_sha256": "2128c8f23e6e0f50445abed44834043bdd02c4ff8480ea8145b76983080a689b",
+  "candidate_stderr_sha256": "beb345c9860b1dac6adb29b6b6593b70530d758c3e4be2261670aefb7215e212"
+}

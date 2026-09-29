@@ -1,0 +1,44 @@
+{
+  "schema": "openwepp.shifted-runtime-qa-cut07-manifest-addendum01.v1",
+  "evidence_class": "Static comparison of recorded full 764-entry source maps, immutable cut07, and recorded receipts. No command was run and no source, authority, or support file was edited by this reviewer.",
+  "sources": {
+    "initial": {"artifact": "shifted-face-capture01-source.json", "sha256": "b65d02a96b6a5fb8467069fd712332bca6ecbaba4e02a9051483b716535ccd0c", "entries": 764, "custody_tree_sha256": "cff19cd8d6aa20249443c826190d9ef5fe9e0bc0d9859b6e00ea3b27609a9cf8"},
+    "release01": {"artifact": "shifted-runtime-controls-release01-source.json", "sha256": "223d4f155a9f7cb354a1e96629a6e5d03a7a7a96beb29e74094dfbf340aa1f9e", "entries": 764, "execution_tree_sha256": "c5165eb9055f2ca438aa507b8db3f72b13a9b30c368814647e4c56cfcbd2726c"}
+  },
+  "findings": [],
+  "manifest_dependency_scope": {
+    "verdict": "PASS for this frozen release01 source map: all 26 Cargo.toml/Cargo.lock entries are byte-identical to the 764-entry initial map.",
+    "root_cargo_lock_sha256": "8251b64a248cd65f2be01962cdc64c44c4b486ac253a00875dfae55c105d5534",
+    "root_cargo_toml_sha256": "e5271cfe2bca5132e263d6227264ebfd19c03e0275a9ff08cb0419c3f61bb676",
+    "lse_cargo_toml_sha256": "efcb09d71cca3a756538ef5700ed73550068df680d5b3aab9ec0983dce662e8f",
+    "changed_entries": [
+      "crates/openwepp-land-surface-energy/src/lib.rs",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage2_controls.rs"
+    ],
+    "unchanged_entry_count": 759,
+    "consequence": "No dependency-resolution or Cargo-deny trigger is introduced by the release01 source diff. This conclusion applies only to the recorded source hash; recheck if any later source or manifest changes."
+  },
+  "private_reachability": {
+    "verdict": "PASS for cut07: lib.rs:133-134 puts m1_trust_region_stage1 behind #[cfg(test)]; the archived BVLS04 body is therefore excluded from normal production builds. Physical-stage test reexports are additionally #[cfg(all(test, feature = m1-trust-region-physical-stage))].",
+    "classification": "The actual source/manifest evidence supports private/noncritical workflow classification for this specific test-only diff, subject to unresolved correctness and quality gates."
+  },
+  "authority_applicability": {
+    "A0": "Unchanged numerical authority admission/unit checks remain valid only as canonical-document evidence. They do not establish runtime behavior.",
+    "A1": "Not waived: current recorded release01 control is the private release selector test(m1_trust_region_refinement_bvls04_expected_red_) with the analytic+physical feature pair, exit 0 and physical=false. The package's broad A1/full qualification remains unmet and its 900-second run did not fit. The passing compat-debug02 selector also excludes real_candidate_domain_refusal_shrinks_retained_base, so it is not the real-domain endpoint.",
+    "A3": "No A3 constitutive formula, external suite, cohort, production equation, or dependency changed in the five-file diff. Therefore this diff does not newly trigger an external A3 suite; existing package-level A3/constitutive closure remains HOLD and is not satisfied by the private controls.",
+    "Critical": "No Critical trigger is present in the recorded diff: no production/public reachability, manifest/dependency/runner change, conservation-operand lineage change, or required-case weakening is shown. The Critical full-workspace command remains NOT SELECTED for this private scope; it reopens on any such drift."
+  },
+  "custody_disclosure": {
+    "oracle_json_sha256_after_restore": "1ee5a94d3af3821e794f0e0eec60ffc473bcb0a7335feaf91f9dac65fd1caa69",
+    "event": "Same-correctness reviewer disclosed a brief mutation of the oracle JSON during running commands, followed by byte-exact restoration. Later support pins record the restored hash.",
+    "disposition": "Historical pin equality does not prove uninterrupted custody for affected interim commands. Preserve the byte-identical historical JSON and disclosure; do not use its wall_time_seconds_observed as runtime-cost evidence. Fresh receipts after the later final source/support freeze are required for terminal qualification."
+  },
+  "non_blocking_follow_ups": [
+    "The 16 introduced lint diagnostics in combined-lint02 remain a quality gate failure despite improvement from 67.",
+    "Correctness cut07's scaled-collapse fixed-bound blocker must be resolved and independently reviewed before release."
+  ],
+  "verdict": "QA PASS for the requested manifest/dependency and private-cfg determination at release01/cut07. This is not source or release approval: correctness, final quality receipts, broad A1 HOLD, held interfaces, and domain/release evidence remain unresolved."
+}

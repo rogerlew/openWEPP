@@ -1,0 +1,31 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-body-scope-qa.v1",
+  "evidence_class": "Static same-reviewer correction; no command, candidate, numerical oracle, or physical replay was run",
+  "supersedes_factual_claim_only": "shifted-runtime-qa-body-scope01.json cfg_dependency_reachability.production_stage1_module and its resulting A1/A3 applicability wording",
+  "frozen_source": {
+    "tree_sha256": "716d84a61559b619b659e4c0079dbf8a025995e763264adc5283f45206abb683",
+    "lib_sha256": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "stage1_sha256": "ff88cac5efb1f490f3643af71e0e9b6d3479b53a9e7eb38fee509ac1f5915ad5"
+  },
+  "corrected_cfg_reachability": {
+    "evidence": "lib.rs lines 129-134 declare both m1_coupled_tests and m1_trust_region_stage1 with #[cfg(test)]. Lines 147-155 only re-export Stage1 test hooks under #[cfg(all(test, feature = m1-trust-region-physical-stage))] or #[cfg(test)].",
+    "conclusion": "At this frozen cut, the Stage1/BVLS-04 body and its work/error observation additions are unreachable from a production build and from non-test feature builds. They are reachable only in lib-test compilation; the selected red/body command enables the analytic and physical-stage test features, so it is the correct compilation surface once the incomplete interfaces are supplied.",
+    "dependency_evidence": "Cargo.lock and the LSE Cargo.toml hashes match red05. No dependency, resolver, toolchain, or LSE feature declaration delta is evidenced by this cut."
+  },
+  "required_consumers_and_boundaries": {
+    "test_consumers": [
+      "m1_trust_region_stage1::bvls04_expected_red_controls and bvls04_future_body_expected_red_controls",
+      "m1_coupled_tests through the cfg(test) Stage1 module",
+      "the physical-stage capture re-exports only when test plus m1-trust-region-physical-stage is enabled"
+    ],
+    "work_fields": "M1TrustRegionWorkObservation and the new BVLS-04 counters are #[cfg(test)]. Stage1 increments them and the unchanged controller carries its test work object to evaluator observation. Final source/control review must still show each expected selected/refused path and recorder consumer observes actual counts, but there is no production work-field consumer at this cut.",
+    "closed_fixture_obligation": "The embedded capture/certificate include_str inputs, expected-red declarations, and physical-stage capture hooks require final closed-fixture provenance and cfg reachability review after the body compiles."
+  },
+  "corrected_gate_applicability": {
+    "A0": "The parent-recorded authority-admission/unit checks apply only to canonical main documentation and remain PASS in that limited scope. They do not validate the detached test body.",
+    "A1": "No production-runtime A1 route is statically reached by this cfg(test) body. A1 remains applicable if the final diff changes a production/test boundary, shared runtime primitive, public behavior, or if the package's separately required authority-suite scope is triggered; none is established by body01.",
+    "A3": "A3 is external constitutive-authority applicability, not a synonym for numerical or contract-derived unit tests. No new external constitutive suite is statically triggered by this test-only cut. The BVLS numerical/error/invariant controls remain required under their own authority, and any final changed consumer or constitutive surface must be assessed separately.",
+    "critical": "The cfg proof supports the prospective private/noncritical classification only for this frozen test-only surface. It does not waive final cfg/fixture review, introduced-lint attribution, required controls, or escalation on any production/shared/dependency/authority reachability drift."
+  },
+  "verdict": "CFG/DEPENDENCY CORRECTION PASS. The production-reachability assertion in body-scope01 was false and is withdrawn. Body01 still fails before tests and remains unapproved for control or physical execution."
+}

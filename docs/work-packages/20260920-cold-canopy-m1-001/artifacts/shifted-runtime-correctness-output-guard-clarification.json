@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Static: exact independent reviewer clarification received in /root/shifted_runtime_correctness; parent custody transcription, no source or execution approval",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "finding": "C04-CONTROL-BODY-003",
+  "verdict": "Approved within scope as defensive output-guard coverage, not reachable failure from admitted finite prior arithmetic",
+  "reason": "Unary binary64 negation cannot turn a finite normal or signed-zero sum into a nonfinite value.",
+  "requirements": [
+    "Inject a fixed nonfinite bit pattern into actual local sum after the last accumulation guard and immediately before delta=-sum.",
+    "Execute actual unary negation and final output guard; do not manufacture Err.",
+    "Emit output operation identity inside actual output-check/failure branch, independent of injector.",
+    "Assert exact output-check event, actual mutated/output bits, returned FactorOutput/FactorApplicationOutput metadata, and selected output slot.",
+    "Restore hook/event state; name the control as defensive invariant coverage.",
+    "Other findings remain open; no physical release follows."
+  ]
+}

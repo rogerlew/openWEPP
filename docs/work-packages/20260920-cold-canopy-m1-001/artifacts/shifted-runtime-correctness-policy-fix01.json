@@ -1,0 +1,54 @@
+{
+  "schema": "cold-canopy-m1-shifted-runtime-correctness-fix-review/v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "recorded_utc": "2026-09-29T01:23:28Z",
+  "evidence_class": "Static: same-reviewer inspection of the frozen BVLS-04 authority, design and controls revisions; Ran: read-only SHA-256 and integer-bound checks only. No Rust, physical, candidate, reference, or historical replay.",
+  "reviewed": {
+    "authority_sha256": "6e88b0d7d95f46224ad95a24c2b7f20e4be099529a2896ffd9576b12433d4dab",
+    "design_sha256": "a81eee7947e1e5321edcf90e2af0f2b73c1d937495b9d6e006b98ab79d5a9973",
+    "controls_sha256": "3b776265d912106ec84cf300640c3170da765a5ee34d1a3a653b721a616d7550",
+    "prior_review": "shifted-runtime-correctness-policy-draft01.json"
+  },
+  "verified_fixes": [
+    "EFT-domain failure is no longer an eligibility escape after the positive branch is selected.",
+    "p1 and p2 check ordering now states active/finite, box, full/original radius, then free/remaining radius; p2 adds closeness last.",
+    "Most BVLS-04 failures now map to the existing typed refinement reason/stage carrier instead of a parallel token framework.",
+    "The m=20 value for the published G04 expression is corrected from 208,138 to 208,178."
+  ],
+  "findings": [
+    {
+      "id": "SHIFTED-RUNTIME-CORRECTNESS-004",
+      "severity": "high",
+      "location": "numerical-methods.md:961-973,1058-1067; shifted-runtime-bvls04-design.md:30-35,72-84; shifted-runtime-bvls04-controls.json eligibility/work",
+      "finding": "The normative p0 path requires a free/remaining-radius gate, but K04 charges only two reduced norms, necessarily p1 and p2. The text does not say whether p0 reuses the completed face's already-validated LambdaTrace norm/gap/tolerance or recomputes a third free norm. Independently, K04 contains no scalar operation for p2's newly evaluated remaining_radius-reduced_norm gap and no operations for the displayed tolerance if it is recomputed.",
+      "required_change": "Choose and state one path. The minimal reuse path is: p0 free bits are required equal to solution.trace.step, so the completed positive-lambda ball solve's already-validated trace.norm/gap/tolerance supplies the p0 free-radius condition with no new reduced norm; do not describe it as a newly applied arithmetic gate. For p2, explicitly compute the new gap. If the displayed tolerance is recomputed, freeze and count its exact multiplication/max order; if solution.trace.tolerance is reused from the same remaining radius, say so explicitly. Add every new scalar operation to K04 and recompute K04/G04/per-43-face numbers. The currently published K04 is low by at least the one p2 gap subtraction.",
+      "decisive_example": "If the displayed tolerance is recomputed as gap=remaining-reduced, a=(2^-40)*remaining, b0=64*epsilon, b=b0*max(1,remaining), tolerance=max(a,b), add four scalar operations. Then K04(20)=69,304, K04(21)=70,233, G04(20)=208,190, G04(21)=210,979, and the 43-face maxima are 3,020,019 scalar/upward and 9,072,097 guards, before any seam-expression change."
+    },
+    {
+      "id": "SHIFTED-RUNTIME-CORRECTNESS-005",
+      "severity": "high",
+      "location": "numerical-methods.md:961-973,1011-1027; shifted-runtime-bvls04-design.md:30-38,59-70; shifted-runtime-bvls04-controls.json eligibility",
+      "finding": "The category/geometric decision still says every failed predicate retains unchanged crossing or an owning error without binding each predicate to one result. Actual Stage1 has unchanged crossing semantics only for box infeasibility; active-bit mismatch, full-radius failure, reduced-radius/ball inconsistency, invalid/missing factor/order, and nonfinite norm arithmetic require terminal owners. Zero lambda must route to unchanged BVLS-03 rather than become an undifferentiated category miss.",
+      "required_change": "Add the literal decision table: lambda==0 routes to BVLS-03; positive-lambda p0 box infeasibility alone routes to unchanged BVLS-02 crossing; active-bit/dimension/factor/order/nonfinite failures return their named typed refinement or pre-existing SVD owner; full or free radius inconsistency returns the named ball/radius owner. State that none of those terminal cases reaches BVLS-02 KKT/release. Mirror the same table in design and controls."
+    },
+    {
+      "id": "SHIFTED-RUNTIME-CORRECTNESS-006",
+      "severity": "medium",
+      "location": "numerical-methods.md:1014-1025; shifted-runtime-bvls04-design.md:63-67",
+      "finding": "The typed mapping still omits p1 box failure. The current map assigns FinalBox only to p2, while p1 is newly required to refuse on box infeasibility. Scratch full-radius and scratch free-radius failures also collapse to the same reason/stage without a field identifying which owning radius failed.",
+      "required_change": "Map p1 lower/upper box refusal explicitly through the existing metadata carrier and correction position First. Ensure the metadata distinguishes original/full from remaining/free radius failure for p1 and p2, by dedicated guard-stage variants or another typed field in the same carrier. Update expected-red controls to assert the returned typed distinction, not only the injected input."
+    },
+    {
+      "id": "SHIFTED-RUNTIME-CORRECTNESS-007",
+      "severity": "medium",
+      "location": "numerical-methods.md:1062-1067; shifted-runtime-bvls04-design.md:79-86",
+      "finding": "The seam expression is called exact, but its terms are not consistent with the normative wording: inherited 85+m covers p0 assembly/equality/box/active/full-radius checking and does not include a new free-radius comparison; 66+m for p1 is an unexplained conservative excess relative to the stated checks. The total can be a valid conservative reservation, but the exact-event claim is unsupported.",
+      "required_change": "Either itemize every non-scalar seam guard to derive the stated terms exactly, or label 238+2m a conservative seam upper bound and remove claims that each subterm is exact. Keep actual counters monotonic and require controls to show observed counts do not exceed the reservation."
+    }
+  ],
+  "residual_risk_and_future_evidence": [
+    "Private cfg reachability remains bounded in the unchanged source, but must be rechecked after body changes.",
+    "Expected-red tests, source review, debug/release controls, independent retained-operand reconstruction and the separately gated physical domain endpoint remain future evidence."
+  ],
+  "verdict": "NO-GO for body release. The frozen revision materially resolves draft01 issues, but exact p0/p2 radius accounting, category/error ownership, p1 box/radius metadata, and the seam-bound claim require one targeted authority/design/control amendment and same-reviewer verification."
+}

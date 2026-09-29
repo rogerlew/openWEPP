@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Static: immutable selected-file control seam copy; known two core findings remain; parent debug01 recording in progress",
+  "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-controls-review-cut04-20260929",
+  "files": {
+    "m1_trust_region_stage1.rs": "00e4e6321fdd08c6411723bd207826711e674ecbe2e8aee79cf4c50cf408c964",
+    "lib.rs": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "m1_trust_region_controller.rs": "50b7c4356eec7e8e894529493c4bdd518684ab10a22c9b7a9b5a05d97868a41e"
+  },
+  "archive_sha256": "56ced10828f00bd4108bbb0bb0f2bdbf5f76d15b2833a62da21a2803a7463c13"
+}

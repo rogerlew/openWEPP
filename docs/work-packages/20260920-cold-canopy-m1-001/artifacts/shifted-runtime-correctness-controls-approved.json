@@ -1,0 +1,51 @@
+{
+  "schema": "openwepp.cold-canopy-m1.shifted-runtime-correctness-controls-approval.v1",
+  "reviewer": "/root/shifted_runtime_correctness",
+  "evidence_class": "Static: narrow verification of the four controls-fix01 blockers and two parent-identified signed-zero expectations; no Rust, oracle, prototype, candidate, reference, or physical replay was run",
+  "reviewed": {
+    "stage1": "/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "stage1_sha256": "d7896c10f9c06af818bf7bc734b5a2752e674e7b69a5655e96529c4fa3133f47",
+    "controls_plan": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-bvls04-controls.json",
+    "controls_plan_sha256": "b6004784a89b883f075ffdf091f29a96f99cb6099760532bbd8d00c7856180d2",
+    "scope": "expected-red Stage1 controls lines 25-353 and corresponding controls-plan mapping only"
+  },
+  "findings": [],
+  "verified_fixes": [
+    {
+      "id": "C04-CONTROL-FIX-001",
+      "status": "resolved",
+      "evidence": "Reservation inputs contain only scalar_capacity, guard_capacity, and free_count=21. Independent one-under cases assert Scalar versus Guard ownership; observed shared requirements are 70276 and 211236; exact capacity asserts category_entry_delta=1. No admits/expected-decision input remains."
+    },
+    {
+      "id": "C04-CONTROL-FIX-002",
+      "status": "resolved",
+      "evidence": "Denominator overflow, division nonfinite, and inverse-output nonfinite assert FactorOutput/FactorApplicationOutput. Coordinate-update nonfinite separately asserts CoordinateUpdate/CoordinateUpdate. No ShiftedDenominator stage is requested."
+    },
+    {
+      "id": "C04-CONTROL-FIX-003",
+      "status": "resolved",
+      "evidence": "The retained calculation accepts the decoded capture. The external certificate remains test-side and independently compares p0/p1/p2 full and reduced ordered sum-of-squares bits, post-square-root norm bits, original/remaining radius bits, and final gap/tolerance bits."
+    },
+    {
+      "id": "C04-CONTROL-FIX-004",
+      "status": "resolved",
+      "evidence": "The existing finite-precision zero-lambda capture is passed to the unchanged BVLS-03 seam with +0.0 and -0.0. The test requires identical result/counters, positive BVLS-03 entries, and zero BVLS-04 entries while preserving the negative-zero lambda bits."
+    },
+    {
+      "id": "C04-SIGNED-ZERO-DELTA",
+      "status": "resolved",
+      "evidence": "The analytic shifted defect is [+0,+0], and the retained inverse result is asserted as [0x8000000000000000,0x8000000000000000], matching the required final unary negation."
+    },
+    {
+      "id": "C04-ZERO-FIXTURE",
+      "status": "resolved",
+      "evidence": "The signed-zero control no longer substitutes zero into the retained positive face; it uses finite-precision-observed-capture.json, whose captured operations carry zero lambda, and requires actual BVLS-03 entry."
+    }
+  ],
+  "residual_risk_and_missing_tests": [
+    "The body and test helper implementations do not yet exist. Body-source review must confirm every helper calls shared production operations, contains no expected-output or enum-to-error factory, and actually mutates finite operands to create unequal-radius reduced-ball violations.",
+    "Green execution must show the expected-red assertions run rather than merely compile, including signed-zero BVLS-03 entry and both independent cap owners.",
+    "This approval does not approve a body, physical endpoint, candidate/reference replay, or production activation."
+  ],
+  "approval": "APPROVED prospectively for parent-authorized BVLS-04 body work at the exact reviewed hashes. No blocker remains in the narrow expected-red control design."
+}

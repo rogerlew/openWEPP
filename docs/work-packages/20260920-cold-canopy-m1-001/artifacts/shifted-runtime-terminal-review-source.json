@@ -1,0 +1,11 @@
+{
+  "evidence_class": "Static: terminal selected source review copy; full recovery separately verified",
+  "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-terminal-review-20260929",
+  "files": {
+    "m1_trust_region_stage1.rs": "f9de794fb2f2b0d5bb4b1d75b1d56a4c2c7f50ca33cd32c699eaf5b24251fdf1",
+    "lib.rs": "5a3dfa285aa0e2f14c7a6dff180ce452c63dbbfb60bfd88601193bbcbdae69e9",
+    "m1_trust_region_controller.rs": "0b615ea9e8e1b112624ccf60fbdd06f967170ba2d62a0f39ae759f54a41640c7",
+    "m1_coupled_tests.rs": "30e65beb4a6b6a8f735922d4b7a93e4cb3efda3123d90a8ed6faea189949b9ea",
+    "m1_trust_region_stage2_controls.rs": "5d39caeaee2cd23266632fe2472e7423128b247ed9f8ca5ca1591c24163e307e"
+  }
+}

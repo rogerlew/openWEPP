@@ -1,0 +1,68 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-20260920/crates/openwepp-land-surface-energy)
+error[E0614]: type `[f64; 21]` cannot be dereferenced
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:6595:27
+     |
+6595 |         let mut full_p2 = *p2;
+     |                           ^^^ can't be dereferenced
+
+error[E0063]: missing field `lambda` in initializer of `KktTransitionOutcome`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7058:19
+     |
+7058 |         return Ok(KktTransitionOutcome {
+     |                   ^^^^^^^^^^^^^^^^^^^^ missing `lambda`
+
+error[E0063]: missing field `lambda` in initializer of `KktTransitionOutcome`
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7105:5
+     |
+7105 |     KktTransitionOutcome {
+     |     ^^^^^^^^^^^^^^^^^^^^ missing `lambda`
+
+error[E0507]: cannot move out of `trace_t`, a captured variable in an `FnMut` closure
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2202:57
+     |
+2149 |     let mut trace_t = vec![0.0; m];
+     |         -----------   ------------ move occurs because `trace_t` has type `Vec<f64>`, which does not implement the `Copy` trait
+     |         |
+     |         captured outer variable
+...
+2202 |     refinement_observe(|trace| { trace.inverse_t = Some(trace_t); trace.inverse_denominator = Some(trace_denominator); trace.inver...
+     |                        -------                          ^^^^^^^ `trace_t` is moved here
+     |                        |
+     |                        captured by this `FnMut` closure
+     |
+help: `Fn` and `FnMut` closures require captured values to be able to be consumed multiple times, but `FnOnce` closures may consume them only once
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:711:40
+     |
+ 711 | fn refinement_observe(mut update: impl FnMut(&mut RefinementObservationTrace)) {
+     |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: consider cloning the value if the performance cost is acceptable
+     |
+2202 |     refinement_observe(|trace| { trace.inverse_t = Some(trace_t.clone()); trace.inverse_denominator = Some(trace_denominator); trace.inverse_z = Some(z.clone()); });
+     |                                                                ++++++++
+
+error[E0507]: cannot move out of `trace_denominator`, a captured variable in an `FnMut` closure
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2202:100
+     |
+2150 |     let mut trace_denominator = vec![0.0; m];
+     |         ---------------------   ------------ move occurs because `trace_denominator` has type `Vec<f64>`, which does not implement the `Copy` trait
+     |         |
+     |         captured outer variable
+...
+2202 |     refinement_observe(|trace| { trace.inverse_t = Some(trace_t); trace.inverse_denominator = Some(trace_denominator); trace.inver...
+     |                        ------- captured by this `FnMut` closure                                    ^^^^^^^^^^^^^^^^^ `trace_denominator` is moved here
+     |
+help: `Fn` and `FnMut` closures require captured values to be able to be consumed multiple times, but `FnOnce` closures may consume them only once
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:711:40
+     |
+ 711 | fn refinement_observe(mut update: impl FnMut(&mut RefinementObservationTrace)) {
+     |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: consider cloning the value if the performance cost is acceptable
+     |
+2202 |     refinement_observe(|trace| { trace.inverse_t = Some(trace_t); trace.inverse_denominator = Some(trace_denominator.clone()); trace.inverse_z = Some(z.clone()); });
+     |                                                                                                                     ++++++++
+
+Some errors have detailed explanations: E0063, E0507, E0614.
+For more information about an error, try `rustc --explain E0063`.
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 5 previous errors
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-analytic-stage,m1-trust-region-physical-stage` exited with code 101

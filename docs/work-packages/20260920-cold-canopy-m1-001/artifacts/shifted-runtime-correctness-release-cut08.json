@@ -1,0 +1,59 @@
+{
+  "schema": "openwepp.shifted-runtime-correctness-release-cut08.v1",
+  "evidence_class": "Static same-review of immutable cut08; reviewer ran no Rust, numerical, prototype, candidate, reference, or physical command.",
+  "reviewed_at_utc": "2026-09-29T04:25:12Z",
+  "cut": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut08-20260929",
+    "manifest": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/shifted-runtime-release-review-cut08.json",
+    "stage1_sha256": "7c4d72f144952d7a928d9c3fd2033363c86c0f980902267fff2505b5fa6b5306",
+    "stage2_controls_sha256": "5d39caeaee2cd23266632fe2472e7423128b247ed9f8ca5ca1591c24163e307e"
+  },
+  "resolved": [
+    {
+      "id": "CUT07-CORRECTNESS-001",
+      "status": "resolved",
+      "evidence": "Positive structure expected_count now uses exact validated physical input bounds via partial_cmp==Equal, so equal physical bounds require mask count0 and physically distinct bounds require count1 even if scaled binary64 values collapse."
+    },
+    {
+      "id": "ordinary-shift-helper",
+      "status": "clear",
+      "evidence": "bvls04_add_shift retains q admission, lambda*q, product admission, h+=shift, and accumulation admission in the original order with identical scalar/guard charges and maps each failure to the same guard stage."
+    },
+    {
+      "id": "factor-delta-helper",
+      "status": "clear",
+      "evidence": "refinement_validate_factor_delta retains length refusal before value scans, absorbs exactly the guards accumulated through the first rejected value, and preserves correction position, stage, and scratch metadata for both calls."
+    },
+    {
+      "id": "final-full-radius-helper",
+      "status": "clear",
+      "evidence": "refinement_final_full_radius retains poison application, ordered full norm, one comparison guard, strict > comparison, and identical typed metadata before the reduced norm."
+    },
+    {
+      "id": "iteration-style-and-tests",
+      "status": "clear",
+      "evidence": "enumerate traversals retain ascending operands and arithmetic statements; added factor_order/free_ids assertions strengthen observation without feeding expected values to calculation."
+    }
+  ],
+  "findings": [
+    {
+      "id": "CUT08-CORRECTNESS-001",
+      "severity": "medium",
+      "classification": "validation precedence and work-accounting drift",
+      "status": "blocking static numerical-core clearance",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-bvls04-release-review-cut08-20260929/m1_trust_region_stage1.rs:7992",
+      "finding": "refinement_bvls04_factor_shape_valid now validates every factor.order entry before the caller's charged solution.trace.step.len check. Cut07 and the approved structure prefix checked factor dimensions/order length, then step length, then order permutation. A malformed face with both bad step length and invalid order now consumes different guards and is rejected by a later category than the frozen precedence, although both map to P0AssemblyEquality.",
+      "exact_required_change": "Preserve the original sequence. After factor.order.len is charged and admitted, charge and check solution.trace.step.len before scanning factor.order entries. The simplest extraction-safe form is to move the step-length guard/check into this helper immediately before order_seen, and remove the caller's later duplicate. Then keep radius after the order scan. No arithmetic or error mapping should otherwise change."
+    }
+  ],
+  "pending_parent_evidence": [
+    "compat-debug03",
+    "lint03 and any separately named frozen release-control result"
+  ],
+  "source_and_support_custody": "Parent states current SOURCE and SUPPORT are frozen. This review does not claim clean continuous custody across the disclosed transient cut07 support drift.",
+  "residual_risk_and_missing_tests": [
+    "Static numerical-core clearance remains withheld for CUT08-CORRECTNESS-001 and pending hash-bound parent commands.",
+    "No physical endpoint run or performance qualification has occurred."
+  ],
+  "verdict": "NO static numerical-core clearance for cut08 until structure-validation order is restored. All other reviewed cut08 numerical helper changes are clear."
+}
