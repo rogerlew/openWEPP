@@ -64,6 +64,11 @@ create it. [Final custody](artifacts/shifted-runtime-final-custody.json) reconci
 recovery, links and unrelated work. Publication status is recorded below after
 remote verification.
 
+Scoped authority, evidence and exact detached recovery were **published to authorized
+main at `ab76830dee833a5d8eb898751f18fe966bcfee05`**, with remote ref and archive
+object verification ([publication receipt](artifacts/shifted-runtime-publication01.json)).
+This is publication of **INCOMPLETE/HOLD experimental evidence**, not runtime release.
+
 
 [Start ledger](artifacts/shifted-runtime-start-ledger.json) carries **382400.393795 s**;
 one later-receipt scan found no greater charge. New allowance **14400 s**, fixed
