@@ -1,0 +1,13 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/cost-attribution-analysis-tests.py"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "utc": "2026-09-30T05:04:19.647739+00:00",
+  "exit_code": 0,
+  "inputs": {
+    "cost-attribution-analyze.py": "99e8d6a4b2990bf19c71d0acbf69838d506a58f0c2be503366584736b64487bd",
+    "cost-attribution-analysis-tests.py": "89db2b892b1384a2dd8c74767817c2a82a8607ff4ee40a6d960a2c4fa214dcda"
+  }
+}

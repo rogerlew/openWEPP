@@ -1,0 +1,29 @@
+{
+  "utc": "2026-09-30T05:33:15.757966+00:00",
+  "reference_entries_unchanged": 771,
+  "source_entries_unchanged": 772,
+  "source_sha256": "d0ef39eaff8e552846b4f59195efcf578efeb57fea98d084ca6d7318e3d29d04",
+  "pins_unchanged": 1420,
+  "unrelated_dirty_files_unchanged": 48,
+  "changed_detached_paths": [
+    "crates/openwepp-land-surface-energy/src/m1_cost_attribution.rs",
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+  ],
+  "production_math_guards_budgets_dependencies": "No changes; exact source patch reviewed independently",
+  "validation_class": "Bounded Component private cfg(test) observer; prior numerical authority/reviews reused for unchanged math; no main Rust adoption",
+  "cohort_outcomes": 624,
+  "physical_replays": 0,
+  "additional_physical_cases": 0,
+  "scoped_documentation_validation": {
+    "new_front_links_checked": 26,
+    "missing_links": [],
+    "python_compile": "PASS five artifact scripts",
+    "git_diff_check": "PASS package diff",
+    "raw_log_whitespace": "Full staged diff-check flags trailing libtest marker space and final blank line in all21 raw stdout logs. These authenticated raw bytes are deliberately preserved; authored package/scripts/JSON/patch checked separately."
+  },
+  "staged_before_terminal": [],
+  "independent_terminal_review": "PASS /root/qa; results/report/ledger and same-reviewer fixes accepted"
+}

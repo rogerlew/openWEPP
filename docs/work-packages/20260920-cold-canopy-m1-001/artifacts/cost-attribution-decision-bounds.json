@@ -1,0 +1,63 @@
+{
+  "basis": "E per-batch exclusive wall shares; extreme conditional bound, not an implementation proposal. Active-KKT lies inside stage1 in this actual cohort; never add parent inclusive to child times.",
+  "all_stage1_union": {
+    "proposal": {
+      "exclusive_union_scope_names": [
+        "stage1",
+        "svd",
+        "damping",
+        "refinement",
+        "refinement_svd",
+        "refinement_damping",
+        "active_kkt"
+      ],
+      "wall_share_samples": [
+        0.9253464171032778,
+        0.9247594999945511,
+        0.9282255330768403,
+        0.9307831813584696,
+        0.925038144536651,
+        0.9250244345435863
+      ],
+      "median_share": 0.9251922808199644,
+      "ideal_if_all_stage1_work_free_samples": [
+        13.395204371951275,
+        13.290714441392337,
+        13.932531203200435,
+        14.447355709584658,
+        13.340118034950839,
+        13.33767866787667
+      ],
+      "median_ideal_if_free": 13.367661203451057
+    },
+    "combined": {
+      "exclusive_union_scope_names": [
+        "stage1",
+        "svd",
+        "damping",
+        "refinement",
+        "refinement_svd",
+        "refinement_damping",
+        "active_kkt"
+      ],
+      "wall_share_samples": [
+        0.8364577775556215,
+        0.8271574768968967,
+        0.8586184750487389,
+        0.8661339490053243,
+        0.8149667246447202,
+        0.8320396391602165
+      ],
+      "median_share": 0.834248708357919,
+      "ideal_if_all_stage1_work_free_samples": [
+        6.114628901659353,
+        5.7856132972757175,
+        7.073059937249461,
+        7.4701538782209465,
+        5.404433327356466,
+        5.953785732538969
+      ],
+      "median_ideal_if_free": 6.0342073170991615
+    }
+  }
+}

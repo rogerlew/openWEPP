@@ -1,0 +1,1 @@
+{"batches": 21, "measurement_triplets": 6, "proposals_per_configuration": 208, "orders": [["R", "D", "E"], ["D", "E", "R"], ["E", "R", "D"], ["E", "D", "R"], ["D", "R", "E"], ["R", "E", "D"]]}

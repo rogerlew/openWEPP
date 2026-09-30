@@ -1,0 +1,166 @@
+{
+  "schema": "openwepp-cold-canopy-m1-cost-attribution-protocol-v2",
+  "reference": "frozen14/treatment immutable source sha256 91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7",
+  "configurations": {
+    "R": "accepted frozen14 cached reference; attribution absent",
+    "D": "identical recovered attribution source with observer disabled; cost_attribution null or enabled=false",
+    "E": "same recovered attribution source with private observer enabled; aggregate record emitted only after PC_PROP_END"
+  },
+  "timing": {
+    "outer": "Linux per-process CPU and monotonic perf_counter_ns command-to-end-marker intervals; startup, parsing, DUMP, serialization and output comparison excluded",
+    "inner": "Rust Instant monotonic wall; fixed 2-phase x 15-scope accumulators and bounded 16-depth RAII nesting; no observer allocations or serialization inside scopes; per-scope child elapsed removed exactly once",
+    "hierarchy": {
+      "initialization": [
+        "natural_jacobian inclusive, owning first/base core and every remaining FD core entry",
+        "other_core if entered",
+        "other setup/unassigned includes phase change and marker/copy effects"
+      ],
+      "proposal": [
+        "selected_jacobian inclusive with first/base and remaining FD core children",
+        "stage1 inclusive owning SVD/damping/refinement/active-KKT",
+        "refinement inclusive owning any refinement SVD/damping/active-KKT child",
+        "acceptance inclusive owning any other core",
+        "other/unassigned"
+      ]
+    },
+    "accounting": "For each phase/scope inclusive minus sum of recorded direct child edge durations equals exclusive. Sum exclusive scope durations is charged once against outer phase wall interval; unassigned = outer wall - sum exclusive, negative is a recording defect. Each incoming edge sum must not exceed child inclusive. Aggregate each batch before medians/shares. Scopes of same name can have different parents; complete direct-child matrix is retained. Combined sums init+proposal without between-command wait.",
+    "source_boundaries": {
+      "natural_selected_jacobian": "evaluate_core_with_jacobian entry through return; selected_probe selects assembly kind, phase is benchmark command",
+      "core": "actual core() entry through return, nearest active Jacobian and its core ordinal distinguishes base/FD",
+      "stage1": "solve_subproblem_with_certificate entire call",
+      "svd": "jacobi_factor entire call; actual entered sweep loop increments count",
+      "damping": "svd_lambda_ball entire call",
+      "refinement": "refine_face_before_crossing entire call",
+      "active_kkt": "box_feasible_kkt_values_with_accounting and activate_first_crossing entries",
+      "acceptance": "transition_after_model entire call, any timed child excluded from exclusive"
+    }
+  },
+  "counts_by_caller_phase": {
+    "initialization": [
+      "base_core_evaluations",
+      "natural_jacobian_assemblies",
+      "natural_jacobian_nested_core_evaluations",
+      "setup_entries"
+    ],
+    "proposal": [
+      "selected_jacobian_assemblies",
+      "selected_jacobian_nested_core_evaluations",
+      "other_core_evaluations",
+      "svd_factorizations",
+      "jacobi_sweeps",
+      "damping_searches",
+      "refinement_entries",
+      "refinement_nested_svd_factorizations",
+      "refinement_nested_damping_searches",
+      "active_face_kkt_acceptance_entries"
+    ]
+  },
+  "batch_record": "Each E batch stores hierarchy times/counts, outer CPU/wall totals, remainders and reconciliation. R/D retain outer CPU/wall and complete outcomes only.",
+  "cohort": {
+    "warmups": [
+      {
+        "configuration": "R",
+        "fresh_proposals": 16
+      },
+      {
+        "configuration": "D",
+        "fresh_proposals": 16
+      },
+      {
+        "configuration": "E",
+        "fresh_proposals": 16
+      }
+    ],
+    "measurement_triplets": [
+      [
+        "R",
+        "D",
+        "E"
+      ],
+      [
+        "D",
+        "E",
+        "R"
+      ],
+      [
+        "E",
+        "R",
+        "D"
+      ],
+      [
+        "E",
+        "D",
+        "R"
+      ],
+      [
+        "D",
+        "R",
+        "E"
+      ],
+      [
+        "R",
+        "E",
+        "D"
+      ]
+    ],
+    "batch_size": 32,
+    "fresh_proposals_per_configuration": 208,
+    "total_fresh_proposals": 624,
+    "gating": "Do not execute until independent readiness approval."
+  },
+  "payload": {
+    "schema": "m1-cost-attribution-v2",
+    "phases": [
+      "initialization",
+      "proposal"
+    ],
+    "metrics": [
+      "natural_jacobian",
+      "selected_jacobian",
+      "natural_base_core",
+      "natural_fd_core",
+      "selected_base_core",
+      "selected_fd_core",
+      "other_core",
+      "stage1",
+      "svd",
+      "damping",
+      "refinement",
+      "refinement_svd",
+      "refinement_damping",
+      "active_kkt",
+      "acceptance"
+    ],
+    "fields": [
+      "inclusive_wall_ns",
+      "exclusive_wall_ns",
+      "calls",
+      "jacobi_sweeps"
+    ],
+    "edges": "15x15 direct_child_wall_ns per phase"
+  },
+  "measurement_quality": {
+    "threshold": 1.1,
+    "comparisons": [
+      "D/R",
+      "E/D"
+    ],
+    "phases": [
+      "initialization",
+      "proposal"
+    ],
+    "clocks": [
+      "process_cpu",
+      "wall"
+    ],
+    "screen": "Median within-triplet ratios; also retain ratio of absolute cost medians and conservatively flag disagreement. Over-threshold attribution is inconclusive for precise baseline shares; no redesign/repetition."
+  },
+  "observer_effects": "Timer acquisition/accumulator costs within parents become parent-exclusive; top-level observer entry/exit, uninstrumented setup, command/marker and final-output-copy effects remain unassigned. No invented subtraction or rescaling. Components are wall only.",
+  "validation_commands": [
+    "cargo fmt --all -- --check",
+    "cargo check -p openwepp-land-surface-energy --lib",
+    "cargo nextest run --release -p openwepp-land-surface-energy --lib --features m1-trust-region-physical-stage,m1-trust-region-analytic-stage,m1-trust-region-controller-stage --no-fail-fast -E \"test(m1_trust_region_stage1::) | test(m1_trust_region_stage2_controls::) | test(cost_observer)\"",
+    "cargo clippy -p openwepp-land-surface-energy --all-targets --no-deps --features m1-trust-region-controller-stage,m1-trust-region-analytic-stage,m1-trust-region-physical-stage --message-format=json -- -D warnings",
+    "Python synthetic analyzer controls, exact cohort driver, independent result reconciliation, source recovery verification"
+  ]
+}

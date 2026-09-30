@@ -1,0 +1,47 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/source/crates/openwepp-sim-contract)
+    Checking openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/source/crates/openwepp-unit-boundary)
+    Checking openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/source/crates/openwepp-coupled-time)
+    Checking openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/source/crates/openwepp-kernel-contract)
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/source/crates/openwepp-vegetation)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/source/crates/openwepp-land-surface-energy)
+warning: unused variable: `iteration`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4025:5
+     |
+4025 |     iteration: u32,
+     |     ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_iteration`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `corrected_assembly`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4026:5
+     |
+4026 |     corrected_assembly: bool,
+     |     ^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_corrected_assembly`
+
+warning: unused variable: `error`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:5771:21
+     |
+5771 |                 Err(error) => {
+     |                     ^^^^^ help: if this is intentional, prefix it with an underscore: `_error`
+
+warning: unused variable: `error`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:5820:21
+     |
+5820 |                 Err(error) => {
+     |                     ^^^^^ help: if this is intentional, prefix it with an underscore: `_error`
+
+warning: field `linear_dimension` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3832:5
+     |
+3812 | pub struct M1PhaseJoinControllerReport {
+     |            --------------------------- field in this struct
+...
+3832 |     linear_dimension: usize,
+     |     ^^^^^^^^^^^^^^^^
+     |
+     = note: `M1PhaseJoinControllerReport` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib) generated 5 warnings (run `cargo fix --lib -p openwepp-land-surface-energy` to apply 4 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 8.38s

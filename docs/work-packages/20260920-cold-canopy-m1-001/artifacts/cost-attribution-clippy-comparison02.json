@@ -1,0 +1,42 @@
+{
+  "reference_count": 299,
+  "candidate_count": 302,
+  "additions": [
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+          "box_feasible_kkt_values_with_accounting",
+          "const N: usize = 21;"
+        ]
+      ],
+      "rendered": "error: adding items after statements is confusing, since items exist from the start of the scope\n    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4754:5\n     |\n4754 |     const N: usize = 21;\n     |     ^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#items_after_statements\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+          "solve_subproblem_with_certificate",
+          "const N: usize = 21;"
+        ]
+      ],
+      "rendered": "error: adding items after statements is confusing, since items exist from the start of the scope\n    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9785:5\n     |\n9785 |     const N: usize = 21;\n     |     ^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#items_after_statements\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+          "jacobi_factor",
+          "fn jacobi_factor( mut b: Vec<Vec<f64>>, free_ids: &[usize], completed_sweeps: u8, work_counter: &mut u8, ) -> Result<JacobiFactor, &'static str> {"
+        ]
+      ],
+      "rendered": "error: this function has too many lines (106/100)\n    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3889:1\n     |\n3889 | / fn jacobi_factor(\n3890 | |     mut b: Vec<Vec<f64>>,\n3891 | |     free_ids: &[usize],\n3892 | |     completed_sweeps: u8,\n3893 | |     work_counter: &mut u8,\n3894 | | ) -> Result<JacobiFactor, &'static str> {\n     | |_______________________________________^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines\n\n"
+    }
+  ],
+  "removals": [],
+  "method": "lint + message + source path/function/content; macro expansion traced to call site; multiset comparison, not count-only",
+  "reference_log": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-treatment-frozen14-lint.stdout",
+  "reference_source": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment",
+  "candidate_log": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/cost-attribution-clippy02.stdout",
+  "candidate_source": "/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/source"
+}

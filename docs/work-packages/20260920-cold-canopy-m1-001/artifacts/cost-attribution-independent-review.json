@@ -1,0 +1,49 @@
+{
+  "reviewer": "/root/qa",
+  "role": "rust_qa_reviewer",
+  "evidence_class": "Static primary-source/protocol review plus independent inspection of Ran receipts",
+  "readiness": "PASS",
+  "source_sha256": "d0ef39eaff8e552846b4f59195efcf578efeb57fea98d084ca6d7318e3d29d04",
+  "pins_sha256": "510d57b7afe5310c79170acf5cd9c4ebced414c0a1f6efe66353ef6c900d0fe5",
+  "verbatim_readiness": "QA readiness PASS. The frozen cut is valid for the exact authorized 624-outcome R/D/E cohort. Verified: pins manifest 510d57b7\u2026, live binary hashes, artifact/live driver equality, v2 protocol, source isolation, and passing default/format/analyzer receipts. No numerical source changes beyond the accepted private observer surfaces.",
+  "results_review": "PASS; no blocking findings",
+  "verified_results": [
+    "Exact21-batch624-outcome208-per-configuration inventory and order; no replay",
+    "Frozen source/pins/binaries; complete outcome equality enforced by driver",
+    "Independent CPU/wall medians, ratios and component/edge/remainder arithmetic agree",
+    "Conditional SVD and complete Stage1 union Amdahl figures agree",
+    "82core calls and refinement wrapper-versus-work-ledger difference reconcile; acceptance0 correctly limited to direct proposal seam",
+    "Final package removes stale pending result status and labels unassigned as phase-specific"
+  ],
+  "findings_and_fix_verification": [
+    {
+      "finding": "Initial instrumentation lacked component hierarchy and phase/caller counts",
+      "disposition": "Fixed before measurement; independent complete-v2 readiness PASS"
+    },
+    {
+      "finding": "First recorder tests selected zero due missing features",
+      "disposition": "Fixed and verified123/123 including3observer tests"
+    },
+    {
+      "finding": "Analyzer arm/configuration field mismatch",
+      "disposition": "Fixed before measurement and synthetic inventory controls passed"
+    },
+    {
+      "finding": "Analyzer must enforce exact v2 schema and expose count/sweep spread",
+      "disposition": "Fixed and verified before measurement"
+    },
+    {
+      "finding": "Proposal unassigned row combined share includes both phases; stale pending status",
+      "disposition": "Same reviewer verified phase-specific label/note and removed pending status"
+    },
+    {
+      "finding": "Records retained pending placeholders",
+      "disposition": "Fixed; same reviewer verified terminal report/records and ledger, no blocking findings"
+    }
+  ],
+  "result_disposition_summary": "QA pass: The cohort and analysis support the proposed architecture/model cost reassessment. The ~1.5\u20131.6x ideal SVD-elimination bound cannot close an approximately100x gap; a localized solver implementation claim would be unsupported.",
+  "final_report_fix_verification": "PASS: same reviewer accepted phase-specific label, removed stale statuses, and synchronized terminal records; no blocking findings or follow-up.",
+  "terminal_disposition_summary": "QA pass: Final report and terminal scoped-diff disposition are accepted. The architecture/model cost reassessment recommendation is supported; no localized solver-change claim is implied.",
+  "ledger_response": "**QA ledger check PASS.**\n\n`2514 + 1800 = 4314`; `433286.393795 + 4314 = 437600.393795`; ceiling remainder is exactly `1086.000000` seconds. From the fixed 04:52 anchor, 4,314 charged seconds reaches 06:03:54, before the unchanged 06:22 deadline. The ledger and package paragraph agree, with no refund or re-anchor.",
+  "terminal_response": "**Findings:** No blocking findings.\n\n- [package.md](/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/package.md) now correctly labels unassigned time as phase-specific and explains the combined denominator.\n- [cost-attribution-decision-bounds.json](/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/cost-attribution-decision-bounds.json) is arithmetically correct: union shares `92.5192%` / `83.4249%` yield conditional free bounds `13.3677x` / `6.0342x`.\n- The report correctly excludes nested-parent double counting, identifies Stage1 residual as real face/setup/guards work, preserves the refinement-count limit, and confines zero acceptance entries to the timing seam.\n- Terminal records now agree: result review PASS, 772 detached source entries and 771 reference entries unchanged, 1,420 pins unchanged, 624 outcomes, and zero replays/additional physical cases. `git diff --check` passes for the package report.\n\n**Non-blocking follow-up:** None.\n\n**QA pass:** Final report and terminal scoped-diff disposition are accepted. The architecture/model cost reassessment recommendation is supported; no localized solver-change claim is implied."
+}

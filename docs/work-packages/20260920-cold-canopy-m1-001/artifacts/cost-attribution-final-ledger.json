@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Ran: fixed first-reading-anchor elapsed plus full reserved closing allocation; all waits/concurrency counted once, no refund/reanchor",
+  "anchor_utc": "2026-09-30T04:52:00+00:00",
+  "closing_allocation_started_utc": "2026-09-30T05:33:53.079477+00:00",
+  "elapsed_seconds_rounded_up": 2514,
+  "closing_seconds_charged": 1800,
+  "increment_seconds_charged": 4314,
+  "carry_seconds": "433286.393795",
+  "cumulative_seconds_charged": "437600.393795",
+  "fixed_ceiling_seconds": "438686.393795",
+  "remaining_under_ceiling_seconds": "1086.000000",
+  "charged_coverage_through_utc": "2026-09-30T06:03:54+00:00",
+  "fixed_work_cutoff_utc": "2026-09-30T05:52:00+00:00",
+  "fixed_hard_deadline_utc": "2026-09-30T06:22:00+00:00",
+  "physical_counts": {
+    "warmup_per_configuration": 16,
+    "measurement_triplets": 6,
+    "measurement_per_configuration": 192,
+    "total_per_configuration": 208,
+    "complete_outcomes": 624,
+    "replays": 0,
+    "extra_physical_cases": 0
+  },
+  "disposition": "Attribution experiment complete, architecture/model cost reassessment recommended; no deployment acceptance or numerical optimization",
+  "closure_rule": "1800 closing seconds charged conservatively even if finished early; greater actual elapsed beyond charged coverage must be recorded under unchanged ceiling. Unused allowance grants no successor work."
+}

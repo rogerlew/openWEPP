@@ -1,0 +1,355 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_cost_attribution.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_cost_attribution.rs
+@@ -0,0 +1,270 @@
++//! Private fixed-scope wall observer for the adopted finite G4 experiment.
++use std::{cell::RefCell, time::Instant};
++const N: usize = 15;
++const DEPTH: usize = 16;
++#[derive(Clone, Copy, PartialEq, Eq)]
++#[repr(usize)]
++pub(crate) enum Scope {
++    NaturalJacobian,
++    SelectedJacobian,
++    NaturalBaseCore,
++    NaturalFdCore,
++    SelectedBaseCore,
++    SelectedFdCore,
++    OtherCore,
++    Stage1,
++    Svd,
++    Damping,
++    Refinement,
++    RefinementSvd,
++    RefinementDamping,
++    ActiveKkt,
++    Acceptance,
++}
++const NAMES: [&str; N] = [
++    "natural_jacobian",
++    "selected_jacobian",
++    "natural_base_core",
++    "natural_fd_core",
++    "selected_base_core",
++    "selected_fd_core",
++    "other_core",
++    "stage1",
++    "svd",
++    "damping",
++    "refinement",
++    "refinement_svd",
++    "refinement_damping",
++    "active_kkt",
++    "acceptance",
++];
++#[derive(Clone, Copy, Default)]
++struct Metric {
++    inclusive_ns: u128,
++    exclusive_ns: u128,
++    calls: u64,
++    sweeps: u64,
++}
++struct Recorder {
++    enabled: bool,
++    phase: usize,
++    depth: usize,
++    active: [usize; DEPTH],
++    children: [u128; DEPTH],
++    core_ordinal: [u64; DEPTH],
++    metrics: [[Metric; N]; 2],
++    edges: [[[u128; N]; N]; 2],
++}
++impl Recorder {
++    const fn empty() -> Self {
++        Self {
++            enabled: false,
++            phase: 0,
++            depth: 0,
++            active: [0; DEPTH],
++            children: [0; DEPTH],
++            core_ordinal: [0; DEPTH],
++            metrics: [[Metric {
++                inclusive_ns: 0,
++                exclusive_ns: 0,
++                calls: 0,
++                sweeps: 0,
++            }; N]; 2],
++            edges: [[[0; N]; N]; 2],
++        }
++    }
++    fn finish(&mut self, phase: usize, slot: usize, depth: usize, elapsed: u128) {
++        assert_eq!(
++            self.depth,
++            depth + 1,
++            "observer scopes must unwind in LIFO order"
++        );
++        assert_eq!(self.phase, phase, "phase changed inside observed scope");
++        let exclusive = elapsed
++            .checked_sub(self.children[depth])
++            .expect("negative observer remainder");
++        let metric = &mut self.metrics[phase][slot];
++        metric.inclusive_ns += elapsed;
++        metric.exclusive_ns += exclusive;
++        metric.calls += 1;
++        self.depth = depth;
++        if depth > 0 {
++            self.children[depth - 1] += elapsed;
++            self.edges[phase][self.active[depth - 1]][slot] += elapsed;
++        }
++    }
++}
++thread_local! { static RECORDER: RefCell<Recorder> = const { RefCell::new(Recorder::empty()) }; }
++pub(crate) struct Guard {
++    value: Option<(Instant, usize, usize, usize)>,
++}
++pub(crate) fn begin(enabled: bool) {
++    RECORDER.with(|cell| {
++        let mut r = cell.borrow_mut();
++        assert_eq!(r.depth, 0);
++        *r = Recorder::empty();
++        r.enabled = enabled;
++    });
++}
++pub(crate) fn phase(phase: usize) {
++    RECORDER.with(|cell| {
++        let mut r = cell.borrow_mut();
++        assert_eq!(r.depth, 0);
++        assert!(phase < 2);
++        r.phase = phase;
++    });
++}
++pub(crate) fn enter(scope: Scope) -> Guard {
++    RECORDER.with(|cell| {
++        let mut r = cell.borrow_mut();
++        if !r.enabled {
++            return Guard { value: None };
++        }
++        let mut scope = scope;
++        let refinement = r.active[..r.depth].contains(&(Scope::Refinement as usize));
++        if refinement && scope == Scope::Svd {
++            scope = Scope::RefinementSvd;
++        }
++        if refinement && scope == Scope::Damping {
++            scope = Scope::RefinementDamping;
++        }
++        let depth = r.depth;
++        assert!(depth < DEPTH, "observer nesting overflow");
++        r.active[depth] = scope as usize;
++        r.children[depth] = 0;
++        r.core_ordinal[depth] = 0;
++        r.depth += 1;
++        Guard {
++            value: Some((Instant::now(), r.phase, scope as usize, depth)),
++        }
++    })
++}
++pub(crate) fn core() -> Guard {
++    let scope = RECORDER.with(|cell| {
++        let mut r = cell.borrow_mut();
++        if !r.enabled {
++            return Scope::OtherCore;
++        }
++        for i in (0..r.depth).rev() {
++            let owner = r.active[i];
++            if owner == Scope::NaturalJacobian as usize || owner == Scope::SelectedJacobian as usize
++            {
++                let base = r.core_ordinal[i] == 0;
++                r.core_ordinal[i] += 1;
++                return match (owner == Scope::NaturalJacobian as usize, base) {
++                    (true, true) => Scope::NaturalBaseCore,
++                    (true, false) => Scope::NaturalFdCore,
++                    (false, true) => Scope::SelectedBaseCore,
++                    (false, false) => Scope::SelectedFdCore,
++                };
++            }
++        }
++        Scope::OtherCore
++    });
++    enter(scope)
++}
++pub(crate) fn sweep() {
++    RECORDER.with(|cell| {
++        let mut r = cell.borrow_mut();
++        if r.enabled {
++            assert!(r.depth > 0);
++            let phase = r.phase;
++            let slot = r.active[r.depth - 1];
++            assert!(slot == Scope::Svd as usize || slot == Scope::RefinementSvd as usize);
++            r.metrics[phase][slot].sweeps += 1;
++        }
++    });
++}
++impl Drop for Guard {
++    fn drop(&mut self) {
++        if let Some((start, phase, slot, depth)) = self.value {
++            let elapsed = start.elapsed().as_nanos();
++            RECORDER.with(|cell| cell.borrow_mut().finish(phase, slot, depth, elapsed));
++        }
++    }
++}
++pub(crate) fn take() -> serde_json::Value {
++    RECORDER.with(|cell| { let mut r=cell.borrow_mut(); assert_eq!(r.depth,0);
++        if !r.enabled { return serde_json::Value::Null; }
++        r.enabled=false;
++        let phases: Vec<_>=(0..2).map(|p| {
++            let metrics: Vec<_>=(0..N).map(|i| {let m=r.metrics[p][i]; serde_json::json!({"name":NAMES[i],"inclusive_wall_ns":m.inclusive_ns,"exclusive_wall_ns":m.exclusive_ns,"calls":m.calls,"jacobi_sweeps":m.sweeps})}).collect();
++            let name = ["initialization", "proposal"][p];
++            serde_json::json!({"name":name,"metrics":metrics,"direct_child_wall_ns":r.edges[p]})
++        }).collect();
++        serde_json::json!({"schema":"m1-cost-attribution-v2","enabled":true,"scope":"complete-hierarchy","phases":phases,"clock":"Rust Instant monotonic wall; CPU totals measured externally"})
++    })
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn cost_observer_synthetic_nesting_accounting() {
++        let mut r = Recorder::empty();
++        r.depth = 3;
++        r.active[..3].copy_from_slice(&[7, 10, 11]);
++        r.finish(0, 11, 2, 20);
++        r.finish(0, 10, 1, 50);
++        r.finish(0, 7, 0, 100);
++        assert_eq!(r.metrics[0][11].exclusive_ns, 20);
++        assert_eq!(r.metrics[0][10].exclusive_ns, 30);
++        assert_eq!(r.metrics[0][7].exclusive_ns, 50);
++        assert_eq!(r.edges[0][7][10], 50);
++        assert_eq!(r.edges[0][10][11], 20);
++    }
++    #[test]
++    #[should_panic(expected = "negative observer remainder")]
++    fn cost_observer_rejects_negative_remainder() {
++        let mut r = Recorder::empty();
++        r.depth = 1;
++        r.children[0] = 11;
++        r.finish(0, 0, 0, 10);
++    }
++    #[test]
++    fn cost_observer_disabled_and_phase_owner_restoration() {
++        begin(false);
++        {
++            let _g = enter(Scope::NaturalJacobian);
++            let _c = core();
++        }
++        assert!(take().is_null());
++        begin(true);
++        {
++            let _g = enter(Scope::NaturalJacobian);
++            {
++                let _c = core();
++            }
++            {
++                let _c = core();
++            }
++        }
++        phase(1);
++        {
++            let _g = enter(Scope::SelectedJacobian);
++            {
++                let _c = core();
++            }
++            {
++                let _c = core();
++            }
++        }
++        {
++            let _c = core();
++        }
++        {
++            let _g = enter(Scope::Refinement);
++            {
++                let _s = enter(Scope::Svd);
++                sweep();
++            }
++        }
++        let v = take();
++        let p = &v["phases"];
++        assert_eq!(p[0]["metrics"][2]["calls"], 1);
++        assert_eq!(p[0]["metrics"][3]["calls"], 1);
++        assert_eq!(p[1]["metrics"][4]["calls"], 1);
++        assert_eq!(p[1]["metrics"][5]["calls"], 1);
++        assert_eq!(p[1]["metrics"][6]["calls"], 1);
++        assert_eq!(p[1]["metrics"][11]["jacobi_sweeps"], 1);
++    }
++}
+--- a/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -2346,0 +2347,2 @@
++    use crate::m1_trust_region_controller::cost_attribution;
++    let enabled = std::env::var("M1_COST_ATTRIBUTION").ok().as_deref() == Some("1");
+@@ -2349,0 +2352 @@
++    cost_attribution::begin(enabled);
+@@ -2366,0 +2370 @@
++    cost_attribution::phase(1);
+@@ -2388 +2392 @@
+-        serde_json::json!({"outcomes": outcomes, "projection_counts": vec![Option::<u32>::None; count], "projection_count_mode": "disabled_optional_capture"})
++        serde_json::json!({"outcomes": outcomes, "projection_counts": vec![Option::<u32>::None; count], "projection_count_mode": "disabled_optional_capture", "cost_attribution": cost_attribution::take()})
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs
+@@ -842,0 +843,5 @@
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        let _cost_scope = crate::m1_trust_region_controller::cost_attribution::enter(
++            crate::m1_trust_region_controller::cost_attribution::Scope::Acceptance,
++        );
++
+@@ -1698,0 +1704,4 @@
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++#[path = "m1_cost_attribution.rs"]
++pub(crate) mod cost_attribution;
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -3626,0 +3627,5 @@
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let _cost_scope = crate::m1_trust_region_controller::cost_attribution::enter(
++        crate::m1_trust_region_controller::cost_attribution::Scope::Damping,
++    );
++
+@@ -3883,0 +3889,5 @@
++// Private timing scopes add lines without changing the ordered factorization.
++#[cfg_attr(
++    all(test, feature = "m1-trust-region-physical-stage"),
++    allow(clippy::too_many_lines)
++)]
+@@ -3889,0 +3900,5 @@
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let _cost_scope = crate::m1_trust_region_controller::cost_attribution::enter(
++        crate::m1_trust_region_controller::cost_attribution::Scope::Svd,
++    );
++
+@@ -3909,0 +3925,2 @@
++        #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++        crate::m1_trust_region_controller::cost_attribution::sweep();
+@@ -4737,0 +4755,5 @@
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let _cost_scope = crate::m1_trust_region_controller::cost_attribution::enter(
++        crate::m1_trust_region_controller::cost_attribution::Scope::ActiveKkt,
++    );
++
+@@ -9375,0 +9398,5 @@
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let _cost_scope = crate::m1_trust_region_controller::cost_attribution::enter(
++        crate::m1_trust_region_controller::cost_attribution::Scope::Refinement,
++    );
++
+@@ -9392,0 +9420,5 @@
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let _cost_scope = crate::m1_trust_region_controller::cost_attribution::enter(
++        crate::m1_trust_region_controller::cost_attribution::Scope::ActiveKkt,
++    );
++
+@@ -9753,0 +9786,5 @@
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let _cost_scope = crate::m1_trust_region_controller::cost_attribution::enter(
++        crate::m1_trust_region_controller::cost_attribution::Scope::Stage1,
++    );
++
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
+@@ -1185,0 +1186,3 @@
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let _cost_scope = crate::m1_trust_region_controller::cost_attribution::core();
++
+@@ -2082,0 +2086,3 @@
++    #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++    let _cost_scope = crate::m1_trust_region_controller::cost_attribution::enter(if selected_probe.is_some() { crate::m1_trust_region_controller::cost_attribution::Scope::SelectedJacobian } else { crate::m1_trust_region_controller::cost_attribution::Scope::NaturalJacobian });
++

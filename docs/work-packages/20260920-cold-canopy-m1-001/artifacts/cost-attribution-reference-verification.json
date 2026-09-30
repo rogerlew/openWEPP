@@ -1,0 +1,11 @@
+{
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment",
+  "source_sha256": "91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7",
+  "entries": 771,
+  "binary": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/binaries14/treatment",
+  "binary_sha256": "286d8e2dd5d3adc691af16a04da739daa13c7677253f1b0a5667ea917e4e8e03",
+  "source_matches_recovery": true,
+  "binary_matches_build": true,
+  "inherited_measurement_pins_checked": 646,
+  "pin_mismatches": []
+}

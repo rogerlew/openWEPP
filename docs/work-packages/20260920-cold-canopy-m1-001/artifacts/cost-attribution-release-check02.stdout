@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/source-9cc1224e0c19
+  scratch: /tmp/openwepp-roger-source-9cc1224e0c19
+  cache:   /workdir/.cache/openwepp

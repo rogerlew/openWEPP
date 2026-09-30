@@ -1,5 +1,313 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Remaining cost attribution — measured; architecture reassessment recommended, 2026-09-30
+
+### Measured cost and decision
+
+**Ran:** all **624/624 complete outcomes** match the retained oracle; the fixed cohort and per-batch reconciliation pass. **Recommend architecture/model cost reassessment before another solver optimization.** SVD factorization is the largest isolated proposal cost, but making it free gives only **1.604x proposal / 1.516x combined** median conditional speedup. Even the extreme assumption that all measured Stage1 work becomes free gives **13.368x proposal / 6.034x combined**, with everything else unchanged. These enabled-wall Amdahl bounds do not establish a route to the recorded roughly 100x aspiration or practical 100-year/five-OFE scale. This is measured performance attribution, not a solver change or deployment acceptance.
+
+Completed-OFE-day CPU ceilings remain **750 us stable cold, 1.5 ms mixed phase, 2.5 ms transition**, plus the existing scaling, memory, map-count and warm-regression screens. Those deployment requirements are not measured here; proposal and completed-day costs are different denominators.
+
+Median microseconds per fresh initialization, proposal, or their sum; each cell is **CPU / wall**. Combined medians are calculated from each batch’s sum, not by summing separately selected phase medians.
+
+| Phase | R unchanged | D observer disabled | E observer enabled |
+| --- | ---: | ---: | ---: |
+| initialization | 100.305 / 104.387 | 95.903 / 100.340 | 96.552 / 99.175 |
+| proposal | 896.679 / 901.309 | 872.066 / 877.425 | 863.223 / 868.424 |
+| combined | 1000.618 / 1010.427 | 961.176 / 971.091 | 946.580 / 958.890 |
+
+R closely reproduces the historical cached costs, but this experiment claims no solver speedup. Negative observed D/R or E/D overhead is variability/code-placement evidence, not negative timer cost or an optimization gain. Total CPU uses the preceding Linux process-clock method; **all component times/shares below are E wall measurements**, never measured CPU fractions and never rescaled to R.
+
+Ranked proposal components: **exclusive** removes every directly timed child exactly once; **inclusive** retains children. Costs show median [minimum–maximum] microseconds across six batches, each divided by 32. Share is median per-batch exclusive/enclosing wall fraction. Counts and sweeps are constant across all six batches; complete count/spread arrays remain in the summary.
+
+| Component / scope | Exclusive us [range] | Inclusive median us | Proposal share [range] | Combined share | Calls / proposal |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| SVD factorization | 327.457 [313.574–374.733] | 327.457 | 37.66% [37.28%–38.11%] | 34.05% | 4 |
+| Other Stage1 / face setup and guards | 215.230 [205.030–245.389] | 805.876 | 24.71% [24.49%–25.09%] | 22.30% | 2 |
+| Damping search | 166.522 [160.548–187.345] | 166.522 | 19.17% [18.95%–19.33%] | 17.21% | 4 |
+| Refinement wrapper incl. eligibility | 79.161 [76.000–87.697] | 79.161 | 9.08% [8.87%–9.23%] | 8.13% | 4 |
+| Selected-J finite-difference core | 34.057 [32.721–41.170] | 34.057 | 3.95% [3.88%–4.17%] | 3.59% | 40 |
+| Unassigned (phase-specific) | 20.178 [15.609–21.610] | 20.178 | 2.23% [1.76%–2.42%] | 3.94% | — |
+| Active crossing / KKT calculations | 17.250 [16.590–19.460] | 17.250 | 1.98% [1.96%–2.01%] | 1.78% | 6 |
+| Selected-J assembly only | 8.308 [7.883–9.733] | 43.521 | 0.96% [0.93%–0.98%] | 0.87% | 1 |
+| Selected-J base core | 1.020 [0.961–1.274] | 1.020 | 0.12% [0.11%–0.13%] | 0.11% | 1 |
+| Other proposal core | 0.985 [0.900–1.333] | 0.985 | 0.11% [0.11%–0.13%] | 0.10% | 1 |
+
+The unassigned row’s combined share includes initialization plus proposal remainders; its proposal columns cover proposal only.
+
+Four SVD factors enter **28 Jacobi sweeps**, and four damping searches occur per proposal. Stage1 is entered twice; its inclusive time contains its SVD/search/refinement/KKT children and must not be added to them. “Other Stage1” is a measured residual of the real subproblem routine—including untimed face preparation, assembly, guards and orchestration—not a claim that 24.71% is disposable timer overhead. Active/KKT scopes cover `activate_first_crossing` and `box_feasible_kkt_values_with_accounting`; remaining face orchestration belongs to Other Stage1.
+
+| Initialization component | Exclusive us [range] | Inclusive median us | Init share [range] | Calls / initialization |
+| --- | ---: | ---: | ---: | ---: |
+| Natural-J finite-difference core | 59.691 [36.182–65.885] | 59.691 | 58.38% [53.60%–62.47%] | 39 |
+| Other setup / unassigned | 19.529 [15.337–34.530] | 19.529 | 21.63% [19.55%–30.12%] | — |
+| Natural-J assembly only | 15.190 [9.894–16.271] | 77.536 | 15.33% [13.82%–20.96%] | 1 |
+| Natural-J base core | 2.548 [1.453–2.824] | 2.548 | 2.49% [2.19%–2.69%] | 1 |
+
+The initialization base core is a child of the actual natural-Jacobian call, not a separate overlapping top-level interval. Counts reconcile to **40 natural-J core calls (1 base + 39 FD), 41 selected-J core calls (1 + 40), and 1 other proposal core = 82 total**, with one natural and one selected assembly. This resolves the historical shorthand “82 entries for two assemblies”; the 82 includes the other evaluator call.
+
+Refinement is **4 wrapper entries**, whereas the historical solver ledger reported **2 work-reservation attempts**. The actual subproblem loop calls `refine_face_before_crossing` for each face; its eligibility prefix can return before `refinement_reserve_work` increments `attempted_entries`. The profiler measures the whole wrapper, including eligibility. The precise two early-return conditions were not re-diagnosed or inferred from these counts. No new Jacobi factorization or damping search is entered inside refinement; factor application/reconstruction remains inside its measured exclusive time. The controller `transition_after_model` acceptance scope has **0 entries** because this G4 timing seam calls `transition_model` directly; full transition/full-solve acceptance is not measured. Zero-entry scopes are retained in raw records, not omitted from accounting.
+
+Every E warmup and measurement batch satisfies inclusive minus direct-child edges = exclusive, and the exclusive sum plus unassigned remainder equals its outer wall total exactly. Measured unassigned ranges are **15.337–34.530 us/init** and **15.609–21.610 us/proposal**. They retain uninstrumented setup, observer boundary/update cost, common command/end-marker I/O, output copies and wall scheduling effects. Timers/accumulator work occurring inside a parent is charged to that parent’s exclusive duration. There is no negative remainder, double counting, proportional correction or invented overhead subtraction. Independently selected component medians/shares need not sum to a median total.
+
+### All measurement triplets and observation quality
+
+CPU microseconds per fresh outcome; each phase cell is **R / D / E**.
+
+| Triplet / order | Initialization R/D/E | Proposal R/D/E | Combined R/D/E |
+| --- | ---: | ---: | ---: |
+| 1 R/D/E | 100.251 / 89.978 / 102.181 | 904.584 / 815.111 / 982.689 | 1004.836 / 905.089 / 1084.870 |
+| 2 D/E/R | 100.359 / 101.829 / 103.094 | 903.527 / 887.850 / 894.953 | 1003.886 / 989.679 / 998.047 |
+| 3 E/R/D | 58.529 / 60.025 / 63.937 | 837.275 / 848.613 / 827.467 | 895.804 / 908.638 / 891.404 |
+| 4 E/D/R | 55.387 / 76.390 / 61.306 | 862.647 / 856.283 / 884.928 | 918.034 / 932.673 / 946.235 |
+| 5 D/R/E | 107.518 / 102.716 / 105.408 | 889.832 / 899.910 / 841.517 | 997.350 / 1002.626 / 946.925 |
+| 6 R/E/D | 101.984 / 102.142 / 90.922 | 924.635 / 941.933 / 826.502 | 1026.618 / 1044.076 / 917.424 |
+
+WALL microseconds per fresh outcome; each phase cell is **R / D / E**.
+
+| Triplet / order | Initialization R/D/E | Proposal R/D/E | Combined R/D/E |
+| --- | ---: | ---: | ---: |
+| 1 R/D/E | 105.186 / 95.632 / 105.037 | 907.890 / 822.889 / 988.413 | 1013.076 / 918.521 / 1093.449 |
+| 2 D/E/R | 103.589 / 105.048 / 106.584 | 909.538 / 892.987 / 903.278 | 1013.127 / 998.034 / 1009.862 |
+| 3 E/R/D | 65.412 / 66.415 / 67.478 | 842.015 / 852.014 / 832.357 | 907.427 / 918.428 / 899.835 |
+| 4 E/D/R | 62.028 / 82.285 / 66.277 | 868.239 / 861.864 / 887.938 | 930.266 / 944.148 / 954.215 |
+| 5 D/R/E | 113.049 / 107.279 / 114.656 | 894.729 / 908.348 / 848.909 | 1007.778 / 1015.626 / 963.565 |
+| 6 R/E/D | 107.799 / 105.971 / 93.313 | 930.045 / 947.821 / 834.980 | 1037.844 / 1053.791 / 928.293 |
+
+| Comparison / phase / clock | Paired ratio median [range] | Median overhead | Ratio of absolute medians | 10% screen |
+| --- | ---: | ---: | ---: | --- |
+| D/R initialization cpu | 1.008 [0.898–1.379] | 0.81% | 0.956 | PASS |
+| D/R initialization wall | 0.999 [0.909–1.327] | -0.14% | 0.961 | PASS |
+| D/R proposal cpu | 1.002 [0.901–1.019] | 0.20% | 0.973 | PASS |
+| D/R proposal wall | 1.002 [0.906–1.019] | 0.23% | 0.974 | PASS |
+| E/D initialization cpu | 1.019 [0.803–1.136] | 1.93% | 1.007 | PASS |
+| E/D initialization wall | 1.015 [0.805–1.098] | 1.53% | 0.988 | PASS |
+| E/D proposal cpu | 0.992 [0.877–1.206] | -0.85% | 0.990 | PASS |
+| E/D proposal wall | 0.994 [0.881–1.201] | -0.58% | 0.990 | PASS |
+
+Both prospective median-quality screens pass in CPU and wall, with both paired-ratio medians and ratios of cost medians below 1.10. Individual ratios vary substantially: passing this screen does not bound every batch’s overhead or identify its distribution among components. Six batches on one host support the stated observed ranking and conditional wall shares, not precise CPU attribution or generalization to every OFE-day. Warmups (16 each) are retained and excluded from statistics; there was **no corrected replay, adaptive extension, discarded batch or separate G4 diagnostic**.
+
+### Conditional optimization bounds
+
+For each nonoverlapping candidate scope, per-batch share `f` gives ideal `1/(1-f)` if free and hypothetical acceleration `s` gives `1/((1-f)+f/s)`. The table reports medians of those batch-wise calculations, using E wall time. These are conditional bounds, not achieved speedups; do not multiply the rows.
+
+| Affected scope | Proposal share / if free / if 10x | Combined share / if free / if 10x |
+| --- | ---: | ---: |
+| all core evaluations | 4.17% / 1.044x / 1.039x | 10.24% / 1.114x / 1.102x |
+| jacobian assembly only | 0.96% / 1.010x / 1.009x | 2.42% / 1.025x / 1.022x |
+| all svd factorization | 37.66% / 1.604x / 1.513x | 34.05% / 1.516x / 1.442x |
+| all damping search | 19.17% / 1.237x / 1.208x | 17.21% / 1.208x / 1.183x |
+| refinement excluding timed children | 9.08% / 1.100x / 1.089x | 8.13% / 1.088x / 1.079x |
+| active kkt and acceptance exclusive | 1.98% / 1.020x / 1.018x | 1.78% / 1.018x / 1.016x |
+| stage1 other exclusive | 24.71% / 1.328x / 1.286x | 22.30% / 1.287x / 1.251x |
+
+The [additional extreme Stage1 bound](artifacts/cost-attribution-decision-bounds.json) uses the union of exclusive Stage1, SVD, damping, refinement and active-KKT scopes, verified as nested within Stage1 here. Its median shares are **92.52% proposal / 83.42% combined**; even making this entire union free gives **13.368x / 6.034x**. This is an architecture-level thought experiment, not a feasible localized optimization or permission to remove scientific work.
+
+**Next decision:** reassess the model/solver architecture against complete-solve and completed-OFE-day cost before adopting another implementation. The evidence does not show that changing SVD, damping or refinement alone can plausibly close the recorded scale gap. It also does not prove the completed-day ceilings impossible: no completed day, full solve, whole run, memory/scaling/map-count or warm-regression screen was measured. Preserve scientific acceptance and seek complete-path feasibility evidence; no numerical implementation or parent/native progression follows automatically.
+
+[Raw cohort](artifacts/cost-attribution-cohort/cohort.json), [all statistics and per-batch reconciliation](artifacts/cost-attribution-summary.json), [execution receipt](artifacts/cost-attribution-cohort-receipt.json), and [host checks](artifacts/cost-attribution-host-process-checks.json) retain every outcome, CPU/wall interval, order, source/binary pin and clock resolution. Nominal process-clock/Python wall/OS monotonic resolution is 1 ns, not an accuracy claim. No heavy Rust build/test process was found in the pre/post snapshots; snapshots do not claim continuous host surveillance.
+
+### Disposition, independent review, custody and charged time
+
+**Attribution experiment COMPLETE; production/full-M1 readiness remains HOLD.**
+Independent `/root/qa` (rust_qa_reviewer/Terra) inspected actual source isolation,
+clock boundaries, hierarchy/counts, every raw batch and arithmetic, conditional
+Amdahl bounds and final claim limits. It found **no blocking result finding** and
+supports architecture/model cost reassessment. The same reviewer verified its
+schema/count-spread and phase-specific unassigned/report-status corrections;
+[review record](artifacts/cost-attribution-independent-review.json) retains attributable
+readiness/results findings. No numerical reviewer was substituted: accepted prior
+numerical reviews apply only to unchanged arithmetic/guards/authority; the changed
+private observer received the required independent profiling/QA review.
+
+The [terminal impact check](artifacts/cost-attribution-terminal-impact.json) confirms
+all 1420 measurement pins, R’s 771 entries, D/E’s 772 entries and all 48 preexisting
+dirty files unchanged; the five-file [detached patch](artifacts/cost-attribution-source.patch)
+contains only the reviewed observer additions. Python syntax, new package links and
+authored-file diff whitespace checks pass. The full staged whitespace check flags
+libtest marker spaces/final blank lines in raw stdout; authenticated log bytes are
+preserved without normalization. No main Rust adoption, push, branch switch,
+external-suite change or parent/native progression occurred. Prior failed/negative
+experiments, original run-slot history and the native integrity stop are preserved.
+
+[Recovery metadata](artifacts/cost-attribution-recovery.json), the small
+[source overlay](artifacts/cost-attribution-source-overlay.tar.gz) and
+[recovery script](artifacts/cost-attribution-recover.py) reconstruct the final
+source from accepted frozen14/treatment and its existing retained base artifacts.
+[Executed recovery](artifacts/cost-attribution-recovery-verification.stdout) exactly
+reproduced all 772 entries. Durable source, binary and verified recovery remain
+under `/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/`;
+R is untouched in the preceding projection-cache directory. External support
+symlinks remain bound to their pinned local targets; this is recoverable local
+custody, not a claim of standalone portability or remote publication. Only scoped
+documentation, raw evidence and recovery are committed locally.
+
+[Closing ledger](artifacts/cost-attribution-final-ledger.json): fixed **04:52 UTC**
+first-reading anchor; **2514 s** rounded-up elapsed to closing plus the full
+**1800 s** closing allocation = **4314 s** new charged time. Carry
+**433286.393795 s** gives **437600.393795 s**, below the fixed
+**438686.393795 s** ceiling, with **1086 s** unused. Charged coverage is through
+**06:03:54 UTC**, inside the unchanged **06:22 UTC** hard deadline; work cutoff
+remains **05:52 UTC**. All waits/concurrency are charged once; no old remainder,
+refund or re-anchoring. Earlier completion does not refund the reserved allocation.
+The 624-outcome cohort is spent; unused time grants no successor optimization or
+additional physical execution. No replay or extra diagnostic was used.
+
+### Adopted scope, fixed allowance and ownership
+
+Owner execution of
+`/tmp/openwepp_cold_canopy_m1_cost_attribution_authorization.md` adopts a new,
+finite G4 attribution cohort. No numerical optimization, main Rust adoption,
+native integration, original physical target execution, parent/cycle progression,
+dependency addition, branch switch or push is authorized. Preserve all preceding
+results, failed runs, custody stops and unrelated dirty work.
+
+Runtime requirements remain completed-OFE-day CPU ceilings stable cold **750 us**,
+mixed phase **1.5 ms**, transition **2.5 ms**, with the scaling, memory, map-count
+and warm-regression screens below. The 100-year/five-OFE concern and roughly 100x
+proposal improvement aspiration remain; whole-run and completed-day feasibility
+are unproven. Historical cached proposal medians were **902.169 us CPU / 904.643 us
+wall**; init+proposal **1000.631 / 1007.844 us**. These are reference evidence,
+not assumed new results. Comparable pre-cache proposal CPU was 3169.913 us.
+
+Source starts at local evidence commit `ad56a3140`, frozen14/treatment tree
+`91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7`.
+R is the retained unchanged reference; D and E share a new detached source and
+binary with private instrumentation disabled/enabled. Durable work is under
+`/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/`;
+reference source/binaries remain in the projection-cache directory below.
+The input fixture remains SHA256
+`4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54`.
+Actual source/input/binary identities must be checked before measurement.
+
+**Fixed allowance:** conservative first-reading anchor **2026-09-30 04:52:00 UTC**,
+work cutoff **05:52:00 UTC**, hard deadline **06:22:00 UTC**. The preceding
+[closing receipt](artifacts/projection-cache-final-ledger.json) was checked once:
+carry **433286.393795 s**, new ceiling **438686.393795 s**, allowance 5400 s,
+including 1800 s reserved for review/preservation/disposition. All elapsed waits
+and concurrent work count once. No old remainder, refund or re-anchoring. Ordinary
+commands are bounded to 180 s and must fit before the applicable closing boundary.
+
+Astra owns integration and this record; `/root/implementer` (implementer/Terra)
+owns detached instrumentation and focused verification; `/root/qa`
+(rust_qa_reviewer/Terra) independently reviews readiness, results and fixes.
+No nested agents. Prior numerical review is reused only for unchanged behavior.
+
+### Frozen readiness cut — before cohort
+
+The exact [v2 protocol](artifacts/cost-attribution-protocol.json) freezes call sites,
+15 scope names, initialization/proposal phase ownership, direct-child hierarchy,
+all cohort orders and validation commands. Each scope records inclusive and
+exclusive monotonic wall time, entries and actual Jacobi sweeps. Core entry is
+classified by its nearest active natural/selected assembly and first/base versus
+subsequent finite-difference call. Per-phase direct-child matrices reconcile nested
+SVD/search/refinement/KKT/acceptance work; no overlapping counters are inferred.
+The [analyzer](artifacts/cost-attribution-analyze.py) rejects schema mismatch,
+negative/inconsistent scope accounting, duplicate child charging and negative
+outer remainders. Unassigned time retains other setup, marker/output-copy and
+observer effects. No component CPU fraction or proportional rescaling is used.
+
+[Build identities](artifacts/cost-attribution-build-identities.json): D/E share source
+`d0ef39eaff8e552846b4f59195efcf578efeb57fea98d084ca6d7318e3d29d04`
+and release binary `08417c2ad94b228701c27061951a93d2a480b9a7bc7149b88c4e9df526762757`.
+R remains source `91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7`,
+binary `286d8e2dd5d3adc691af16a04da739daa13c7677253f1b0a5667ea917e4e8e03`.
+[Configuration](artifacts/cost-attribution-config.json) sets observation off for
+R/D and on only for E; D/E have the same binary and complete-output consumer.
+[Measurement pins](artifacts/cost-attribution-measurement-pins.json) bind all retained
+R files, shared inputs/supports, binaries, config, protocol, driver and analyzer.
+R's 771 entries and 646 original pins were checked unchanged; detached recovery
+reproduced all 772 entries exactly. No source edits during result-bearing commands.
+
+**Ran:** terminal [release check02](artifacts/cost-attribution-release-check02.json)
+123/123 selected tests pass, including 3 synthetic observer controls; [default
+check](artifacts/cost-attribution-default-check.json), [format
+check](artifacts/cost-attribution-format-check.json), and 5 [analyzer
+controls](artifacts/cost-attribution-analysis-check03.json) pass. Strict
+[Clippy03](artifacts/cost-attribution-clippy03.json) remains FAIL101 with 299 inherited
+findings; same-command/source-aware [comparison03](artifacts/cost-attribution-clippy-comparison03.json)
+shows zero additions/removals. The prospective inherited-lint disposition applies;
+this is not clean Clippy. Prior accepted numerical reviews remain reused for
+unchanged arithmetic, guards, budgets and authority. Actual diff is five private
+observer surfaces; no production, solver-owned allocation, manifest or dependency
+change. Source isolation was independently inspected by `/root/qa`.
+
+Internal implementation checkpoints were incomplete, not scientific negatives.
+The first implementer supplied partial hooks repeatedly; Astra reassessed and
+integrated the fixed recorder/source join, retaining one independent QA reviewer.
+Replacement dispatch was unavailable because of the thread limit. Partial source,
+pre-lint source and integration inputs are retained in
+[development cuts](artifacts/cost-attribution-development-cuts.tar.gz). Initial
+feature-omitting compile/zero-selected-tests and one corrected JSON macro compile
+failure were reported by the implementer; full tool logs were not durably retained,
+so they supply no acceptance evidence. Parent reran required checks with the
+existing custody recorder. Clippy01 used the wrong dependency surface and stopped
+at an inherited dependency diagnostic; Clippy02 found three instrumentation-only
+findings. Constants were moved before observer guards and a narrowly documented
+test-only line-count allowance added for the unchanged ordered factorization;
+terminal checks and the same reviewer verify those fixes. No physical slot was
+used by these development checks.
+
+Independent `/root/qa` accepted the fixed hierarchy, disabled-mode isolation,
+source diff, schema/count-spread fixes and config identities, finding no remaining
+source/protocol/config blocker. Readiness was conditional on the default, format,
+analyzer checks and final pin freeze; those are now satisfied. Final independent readiness **PASS** for the exact frozen cut is retained in
+[review record](artifacts/cost-attribution-independent-review.json). All 624 physical
+outcomes were unused at readiness; the one cohort command now follows this freeze.
+
+### Prospective intent, protocol and validation
+
+Risk: **Bounded Component**, conditional on private instrumentation only and
+unchanged numerical behavior/authority. Intended writes are this record,
+`artifacts/cost-attribution-*` evidence/recovery, and the detached experiment tree.
+Map actual call sites before freezing: initialization base evaluation, natural
+Jacobian and setup; proposal selected Jacobian, other core calls, SVD, damping
+search, refinement, active-face/KKT/acceptance and remainder. Fixed accumulators
+retain inclusive/exclusive wall durations and counts. Nested core belongs inside
+Jacobian and nested search/factors inside refinement; charge each interval once
+in exclusive reconciliation. Total CPU remains the existing process-clock measure;
+component wall shares must not be relabeled CPU shares. No logging, serialization,
+full-state capture or per-arithmetic timers inside measured scopes.
+
+Before numerical measurement, freeze exact source, input, binary, driver/protocol
+and validation commands here, and obtain independent readiness. Cohort is exactly
+one warmup of 16 fresh proposals each for R/D/E, then six 32-proposal triplets in
+orders **R/D/E, D/E/R, E/R/D, E/D/R, D/R/E, R/E/D**: **208 outcomes per configuration,
+624 total**. Every complete output must match the retained frozen14 numerical
+oracle outside timing. No separate physical diagnostic, adaptive tuning or noise
+retry. At most one independently demonstrated defective-configuration replay,
+with failed source/results preserved. Mismatch or uncontained custody failure
+stops interpretation. No edits to source during result-bearing commands.
+
+Use the same host/toolchain/release settings serially without heavy concurrent
+build/test work. Keep original initialization/proposal boundaries excluding
+startup, parsing and serialization; retain common marker/output-copy costs and
+clock resolution without invented subtraction. Reconcile every batch before
+medians/shares. Independently selected component medians need not sum to the
+median enclosing total. Prospective quality screen: median overhead **>10% CPU or
+wall**, separately D/R and E/D for initialization and proposal, makes affected
+precise baseline shares inconclusive. No redesign after seeing results.
+
+Selected validation obligations: affected Rust formatting, default-library build,
+private synthetic nesting/accounting tests, owning isolated Stage1/Stage2 numerical
+controls, unchanged complete-output encoder real-consumer parity through the
+fixed cohort, and warnings-denied Clippy with prospectively selected bounded
+inherited-lint policy (same command/toolchain, source-aware diagnostic comparison,
+zero new relevant findings; retain prior failures honestly). Source/terminal-diff
+inspection must prove no solver mathematics, guards, budgets, dependencies,
+production reachability, authoritative counters or external A3 bindings changed.
+Reuse accepted A0 formula/authority and unchanged A1 evidence; touched observational
+invariants get direct tests. No change to physics, conservation lineage, authority,
+public consumers, manifests/toolchain or external suites is intended, so those
+campaign/dependency/anti-evasion workflows are not triggered by private timers.
+Unknown or changed impact requires escalation, not silent narrowing.
+
+Outcome will report all R/D/E raw totals and triplets, ranked measured components,
+counts/spread/limits, reconciled overhead and conditional Amdahl ceilings using
+exclusive shares for proposal and combined denominators. Recommend at most one
+next implementation, or architecture/model reassessment; no implementation follows
+automatically. Full-solve/completed-day evidence remains required for deployment.
+
 ## Projection-cache experiment — verified proposal improvement, 2026-09-30
 
 **Ran:** comparable release median per-proposal CPU cost **3169.913 → 902.169 us**;

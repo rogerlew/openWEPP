@@ -1,0 +1,19 @@
+{
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/source",
+  "source_sha256": "d0ef39eaff8e552846b4f59195efcf578efeb57fea98d084ca6d7318e3d29d04",
+  "source_unchanged_during_release_check": true,
+  "release_receipt": "cost-attribution-release-check02.json",
+  "binary": "/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/binaries/attribution",
+  "binary_sha256": "08417c2ad94b228701c27061951a93d2a480b9a7bc7149b88c4e9df526762757",
+  "built_binary": "/tmp/openwepp-cost-attribution-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+  "reference_source_sha256": "91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7",
+  "reference_binary": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/binaries14/treatment",
+  "reference_binary_sha256": "286d8e2dd5d3adc691af16a04da739daa13c7677253f1b0a5667ea917e4e8e03",
+  "features": [
+    "m1-trust-region-physical-stage",
+    "m1-trust-region-analytic-stage",
+    "m1-trust-region-controller-stage"
+  ],
+  "release_profile": "opt3,thin-LTO,codegen-units1; unchanged manifests/toolchain",
+  "config_sha256": "7e745e2a3c9acb4cd7c0938297ca2c0820f20f5f81e4f45435a6c0665e4df35f"
+}
