@@ -1,0 +1,176 @@
+{
+  "evidence_class": "Static source extraction/primary-source retrieval; Ran offline hash/arithmetic checks only",
+  "base_commit": "b6ac817300ba9ce449298f30afb7736d9e35509a",
+  "owner_authorization": {
+    "original": "/tmp/openwepp_cold_canopy_m1_architecture_decision_authorization.md",
+    "preserved": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/architecture-decision-owner-authorization.md",
+    "sha256": "d587693be490ec77c38cd6b6ccfd2d4e9ed978c9c16614fecafc6f5b92d62f68"
+  },
+  "reference_source_locations": [
+    {
+      "root": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment",
+      "relative_path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_fixed_sequence_provider.rs",
+      "sha256": "5b3cf54014c90a15300a425a248e42ef469c63b2cb81586b26acd1d441f99e0b",
+      "locations": "555;752-887;1194-1359;1451-1645",
+      "claim": "record construction, solver call, one hard-bound support per record"
+    },
+    {
+      "root": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment",
+      "relative_path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/mod.rs",
+      "sha256": "83cf785961155d5d0a504399ae03fe1b5c7acd6d4dc99d54fe8a72da64f36568",
+      "locations": "93-105",
+      "claim": "test-only actual provider and receiver modules"
+    },
+    {
+      "root": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment",
+      "relative_path": "crates/openwepp-hillslope-orchestrator/src/land_surface_energy_shadow/m1_receiver.rs",
+      "sha256": "cd5164677d0b9e09eddd004f27f0b6fd48d7226d9f7b3ecd9ddc09467b2215d9",
+      "locations": "648-680;1169-1390",
+      "claim": "current owners, parent custody and native obligations"
+    },
+    {
+      "root": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment",
+      "relative_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+      "sha256": "53feb758af3a8e0e94a7b5b4ba90e2876b731a49aad0b8c908beb3a0bce7d677",
+      "locations": "1182-1511;2695-2755;5448-5470;5478-5845",
+      "claim": "21 residuals, private trust adapter, hydraulic charges, canonical seed/loop"
+    },
+    {
+      "root": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment",
+      "relative_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs",
+      "sha256": "4748964039c80f0037d61b0018241e83bbc3185a13db5e259b08e71f242b18f9",
+      "locations": "842-940;1122-1210",
+      "claim": "zeroPAR humidity-affine constitutive law"
+    },
+    {
+      "root": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment",
+      "relative_path": "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_hydraulics.rs",
+      "sha256": "d5533ee58a5d4582d9ab5dabd7ff44dbf7f5d6ac533e21d955a5c32cb28c2c44",
+      "locations": "whole file",
+      "claim": "FullSupply downstream hydraulics"
+    },
+    {
+      "root": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment",
+      "relative_path": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "sha256": "9e14b4e2baf6c688a8446a38e447942101c4d1f89f0a15c1af9d7f5d071373a7",
+      "locations": "1778-1966;2333-2410",
+      "claim": "retained proposal timing seam and independent oracle boundary"
+    }
+  ],
+  "canonical_authority_pins": [
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md",
+      "sha256": "9289b21afae8420be74b61abd3a939778a6ca990b5d95d0d6b53f28d265dfeac"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md",
+      "sha256": "b76d674dff647066f3cfabb1756bc121ed49942250b51319799c16964b0445d2"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+      "sha256": "ecad8d17ad3facb5bff86b8dc3e65a529df777fa370ffc6d82d2cc5c0138a78c"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
+      "sha256": "b930bbd0f0ce2c16d826be6a6d1d0bb4e6fe0155e611232047e0b4205e2dbfc4"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/solve-boundary.md",
+      "sha256": "c6b60b52eb194341324df1fc69736030627fe4e7d45371442d32e6f4dc80ee94"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/nonlinear-solve.md",
+      "sha256": "d8ba959af095a9e829a7d7324968ed2a89f80d921a5a72ee5b72c0f6b776c2e3"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md",
+      "sha256": "ba0dba474ee78f5efde530f9e0764d9899b684cf98675d6609228cfcfd7ee2c1"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md",
+      "sha256": "d6d48539ad0e27eee6ab3d829fd64cb7f9f02b3cc2954bac76c72d49399ef211"
+    },
+    {
+      "path": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/dependency-replay.md",
+      "sha256": "6ce8ffe21317027f5d1171579a9059c64c7ae3bd9ba9181ceea91323254b6b25"
+    }
+  ],
+  "prior_evidence_pins": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/cost-attribution-summary.json",
+      "sha256": "633d039ee9e89c1abb4108c3dd6eac677d524c280d07ec17cbbfc9c3b1950d44"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/cost-attribution-decision-bounds.json",
+      "sha256": "d679861793c9969ff7b2884b26196dc73d3b81f22a111aea3ed2dc62cc74ac67"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/cost-attribution-independent-review.json",
+      "sha256": "3751e9ef5d9e158f6fd3d984581f9dbc5d145d1c973c26a2cda0fef17f65883b"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/cost-attribution-recovery.json",
+      "sha256": "98066b18de66b797c6b5838a6aea520d0f933dee47fd56453690d9faa0bfd52b"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/cost-attribution-measurement-pins.json",
+      "sha256": "510d57b7afe5310c79170acf5cd9c4ebced414c0a1f6efe66353ef6c900d0fe5"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-recovery.json",
+      "sha256": "d1381a39a898ab88efdb83df05ddb8c786b3d99bcc06993572663494d521a43c"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-cost-summary.json",
+      "sha256": "ecae14e1254cd71de73f99eb7eaac21cce4fa3a821a70d701812d276a65b4b33"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-independent-reviews.json",
+      "sha256": "c47de80e973eaf65d400f48d93325a913358a6b5996a2a508be5521b7af8b468"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json",
+      "sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54"
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/continuous-fixtures-draft01.json",
+      "sha256": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1"
+    },
+    {
+      "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md",
+      "sha256": "7881a4be782fdc1bb1139755675128e7419ff48d958e6afa1f9b2d8f4350d1c2"
+    },
+    {
+      "path": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/pre-implementation-gates.md",
+      "sha256": "9456cbd9639b58414786f536bc0d0f85bde3c34e940f5e770f12aa6485ce1c52"
+    },
+    {
+      "path": "docs/work-packages/20260910-stage3-snow-accuracy-runtime-001/package.md",
+      "sha256": "fb0c4df37a954b50417899cb11107ef3a69a3172525e4984e37e3fa92c574fd7"
+    }
+  ],
+  "binary_pins": [
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/binaries14/treatment",
+      "sha256": "286d8e2dd5d3adc691af16a04da739daa13c7677253f1b0a5667ea917e4e8e03",
+      "executed_this_study": false
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/binaries/attribution",
+      "sha256": "08417c2ad94b228701c27061951a93d2a480b9a7bc7149b88c4e9df526762757",
+      "executed_this_study": false
+    }
+  ],
+  "measurement_pins_verified_unchanged": 1420,
+  "unrelated_dirty_files_verified_unchanged": 48,
+  "r_source_verified_entries": 771,
+  "profiling_source_verified_entries": 772,
+  "primary_source_retrieval_manifest": "architecture-decision-rhessys-source.json",
+  "primary_source_retrieval_manifest_sha256": "45c4d4b7742234abe77479b289dd073f102ca88d7e5919bbb3976d57e46003fa",
+  "limitations": [
+    "No solver, benchmark, physical case, native owner progression or RHESSys execution.",
+    "M1 caller inspected in actual frozen14 treatment, not substituted main Rust.",
+    "Complete evaluated/source recovery metadata retained in prior committed evidence.",
+    "Whole-run source target is a package-adopted engineering SLO for10OFEs, not a separately recovered fiveOFE target."
+  ]
+}

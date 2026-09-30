@@ -1,0 +1,286 @@
+{
+  "evidence_class": "Ran: offline arithmetic/source hash checks only. Static conditional work models; no physical or performance execution.",
+  "units": "microseconds unless otherwise named",
+  "source_identities": [
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment",
+      "entries": 771,
+      "sha256": "91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7"
+    },
+    {
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-cost-attribution-20260930/source",
+      "entries": 772,
+      "sha256": "d0ef39eaff8e552846b4f59195efcf578efeb57fea98d084ca6d7318e3d29d04"
+    }
+  ],
+  "unrelated_dirty_files_unchanged": 48,
+  "measured_prior_phase_cpu_medians": {
+    "initialization": 100.30534374999999,
+    "proposal": 896.6793125,
+    "sum_of_phase_medians_not_combined_median": 996.9846562500001,
+    "combined_median": 1000.6180625
+  },
+  "scenarios": [
+    {
+      "supports_per_day": 1440,
+      "solves_per_support": 1,
+      "solves_per_day": 1440,
+      "allowance_cpu_us_per_solve_other_zero": {
+        "stable": 0.5208333333333334,
+        "mixed": 1.0416666666666667,
+        "transition": 1.7361111111111112
+      },
+      "setup_only_cpu_us_if_R_transfers": 144439.69499999998,
+      "scenario_cpu_us_per_day_if_R_transfers": {
+        "1": 1435657.905,
+        "3": 4018094.325,
+        "8": 10474185.375
+      },
+      "one_proposal_over_budget_ratio_if_R_transfers": {
+        "stable": 1914.21054,
+        "mixed": 957.10527,
+        "transition": 574.263162
+      }
+    },
+    {
+      "supports_per_day": 1440,
+      "solves_per_support": 2,
+      "solves_per_day": 2880,
+      "allowance_cpu_us_per_solve_other_zero": {
+        "stable": 0.2604166666666667,
+        "mixed": 0.5208333333333334,
+        "transition": 0.8680555555555556
+      },
+      "setup_only_cpu_us_if_R_transfers": 288879.38999999996,
+      "scenario_cpu_us_per_day_if_R_transfers": {
+        "1": 2871315.81,
+        "3": 8036188.65,
+        "8": 20948370.75
+      },
+      "one_proposal_over_budget_ratio_if_R_transfers": {
+        "stable": 3828.42108,
+        "mixed": 1914.21054,
+        "transition": 1148.526324
+      }
+    },
+    {
+      "supports_per_day": 49,
+      "solves_per_support": 1,
+      "solves_per_day": 49,
+      "allowance_cpu_us_per_solve_other_zero": {
+        "stable": 15.306122448979592,
+        "mixed": 30.612244897959183,
+        "transition": 51.02040816326531
+      },
+      "setup_only_cpu_us_if_R_transfers": 4914.961843749999,
+      "scenario_cpu_us_per_day_if_R_transfers": {
+        "1": 48852.24815625,
+        "3": 136726.82078125,
+        "8": 356413.25234375003
+      },
+      "one_proposal_over_budget_ratio_if_R_transfers": {
+        "stable": 65.136330875,
+        "mixed": 32.5681654375,
+        "transition": 19.5408992625
+      }
+    },
+    {
+      "supports_per_day": 49,
+      "solves_per_support": 2,
+      "solves_per_day": 98,
+      "allowance_cpu_us_per_solve_other_zero": {
+        "stable": 7.653061224489796,
+        "mixed": 15.306122448979592,
+        "transition": 25.510204081632654
+      },
+      "setup_only_cpu_us_if_R_transfers": 9829.923687499999,
+      "scenario_cpu_us_per_day_if_R_transfers": {
+        "1": 97704.4963125,
+        "3": 273453.6415625,
+        "8": 712826.5046875001
+      },
+      "one_proposal_over_budget_ratio_if_R_transfers": {
+        "stable": 130.27266175,
+        "mixed": 65.136330875,
+        "transition": 39.081798525
+      }
+    },
+    {
+      "supports_per_day": 48,
+      "solves_per_support": 1,
+      "solves_per_day": 48,
+      "allowance_cpu_us_per_solve_other_zero": {
+        "stable": 15.625,
+        "mixed": 31.25,
+        "transition": 52.083333333333336
+      },
+      "setup_only_cpu_us_if_R_transfers": 4814.656499999999,
+      "scenario_cpu_us_per_day_if_R_transfers": {
+        "1": 47855.2635,
+        "3": 133936.4775,
+        "8": 349139.5125
+      },
+      "one_proposal_over_budget_ratio_if_R_transfers": {
+        "stable": 63.807018,
+        "mixed": 31.903509,
+        "transition": 19.142105400000002
+      }
+    },
+    {
+      "supports_per_day": 48,
+      "solves_per_support": 2,
+      "solves_per_day": 96,
+      "allowance_cpu_us_per_solve_other_zero": {
+        "stable": 7.8125,
+        "mixed": 15.625,
+        "transition": 26.041666666666668
+      },
+      "setup_only_cpu_us_if_R_transfers": 9629.312999999998,
+      "scenario_cpu_us_per_day_if_R_transfers": {
+        "1": 95710.527,
+        "3": 267872.955,
+        "8": 698279.025
+      },
+      "one_proposal_over_budget_ratio_if_R_transfers": {
+        "stable": 127.614036,
+        "mixed": 63.807018,
+        "transition": 38.284210800000004
+      }
+    },
+    {
+      "supports_per_day": 24,
+      "solves_per_support": 1,
+      "solves_per_day": 24,
+      "allowance_cpu_us_per_solve_other_zero": {
+        "stable": 31.25,
+        "mixed": 62.5,
+        "transition": 104.16666666666667
+      },
+      "setup_only_cpu_us_if_R_transfers": 2407.3282499999996,
+      "scenario_cpu_us_per_day_if_R_transfers": {
+        "1": 23927.63175,
+        "3": 66968.23875,
+        "8": 174569.75625
+      },
+      "one_proposal_over_budget_ratio_if_R_transfers": {
+        "stable": 31.903509,
+        "mixed": 15.9517545,
+        "transition": 9.571052700000001
+      }
+    },
+    {
+      "supports_per_day": 24,
+      "solves_per_support": 2,
+      "solves_per_day": 48,
+      "allowance_cpu_us_per_solve_other_zero": {
+        "stable": 15.625,
+        "mixed": 31.25,
+        "transition": 52.083333333333336
+      },
+      "setup_only_cpu_us_if_R_transfers": 4814.656499999999,
+      "scenario_cpu_us_per_day_if_R_transfers": {
+        "1": 47855.2635,
+        "3": 133936.4775,
+        "8": 349139.5125
+      },
+      "one_proposal_over_budget_ratio_if_R_transfers": {
+        "stable": 63.807018,
+        "mixed": 31.903509,
+        "transition": 19.142105400000002
+      }
+    },
+    {
+      "supports_per_day": 1,
+      "solves_per_support": 1,
+      "solves_per_day": 1,
+      "allowance_cpu_us_per_solve_other_zero": {
+        "stable": 750.0,
+        "mixed": 1500.0,
+        "transition": 2500.0
+      },
+      "setup_only_cpu_us_if_R_transfers": 100.30534374999999,
+      "scenario_cpu_us_per_day_if_R_transfers": {
+        "1": 996.9846562500001,
+        "3": 2790.34328125,
+        "8": 7273.739843750001
+      },
+      "one_proposal_over_budget_ratio_if_R_transfers": {
+        "stable": 1.329312875,
+        "mixed": 0.6646564375,
+        "transition": 0.39879386250000004
+      }
+    },
+    {
+      "supports_per_day": 1,
+      "solves_per_support": 2,
+      "solves_per_day": 2,
+      "allowance_cpu_us_per_solve_other_zero": {
+        "stable": 375.0,
+        "mixed": 750.0,
+        "transition": 1250.0
+      },
+      "setup_only_cpu_us_if_R_transfers": 200.61068749999998,
+      "scenario_cpu_us_per_day_if_R_transfers": {
+        "1": 1993.9693125000001,
+        "3": 5580.6865625,
+        "8": 14547.479687500001
+      },
+      "one_proposal_over_budget_ratio_if_R_transfers": {
+        "stable": 2.65862575,
+        "mixed": 1.329312875,
+        "transition": 0.7975877250000001
+      }
+    }
+  ],
+  "limits": [
+    "1440 is the fixed diagnostic provider completed-day requirement, not an observed completed day or universal climate cadence.",
+    "49/48 require a different adopted support policy; 24/1 additionally cross current parent boundaries.",
+    "Two solves/support is illustrative, not inferred from two occupancies or map caps.",
+    "1/3/8 proposals are sensitivities, never observed solve averages.",
+    "G4 R initialization/proposal costs have no demonstrated transfer to any complete solve.",
+    "C_other=0 is an optimistic allowance only; failed attempts and all owners remain payable."
+  ],
+  "recovered_whole_run_target": {
+    "ofes": 10,
+    "years": 100,
+    "days": 36525,
+    "cpu_seconds": 182.625,
+    "wall_seconds": 210,
+    "source": "docs/work-packages/20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md:62-73,156-165",
+    "cpu_average_us_per_ofe_day": 500.0,
+    "five_ofe_target": "No separate explicit five-OFE wall ceiling recovered; do not scale 210 s into an adopted target."
+  },
+  "counterfactual_100x_whole_R_phase_cost_at_1440": {
+    "cpu_us_per_day": 14356.57905,
+    "budget_ratios": {
+      "stable": 19.142105400000002,
+      "mixed": 9.571052700000001,
+      "transition": 5.74263162
+    }
+  },
+  "new_method_evaluation_wall_subtotals_only": {
+    "observed_component_transfer_envelope_us_per_core": [
+      0.9,
+      2.8
+    ],
+    "optimistic_two_evaluations_us": [
+      1.8,
+      5.6
+    ],
+    "conditional_3_to_8_updates_2_to_4_evaluations_each_us": [
+      5.4,
+      89.6
+    ],
+    "not_total_cost": "Add derivative/factor/constraints/hydraulic/materialization/setup/rejection cost. Wall envelope is not a CPU prediction or universal physical lower bound."
+  },
+  "controls": {
+    "supports_60s": 1440,
+    "parents_1800s": 48,
+    "records_per_parent": 30,
+    "two_occupancy_energy_dimension": 21,
+    "joint_with_downstream_hydraulics": 29,
+    "fixed_identity_reduction": 14,
+    "plus_affine_q_reduction": 13,
+    "plus_two_exact_dark_sun_anchors": 11
+  }
+}

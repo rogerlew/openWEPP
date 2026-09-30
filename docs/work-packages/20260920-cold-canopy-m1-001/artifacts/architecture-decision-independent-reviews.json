@@ -1,0 +1,63 @@
+{
+  "evidence_class": "Static independent scientific/evidence reviews plus Ran independent offline arithmetic and source hash checks; no new numerical/physical execution",
+  "scientific_brief_sha256": "b08a265a4d20da4f12cbe1fdd198471a1881a5693e7d92e45dbee5b26246a551",
+  "scientific_brief_delimiters": [
+    "## Architecture and deployment-cost decision",
+    "### Static evidence, independent review and disposition"
+  ],
+  "parent_scientific_designer": "/root (Astra orchestration)",
+  "correctness": {
+    "reviewer": "/root/architecture_correctness",
+    "role": "rust_code_reviewer",
+    "independent_of_design": true,
+    "disposition": "APPROVE; no remaining blocker",
+    "findings": [
+      {
+        "severity": "Medium",
+        "finding": "Coarsened gates did not directly bound humidity and upper-to-lower drainage integrals; aggregate totals could hide compensation.",
+        "fix": "Added qcan, per-occupancy dry/wet vapor, intercepted upper drainage mass/enthalpy, signed/gross per-sign reference gates, separate from exact custody.",
+        "reviewer_fix_verification": "Verified resolved in final accuracy paragraphs."
+      },
+      {
+        "severity": "Medium",
+        "finding": "Blanket temperature forward-error gate was undefined for fully-wet null coordinates.",
+        "fix": "Compare physically determined temperatures; separately freeze/test certified current-base hold convention and common prescribed reactivation control entry. No arbitrary physical anchor.",
+        "reviewer_fix_verification": "Verified resolved in final accuracy/gauge paragraphs."
+      }
+    ],
+    "independent_checks": [
+      "Offline decimal budget and P1/P3/P8 sensitivities,100x counterfactual,48-support and recovered500us mean",
+      "All11 retrieved RHESSys file hashes and sizes",
+      "Pinned provider4320records/3days,30/parent,one joint two-occupancy call/support",
+      "All21 residuals,21\u219214\u219213/11 dimensions, exact zeroPAR humidity formula, selected drainage vs physical state distinction"
+    ],
+    "final_response": "Static/Ran review complete: approved with no remaining correctness blockers. Both medium findings were corrected and independently verified. Cadence arithmetic,21-row mapping,exact reductions,humidity elimination,cost-transfer limits,source provenance,and successor falsification criteria are consistent. Approval covers only the static decision study,not implementation,contract amendment,or deployment."
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "role": "rust_qa_reviewer",
+    "independent_of_design": true,
+    "disposition": "PASS; no remaining blocker",
+    "findings": [
+      {
+        "severity": "blocking",
+        "finding": "Three successor cases were not exactly bound to the source fixture or identified as new derived inputs.",
+        "fix": "Added immutable three-case manifest with exact intervals, source JSON pointers, initial-MH formulas and binary64 bits, required behaviors, explicit derived-input classification and no replacement on missing behavior.",
+        "reviewer_fix_verification": "All bit pins/formulas independently recomputed; manifest linked and hash-bound in package; PASS."
+      }
+    ],
+    "independent_checks": [
+      "Budget and CPU transfer sensitivities; no wall-to-CPU transfer claim",
+      "Recovered210s10OFE century and500us CPU mean",
+      "All7 frozen-source locations,9 authority pins,13 prior-evidence pins,2 binary hashes,authorization and RHESSys manifest",
+      "All48 unrelated initial dirty files unchanged; static-only scoped diff and whitespace pass"
+    ],
+    "affected_scope_fix_verification": "PASS: revised gates bound coarsened qcan, per-occupancy dry/wet vapor, upper-to-lower drainage mass/enthalpy and signed/gross per-sign integrals; physically determined temperatures separated from null-coordinate hold convention with same prescribed control entry before reactivation. No new model claim or execution authorization.",
+    "ledger_verification": "PASS: elapsed ceiling, full closing charge, cumulative carry, fixed remaining allowance, coverage and original deadline independently recomputed; no refund, re-anchor or duplicate closing charge."
+  },
+  "limits": [
+    "New reduced solver,cadence accuracy,reference convergence,required case behaviors,null reactivation and column-day cost remain unexecuted.",
+    "Passing proposed column-day screen cannot establish completed OFE-day or deployment because native/receiver/C_other remains unresolved.",
+    "No reviewers designed this decision; same reviewers independently verified the accepted fixes."
+  ]
+}

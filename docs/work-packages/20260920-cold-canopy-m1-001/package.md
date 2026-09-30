@@ -1,5 +1,437 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Architecture and deployment-cost decision — static conclusion, 2026-09-30
+
+**Static: no evaluated architecture presently has a defensible deployment-cost
+path under the fixed 60-second M1 caller.** A completed diagnostic day needs
+**1,440 joint two-occupancy solves**, before receiver work or rejected attempts.
+The adopted **750 / 1,500 / 2,500 us CPU per completed OFE-day** therefore allows
+only **0.521 / 1.042 / 1.736 us per solve** in stable / mixed / transition regimes,
+with all other work optimistically free. Current G4 initialization alone is
+**100.305 us CPU**. Recommend stopping local BVLS/SVD optimization. The sole
+conditional direction worth falsifying is **a coarser, explicitly adopted support
+policy combined with an exactly reduced coupled formulation**. This is a temporal
+accuracy tradeoff, not an established fast architecture or a production release.
+No physical-model simplification is selected; a wholesale RHESSys formulation
+would discard required M1 science without an acceptable accuracy reference.
+
+### Denominator and recovered requirement
+
+The actual retained diagnostic route is `advance_fixed_sequence_support_inner`
+→ `prepare_fixed_sequence_support` → `solve_m1_coupled_column` → prepared owner
+context → `advance_m1_caller_support_with_gsi` → native/owner custody → accepted
+slab. In cached source `91fae0…f94a7`, provider lines1194–1359 construct **one joint
+column**, using true current M/H and soil temperatures, and call the canonical
+Newton solver once; lines1469–1645 bind each record to a 60-second slab and
+`HardBoundary`. Thirty records make each 1,800-second parent; 48 parents make a
+day. The two ordered occupancies are coupled inside that one solve, **not two
+independent columns**. Multiple tiles/OFE, repeated physical maps, native receiver
+solves and failed attempts add work; their deployment counts are not observed.
+The provider, receiver and controls are `cfg(test)` (`land_surface_energy_shadow/
+mod.rs:93–105`); this is implemented diagnostic wiring, not a connected production
+M1 climate runner. The G4 trust-region adapter is a separate private test/feature
+seam: its measured `transition_model` does not replace the caller's Newton loop,
+accept a nonlinear step, complete hydraulics/materialization, or advance a day.
+
+Forcing records are not inherently numerical time steps. **Here they are**, because
+the implemented provider explicitly binds each to an accepted support and hard
+boundary. General coupled-time authority permits larger supports only inside
+parent/segment/event/output/restart boundaries, with one common duration and
+atomic owners. It does not authorize this provider to skip or average records.
+M1 freeze/melt joins are backward-Euler constitutive transitions, not events
+requiring smaller steps. The 60-second minimum is a floor, not a universal
+maximum; a failed 60-second solve cannot be rescued by an unadmitted sub-floor
+subdivision. This fixed provider returns its typed failure; it has no successful
+adaptive subdivision path. A future larger-support adopter might reject and
+subdivide to the floor, increasing accepted supports and failed work, never
+reducing the accounting denominator. [M1 provider and physical authority](../../specifications/science-contracts/contracts/SC-VEGETATION-001.md#m1-private-fixed-sequence-diagnostic-provider-and-receipt),
+[coupled time](../../specifications/science-contracts/contracts/SC-COUPLEDTIME-001.md#algorithm-specification),
+[support floor](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/terminal-support.md#support).
+
+Let `S` be accepted supports, `K_s` actual M1 solve invocations on support `s`,
+`P_sk` proposed nonlinear steps including rejected proposals, and `C_fail` all
+failed support attempts. The necessary CPU condition is
+
+`sum_s sum_k (C_setup,sk + P_sk*C_proposal,sk) + C_fail + C_other <= B_day`.
+
+The familiar uniform form is `N_solves*(C_setup+P*C_proposal)+C_other<=B_day`.
+`C_other` includes hydraulic solves, accepted materialization, receivers, other
+owners, map composition, temporal error control and day work; it is not zero in
+an executable day. Jacobian reuse within a base can make proposal costs unequal;
+reassembly, phase selection and rejection must then be charged separately rather
+than multiplied by a convenient single G4 number. Caller seeds retain M/H and
+soil state but reset other temperatures to air, humidity to forcing and D to zero
+(`m1_coupled.rs:5509–5575`). No across-support Jacobian/factor cache or accepted
+warm thermal seed is connected. FullSupply potential-to-final coordinate reuse
+exists in wider LSE authority, with complete final reevaluation; it does not
+establish free M1 setup or a second M1 solve in this provider.
+
+| Conditional supports/day; one solve/support | Stable us/solve | Mixed | Transition | Meaning |
+| --- | ---: | ---: | ---: | --- |
+| 1,440 | 0.521 | 1.042 | 1.736 | Mandatory for a completed fixed-provider day; none measured |
+| 49 | 15.306 | 30.612 | 51.020 | Proposed 1,800-second parent coarsening, preserving the first 60-second forcing change |
+| 48 | 15.625 | 31.250 | 52.083 | Proposed coarsening where changes align with parents |
+| 24 | 31.250 | 62.500 | 104.167 | Hourly sensitivity only; would also change parent policy |
+| 1 | 750 | 1,500 | 2,500 | Daily sensitivity only; not admitted M1 cadence |
+
+All entries spend the whole daily budget on these solves. Two actual solve
+invocations/support halve every allowance; that is a sensitivity, not a count
+inferred from two occupancies or the eight-map cap. With fresh R setup and one
+R-cost proposal hypothetically transferred to every support, `100.305+896.679`
+(not the separately computed combined median) yields **1.435658 s CPU/day**:
+**1,914 / 957 / 574 times** these regime budgets. For illustrative `P=3,8`, the
+same conditional totals are **4.018094 / 10.474185 s/day**. These are not forecasts:
+no completed-solve iteration distribution exists for stable, mixed or transition
+M1. Even an assumed 100x reduction of both measured phases leaves **14.357 ms/day**,
+5.74–19.14 times the budgets. At 48 supports/day the unchanged one-proposal
+scenario is still **47.855 ms/day**; coarsening alone is insufficient. Actual
+G4 medians remain init100.305/104.387, proposal896.679/901.309, combined1000.618/
+1010.427 us CPU/wall. Wall attribution cannot be used as component CPU timing.
+[Reproducible arithmetic and explicit sensitivity assumptions](artifacts/architecture-decision-arithmetic.json),
+[offline calculator](artifacts/architecture-decision-calculate.py).
+
+**Recovered whole-run target:** the earlier adopted engineering SLO is **182.625 s
+CPU / 210 s wall for a complete 10-OFE, 36,525-day century**, with representative
+mean **500 us CPU / 550 us wall per OFE-day**. Transient regime ceilings do not
+replace that weighted long-run requirement. Its actual source is
+[performance-budget.md, engineering derivation and hard-budget table](../20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/performance-budget.md),
+whose adoption is recorded in [pre-implementation gates](../20260901-stage3-native-vegetation-laned-watershed-throughput-recovery-001/artifacts/pre-implementation-gates.md).
+The later [snow accuracy/runtime record](../20260910-stage3-snow-accuracy-runtime-001/package.md#workload-budget)
+confirms it. No separate explicit five-OFE century wall ceiling was recovered in
+these sources, this package or its retained owner authorizations. Do not invent
+105 s by linear scaling, or 10 s from the old 16.6-minute single-proposal estimate.
+Retain maps/support<=8, stable map median<=2/p95<=4, `T10/T1<=12`, `T19/T10<=2.2`,
+warm CPU/wall regression<=5% from six balanced pairs, and memory<=128 MiB+16 MiB/OFE.
+Map counts are physical-map counts, not Newton, finite-difference or SVD counts.
+
+### Equations and exact reductions
+
+The indexed map below covers all 21 coordinates **and corresponding residual
+rows**. U/L are upper/lower occupancies. Temperatures and D are algebraic support
+unknowns; only M/H are new persistent canopy stores. LSE assembles the equations;
+vegetation owns canopy M/H and gas state, hydrology owns water authorization and
+received release, snow owns the prescribed lower boundary, and soil thermal owns
+soil temperatures. Every transfer retains matching mass, enthalpy and identity.
+Ground and soil rows here are identities, not newly solved ground/soil physics.
+
+| Index | Coordinate | Residual and ownership |
+| ---: | --- | --- |
+| 0 | U sun T | Dry leaf SW+reciprocal LW−sensible−latent; LSE/vegetation; zero structural area gives exact anchor |
+| 1 | U shade T | Same dry leaf energy law and gas coupling |
+| 2 | U stem T | Dry SW+LW−sensible, no leaf transpiration term |
+| 3 | U M | `M−M0−dt*(I−E−D)`; vegetation mass, routed hydrology exchanges |
+| 4 | U H | `H−H0−dt*(Q+I*hI−E*hv−D*hl)`; vegetation energy store |
+| 5 | U D | `min(dt*D,Cliq−ml)`; liquid release complementarity |
+| 6 | L sun T | Lower dry leaf energy/anchor, coupled radiation and shared air |
+| 7 | L shade T | Lower dry leaf energy/gas |
+| 8 | L stem T | Lower dry stem energy |
+| 9 | L M | Lower mass law; I includes intercepted upper D |
+| 10 | L H | Lower enthalpy law; incoming upper D carries upper `hl` |
+| 11 | L D | Lower capacity/complementarity; release to receiver |
+| 12 | Tcan | Sum canopy sensible + prescribed snow sensible − atmospheric sensible |
+| 13 | qcan | Sum dry/wet vapor + prescribed snow vapor − atmospheric vapor |
+| 14 | Tground | `Tground−Tsnow_prescribed` (snow boundary identity) |
+| 15 | Tsoil1 | `Tsoil1−Tsoil1_begin` (soil-thermal identity) |
+| 16 | Tsoil2 | Corresponding beginning-soil identity |
+| 17 | Tsoil3 | Corresponding beginning-soil identity |
+| 18 | Tsoil4 | Corresponding beginning-soil identity |
+| 19 | Tsoil5 | Corresponding beginning-soil identity |
+| 20 | Tsoil6 | Corresponding beginning-soil identity |
+
+Source: retained `m1_coupled.rs::core`, lines1182–1511, and
+[vegetation M1 equations](../../specifications/science-contracts/contracts/SC-VEGETATION-001.md)
+lines3179–3305,3516–3758. `M=ml+mi`; with `Tf=273.15 K`, `Cw=4218`, `Ci=2106`,
+`Lf=333700`, `H=ml*Cw*(T−Tf)+mi*(Ci*(T−Tf)−Lf)`.
+For positive M: liquid `H>=0`, mixed `−Lf*M<=H<0`, ice `H<−Lf*M`.
+Mixed `T=Tf`, `ml=M+H/Lf`; ice `ml=0`; liquid `ml=M`.
+`fwet=min(1,(M/Cliq)^(2/3))` uses **total M**, while capacity constrains **ml**.
+`hv=2501000+1849*(T−Tf)`, `hl=Cw*(T−Tf)`; Q contains radiation and sensible heat,
+not another latent debit. Empty M/H, liquid-conducting zero-PAR tissue, phase
+saturation, bounds and FullSupply guards remain mandatory. This wet-fraction
+provenance agrees with [CLM5 Hydrology §2.7.23](https://escomp.github.io/CTSM/release-clm5.0/tech_note/Hydrology/CLM50_Tech_Note_Hydrology.html),
+but CLM's liquid/snow-store formulation is not authority to erase M1 enthalpy.
+
+There is genuine simultaneous feedback: M changes wet/dry area and radiation;
+M/H change wet temperature, saturation and sensible/latent transfer; every
+component changes reciprocal longwave in both occupancies and shared air;
+shared air changes all sensible/vapor fluxes. Upper D supplies lower mass and
+enthalpy, with `dI_L/dD_U=capture_L` and
+`d(IhI)_L=capture_L*(hl_U*dD_U+D_U*dhl_U)`. A top-down solve cannot ignore the
+reverse radiative/air feedback. For liquid/ice,
+`dT/dH=1/(M*Cphase)` and `dT/dM=−H/(M²*Cphase)`; both vanish inside mixed phase.
+Capacity tangents are `dt*dD` or `−dml`; phase/capacity joins require directional
+selection and full candidate checks, not a smooth derivative carried across a join.
+
+**Exact mathematical opportunities, not current implementation permissions:**
+
+- Substitute the seven externally fixed identity coordinates and reconstruct all
+  their rows: 21→14. No new ground/soil solve is removed. On genuine zero-area
+  sun components substitute `Tsun=max(Tcan,Tf)` with its piecewise anchor rule;
+  if both qualify, 14→12. Zero PAR alone does not imply zero sun area. Ground/LW
+  and anchor derivatives must remain in every affected row.
+- In exact-zero-PAR M1, `gs=g0*1e-6*R*Tleaf/p` is independent of qcan
+  (`solver_covered_evaluation.rs:1175–1209, m1_zero_par_leaf_state:842–940`).
+  Define dry `g=A_dry/(rb+rs)`, wet `g=gb_wet*A_wet`, and `ga=1/ra_vapor`.
+  The shared vapor row gives exactly
+  `qcan=(sum(g*q_surface)+ga*q_air+E_snow/rho)/(sum(g)+ga)`.
+  `ga>0` protects the denominator even at complete wetness/zero dry area.
+  This permits one more primal algebraic elimination: **13 unknowns generally,
+  11 with two exact dark-sun anchors**. Reconstruct humidity and all21 residuals;
+  reject a nonfinite/out-of-domain q or failed leaf/saturation guard, never clamp.
+  Derivatives through rho, temperatures and wetness are essential. This is a new
+  proposed representation requiring authority review, not BVLS-05 permission.
+- Selected drainage rows `dt*D` admit the already contracted **linear-step**
+  substitution `dD=−D`, with their full coupling-column RHS correction. Capacity
+  rows do not justify that substitution. Generic block elimination uses
+  `Jaa−Jab*Jbb^-1*Jba` and the similarly corrected RHS only if Jbb is demonstrably
+  nonsingular in the selected regime. A local dry/wet/phase block is not
+  invertible merely because one captured matrix looks sparse. Solving local
+  nonlinear blocks fully at every outer evaluation can preserve the root;
+  stopping them early introduces inexact-solve error.
+- The **existing** 21+2×4 hydraulic structure is already an exact cold-dark
+  triangular reduction: beta=1 and analytic ci remove hydraulic feedback on
+  energy under FullSupply, then two four-potential hydraulic solves use Egas.
+  Their guards/failure/materialization cost remains payable; they are not eight
+  more removable variables inside the21. Fully wet dry-temperature null columns
+  are a different issue: BVLS-05 permits only certified zero **increments** at
+  one assembly, with all21 rows, original domain and next-assembly reactivation.
+  It does not permit arbitrary fixed physical temperatures or dropping carbon/
+  gas outputs. Empty/supersaturated stores still reject; no condensation model
+  or differentiation of `M^(2/3)` at zero is invented.
+
+A cheaper factorization must still address rank, bounds and representable steps.
+SVD supplies the rank-admitted least-squares face solve; BVLS tracks active bounds
+rather than clipping physical states. Fixed48 damping bisections solve the
+trust-ball multiplier, not a physical timescale. BVLS-02 bounds finite-precision
+KKT decisions; BVLS-03/04 compensated refinement addresses inaccurate stationary
+face solutions using existing factors; BVLS-05 certifies specific structural
+zero directions. These are numerical representations/protections, not process
+physics. Replacing their representation requires equivalent admissibility and
+root/conservation evidence, deterministic typed failures and a bounded selected
+algorithm. Plain LU/QR on the same matrix does not cure rank changes, ill
+conditioning or constrained-step selection. See [numerical authority](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md#cold-canopy-m1-trust-region-experiment)
+and [selected-drainage authority](../../specifications/science-contracts/contracts/SC-VEGETATION-001.md#m1-prospective-selected-drainage-affine-elimination-amendment).
+
+### Three paths and decision
+
+New work models below are **conditional**, not performance predictions. The only
+transferable scale indicator is the measured E core wall work: approximately
+0.9–2.8 us per call across the selected/other/natural base measurements (FD
+averages also vary). Optimistically two such evaluations cost **1.8–5.6 us wall**;
+a modest illustrative 3–8 updates ×2–4 evaluations costs **5.4–89.6 us wall**,
+**plus** setup, derivatives, factors, admissibility, hydraulics and materialization.
+A rewritten evaluator could change that scale; it is not a hardware lower bound,
+a CPU estimate, or a measured range for a new method. No defensible total CPU
+range is available for any unimplemented path. These explicit unknowns cannot
+be replaced by cubic FLOP ratios. The retained Stage1-free wall bounds remain
+13.368x proposal /6.034x combined; they overlap SVD/damping/refinement and must
+not be multiplied together or transferred to CPU.
+
+| Path | Work model and accuracy class | Deployment assessment |
+| --- | --- | --- |
+| 1. Exactly reduced coupled solve, current60s | 13 variables generally/11 with zero-area sun; selected-regime derivatives, one small factorization per update plus bounded constraint/globalization work; 2×4 hydraulic blocks. Analytic derivatives could remove most FD probes; retaining centered FD needs roughly2n+1 evaluations/assembly and may need a second join assembly. Algebraic/root equivalence is possible; identical binary64 trajectory is not promised. Optimistic/modest evaluation subtotals above apply, with unknown factor/guard additions. | No supported route to0.521–1.736us CPU/support. The measured evaluation wall scale is already comparable to/exceeds the entire allowance, but does not prove impossibility. Reject standalone implementation now; no estimated100x factorization miracle. |
+| 2. Sequential/partitioned, current60s | Local occupancy blocks of up to6 plus shared-air2, with seven identities substituted; at least one global coupling residual per sweep and local constitutive solves. One sweep is a lagged/split approximation; 3–8 converged outer sweeps is an illustrative sensitivity, not an observed contraction rate. Optimistic one complete evaluation0.9–2.8us wall plus local work; 3–8 sweeps with2–4 evaluation equivalents gives5.4–89.6us plus local factors/iterations. | Fully converged nesting can preserve equations but has no cheaper-work guarantee. One-pass speed sacrifices simultaneous closure/accuracy; phase/capacity feedback can prevent contraction. Reject: no evidence it meets sub-microsecond stable allowance and its new splitting error has no budget. |
+| 3. Explicit cadence/model tradeoff | Preferred subcase: retain coupled M1 equations and exact reduction, merge identical records only within parents, yielding48/49 supports/day before adaptation. Same per-solve work model as1; optimistic evaluation-only48-support subtotal86.4–268.8us wall/day; modest259.2–4300.8us, with all other work additional and CPU unknown. Alternative RHESSys-style daily energy/ET plus hourly precipitation reduces cadence and removes this coupled system but changes physics. | **Only conditional direction recommended for one falsification test:** cadence-first exact-physics subcase has15–52us/solve allowance, potentially compatible with a radically smaller solve; neither cost nor temporal error is established. RHESSys-style model replacement is rejected for M1 absent a newly adopted science contract and evidence. No current path is deployment-credible. |
+
+The comparison is specifically **laurencelin/RHESSysEastCoast at
+375c75b1cd2202217651dff43aa113d80b9c1118**, freshly retrieved and hashed in
+[source provenance](artifacts/architecture-decision-rhessys-source.json).
+`patch_daily_F.c:1121,1460,1518` invokes daily canopy processing;
+`canopy_stratum_daily_F.c:634,871,941–1058,1189–1328,1399,1744–1849` orders longwave,
+snow storage, empirical conductance, Penman–Monteith ET, liquid storage and
+Farquhar photosynthesis. [Daily source](https://github.com/laurencelin/RHESSysEastCoast/blob/375c75b1cd2202217651dff43aa113d80b9c1118/cycle/canopy_stratum_daily_F.c).
+Hourly rain interception is separately conditional on hourly-rain flag and
+positive rainfall (`canopy_stratum_hourly.c:81–87`). Longwave prescribes canopy
+temperature from mean air, capped at0°C with snow, rather than solving M1
+component/shared-air temperatures (`compute_Lstar_canopy.c:79–87`); it also clips
+negative warm net longwave at198–200. [Longwave source](https://github.com/laurencelin/RHESSysEastCoast/blob/375c75b1cd2202217651dff43aa113d80b9c1118/rad/compute_Lstar_canopy.c).
+Conductance multiplies APAR/LWP/CO2/Tmin/VPD responses before assimilation; the
+calculated Tavg factor is omitted, and a conductance floor remains (conductance
+source130–193). Snow storage applies bounded sublimation and empirical storage/
+unloading instead of solving M1's simultaneous M/H ledger (`compute_snow_stored.c:
+170–280`). These source facts explain different work, **not equal physics or
+measured speed**. No fork timing is used, and no clamps, omitted psychrometric
+factor, floors or undocumented failure behavior are proposed for adoption.
+
+Exact reduction changes representation; derivative/globalization or stopping
+changes numerical accuracy; larger backward-Euler supports change temporal
+accuracy; prescribing canopy temperature/empirical snow stores changes the
+physical model. Coarsening can shift freezing/melting, drainage onset, ET and
+throughfall timing even when both discrete mass/energy ledgers close. Receiver
+runoff may amplify that timing shift. Splitting can additionally violate shared
+flux agreement unless one exchanged flux is constructed and debited/credited
+once. Conservation alone is not trajectory accuracy. No tolerated error below
+is owner-approved, and no observation-based validation is claimed.
+
+### One proposed falsification experiment — not executed or authorized here
+
+**Hypothesis:** an exact reduced M1 column solver, with a prospectively admitted
+1,800-second maximum and unchanged forcing discontinuities/parent endpoints,
+can complete representative column-days cheaply enough to leave deployment
+headroom while matching independently solved60-second trajectories. This tests
+both cadence error and completed work, not just a cheap iteration. If it fails,
+reject this combined direction for these budgets; do not launch another sequence
+of face/refinement corrections from its failures.
+
+Minimal surface: one detached test-only reduced evaluator/Jacobian/solver plus a
+column-day driver and independent reference evaluator; no production selector,
+canonical edit, native advancement, preserved target rerun or historical fallback.
+Use the seven identities and verified humidity substitution, exact zero-area
+anchors only, full reconstructed21-row checks, state-defined phase/capacity
+selection, one bounded chosen nonlinear method with typed nonconvergence, and
+existing two hydraulic blocks/final materialization. Before implementation the
+successor must freeze its single method and independent derivative/conditioning
+controls; this brief is not an executable numerical-method specification.
+Affected authority: LSE solve/numerical/replay/acceptance, vegetation M1
+phase/capacity/drainage/hydraulics/provider, coupled-time support/forcing custody;
+receiver/snow/hydrology contracts remain unchanged and their unresolved native
+integrity stop is not bypassed. Coarsening needs an explicit diagnostic provider
+amendment: consume/authenticate all records, collapse only identical forcing
+within each parent, split at every real change; no nonlinear forcing averaging,
+no unchanged-provider receipt claim, no phase-crossing sub-floor event.
+
+**Three new, fixed proposed one-day diagnostic cases** are pinned now in
+[the immutable successor case manifest](artifacts/architecture-decision-successor-cases.json)
+(SHA256 `b3ad4fa07c7748c56df0ad9c2fb681be019e86e9bd9befb97d705eb4d10e2ce8`).
+They are derived inputs, **not slices of either historical72-hour trajectory**.
+Original geometry/zero-PAR/root/snow-boundary data remain pinned; forcing values
+come exactly from cycle0 segments0/1/2 of `continuous-fixtures-draft01.json`,
+with new prescribed intervals and binary64 initial-state bits in the manifest: (A) cold replenishment for24h, U/L M=0.024/0.030 kg/m² and
+H=M*(2106*(268.15−273.15)−333700) J/m² (both ice); (B) warm rain
+for24h, the same U/L M and H=−0.5*333700*M (both half-liquid mixed);
+(C) U/L M=0.018 and H=0, original first60s, cold replenishment to12h, then
+warm rain to24h. No solved endpoint selects an initial state. Both occupancies remain;
+retain independent M/H, exact initial joins, upper-to-lower drainage and common
+air. Freeze six short contract-derived controls: empty nonsupersaturated;
+empty supersaturated typed refusal; both phase joins in both directional signs;
+capacity tie/positive drainage; fully wet→dry reactivation; near-bound/rank refusal.
+Use existing admissible fixture operands for these controls and freeze exact
+bits/hashes prospectively; absence of any admissible required case stops readiness.
+The manifest fixes regime obligations: A stays strictly ice; B has an accepted
+mixed state then reaches liquid with upper/lower drainage; C freezes then melts
+in order. These are physical intents, not predicted results. Missing an obligation
+is inconclusive and stops the experiment: no replacement case or relabeling.
+
+Compare only three arms on that frozen corpus: independent high-precision
+60-second reference; reduced binary64 at60s; the **same** reduced binary64 at
+coarsened supports. The first comparison isolates representation/numerical error;
+the second isolates cadence. Reference residuals and reservoir/transfer integrals
+must be reconstructed from primitive operands independently of candidate
+Jacobians/normalizers and materialized totals. Require a converged independent
+root and a precision-doubling stability check at the **same60s discretization**;
+current failed Newton/G4 outcomes are not numerical references. This is accuracy
+relative to a specified discrete reference, not continuous-time or empirical
+truth. Reference failure or disagreement stops as **inconclusive**; it does not
+license a looser tolerance or another solver chain.
+
+Proposed accuracy gates: unchanged canonical root/step/domain/phase/capacity and
+exact transfer identities; each accepted reservoir independently closes to
+`1e-9 kg/m²` mass and `1e-6 J/m²` energy, with the existing scaled tests also
+passing. At matching60s endpoints, reduced/reference differences must be no more
+than `1e-8 K` for physically determined temperatures, `1e-12 kg/kg qcan`,
+`1e-9 kg/m² M` and `1e-6 J/m² H` (existing admission scales used as a stringent
+representation screen, not a forward-error theorem). Fully-wet dry-component
+null temperatures have no unique root value and are excluded from this physical
+forward-temperature comparison, at both cadences. Freeze the BVLS-05-style
+**current-base hold convention** as a separate numerical rule: only a component
+with positive structural area, exactly unit wet fraction and certified zero
+complete raw/weighted column holds its current-base coordinate bit-for-bit;
+all domain/gas/output guards still run, and the coordinate reactivates when the
+certificate ceases. No constant physical temperature or new anchor is assigned.
+The independent reference tests that convention separately from root accuracy.
+The fully-wet→dry control must begin from the same prescribed complete vector
+and held values in both arms, verify the same hold convention, then compare
+reactivated physically determined temperatures and all physical outputs. A gauge
+mismatch is a numerical-convention failure, not evidence of physical root error.
+
+For coarsening, proposed **screening** limits at every shared checkpoint/day end
+are `0.01 K` on physically determined temperatures, `1e-6 kg/kg qcan`,
+`1e-4 kg/m² M` and `10 J/m² H`. Apply the cumulative mass-flux bound
+`max(1e-4 kg/m²,0.1% of reference absolute throughput)` separately to **each
+occupancy's dry and wet vapor**, total ET, lower release, and the **upper-drainage
+mass actually intercepted by the lower occupancy**. Report signed net and gross
+positive/negative integrals, and apply the same bound separately to each sign,
+so cancellation between occupancies, wet/dry paths or opposing exchanges cannot
+hide error. Independently integrate the corresponding **upper→lower drainage
+enthalpy** (`capture_L*D_U*hl_U`) and each external boundary-energy exchange;
+each must differ by at most `max(10 J/m²,0.1% of reference absolute throughput)`,
+again retaining signed/gross integrals. Exact debit/credit identity remains a
+separate conservation gate; it does not satisfy these trajectory comparisons.
+The humidity screen is below0.1% of the recorded cold ambient q and guards the
+shared vapor gradient; per-path flux screens still govern near-saturation cases.
+Require first drainage and each freeze/melt crossing within60s of reference. These tentative0.1% flux/one-record
+chronology screens reserve most a hypothetical1% application error budget for
+other processes; no such application budget is presently adopted. Report maximum
+and signed cumulative errors, phase ordering and closure separately. If crossing
+time cannot be resolved from coarse endpoints without hidden subcycling, the
+chronology screen fails. No runoff-equivalence claim follows without the receiver.
+
+Proposed cost gate: complete **column-days** (all accepted and rejected supports,
+initialization, derivative/factor work, hydraulics, materialization and driver
+state updates) at **<=375 /750 /1,250 us CPU** for the three intended regimes,
+reserving half the existing day ceiling for unmeasured owners/receivers; report
+CPU and wall separately. The50% reserve is a proposed conservative rejection
+screen, not a measured allocation. Require each successful timed batch to
+complete its whole day and satisfy all scientific checks; failed/time-to-refusal
+and iteration-only timings never count. Six balanced batches per candidate arm,
+32 complete days/batch after one untimed day/arm/case, no steady-state seed reset
+inside a day. Count actual supports, solves, proposals, probes, hydraulics and
+rejections; check map/scaling/memory/warm screens only where the exercised surface
+actually supplies their denominator. Passing column-day cost is necessary, **not
+completed-OFE-day or deployment acceptance**; the unresolved `C_other` and native
+holds remain explicit. No season/century extrapolation from these three days.
+
+Proposed total successor cap **7,200 charged seconds including1,800 closing**,
+commands<=180s, reference generation<=900s total, each candidate case<=60s wall,
+at most one frozen treatment cut and one run of each specified arm/control/batch.
+Stop on guard/reference/integrity failure, first accuracy miss, timing-budget miss,
+work exhaustion, missing mandatory regime or elapsed cap. Preserve the negative
+or inconclusive result; no retuning, case replacement, additional target probe,
+production adoption or native progression follows. This is one bounded
+feasibility experiment proposed for later owner adoption, not authorized work now.
+
+### Static evidence, independent review and disposition
+
+Owner execution of the [preserved authorization](artifacts/architecture-decision-owner-authorization.md)
+(`/tmp/openwepp_cold_canopy_m1_architecture_decision_authorization.md`) adopted
+this decision study only. [Source locations, authority and prior-evidence pins](artifacts/architecture-decision-source-evidence.json)
+retain the exact inspected source, binaries and primary-source provenance. **Ran now:** offline arithmetic and exact source
+hash comparisons;771 reference and772 profiler entries match retained recovery
+metadata, all1,420 prior measurement pins and48 unrelated initial dirty files
+unchanged. **Inspected prior Ran:**
+projection-cache416 outcomes and attribution624 outcomes, their raw summaries,
+source/binary identities and independent conclusions. The two local performance
+experiments remain proposal-only evidence. **Not run:** solver/prototype,
+physical case, benchmark, native continuation, correctness campaign or RHESSys.
+No production/source/authority/dependency changes, branch switch or push.
+Historical failed results, original physical target slots and all M1/native holds
+remain unchanged. The one maintained narrative is this package; raw arithmetic
+and source identities are supporting evidence, not replacement science authority.
+
+**Static study COMPLETE; no evaluated deployment path established.** Independent
+correctness `/root/architecture_correctness` **APPROVE** and QA/evidence `/root/qa`
+**PASS**, with each reviewer independently verifying the accepted fixes. QA fixed
+case provenance/pinning; correctness fixed missing humidity/inter-occupancy flux
+accuracy gates and the null-temperature comparison. [Review findings and fix verification](artifacts/architecture-decision-independent-reviews.json)
+retain independence and evidence limits. Approval applies only to this static
+decision and its proposed falsification, not implementation, authority amendment
+or deployment. The original physical slots and all native/full-M1 holds remain.
+
+[Closing ledger](artifacts/architecture-decision-closing-ledger.json): first-reading
+anchor **06:09:45 UTC**, original work cutoff **07:09:45**, hard deadline **07:39:45**
+on2026-09-30. Carry **437600.393795 s** plus **1903 s** elapsed through closing
+entry (rounded up) plus the fully charged **1,800 s** closing allocation gives
+**3703 s newly charged**, cumulative **441303.393795 s**, below the unchanged
+**443000.393795 s** ceiling by **1697.000000 s**. Charged coverage extends
+through **07:11:28 UTC**; closing work inside that allocation
+is not counted again. No refund, reused old remainder, re-anchor or extension.
+Final scope is this front brief plus `artifacts/architecture-decision-*`; the
+prior package history and unrelated work remain unchanged. Source/hash/arithmetic,
+JSON/link/whitespace and exact scoped-diff checks support local commit;
+[terminal checks](artifacts/architecture-decision-checks.json) retain their scope.
+QA independently verified the final ledger arithmetic and unchanged deadline.
+No Rust workflow/campaign is applicable to this static-only disposition.
+
 ## Remaining cost attribution — measured; architecture reassessment recommended, 2026-09-30
 
 ### Measured cost and decision

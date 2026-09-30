@@ -1,0 +1,19 @@
+{
+  "evidence_class": "Ran offline document,arithmetic receipt and source-custody validation; no solver/tests/physical cases",
+  "prior_package_history_unchanged": true,
+  "history_sha256": "e1deb31a13b004f86fd4c0599aae4d3310b0b9088489bed8cbb8445c393ae04f",
+  "local_front_links_checked": 18,
+  "all_architecture_json_parse": true,
+  "source_locations_unchanged": 7,
+  "authority_pins_unchanged": 9,
+  "prior_evidence_pins_unchanged": 13,
+  "binary_pins_unchanged": 2,
+  "rhessys_files_sha_and_size_unchanged": 11,
+  "measurement_pins_unchanged": 1420,
+  "unrelated_dirty_files_unchanged": 48,
+  "scientific_brief_hash_matches_reviews": true,
+  "scoped_terminal_diff": "Only package front brief and architecture-decision-* evidence; no historical package text,production,tests or canonical edits",
+  "git_diff_check": "PASS: staged11-file scoped diff; no whitespace errors",
+  "staged_file_count": 11,
+  "new_physical_executions": 0
+}

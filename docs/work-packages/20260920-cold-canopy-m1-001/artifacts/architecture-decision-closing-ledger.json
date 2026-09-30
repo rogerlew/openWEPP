@@ -1,0 +1,22 @@
+{
+  "status": "COMPLETE static decision; two independent reviews and final evidence checks pass",
+  "anchor_utc": "2026-09-30T06:09:45Z",
+  "observed_closing_entry_utc": "2026-09-30T06:41:27.873781+00:00",
+  "elapsed_through_closing_entry_rounded_up_seconds": 1903,
+  "full_closing_allocation_charged_seconds": 1800,
+  "new_charge_seconds": 3703,
+  "carry_seconds": "437600.393795",
+  "cumulative_charged_seconds": "441303.393795",
+  "fixed_ceiling_seconds": "443000.393795",
+  "unused_allowance_seconds": "1697.000000",
+  "charged_coverage_through_utc": "2026-09-30T07:11:28+00:00",
+  "original_work_cutoff_utc": "2026-09-30T07:09:45Z",
+  "original_hard_deadline_utc": "2026-09-30T07:39:45Z",
+  "policy": "All elapsed reading/work/waits/concurrency counted once through closing entry, rounded up to a whole second; full1800s subsequent closing allocation charged conservatively. Closing activity within it is not charged again. No historical refund, old remainder, re-anchor or extension. Unused time is not added to a future allowance.",
+  "review_status": "Correctness APPROVE and QA PASS, including reviewer-owned fix verification; QA ledger arithmetic and consistency PASS",
+  "scientific_brief_sha256": "b08a265a4d20da4f12cbe1fdd198471a1881a5693e7d92e45dbee5b26246a551",
+  "physical_executions_this_study": 0,
+  "production_or_canonical_edits": 0,
+  "pushes": 0,
+  "qa_ledger_verification": "1902.873781s elapsed rounds up to1903; +1800=3703; cumulative441303.393795; remainder1697; charged coverage07:11:28 before07:39:45. Scientific hash matches ledger and independent-review record."
+}

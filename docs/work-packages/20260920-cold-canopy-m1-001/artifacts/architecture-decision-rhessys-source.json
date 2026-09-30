@@ -1,0 +1,84 @@
+{
+  "evidence_class": "Static: primary-source retrieval only; no RHESSys execution",
+  "repository": "laurencelin/RHESSysEastCoast",
+  "commit": "375c75b1cd2202217651dff43aa113d80b9c1118",
+  "files": [
+    {
+      "path": "cycle/canopy_stratum_daily_F.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/cycle/canopy_stratum_daily_F.c",
+      "sha256": "c237b7d4082c6c3fc544d1c2bacdd8a95a1473b01ab4ef404e78cca85d5f2fd9",
+      "bytes": 80615,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/cycle/canopy_stratum_daily_F.c"
+    },
+    {
+      "path": "cycle/canopy_stratum_hourly.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/cycle/canopy_stratum_hourly.c",
+      "sha256": "60fcce772d57e889f2c2f8eaef6af43bf76418cbc80f6fc3e9142985045d1945",
+      "bytes": 5214,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/cycle/canopy_stratum_hourly.c"
+    },
+    {
+      "path": "cycle/patch_daily_F.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/cycle/patch_daily_F.c",
+      "sha256": "e0e5d7517388e5303d745c4748e0fc238535b6d72a04dcad3a563c1375b413c4",
+      "bytes": 157826,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/cycle/patch_daily_F.c"
+    },
+    {
+      "path": "hydro/compute_rain_stored.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/hydro/compute_rain_stored.c",
+      "sha256": "a601c848b4cd48e96a41659aa9618d7fef7a44395dec6bffc296a0b0c413f8a5",
+      "bytes": 7860,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/hydro/compute_rain_stored.c"
+    },
+    {
+      "path": "hydro/compute_hourly_rain_stored.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/hydro/compute_hourly_rain_stored.c",
+      "sha256": "ede9388bacd4e1e4be8a9865a94961437649bd0d94c8e169e1ecba43fe829de0",
+      "bytes": 3126,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/hydro/compute_hourly_rain_stored.c"
+    },
+    {
+      "path": "hydro/compute_snow_stored.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/hydro/compute_snow_stored.c",
+      "sha256": "ab5b52d9f653742dea2fd8105d6471f9fc3da9053268dc7239365ee175046347",
+      "bytes": 14785,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/hydro/compute_snow_stored.c"
+    },
+    {
+      "path": "hydro/compute_snow_sublimation.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/hydro/compute_snow_sublimation.c",
+      "sha256": "233f9c88cad03c0ad91a0965ded9c65461e360346443370a082a324502a264e7",
+      "bytes": 5628,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/hydro/compute_snow_sublimation.c"
+    },
+    {
+      "path": "hydro/compute_vascular_stratum_conductance.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/hydro/compute_vascular_stratum_conductance.c",
+      "sha256": "3b6a571fa849c5b1486d1a3d8ebb2e8c055cdecb3ff57edb6c6b2f5603e23374",
+      "bytes": 9203,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/hydro/compute_vascular_stratum_conductance.c"
+    },
+    {
+      "path": "hydro/penman_monteith.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/hydro/penman_monteith.c",
+      "sha256": "0dcec7f49de922c587af14e1c5662aedab87d448bf19ee7c1d17f1254d8f55a9",
+      "bytes": 6245,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/hydro/penman_monteith.c"
+    },
+    {
+      "path": "rad/compute_Lstar_canopy.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/rad/compute_Lstar_canopy.c",
+      "sha256": "095c2a39b113a86b5db9de5af69a5bb38fae1187af5852a5c57169678ebfa191",
+      "bytes": 8044,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/rad/compute_Lstar_canopy.c"
+    },
+    {
+      "path": "cn/compute_farq_psn.c",
+      "url": "https://raw.githubusercontent.com/laurencelin/RHESSysEastCoast/375c75b1cd2202217651dff43aa113d80b9c1118/cn/compute_farq_psn.c",
+      "sha256": "f7a1b883f077478f96b5d94109c557419bb2d76f448e301d041d1a9c2e58a2a6",
+      "bytes": 14548,
+      "local_path": "/home/roger/openwepp-experiments/cold-canopy-m1-architecture-decision-20260930/rhessys/cn/compute_farq_psn.c"
+    }
+  ]
+}

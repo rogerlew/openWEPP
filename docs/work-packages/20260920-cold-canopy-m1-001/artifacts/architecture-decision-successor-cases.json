@@ -1,0 +1,196 @@
+{
+  "status": "PROPOSED ONLY: fixed derived inputs for one later falsification experiment; no numerical execution or adoption",
+  "base_input": "original-input-reference.json",
+  "base_sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+  "forcing_source": "continuous-fixtures-draft01.json",
+  "forcing_source_sha256": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1",
+  "not_existing_trajectory_slices": true,
+  "duration_s": 86400,
+  "parent_duration_s": 1800,
+  "reference_support_s": 60,
+  "candidate_max_support_s": 1800,
+  "remaining_inputs": "Copy all unmentioned original inputs exactly; same2occupancies6soil and prescribed represented-snow boundary, zeroPAR/SW and root observations. Synchronize duplicate meteorology/duration, top rain=rate*support_duration, hI=4218*(Tliquid-273.15). No native owner progression.",
+  "support_policy": "Read/authenticate all 60s records; merge only identical forcing within each1800s parent; retain every forcing change. No result-dependent coarsening or case selection.",
+  "initial_state_rule": "Fixed prescribed thermodynamic inventories; never solved endpoints. Derived inputs are new diagnostic cases, not existing physical target slots.",
+  "cases": [
+    {
+      "id": "A_cold_ice_day",
+      "segments": [
+        {
+          "start_s": 0,
+          "end_s": 86400,
+          "forcing_value_source_json_pointer": "/cycles/0/segments/1/boundary_overrides",
+          "boundary_overrides": {
+            "air_temperature_k": 266.85496453757526,
+            "air_specific_humidity_kg_kg": 0.0013506651734953076,
+            "atmospheric_downward_longwave_w_m2": 272.50372519089217,
+            "top_liquid_rate_kg_m2_tile_s": 8e-06,
+            "top_liquid_temperature_k": 273.15
+          },
+          "binary64_hex": {
+            "air_temperature_k": "4070adadef4b8202",
+            "air_specific_humidity_kg_kg": "3f562119afdf5f18",
+            "atmospheric_downward_longwave_w_m2": "4071080f422550da",
+            "top_liquid_rate_kg_m2_tile_s": "3ee0c6f7a0b5ed8d",
+            "top_liquid_temperature_k": "4071126666666666"
+          }
+        }
+      ],
+      "initial_phase_records": [
+        {
+          "occupancy_id": "stratum-z-upper::forest",
+          "mass_kg_m2_tile_ground": 0.024,
+          "enthalpy_j_m2_tile_ground": -8261.52,
+          "mass_binary64_hex": "3f989374bc6a7efa",
+          "enthalpy_binary64_hex": "c0c022c28f5c28f6"
+        },
+        {
+          "occupancy_id": "stratum-a-lower::forest",
+          "mass_kg_m2_tile_ground": 0.03,
+          "enthalpy_j_m2_tile_ground": -10326.9,
+          "mass_binary64_hex": "3f9eb851eb851eb8",
+          "enthalpy_binary64_hex": "c0c42b7333333333"
+        }
+      ],
+      "initial_formula": "H=M*(Ci*(268.15-Tf)-Lf), constants Ci2106 Tf273.15 Lf333700, exact binary64 bits retained",
+      "required_behavior": [
+        "both occupancies remain strictly ice for the day",
+        "finite nonzero cumulative wet vapor in at least one occupancy"
+      ],
+      "proposed_cpu_screen_us": 375
+    },
+    {
+      "id": "B_mixed_to_liquid_day",
+      "segments": [
+        {
+          "start_s": 0,
+          "end_s": 86400,
+          "forcing_value_source_json_pointer": "/cycles/0/segments/2/boundary_overrides",
+          "boundary_overrides": {
+            "air_temperature_k": 279.15,
+            "air_specific_humidity_kg_kg": 0.003,
+            "atmospheric_downward_longwave_w_m2": 360.0,
+            "top_liquid_rate_kg_m2_tile_s": 0.0002,
+            "top_liquid_temperature_k": 278.15
+          },
+          "binary64_hex": {
+            "air_temperature_k": "4071726666666666",
+            "air_specific_humidity_kg_kg": "3f689374bc6a7efa",
+            "atmospheric_downward_longwave_w_m2": "4076800000000000",
+            "top_liquid_rate_kg_m2_tile_s": "3f2a36e2eb1c432d",
+            "top_liquid_temperature_k": "4071626666666666"
+          }
+        }
+      ],
+      "initial_phase_records": [
+        {
+          "occupancy_id": "stratum-z-upper::forest",
+          "mass_kg_m2_tile_ground": 0.024,
+          "enthalpy_j_m2_tile_ground": -4004.4,
+          "mass_binary64_hex": "3f989374bc6a7efa",
+          "enthalpy_binary64_hex": "c0af48cccccccccd"
+        },
+        {
+          "occupancy_id": "stratum-a-lower::forest",
+          "mass_kg_m2_tile_ground": 0.03,
+          "enthalpy_j_m2_tile_ground": -5005.5,
+          "mass_binary64_hex": "3f9eb851eb851eb8",
+          "enthalpy_binary64_hex": "c0b38d8000000000"
+        }
+      ],
+      "initial_formula": "H=(-0.5*Lf)*M, Lf333700; half-liquid at Tf",
+      "required_behavior": [
+        "at least one accepted mixed-phase state before liquid",
+        "both occupancies reach liquid",
+        "positive upper drainage reaches lower incident liquid with matching enthalpy",
+        "positive lower liquid release"
+      ],
+      "proposed_cpu_screen_us": 750
+    },
+    {
+      "id": "C_freeze_then_melt_day",
+      "segments": [
+        {
+          "start_s": 0,
+          "end_s": 60,
+          "forcing_value_source_json_pointer": "/cycles/0/segments/0/boundary_overrides",
+          "boundary_overrides": {
+            "air_temperature_k": 266.85496453757526,
+            "air_specific_humidity_kg_kg": 0.0013506651734953076,
+            "atmospheric_downward_longwave_w_m2": 272.50372519089217,
+            "top_liquid_rate_kg_m2_tile_s": 0.0,
+            "top_liquid_temperature_k": 273.15
+          },
+          "binary64_hex": {
+            "air_temperature_k": "4070adadef4b8202",
+            "air_specific_humidity_kg_kg": "3f562119afdf5f18",
+            "atmospheric_downward_longwave_w_m2": "4071080f422550da",
+            "top_liquid_rate_kg_m2_tile_s": "0000000000000000",
+            "top_liquid_temperature_k": "4071126666666666"
+          }
+        },
+        {
+          "start_s": 60,
+          "end_s": 43200,
+          "forcing_value_source_json_pointer": "/cycles/0/segments/1/boundary_overrides",
+          "boundary_overrides": {
+            "air_temperature_k": 266.85496453757526,
+            "air_specific_humidity_kg_kg": 0.0013506651734953076,
+            "atmospheric_downward_longwave_w_m2": 272.50372519089217,
+            "top_liquid_rate_kg_m2_tile_s": 8e-06,
+            "top_liquid_temperature_k": 273.15
+          },
+          "binary64_hex": {
+            "air_temperature_k": "4070adadef4b8202",
+            "air_specific_humidity_kg_kg": "3f562119afdf5f18",
+            "atmospheric_downward_longwave_w_m2": "4071080f422550da",
+            "top_liquid_rate_kg_m2_tile_s": "3ee0c6f7a0b5ed8d",
+            "top_liquid_temperature_k": "4071126666666666"
+          }
+        },
+        {
+          "start_s": 43200,
+          "end_s": 86400,
+          "forcing_value_source_json_pointer": "/cycles/0/segments/2/boundary_overrides",
+          "boundary_overrides": {
+            "air_temperature_k": 279.15,
+            "air_specific_humidity_kg_kg": 0.003,
+            "atmospheric_downward_longwave_w_m2": 360.0,
+            "top_liquid_rate_kg_m2_tile_s": 0.0002,
+            "top_liquid_temperature_k": 278.15
+          },
+          "binary64_hex": {
+            "air_temperature_k": "4071726666666666",
+            "air_specific_humidity_kg_kg": "3f689374bc6a7efa",
+            "atmospheric_downward_longwave_w_m2": "4076800000000000",
+            "top_liquid_rate_kg_m2_tile_s": "3f2a36e2eb1c432d",
+            "top_liquid_temperature_k": "4071626666666666"
+          }
+        }
+      ],
+      "initial_phase_records": [
+        {
+          "occupancy_id": "stratum-z-upper::forest",
+          "mass_kg_m2_tile_ground": 0.018,
+          "enthalpy_j_m2_tile_ground": 0.0,
+          "mass_binary64_hex": "3f926e978d4fdf3b",
+          "enthalpy_binary64_hex": "0000000000000000"
+        },
+        {
+          "occupancy_id": "stratum-a-lower::forest",
+          "mass_kg_m2_tile_ground": 0.018,
+          "enthalpy_j_m2_tile_ground": 0.0,
+          "mass_binary64_hex": "3f926e978d4fdf3b",
+          "enthalpy_binary64_hex": "0000000000000000"
+        }
+      ],
+      "initial_formula": "original liquid initialization M0.018 H0 both occupancies",
+      "required_behavior": [
+        "at least one occupancy passes liquid-to-mixed-to-ice then ice-to-mixed-to-liquid in order",
+        "positive lower liquid release after warming"
+      ],
+      "proposed_cpu_screen_us": 1250
+    }
+  ],
+  "missing_required_behavior": "INCONCLUSIVE: no replacement case, retuning, relabeling or additional run; not a scientific or cost pass."
+}
