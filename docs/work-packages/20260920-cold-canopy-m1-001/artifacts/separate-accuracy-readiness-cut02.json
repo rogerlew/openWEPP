@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Review input preservation, no physical execution",
+  "sha256": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "6350e84fc787e00c1761a996b2a3f1360bf0ee4f7caacd8b0575c1ca0a136625",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "90ffa733275aef17f0b24c098eeb043d509e436e441e42be0e9be7202699179b",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "49d405d0e67cf9a48d5c0e32d5b2f9af0c53ca6d38cd0b8f83edc5579b87a41e",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json": "8312615b7273fd610425a9ad3a71e7318eb8f6866ae4b8d514d08bf13f5923fa",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-measurement-draft.json": "9495d4647d30c2b0252c8561d0a24f072f7393e0e3ecfc79357aa78dd4b0da35"
+  }
+}

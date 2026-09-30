@@ -1,0 +1,21 @@
+{
+  "files": {
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-runner.py": "54d0d64c8c260b4e8ea5f152b1382f8da65a205c8f3b1a705bd1fd0517b3f5b6",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-results.py": "824deb291aa43b3ca1aaefdf586c424b8724b4ebc756de1db1766f152e8dbfc7",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-independent-reconstruction.py": "d13fc8575422123bcdd439fe3e613fec92138e1e9d3493d7ebdbee7ba25917f8",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-source-custody.py": "bd3cb9c63d9f66a7c6bc7c407615e82de1c1abd47057e8d28424f6641b77a877",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-build-custody.py": "88f09f4d70cc5d0a3679eba13312324d94611a9cd18ea0a9e3483a33f4722492",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-input-check.py": "a1bb9f3e021c7434a381695c6ef9d062fe78b9343280b3c7b240955455d675c6",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-input-check.json": "7713f550f4cab32062da1742e2abcd35f2c99b80034169e341bd3b02d28ba806",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-measurement-draft.json": "16a39a73e6396d2063cb80e68795c8cca841e6fd7f197ac9449957d582203f95",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json": "80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/architecture-decision-successor-cases.json": "b3ad4fa07c7748c56df0ad9c2fb681be019e86e9bd9befb97d705eb4d10e2ce8",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/continuous-fixtures-draft01.json": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "6350e84fc787e00c1761a996b2a3f1360bf0ee4f7caacd8b0575c1ca0a136625",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "49d405d0e67cf9a48d5c0e32d5b2f9af0c53ca6d38cd0b8f83edc5579b87a41e"
+  },
+  "archive_sha256": "b247e5a43c60ecf23cff3761fd1421f1fd2e7ab535cc630d31b5af3a943cccba"
+}

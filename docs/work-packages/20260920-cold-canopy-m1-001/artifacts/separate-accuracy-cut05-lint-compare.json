@@ -1,0 +1,112 @@
+{
+  "reference_count": 299,
+  "candidate_count": 289,
+  "additions": [],
+  "removals": [
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "validate",
+          "requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,"
+        ]
+      ],
+      "rendered": "error: casting `f64` to `u128` may truncate the value\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1044:27\n     |\n1044 |             requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,\n     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_possible_truncation\n     = note: `-D clippy::cast-possible-truncation` implied by `-D warnings`\n     = help: to override `-D warnings` add `#[allow(clippy::cast_possible_truncation)]`\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "validate",
+          "requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,"
+        ]
+      ],
+      "rendered": "error: casting `f64` to `u128` may truncate the value\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1044:27\n     |\n1044 |             requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,\n     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_possible_truncation\n     = note: `-D clippy::cast-possible-truncation` implied by `-D warnings`\n     = help: to override `-D warnings` add `#[allow(clippy::cast_possible_truncation)]`\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "validate",
+          "requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,"
+        ]
+      ],
+      "rendered": "error: casting `f64` to `u128` may lose the sign of the value\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1044:27\n     |\n1044 |             requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,\n     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_sign_loss\n     = note: `-D clippy::cast-sign-loss` implied by `-D warnings`\n     = help: to override `-D warnings` add `#[allow(clippy::cast_sign_loss)]`\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "validate",
+          "requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,"
+        ]
+      ],
+      "rendered": "error: casting `f64` to `u128` may lose the sign of the value\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1044:27\n     |\n1044 |             requested_ns: (input.column.interval_s * 1_000_000_000.0) as u128,\n     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#cast_sign_loss\n     = note: `-D clippy::cast-sign-loss` implied by `-D warnings`\n     = help: to override `-D warnings` add `#[allow(clippy::cast_sign_loss)]`\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "materialize_m1_coupled_column",
+          "evaluation.occupancies[0] .hydraulics .continuity_residuals_kg_m2_tile_s[0] = f64::NAN"
+        ]
+      ],
+      "rendered": "error: consider adding a `;` to the last statement for consistent formatting\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2415:13\n     |\n2415 | /             evaluation.occupancies[0]\n2416 | |                 .hydraulics\n2417 | |                 .continuity_residuals_kg_m2_tile_s[0] = f64::NAN\n     | |________________________________________________________________^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned\nhelp: add a `;` here\n     |\n2415 |             evaluation.occupancies[0]\n2416 |                 .hydraulics\n2417 ~                 .continuity_residuals_kg_m2_tile_s[0] = f64::NAN;\n     |\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "materialize_m1_coupled_column",
+          "evaluation.occupancies[0] .hydraulics .root_fluxes_kg_m2_tile_s[0] = f64::NAN"
+        ]
+      ],
+      "rendered": "error: consider adding a `;` to the last statement for consistent formatting\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2410:13\n     |\n2410 | /             evaluation.occupancies[0]\n2411 | |                 .hydraulics\n2412 | |                 .root_fluxes_kg_m2_tile_s[0] = f64::NAN\n     | |_______________________________________________________^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned\n     = note: `-D clippy::semicolon-if-nothing-returned` implied by `-D warnings`\n     = help: to override `-D warnings` add `#[allow(clippy::semicolon_if_nothing_returned)]`\nhelp: add a `;` here\n     |\n2410 |             evaluation.occupancies[0]\n2411 |                 .hydraulics\n2412 ~                 .root_fluxes_kg_m2_tile_s[0] = f64::NAN;\n     |\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "validate",
+          "let boundary = input .column .stage3_lower_boundary .as_ref() .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;"
+        ]
+      ],
+      "rendered": "error: unnecessary closure used to substitute value for `Option::None`\n   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:994:20\n    |\n994 |       let boundary = input\n    |  ____________________^\n995 | |         .column\n996 | |         .stage3_lower_boundary\n997 | |         .as_ref()\n998 | |         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n    | |___________________________________________________________________________________________^\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_lazy_evaluations\n    = note: `-D clippy::unnecessary-lazy-evaluations` implied by `-D warnings`\n    = help: to override `-D warnings` add `#[allow(clippy::unnecessary_lazy_evaluations)]`\nhelp: use `ok_or` instead\n    |\n998 -         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n998 +         .ok_or(LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n    |\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "validate",
+          "let boundary = input .column .stage3_lower_boundary .as_ref() .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;"
+        ]
+      ],
+      "rendered": "error: unnecessary closure used to substitute value for `Option::None`\n   --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:994:20\n    |\n994 |       let boundary = input\n    |  ____________________^\n995 | |         .column\n996 | |         .stage3_lower_boundary\n997 | |         .as_ref()\n998 | |         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n    | |___________________________________________________________________________________________^\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_lazy_evaluations\n    = note: `-D clippy::unnecessary-lazy-evaluations` implied by `-D warnings`\n    = help: to override `-D warnings` add `#[allow(clippy::unnecessary_lazy_evaluations)]`\nhelp: use `ok_or` instead\n    |\n998 -         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n998 +         .ok_or(LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n    |\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "validate",
+          "let optical = input .column .stage3_optical .as_ref() .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;"
+        ]
+      ],
+      "rendered": "error: unnecessary closure used to substitute value for `Option::None`\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1000:19\n     |\n1000 |       let optical = input\n     |  ___________________^\n1001 | |         .column\n1002 | |         .stage3_optical\n1003 | |         .as_ref()\n1004 | |         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n     | |___________________________________________________________________________________________^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_lazy_evaluations\nhelp: use `ok_or` instead\n     |\n1004 -         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n1004 +         .ok_or(LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n     |\n\n"
+    },
+    {
+      "locations": [
+        [
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+          "validate",
+          "let optical = input .column .stage3_optical .as_ref() .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;"
+        ]
+      ],
+      "rendered": "error: unnecessary closure used to substitute value for `Option::None`\n    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1000:19\n     |\n1000 |       let optical = input\n     |  ___________________^\n1001 | |         .column\n1002 | |         .stage3_optical\n1003 | |         .as_ref()\n1004 | |         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n     | |___________________________________________________________________________________________^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_lazy_evaluations\nhelp: use `ok_or` instead\n     |\n1004 -         .ok_or_else(|| LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n1004 +         .ok_or(LandSurfaceEnergyError::UnsupportedDomain(\"m1_diagnostic_envelope\"))?;\n     |\n\n"
+    }
+  ],
+  "method": "lint + message + source path/function/content; macro expansion traced to call site; multiset comparison, not count-only",
+  "reference_log": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-baseline-clippy.jsonl",
+  "reference_source": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/recovered-treatment",
+  "candidate_log": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-cut05-clippy.jsonl",
+  "candidate_source": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/development-treatment"
+}

@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/cold-canopy-separate-20260930
+  scratch: /tmp/openwepp-roger-cold-canopy-separate-20260930
+  cache:   /workdir/.cache/openwepp

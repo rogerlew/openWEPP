@@ -1,0 +1,5 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/development-treatment/crates/openwepp-land-surface-energy)
+error: could not compile `openwepp-land-surface-energy` (lib) due to 67 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 226 previous errors

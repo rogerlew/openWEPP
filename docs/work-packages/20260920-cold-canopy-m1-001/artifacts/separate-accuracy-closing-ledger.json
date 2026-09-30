@@ -1,0 +1,17 @@
+{
+  "as_of_utc": "2026-09-30T23:32:44.292181+00:00",
+  "anchor_utc": "2026-09-30T20:48:00+00:00",
+  "elapsed_charged_seconds": "9884.292181",
+  "prior_carry_seconds": "441303.393795",
+  "cumulative_charged_seconds": "451187.685976",
+  "fixed_ceiling_seconds": "455703.393795",
+  "remaining_to_hard_deadline_seconds": "4515.707819",
+  "work_cutoff_utc": "2026-10-01T00:18:00Z",
+  "hard_deadline_utc": "2026-10-01T00:48:00Z",
+  "physical_control_process_seconds": 0.053829565,
+  "reference_seconds": 0.0,
+  "completed_candidate_days": 0,
+  "replay_consumed": 1,
+  "disposition": "INCOMPLETE; stopped at exhausted corrected-control replay, before budget expiry",
+  "accounting": "Elapsed work/reading/waits/concurrency counted once from the fixed conservative anchor. No old remainder/refund, renewal or additional allowance. Ledger is through the stated timestamp; final commit/handoff elapsed remains chargeable under the same ceiling."
+}

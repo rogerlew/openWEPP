@@ -1,0 +1,33 @@
+{
+  "evidence_class": "Ran: offline recovered source identity checks only",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/recovered-treatment",
+  "source_sha256": "91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7",
+  "verified_entries": 771,
+  "recovery_script": "projection-cache-recover.py",
+  "recovery_cut": "frozen14/treatment",
+  "metadata_sha256": "d1381a39a898ab88efdb83df05ddb8c786b3d99bcc06993572663494d521a43c",
+  "external_symlinks": {
+    ".config": {
+      "link": "/workdir/openWEPP/.config"
+    },
+    ".venv": {
+      "link": "/workdir/openWEPP/.venv"
+    },
+    "assurance": {
+      "link": "/workdir/openWEPP/assurance"
+    },
+    "docs": {
+      "link": "/workdir/openWEPP/docs"
+    },
+    "src": {
+      "link": "/workdir/openWEPP/src"
+    },
+    "tests": {
+      "link": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests"
+    },
+    "tools": {
+      "link": "/workdir/openWEPP/tools"
+    }
+  },
+  "limitation": "Symlink strings verified; build-support target contents require separate pins before any build or execution. No recovered source executed."
+}

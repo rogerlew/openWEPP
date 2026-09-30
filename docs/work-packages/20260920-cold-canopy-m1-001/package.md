@@ -1,5 +1,377 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Separate accuracy/cost investigations — stopped at control gate, 2026-09-30
+
+**Disposition: INCOMPLETE; single corrected replay exhausted.** The corrected
+C1 invocation failed while constructing its mapped seed with `VEG-E-142`
+(`Domain`). Independent source/arithmetic review confirms the frozen purportedly
+admissible fixture reconstructs negative humidity; the domain refusal is correct.
+The coordinator is halted. No further physical run or implementation
+correction is authorized within this execution. Both attempts remain preserved;
+the first was an independently verified one-ULP test-oracle defect. The second
+failure is not a solver-performance negative or a completed-day accuracy
+measurement. Final evidence review and the scoped local commit preserve this
+blocked prerequisite; no main Rust adoption or push is authorized.
+
+Owner invocation of `/tmp/openwepp_cold_canopy_m1_separate_accuracy_cost_investigations.md`
+adopts the separate A/B diagnostic investigations. Scope: detached test-only
+full/reduced column-day comparisons, P0–P3 at60s, then reduced P2/P3 at
+300/900/1800s, with no production adoption or native/provider integration.
+The leading owner direction below is preserved and incorporated. The prior
+combined experiment's accuracy/half-budget screens are comparison lines only.
+
+**Targets and gap:** complete10-OFE/36,525-day century <=182.625s CPU/210s wall;
+representative mean500us CPU/550us wall per OFE-day; M1 regime CPU ceilings
+750/1500/2500us per completed OFE-day. Prior G4 proposal timing is not completed
+solve/day timing; neither reduction nor cadence has measured accuracy/cost
+here. Column-only results cannot establish whole-system deployment.
+
+| Investigation | Candidate coverage | Accuracy / completed-day CPU and wall cost | Conclusion |
+| --- | --- | --- | --- |
+| A: FULL/REDUCED × P0–P3 at60s, three cases | 0/24; all NOT RUN | Unresolved / unmeasured | No reduction or tolerance gain can be inferred. |
+| B: REDUCED P2/P3 at300/900/1800s, three cases | 0/18 new cells; required60s baselines also unrun | Unresolved / unmeasured | No cadence effect or matched-profile comparison is available. |
+
+The [42-cell inventory](artifacts/separate-accuracy-cell-inventory.json) and
+[mechanical results](artifacts/separate-accuracy-results.json) retain every
+missing case/formulation/profile/cadence. All three strict references and three
+stability checks are unrun. C1 has two failed attempts; C2–C6 are unrun. No
+one-day regime coverage, output-error vector, dry/wet/ET integral, intercepted
+drainage mass/enthalpy, lower release, conservation ledger or transition timing
+was established. There is no measured nondominated frontier, no basis for saying
+extra accuracy buys little output improvement, and no demonstrated deployment
+path. Native owner/receiver costs, complete OFE-day cost, scaling, memory and
+warm regression remain unmeasured; the existing deployment targets are unchanged.
+
+**Executed stop and prerequisite:** the corrected C1's frozen air humidity is
+0.001kg/kg, both stores are empty, and retained snow vapor is
+−4.871670425672764e-5kg/m²/s. The independent explicit balance gives
+`qcan = −0.0005937253750308246 kg/kg`, outside the admitted[0,0.1] domain.
+The [correctness review](artifacts/separate-accuracy-correctness-review.json)
+records operands and source locations. The fixture's promise of an admissible
+mapped seed is false; this does not falsify either scientific investigation.
+The missing prerequisite is an independently validated admissible frozen control
+corpus, with a new explicit decision needed before any data change or further
+execution. No forcing, humidity, guard or tolerance was retuned here.
+
+The [first attempt](artifacts/separate-accuracy-operation-fe622ef69e1608e12123.json)
+and [sole corrected replay](artifacts/separate-accuracy-operation-fe622ef69e1608e12123-c1-oracle-replay01.json)
+charge0.002019944s and0.051809621s respectively: **0.053829565s total control
+process elapsed**, references0s, completed days0. This elapsed control/setup/failure
+cost is not CPU time or per-day cost. [Terminal state](artifacts/separate-accuracy-runner-state.json)
+retains the invalidated original attempt, consumed replay and HALTED disposition.
+Source cut03 and build/tool cut04 remain frozen and recoverable. Static launch
+reviews, format, release compilation and no-new-lint comparison passed; the
+required executable control gate failed, so numerical and deployment acceptance
+remain blocked. No full-workspace correctness campaign was run or claimed.
+
+**Closing preservation:** the [ledger](artifacts/separate-accuracy-closing-ledger.json)
+at2026-09-30T23:32:44.292181Z records9884.292181s elapsed charge from20:48Z,
+cumulative451187.685976s against the unchanged455703.393795s ceiling.
+The stop is the replay/control limit, not budget expiry;4515.707819s remained
+to the hard deadline at that timestamp. Final commit/handoff time remains
+chargeable under that same ceiling. Physical control-process charge is
+0.053829565s; no reference or candidate day completed. No remaining allowance
+is renewed or treated as permission for follow-on work.
+
+Terminal reconciliation stages only the three diagnostic LSE authority files,
+this package, and new `separate-accuracy-*` evidence/tools/recoverable archives.
+All48 unrelated initial dirty paths retain their original hashes; main Rust is
+unstaged. Authored-source/document/JSON/script whitespace checks pass. The full
+staged whitespace check reports17 literal trailing-space compiler suggestions
+in the preserved baseline Clippy stdout; those raw evidence bytes are retained.
+Both original reviewers verify the blocked disposition and preservation, rather
+than admitting the incomplete investigation. The scoped commit remains local.
+
+**Source and custody:** main evidence commit is
+`20f02922d62e893d843fb6c571ad1824d005dc71`; required retained frozen14 source is
+`91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7`.
+The implementer verifies/reconstructs it before isolated work. Preserve all
+pre-existing dirty/staged/untracked content. Durable working/evidence directory:
+`/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/`.
+
+**Budget:** conservative first-work anchor2026-09-30T20:48:00Z, fixed
+hard deadline2026-10-01T00:48:00Z; closing begins00:18:00Z. Prior closing
+ledger verified once: carry441303.393795s; new allowance14400s, including1800s
+closing; fixed cumulative ceiling455703.393795s. No prior remainder/refund.
+Charge elapsed reading, work, waits and concurrency once. Commands<=180s and
+must fit before closing. Aggregate physical/reference/timing cap1800s, reference
+subcap900s, cells<=60s. Readiness must conclude by21:48:00Z; no method-development
+campaign if a common implementable method cannot be frozen in that envelope.
+
+**Prospective checkpoints and validation:** (1) source/input authentication,
+affected science and algorithm/profile/seed/reference/control specification;
+(2) distinct correctness and QA authority review before numerical body edits;
+(3) contract-derived six controls and focused detached checks, then immutable
+source/input/protocol freeze; (4) at most42 candidate cells plus three strict
+references and their one stability check; (5) independent reconstruction,
+reviewer-owned fix verification, terminal diff and scoped local commit.
+No physical execution until readiness. Full/reduced share algorithm, derivatives,
+profiles, caps and seeds; B prespecifies reduced with no opportunistic switch.
+Failed/missing cells remain visible. No valid-negative retries; at most one
+independently verified defect replay of affected work under the owner policy.
+
+Selected validation under the testing strategy: diagnostic confinement/source
+recovery, original-row and chain-rule controls, profile/downstream-admission
+consistency, state/forcing/support custody, independent mass/energy/transfer
+reconstruction, release build and affected format/Clippy/tests. Prospective
+bounded inherited-lint policy requires same-command baseline/candidate evidence
+and no new relevant diagnostics. Authority/schema/path checks apply to actual
+amendments. No production/shared primitive/dependency change is authorized;
+any unexpected such impact stops and reclassifies the plan. Whole-workspace
+release qualification, scaling/memory/warm regression and native receiver/owner
+cost remain unmeasured deployment obligations, not diagnostic passes.
+
+Astra owns integration/package record; `/root/implementation` owns detached
+implementation. Distinct correctness and QA reviewers will inspect primary
+evidence without designing the method or editing numerical source. No nested
+spawning and at most two concurrent children. **Historical readiness: PRE_BODY_APPROVED**
+by the distinct [correctness reviewer](artifacts/separate-accuracy-correctness-review.json)
+and [QA reviewer](artifacts/separate-accuracy-qa-review.json), including same-reviewer
+verification of the corrected control data and inward drainage derivative probe.
+The implementer edited only the durable `development-treatment` clone.
+The immutable `recovered-treatment` remains the exact retained baseline.
+The common complete detached TR/BVLS/SVD controller retains full 21-row assembly,
+with the reduced implicit tangent and smaller free face. This changes the chart
+and approximate tangent, so a measured contrast cannot be called a pure identical-
+trajectory factorization speedup. No physical execution has occurred.
+
+**Ran, offline only:** [input checks](artifacts/separate-accuracy-input-check.json)
+authenticate the prescribed manifest, base, forcing and binary64 bits;
+[recovered source checks](artifacts/separate-accuracy-source-check.json) verify
+771 entries and the requested tree identity. Parent-bounded support counts for
+A/B are1440/288/96/48 at60/300/900/1800s, and C counts are1440/289/97/49.
+[External support checks](artifacts/separate-accuracy-support-check.json) find
+643/646 historical pins unchanged and only the three deliberately edited
+authority files different. Actual build dependency closure and final immutable
+source/input freeze remain pending. The offline Nix shell supplies rustc1.95.0
+(`59807616e1fa2540724bfbac14d7976d7e4a3860`, LLVM21.1.8); ordinary PATH lacks
+Rust tools. Use a unique `OPENWEPP_TASK_ID` for detached builds.
+
+[Measurement draft](artifacts/separate-accuracy-measurement-draft.json) fixes
+cell order, six four-day timing batches, clocks, inclusion/exclusion, limits
+and failure handling for review. [Cell inventory](artifacts/separate-accuracy-cell-inventory.json)
+retains all42 unrun candidate cells. Authority admission command
+`bash tools/release/check_science_contract_admission.sh --base-ref HEAD --worktree`
+returned A0_ADMITTED for49 contracts; this is schema/registry evidence, not
+numerical-method approval. The approved scientific cut is numerical-methods SHA256
+`b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c`,
+protocol `3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e`,
+and control fixtures `80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb`.
+Draft status strings and earlier review findings are historical; the reviewers'
+latest fix-verification dispositions govern pre-body readiness. Actual implemented
+controls, code review, and source/input/depfile/binary freeze remain required
+before physical execution. Readiness concluded inside the first60-minute limit.
+
+### Readiness corrections and current implementation checks
+
+Detached implementation includes exact reduced reconstruction/pullback, a
+profile tolerance vector through solver and private final admission, primitive
+per-support outputs, continuous M/H support loop, and an authenticated Rust IPC
+harness. All-three-feature no-run compilation passes. The sixth control now
+invokes the retained rank-refusal factorization seam. Timing orchestration remains
+in progress; parent inspection rejected an intermediate one-day runner and parent-
+CPU clock as inconsistent with the frozen six-by-four/child-CPU protocol. No
+physical execution occurred on those intermediate implementations. Final release
+build, source-aware lint comparison, full implementation review and freeze remain
+pending. Independent reconstruction and source/build custody tooling passed the
+separate QA scope, including the verified missing-array/empty-evidence fix.
+
+The first complete implementation cut is preserved in
+[source cut01](artifacts/separate-accuracy-source-cut01.tar.gz) with
+[recovery receipt](artifacts/separate-accuracy-source-cut01.json), tree SHA256
+`bc8fc785c5c412bc411849a5ff6f2eff4c8c26b009608780df39a366107cb749`.
+It was recovered and rehashed at `review-cut01` under the durable experiment
+root. The release binary SHA256 is
+`7d9f640427c4a7089da32515e46c838d50cfeacf03e6200da624f1164721b3db`;
+[build custody cut01](artifacts/separate-accuracy-build-cut01.json) pins586 files
+from61 observed depfiles and explicit protocol inputs. Both original reviewers
+reviewed this immutable implementation cut. Source-aware Clippy comparison
+is299 baseline/315 candidate, with18 additions and2 removals; resolution remains
+required. This cut has not been released for physical execution.
+
+**Implementation cut01 review: BLOCKED_PRE_EXECUTION.** Correctness findings
+IMPL-01–08 identify reduced logical/physical coordinate mixing; unthreaded
+profile root/witness thresholds and wrong strict arithmetic; missing independent
+Jx wet-null certification; incorrect rain enthalpy/dry/common successor seeds;
+parent-boundary crossing; incomplete independent controls; mislabeled drainage
+transfer operands; and missing joint anchor certificates. QA independently found
+incompatible Rust/runner IPC and an END deadlock, cap/charge and finite-schedule
+enforcement gaps, missing timing-digest comparisons and incomplete runtime
+custody checks. The first build/Clippy logs are retained in
+[validation cut01](artifacts/separate-accuracy-validation-cut01.tar.gz).
+No physical run used this cut. These are implementation defects, not valid
+physical negatives or observed accuracy/cost failures.
+
+Astra's bounded reassessment continues one corrective batch under the unchanged
+approved algorithm, profiles, inputs, controls and deadlines: the findings give
+concrete local implementation corrections, with no new method or authority
+required. The same implementer owns corrections and the same reviewers own fix
+verification. New Clippy diagnostics must be fixed or independently established
+as equivalent relocations. Exact-cut formatting and selected execution remain
+required. `cargo deny` is not triggered by the current unchanged manifests,
+lockfiles, dependencies, license/source policy, toolchain and workspace resolution
+(testing strategy increment requirement7); campaign/release qualification is not
+being claimed. No physical allowance has been consumed or renewed.
+
+QA's nonphysical fake-child suite now passes14 bounded runner checks on runner
+`af0ab1bb3eabcd776014c7803d70b7e73649c3183eeedfd4a6cc024449c1bdaf`:
+successful diagnostic/six-four-day IPC, frame/failure/digest refusal, ordering,
+B eligibility, cumulative cell and global limits, launch/END/DUMP charging and
+retry-state preservation. [Mock checker](artifacts/separate-accuracy-runner-mock-check.py)
+and [receipt](artifacts/separate-accuracy-runner-mock-check-receipt.json) are
+verification evidence only; reference/stability/reuse and full runtime pins remain
+unimplemented in that runner cut. Core fixes compile but are not yet independently
+accepted. Parent inspection found raw upper drainage still mislabeled as lower-
+intercepted drainage; the producer and independent checker are being corrected
+using separate raw geometry/rain operands. No physical evidence is inferred.
+
+**Current corrective checkpoint,22:46UTC:** the historical runner above is
+superseded by Astra's coordinator SHA256
+`54d0d64c8c260b4e8ea5f152b1382f8da65a205c8f3b1a705bd1fd0517b3f5b6`.
+QA passed its19-operation synthetic sequence with real custody helpers, including
+controls/references/stability, strict-reference reuse, six four-day batches,
+deadline accounting and interrupted-operation refusal. The independently authored
+reconstruction verifier v2 SHA256
+`d13fc8575422123bcdd439fe3e613fec92138e1e9d3493d7ebdbee7ba25917f8`
+also passed separate QA, including captured upper drainage, rain/enthalpy routing
+and poisoned-label rejection. These are nonphysical checks only. Corrected Rust
+equations/profile/controller/routing are undergoing same-reviewer verification;
+the implementer is completing independent smooth pullback and selected-side
+assembly controls, followed by inherited-lint reconciliation. Final immutable
+source/build release remains blocked until both scopes accept it. Physical charge
+is0s; elapsed package charge7080s, cumulative448383.393795s, with7320s to the
+fixed hard deadline and5520s before closing. No allowance is renewed.
+
+**Frozen corrective cut02,23:08UTC:** [source archive](artifacts/separate-accuracy-source-cut02.tar.gz)
+and [recovery receipt](artifacts/separate-accuracy-source-cut02.json) preserve
+771 entries at tree SHA256
+`24d060be786312a749f718f6cd7ccabc0094a9ec593a700e398fefdcbb71ae0d`;
+`review-cut02` was independently recovered and rehashed. All source writers are
+stopped. [Tool/input/authority archive](artifacts/separate-accuracy-tools-cut02.tar.gz)
+preserves the current coordinator, independent verifier, mechanical reporter and
+unchanged scientific settings. Source-aware [Clippy cut05](artifacts/separate-accuracy-cut05-lint-compare.json)
+has299 baseline/289 candidate diagnostics, zero additions and10 removals; the
+command still exits101 on inherited diagnostics and is not an unconditional
+Clippy pass. Format and all-feature test compilation passed; exact-cut release
+build and real build/binary custody are in progress. The same two reviewers are
+checking this immutable cut before conditional authorization of the six controls
+and fixed schedule. Controls and all42 candidate cells remain unrun.
+
+Corrections retain physical humidity-step admission in the reduced chart,
+consumed full-Jx plus mapped-Jy wet-null certificates, E-mapped phase directions,
+primitive non-q validation before humidity construction, unchanged identity
+normalizers under strict refinement, and signed-zero area certificates. Frozen
+controls now bind all retained-coordinate pullback checks, exact anchor/identity
+derivatives and original identity rows, actual selected-side assemblies in all
+four join directions, capacity-domain refusal, dry reactivation, and the complete
+frozen C6 matrix/residual/base/box/radius through typed subproblem rank refusal.
+The IPC retains first-failure support/kind, treats missing primitive output as an
+integrity failure, and stops fresh-day batches at their first failed day.
+
+**First executed control and bounded correction:** cut02's C1 process stopped
+at the common strict-profile oracle before fixture evaluation. Its
+[raw operation](artifacts/separate-accuracy-operation-fe622ef69e1608e12123.json)
+and [halted state](artifacts/separate-accuracy-runner-state-failed-cut02.json)
+retain the0.002019944s charge. Independent arithmetic review established an
+invalid negative: binary64 `1e-10 / 10` is `0x3da5fd7fe1796496`, whereas the
+test expected the one-ULP-lower decimal literal `1e-11`. Runtime arithmetic
+already matches the frozen division rule. The sole allowed correction changes
+only the expected test bits; it does not change tolerances or physical inputs.
+
+[Source cut03](artifacts/separate-accuracy-source-cut03.tar.gz), tree
+`fb933d74c6964eacc2c1932aa9d1340b1d60fb1e192161ccc8ab50d3d1e09e00`,
+differs only in that oracle. Same-reviewer correctness verification accepts the
+change. Exact-cut format/release compilation passes; [Clippy cut07](artifacts/separate-accuracy-cut07-lint-compare.json)
+retains zero additions/10 removals. Release binary SHA256 is
+`1e8a534a0f47ee014c1a5d6fce867acc06c1bc04c5d24192f60417d42b713b8c`.
+QA is verifying explicit state recovery with unique output names, original
+charge retained and deducted from the corrected control's30s cap, and an
+enforced single-replay marker. The live state remains halted until that review
+and revised tool/build custody pass. If the corrected C1 passes, the five unrun
+controls may proceed once; only all-six success permits the frozen schedule.
+Any subsequent control failure is terminal, with no second correction/replay.
+
+The retained [cut02 archive](artifacts/separate-accuracy-readiness-cut02.tar.gz),
+subsequent cuts, and reviewer records preserve the rejected drafts. Corrections
+bound common mapped seeds, selected-side full Jacobian assembly, humidity units
+and guard ordering, original and reduced wet-null certificates, exact directional
+joins/rank fixtures, and the60s reference with a900s execution subcap. All were
+reviewed before numerical body edits; no physical result drove these corrections.
+
+At21:32UTC, elapsed charged time was2641s (cumulative443944.393795s), with
+11759s left to the fixed hard deadline and zero physical execution charge.
+At21:48:29UTC, the readiness deadline had passed with pre-body approval already
+recorded; elapsed charge3629s, cumulative444932.393795s, remaining10771s to
+hard deadline. Implementation and pre-execution checks continue; physical charge0.
+QA reviewed the independent checker/custody tools and required missing candidate
+residual/normalizer arrays to force UNRESOLVED; its author is correcting that
+specific disposition before same-reviewer fix verification.
+
+The recovered baseline selected release Clippy run with all three retained M1
+features and `--no-deps --lib --tests -- -D warnings` exited101 with228 existing
+LSE test diagnostics ([raw log](artifacts/separate-accuracy-baseline-clippy-nodeps.stdout)).
+The initial run without `--no-deps` stopped at inherited vegetation lint
+([raw log](artifacts/separate-accuracy-baseline-clippy.stdout)). Candidate comparison
+must use the same selected command; neither result is a numerical workflow pass.
+
+## Owner direction — separate reduction and cadence; permit accuracy tradeoffs, 2026-09-30
+
+The owner requests separate investigation of exact reduction and coarser time
+steps, explicitly permits relaxed accuracy, and rejects treating the current
+extremely tight tolerances as necessary application accuracy. This supersedes
+the prior recommendation to investigate only a combined reduction/coarsening
+candidate. Its proposed 0.1% flux, 0.01 K and 60-second chronology screens were
+not adopted application requirements. Do not make them automatic rejection
+thresholds for these investigations or ask the owner again whether relaxation
+is permitted. Production numerical/science changes still need prospective
+specification and review; this direction is not a silent code/contract edit.
+
+**Static findings:** retained `m1_coupled.rs` requires step temperature <=1e-8 K,
+humidity <=1e-12 kg/kg, hydraulic potential <=1e-7 mm and beta <=1e-10.
+`m1_tolerances` uses the smaller of absolute and scaled bounds for M/H/capacity,
+including mass 1e-9 kg/m2 and enthalpy 1e-6 J/m2 absolute ceilings plus 1e-8
+relative ceilings. Final materialization independently repeats these limits.
+Thus a solver-only stopping relaxation is insufficient. Audit stopping,
+normalization, inner solve accuracy and final acceptance together; distinguish
+numerical balance residuals, independent accounting checks and domain predicates.
+
+Investigate two separately attributable axes:
+
+1. **Exact reduction:** fixed 60-second forcing/support sequence; compare full
+   and algebraically reduced equations at matched tolerance profiles. First
+   establish reconstruction/root equivalence on admitted cases, then examine a
+   finite prospective sweep of practical numerical tolerances. Report reduction
+   benefit at each matched profile separately from tolerance benefit. Exact
+   algebra does not require a bit-identical iterative trajectory. Retain full
+   reconstructed physical residuals and separately account for nonunique null
+   coordinates, conditioning, hydraulics and materialization costs.
+2. **Time-step coarsening:** keep one solver/formulation and one numerical
+   tolerance profile fixed across the cadence sweep, using 60-second results
+   as the discrete reference. Preserve real forcing changes and parent/state
+   custody. Record temporal error and completed-work cost for a fixed finite
+   set of larger supports; do not bundle a solver replacement into this contrast.
+   Numerical error must be estimated separately so it is not mislabeled as
+   temporal error. If no common functioning solver exists, state that prerequisite
+   explicitly; do not claim independent evidence from unmatched arms.
+
+Select a bounded sweep before result-bearing execution. An accuracy miss at one
+setting is data for the accuracy/cost curve, not permission for post-hoc retuning
+and not an automatic stop for the remaining prespecified settings. Integrity,
+invalid physical states and time/run limits retain their stops. Measure signed
+and absolute cumulative mass/energy imbalance, ET, storage, inter-occupancy
+transfer, drainage and transition timing; compare errors with process magnitudes
+and practical outputs rather than demanding identical trajectories. Finite
+numerical balance errors can have explicit budgets; duplicate/missing transfers
+and inconsistent owner accounting are not accuracy knobs.
+
+Deployment anchor remains the recovered complete 10-OFE century SLO of 210 s
+wall / 182.625 s CPU and representative mean 500 us CPU/OFE-day, alongside the
+M1 regime ceilings below. Report complete-solve/day cost and accuracy together.
+No new physical run, numerical implementation or tolerance change was performed
+in this follow-up; the completed historical experiments remain closed. Future
+execution must bind concrete methods, tolerance profiles, cases and bounded
+allowances prospectively rather than inherit the old combined experiment as-is.
+
 ## Architecture and deployment-cost decision — static conclusion, 2026-09-30
 
 **Static: no evaluated architecture presently has a defensible deployment-cost

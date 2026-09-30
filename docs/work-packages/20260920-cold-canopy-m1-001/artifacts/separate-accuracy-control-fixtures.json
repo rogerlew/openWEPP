@@ -1,0 +1,478 @@
+{
+  "schema": "openwepp.cold_canopy_m1.separate_accuracy.controls.v1",
+  "status": "STATIC FIXTURE SPECIFICATION ONLY; no solver invocation",
+  "base": {
+    "path": "original-input-reference.json",
+    "sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+    "record": "solver_input record_index=0",
+    "all_unspecified_input_bytes": "must remain base-identical"
+  },
+  "application": "decode base JSON, apply JSON-Pointer replacements in listed order, reject a missing pointer or nonmatching base hash; serialize f64 by stated IEEE-754 bits; derive M1 input through the retained input adapter only.",
+  "independent_oracle": "fixtures use standalone IEEE-754 arithmetic for stated formulas and may not call candidate P/Jy/BVLS helpers.",
+  "controls": [
+    {
+      "id": "C1_empty_admissible",
+      "overrides": [
+        {
+          "json_pointer": "/inputs/occupancies/0/beginning_canopy_liquid_kg_m2_tile",
+          "binary64": "0x0000000000000000",
+          "decimal": 0.0
+        },
+        {
+          "json_pointer": "/inputs/occupancies/1/beginning_canopy_liquid_kg_m2_tile",
+          "binary64": "0x0000000000000000",
+          "decimal": 0.0
+        },
+        {
+          "json_pointer": "/inputs/air_specific_humidity_kg_kg",
+          "binary64": "0x3f50624dd2f1a9fc",
+          "decimal": 0.001
+        }
+      ],
+      "derived_trial_bits": {
+        "M0": "0x0000000000000000",
+        "H0": "0x0000000000000000",
+        "M1": "0x0000000000000000",
+        "H1": "0x0000000000000000"
+      },
+      "oracle_assertions": [
+        "standalone saturation/conductance arithmetic computes reconstructed qcan from dry+wet g (m/s), ga=1/Rvapor, and E_snow/rho; qcan is finite/in bounds and every designated primal guard/core evaluation succeeds",
+        "P(seed) has finite q and P(y)==x bitwise"
+      ]
+    },
+    {
+      "id": "C2_empty_supersaturation_refusal",
+      "overrides": [
+        {
+          "json_pointer": "/inputs/occupancies/0/beginning_canopy_liquid_kg_m2_tile",
+          "binary64": "0x0000000000000000",
+          "decimal": 0.0
+        },
+        {
+          "json_pointer": "/inputs/occupancies/1/beginning_canopy_liquid_kg_m2_tile",
+          "binary64": "0x0000000000000000",
+          "decimal": 0.0
+        },
+        {
+          "json_pointer": "/inputs/air_specific_humidity_kg_kg",
+          "binary64": "0x3fb999999999999a",
+          "decimal": 0.1
+        }
+      ],
+      "derived_trial_bits": {
+        "M0": "0x0000000000000000",
+        "H0": "0x0000000000000000",
+        "M1": "0x0000000000000000",
+        "H1": "0x0000000000000000"
+      },
+      "oracle_assertions": [
+        "standalone saturation arithmetic computes reconstructed qcan and demonstrates an empty positive surface qsurface<=qcan",
+        "typed outcome exactly VEG-E-142 before controller/J assembly; no other error is accepted"
+      ]
+    },
+    {
+      "id": "C3_directional_phase_joins",
+      "overrides": [
+        {
+          "json_pointer": "/inputs/occupancies/0/beginning_canopy_liquid_kg_m2_tile",
+          "binary64": "0x3f926e978d4fdf3b",
+          "decimal": 0.018
+        }
+      ],
+      "derived_trial_bits": {
+        "M0": "0x3f926e978d4fdf3b",
+        "H0": "0x0000000000000000",
+        "D0": "0x3f33a92a30553261",
+        "cooling_direction_H0": "0xbff0000000000000",
+        "warming_direction_H0": "0x3ff0000000000000",
+        "lower_M": "0x3f926e978d4fdf3b",
+        "lower_H": "0xc0b7769999999999",
+        "lower_dM": "0x0000000000000000",
+        "lower_dH_ice": "0xbff0000000000000",
+        "lower_dH_mixed": "0x3ff0000000000000"
+      },
+      "oracle_assertions": [
+        "At H=+0.0, dH=-1 selects Mixed and dH=+1 selects Liquid, with dM=+0.0.",
+        "At H=-Lf*M exactly in retained binary64 multiplication order, dM=+0.0,dH=-1 gives negative dH+Lf*dM and selects Ice; dH=+1 gives positive normal and selects Mixed.",
+        "Check all four prescribed directional selections, retained selected-side probes, and at-most-one optional reassembly only when the frozen set differs from the natural set; no old endpoint is consumed."
+      ]
+    },
+    {
+      "id": "C4_capacity_positive_drainage",
+      "overrides": [
+        {
+          "json_pointer": "/inputs/occupancies/0/liquid_capacity_kg_m2_plant",
+          "binary64": "0x3fcc28f5c28f5c29",
+          "decimal": 0.22
+        }
+      ],
+      "derived_trial_bits": {
+        "capacity0": "0x3fd3020c49ba5e37",
+        "M0": "0x3fd3020c49ba5e37",
+        "H0": "0x0000000000000000",
+        "D0": "0x3ef1111111111111"
+      },
+      "oracle_assertions": [
+        "independent rcap=min(60*D0,C_liq-m_liq)=+0.0",
+        "D0>0; materialization requires original capacity/rcap checks"
+      ]
+    },
+    {
+      "id": "C5_full_wet_reactivation",
+      "overrides": [],
+      "derived_trial_bits": {
+        "capacity0": "0x3fd3020c49ba5e37",
+        "base_M0": "0x3fd3020c49ba5e37",
+        "base_H0": "0x0000000000000000",
+        "next_M0": "0x3fd3020c49ba5e36",
+        "next_H0": "0x0000000000000000"
+      },
+      "oracle_assertions": [
+        "positive retained shade/stem areas and fwet(base)=1 exactly give certified Jx AND mapped Jy dry-role raw/weighted zeros",
+        "next base has fwet<1; same semantic role is ordinary y column, never D_y"
+      ]
+    },
+    {
+      "id": "C6_near_bound_rank_refusal",
+      "overrides": [],
+      "synthetic_bvls": {
+        "shape": [
+          21,
+          11
+        ],
+        "f_bits": "0x0000000000000000",
+        "base_bits": "0x0000000000000000",
+        "lower_bits": "0xbff0000000000000",
+        "upper_bits": "0x3ff0000000000000",
+        "radius_bits": "0x3ff0000000000000",
+        "matrix_binary64": [
+          [
+            "0x3ff0000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x3ff0000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x3ff0000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x3ff0000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x3ff0000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x3ff0000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x3ff0000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x3ff0000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x3ff0000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x3ff0000000000000",
+            "0x3ff0000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ],
+          [
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000",
+            "0x0000000000000000"
+          ]
+        ],
+        "independent_rank_proof": "Columns0..9 have an identity10 minor; col10 equals col9 in every row. Rank is exactly10, with null vector v9=+1,v10=-1 and every other component0."
+      },
+      "oracle_assertions": [
+        "independent SVD criterion sigma_min <= 2^-40*sigma_max",
+        "typed rank refusal before trial/materialization"
+      ]
+    }
+  ],
+  "cross_control_mapping_checks": {
+    "seed": "independently evaluate explicit q balance and both anchors; FULL x seed equals P(REDUCED y) bitwise",
+    "pullback": {
+      "fixture_binding": {
+        "manifest": "architecture-decision-successor-cases.json",
+        "sha256": "b3ad4fa07c7748c56df0ad9c2fb681be019e86e9bd9befb97d705eb4d10e2ce8",
+        "case_id": "A_cold_ice_day",
+        "support_s": 60,
+        "initial_phase_records": [
+          {
+            "occupancy_id": "stratum-z-upper::forest",
+            "mass_kg_m2_tile_ground": 0.024,
+            "enthalpy_j_m2_tile_ground": -8261.52,
+            "mass_binary64_hex": "3f989374bc6a7efa",
+            "enthalpy_binary64_hex": "c0c022c28f5c28f6"
+          },
+          {
+            "occupancy_id": "stratum-a-lower::forest",
+            "mass_kg_m2_tile_ground": 0.03,
+            "enthalpy_j_m2_tile_ground": -10326.9,
+            "mass_binary64_hex": "3f9eb851eb851eb8",
+            "enthalpy_binary64_hex": "c0c42b7333333333"
+          }
+        ],
+        "forcing_segment": 0,
+        "seed": "Use the common mapped primitive seed frozen in the accepted authority: all prescribed identities, both zero-area anchors, then humidity; retain exact manifest M/H bits."
+      },
+      "scope": "Independent smooth-state algebra assertions within the six-control inventory, not an additional trajectory or physical cell.",
+      "branch_preconditions": "Both inventories strictly ice, M<C, drainage-selected min branch, Tcan<Tf. Interior T/M/H probes use both sides and must retain classifications and pass all guards. Drainage is exactly at its admitted lower bound0: use only the unique inward positive probe, never evaluate negative drainage. Any required probe guard/branch failure fails this control; no runtime alternate derivative.",
+      "comparison": "For each retained native coordinate z, let a be the declared implicit pullback dq/dz. For interior temperature/mass/enthalpy coordinates use b=(q_independent(z+h)-q_independent(z-h))/(2*h). For drainage D=0 use b=(q_independent(D+h)-q_independent(D))/h with the same frozen source h=1e-10 kg/m2/s. The standalone humidity formula has no drainage operand, independently implying b=0. Require abs(a-b) <= 1e-10*(kg/kg)/unit(z) + 1e-6*max(abs(a),abs(b)). Both terms have derivative units; near zero only the absolute floor remains. Anchor entries are exact0 or1 K/K; prescribed-identity derivatives exact0.",
+      "native_units": {
+        "temperature": "K",
+        "mass": "kg/m2",
+        "enthalpy": "J/m2",
+        "drainage": "kg/m2/s"
+      },
+      "h": {
+        "temperature": 0.0001,
+        "mass": 1e-08,
+        "enthalpy": 0.001,
+        "drainage": 1e-10
+      },
+      "oracle": "Standalone published saturation/conductance/density/phase/wetness arithmetic in fixed occupancy/component order, independent of candidate P, Jx, Jy and normalizer helpers."
+    },
+    "identity_rows": "R[14..20] exact +0.0 after P and their normalizers exactly 1e-9",
+    "reference_ledger": "independently reconstruct per 60-second support: deltaM=dt*(incident-vapor-drainage) kg/m2; deltaH=dt*(nonvapor+incident*h-vapor*(Lv+Cpv*(Twet-Tf))-drainage*Cw*(Twet-Tf)) J/m2; transfer=dt*drainage kg/m2. Accumulate across horizon and compare each same-unit ledger difference <=1e-10 kg/m2 or <=1e-7 J/m2; a missing/failed operand is unresolved."
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "evidence_class": "Ran: offline byte/bit authentication and schedule arithmetic only; no physical execution",
+  "manifest_sha256": "b3ad4fa07c7748c56df0ad9c2fb681be019e86e9bd9befb97d705eb4d10e2ce8",
+  "base_sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+  "forcing_sha256": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1",
+  "support_policy": "greedy maximal identical-forcing runs bounded by selected cadence and 1800-second parents; all original records consumed once",
+  "cases": [
+    {
+      "id": "A_cold_ice_day",
+      "authenticated_original_records": 1440,
+      "schedules": {
+        "60": {
+          "interval_count": 1440,
+          "support_sha256": "fc7c44297002c5ee962713e1acf4c289d8d21a47e42f3c2d8c24d8cbb43daee9",
+          "duration_counts": {
+            "60": 1440
+          }
+        },
+        "300": {
+          "interval_count": 288,
+          "support_sha256": "25e6b8c74960b86fc0505c8160d44b95f8f66f34bd8298f6e463cf15a739a9de",
+          "duration_counts": {
+            "300": 288
+          }
+        },
+        "900": {
+          "interval_count": 96,
+          "support_sha256": "945badef25dd67875597bade4c822df9304e78bf73ad6e06fba315082c68650c",
+          "duration_counts": {
+            "900": 96
+          }
+        },
+        "1800": {
+          "interval_count": 48,
+          "support_sha256": "60a223014d9bee9835c9c456705ec27c24e12566496072c5b11157e524055fd3",
+          "duration_counts": {
+            "1800": 48
+          }
+        }
+      }
+    },
+    {
+      "id": "B_mixed_to_liquid_day",
+      "authenticated_original_records": 1440,
+      "schedules": {
+        "60": {
+          "interval_count": 1440,
+          "support_sha256": "2053406014e04ce8b28c5a8c5874ecb37382bd2c0e3ea91c5f757ac2f3cc27e6",
+          "duration_counts": {
+            "60": 1440
+          }
+        },
+        "300": {
+          "interval_count": 288,
+          "support_sha256": "6f7ea555d0f0b2f39b76817aefbd0b2f0f40ebc15138b1ef87c3bfec54be9423",
+          "duration_counts": {
+            "300": 288
+          }
+        },
+        "900": {
+          "interval_count": 96,
+          "support_sha256": "b9db1aa9dc923fc9d65b0b982895b50b3f98c2f0e97fe3081aa43f8872404aa6",
+          "duration_counts": {
+            "900": 96
+          }
+        },
+        "1800": {
+          "interval_count": 48,
+          "support_sha256": "d823f7ef131efb3dc7f72991d7db398636bc1fde3cad98b519490113285d6b04",
+          "duration_counts": {
+            "1800": 48
+          }
+        }
+      }
+    },
+    {
+      "id": "C_freeze_then_melt_day",
+      "authenticated_original_records": 1440,
+      "schedules": {
+        "60": {
+          "interval_count": 1440,
+          "support_sha256": "e97aabb2b96ecac6fbc09de70959e85e7b736c6697efef69748d46ec4521cb85",
+          "duration_counts": {
+            "60": 1440
+          }
+        },
+        "300": {
+          "interval_count": 289,
+          "support_sha256": "8ad2569adb021492f1027d8ff518cefb49c54af8684ee23b3789ba85f1d835a5",
+          "duration_counts": {
+            "60": 1,
+            "240": 1,
+            "300": 287
+          }
+        },
+        "900": {
+          "interval_count": 97,
+          "support_sha256": "10fc8bc6e08f7c16f25162010e8e89ea195e2f973acad1590f3d8d35a2f9e9fc",
+          "duration_counts": {
+            "60": 1,
+            "840": 1,
+            "900": 95
+          }
+        },
+        "1800": {
+          "interval_count": 49,
+          "support_sha256": "7eff485fa20e90e035305adb337f80cd5615b7388484c8103e60cab6d645b44f",
+          "duration_counts": {
+            "60": 1,
+            "1740": 1,
+            "1800": 47
+          }
+        }
+      }
+    }
+  ]
+}

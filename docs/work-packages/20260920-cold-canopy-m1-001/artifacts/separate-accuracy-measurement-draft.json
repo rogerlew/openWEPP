@@ -1,0 +1,374 @@
+{
+  "status": "PRE_BODY_APPROVED protocol; implemented runner, source/binary/dependency freeze and independent pre-execution review pending",
+  "limits": {
+    "anchor_utc": "2026-09-30T20:48:00Z",
+    "readiness_deadline_utc": "2026-09-30T21:48:00Z",
+    "work_cutoff_utc": "2026-10-01T00:18:00Z",
+    "hard_deadline_utc": "2026-10-01T00:48:00Z",
+    "command_seconds": 180,
+    "all_physical_elapsed_seconds": 1800,
+    "reference_elapsed_seconds": 900,
+    "candidate_cell_elapsed_seconds": 60,
+    "reference_trajectory_seconds": 150,
+    "stability_trajectory_seconds": 150,
+    "control_seconds": 30
+  },
+  "budget_accounting": "One monotonic elapsed interval per result-bearing child from launch through evidence collection; sequential physical children only. Sum controls+reference+stability+candidate diagnostic+timing, including startup/parse overhead for limits although excluded from sample timing. Deny launch after global/deadline exhaustion; watchdog kills at earliest cap and preserves partial as timeout, never a completed timing.",
+  "cell_sequence": [
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300
+    }
+  ],
+  "balance": "A alternates FULL/REDUCED within matched case/profile pairs; B alternates ascending/descending new cadence order. No measurement-driven reorder. Each cell completes diagnostic then six consecutive fixed four-day batches; between-cell pairing is balanced, not six interleaved cross-arm pairs.",
+  "per_cell": {
+    "untimed_diagnostic_days": 1,
+    "timing_batches": 6,
+    "fresh_complete_days_per_batch": 4,
+    "batch_order": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "freshness": "Initialize each day from exact fixed case bits; carry accepted M/H and diagnostic state across every support within that day, never reset at parent boundaries. No warmup days or extra physical cases. Only diagnostic-completing cells enter timing. Failure during any timed day ends the cell; retain earlier full batches but label timing coverage incomplete."
+  },
+  "clock_protocol": {
+    "cpu": "Linux per-process CPUCLOCK_SCHED via clock_gettime_ns(((~pid)<<3)|2), verify reported PID equals measured child and record clock_getres; existing projection-cache-timing.py protocol is the reference mechanism, not an execution target",
+    "wall": "time.perf_counter_ns() / CLOCK_MONOTONIC; retain start/end ns per batch",
+    "sequence": "After child fixture parse and READY handshake, sample CPU then wall; send RUN_FRESH_DAYS 4; child executes four complete freshly initialized days retaining consumed outcome data and emits END only; sample wall then CPU. DUMP and JSON formatting/parent validation follow outside interval. No child exit until clocks sampled. Record every CPU/wall sample; no resampling or overhead subtraction.",
+    "included": "day initialization, every accepted/rejected solve/evaluator/derivative/factor, hydraulics, materialization, all diagnostic state updates and output storage",
+    "excluded": "build, process startup, fixture parsing before READY, JSON formatting and checks after END",
+    "observation_overhead": "command read, END write, result retention, parent IPC and scheduling are unavoidably included; explicitly report without subtraction",
+    "checks": "Timed day outcome entire numerical state/flux/integral/transition/support trace digest must equal same-cell diagnostic outcome exactly under identical settings. Hash formation after END from retained operands, no hidden solve. Different FULL/REDUCED trajectories are not required bit-identical."
+  },
+  "failure_policy": {
+    "numerical_domain_failure": "record first failure and actual intervals; end cell; other safe scheduled cells continue",
+    "integrity_failure": "stop entire experiment, preserve evidence",
+    "reference_failure": "retain timing/completion but mark reference accuracy unresolved; safe other profiles continue",
+    "B_eligibility": "For each case/profile, reduced60 must complete. Otherwise all corresponding new cadences unavailable without changing method.",
+    "accuracy_or_cost_miss": "data, continue fixed schedule",
+    "retry": "No valid-negative/timeout/noisy timing retry. At most one affected-work replay after independently verified implementation/recording defect; retain first evidence. Shared correction invalidating more work than allowed stops campaign."
+  },
+  "host_build": {
+    "profile": "release",
+    "toolchain": "rustc1.95.0 commit59807616e1fa2540724bfbac14d7976d7e4a3860 LLVM21.1.8 via repository locked Nix environment",
+    "feature": "m1-trust-region-physical-stage,m1-trust-region-analytic-stage,m1-trust-region-controller-stage (all test-only)",
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "threads": 1,
+    "optional_tracing": "off during timing; no extra physical tracing replay",
+    "concurrency": "No concurrent heavy builds/tests or other physical cells; record process snapshots before/after measurement without claiming continuous surveillance",
+    "freeze": "Exact detached source/input/protocol, external support files, Cargo.lock/flake.lock/toolchain/config and binary digests before physical controls/cells; no writer mutation during validation/measurement. Build depfile audit closes actual dependencies; deny mismatch before/after commands."
+  },
+  "reference_order": "One FULL/P0 60s reference per case and its one explicitly defined stricter stability check, before candidate sweep. Reference source/settings must match A FULL/P0 to reuse its outputs as candidate diagnostic; timing still fresh. No duplicate strict physical diagnostic when reused.",
+  "result_reporting": "Separate A matched-profile reduction ratios and within-formulation tolerance contrasts; B matched-profile cadence and strict-reference total differences. Missing/failed cells have no invented ratio. Retain all24 day outcomes per completed timing cell and six CPU/wall samples, medians/ranges, dimensional outputs, independent integrals and coverage; column-day costs never whole-OFE-day pass."
+}

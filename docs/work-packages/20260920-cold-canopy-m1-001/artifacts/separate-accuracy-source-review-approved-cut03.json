@@ -1,0 +1,35 @@
+{
+  "artifact_pins": {
+    "architecture-decision-successor-cases.json": "b3ad4fa07c7748c56df0ad9c2fb681be019e86e9bd9befb97d705eb4d10e2ce8",
+    "continuous-fixtures-draft01.json": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1",
+    "original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+    "separate-accuracy-build-custody.py": "88f09f4d70cc5d0a3679eba13312324d94611a9cd18ea0a9e3483a33f4722492",
+    "separate-accuracy-control-fixtures.json": "80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb",
+    "separate-accuracy-independent-reconstruction.py": "d13fc8575422123bcdd439fe3e613fec92138e1e9d3493d7ebdbee7ba25917f8",
+    "separate-accuracy-input-check.json": "7713f550f4cab32062da1742e2abcd35f2c99b80034169e341bd3b02d28ba806",
+    "separate-accuracy-measurement-draft.json": "16a39a73e6396d2063cb80e68795c8cca841e6fd7f197ac9449957d582203f95",
+    "separate-accuracy-protocol-draft.json": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e",
+    "separate-accuracy-runner.py": "1c2964356d6b7ad58fd9767e7ac35aac124e821cf4fd606361ccfa24b6834a80",
+    "separate-accuracy-source-custody.py": "bd3cb9c63d9f66a7c6bc7c407615e82de1c1abd47057e8d28424f6641b77a877"
+  },
+  "binary_sha256": "1e8a534a0f47ee014c1a5d6fce867acc06c1bc04c5d24192f60417d42b713b8c",
+  "build_receipt": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-build-cut03.json",
+    "sha256": "3adf7c110fecdb113db16240c0bb78c876b2a473c151742d7081e373a1594c29"
+  },
+  "prior_failed_state_sha256": "e61cd6325c61a87c30554d3428c9dabf6b4665585576564c3e2d6be137385e42",
+  "review_scope": "One corrected C1 replay; remaining unrun controls iff C1 passes; fixed schedule iff all six pass. No further correction/replay. Pending final QA custody check before installation.",
+  "reviewers": [
+    "separate-accuracy-correctness-review.json",
+    "separate-accuracy-qa-review.json"
+  ],
+  "source_archive": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-source-cut03.tar.gz",
+    "sha256": "5464bcb6d9814750d9934c61d681057dae21e93b6b58334f0ceea59a601d7a1a"
+  },
+  "source_receipt": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-source-cut03.json",
+    "sha256": "654969aa698823cd8c3ab8052ab971e90081e4f55a53d05230415aed4640fde6"
+  },
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/development-treatment"
+}

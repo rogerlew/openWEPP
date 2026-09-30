@@ -1,0 +1,9 @@
+{
+  "status": "review-pending; no numerical edits permitted",
+  "sha256": {
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "6350e84fc787e00c1761a996b2a3f1360bf0ee4f7caacd8b0575c1ca0a136625",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "0a70ad79651ee14893cd84264762a227e1b3f802d6b13b9b9e075275add52315",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "49d405d0e67cf9a48d5c0e32d5b2f9af0c53ca6d38cd0b8f83edc5579b87a41e",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json": "a295749ca85e8329a00e720c8392aa7a8f820e49a6f68e44b41dd6da33afbd5f"
+  }
+}

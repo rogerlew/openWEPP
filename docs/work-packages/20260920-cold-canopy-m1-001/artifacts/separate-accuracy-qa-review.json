@@ -1,0 +1,622 @@
+{
+  "c1_oracle_replay_namespace_review": {
+    "evidence_class": "Ran: synthetic fake child only; no Rust/binary/physical execution.",
+    "failed_state_reviewed": "separate-accuracy-state-failed-cut02.json preserved original C1 control operation, failure raw output and charged_seconds 0.002019944.",
+    "limitation": "Manual state recovery itself is an external reviewed procedure and was not applied to the real halted state by QA.",
+    "mock_driver_sha256": "bf102a14710318d180af6de84f64a3e668c48a9d35fe7b2a53d7a7890018a065",
+    "runner_sha256": "1c2964356d6b7ad58fd9767e7ac35aac124e821cf4fd606361ccfa24b6834a80",
+    "status": "PASS",
+    "synthetic_check": {
+      "detail": {
+        "cap_seconds": 29.997980056,
+        "output": "/tmp/separate-accuracy-runner-mock-6qnqj1uy/separate-accuracy-operation-fe622ef69e1608e12123-c1-oracle-replay01.json",
+        "physical_seconds": 0.019142862
+      },
+      "status": "PASS"
+    },
+    "verified": [
+      "Only c1-oracle-replay01 with exactly one preserved C1 control is accepted.",
+      "Replay output has a unique namespace suffix.",
+      "Class cap is 30 - 0.002019944 seconds; aggregate physical charge retains old plus replay charge.",
+      "The runner does not reset halted state or expose an automatic recovery CLI."
+    ]
+  },
+  "c1_replay_consumption_fix_verification": {
+    "checks": {
+      "invalid_markers": {
+        "detail": {
+          "bool": "RuntimeError: Invalid single-control defect recovery evidence",
+          "missing": "RuntimeError: Invalid single-control defect recovery evidence",
+          "two": "RuntimeError: Invalid single-control defect recovery evidence",
+          "zero": "RuntimeError: Invalid single-control defect recovery evidence"
+        },
+        "status": "PASS"
+      },
+      "valid_replay": {
+        "detail": {
+          "cap_seconds": 29.997980056,
+          "output": "/tmp/separate-accuracy-runner-mock-ip0lu916/separate-accuracy-operation-fe622ef69e1608e12123-c1-oracle-replay01.json",
+          "physical_seconds": 0.02092217
+        },
+        "status": "PASS"
+      }
+    },
+    "disposition": "Exact integer defect_replay_consumed=1 is now an executable prelaunch condition. Missing/0/2/bool values fail closed before the child is started.",
+    "evidence_class": "Ran: synthetic fake child only; no Rust/binary/physical execution.",
+    "mock_driver_sha256": "8170f2046675c9145c6bf12703d00ce5af85a78623f5a3c465ba3969b5b8961d",
+    "runner_sha256": "28b20757707ec678f7d25e42c6f594d3d8f81b59a13cbe26757e1547780cdf74",
+    "status": "PASS"
+  },
+  "coordinator_deadline_inflight_fix_verification": {
+    "checks": {
+      "custody_and_pins_prepost": {
+        "detail": "Synthetic source archive, source receipt, depfile build receipt, binary and all runner artifact pins were accepted before and after each mock operation.",
+        "status": "PASS"
+      },
+      "interrupted_state_refuses_launch": {
+        "detail": {
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/separate-accuracy-runner-mock-hpr8d4r4/separate-accuracy-runner.py\", line 381, in <module>\n    main()\n  File \"/tmp/separate-accuracy-runner-mock-hpr8d4r4/separate-accuracy-runner.py\", line 360, in main\n    cur = state()\n          ^^^^^^^\n  File \"/tmp/separate-accuracy-runner-mock-hpr8d4r4/separate-accuracy-runner.py\", line 52, in state\n    raise RuntimeError('Interrupted physical operation: preserve state; no automatic retry or further launch')\nRuntimeError: Interrupted physical operation: preserve state; no automatic retry or further launch"
+        },
+        "status": "PASS"
+      },
+      "success_1_diagnostic_plus_6x4": {
+        "detail": {
+          "controls_and_reference_operations": 12,
+          "physical_seconds": 0.368279977,
+          "result_count": 19
+        },
+        "status": "PASS"
+      }
+    },
+    "disposition": "PASS for the affected coordinator controls under an isolated fake child. No actual Rust endpoint, release binary, or physical operation was run.",
+    "driver_sha256": "93870104fd582b3a5d3914aa7586c0c24e78ccb95baeefd456243a8a77db2ac4",
+    "evidence_class": "Ran: synthetic fake child only; no Rust/binary/physical execution.",
+    "previous_coordinator_archive": "artifacts/separate-accuracy-coordinator-cut01.tar.gz",
+    "runner_sha256": "54d0d64c8c260b4e8ea5f152b1382f8da65a205c8f3b1a705bd1fd0517b3f5b6",
+    "static_review": "authenticate bounds each custody helper by the command deadline; the physical cap leaves the stated final-accounting reserve. in_flight is written before child launch, blocks state() on a subsequent process, and is removed only after final charge plus post-run custody disposition.",
+    "status": "PASS"
+  },
+  "cut02_real_build_custody_verification": {
+    "binary_sha256": "1c171a3739b725d01b211ab6bdb3dee2ddc8a8564ffc304cc88b0d664d49d4a7",
+    "build_custody_check": "PASS",
+    "build_receipt": "artifacts/separate-accuracy-build-cut02.json",
+    "depfile_count": 61,
+    "disposition": "PASS: real binary/dependency/source custody closes the condition on QA authorization for the fixed six controls and frozen schedule. This is not numerical acceptance or a physical result.",
+    "evidence_class": "Ran: read-only build-custody and source-custody checks. Static: receipt/log/list inspection. No ignored test or physical operation was launched.",
+    "pin_count": 594,
+    "post_build_source_custody_check": "PASS for source tree 24d060be786312a749f718f6cd7ccabc0094a9ec593a700e398fefdcbb71ae0d with 771 entries.",
+    "release_no_run_evidence": "fmt --check and cargo test --offline --release --no-run with all three features are supplied as exit-0 evidence; list output contains both m1_separate_accuracy_diagnostic_ipc and m1_separate_accuracy_six_frozen_controls.",
+    "required_pins_verified": [
+      "runner 54d0d64c\u2026",
+      "input check 7713f550\u2026",
+      "protocol 3c99c7be\u2026",
+      "controls 80d91346\u2026",
+      "verifier d13fc857\u2026",
+      "reporter 824deb29\u2026",
+      "source/build custody helpers",
+      "authority contract"
+    ]
+  },
+  "cut03_replay_installation_review": {
+    "build_custody": "PASS 597 pins/61 depfiles/binary 1e8a534a\u2026",
+    "evidence_class": "Ran: read-only build/source custody checks. Static: proposed state/receipt/runner inspection. No physical operation.",
+    "finding": {
+      "finding": "The proposed replay state declares defect_replay_consumed: 1, but the runner never reads or validates that field. The sole-replay consumption condition is documentary rather than fail-closed; only namespace and one preserved C1 operation are enforced.",
+      "location": "artifacts/separate-accuracy-runner.py:223-234; artifacts/separate-accuracy-runner-state-replay01-proposed.json:3",
+      "severity": "blocker"
+    },
+    "proposed_state_preserves": "C1 failure results/failed membership and 0.002019944 seconds; operations empty, one preserved C1, phase READY, namespaced recovery.",
+    "receipt_sha256": "0ae4a2ab9c69e026cdeed47f818671804f33ca9ecddb8154e441f29d1733f6c6",
+    "resolution": "runner 28b20757\u2026 validates exact int marker value 1; synthetic refusal/valid replay checks pass. The new runner still requires a new build/tool receipt before installation.",
+    "source_custody": "PASS source fb933d74\u2026/771 entries",
+    "status": "FIX_VERIFIED_PENDING_CUT04_CUSTODY"
+  },
+  "cut04_replay_installation_authorization": {
+    "authorization": "APPROVED: install only runner-state-replay01-proposed-cut04.json and source-review-approved-cut04.json, then launch exactly the sole C1 control replay against binary 1e8a534a\u2026. Preserve the original halted-state artifacts and do not reset or launch any other operation.",
+    "binary_sha256": "1e8a534a0f47ee014c1a5d6fce867acc06c1bc04c5d24192f60417d42b713b8c",
+    "build_custody": "PASS 597 pins/61 depfiles",
+    "evidence_class": "Ran: read-only cut04 build/source custody checks. Static: receipt/tool archive/proposed-state inspection. No physical operation.",
+    "limitations": "No numerical, scientific, or broader schedule acceptance; QA did not execute physical work.",
+    "receipt_sha256": "093f46c83fe2aae46ba0905b9021a89f30b548811364282cee0c0daa8cb61d70",
+    "recovery_state": "PASS: READY, exact receipt hash, 0.002019944 preserved charge, one preserved C1 failure, no active operations, defect_replay_consumed integer 1 and c1-oracle-replay01 namespace.",
+    "source_custody": "PASS source cut03 fb933d74\u2026/771 entries",
+    "tool_archive": "PASS tools-cut04 archive 4a8fa22a\u2026 pins runner 28b20757\u2026"
+  },
+  "evidence_class": "Static: document, protocol, receipt, recovery-procedure, and frozen-source inspection. No physical or numerical execution was run by this reviewer.",
+  "evidence_infrastructure_fix_verification": {
+    "evidence_class": "Ran: `.venv/bin/python separate-accuracy-independent-reconstruction.py --self-check`, synthetic arithmetic only; no Rust build, numerical body, or physical execution.",
+    "reviewed_cut": {
+      "independent_reconstruction_py": "8b3604505c96dbae0dbe4e116308863d39d26a2cc046ff1cda060d7b7d791ad5",
+      "self_check_receipt": "3485b50c17956923f592bfed3182ea7625734f71bb20bb549e29903a43674a5e"
+    },
+    "verdict": "PASS: the pre-execution candidate-array disposition blocker is fixed. Immutable source/input/depfile/binary freeze and independent review of the implemented cut remain required before any execution.",
+    "verified": "The repository Python environment reported PASS for the prior oracle tests plus missing candidate residuals, missing candidate normalizers, and empty support-list fail-closed regressions. The source now raises UNRESOLVED for each missing candidate comparison input."
+  },
+  "evidence_infrastructure_review": {
+    "evidence_class": "Ran: independent verifier self-check and one malformed-record synthetic check only; no Rust build, numerical body, or physical execution. Static: source/build custody and measurement-draft inspection.",
+    "finding": {
+      "evidence": "When candidate residuals and normalizers are absent, the verifier reports their comparisons as unavailable but its document status remains RESOLVED. A synthetic record with both arrays deleted produced `RESOLVED unavailable unavailable`. Measurement reporting does not bind this status to an accuracy-unresolved result. Require the runner/receipt consumer to mark accuracy UNRESOLVED unless both 21-element candidate arrays are present and comparison results are available; malformed or contradictory candidate arrays already fail closed.",
+      "location": "separate-accuracy-independent-reconstruction.py:454-489,533-616; separate-accuracy-measurement-draft.json:373",
+      "severity": "blocker for pre-execution accuracy disposition"
+    },
+    "reviewed_artifacts": {
+      "build_custody_py": "88f09f4d70cc5d0a3679eba13312324d94611a9cd18ea0a9e3483a33f4722492",
+      "independent_reconstruction_py": "0b89d2fcc0faaa36e656f0b4f23ec863b5817da799da4733e12c5d0c4a495500",
+      "measurement_draft_json": "16a39a73e6396d2063cb80e68795c8cca841e6fd7f197ac9449957d582203f95",
+      "source_custody_py": "bd3cb9c63d9f66a7c6bc7c407615e82de1c1abd47057e8d28424f6641b77a877"
+    },
+    "verdict": "PASS for pre-body evidence-tool specification. The stated candidate-array disposition must be enforced before physical/reference accuracy claims.",
+    "verified": [
+      "The verifier self-check passed its independent 21-row oracle, transfer ledger, poisoned-candidate invariance, missing-primitive fail-closed path, and strict-reference normalizer vector.",
+      "A malformed 21-coordinate synthetic record returned UNRESOLVED with a precise reason.",
+      "The source-custody tool records symlink strings without following targets and detects source-tree/symlink drift; build custody resolves and hashes observed depfile dependencies and detects both target-content and link-resolution drift after freeze.",
+      "The measurement draft preserves the finite sequence, timing accounting, and all three retained test-only feature metadata."
+    ]
+  },
+  "final_control_data_recheck": {
+    "evidence_class": "Static: corrected control-data and control-custody inspection only. No numerical body or physical execution was run by this reviewer.",
+    "reviewed_cut": {
+      "control_fixtures_sha256": "f10ee8b04cebc3d212a2f7e460e5af5ca4834afd37a67467b533cae7f8418808",
+      "prior_control_cut_archive_sha256": "75dbd0320d0c2ce939dfcc1dc9f52c28fc0240d979021b6a7ea65b56e8ed0c28",
+      "protocol_sha256": "b24b8fc8c83c073414f0c3d0256b7021a5a12d1c0f49f6b43c21e97ae1552c66"
+    },
+    "verdict": "QA FINAL PRE-BODY PASS for the corrected control specification and custody. This reuses the prior authority-scope QA pass; the independent correctness review remains the scientific release gate. Actual source/input/depfile/binary freeze remains a pre-execution hold.",
+    "verified": [
+      "C3 uses lower_H 0xc0b7769999999999 and explicitly asserts upper cooling selects Mixed, upper warming selects Liquid, and the two lower directional joins select Ice and Mixed respectively.",
+      "C6 supplies an explicit 21-by-11 binary64 matrix, with columns 9 and 10 equal for every row and an independent rank-10 proof.",
+      "The pullback control binds the authenticated case-A source, exact M/H bits, source finite-difference steps and derivative units, smooth branch preconditions, and an independent oracle/threshold.",
+      "The reference ledger defines independent per-60-second mass, enthalpy and drainage-transfer operands, thresholds, and unresolved disposition.",
+      "Protocol removes embedded controls and pins the sole control-definition artifact by path and SHA-256; the prior cut is retained as a named archive."
+    ]
+  },
+  "final_readiness_verification": {
+    "evidence_class": "Static: final authority, protocol, fixture, and base-input inspection. No numerical body or physical execution was run by this reviewer.",
+    "reviewed_cut": {
+      "base_input_sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+      "control_fixtures_sha256": "71921101dfdc50f09327244b27d4c6bb9178b2d53d2ac509a2a19218c06e3517",
+      "numerical_methods_sha256": "f506ae64a8f53f73634ee6b2415b662727b427a48bab82806541f95bf9ae95cf",
+      "protocol_sha256": "f07480f3a6a00d6b39d59d5de1cc08ccdb3de7a64f276285bf69ab40b7869a93"
+    },
+    "verdict": {
+      "package_pre_body": "HOLD pending the separate correctness reviewer re-verifying this corrected cut; the currently stored correctness review still says its prior cut is blocked and fix verification is pending.",
+      "pre_execution": "HOLD: before any build, validation, timing, or physical execution, close and freeze actual detached source/input/dependency depfile identities and resulting binary identity, then recheck no drift. The historical support-pin receipt is not that closure.",
+      "qa_pre_body": "PASS: this QA/evidence review finds the corrected authority, protocol, and six-control fixture specification sufficient for the detached numerical-body scope.",
+      "scientific_claim": "No scientific success or failure is claimed; no physical run occurred."
+    },
+    "verified_fixes": [
+      {
+        "evidence": "Protocol reference.support_s is 60, with 150-second per-case and 900-second aggregate execution caps. Authority text matches the 60-second FULL/P0 strict reference and same-unit stability policy.",
+        "prior_blocker": "reference support contradiction",
+        "status": "resolved"
+      },
+      {
+        "evidence": "The v1 fixture file contains six uniquely identified controls, authenticated base hash, ordered JSON-Pointer replacements, IEEE-754 values, independent-oracle constraints, and explicit cross-control seed, pullback, and identity-row checks. All five listed JSON-Pointer targets resolve in the authenticated base input.",
+        "prior_blocker": "incomplete executable controls",
+        "status": "resolved for QA readiness"
+      },
+      {
+        "evidence": "Authority now specifies all-profile identity-row and temperature-row treatment, separates P1-P3 finite admissions from retained controller predicates, and the protocol states declared same-unit stability thresholds and categorical phase/capacity comparison.",
+        "prior_blocker": "ambiguous profile/reference evidence",
+        "status": "resolved for QA readiness"
+      }
+    ]
+  },
+  "findings": [
+    {
+      "finding": "The protocol has no frozen six-by-four balanced timing order, fresh-complete-day rule, per-cell cap enforcement, CPU/wall clock interval, no-retry/defect-replay handling, host/toolchain identity, or timed-versus-diagnostic equality check. The cell inventory lists cells only, so the required fair cost attribution and measurement process cannot be reproduced.",
+      "location": "artifacts/separate-accuracy-protocol-draft.json:1-45; separate-accuracy-owner-authorization.md:205-226",
+      "severity": "blocker"
+    },
+    {
+      "finding": "The six controls are names and broad predicates, not executable fixtures: they lack frozen complete inputs, independently derived expected operands/outcomes, and assertions. The specification does not bind direct controls for the P-map substitutions, chain-rule pullback, complete 21-row reconstructed output, and relevant failure paths.",
+      "location": "artifacts/separate-accuracy-protocol-draft.json:36-43; separate-accuracy-owner-authorization.md:184-188",
+      "severity": "blocker"
+    },
+    {
+      "finding": "P1-P3 do not define an implementation-level mapping for every 21-row residual tolerance and each nonlinear, trust-region/BVLS/KKT, hydraulic, and final-admission predicate. In particular, the frozen implementation has distinct identity-row tolerance handling and a separate normalized-final-residual gate. The proposed category table cannot establish matched full/reduced profile behavior until these mappings are frozen.",
+      "location": "contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1219-1240; recovered-treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:5034-5060,5137-5142",
+      "severity": "blocker"
+    },
+    {
+      "finding": "Reference policy names FULL/P0 and a generic tenfold-tightening stability run, but provides no independent residual/mass/energy/transfer reconstruction method, operand provenance, comparison metrics, or criterion for a credible reference. Accuracy must remain unresolved without those definitions.",
+      "location": "artifacts/separate-accuracy-protocol-draft.json:44; separate-accuracy-owner-authorization.md:190-198",
+      "severity": "blocker"
+    },
+    {
+      "finding": "The recovered tree receipt correctly marks external symlink targets as requiring separate pins. Those mutable targets must be pinned before build or measurement; therefore custody is not yet closed. This is a readiness/custody hold, not a scientific failure.",
+      "location": "artifacts/separate-accuracy-source-check.json:1; artifacts/projection-cache-recover.py:1-5",
+      "severity": "blocker"
+    },
+    {
+      "finding": "The IPC protocols cannot complete. The runner sends RUN_FRESH_DAYS followed by a count (1 or 4), then waits for END carrying day_count/support_count and DUMP carrying days. Rust accepts only the literal RUN_FRESH_DAYS, performs one day, then waits for literal END before emitting END {record_count}, and later emits records. The runner therefore first gets a command mismatch; even with that repaired it deadlocks because each side waits for the other to send/emit END. This also cannot implement one diagnostic plus six four-fresh-day batches.",
+      "location": "artifacts/separate-accuracy-runner.py:65-75; review-cut01/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7518-7537",
+      "required_disposition": "Make one frozen, tested IPC schema for command payloads and marker fields, including a nonphysical mock transcript that proves diagnostic and all six timing batches complete without deadlock.",
+      "severity": "blocker"
+    },
+    {
+      "finding": "Cap and charge accounting does not implement the frozen policy. Every run uses candidate_cell_elapsed_seconds (60), never the reference/stability/control caps; global physical_seconds adds only the sample wall interval and omits launch, fixture parsing, DUMP/evidence and artifact time; failure charging subtracts a perf_counter_ns integer from time.monotonic seconds, which clamps to zero after clock start. No watchdog covers the full launch-through-evidence interval, and result receipts omit required start/end timestamps and clock resolution.",
+      "location": "artifacts/separate-accuracy-runner.py:49-80; artifacts/separate-accuracy-measurement-draft.json:8-16",
+      "required_disposition": "Use a single monotonic unit and per-child launch-through-evidence interval for all charges, select the correct cap class, retain sample and aggregate timestamps/resolution, and test timeout/failure charge retention with a synthetic child.",
+      "severity": "blocker"
+    },
+    {
+      "finding": "The runner validates only field shape/cadence and same-cell batch succession. It never binds launches to frozen cell_sequence, the six-by-four campaign inventory/order, B eligibility after reduced-60 completion, reference/stability/reuse policy, or diagnostic-versus-timing outcome digest equality. READY does not validate the reported base SHA-256 or child PID against the measured PID. Thus an incomplete, reordered, unauthenticated, or numerically divergent campaign can be recorded as completed.",
+      "location": "artifacts/separate-accuracy-runner.py:13-18,39-48,61-78; artifacts/separate-accuracy-measurement-draft.json:16-17 and reference_order/clock_protocol/result_reporting sections",
+      "required_disposition": "Load and enforce the exact sequence and eligibility/reference rules; require all mandatory READY identities; compare retained outcome digests; and emit typed incomplete/reference/integrity dispositions and campaign coverage.",
+      "severity": "blocker"
+    },
+    {
+      "finding": "Pre-execution custody is incomplete. The required separate-accuracy-source-review-approved.json receipt is absent, so the runner correctly blocks. Its READY snapshot only hashes input-check and measurement; run-time authentication does not recompare that snapshot and omits protocol, controls, verifier and runner/tool archive digests. The build cut pins a development-treatment dependency tree while the reviewed source is a separate review-cut; the matching m1_coupled_tests.rs hash is useful evidence but does not prove whole-tree/source-cut equivalence or required receipt linkage.",
+      "location": "artifacts/separate-accuracy-runner.py:5,11-12,22-28,83-85; artifacts/separate-accuracy-source-cut01.json:scope; artifacts/separate-accuracy-build-cut01.json:scope",
+      "required_disposition": "Produce and validate the required source/binary/dependency receipt that binds the exact source cut, tool/artifact hashes, resolved dependency pins and binary; reject drift before every launch and preserve before/after custody evidence.",
+      "severity": "blocker"
+    },
+    {
+      "finding": "The only supplied source-aware clippy comparison reports 315 candidate diagnostics against 299 reference diagnostics: 18 additions and 2 removals. Added errors include new casts, needless pass-by-value, too-many-lines in both new helper/control functions, and formatting/style diagnostics. No successful cargo fmt, clippy -D warnings, test, or deny evidence exists for this immutable cut. The documented 18/2 delta is not waived.",
+      "location": "artifacts/separate-accuracy-candidate-clippy-compare.json; review-cut01/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7307-7537,7644-7765",
+      "required_disposition": "Resolve or separately adjudicate every newly introduced diagnostic and provide exact-cut gate receipts; do not infer a pass from binary availability.",
+      "severity": "blocker"
+    },
+    {
+      "finding": "The current runner CLI exposes only diagnostic and timing. It has no reference/stability/reuse operation or distinct reference/stability/control cap class, so the frozen 150/900-second reference policy and reuse disposition cannot be executed or independently verified through this interface.",
+      "location": "artifacts/separate-accuracy-runner.py:60-76,112-123",
+      "severity": "blocker"
+    },
+    {
+      "finding": "authenticate() checks input-check, measurement, and binary hashes only. It does not require source-tree, runner-script, protocol, control-fixture, or independent-reconstruction pins, so custody for those required inputs is not enforced at launch.",
+      "location": "artifacts/separate-accuracy-runner.py:11-12,22-31",
+      "severity": "blocker"
+    },
+    {
+      "finding": "reference_check assumes compare() returned COMPUTED_DISCRETE_DIFFERENCE. If both reconstructions resolve but have no shared endpoints, compare() returns UNRESOLVED and line 124 accesses a missing maximum_absolute_coordinate_difference field, crashing the mechanical report instead of returning an unresolved reference disposition.",
+      "location": "artifacts/separate-accuracy-results.py:113-146",
+      "severity": "blocker"
+    },
+    {
+      "finding": "Day outcome serializes every terminal condition as Option<String>. In particular missing_primitive_record is indistinguishable from a numerical/domain refusal at the IPC schema. The coordinator maps every non-null first_failure to numerical_or_domain_failure, so a missing primitive record is not an integrity halt as required.",
+      "location": "development-treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3650-3700; artifacts/separate-accuracy-runner.py:294-305",
+      "severity": "blocker"
+    },
+    {
+      "finding": "The proposed replay state declares defect_replay_consumed: 1, but the runner never reads or validates that field. The sole-replay consumption condition is documentary rather than fail-closed; only namespace and one preserved C1 operation are enforced.",
+      "location": "artifacts/separate-accuracy-runner.py:223-234; artifacts/separate-accuracy-runner-state-replay01-proposed.json:3",
+      "severity": "blocker"
+    }
+  ],
+  "finite_correctness_recheck": {
+    "evidence_class": "Static: affected corrected authority/protocol/control-fixture inspection only. No numerical body or physical execution was run by this reviewer.",
+    "reviewed_cut": {
+      "control_fixtures_sha256": "e3a972954c2d87e393c2b8e71566155129ab4013441df06c661937a2916fb65f",
+      "numerical_methods_sha256": "b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c",
+      "protocol_sha256": "dfdf8b38b48cdae6b49bd72f119c29093da8fe1c129acada21e9755c70e3e983"
+    },
+    "scope": "Humidity conductance units and guards; C6 rank-deficient fixture; four directional phase joins; smooth-pullback control and threshold; independent reference-ledger operands and criteria.",
+    "verdict": "QA PASS for the affected finite-correctness fixes. The prior QA pre-body pass remains valid in this scope. The separate correctness reviewer owns scientific release; actual detached source/input/depfile/binary freeze remains a pre-execution hold, not a prerequisite to author detached body code.",
+    "verified": [
+      "Humidity operands now state dry/wet/air conductances in m/s and retain E_snow/rho in the explicit humidity balance, with finite and sign guards.",
+      "C6 now explicitly duplicates one complete column across all 21 rows, creating the claimed rank deficiency rather than only a partial-row resemblance.",
+      "C3 now binds upper cooling/warming and lower ice/mixed directional joins, with four selected-side assembly assertions.",
+      "The pullback control is a pinned smooth-state independent explicit-P central-difference comparison with declared absolute/relative q thresholds and exact anchor entries.",
+      "Reference evaluation now requires independent 60-second mass, enthalpy, and drainage-transfer operand reconstruction with same-unit thresholds and unresolved disposition for missing operands."
+    ]
+  },
+  "fix4_01_pullback_recheck": {
+    "evidence_class": "Static: affected pullback-control and protocol-custody inspection only. No numerical body or physical execution was run by this reviewer.",
+    "reviewed_cut": {
+      "authority_sha256": "b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c",
+      "control_fixtures_sha256": "80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb",
+      "protocol_sha256": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e"
+    },
+    "verdict": "QA FINAL PRE-BODY PASS retained. This correction resolves the affected control-policy defect without changing numerical authority. The separate correctness review remains the scientific release gate; actual source/input/depfile/binary freeze remains a pre-execution hold.",
+    "verified": "The drainage pullback point is exactly its admitted lower bound. The fixture now requires the unique inward positive one-sided difference with h=1e-10 kg/m2/s, prohibits a negative-drainage probe, and independently corroborates b=0 because the humidity formula has no drainage operand. Interior temperature/mass/enthalpy probes remain centered. Protocol custody pins this sole fixture artifact by the reviewed hash."
+  },
+  "fix_verification": {
+    "evidence_class": "Static: corrected draft inspection only. No numerical body or physical execution was run by this reviewer.",
+    "remaining_blockers": [
+      {
+        "finding": "The strict reference declares support_s=900 while the required comparator and acceptance are FULL/P0 60-second results. The 900-second value is the reference elapsed cap, not a support duration. As written, this creates an incompatible reference trajectory and invalidates the stated 60-second comparison. Set the reference support explicitly to 60 seconds and retain 900 seconds only as the execution cap.",
+        "location": "separate-accuracy-protocol-draft.json:178-210; numerical-methods.md:1264-1271",
+        "severity": "blocker"
+      },
+      {
+        "finding": "The controls improved but remain prose fixture/oracle strings, not frozen executable fixtures with concrete serialized inputs and independently computed expected operands/assertions. They also still omit a direct exact-P-substitution and finite-difference chain-rule control, and an explicit complete 21-row/output-reconstruction control. Undefined values such as capacity C prevent an independent reviewer from reproducing the setup without choosing implementation details.",
+        "location": "separate-accuracy-protocol-draft.json:146-176; separate-accuracy-owner-authorization.md:184-188",
+        "severity": "blocker"
+      },
+      {
+        "finding": "Final actual build depfile/input closure, resulting detached binary identity, and immutable before/after freeze remain pending. The historical support-pin receipt deliberately does not establish those prerequisites; deny build or physical measurement until it does.",
+        "location": "separate-accuracy-support-check.json:1; separate-accuracy-measurement-draft.json:host_build.freeze",
+        "severity": "blocker"
+      }
+    ],
+    "resolved_prior_findings": [
+      {
+        "evidence": "separate-accuracy-measurement-draft.json fixes all 42-cell order, six four-day fresh batches, monotonic CPU/wall clock protocol, per-cell/global caps, no-retry policy, release/toolchain conditions, and timed-versus-diagnostic digest equality. A matching implemented runner and final freeze remain required before execution.",
+        "prior_blocker": "timing and cost-attribution protocol",
+        "status": "resolved at draft-specification level"
+      },
+      {
+        "evidence": "numerical-methods.md:1244-1271 now bounds P1-P3 to named finite admissions, preserves controller/rank/domain/identity/hydraulic-continuity predicates, and states shared normalizer/final-check use plus the strict-reference comparison.",
+        "prior_blocker": "profile and final-admission mapping",
+        "status": "resolved at authority-draft level"
+      },
+      {
+        "evidence": "support-check records 646 historical pins, 643 unchanged entries, and the three expected authority-draft changes. Its own status correctly retains final build depfile/input closure and freeze as pending, so it is not build custody evidence.",
+        "prior_blocker": "historical external-support identity",
+        "status": "partially resolved"
+      }
+    ],
+    "reviewed_cut": {
+      "measurement_draft_sha256": "9495d4647d30c2b0252c8561d0a24f072f7393e0e3ecfc79357aa78dd4b0da35",
+      "numerical_methods_sha256": "90ffa733275aef17f0b24c098eeb043d509e436e441e42be0e9be7202699179b",
+      "protocol_sha256": "8312615b7273fd610425a9ad3a71e7318eb8f6866ae4b8d514d08bf13f5923fa",
+      "support_check_sha256": "8c697b12a7c1553ff64d72868a2637994f11c5d7872726c7f50c26b34dd81f04"
+    },
+    "verification_verdict": "BLOCK: the timing and profile drafts address material prior gaps, but the reference-support contradiction, incomplete executable control inventory, and explicitly pending final dependency/binary custody must be resolved before numerical body work or physical results. This is a draft-readiness verdict; no scientific failure is claimed."
+  },
+  "immutable_source_cut02_static_review": {
+    "conditional_authorization": "QA conditionally authorizes the six fixed controls and frozen coordinator schedule only after the parent supplies and QA verifies a real build/dependency/binary custody receipt binding this exact source cut. This does not accept numerical results.",
+    "evidence_class": "Static: immutable source/artifact inspection. Ran: source-custody check only; no Rust/binary/physical execution.",
+    "lint_compare": {
+      "additions": 0,
+      "artifact": "separate-accuracy-cut05-lint-compare.json",
+      "candidate_count": 289,
+      "reference_count": 299,
+      "removals": 10
+    },
+    "remaining": [
+      "Real build/dependency/binary custody receipt and post-build source check.",
+      "Actual immutable Rust IPC execution and required Rust gate evidence.",
+      "Independent correctness/numerical acceptance."
+    ],
+    "source_archive_sha256": "96d9da924f1cc9d10d78d31278a6d050b9a98b953b24848f2e54afa6e0b6abfb",
+    "source_custody_check": "PASS: development-treatment matched archive/receipt exactly.",
+    "source_entries": 771,
+    "source_tree_sha256": "24d060be786312a749f718f6cd7ccabc0094a9ec593a700e398fefdcbb71ae0d",
+    "verified": [
+      "missing primitive record panics with support_id, so child failure reaches coordinator integrity disposition rather than a domain result.",
+      "controller refusal preserves support_id and refusal debug kind in first_failure.",
+      "IPC executes a sequential day loop and breaks immediately after the first failed day; DUMP serializes only executed outcomes with completed_supports/first_failure/records.",
+      "READY includes child PID/base/request/support count and END includes day_count/support_count/complete_days."
+    ]
+  },
+  "implementation_evidence_review_cut01": {
+    "evidence_class": "Static: immutable-cut source/artifact inspection; Ran: previously recorded verifier self-check only. No Rust build, binary execution, or physical measurement was run for this review.",
+    "findings": [
+      {
+        "finding": "The IPC protocols cannot complete. The runner sends RUN_FRESH_DAYS followed by a count (1 or 4), then waits for END carrying day_count/support_count and DUMP carrying days. Rust accepts only the literal RUN_FRESH_DAYS, performs one day, then waits for literal END before emitting END {record_count}, and later emits records. The runner therefore first gets a command mismatch; even with that repaired it deadlocks because each side waits for the other to send/emit END. This also cannot implement one diagnostic plus six four-fresh-day batches.",
+        "location": "artifacts/separate-accuracy-runner.py:65-75; review-cut01/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7518-7537",
+        "required_disposition": "Make one frozen, tested IPC schema for command payloads and marker fields, including a nonphysical mock transcript that proves diagnostic and all six timing batches complete without deadlock.",
+        "severity": "blocker"
+      },
+      {
+        "finding": "Cap and charge accounting does not implement the frozen policy. Every run uses candidate_cell_elapsed_seconds (60), never the reference/stability/control caps; global physical_seconds adds only the sample wall interval and omits launch, fixture parsing, DUMP/evidence and artifact time; failure charging subtracts a perf_counter_ns integer from time.monotonic seconds, which clamps to zero after clock start. No watchdog covers the full launch-through-evidence interval, and result receipts omit required start/end timestamps and clock resolution.",
+        "location": "artifacts/separate-accuracy-runner.py:49-80; artifacts/separate-accuracy-measurement-draft.json:8-16",
+        "required_disposition": "Use a single monotonic unit and per-child launch-through-evidence interval for all charges, select the correct cap class, retain sample and aggregate timestamps/resolution, and test timeout/failure charge retention with a synthetic child.",
+        "severity": "blocker"
+      },
+      {
+        "finding": "The runner validates only field shape/cadence and same-cell batch succession. It never binds launches to frozen cell_sequence, the six-by-four campaign inventory/order, B eligibility after reduced-60 completion, reference/stability/reuse policy, or diagnostic-versus-timing outcome digest equality. READY does not validate the reported base SHA-256 or child PID against the measured PID. Thus an incomplete, reordered, unauthenticated, or numerically divergent campaign can be recorded as completed.",
+        "location": "artifacts/separate-accuracy-runner.py:13-18,39-48,61-78; artifacts/separate-accuracy-measurement-draft.json:16-17 and reference_order/clock_protocol/result_reporting sections",
+        "required_disposition": "Load and enforce the exact sequence and eligibility/reference rules; require all mandatory READY identities; compare retained outcome digests; and emit typed incomplete/reference/integrity dispositions and campaign coverage.",
+        "severity": "blocker"
+      },
+      {
+        "finding": "Pre-execution custody is incomplete. The required separate-accuracy-source-review-approved.json receipt is absent, so the runner correctly blocks. Its READY snapshot only hashes input-check and measurement; run-time authentication does not recompare that snapshot and omits protocol, controls, verifier and runner/tool archive digests. The build cut pins a development-treatment dependency tree while the reviewed source is a separate review-cut; the matching m1_coupled_tests.rs hash is useful evidence but does not prove whole-tree/source-cut equivalence or required receipt linkage.",
+        "location": "artifacts/separate-accuracy-runner.py:5,11-12,22-28,83-85; artifacts/separate-accuracy-source-cut01.json:scope; artifacts/separate-accuracy-build-cut01.json:scope",
+        "required_disposition": "Produce and validate the required source/binary/dependency receipt that binds the exact source cut, tool/artifact hashes, resolved dependency pins and binary; reject drift before every launch and preserve before/after custody evidence.",
+        "severity": "blocker"
+      },
+      {
+        "finding": "The only supplied source-aware clippy comparison reports 315 candidate diagnostics against 299 reference diagnostics: 18 additions and 2 removals. Added errors include new casts, needless pass-by-value, too-many-lines in both new helper/control functions, and formatting/style diagnostics. No successful cargo fmt, clippy -D warnings, or test evidence exists for this immutable cut. cargo deny is not mandatory for this scope because manifests, lockfiles, dependency/license/source policy, toolchain dependency, and workspace resolution did not change. The documented 18/2 delta is not waived.",
+        "location": "artifacts/separate-accuracy-candidate-clippy-compare.json; review-cut01/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7307-7537,7644-7765",
+        "required_disposition": "Resolve or separately adjudicate every newly introduced diagnostic and provide exact-cut formatting/lint/test receipts; Cargo deny is not a required gate for this scope; do not infer a pass from binary availability.",
+        "severity": "blocker"
+      }
+    ],
+    "missing_evidence": [
+      "A corrected immutable runner/Rust IPC cut and synthetic transcript tests.",
+      "Source-review-approved receipt binding source cut, tools, inputs, protocol, controls, reconstruction and binary/dependency cut.",
+      "Exact-cut cargo fmt, clippy -D warnings, tests and cargo deny receipts after the 18 added diagnostics are resolved/adjudicated.",
+      "Independent correctness review of the corrected immutable Rust cut."
+    ],
+    "reviewed_cut": {
+      "baseline_recovered_treatment": "91fae0 (as supplied by owner)",
+      "build_binary_sha256": "7d9f640427c4a7089da32515e46c838d50cfeacf03e6200da624f1164721b3db",
+      "controls_sha256": "80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb",
+      "measurement_sha256": "16a39a73e6396d2063cb80e68795c8cca841e6fd7f197ac9449957d582203f95",
+      "protocol_sha256": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e",
+      "reconstruction_sha256": "8b3604505c96dbae0dbe4e116308863d39d26a2cc046ff1cda060d7b7d791ad5e",
+      "runner_sha256": "7f5b4eb3ef256aa254af6a7630220b874c3a47f82765c3a3de5dc0adaac09c66",
+      "source_archive_sha256": "e1c3b6b477ef6f7aff1f3d4f7539b3bc730ea303b0c3ef9006fd261a40b08808",
+      "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/review-cut01",
+      "source_tree_sha256": "bc8fc785c5c412bc411849a5ff6f2eff4c8c26b009608780df39a366107cb749",
+      "tools_archive_sha256": "141b1e7041a931745dff5122ff638033d0c4af7c71f0d82f9d934901f6b71656",
+      "verified_file_identity": "m1_coupled_tests.rs is 3cea6c0d9852f42259f2047b15eaf83cd24cddcac74d016e2f1c928423ff003c in review-cut01 and in the build-cut development-treatment pin."
+    },
+    "verdict": {
+      "physical_charge_seconds": 0,
+      "reason": "The frozen runner and Rust IPC cannot exchange a completed fresh-day result, and the campaign, cap, custody, and lint gates are not enforceable from this cut.",
+      "scope": "Implementation/evidence QA only; no scientific correctness conclusion.",
+      "status": "PRE_EXECUTION_BLOCKED"
+    },
+    "verified_static_scope": [
+      "The archived tools hashes match the live named artifacts.",
+      "Rust loads the authenticated control fixture, asserts the base hash, asserts the exact ordered C1-C6 IDs, and exercises the documented C1-C6 crosschecks at review-cut01 m1_coupled_tests.rs:7543-7764.",
+      "The measurement artifact defines 42 cells and the intended one diagnostic plus six four-fresh-day schedule, child CPU/wall sampling boundary, and frozen limits; this review finds the runner does not enforce those declarations.",
+      "The prior independent-reconstruction self-check remains a synthetic PASS; it does not validate the Rust IPC, runner, custody receipt, binary, or physical campaign."
+    ]
+  },
+  "non_blocking_debt_or_follow_up": [
+    "The amendment correctly retains detached scope, common-controller intent, full 21-row residual retention, and production HOLD.",
+    "The prior offline input receipt records manifest/bit authentication and cadence arithmetic for all 1,440 forcing records per case; it is not physical execution.",
+    "git diff --check was clean for the reviewed contract diff.",
+    {
+      "finding": "After blocking protocol/gate repairs, split the long fixture construction and six-control test into named helpers; this will improve auditability and remove the introduced too-many-lines diagnostics.",
+      "location": "review-cut01/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7307-7765"
+    },
+    {
+      "finding": "The mock driver is intentionally limited to synthetic IPC and accounting behavior. Re-run it whenever runner framing, custody fields, scheduling, caps, or result schemas change, then retain a receipt for that exact runner hash.",
+      "location": "artifacts/separate-accuracy-runner-mock-check.py"
+    }
+  ],
+  "results_report_no_endpoint_fix_verification": {
+    "evidence": "reference_check returned UNRESOLVED with its difference disposition and did not index a missing coordinate-difference field.",
+    "evidence_class": "Ran: synthetic in-memory no-common-endpoint reference check only; no physical operation.",
+    "report_sha256": "824deb291aa43b3ca1aaefdf586c424b8724b4ebc756de1db1766f152e8dbfc7",
+    "status": "PASS"
+  },
+  "results_report_review": {
+    "evidence_class": "Static: source inspection. Ran: no-state synthetic report only; no physical operation.",
+    "finding": {
+      "finding": "reference_check assumes compare() returned COMPUTED_DISCRETE_DIFFERENCE. If both reconstructions resolve but have no shared endpoints, compare() returns UNRESOLVED and line 124 accesses a missing maximum_absolute_coordinate_difference field, crashing the mechanical report instead of returning an unresolved reference disposition.",
+      "location": "artifacts/separate-accuracy-results.py:113-146",
+      "severity": "blocker"
+    },
+    "report_sha256": "fda8eab5f34b12908217cc135a38fe752bc984193a37b1c3097075538825a255",
+    "synthetic_result": {
+      "A_NOT_RUN": 24,
+      "B_NOT_RUN": 18,
+      "cells": 42,
+      "physical_seconds": 0,
+      "unresolved_references": 3
+    },
+    "verdict": "CONDITIONAL_PASS except for the malformed/no-shared-endpoint reference disposition defect. No numerical or physical claim was reviewed.",
+    "verified_scope": [
+      "Signed and gross per-occupancy dry/wet/ET and transfer integrals multiply rate by interval.",
+      "M1 phase convention is empty at zero mass, ice below -333700*M, mixed below zero enthalpy, liquid otherwise.",
+      "Endpoint comparison uses shared support endpoints only and no near-zero relative division.",
+      "Only complete timing operations enter column-day samples; six batches are required for a complete coverage claim.",
+      "Reference credibility checks frozen 60-second horizon, state/phase/category agreement, original rows, and per-support/cumulative ledger agreement."
+    ]
+  },
+  "review_scope": "preimplementation review of COLD-CANOPY-M1-SEPARATE-ACCURACY-01; no numerical body or physical execution",
+  "reviewed_cut": {
+    "additional_reviewed_artifacts": {
+      "separate-accuracy-cell-inventory.json": "44738492aaaf653cb60e6482c5bd2e7a8221f83d408316748f2a0c3a6523f819",
+      "separate-accuracy-input-check.json": "7713f550f4cab32062da1742e2abcd35f2c99b80034169e341bd3b02d28ba806",
+      "separate-accuracy-input-check.py": "a1bb9f3e021c7434a381695c6ef9d062fe78b9343280b3c7b240955455d675c6",
+      "separate-accuracy-source-check.json": "46eeccaaf15aae5f72421c855e338eca2db79041ea8161207be00b70fd17d90f"
+    },
+    "sha256": {
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": "6350e84fc787e00c1761a996b2a3f1360bf0ee4f7caacd8b0575c1ca0a136625",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": "49d405d0e67cf9a48d5c0e32d5b2f9af0c53ca6d38cd0b8f83edc5579b87a41e",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "0a70ad79651ee14893cd84264762a227e1b3f802d6b13b9b9e075275add52315",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json": "a295749ca85e8329a00e720c8392aa7a8f820e49a6f68e44b41dd6da33afbd5f"
+    },
+    "source_identity": {
+      "recovered_path": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/recovered-treatment",
+      "required_frozen_tree_sha256": "91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7",
+      "status": "Static receipt and recovery-procedure inspection only; external symlink target contents remain intentionally unpinned."
+    },
+    "status": "review-pending; no numerical edits permitted"
+  },
+  "reviewer_role": "secondary QA/evidence reviewer",
+  "runner_mock_check_verification": {
+    "checks": {
+      "c1_oracle_replay_namespace_preserves_charge": {
+        "detail": {
+          "cap_seconds": 29.997980056,
+          "output": "/tmp/separate-accuracy-runner-mock-6qnqj1uy/separate-accuracy-operation-fe622ef69e1608e12123-c1-oracle-replay01.json",
+          "physical_seconds": 0.019142862
+        },
+        "status": "PASS"
+      },
+      "custody_and_pins_prepost": {
+        "detail": "Synthetic source archive, source receipt, depfile build receipt, binary and all runner artifact pins were accepted before and after each mock operation.",
+        "status": "PASS"
+      },
+      "interrupted_state_refuses_launch": {
+        "detail": {
+          "stderr": "Traceback (most recent call last):\n  File \"/tmp/separate-accuracy-runner-mock-h49_c3r2/separate-accuracy-runner.py\", line 394, in <module>\n    main()\n  File \"/tmp/separate-accuracy-runner-mock-h49_c3r2/separate-accuracy-runner.py\", line 373, in main\n    cur = state()\n          ^^^^^^^\n  File \"/tmp/separate-accuracy-runner-mock-h49_c3r2/separate-accuracy-runner.py\", line 52, in state\n    raise RuntimeError('Interrupted physical operation: preserve state; no automatic retry or further launch')\nRuntimeError: Interrupted physical operation: preserve state; no automatic retry or further launch"
+        },
+        "status": "PASS"
+      },
+      "success_1_diagnostic_plus_6x4": {
+        "detail": {
+          "controls_and_reference_operations": 12,
+          "physical_seconds": 0.39020035399999997,
+          "result_count": 19
+        },
+        "status": "PASS"
+      }
+    },
+    "disposition": "PASS for the coordinator integration surface: exact operation order through six controls, three reference/stability pairs, A reference reuse, a diagnostic and six four-day batches, with pre/post synthetic source/archive/build/binary/artifact custody.",
+    "driver": "artifacts/separate-accuracy-runner-mock-check.py",
+    "driver_sha256": "bf102a14710318d180af6de84f64a3e668c48a9d35fe7b2a53d7a7890018a065",
+    "evidence_class": "Ran: synthetic fake child only; no Rust/binary/physical execution.",
+    "measurement_sha256": "16a39a73e6396d2063cb80e68795c8cca841e6fd7f197ac9449957d582203f95",
+    "receipt": "artifacts/separate-accuracy-runner-mock-check-receipt.json",
+    "result": "PASS",
+    "runner_sha256": "1c2964356d6b7ad58fd9767e7ac35aac124e821cf4fd606361ccfa24b6834a80",
+    "scope": "Generated fake child and all custody material exist only in mktemp. It tests no Rust/M1 physics, real binary, or physical operation.",
+    "unimplemented_cli_coverage": []
+  },
+  "rust_ipc_failure_boundary_static_review": {
+    "evidence_class": "Static: current development-treatment source inspection only; no Rust execution.",
+    "finding": {
+      "finding": "Day outcome serializes every terminal condition as Option<String>. In particular missing_primitive_record is indistinguishable from a numerical/domain refusal at the IPC schema. The coordinator maps every non-null first_failure to numerical_or_domain_failure, so a missing primitive record is not an integrity halt as required.",
+      "location": "development-treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3650-3700; artifacts/separate-accuracy-runner.py:294-305",
+      "severity": "blocker"
+    },
+    "resolution": "missing primitive now panics with support_id; first failure breaks the day batch; domain/controller refusal retains support ID and typed debug detail.",
+    "status": "RESOLVED_ON_CUT02"
+  },
+  "staged_terminal_preservation_commit_review": {
+    "authorization": "APPROVED_FOR_SCOPED_LOCAL_EVIDENCE_COMMIT_ONLY",
+    "closing_ledger": "PASS: anchor 2026-09-30T20:48:00Z through 2026-09-30T23:32:44.292181Z; 441303.393795 + 9884.292181 = 451187.685976 seconds; unchanged ceiling 455703.393795 seconds; remaining 4515.707819 seconds. It explicitly disallows renewal and makes commit/handoff chargeable.",
+    "conditions": "Commit and any handoff must remain explicitly INCOMPLETE / terminal partial control failure; they must not claim numerical, scientific, runtime, deployment, or campaign acceptance. Do not include unrelated dirty paths or a Rust adoption/push in this authorization.",
+    "custody": "PASS within preserved evidence scope: terminal state/raw outputs, cut03 source custody, cut04 build/tool custody, and reviewer records are staged. This is evidence preservation, not a new source or binary release.",
+    "evidence_class": "Static: staged-diff, package, results/state, and closing-ledger inspection; prior physical outcome evidence is retained read-only. No physical execution by QA.",
+    "finding": {
+      "detail": "Full staged git diff --check reports 17 trailing spaces in literal compiler-suggestion lines. They are preserved raw diagnostic bytes; the staged whitespace check excluding raw .stdout evidence passes.",
+      "location": "artifacts/separate-accuracy-baseline-clippy-nodeps.stdout",
+      "severity": "non-blocking evidence-format limitation"
+    },
+    "package_disposition": "PASS: leading package section states INCOMPLETE; corrected C1 replay terminally failed; A is 0/24 NOT RUN, B is 0/18 NOT RUN; all references and candidate days are unrun; no numerical, deployment, or scientific acceptance is claimed.",
+    "replay_and_results": "PASS: active state is HALTED with one replay operation and one preserved original operation; 0.002019944 + 0.051809621 = 0.053829565 physical control-process seconds, zero reference seconds, and zero completed days. Results retain 42 cells, all NOT_RUN.",
+    "scope": "102 staged paths: exactly SC-LANDSURFACEENERGY-001.md plus its binding-index.md and numerical-methods.md, package.md, and separate-accuracy-* package artifacts. No Rust source is staged."
+  },
+  "superseded_findings": [
+    {
+      "location": "runner.py:60-76,112-123",
+      "reason": "CLI now includes control/reference/stability; class cap and reference aggregate cap are implemented and exercised by synthetic integration.",
+      "status": "resolved on runner f40689..."
+    },
+    {
+      "location": "runner.py:11-12,22-31",
+      "reason": "authenticate now requires artifact pins and source archive/source receipt/build receipt, and invokes both custody checks pre/post operation.",
+      "status": "resolved on runner f40689..."
+    }
+  ],
+  "terminal_c1_replay_outcome_review": {
+    "charge_check": "PASS: 0.002019944 original plus 0.051809621 replay equals 0.053829565.",
+    "completed": 0,
+    "custody": "PASS: cut04 build 597 pins/61 deps/binary 1e8a534a\u2026 and source cut03 fb933d74\u2026/771 still verify.",
+    "disposition": "No further physical action is authorized. This is a partial failed-control record, not numerical acceptance or schedule completion.",
+    "evidence_class": "Ran: read-only state/raw-output/build-custody/source-custody inspection after owner-authorized sole replay. QA did not launch any operation.",
+    "failed": 2,
+    "operations": 1,
+    "physical_seconds": 0.053829565,
+    "preserved_defect_operations": 1,
+    "reference_seconds": 0.0,
+    "replay_outcome": "integrity_failure with retained raw stdout: control mapped seed VEG-E-142 Domain at m1_coupled_tests.rs:7687.",
+    "results": 2,
+    "sole_operation": "C1_empty_admissible only; no C2-C6, references, stability, diagnostics, or timing cells recorded.",
+    "state": "HALTED",
+    "status": "PARTIAL_TERMINAL_CLOSURE"
+  },
+  "verdict": {
+    "physical_charge_seconds": 0.053829565,
+    "pre_execution": "Closed: user limit exhausted after the owner-authorized sole C1 replay; no further physical execution authorized.",
+    "scientific_claim": "No numerical/scientific/deployment acceptance. All A/B cells, references, and remaining controls are unrun.",
+    "status": "TERMINAL_PARTIAL_FAILURE_RECORDED"
+  },
+  "verifier_v2_routing_correction": {
+    "evidence_class": "Ran: .venv/bin/python separate-accuracy-independent-reconstruction.py --self-check; synthetic only; no physical execution.",
+    "status": "PASS",
+    "supplied_self_receipt_sha256_prefix": "ab69d1",
+    "verified": "Independent reconstruction derives top-rain capture, captured upper drainage, downstream debit/credits, and rejects old total-lower-incident and raw-upper-drainage transfer labels. Missing routing operands fail closed.",
+    "verifier_sha256": "d13fc8575422123bcdd439fe3e613fec92138e1e9d3493d7ebdbee7ba25917f8"
+  }
+}

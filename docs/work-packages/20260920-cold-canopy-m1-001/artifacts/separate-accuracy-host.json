@@ -1,0 +1,55 @@
+{
+  "evidence_class": "Ran: host/settings observation only; no physical execution",
+  "observed_utc": "2026-09-30T21:35:53Z",
+  "platform": "Linux-7.0.0-29-generic-x86_64-with-glibc2.42",
+  "machine": "x86_64",
+  "cpu_models": [
+    "13th Gen Intel(R) Core(TM) i7-13620H"
+  ],
+  "available_affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "logical_cpu_count": 16,
+  "clocks": {
+    "monotonic": {
+      "implementation": "clock_gettime(CLOCK_MONOTONIC)",
+      "monotonic": true,
+      "adjustable": false,
+      "resolution": 1e-09
+    },
+    "perf_counter": {
+      "implementation": "clock_gettime(CLOCK_MONOTONIC)",
+      "monotonic": true,
+      "adjustable": false,
+      "resolution": 1e-09
+    },
+    "process_time": {
+      "implementation": "clock_gettime(CLOCK_PROCESS_CPUTIME_ID)",
+      "monotonic": true,
+      "adjustable": false,
+      "resolution": 1e-09
+    }
+  },
+  "main_lock_hashes": {
+    "Cargo.lock": "5787d315c0ed47a38fb43819688ee451caf3fc8f4392567c9a739cce4eb16c7c",
+    "flake.lock": "35e40e33a476aebf22350340b8a6a493c62778a332813e62512d030a2f4aadd6",
+    "flake.nix": "702c8e7fb47d9c2950be4b326f3adbca0d8c683467e8442a3f3f6ffc9356fcb9"
+  },
+  "toolchain": "rustc1.95.0 (59807616e1fa2540724bfbac14d7976d7e4a3860) LLVM21.1.8 locked offline Nix",
+  "limitation": "Observation is not continuous host isolation; actual detached dependency and binary pinning pending."
+}

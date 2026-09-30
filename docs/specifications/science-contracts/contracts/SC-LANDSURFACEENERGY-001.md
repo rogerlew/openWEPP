@@ -4,7 +4,7 @@ title: Land-Surface Energy-Balance Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + land-surface-energy/hydrology reviewer
-contract_version: 40
+contract_version: 41
 producer_scope:
   - Future snow-free land-surface energy control-volume evaluator
   - Future post-snow receiving-surface evaluator after an atomic handoff cutover
@@ -62,6 +62,10 @@ chapter's Dependencies and introduction. Uncertainty expands reading.
 
 <a id="change-log"></a>
 ## Change Log
+2026-09-30 v41: review-pending `COLD-CANOPY-M1-SEPARATE-ACCURACY-01`
+detached full/reduced accuracy-cost authority.  It selects one complete
+test-only TR/BVLS controller for both arms, defines exact coordinate pullback,
+P0--P3 numerical profiles, and bounded support coarsening.  Production HOLD.
 2026-09-29 v40: owner-adopted prospective `COLD-CANOPY-M1-TR-SVD-BVLS-05`
 fully-wet structural-null-direction binding. It holds only role-proven exact
 zero step directions after complete assembly, retains all 21 physical residuals

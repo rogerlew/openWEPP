@@ -1,0 +1,7 @@
+{
+  "separate-accuracy-runner.py": "7f5b4eb3ef256aa254af6a7630220b874c3a47f82765c3a3de5dc0adaac09c66",
+  "separate-accuracy-measurement-draft.json": "16a39a73e6396d2063cb80e68795c8cca841e6fd7f197ac9449957d582203f95",
+  "separate-accuracy-protocol-draft.json": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e",
+  "separate-accuracy-control-fixtures.json": "80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb",
+  "separate-accuracy-independent-reconstruction.py": "8b3604505c96dbae0dbe4e116308863d39d26a2cc046ff1cda060d7b7d791ad5"
+}

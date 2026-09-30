@@ -1,0 +1,863 @@
+{
+  "findings": [
+    {
+      "id": "CORRECTNESS-01",
+      "severity": "blocker",
+      "location": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1197-1205",
+      "finding": "The reduced trust-region feasible geometry and active-set semantics are contradictory and not uniquely implementable. The amendment assigns the ordinary diagonal-scaled Euclidean ball and box to 13/11 y coordinates, then requires physical bounds, step norms, and active masks to be evaluated after the nonlinear reconstruction x=P(y). The retained BVLS accepts coordinatewise affine lower/upper arrays at its base and solves their intersection with an Euclidean ball; reconstructed humidity creates a coupled nonlinear q bound and the zero-area anchor is piecewise. No y bounds, physical-to-y active-mask mapping, or controlling step norm/radius-update rule is frozen.",
+      "evidence": [
+        "numerical-methods.md:354-365 defines the original 21-coordinate affine box and scaled Euclidean ball",
+        "numerical-methods.md:404-458 defines coordinatewise face pivots, box crossings and KKT releases",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:289-304 passes fixed coordinate scales, lower/upper bounds, base and radius directly to the subproblem",
+        "The package requires the same algorithm/globalization in both representations at /tmp/openwepp_cold_canopy_m1_separate_accuracy_cost_investigations.md:115-121"
+      ],
+      "required_disposition": "Freeze one representation-space box, active-set mapping, governed physical step policy, and radius update interpretation that can be executed by the retained controller without an undisclosed nonlinear constrained subproblem or algorithm confounder."
+    },
+    {
+      "id": "CORRECTNESS-02",
+      "severity": "blocker",
+      "location": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1176-1208",
+      "finding": "The pullback Jacobian is stated only as J_y=J_x*dP/dy. There is no executable derivative and assembly policy for dP/dy, including reconstructed humidity's dependencies through canopy density, dry saturation and conductance, wet saturation, reservoir-derived wet temperature/wetness, the snow vapor source, and the piecewise zero-area anchor. Analytic versus probed construction, branch and tie derivatives, probe/domain refusal precedence, and work accounting are not frozen. These choices can change predictor direction, phase/capacity selection, rank, KKT releases, accepted updates, and measured cost.",
+      "evidence": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1182-1230 derives density and reservoir wet state before surface evaluation",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1305-1338 evaluates dry zero-PAR and wet saturation vapor operands",
+        "numerical-methods.md:369-388 freezes the retained raw physical Jacobian and phase-selected assembly lifecycle",
+        "The package requires propagated dependencies and exact chain-rule controls at prompt lines 105-109 and 184-188"
+      ],
+      "required_disposition": "Freeze the complete derivative construction and all nondifferentiable/guard cases prospectively, with the same declared derivative policy in FULL and REDUCED or an explicit confounder disposition."
+    },
+    {
+      "id": "CORRECTNESS-03",
+      "severity": "blocker",
+      "location": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1179-1191",
+      "finding": "The exact-zero-PAR humidity substitution is algebraically applicable, but its operands and guard order are under-specified. 'After all gas and saturation guards' is circular because the retained leaf routine checks canopy q and q_surface>q before entering its q-independent exact-zero-PAR gas branch. The sum(g_i), E_snow sign/units/source, density evaluation point, q-dependent leaf checks, and empty-store saturation checks are not bound to an exact order. An implementation can therefore change domain/error precedence while still appearing to implement the displayed equation.",
+      "evidence": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:842-890 checks q and q_surface>q before the gas-state call",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:1176-1210 shows that the exact-zero-PAR gas branch itself is independent of canopy q",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1270-1303 contains the q-dependent empty-store surface checks",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1467 and 1490-1492 establish the vapor-row sign convention"
+      ],
+      "required_disposition": "Bind every conductance/source operand and freeze q-independent operand evaluation, q reconstruction, q-dependent guard evaluation, and typed refusal precedence."
+    },
+    {
+      "id": "CORRECTNESS-04",
+      "severity": "high",
+      "location": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1188-1191",
+      "finding": "The zero-structural-area sun map names only a 'documented piecewise canopy/reference anchor' and does not freeze the exact function, its derivative, or its equality tie rule. The authenticated three-case corpus has both sun structural areas exactly zero, so the 11-coordinate path is the ordinary corpus path rather than an optional edge.",
+      "evidence": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs:245-261 defines the retained sun/leaf anchor as max(Tcan, LIQUID_VAPOR_PHASE_MINIMUM_K)",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1368-1383 uses that anchor for zero-area sun/shade rows",
+        "Static inspection of the authenticated base input found both sun leaf areas exactly zero for all three derived cases"
+      ],
+      "required_disposition": "Bind the exact anchor, structural certificate, branch derivative, equality tie, and 11-coordinate role ordering."
+    },
+    {
+      "id": "CORRECTNESS-05",
+      "severity": "blocker",
+      "location": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1210-1217",
+      "finding": "The amendment says the existing BVLS-05 fully-wet hold applies to either representation, but BVLS-05 is explicitly defined over original 21-coordinate physical masks, the full A/W/S, and a 21-minus-D retained system. The reduced arm has 11/13 y columns. It does not define role/index mapping, whether the complete zero-column certificate is applied to J_x or J_y, how physical-current-free and initial-free masks map, or how held coordinates participate in scatter and all-coordinate KKT accounting. Eliminated identity/humidity/anchor coordinates cannot be conflated with assembly-local certified wet null directions.",
+      "evidence": [
+        "numerical-methods.md:1276-1306 freezes BVLS-05 masks, D, full A/f/W/S, original indices and scatter behavior",
+        "numerical-methods.md:1308-1318 retains full-vector box/radius, KKT and physical checks over all 21 original coordinates",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1211-1228 and 1368-1405 show why positive-area dry columns become structurally null at exact full wetness"
+      ],
+      "required_disposition": "Extend the certificate and mask/scatter authority explicitly to the reduced representation while preserving independent certification and reactivation on every assembly."
+    },
+    {
+      "id": "CORRECTNESS-06",
+      "severity": "blocker",
+      "location": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1219-1240 and docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json:profiles",
+      "finding": "The P1-P3 profiles do not map their thresholds to every nonlinear and downstream admission site, and no prospective error rationale or near-zero justification is recorded. The retained outer normalization uses additive energy/water tolerance helpers and min-of-absolute-and-relative M/H/cap tolerances, while final materialization separately checks reconstructed residuals, stored residuals, capacity residual/rcap, and reconstruction-to-stored equality. The phrase 'post-materialization finite residual budgets' does not say which checks adopt max(abs,rel*scale) and which remain exact accounting identities. 'Newton residual normalization' also does not name the selected trust-region controller's root/merit surfaces.",
+      "evidence": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/physics.rs:586-593 defines additive P0 energy/water tolerances",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:5034-5059 defines P0 residual-row normalizers",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:900-950 defines distinct final materialization guards",
+        "The package requires every dimensional, inner-solve and final-acceptance setting, magnitude-aware near-zero behavior, and a rationale before runs at prompt lines 123-140"
+      ],
+      "required_disposition": "Freeze a per-check profile/admission map, preserve accounting identity checks explicitly, and provide the required prospective numerical-error and near-zero rationale before implementation."
+    },
+    {
+      "id": "CORRECTNESS-07",
+      "severity": "blocker",
+      "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json:controls,reference",
+      "finding": "The six controls and independent reference/stability policy are labels rather than exact executable frozen specifications. Several controls provide only predicates or prose directions, without complete bit-authenticated inputs, exact derivative operands, expected values from an independent construction, or precise typed outcomes. The reference stability policy says only 'every numerical threshold reduced tenfold' and does not enumerate the affected P0 additive/min tolerances, step checks, final materialization checks, or expected stability criterion.",
+      "evidence": [
+        "The controls entries empty_admissible, directional_phase_joins, capacity_positive_drainage and full_wet_to_dry_reactivation lack complete input/state vectors and independent numeric expectations",
+        "The near_bound_rank_refusal entry specifies a duplicated column but not the frozen matrix bits or complete expected refusal metadata",
+        "The package requires six frozen controls, independent operands, one strict reference per case, and one predeclared stability check at prompt lines 184-203"
+      ],
+      "required_disposition": "Freeze complete control fixtures and independent expectations plus an exact reference/stability profile and comparison criterion before any physical result."
+    },
+    {
+      "id": "CORRECTNESS-08",
+      "severity": "high",
+      "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-source-check.json:external_symlinks,limitation",
+      "finding": "The retained treatment source has been recovered and its 771-entry source identity verified, but its build-support symlinks point outside the recovered tree and their target contents are not pinned. Building or executing before those targets are frozen would break the required result-bearing-source custody and could import mutable main-worktree behavior.",
+      "evidence": [
+        "separate-accuracy-source-check.json records source tree SHA256 91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7 and explicitly limits assurance to symlink strings",
+        "External links include .config, .venv, assurance, docs, src, tests and tools"
+      ],
+      "required_disposition": "Pin or replace every execution-relevant external target and authenticate the resulting executable source environment before build or execution."
+    }
+  ],
+  "fix_verification_round_2": {
+    "reviewed_at": "2026-09-30T14:15:38-07:00",
+    "evidence_class": "Static same-reviewer verification; no numerical body inspection and no physical execution",
+    "reviewed_cut_sha256": {
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "f506ae64a8f53f73634ee6b2415b662727b427a48bab82806541f95bf9ae95cf",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json": "f07480f3a6a00d6b39d59d5de1cc08ccdb3de7a64f276285bf69ab40b7869a93",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json": "71921101dfdc50f09327244b27d4c6bb9178b2d53d2ac509a2a19218c06e3517",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-measurement-draft.json": "9495d4647d30c2b0252c8561d0a24f072f7393e0e3ecfc79357aa78dd4b0da35",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-support-check.json": "8c697b12a7c1553ff64d72868a2637994f11c5d7872726c7f50c26b34dd81f04"
+    },
+    "resolved_prior_findings": [
+      "CORRECTNESS-01: representation-space y box, masks, trust norm and physical candidate checks are now distinguished",
+      "CORRECTNESS-02 in authority design: both arms pay the complete retained Jx assembly and REDUCED's implicit approximate pullback and chart confounder are disclosed",
+      "CORRECTNESS-04: anchor function, branch derivative, equality tie, retained-index order and common mapped seed are frozen",
+      "CORRECTNESS-05 in authority design: reduced D_y mapping and independent Jx/Jy zero-column requirements are now stated",
+      "CORRECTNESS-06 substantially: identity normalizers, mass versus capacity scales, additive energy/water profiles and retained controller arithmetic are separated",
+      "CORRECTNESS-07 reference cadence: the strict comparison is now at 60-second support and wall caps are separately named",
+      "CORRECTNESS-08 is reclassified correctly as a post-implementation pre-execution gate; historical support pins are checked, while final binary/depfile/input closure remains pending"
+    ],
+    "remaining_findings": [
+      {
+        "id": "FIX2-01",
+        "severity": "blocker",
+        "location": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1186-1200",
+        "finding": "The humidity reconstruction is dimensionally inconsistent. The amendment defines wet g_i as rho*gb_wet*wet_area and ga as rho/R_vapor, both mass conductances with units kg m^-2 s^-1, while the displayed numerator adds E_snow/rho, which has conductance units m s^-1, to g*q terms with mass-flux units. The retained residual supports either conductances without rho together with E_snow/rho, or mass conductances together with E_snow, but the reviewed cut mixes the two. 'Dry-leaf conductance' is also not bound to the required area*(1-fwet)/(rb+rs) coefficient in the same unit convention.",
+        "evidence": [
+          "retained solver_covered_evaluation.rs:911-917 forms dry vapor as rho*area*(1-fwet)/(rb+rs)*(qsurface-qcan)",
+          "retained m1_coupled.rs:1335-1338 forms wet vapor as rho*gb_wet*wet_area*(qwet-qcan)",
+          "retained m1_coupled.rs:1490-1492 forms the air term as -rho*(qcan-qair)/R_vapor and adds the signed snow vapor mass flux directly"
+        ],
+        "required_disposition": "Correct and freeze one dimensionally consistent coefficient convention and exact dry/wet/air accumulation order before numerical body edits."
+      },
+      {
+        "id": "FIX2-02",
+        "severity": "blocker",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:C6_near_bound_rank_refusal",
+        "finding": "The frozen C6 matrix is full column rank and cannot produce the required rank refusal. Its first eleven rows contain the 11-by-11 identity; adding row 11 entries in columns 9 and 10 does not duplicate those columns. The affected Gram block is [[2,1],[1,2]], with singular values sqrt(3) and 1, so sigma_min <= 2^-40*sigma_max is false.",
+        "required_disposition": "Freeze a matrix whose actual binary64 columns satisfy the stated rank predicate and an independently computed expected refusal."
+      },
+      {
+        "id": "FIX2-03",
+        "severity": "blocker",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:cross_control_mapping_checks.pullback",
+        "finding": "The pullback control is not executable as an independent derivative oracle. It supplies no numeric comparison threshold even though the declared implicit Jx pullback and a centered explicit-P difference are approximate and need not be bit-equal. It also calls C1 and C4 smooth states, but C1 is at M=H=0 empty-phase boundaries and C4 is simultaneously at H=0 and M=capacity phase/capacity joins. A centered perturbation of all mapped coordinates does not remain on one smooth branch there.",
+        "evidence": [
+          "numerical-methods.md:1222-1226 explicitly disclaims equality between the finite-difference implicit coefficient and the derivative of explicit nonlinear P, then requires a smooth-branch control",
+          "C1 derived trial fixes both reservoirs at M=H=0; C4 fixes H0=0 and M0=C"
+        ],
+        "required_disposition": "Freeze admissible smooth-branch operands, exact perturbed roles/steps, and a prospective numeric acceptance rule for the independent explicit-P comparison."
+      },
+      {
+        "id": "FIX2-04",
+        "severity": "blocker",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:C1_empty_admissible,C2_empty_supersaturation_refusal",
+        "finding": "The empty-store oracles compare each surface saturation to qair, but the retained empty-store predicate compares qsurface to reconstructed canopy q. Dry surfaces, the atmosphere, snow vapor and any wet terms all contribute to that reconstructed q. Therefore qsurface>qair does not establish C1 admissibility and qair>qsurface alone does not establish C2's exact refusal precedence. C1 additionally requires only 'not VEG-E-142', allowing an unrelated failure instead of proving the named admissible control completes its intended path.",
+        "evidence": [
+          "retained solver_covered_evaluation.rs:885-890 rejects positive-area qsurface<=canopy_q",
+          "retained m1_coupled.rs:1490-1492 defines canopy q through the complete shared vapor balance"
+        ],
+        "required_disposition": "Bind the independent reconstructed-q operands/result and require the intended complete admissible outcome for C1 and exact q-based refusal for C2."
+      },
+      {
+        "id": "FIX2-05",
+        "severity": "high",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:C3_directional_phase_joins",
+        "finding": "C3 covers only the H=0 upper phase join and says merely that the two labels differ. The retained assembly has a second directional join at H=-Lf*M, with one-sided M and H behavior, and exact expected sides are not frozen for either direction. This does not validate the claimed preservation of the original natural/selected phase probe and capacity-override policy.",
+        "evidence": "retained m1_coupled.rs:2127-2162 handles both H==0 and H+Lf*M==0 joins and changes forced probe direction by selected phase",
+        "required_disposition": "Complete the frozen directional-join expectations over both retained phase boundaries and their affected roles."
+      },
+      {
+        "id": "FIX2-06",
+        "severity": "high",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:C5_full_wet_reactivation",
+        "finding": "The authority now requires exact raw and weighted zero-column certification independently in Jx and the actual mapped Jy column, but C5 asserts only Jx zeros before admitting D_y. It therefore cannot catch a nonzero pullback contribution hidden by the physical-column certificate.",
+        "required_disposition": "Make the control independently assert both authority-required Jx and Jy raw/weighted certificates before the hold and the ordinary nonzero mapped column after reactivation."
+      },
+      {
+        "id": "FIX2-07",
+        "severity": "high",
+        "location": "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md:1234-1239,1252-1258",
+        "finding": "The geometry paragraph correctly preserves retained controller admission, but the profile paragraph still calls temperature, humidity, hydraulic and beta thresholds 'outer accepted physical step maxima.' In the retained controller, a finite threshold miss does not reject an ordinary update while the residual is above one; these thresholds gate root admission and post-update root admission. The conflicting wording can reintroduce the previously rejected globalization change.",
+        "evidence": "retained m1_trust_region_controller.rs:891-937 permits an ordinary update for any complete governed step when the merit tests pass, while lines 897-920 and post_update_admit apply the pass bit to root admission",
+        "required_disposition": "Remove the conflicting accepted-update characterization and bind the profile thresholds to their exact retained governed-root admission sites."
+      },
+      {
+        "id": "FIX2-08",
+        "severity": "high",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json:reference.acceptance",
+        "finding": "The 60-second P0/stricter comparison now has same-unit state thresholds and categorical labels, but reference credibility still has no frozen acceptance rule for the independently reconstructed mass, energy and transfer integrals required by the package. The measurement draft says those integrals will be retained, not what closure or cross-run result admits a credible reference. A run can currently be called stable from state/residual checks while its independent ledger reconstruction is unresolved.",
+        "evidence": [
+          "package prompt lines 190-193 require independently reconstructed original residuals and mass/energy/transfer integrals plus the predeclared stability check",
+          "measurement draft result_reporting retains independent integrals but supplies no admission thresholds or exact identity rule"
+        ],
+        "required_disposition": "Freeze the independent ledger operands, units/horizon, closure predicates, and reference-versus-stability comparison rule before execution authority is released."
+      }
+    ],
+    "release_gate_decision": {
+      "pre_body": "BLOCKED. FIX2-01 through FIX2-04 are direct authority/control contradictions; FIX2-05 through FIX2-08 are required control/admission gaps. Numerical body edits are not released on this cut.",
+      "pre_execution": "Separately pending after implementation: implemented controls/tests, reviewed terminal source diff, successful build, binary digest, actual depfile/input closure, and immutable source/input/protocol freeze. These later artifacts are not prerequisites for body authoring and do not create a circular pre-body gate."
+    }
+  },
+  "fix_verification_round_3": {
+    "reviewed_at": "2026-09-30T14:22:00-07:00",
+    "evidence_class": "Static same-reviewer verification; no numerical body and no physical execution",
+    "reviewed_cut_sha256": {
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json": "dfdf8b38b48cdae6b49bd72f119c29093da8fe1c129acada21e9755c70e3e983",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json": "e3a972954c2d87e393c2b8e71566155129ab4013441df06c661937a2916fb65f"
+    },
+    "verified_corrections": [
+      "FIX2-01 corrected: all dry, wet and atmospheric conductances are now m/s and E_snow/rho is dimensionally consistent",
+      "FIX2-04 corrected in the exact controls artifact: C1/C2 reconstruct qcan independently and require the intended success or exact VEG-E-142 refusal",
+      "FIX2-06 corrected: C5 requires both Jx and mapped Jy raw/weighted zero certificates",
+      "FIX2-07 corrected: profile step thresholds are bound to governed root/witness admission only",
+      "FIX2-08 substantially corrected: reference support is 60 seconds and primitive per-support ledger formulas, units, cumulative comparison thresholds and unresolved handling are recorded",
+      "The authority-level common seed, full retained Jx cost in both arms, approximate implicit pullback confounder, representation geometry and BVLS mapping remain implementable and internally consistent"
+    ],
+    "remaining_findings": [
+      {
+        "id": "FIX3-01",
+        "severity": "blocker",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:C3_directional_phase_joins",
+        "finding": "The phase-join fixture is not at the declared lower boundary and its upper-boundary cooling expectation is wrong. With M=0.018 and retained Lf=333700, -Lf*M is -6006.599999999999 with bits c0b7769999999999, while lower_H is frozen as c0a52516c0000000 (-2706.54443359375). At H=+0.0 the retained classifier selects Mixed for dH<0, not Ice; warming dH>=0 selects Liquid. Therefore two of the four claimed phase choices cannot validate the retained assembly.",
+        "evidence": [
+          "retained m1_coupled.rs:526 freezes LF=333700",
+          "retained m1_coupled.rs:1785-1799 selects Mixed/Liquid at H=0 and Ice/Mixed at H+LF*M=0"
+        ],
+        "required_disposition": "Correct the frozen boundary bits and exact expected phase labels against the retained classifier before body release."
+      },
+      {
+        "id": "FIX3-02",
+        "severity": "blocker",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:cross_control_mapping_checks.pullback",
+        "finding": "The pullback control is still not a uniquely executable frozen fixture or comparison. It names a 'pinned smooth original-input initial ice state with M<C', but original-input-reference.json explicitly does not define physical enthalpy initialization, and this controls artifact does not identify the successor case/hash or state M/H bits. Its comparison wording 'absolute<=1e-10 plus relative<=1e-6' also omits the actual combined inequality, reference scale and derivative units by coordinate role.",
+        "evidence": [
+          "original-input-reference.json records physical_enthalpy_initialization as NOT_DEFINED",
+          "the controls artifact base section pins only original-input-reference.json and supplies no separate M/H record for the pullback state"
+        ],
+        "required_disposition": "Pin the exact smooth state bits/source and the dimensioned per-role comparison expression before body release."
+      },
+      {
+        "id": "FIX3-03",
+        "severity": "high",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json:controls,controls_artifact",
+        "finding": "The protocol retains an obsolete controls array that materially contradicts its hash-pinned controls artifact. Examples include forced positive structural areas versus unchanged base zero-area sun geometry in C1, only the H=0 join versus four phase vectors in C3, Jx-only certification versus Jx-and-Jy in C5, and the old full-rank C6 rule versus the new rule. The protocol does not say the array is nonnormative or superseded, so two machine-readable control specifications remain active.",
+        "required_disposition": "Reconcile or explicitly retire the obsolete embedded summaries so the hash-pinned control artifact is the single executable specification."
+      },
+      {
+        "id": "FIX3-04",
+        "severity": "high",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:C6_near_bound_rank_refusal.synthetic_bvls.matrix_rule",
+        "finding": "C6 now produces a rank refusal, but not for its stated reason. The sequential rule copies the initially-zero column 9 into column 10 and only afterward sets A[9,9]=1, leaving column 10 all zero rather than duplicating the final column 9. The assertion that the columns duplicate is false, and implementations that interpret the prose declaratively versus sequentially receive different matrices.",
+        "required_disposition": "Make the frozen matrix rule and claimed column relation agree exactly; retain an independently checked rank-refusal outcome."
+      }
+    ],
+    "release_gate_decision": {
+      "pre_body": "BLOCKED only on FIX3-01 through FIX3-04. The numerical authority itself is acceptable for detached implementation once the exact controls/protocol are corrected and this reviewer verifies the new hashes.",
+      "pre_execution": "Still separate and later: implemented controls/tests, terminal diff review, successful build, binary digest, depfile/input closure and immutable measurement freeze."
+    }
+  },
+  "fix_verification_round_4": {
+    "reviewed_at": "2026-09-30T14:27:00-07:00",
+    "evidence_class": "Static same-reviewer verification of the four finite control-data corrections; no numerical body and no physical execution",
+    "reviewed_cut_sha256": {
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json": "b24b8fc8c83c073414f0c3d0256b7021a5a12d1c0f49f6b43c21e97ae1552c66",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json": "f10ee8b04cebc3d212a2f7e460e5af5ca4834afd37a67467b533cae7f8418808"
+    },
+    "verified_corrections": [
+      "FIX3-01 corrected: lower_H is the exact retained -Lf*M binary64 product c0b7769999999999; H=0 cooling selects Mixed and warming Liquid; lower-normal Ice/Mixed expectations match the retained classifier",
+      "FIX3-03 corrected: the protocol removes the obsolete embedded controls and makes the hash-pinned controls artifact the sole executable definition",
+      "FIX3-04 corrected: C6 supplies an explicit 21-by-11 binary64 matrix whose columns 9 and 10 are equal, with a ten-column identity minor and the stated null vector",
+      "FIX3-02 substantially corrected: the pullback control pins the authenticated case-A M/H bits, manifest hash, branch preconditions, source h by role, native derivative units and a combined absolute-plus-relative inequality"
+    ],
+    "remaining_findings": [
+      {
+        "id": "FIX4-01",
+        "severity": "blocker",
+        "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:cross_control_mapping_checks.pullback",
+        "finding": "The pullback fixture still requires a centered plus/minus explicit-P quotient for every retained coordinate and requires each plus/minus probe to pass all domain checks. The accepted common seed fixes both drainage coordinates at exactly +0.0, while their y lower bound is zero. Therefore each negative drainage probe is outside the representation box/domain and the frozen control must fail even though q is analytically independent of drainage. This also differs from the retained Jx policy, which uses the unique inward one-sided probe at an exact bound.",
+        "evidence": [
+          "accepted authority numerical-methods.md:1167-1171 freezes seed drainage at zero",
+          "accepted authority numerical-methods.md:1229-1236 copies the original D>=0 bound into y and preserves primitive domain checks",
+          "retained m1_coupled.rs:2163-2191 uses the available one-sided difference when the opposite finite-difference trial is inadmissible"
+        ],
+        "required_disposition": "Make the drainage-role oracle consistent with its exact-bound domain and retained derivative policy, or freeze an independently justified exact drainage derivative check; do not require an inadmissible negative-D probe."
+      }
+    ],
+    "release_gate_decision": {
+      "pre_body": "BLOCKED only on FIX4-01. The accepted numerical authority and every other reviewed control/protocol correction are ready for detached body implementation once this exact-bound derivative-control contradiction is corrected and hash-verified.",
+      "pre_execution": "Unchanged later gates: implemented controls/tests, terminal diff review, successful build, binary digest, depfile/input closure and immutable measurement freeze."
+    }
+  },
+  "fix_verification_round_5": {
+    "reviewed_at": "2026-09-30T21:25:44Z",
+    "evidence_class": "Static same-reviewer verification of FIX4-01 only; no numerical body and no physical execution",
+    "reviewed_cut_sha256": {
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e",
+      "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json": "80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb"
+    },
+    "verified_corrections": [
+      "FIX4-01 corrected: interior temperature, mass and enthalpy roles retain centered explicit-P differences, while drainage at exact D=+0.0 uses only the unique inward positive quotient with the frozen 1e-10 kg m^-2 s^-1 step",
+      "The independent explicit humidity formula contains no drainage operand and therefore supplies the separate expected dq/dD=0 result",
+      "The same dimensioned absolute-plus-relative derivative comparison applies without evaluating an inadmissible negative drainage coordinate",
+      "The protocol points to the corrected controls hash as the sole executable control definition",
+      "Accepted numerical authority b30225ce is unchanged"
+    ],
+    "remaining_findings": [],
+    "release_gate_decision": {
+      "pre_body": "APPROVED for the bounded detached numerical body described by authority b30225ce, protocol 3c99c7be and controls 80d91346. This approval does not authorize a production solver, main Rust adoption, physical result claims or execution before later gates.",
+      "pre_execution": "Pending after implementation: author controls/tests, independent review of the implemented numerical diff and exact authority binding, QA/evidence review, applicable nonphysical validation, successful build, binary digest, actual depfile/input closure, and immutable result-bearing source/input/protocol freeze. Physical execution remains unauthorized by this readiness review."
+    }
+  },
+  "residual_risk_and_missing_tests": {
+    "readiness_positive_evidence": [
+      "Static: the retained canonical Newton/LU implementation is complete, but its square selected-drainage solve has no BVLS-05 hold and is singular on exact fully-wet positive-area dry columns; it is not a viable common full-domain arm without a newly authorized solver change.",
+      "Static: the retained private trust-region/BVLS controller has a complete run loop and materialization path at m1_trust_region_controller.rs:1506-1600. This distinguishes the historical proposal-only timing failure from absence of a complete diagnostic controller and makes the common-controller route a feasible candidate after the blockers above are resolved.",
+      "Static: the zero-PAR vapor row is affine in canopy humidity after q-independent exact-zero-PAR gas operands are formed, so an exact algebraic humidity reduction is plausible under the frozen corpus; this review does not approve its current incomplete guard/derivative specification.",
+      "Ran evidence inspected, not rerun by reviewer: source recovery reports the required treatment SHA256 and input authentication reports the adopted manifest/base/forcing hashes and exact schedule counts."
+    ],
+    "missing_validation_before_release": [
+      "Exact independent substitution and chain-rule derivative controls for humidity and both zero-area anchors",
+      "Reduced BVLS-05 full-wet hold and dry-reactivation control with independent raw and weighted zero-column operands",
+      "Per-profile agreement between normalized root admission, governed-step admission, and all final materialization residual/accounting checks",
+      "Exact full/reduced common mapped seed equality, including reconstructed humidity bits",
+      "Exact reference/stability fixtures and acceptance comparison",
+      "Pinned recovered build-support targets and a fresh reviewed authority/protocol cut"
+    ],
+    "physical_runs": "Not run; prohibited during this readiness review."
+  },
+  "verdict": {
+    "status": "PRE_BODY_APPROVED",
+    "statement": "No correctness/authority blocker remains in the reviewed readiness cut. The bounded detached implementation may begin against the exact accepted authority, protocol and controls hashes. Earlier blocked findings are preserved only as nested review history and were closed by fix-verification round 5. This is not implementation acceptance or physical-execution approval.",
+    "fix_verification": "Rounds 1-5 close all readiness findings. Reuse authority b30225ce, protocol 3c99c7be and controls 80d91346 for body implementation; any substantive change requires scoped re-review. Preserve the distinct post-implementation pre-execution gates."
+  },
+  "review_identity": {
+    "reviewer": "/root/correctness",
+    "role": "independent correctness/authority reviewer",
+    "evidence_class": "Static review plus inspection of supplied offline authentication artifacts; no physical execution",
+    "reviewed_at": "2026-09-30T14:15:38-07:00"
+  },
+  "reviewed_cut_sha256": {
+    "/tmp/openwepp_cold_canopy_m1_separate_accuracy_cost_investigations.md": "b73616ad3e7787b9d2aafd965d90c39a3af27f0a3238a066a7e9cdde2940dbcc",
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": "0a70ad79651ee14893cd84264762a227e1b3f802d6b13b9b9e075275add52315",
+    "docs/work-packages/20260920-cold-canopy-m1-001/package.md": "b4400b117c4e0b0a5f14ec9d657e1160f93e36edb5a7cb6f6e25f3a6298b5c24",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json": "a295749ca85e8329a00e720c8392aa7a8f820e49a6f68e44b41dd6da33afbd5f",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-source-check.json": "46eeccaaf15aae5f72421c855e338eca2db79041ea8161207be00b70fd17d90f",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-input-check.json": "7713f550f4cab32062da1742e2abcd35f2c99b80034169e341bd3b02d28ba806",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-cell-inventory.json": "44738492aaaf653cb60e6482c5bd2e7a8221f83d408316748f2a0c3a6523f819",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "53feb758af3a8e0e94a7b5b4ba90e2876b731a49aad0b8c908beb3a0bce7d677",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation.rs": "4748964039c80f0037d61b0018241e83bbc3185a13db5e259b08e71f242b18f9",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs": "1d6742c8e4a44fa5c587bbc4941983a2cc0e5ed99d72fe8a0a5c97e87295860b",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "356d3f9017601c9c2b766a50aee6d13faf237a662f0876cd5747cdf112d06478"
+  },
+  "implementation_review_cut01": {
+    "reviewed_at": "2026-09-30T22:07:00Z",
+    "reviewer": "/root/correctness",
+    "scope": "Independent correctness/authority review of the immutable detached Rust implementation, frozen controls, and hash-pinned external runner. The reviewer-authored independent reconstruction verifier was excluded from self-review.",
+    "evidence_class": "Static review of immutable source/tool cuts and supplied build/lint evidence; no Rust command, control, physical test, or physical campaign was run by this reviewer.",
+    "reviewed_cut": {
+      "candidate_source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/review-cut01",
+      "candidate_source_sha256": "bc8fc785c5c412bc411849a5ff6f2eff4c8c26b009608780df39a366107cb749",
+      "candidate_source_archive_sha256": "e1c3b6b477ef6f7aff1f3d4f7539b3bc730ea303b0c3ef9006fd261a40b08808",
+      "baseline_source_sha256": "91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7",
+      "authority_sha256": "b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c",
+      "protocol_sha256": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e",
+      "controls_sha256": "80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb",
+      "runner_sha256": "7f5b4eb3ef256aa254af6a7630220b874c3a47f82765c3a3de5dc0adaac09c66",
+      "supplied_release_test_binary_sha256": "7d9f640427c4a7089da32515e46c838d50cfeacf03e6200da624f1164721b3db"
+    },
+    "findings": [
+      {
+        "id": "IMPL-01",
+        "severity": "blocker",
+        "location": "review-cut01/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3816-3822,3840-3863,3866-3879; retained m1_trust_region_stage1.rs:prepare_subproblem base/bounds admission",
+        "finding": "REDUCED does not maintain controller state in the declared y coordinates. It fixes eliminated humidity/anchor bounds to their initial reconstructed values, but evaluate() returns newly reconstructed physical coordinates as the controller base. Any accepted Tcan/M/H update that changes qcan or an anchor therefore makes the next base differ from its fixed lower/upper bound and the next subproblem refuses it as outside the box. pre_evaluator_trial_domain also checks the unreconstructed embedded coordinates. This cannot implement a nonlinear P(y) across accepted bases.",
+        "required_fix": "Keep the retained controller's base, bounds, masks and trust norm consistently in the declared representation coordinates while reconstructing physical P(y) for every required physical call; add a multi-update control proving changed q/anchors do not invalidate the next reduced base. Remove the silent initial reconstruction unwrap_or fallback."
+      },
+      {
+        "id": "IMPL-02",
+        "severity": "blocker",
+        "location": "review-cut01/.../m1_coupled.rs:2637-2676,524-575; retained m1_trust_region_controller.rs:451-530,1095-1147",
+        "finding": "Profile policy is only wired into residual normalizers/final materialization. Every P1-P3 and strict-reference governed root/witness admission still calls the fixed P0 step thresholds. The strict-reference normalizers also use max(abs,rel*scale) for mass/cap/H and max rather than additive abs+rel for energy/water. Authority requires the displayed P0 policy divided by ten for strict reference: min-based P0 mass/cap/H and additive energy/water operands, with T/q/hydraulic/beta thresholds divided by ten.",
+        "required_fix": "Bind the selected ordinary/strict profile to every authorized governed root/witness comparison and use the exact approved normalizer arithmetic. Add exact per-row and governed-threshold controls for P0-P3 and strict reference through materialization."
+      },
+      {
+        "id": "IMPL-03",
+        "severity": "blocker",
+        "location": "review-cut01/.../m1_coupled.rs:2680-2697,3981-4030; retained m1_trust_region_stage1.rs:5404-5478",
+        "finding": "REDUCED BVLS-05 sees only the projected matrix returned by implicit_pullback. The certificate then tests input.raw_jacobian and its weighted form, both Jy. The complete physical Jx is discarded, so the required independent raw/weighted zero certificate in both the original Jx role column and mapped Jy role column is absent. The provenance's declared initial_free/physical_current_free values are also ignored in favor of the embedded state masks.",
+        "required_fix": "Carry and enforce the separately assembled physical-Jx certificate together with the actual mapped-Jy certificate and physical/mapped free-role admission on every natural, selected and new-base assembly. Add assertions over both matrices and dry reactivation."
+      },
+      {
+        "id": "IMPL-04",
+        "severity": "blocker",
+        "location": "review-cut01/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7338-7428; m1_coupled.rs:620-640,1114-1119,1238-1244,3464-3487,3816-3822",
+        "finding": "The authenticated day construction is not executable or arm-matched. It creates every rainy input with top_liquid_specific_enthalpy_j_kg=None even though every positive-rain core requires Some, and it ignores the authenticated top_liquid_temperature_k. Its dry-temperature seed comes from the historical trial constants instead of setting all dry temperatures to air temperature. After the first support it updates carried M/H without reconstructing q for FULL, while REDUCED reconstructs q on entry, so the two arms no longer receive the same mapped physical seed.",
+        "required_fix": "Construct the authenticated rain enthalpy from the frozen forcing, build the exact approved air-temperature/common mapped seed, and reconstruct that common seed after every carried M/H update before either arm starts. Add bitwise FULL/REDUCED seed equality for initial and successor supports."
+      },
+      {
+        "id": "IMPL-05",
+        "severity": "blocker",
+        "location": "review-cut01/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7354-7357,7483-7537; tools-cut01 separate-accuracy-runner.py:65-75",
+        "finding": "Cadence and IPC do not implement the frozen measurement protocol. Cadence supports stop only at forcing-segment ends, so case C supports beginning at 60 s cross each 1800-second parent boundary. The Rust IPC accepts only the literal RUN_FRESH_DAYS and emits one record_count/records payload, whereas the frozen runner sends RUN_FRESH_DAYS 1 or 4 and requires day_count/support_count and days. No diagnostic or timing child can complete this handshake.",
+        "required_fix": "Split supports at both forcing changes and 1800-second parent ends, and make the immutable Rust/runner IPC agree on the exact one-day/four-fresh-day protocol and payload schema before any physical launch."
+      },
+      {
+        "id": "IMPL-06",
+        "severity": "blocker",
+        "location": "review-cut01/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7565-7764 and controls artifact cross_control_mapping_checks",
+        "finding": "The nominal six-control test does not execute the reviewed oracles. C1/C2 obtain q from the implementation under test and never independently calculate/assert q or P(seed) bits; C3 checks only the two H=0 upper joins and no selected-side/reassembly behavior; C4 checks a duplicated min expression without the actual core/materialization; C5 discards both inspections and asserts neither Jx/Jy zero columns nor next-base dry reactivation; C6 checks only fixture shape then runs a separately hardcoded matrix. The required smooth explicit-P pullback/anchor derivative control is not referenced or executed at all.",
+        "required_fix": "Bind every frozen oracle assertion and cross-control mapping check to actual executable assertions using independent expected operands, including four directional joins, actual C4 materialization, dual-matrix C5 plus reactivation, exact C6 fixture data/typed refusal, and the full explicit-P derivative/anchor control."
+      },
+      {
+        "id": "IMPL-07",
+        "severity": "high",
+        "location": "review-cut01/.../m1_coupled.rs:2995-3027 versus core incident routing at 1246-1268,1348-1359",
+        "finding": "Primitive transfer fields are mislabeled. upper_to_lower_intercepted_mass_kg_m2_s is populated with the lower reservoir's total incident liquid, which includes captured upper through-rain as well as captured upper drainage. Its specific enthalpy is the corresponding mixture. These are not the declared upper-to-lower intercepted drainage operands, so independent transfer-ledger evidence would be scientifically wrong when rain is nonzero.",
+        "required_fix": "Export the actual separated upper-drainage capture mass and its own specific enthalpy, and independently bind every declared terminal-release component before ledger use."
+      },
+      {
+        "id": "IMPL-08",
+        "severity": "high",
+        "location": "review-cut01/.../m1_coupled.rs:2578-2633 and representation selection at m1_coupled_tests.rs:7295-7303",
+        "finding": "The two-sun anchor reduction is selected by an external boolean without enforcing the required joint exact-zero structural certificate. reconstruct_reduced merely updates whichever individual sun area happens to be zero, while representation.eliminated removes both sun coordinates. A changed one-sided certificate is not rejected, and the required pre-q primitive-domain/guard ordering is not explicitly entered before reconstruction.",
+        "required_fix": "Enforce both exact-zero sun-area bits and finite anchors before selecting the 11-coordinate map, reject any changed certificate, and preserve the approved validation/typed-error ordering before q construction."
+      },
+      {
+        "id": "IMPL-09",
+        "severity": "medium",
+        "location": "artifacts/separate-accuracy-candidate-clippy-compare.json",
+        "finding": "Supplied release compilation passed, but the candidate clippy gate exits 4 with 16 net new diagnostics, including lossy cadence/support casts and unchecked support_id truncation. This is unresolved implementation quality evidence, not a physical result.",
+        "required_fix": "Resolve the new diagnostics without suppressing numeric or error-handling concerns, then rebuild and refresh immutable custody evidence."
+      }
+    ],
+    "positive_static_evidence": [
+      "The implementation remains cfg(test)+private-feature confined for the detached solver path and reuses the retained complete TR/BVLS/SVD controller rather than adding a production solver.",
+      "Both arms assemble the complete physical Jacobian before REDUCED forms its approximate pullback, and the P1-P3 residual normalizer formulas themselves match the accepted additive/max families.",
+      "Materialization receives the selected residual tolerance vector and primitive output includes complete coordinates/residuals/normalizers plus dry/wet energy operands.",
+      "Supplied evidence reports successful all-feature release compilation and binary SHA-256 7d9f6404; this is compile evidence only."
+    ],
+    "residual_risk_and_missing_tests": [
+      "No control or physical test was executed in this review; physical execution remained prohibited.",
+      "After fixes, same-reviewer correctness verification is required on a new immutable cut, followed by QA evidence verification, clean applicable nonphysical gates, rebuilt binary/depfile freeze, and only then physical execution authorization.",
+      "The independent reconstruction verifier is outside this reviewer's review scope because this reviewer authored it; its separate QA pass remains the applicable evidence."
+    ],
+    "verdict": {
+      "status": "BLOCKED_PRE_EXECUTION",
+      "statement": "The immutable cut is not scientifically executable and does not implement the accepted representation, profile, cadence, control, or transfer-evidence contracts. Physical controls, references, diagnostics, and timing remain unauthorized.",
+      "physical_charge_seconds": 0
+    }
+  },
+  "implementation_fix_verification_interim_development_treatment": {
+    "reviewed_at": "2026-09-30T22:59:36Z",
+    "reviewer": "/root/correctness",
+    "scope": "Interim same-reviewer static verification of the actively mutable development-treatment fixes for IMPL-01 through IMPL-09. This is a checkpoint for implementer correction, not an immutable release-cut decision. The reviewer-authored independent reconstruction verifier remains excluded from self-review.",
+    "evidence_class": "Static source inspection only; no Rust command, control, physical test, reference, diagnostic, timing, or physical campaign was run by this reviewer.",
+    "checkpoint": {
+      "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/development-treatment",
+      "mutability": "actively_mutable_interim_not_release_cut",
+      "solver_covered_evaluation_rs_sha256": "373d3376609d88b4234817864288bf4e7909d07964566141d6c20ce0a8b4ac59",
+      "m1_coupled_rs_sha256": "146e0cae86b9f53d8e7f64108504d47298487087d31ad0b58bb3eea82eb81bd2",
+      "m1_coupled_tests_rs_sha256": "4c92f0514caf1de10c07b89363c1cfe2d4445710203d81a476a5a4d603522dea",
+      "m1_trust_region_stage1_rs_sha256": "82a3afac8b258c4519bfa0c4ab7fea53106b7084d08feb8986d1b3ec2851aefb",
+      "m1_trust_region_controller_rs_sha256": "9637b17497bdc649870b49e6d6ebb1a38e60b67a0f33ddd7af2101fc8d5446c8",
+      "m1_trust_region_controller_interface_rs_sha256": "b049be314de340fc09063c23803833699bc5a5eb28f909e5938f9690d48f9445"
+    },
+    "remaining_findings": [
+      {
+        "id": "INTERIM-CONTROL-01",
+        "severity": "blocker for pre-execution control release; implementation arithmetic appears correct statically",
+        "location": "development-treatment/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7783-7858; separate-accuracy-control-fixtures.json#/cross_control_mapping_checks/identity_rows",
+        "finding": "The repaired smooth control now checks implicit humidity derivatives for all eleven retained coordinates and directly checks the frozen below-Tf anchor coefficients and E identity derivatives. It still does not assert that exact P reconstruction produces raw residual rows 14..20 as +0.0 and all seven corresponding normalizers as exact 1e-9, as the frozen identity_rows oracle requires. The unrelated FULL adapter test at lines 5937-5986 covers only row 14 and deliberately has a nonzero identity residual, so it does not close this mapping-control obligation.",
+        "required_fix": "Bind all seven reconstructed REDUCED identity residual and normalizer values on the frozen smooth mapped fixture to the existing exact control oracle before pre-execution release. Do not change the numerical method."
+      },
+      {
+        "id": "INTERIM-CONTROL-02",
+        "severity": "blocker for pre-execution control release",
+        "location": "development-treatment/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8224-8253; development-treatment/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3884-3893; separate-accuracy-control-fixtures.json#/controls/C6_near_bound_rank_refusal",
+        "finding": "C6 decodes and passes the exact frozen 21-by-11 binary64 matrix to the retained Jacobi factor, so the former hardcoded-matrix defect is fixed. It does not decode or use the frozen f, base, lower, upper, or radius operands. The helper calls jacobi_factor directly and reduces its string error to bool, bypassing the actual BVLS/subproblem near-bound path and its typed controller rank refusal. The control therefore does not establish the frozen near-bound configuration or refusal before trial/materialization.",
+        "required_fix": "Bind the existing frozen C6 operands through the retained BVLS/subproblem rank-refusal seam and assert its typed refusal plus no trial/materialization entry. Preserve the frozen matrix and method."
+      },
+      {
+        "id": "INTERIM-EVIDENCE-02",
+        "severity": "release gate",
+        "location": "development-treatment mutable source; artifacts/separate-accuracy-candidate-clippy-compare.json",
+        "finding": "This checkpoint is mutable and has no reviewer-run build, lint, or executable-control evidence. The prior immutable cut's net-new lint diagnostics therefore remain open until corrected evidence is supplied on the final immutable cut.",
+        "required_fix": "After the control correction and lint cleanup, freeze a new immutable source/tool cut, rebuild it, preserve binary/depfile custody, and return it for same-reviewer static verification and independent QA before physical execution."
+      }
+    ],
+    "fix_statuses": [
+      {
+        "finding_id": "IMPL-01",
+        "status": "RESOLVED_STATIC_AT_CHECKPOINT",
+        "evidence": "The controller retains logical representation coordinates while exact P is applied to local physical copies for domain, core, phase, hydraulic, and materialization work; common mapped successor seeds are reconstructed for both arms."
+      },
+      {
+        "finding_id": "IMPL-02",
+        "status": "RESOLVED_STATIC_AT_CHECKPOINT",
+        "evidence": "Profile and strict-reference normalizers feed the adapter/materializer; governed thresholds feed controller admission; q admission reads physical reconstructed payload; strict reference preserves 1e-9 identity-row normalizers."
+      },
+      {
+        "finding_id": "IMPL-03",
+        "status": "RESOLVED_STATIC_AT_CHECKPOINT",
+        "evidence": "Complete physical Jx and actual mapped Jy zero certificates are kept separately and conjunctively enter the retained BVLS masks; dry reassembly removes a lost certificate."
+      },
+      {
+        "finding_id": "IMPL-04",
+        "status": "RESOLVED_STATIC_AT_CHECKPOINT",
+        "evidence": "Authenticated support construction derives rain enthalpy, uses the air-temperature dry seed and common mapped seed, and carries accepted M/H continuously."
+      },
+      {
+        "finding_id": "IMPL-05",
+        "status": "RESOLVED_STATIC_AT_CHECKPOINT",
+        "evidence": "Cadence splits at both forcing changes and 1800-second parent ends; the Rust IPC accepts the frozen one/four-day commands and emits day/support structure expected by the runner."
+      },
+      {
+        "finding_id": "IMPL-06",
+        "status": "PARTIAL_TWO_CONTROL_BINDING_GAPS",
+        "evidence": "C1/C2 use independent q; C3 invokes actual retained phase selection, selected Jacobian assembly, and selected-side probe in all four directions; C4 uses actual core/materializer and its poison reaches the capacity-domain check before residual tolerances; C5 uses actual Jx/Jy certificates plus dry reactivation. The smooth control covers all retained dq coordinates and exact E anchor/identity coefficients. The exact reconstructed identity residual/normalizer oracle remains unasserted, and C6 uses the exact frozen matrix but bypasses the frozen near-bound BVLS/controller refusal path."
+      },
+      {
+        "finding_id": "IMPL-07",
+        "status": "RESOLVED_STATIC_AT_CHECKPOINT",
+        "evidence": "Primitive output exports raw routing operands and labels upper-to-lower drainage capture as cl*Dupper with the upper wet-temperature specific enthalpy, distinct from total lower incident and terminal release."
+      },
+      {
+        "finding_id": "IMPL-08",
+        "status": "RESOLVED_STATIC_AT_CHECKPOINT",
+        "evidence": "Reduction enforces the joint finite exact-zero sun-area certificate with signed-zero acceptance. Non-q primitives are validated before trial reservoir/capacity/wet decoding, density and q construction; q-dependent validation follows reconstruction."
+      },
+      {
+        "finding_id": "IMPL-09",
+        "status": "OPEN_PENDING_FINAL_LINT_BUILD_EVIDENCE",
+        "evidence": "No replacement immutable lint/build receipt was reviewed at this mutable checkpoint."
+      }
+    ],
+    "c3_static_verification": {
+      "location": "m1_coupled_tests.rs:7951-7985 and solver_covered_evaluation/m1_coupled.rs:2007-2040,3831-3844,4247-4308,4434-4461",
+      "finding": "Each of the four fixture directions enters adapter select_phase, selected raw_jacobian, and selected_side_probe. selected_side_probes increments only after the retained m1_selected_probe returns successfully; the selected assembly path independently measures the retained runtime selected_probe_entries delta around evaluate_core_with_jacobian. The test therefore binds actual retained selected probing rather than merely counting adapter entry."
+    },
+    "positive_static_evidence": [
+      "The nonlinear physical map is used for base/candidate reconstruction, while the frozen E*d tangent maps representation directions used by selected phase/assembly/probe paths.",
+      "The smooth fixture uses centered admissible probes for interior T/M/H coordinates and inward forward probes for both D=0 coordinates, with the frozen combined absolute-plus-relative derivative tolerance.",
+      "No second physical solver or fallback chain was introduced; both arms still use the retained TR/SVD/BVLS controller and pay the complete physical Jacobian assembly path."
+    ],
+    "residual_risk_and_missing_tests": [
+      "No executable control has run under this review, so static wiring does not prove the six controls pass.",
+      "Repeated validation/reconstruction work is visible in the detached reduced path. It is not a correctness defect, but deployable runtime remains unestablished until authorized timing evidence exists.",
+      "The source was actively mutable during inspection. Every static conclusion must be rechecked against the later hash-pinned immutable cut."
+    ],
+    "verdict": {
+      "status": "BLOCKED_INTERIM_NOT_RELEASE_CUT",
+      "statement": "The core numerical, profile, routing, chart, BVLS, cadence, C3, C4, and C5 fixes are statically present at this checkpoint. Pre-execution release remains blocked by the missing seven-row exact identity mapping-control assertions, C6's bypass of the frozen near-bound typed-refusal path, and the absence of an immutable clean build/lint/control cut.",
+      "physical_charge_seconds": 0
+    }
+  },
+  "implementation_final_review_cut02": {
+    "reviewed_at": "2026-09-30T23:11:48Z",
+    "reviewer": "/root/correctness",
+    "scope": "Final same-reviewer static correctness review of immutable Rust review-cut02, reusing the previously verified authority and fix history and independently checking the final identity, C6, recording, lint-cleanup, and build-custody deltas. The reviewer-authored reconstruction verifier remains excluded from self-review.",
+    "evidence_class": "Static source and supplied receipt review. This reviewer ran no Rust command, frozen control, reference cell, diagnostic cell, timing cell, or physical campaign.",
+    "reviewed_cut": {
+      "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/review-cut02",
+      "source_tree_sha256": "24d060be786312a749f718f6cd7ccabc0094a9ec593a700e398fefdcbb71ae0d",
+      "source_receipt_sha256": "550c232ec879f56d8b932b0aada85e7e1bedd810fe7647945040940e0d477c85",
+      "source_archive_sha256": "96d9da924f1cc9d10d78d31278a6d050b9a98b953b24848f2e54afa6e0b6abfb",
+      "authority_sha256": "b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c",
+      "protocol_sha256": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e",
+      "controls_sha256": "80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb",
+      "lint_compare_sha256": "82dd5874f3d3cb4dafa882082de4e904b29e6035542a230de1b660bacc4b8d37",
+      "build_receipt_sha256": "f491a9dcd99ea42bf92f76e68e31858549be0265184a7d1cd5240cf6e13724ac",
+      "release_build_stdout_sha256": "873b51e2d5a21e7f8dcdde48078ff792098a8fb7b25ab14c6ba1bd1820edbd09",
+      "release_build_stderr_sha256": "d5d5f8820fa7f03c2ba281d8c44e6d416a714f5dac9aff2ac59867488cf6c894",
+      "release_binary_sha256": "1c171a3739b725d01b211ab6bdb3dee2ddc8a8564ffc304cc88b0d664d49d4a7",
+      "release_depfile_count": 61,
+      "reviewed_rust_file_sha256": {
+        "solver_covered_evaluation.rs": "b6f9ae861747506457f2d658390819e2b3230955f35a7a8a622cc81d226ccb43",
+        "solver_covered_evaluation/m1_coupled.rs": "7acf6a7de195a0ea2b582850d5ecb03361a88ea0157fe6c9f2dfff87f99dc854",
+        "m1_coupled_tests.rs": "ff992f0bcb47d4be14a951b89376ce762fffdcd9bdebbb41cfb6086e32816588",
+        "m1_trust_region_stage1.rs": "85f18a2ef5a34ddafc755a330e83b917a65a556dc263dcf9579750fd939d544f",
+        "m1_trust_region_controller.rs": "9637b17497bdc649870b49e6d6ebb1a38e60b67a0f33ddd7af2101fc8d5446c8",
+        "m1_trust_region_controller_interface.rs": "b049be314de340fc09063c23803833699bc5a5eb28f909e5938f9690d48f9445"
+      }
+    },
+    "findings": [],
+    "resolved_final_findings": [
+      {
+        "id": "INTERIM-CONTROL-01",
+        "status": "RESOLVED_STATIC",
+        "location": "review-cut02/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7842-7865",
+        "evidence": "The smooth REDUCED control reads physical residuals and normalizers after exact P and the retained assembly, then asserts every original row 14..20 is exact binary64 +0 and every corresponding normalizer is exact binary64 1e-9. It does not mistake eliminated Jy columns for original residual rows."
+      },
+      {
+        "id": "INTERIM-CONTROL-02",
+        "status": "RESOLVED_STATIC",
+        "location": "review-cut02/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8231-8287; m1_trust_region_stage1.rs:3884-3917,9779-9812",
+        "evidence": "C6 decodes the exact frozen 21-by-11 binary64 matrix and f/base/lower/upper/radius operands. Its helper installs those operands into the ordinary retained solve_subproblem entry. The rank-10 first face reaches retained Jacobi/SVD factorization and returns typed RankDeficient; the test requires one attempted subproblem and one SVD. This stage1-only seam has no evaluator trial or materialization entry."
+      },
+      {
+        "id": "IMPL-09",
+        "status": "RESOLVED_FOR_THIS_DETACHED_CUT",
+        "location": "separate-accuracy-cut05-lint-compare.json and review-cut02 Rust annotations",
+        "evidence": "The source-matched cut05 comparison reports reference299/candidate289, zero additions and ten removals. New allowances are locally scoped: canonical typed-error results, the test-only humidity operand projection, and authenticated support/control harness size and bounded casts. No float-comparison suppression was added. The support constructor's casts are bounded by the authenticated one-day duration and supported cadences. The Duration conversion cleanup preserves the SupportBelowMinimum variant and cannot affect admitted supports of at least60 seconds."
+      }
+    ],
+    "final_static_checks": [
+      "The complete numerical path previously verified in the mutable checkpoint is byte-identical in the immutable cut: common physical seed, exact nonlinear P for physical base/candidates, approximate Jx-derived E pullback for representation directions, complete all-row Jx/Jy certificates, retained TR/SVD/BVLS controller, original phase/capacity/domain ordering, profile propagation and strict-reference identity policy.",
+      "C3's four directions enter actual retained selected phase selection, selected Jacobian assembly and selected-side probe; C4's one-ulp capacity poison reaches the capacity-domain check before residual tolerances; C5 binds independent physical Jx and mapped Jy null certificates and dry reactivation.",
+      "Primitive records are minted only after accepted materialization and carry accepted coordinates, actual residuals/normalizers, raw routing inputs, separated upper-drainage capture and terminal lower drainage. The day loop carries only accepted M/H, reconstructs the common mapped successor seed, and serializes partial completion plus the first typed failure fail-closed.",
+      "The IPC accepts only one or four fresh days, emits READY before numerical work, END before DUMP serialization, and preserves the frozen support order/cadence boundaries.",
+      "The optimized release build completed successfully and its binary and 61 depfile-resolved inputs are hash-pinned. Relevant Rust hashes in the build receipt match immutable cut02."
+    ],
+    "lint_annotation_review": [
+      "result_large_err allowances retain the canonical typed M1CoupledError instead of introducing an alternate boxed or erased error path; test-only wrappers do not change taxonomy.",
+      "too_many_arguments is confined to the test-only independent humidity-operand projection whose explicit physical operands are part of the reviewed oracle.",
+      "too_many_lines is confined to the authenticated support constructor and the single frozen six-control harness; it does not suppress arithmetic, domain, error, or comparison diagnostics.",
+      "cast_precision_loss and cast_possible_truncation are confined to authenticated test support construction. Cadences are 60/300/900/1800 seconds and a one-day support inventory cannot overflow u32."
+    ],
+    "residual_risk_and_missing_tests": [
+      "Static review cannot establish that the six controls or any trajectory converges. The exact six frozen controls are the next evidence step and must all pass on the pinned binary before any reference, diagnostic or timing schedule proceeds.",
+      "The REDUCED arm intentionally uses an approximate implicit Jx pullback rather than a finite-difference Jacobian of nonlinear P, and stores a padded 21-coordinate controller representation while its admitted factor/free face is 11-dimensional. These remain declared representation/linearization confounders and are not production validation claims.",
+      "No deployable-speed conclusion exists before the fixed schedule completes. Report CPU, wall, proposal, completed-support/day and whole-run costs without converting failures or partial days into successful speedups.",
+      "This detached private-feature experiment does not establish production solver readiness or authorize transplanting its map/profile/controller variants into the native production candidate."
+    ],
+    "verdict": {
+      "status": "APPROVED_STATIC_FOR_CONDITIONAL_PHYSICAL_LAUNCH",
+      "statement": "No static correctness blocker remains in immutable cut02. The pinned release binary is authorized to launch exactly the six frozen controls. If and only if every control passes with intact custody and no unexpected charge, the already frozen reference, diagnostic and timing schedule may proceed in its specified order and caps. Any control failure, custody mismatch, typed refusal where success is required, incomplete day or missing primitive evidence stops dependent execution and remains unresolved.",
+      "approval_scope": "Detached COLD-CANOPY-M1-SEPARATE-ACCURACY-01 measurement only; no production claim or numerical-method expansion.",
+      "physical_charge_seconds_by_reviewer": 0
+    }
+  },
+  "first_physical_control_failure_adjudication": {
+    "reviewed_at": "2026-09-30T23:14:00Z",
+    "reviewer": "/root/correctness",
+    "scope": "Independent classification of the halted first C1 invocation at the common strict-P0 governed-threshold bit assertion. No physical replay or source edit was performed by this reviewer.",
+    "evidence_class": "Static authority/source inspection plus synthetic IEEE-754 binary64 arithmetic only; reported coordinator physical charge 0.002019944 seconds was not incurred by this reviewer.",
+    "finding": {
+      "id": "CONTROL-ORACLE-BINARY64-01",
+      "severity": "blocking control-oracle defect; not a numerical implementation failure",
+      "location": "review-cut02/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7780-7788; solver_covered_evaluation/m1_coupled.rs:2721-2728; numerical-methods.md:1263-1273",
+      "classification": "INVALID_NEGATIVE_CONTROL_ORACLE_MISMATCH",
+      "finding": "The frozen authority requires strict reference governed thresholds to be the displayed retained P0 thresholds divided by ten. The implementation performs exactly that binary64 operation. The control instead requires bit identity with newly parsed decimal literals. Temperature, humidity and hydraulic happen to round to the same binary64 values under both constructions; beta does not. Binary64 1e-10 divided by binary64 10.0 is one ULP above the independently parsed binary64 literal 1e-11, so the common assertion fails before the selected C1 physical body executes.",
+      "binary64_evidence": [
+        {
+          "role": "temperature",
+          "p0_bits": "0x3e45798ee2308c3a",
+          "divided_by_10_bits": "0x3e112e0be826d695",
+          "decimal_literal_bits": "0x3e112e0be826d695",
+          "ulp_delta": 0
+        },
+        {
+          "role": "humidity",
+          "p0_bits": "0x3d719799812dea11",
+          "divided_by_10_bits": "0x3d3c25c268497682",
+          "decimal_literal_bits": "0x3d3c25c268497682",
+          "ulp_delta": 0
+        },
+        {
+          "role": "hydraulic",
+          "p0_bits": "0x3e7ad7f29abcaf48",
+          "divided_by_10_bits": "0x3e45798ee2308c3a",
+          "decimal_literal_bits": "0x3e45798ee2308c3a",
+          "ulp_delta": 0
+        },
+        {
+          "role": "beta",
+          "p0_bits": "0x3ddb7cdfd9d7bdbb",
+          "divided_by_10_bits": "0x3da5fd7fe1796496",
+          "decimal_literal_bits": "0x3da5fd7fe1796495",
+          "ulp_delta": 1
+        }
+      ],
+      "authority_interpretation": "The operative phrase is 'every displayed P0 step threshold divided by 10'. It specifies an operation on retained P0, not reparsing a mathematically equivalent decimal label into a fresh binary64 value. Protocol string beta=1e-11 remains a human/machine decimal description and does not override the authority with a bit-exact alternate computation.",
+      "not_affected": [
+        "runtime strict-profile arithmetic",
+        "profile or input selection",
+        "normalizers or physical equations",
+        "C1 fixture physics",
+        "reference/diagnostic/timing results, none of which ran"
+      ]
+    },
+    "exact_fix_boundary": {
+      "permitted_change": "Change only the common strict-threshold expected-bit oracle in m1_coupled_tests.rs:7780-7788 so it freezes the result of retained-P0 binary64 division: [0x3e112e0be826d695,0x3d3c25c268497682,0x3e45798ee2308c3a,0x3da5fd7fe1796496]. An explicit from_bits vector is preferred because it remains independent of the implementation helper.",
+      "forbidden_changes": [
+        "Do not change m1_separate_accuracy_governed_thresholds_for_test or retained P0 constants.",
+        "Do not retune any profile, input, normalizer, acceptance threshold, or physical fixture.",
+        "Do not change the authority/protocol decimal descriptions to conceal the binary64 construction.",
+        "Do not discard or rewrite the original failed operation evidence."
+      ],
+      "required_post_fix_evidence": [
+        "Freeze a new source cut containing only the reviewed oracle correction relative to cut02.",
+        "Rebuild and re-pin binary, depfile and tool custody.",
+        "Replay exactly corrected C1 once under the unchanged fixture and accounting limits.",
+        "No other control, reference, diagnostic or timing work is authorized by this adjudication."
+      ]
+    },
+    "verdict": {
+      "status": "CORRECTED_C1_REPLAY_ONLY_AFTER_FREEZE",
+      "statement": "The observed failure is an invalid negative caused by a one-ULP bit-oracle mismatch. The numerical implementation remains consistent with frozen authority. Static launch approval is suspended only until the bounded oracle-only rebuild is frozen; then the sole allowed corrected C1 replay may run. Dependent physical work remains halted pending that result.",
+      "physical_charge_seconds_by_reviewer": 0
+    }
+  },
+  "oracle_only_fix_review_cut03": {
+    "reviewed_at": "2026-09-30T23:16:45Z",
+    "reviewer": "/root/correctness",
+    "scope": "Independent immutable review of the one permitted strict-threshold control-oracle correction from review-cut02 to review-cut03. Prior cut02 scientific review is reused for byte-identical entries.",
+    "evidence_class": "Static source/receipt/lint inspection only; no Rust command, control, reference, diagnostic, timing cell, or other physical execution was run by this reviewer.",
+    "reviewed_cut": {
+      "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/review-cut03",
+      "source_tree_sha256": "fb933d74c6964eacc2c1932aa9d1340b1d60fb1e192161ccc8ab50d3d1e09e00",
+      "source_receipt_sha256": "654969aa698823cd8c3ab8052ab971e90081e4f55a53d05230415aed4640fde6",
+      "source_archive_sha256": "5464bcb6d9814750d9934c61d681057dae21e93b6b58334f0ceea59a601d7a1a",
+      "changed_entry": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "changed_entry_sha256": "9b1301cb8eab6eafa76bff01f155762633106abc144bbad7561f65b61804ea90",
+      "cut02_changed_entry_sha256": "ff992f0bcb47d4be14a951b89376ce762fffdcd9bdebbb41cfb6086e32816588",
+      "lint_compare_sha256": "af89c3aa8323dcc9470053fb3098033d81ff4d1254927a76467aa13353cc1492",
+      "release_build_status_at_review": "pending; successful source-matched build and new binary/depfile custody are explicit launch prerequisites"
+    },
+    "findings": [],
+    "entry_diff_verification": {
+      "result": "EXACT_ORACLE_ONLY_DELTA",
+      "evidence": [
+        "The cut02/cut03 custody-entry comparison changes exactly one path: m1_coupled_tests.rs.",
+        "The full detached-tree textual diff is six insertions and one deletion, all within the common strict-P0 expected vector at the previously adjudicated assertion.",
+        "The four decimal literals are replaced by explicit f64::from_bits constants 0x3e112e0be826d695, 0x3d3c25c268497682, 0x3e45798ee2308c3a and 0x3da5fd7fe1796496.",
+        "These are exactly the independently reviewed results of applying binary64 division by 10.0 to the four retained P0 governed thresholds. No runtime helper, profile, input, normalizer, authority, fixture or physical path changed.",
+        "The source-matched cut07 lint comparison reports baseline299/candidate289 with zero additions and the same ten previously reviewed removals. Supplied format and no-run checks passed."
+      ]
+    },
+    "reused_scientific_review": {
+      "source": "implementation_final_review_cut02",
+      "statement": "Every scientific and controller entry other than the test oracle file is byte-identical to cut02. Within that file, the sole delta is the expected-bit vector. The cut02 findings, confounders, detached scope and no-production conclusion therefore remain unchanged."
+    },
+    "authorization_sequence": [
+      "Before launch, independent QA must approve the preserved-state recovery, including the original failed operation, original 0.002019944-second charge, unique output namespace and consumed single-replay flag.",
+      "The cut03 release build must succeed and new binary, depfile, source, authority, protocol, controls, runner and recovery custody must be verified against their frozen receipts.",
+      "Then exactly one corrected C1 replay is authorized. This consumes the sole correction/replay allowance regardless of outcome.",
+      "If corrected C1 passes, run each of the five previously unrun frozen controls once under the unchanged limits.",
+      "If and only if corrected C1 and all five remaining controls pass, the already frozen reference, diagnostic and timing schedule may proceed in its specified order and caps.",
+      "Any subsequent control failure, custody mismatch, required-cell refusal, incomplete day or missing primitive evidence halts dependent work as unresolved. No second correction or replay is authorized."
+    ],
+    "residual_risk_and_missing_tests": [
+      "The corrected oracle has not yet executed; static review proves only that the intended expected bits and no other source delta are present.",
+      "Cut03 release build/custody and QA recovery approval were pending at this review checkpoint and remain mandatory gates.",
+      "All cut02 declared approximate-pullback/chart confounders and detached no-production limits remain in force."
+    ],
+    "verdict": {
+      "status": "APPROVED_STATIC_FOR_SINGLE_C1_REPLAY_AFTER_EXTERNAL_GATES",
+      "statement": "Cut03 implements exactly the authorized oracle-only correction and introduces no scientific change. Once QA approves recovery and the new release build/custody is complete, exactly one corrected C1 replay may run. Passing C1 unlocks the five unrun controls; passing all six unlocks only the frozen fixed schedule. Any later control failure is terminal for this investigation because no second correction/replay is authorized.",
+      "physical_charge_seconds_by_reviewer": 0
+    }
+  },
+  "terminal_c1_replay_failure_adjudication": {
+    "reviewed_at": "2026-09-30T23:28:29Z",
+    "reviewer": "/root/correctness",
+    "scope": "Read-only static diagnosis of the terminal corrected-C1 replay failure against immutable review-cut03. No further implementation, control replay, reference, candidate, diagnostic or timing execution is authorized.",
+    "evidence_class": "Static source and frozen-input arithmetic only. This reviewer ran no Rust command and no physical execution. The named operation artifact was not present under the reviewed repository or experiment directory, so the panic location, operation names and charges below are coordinator-reported evidence; the refusal mechanism was independently reconstructed from the immutable source and raw operands.",
+    "reviewed_cut": {
+      "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/review-cut03",
+      "source_tree_sha256": "fb933d74c6964eacc2c1932aa9d1340b1d60fb1e192161ccc8ab50d3d1e09e00",
+      "control_fixture": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json",
+      "base_input": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json"
+    },
+    "reported_execution_evidence": {
+      "original_failed_operation": "operation-fe622ef69e1608e12123.json",
+      "original_charge_seconds": 0.002019944,
+      "corrected_replay_operation": "operation-fe622ef69e1608e12123-c1-oracle-replay01.json",
+      "corrected_replay_charge_seconds": 0.051809621,
+      "total_physical_charge_seconds": 0.053829565,
+      "reported_panic": "m1_coupled_tests.rs:7687: control mapped seed: Vegetation(M1Error { code: VEG-E-142, stage: Domain })",
+      "reported_downstream_execution": "No C1 oracle/core assertion, other control, reference, candidate, diagnostic or timing cell ran.",
+      "replay_allowance": "Consumed; no second correction or replay is authorized."
+    },
+    "findings": [
+      {
+        "severity": "terminal blocker for this investigation",
+        "classification": "CONTROL_FIXTURE_ADMISSIBILITY_DEFECT; PHYSICAL_SOLVER_RESULT_UNAVAILABLE",
+        "title": "Frozen C1 contradicts its admissibility oracle because its reconstructed canopy humidity is negative.",
+        "locations": [
+          "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:14",
+          "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:27",
+          "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json:38",
+          "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json:9",
+          "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json:14",
+          "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json:317",
+          "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json:398",
+          "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7607",
+          "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7685",
+          "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7919",
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2633",
+          "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2672"
+        ],
+        "source_grounded_diagnosis": [
+          "C1 freezes qair to IEEE-754 bits 0x3f50624dd2f1a9fc (0.001) and both reservoirs to M=H=+0. Its own oracle says the reconstructed qcan must be finite and in [0,0.1].",
+          "The retained base has pressure 87633.52548751776 Pa, canopy temperature 266.85496453757526 K, vapor resistance 37.42956764357553 s/m and snow-to-canopy vapor flux -4.871670425672764e-05 kg m^-2 s^-1. Zero reservoir mass makes both wet conductances zero.",
+          "Direct evaluation of the immutable reconstruction expression gives rho=1.144030085708415 kg/m^3, snow contribution -4.258341180473494e-05 m/s, atmospheric contribution +2.671684614480556e-05 m/s, and the two nonzero shade dry-leaf contributions together +3.345566981968688e-09 m/s. The numerator is therefore -1.5863220092947408e-05 m/s and the denominator is +0.026718110358890816 m/s.",
+          "The reconstructed qcan is -0.0005937253750308246 (binary64 0xbf43748788c6a9d6), robustly outside [0,0.1]. The exact typed refusal is the domain guard at m1_coupled.rs:2673.",
+          "separate_accuracy_apply_control calls reconstruction and unwraps it at m1_coupled_tests.rs:7685-7687. Consequently execution never reaches the independent C1 q oracle or designated core call at lines 7922-7928."
+        ],
+        "missing_prerequisite": "Before release, the frozen C1 control required independent raw-operand validation that its declared base plus overrides produced a nonnegative humidity-map numerator and an in-domain qcan under the retained negative snow-vapor forcing. That prerequisite was absent. Identifying it does not authorize changing the humidity override, forcing, profile, mapping or any physical input.",
+        "adjudication": "The panic is the expected implementation response to the actual frozen C1 operands, while the fixture label and oracle expectation are false for those operands. It is a fixture/control-data failure before physical core evaluation, not a valid negative physical-control result and not evidence for or against full/reduced solver accuracy."
+      }
+    ],
+    "outcome_disposition": {
+      "C1_empty_admissible": "UNAVAILABLE: mapped seed refused before the independent oracle and core.",
+      "C2_through_C6": "NOT_RUN_UNAVAILABLE",
+      "reference_profile": "NOT_RUN_UNAVAILABLE",
+      "candidate_profiles": "NOT_RUN_UNAVAILABLE",
+      "fixed_schedule_and_cadence": "NOT_RUN_UNAVAILABLE",
+      "accuracy_comparison": "UNRESOLVED",
+      "runtime_cost_and_speedup": "UNESTABLISHED; only failed-control overhead of 0.053829565 seconds is reported and it is not a model-cost measurement.",
+      "production_or_scientific_claim": "NONE"
+    },
+    "residual_risk_and_missing_tests": [
+      "The immutable implementation retains the prior static cut02/cut03 review conclusions, including the approximate-pullback/chart confounder, but those static conclusions cannot substitute for the controls and fixed schedule that did not run.",
+      "No successful control establishes actual full/reduced controller execution, physical reconstruction, residual parity, conservation reconstruction, strict-reference behavior, day continuity, cadence, accuracy or runtime.",
+      "Because the sole corrected-C1 replay is consumed and further implementation or physical work is forbidden, the missing evidence cannot be recovered within this investigation."
+    ],
+    "verdict": {
+      "status": "TERMINAL_UNAVAILABLE_REPLAY_EXHAUSTED",
+      "statement": "The investigation cannot establish separate-accuracy correctness, accuracy benefit or deployable cost. C1 failed because its frozen fixture is outside the reconstruction humidity domain before core evaluation; all dependent evidence is unavailable. No further correction, replay, other control, reference, candidate, diagnostic or timing execution is authorized.",
+      "physical_charge_seconds_by_reviewer": 0,
+      "reported_total_physical_charge_seconds": 0.053829565
+    },
+    "partial_pre_control_evidence": {
+      "classification": "COORDINATOR_REPORTED_PARTIAL_ONLY; NOT A COMPLETE CONTROL ACCEPTANCE",
+      "statement": "Given the reported replay panic at the C1 mapped-seed unwrap, Rust sequential execution necessarily passed the common prelude earlier in the same test: the P1 and corrected strict-P0 governed-threshold assertions, the smooth A/60 retained Jx/Jy assembly, direct anchor/identity direction checks, physical identity residual rows 14..20 and their 1e-9 normalizers, and the listed smooth implicit-pullback finite-difference checks (m1_coupled_tests.rs:7759-7908). This is useful partial evidence only. It did not evaluate C1, any of C2-C6, or a full controller/day schedule, and the operation artifact was unavailable to this reviewer for independent custody inspection."
+    }
+  },
+  "final_package_consistency_review": {
+    "reviewed_at": "2026-09-30T23:32:49Z",
+    "reviewer": "/root/correctness",
+    "scope": "Bounded final static consistency check of the package leading disposition, mechanical results, terminal runner/operation evidence, recoverable cut custody and staged diagnostic-authority scope. Prior numerical and implementation reviews are reused.",
+    "evidence_class": "Static file, JSON, hash and staged-path inspection only. No source change, Rust command, control, reference, candidate, diagnostic, timing cell or other physical execution was performed.",
+    "findings": [],
+    "consistency_evidence": [
+      "package.md leads with INCOMPLETE, corrected replay exhausted, HALTED, no further execution or correction, no main Rust adoption, and no production or push authorization. It classifies the second C1 failure as fixture inadmissibility before physical core evaluation rather than a solver-performance or accuracy negative.",
+      "The package reproduces the independently reviewed C1 raw operands and qcan=-0.0005937253750308246 kg/kg witness, preserves the admitted [0,0.1] guard, forbids retuning, and identifies an independently validated admissible control corpus as the missing prerequisite.",
+      "separate-accuracy-results.json contains exactly 42 cells: 24 investigation-A and 18 investigation-B. Every cell has diagnostic_status NOT_RUN, accuracy_status UNRESOLVED, zero timing batches and no operation. All three reference credibility entries are UNRESOLVED and day_analyses is empty.",
+      "The terminal runner state is HALTED, defect_replay_consumed=1, completed is empty, preserves both failed C1 result records, reports reference_seconds=0.0 and physical_seconds=0.053829565. Raw operation records match the first strict-P0 oracle panic and second mapped-seed VEG-E-142 Domain panic stated by the package.",
+      "The package correctly treats 0.053829565 seconds as failed-control setup/process elapsed rather than CPU-per-day or deployment cost. It claims no frontier, completed day, reference, stability result, accuracy result, conservation ledger, scaling result or deployable path.",
+      "The frozen numerical-methods, protocol and control-fixture hashes remain b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c, 3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e and 80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb respectively.",
+      "Source cut03 archive SHA256 5464bcb6d9814750d9934c61d681057dae21e93b6b58334f0ceea59a601d7a1a and tools cut04 archive SHA256 4a8fa22a569666f80e155a5cab8c7e9efa62bc705ccfe52fd70cece5c1c3de5f are present; build cut04 pins binary SHA256 1e8a534a0f47ee014c1a5d6fce867acc06c1bc04c5d24192f60417d42b713b8c.",
+      "The staged science-authority scope is limited to SC-LANDSURFACEENERGY-001.md, its binding-index.md and numerical-methods.md. The amendment remains explicitly review-pending, detached-only, unpromoted and production HOLD. No Rust source, Cargo manifest or lockfile is staged.",
+      "Historical checkpoint prose later in package.md records the formerly conditional replay sequence, but the leading current disposition explicitly supersedes it with the terminal failed replay and exhausted allowance; it does not reopen execution."
+    ],
+    "residual_risk_and_missing_tests": [
+      "All physical science, accuracy, conservation, reference, stability and cost evidence remains absent by terminal disposition; static implementation and common-prelude evidence cannot replace it.",
+      "The closing elapsed-budget ledger was explicitly pending at this review checkpoint and must be added without changing the fixed allowance or terminal no-replay disposition.",
+      "The worktree contains unrelated unstaged Rust and untracked files outside this package. They were not reviewed and must remain excluded from the scoped diagnostic commit.",
+      "git diff --cached --check reports trailing whitespace inside a staged captured Clippy stdout artifact. This is archived command output, not numerical source or authority text; it does not change the science disposition."
+    ],
+    "verdict": {
+      "status": "APPROVED_INCOMPLETE_BLOCKED_DIAGNOSTIC_CLOSURE",
+      "statement": "No correctness inconsistency blocks the scoped local evidence commit. The package and primary records consistently close the investigation as incomplete and blocked at an inadmissible C1 fixture, with replay exhausted, all 42 cells and all references unresolved, cost/accuracy unmeasured, and no production or Rust adoption. Approval is limited to preserving this diagnostic negative and its reviewed authority/evidence; it is not numerical, scientific, deployment or release acceptance.",
+      "physical_charge_seconds_by_reviewer": 0
+    }
+  }
+}

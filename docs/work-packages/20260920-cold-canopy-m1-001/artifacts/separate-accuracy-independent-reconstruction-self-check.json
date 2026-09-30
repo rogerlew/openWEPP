@@ -1,0 +1,77 @@
+{
+  "schema": "openwepp.m1-separate-accuracy-independent-reconstruction.self-check-receipt.v2",
+  "generated_at_utc": "2026-09-30T22:33:44Z",
+  "author": "/root/correctness",
+  "supersedes_receipt_sha256": "3485b50c17956923f592bfed3182ea7625734f71bb20bb549e29903a43674a5e",
+  "fix_scope": "Independent raw routing reconstruction now derives canopy capture, rain throughfall/stemflow, captured upper drainage, mixed lower incident liquid, bypass terminal components, lower reservoir release, and mass/enthalpy debit-credit identities. Missing raw routing operands fail closed; synthetic nonzero-rain plus nonzero-drainage cases reject both historical total-lower-incident and raw-upper-drainage transfer mislabels.",
+  "review_posture": "Verifier authoring evidence only; this is not independent review of the verifier and QA review remains required.",
+  "authority": {
+    "method": "COLD-CANOPY-M1-SEPARATE-ACCURACY-01",
+    "numerical_methods_sha256": "b30225cef30ec2c35f465d6e2466b3411229a8097446612fd9fd3688de55505c",
+    "canonical_formula_sources": [
+      "m1_liquid_routing.rs:m1_liquid_interception_fraction",
+      "solver_covered_evaluation/m1_coupled.rs:coupled_core routing operands"
+    ]
+  },
+  "raw_routing_operands_required": [
+    "top_rain_kg_m2_s",
+    "top_rain_specific_enthalpy_j_kg",
+    "lai_m2_m2[2]",
+    "sai_m2_m2[2]",
+    "liquid_interception_fraction[2]",
+    "stemflow_fraction[2]",
+    "reservoirs[0..2].drainage_kg_m2_s",
+    "reservoirs[0..2].wet_temperature_k",
+    "reservoirs[0..2].incident_liquid_kg_m2_s",
+    "reservoirs[0..2].incident_enthalpy_j_kg"
+  ],
+  "candidate_routing_operands_compared_only": [
+    "upper_to_lower_intercepted_mass_kg_m2_s",
+    "upper_to_lower_intercepted_specific_enthalpy_j_kg",
+    "lower_terminal_release_mass_kg_m2_s"
+  ],
+  "verifier": {
+    "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-independent-reconstruction.py",
+    "sha256": "d13fc8575422123bcdd439fe3e613fec92138e1e9d3493d7ebdbee7ba25917f8",
+    "python": "Python 3.14.4"
+  },
+  "commands": [
+    {
+      "command": "python3 -m py_compile separate-accuracy-independent-reconstruction.py",
+      "exit_code": 0,
+      "class": "arithmetic/static tooling; no physical execution"
+    },
+    {
+      "command": "python3 separate-accuracy-independent-reconstruction.py --self-check",
+      "exit_code": 0,
+      "stdout_sha256": "910b02d90a28ebef6fc8ff637af022a552681331ea8ca90b5e09f8ce374ba5aa",
+      "class": "synthetic arithmetic only; no physical execution"
+    }
+  ],
+  "result": {
+    "authority": "COLD-CANOPY-M1-SEPARATE-ACCURACY-01@b30225ce",
+    "physical_execution": false,
+    "schema": "openwepp.m1-separate-accuracy-independent-reconstruction.v2.self-check",
+    "status": "PASS",
+    "synthetic_only": true,
+    "tests": {
+      "candidate_residual_poison_invariance": true,
+      "empty_support_list_fails_closed": true,
+      "hardcoded_21_row_oracle": true,
+      "hardcoded_transfer_ledger_oracle": true,
+      "missing_candidate_normalizers_fail_closed": true,
+      "missing_candidate_residuals_fail_closed": true,
+      "missing_operand_fails_closed": true,
+      "missing_routing_operand_fails_closed": true,
+      "old_total_lower_incident_transfer_label_rejected": true,
+      "raw_upper_drainage_transfer_label_rejected": true,
+      "strict_reference_tolerance_vector": true
+    }
+  },
+  "physical_execution": false,
+  "candidate_helpers_used_for_reconstruction": false,
+  "pending": [
+    "Independent QA review of changed verifier and receipt",
+    "Evaluation against implemented serialized support output after the pre-execution gate permits it"
+  ]
+}

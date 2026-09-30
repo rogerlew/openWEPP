@@ -1,0 +1,194 @@
+{
+  "status": "REVIEW-PENDING corrected authority/protocol; no numerical body edit or physical execution",
+  "method": "COLD-CANOPY-M1-SEPARATE-ACCURACY-01",
+  "source": {
+    "cut": "frozen14/treatment",
+    "tree_sha256": "91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7",
+    "recovered_path": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/recovered-treatment"
+  },
+  "common_algorithm": {
+    "controller": "complete test-only 21-coordinate trust-region/BVLS/SVD controller",
+    "update_cap": 50,
+    "proposal_cap_per_base": 21,
+    "common_to_full_and_reduced": [
+      "phase_capacity_selection",
+      "SVD_rank_refusal",
+      "bounds",
+      "radius_globalization",
+      "KKT_refinement",
+      "hydraulic_completion",
+      "materialization",
+      "typed_failures"
+    ],
+    "cross_support_cache": "forbidden",
+    "initial_seed": "same mapped physical x for both arms: current M/H, prescribed snow/soil, Tcan=air, D=0, both zero-area sun anchors=max(Tcan,273.15), and finite reconstructed q"
+  },
+  "representations": {
+    "full": "ordinary 21-coordinate primitive state",
+    "reduced": {
+      "normal_free_dimension": 13,
+      "two_dark_sun_anchor_dimension": 11,
+      "exact_map": [
+        "x14..x20=prescribed snow/soil identities",
+        "x13=positive-denominator zero-PAR vapor balance",
+        "zero-area sun anchor only after structural certificate"
+      ],
+      "row_policy": "retain and independently check actual R(P(y))[0..20]; never write a mapped row literal zero",
+      "jacobian": "both arms first assemble retained complete Jx using original natural/selected FD probes/phase/capacity/anchor overrides; REDUCED forms approximate implicit E where j12=position(original12), E[a,j12]=1 above273.15 else0, dq/dy[j]=-(J13,i(j)+J13,0E0j+J13,6E6j)/J13,13; Jy=JxE; require J13,13 finite negative nonzero; require BVLS05 raw/weighted zero certificate independently in Jx and mapped Jy; charge Jx equally and pullback separately; control compares to explicit-P centered tangent",
+      "physical_checks": "all physical bounds, step norms, domain checks, phase/capacity checks and materialization use reconstructed x",
+      "geometry": "affine y box/scales copied by retained original index; native diagonal Euclidean y ball and BVLS y masks only; all physical candidate checks unchanged; no added physical governed-step rejection or radius rule",
+      "roles": {
+        "original_index_order": [
+          "Tsun0",
+          "Tshade0",
+          "Tstem0",
+          "M0",
+          "H0",
+          "D0",
+          "Tsun1",
+          "Tshade1",
+          "Tstem1",
+          "M1",
+          "H1",
+          "D1",
+          "Tcan",
+          "qcan",
+          "snow",
+          "soil0",
+          "soil1",
+          "soil2",
+          "soil3",
+          "soil4",
+          "soil5"
+        ],
+        "ordinary_y_indices": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "other_y_indices": "0..12 except qcan (13), unless both sun areas exact zero",
+        "anchor": "max(Tcan,273.15); derivative 1 only for Tcan>273.15, equality constant branch"
+      },
+      "humidity_operands": "g_dry=area_dry/(rb+rs), g_wet=gb_wet*area_wet, ga=1/Rvapor, all m/s; q=(sum(g*qsurface)+ga*qair+E_snow/rho)/(sumg+ga)"
+    },
+    "wet_null_hold": "separate BVLS05 assembly-local +0 increment only; not a coordinate map"
+  },
+  "profiles": {
+    "P0": {
+      "temperature_k": "1e-8",
+      "humidity_kg_kg": "1e-12",
+      "hydraulic_mm": "1e-7",
+      "beta": "1e-10",
+      "residuals": "existing policy"
+    },
+    "P1": {
+      "temperature_k": "1e-6",
+      "humidity_kg_kg": "1e-10",
+      "hydraulic_mm": "1e-5",
+      "beta": "1e-8",
+      "mass_capacity_abs": "1e-8",
+      "mass_capacity_rel": "1e-6",
+      "enthalpy_abs_j_m2": "3.337e-3",
+      "enthalpy_rel": "1e-6",
+      "energy_abs_rel": [
+        "1e-4",
+        "1e-8"
+      ],
+      "water_abs_rel": [
+        "1e-10",
+        "1e-7"
+      ]
+    },
+    "P2": {
+      "temperature_k": "1e-4",
+      "humidity_kg_kg": "1e-8",
+      "hydraulic_mm": "1e-3",
+      "beta": "1e-6",
+      "mass_capacity_abs": "1e-6",
+      "mass_capacity_rel": "1e-5",
+      "enthalpy_abs_j_m2": "3.337e-1",
+      "enthalpy_rel": "1e-5",
+      "energy_abs_rel": [
+        "1e-2",
+        "1e-6"
+      ],
+      "water_abs_rel": [
+        "1e-8",
+        "1e-5"
+      ]
+    },
+    "P3": {
+      "temperature_k": "1e-2",
+      "humidity_kg_kg": "1e-6",
+      "hydraulic_mm": "1e-1",
+      "beta": "1e-4",
+      "mass_capacity_abs": "1e-4",
+      "mass_capacity_rel": "1e-3",
+      "enthalpy_abs_j_m2": "3.337e1",
+      "enthalpy_rel": "1e-3",
+      "energy_abs_rel": [
+        "1",
+        "1e-4"
+      ],
+      "water_abs_rel": [
+        "1e-6",
+        "1e-3"
+      ]
+    },
+    "identity_rows": "indices14..20 exactly 1e-9 all profiles; all temperature residual rows, including inactive anchors, retain energy-tolerance normalizers; direct-anchor Jx derivative has 1 K coordinate unit; retained hydraulic inner precision/continuity unchanged all profiles",
+    "capacity_scale": "max(C_liq,1e-9), distinct from mass scale max(abs(M0),abs(deltaM),1e-9)"
+  },
+  "reference": {
+    "support_s": 60,
+    "arm": "FULL/P0",
+    "strict_thresholds": {
+      "T": "1e-9",
+      "q": "1e-13",
+      "hydraulic": "1e-8",
+      "beta": "1e-11",
+      "mass_capacity_abs_rel": [
+        "1e-10",
+        "1e-9"
+      ],
+      "enthalpy_abs_rel": [
+        "1e-7",
+        "1e-9"
+      ],
+      "energy_abs_rel": [
+        "1e-7",
+        "1e-11"
+      ],
+      "water_abs_rel": [
+        "1e-13",
+        "1e-10"
+      ]
+    },
+    "unchanged": [
+      "rank",
+      "domain",
+      "identity",
+      "hydraulic continuity"
+    ],
+    "acceptance": "report same-unit differences separately: T<=1e-7K, q<=1e-11kg/kg, M<=1e-10kg/m2, H<=1e-7J/m2, D<=1e-10kg/m2/s; phase/capacity labels categorical. stable iff all numeric thresholds pass and labels agree; otherwise unresolved. all 21 residuals independently pass strict profile.",
+    "cap_seconds": 150,
+    "aggregate_cap_seconds": 900,
+    "ledger": "independent primitive operand reconstruction over 60s: deltaM, deltaH and drainage transfer; thresholds kg/m2=1e-10, J/m2=1e-7; missing/failed operand => accuracy unresolved"
+  },
+  "matrix": {
+    "A": "3 cases x FULL/REDUCED x P0..P3 x 60s",
+    "B": "3 cases x REDUCED x P2/P3 x 60/300/900/1800s; each stratum requires its own 60s completion"
+  },
+  "controls_artifact": {
+    "path": "separate-accuracy-control-fixtures.json",
+    "sha256": "80d913462123e0e87ca1244081325a6634bea33f2fa542b58fda883cb8a896eb"
+  },
+  "controls_definition": "The hash-pinned controls_artifact is the sole control definition; previous embedded prose controls are superseded, not a second executable input."
+}

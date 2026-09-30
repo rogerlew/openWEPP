@@ -1,0 +1,384 @@
+{
+  "evidence_class": "Prospective inventory; no solver executed",
+  "candidate_cells": [
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN_READINESS_PENDING"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "A_cold_ice_day/REDUCED/P2/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "A_cold_ice_day/REDUCED/P2/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "A_cold_ice_day/REDUCED/P2/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "A_cold_ice_day/REDUCED/P3/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "A_cold_ice_day/REDUCED/P3/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "A_cold_ice_day/REDUCED/P3/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "B_mixed_to_liquid_day/REDUCED/P2/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "B_mixed_to_liquid_day/REDUCED/P2/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "B_mixed_to_liquid_day/REDUCED/P2/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "B_mixed_to_liquid_day/REDUCED/P3/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "B_mixed_to_liquid_day/REDUCED/P3/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "B_mixed_to_liquid_day/REDUCED/P3/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "C_freeze_then_melt_day/REDUCED/P2/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "C_freeze_then_melt_day/REDUCED/P2/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "C_freeze_then_melt_day/REDUCED/P2/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "C_freeze_then_melt_day/REDUCED/P3/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "C_freeze_then_melt_day/REDUCED/P3/60 completed"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN_READINESS_PENDING",
+      "requires": "C_freeze_then_melt_day/REDUCED/P3/60 completed"
+    }
+  ],
+  "references": [
+    {
+      "case": "A_cold_ice_day",
+      "strict_trajectory": "NOT_RUN",
+      "one_stability_check": "NOT_RUN"
+    },
+    {
+      "case": "B_mixed_to_liquid_day",
+      "strict_trajectory": "NOT_RUN",
+      "one_stability_check": "NOT_RUN"
+    },
+    {
+      "case": "C_freeze_then_melt_day",
+      "strict_trajectory": "NOT_RUN",
+      "one_stability_check": "NOT_RUN"
+    }
+  ],
+  "controls": {
+    "empty_admissible": "NOT_RUN",
+    "empty_supersaturated_refusal": "NOT_RUN",
+    "directional_phase_joins": "NOT_RUN",
+    "capacity_positive_drainage": "NOT_RUN",
+    "fully_wet_to_dry_reactivation": "NOT_RUN",
+    "near_bound_rank_refusal": "NOT_RUN"
+  }
+}

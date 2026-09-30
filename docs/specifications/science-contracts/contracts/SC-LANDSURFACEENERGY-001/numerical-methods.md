@@ -1155,6 +1155,129 @@ existing work observation, including refused/discarded work.  A domain-refusal
 endpoint is control-path cost only, never a seasonal, target, or throughput
 claim.
 
+### COLD-CANOPY-M1-SEPARATE-ACCURACY-01 detached reduced-representation amendment
+
+**Status: review-pending diagnostic authority.** This is a fixed detached
+comparison only.  It selects neither a production solver nor a historical
+proposal-only timing path.
+
+Both arms invoke the retained complete test-only TR/BVLS/SVD controller with
+50 accepted bases, 21 proposals/base, its existing selected phase/capacity
+assembly, rectangular SVD rank refusal, KKT/refinement, radius rules,
+hydraulic completion, materialization and typed failures.  A support starts
+with one primitive seed `x0`: current M/H; prescribed indices 14..20; `Tcan`
+equal to air temperature; zero drainage; air dry temperatures; both zero-area sun anchors reconstructed from Tcan; and the humidity
+constructed below. FULL receives exactly those 21 bits. REDUCED receives the
+unique `y0` such that `P(y0)=x0`; no accepted base, factor, face, radius or
+Jacobian crosses a support.
+
+Index order is frozen as `[Tsun0,Tshade0,Tstem0,M0,H0,D0,
+Tsun1,Tshade1,Tstem1,M1,H1,D1,Tcan,qcan,snow,soil0..soil5]`. REDUCED's `y`
+order is the ascending retained original indices. It removes 14..20 as exact
+prescribed identities; at exact zero PAR it removes 13 by the humidity map; and
+when both sun structural areas are IEEE `+0.0` or `-0.0`, it also removes 0 and
+6. Thus the corpus's ordinary order is `[1,2,3,4,5,7,8,9,10,11,12]` (11
+coordinates); otherwise it is original 0..12 (13 coordinates). Each zero-area
+sun anchor is exactly `max(Tcan, 273.15 K)`: its derivative is 1 for
+`Tcan > 273.15`, 0 for `Tcan <= 273.15`; equality selects the constant branch.
+Any changed structural certificate or a nonfinite anchor rejects that assembly,
+rather than changing dimension mid-face.
+
+Before humidity construction, evaluate the retained q-independent operands in
+this order: validate the primitive non-q input domain; decode each reservoir,
+capacity, wet fraction and wet temperature; evaluate density at `Tcan`; compute
+internal saturation `q_surface_i` for each dry leaf and external wet saturation
+and snow source with the retained phase; then compute exact retained conductances in m s-1: each dry `g_i=dry_area/(r_b+r_s)`, each wet `g_wet=gb_wet*wet_area`, and `ga=1/R_vapor`; sum dry and wet conductances without rho using the retained arithmetic with
+`qcan` deliberately unavailable. Reject in that order for any retained typed
+error, nonfinite value, `rho<=0`, `g_i<0`, `ga<=0`, or
+`sum(g_i)+ga<=0`. Define
+
+```text
+qcan = (sum_i(g_i*q_surface_i) + ga*qair + E_snow/rho) / (sum_i(g_i)+ga).
+```
+
+`E_snow` is the retained signed snow vapor mass flux in kg m-2 s-1; the numerator uses `E_snow/rho` and every g is m s-1, exactly as displayed. Reject a nonfinite numerator/result or a
+result outside the ordinary q bounds. Only then run the retained q-dependent
+empty-store surface guards and leaf `q_surface>qcan` guards in their original
+surface order, preserving their typed precedence. No clamp or literal-zero
+residual is allowed.
+
+`P(y)` is reconstructed before every residual, phase/capacity, candidate,
+hydraulic and final-materialization call. Every call retains actual binary64
+`R(P(y))[0..20]`. Both arms first assemble the same retained complete physical
+`Jx` at that reconstructed x: ordinary natural/selected phase side, original
+finite-difference steps/probes, retained anchor-row overrides, capacity
+selection and all source refusal precedence. FULL passes Jx directly. REDUCED
+forms only a deterministic **approximate tangent pullback** after that complete
+assembly; it does not rerun finite differences in y and must report this
+linearization as a representation confounder.
+
+Let `E` begin as the 21-by-m original-index scatter. Identity rows 14..20 are
+zero. Let `j12` be the y-column whose retained original index is 12. For anchors 0 and 6, set `E[a,j12]` to the retained anchor branch coefficient (1 above 273.15 K, 0 at/below it). For each y column `j`, let `i(j)` be its retained original index and define
+`dq/dy[j]=-(Jx[13,i(j)]+Jx[13,0]*E[0,j]+Jx[13,6]*E[6,j])/Jx[13,13]`.
+Set E[13,j] to that value and form `Jy=Jx*E`; retain all 21 rows and original
+row normalizers. This is permitted only if Jx[13,13] is finite, strictly
+negative and nonzero; otherwise return the retained typed Jacobian/rank refusal
+before BVLS. It is the implicit tangent of the retained vapor row, not a claim
+that its finite-difference coefficient equals the derivative of the explicit
+nonlinear humidity reconstruction. The six controls independently compare this
+E humidity/anchor tangent with centered evaluations of explicit P on the same
+smooth branch; a branch/guard mismatch is a control failure, not a runtime
+alternate derivative. Pullback multiply/add work is separately charged, and
+both arms charge the same complete Jx assembly/probes.
+
+The retained controller's affine box and scaled Euclidean ball exist **only in
+representation coordinates**. For FULL use original x lower/upper/scales. For
+REDUCED copy them for each retained original index in y order; eliminated
+coordinates have no box or face bit. BVLS lower/upper face masks, pivots, KKT
+releases and radius updates operate only on y. Candidate reconstruction still
+uses exact nonlinear P and performs all existing primitive bounds,
+phase/capacity/domain and final materialization checks. It does **not** impose a
+new global physical governed-step rejection: controller admission and radius
+update remain exactly retained. The controlled trust norm is native scaled x or
+y norm, and the induced physical metric is reported only. All 21 residual rows
+remain in the rectangular objective.
+
+BVLS-05 is separate. At each natural/selected/new-base assembly, first derive
+its certificate on the complete physical `J_x` and physical masks. Map an
+admitted certified role only if its original index occurs in y; construct
+`D_y` in ascending y order, set that increment `+0.0`, and scatter through the
+same original-index map. Eliminated 0,6,13,14..20 can never enter `D_y`.
+The raw and weighted zero-column certificate must hold independently in both Jx original-role column and its actual Jy mapped column; initial-free/current-physical-free
+requirements, all-row KKT contribution and reactivation are unchanged; a
+mapped `D_y` hold is not a P coordinate. Any new assembly that has dry area or
+loses certification leaves its y coordinate ordinary/free.
+
+P0 is current policy. Identity rows 14..20 retain their exact 1e-9 row normalizer in every profile. Every temperature residual row, including an inactive anchor row, uses its retained energy-tolerance normalizer; only the Jx direct-anchor derivative uses its retained 1 K coordinate unit. P1--P3 replace only named finite numerical admissions:
+(1) root residual normalizers for all 21 rows; (2) final materialization mass,
+enthalpy, capacity and reconstructed-to-stored residual comparisons; and (3) governed root/witness admission comparisons only. Debit-credit identities, receipt equality,
+reconstructed-to-stored equality before its stated numeric comparison,
+finite/domain/phase/rank predicates, hydraulic solver continuity, cap counts,
+and the controller merit/radius/KKT arithmetic remain exact/current. For P1--P3
+mass use `max(abs,rel*max(|M0|,|deltaM|,1e-9))`; capacity use `max(abs,rel*max(C_liq,1e-9))`; enthalpy use
+`max(Lf*absM,rel*max(|H0|,|deltaH|,1))`; energy/water use the displayed
+additive `abs+rel*max(scale,floor)`. This couples phase energy to mass,
+prevents a zero-scale collapse, and relaxes only displayed roundoff/admission
+budgets, not conservation. The same profile feeds normalizer and final check.
+
+|profile|T K|q kg/kg|hydraulic mm|beta|M/cap abs,rel|H abs J/m2,rel|energy abs,rel W/m2|water abs,rel kg/m2/s|
+|---|---:|---:|---:|---:|---|---|---|---|
+|P0|1e-8|1e-12|1e-7|1e-10|`min(1e-9,1e-8s)`|`min(1e-6,1e-8s)`|1e-6,1e-10|1e-12,1e-9|
+|P1|1e-6|1e-10|1e-5|1e-8|1e-8,1e-6|3.337e-3,1e-6|1e-4,1e-8|1e-10,1e-7|
+|P2|1e-4|1e-8|1e-3|1e-6|1e-6,1e-5|3.337e-1,1e-5|1e-2,1e-6|1e-8,1e-5|
+|P3|1e-2|1e-6|1e-1|1e-4|1e-4,1e-3|3.337e1,1e-3|1,1e-4|1e-6,1e-3|
+
+The strict reference is FULL/P0 at 60 seconds, with a 900-second aggregate budget and 150-second per-case cap with every displayed P0 step
+threshold divided by 10; mass/cap absolute and relative operands become
+`1e-10,1e-9`, enthalpy `1e-7,1e-9`, energy `1e-7,1e-11`, water
+`1e-13,1e-10`, and identity/rank/domain/hydraulic predicates remain unchanged.
+For each case the reference and P0 runs must complete. The report records same-unit state differences separately and independently reconstructs 60-second-horizon M/H/transfer ledgers in kg m-2, J m-2, and kg m-2 from primitive operands, never the candidate receipt. Stability is `stable` only when every declared state and ledger threshold in the machine-readable protocol passes and labels agree; otherwise accuracy is `unresolved` (timing may still be reported as such).
+
+The cadence arm uses REDUCED P2/P3 only after that profile's 60-second reduced
+cell completes. It consumes each authenticated 60-second forcing record once,
+joins only byte-identical forcing within an 1800-second parent, splits at each
+change/parent end, and forbids averaging, retry, adaptive subcycle or fallback.
+
 ### COLD-CANOPY-M1-TR-SVD-BVLS-05 fully-wet structural-null-direction amendment
 
 **Status: OWNER-ADOPTED prospective experimental authority; dual independent

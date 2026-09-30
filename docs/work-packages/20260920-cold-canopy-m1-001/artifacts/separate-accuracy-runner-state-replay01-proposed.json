@@ -1,0 +1,44 @@
+{
+  "completed": [],
+  "defect_replay_consumed": 1,
+  "failed": [
+    "{\"batch\":0,\"cell\":{\"control_id\":\"C1_empty_admissible\"},\"kind\":\"control\"}"
+  ],
+  "operations": {},
+  "phase": "READY",
+  "physical_seconds": 0.002019944,
+  "preserved_defect_operations": [
+    {
+      "batch": 0,
+      "cap_seconds": 30,
+      "cell": {
+        "control_id": "C1_empty_admissible"
+      },
+      "charged_seconds": 0.002019944,
+      "key": "{\"batch\":0,\"cell\":{\"control_id\":\"C1_empty_admissible\"},\"kind\":\"control\"}",
+      "kind": "control",
+      "output": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-operation-fe622ef69e1608e12123.json",
+      "reason": "fixed control failed: \nrunning 1 test\n\nthread 'm1_coupled_tests::m1_separate_accuracy_six_frozen_controls' (3467583) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7780:5:\nstrict P0 divides retained governed thresholds exactly\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nm1_coupled_tests::m1_separate_accuracy_six_frozen_controls --- FAILED\n\nfailures:\n\nfailures:\n    m1_coupled_tests::m1_separate_accuracy_six_frozen_controls\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 416 filtered out; finished in 0.00s\n\n",
+      "status": "integrity_failure"
+    }
+  ],
+  "receipt_sha256": "0ae4a2ab9c69e026cdeed47f818671804f33ca9ecddb8154e441f29d1733f6c6",
+  "recovery_reason": "Independently verified test oracle one-ULP beta error; runtime and scientific settings unchanged; exactly one affected prior control.",
+  "reference_seconds": 0.0,
+  "results": [
+    {
+      "batch": 0,
+      "cap_seconds": 30,
+      "cell": {
+        "control_id": "C1_empty_admissible"
+      },
+      "charged_seconds": 0.002019944,
+      "key": "{\"batch\":0,\"cell\":{\"control_id\":\"C1_empty_admissible\"},\"kind\":\"control\"}",
+      "kind": "control",
+      "output": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-operation-fe622ef69e1608e12123.json",
+      "reason": "fixed control failed: \nrunning 1 test\n\nthread 'm1_coupled_tests::m1_separate_accuracy_six_frozen_controls' (3467583) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7780:5:\nstrict P0 divides retained governed thresholds exactly\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nm1_coupled_tests::m1_separate_accuracy_six_frozen_controls --- FAILED\n\nfailures:\n\nfailures:\n    m1_coupled_tests::m1_separate_accuracy_six_frozen_controls\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 416 filtered out; finished in 0.00s\n\n",
+      "status": "integrity_failure"
+    }
+  ],
+  "verified_defect_namespace": "c1-oracle-replay01"
+}
