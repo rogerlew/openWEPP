@@ -1,0 +1,8 @@
+{
+  "scope": "Nonphysical mock only; tests CPU clock, handshake, finite schedule and complete output checks. No G4 invoked.",
+  "exit": 0,
+  "stdout": "{\"batches\": 14, \"measurement_pairs\": 6, \"proposals_per_arm\": 208}\n",
+  "stderr": "",
+  "driver_sha256": "a1bc8ad9bc2c2ea9e2fada9f8b3afd79c2206bf54fc4b9f4688c866f373cbf1c",
+  "mock_path": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/clock-protocol-mock"
+}

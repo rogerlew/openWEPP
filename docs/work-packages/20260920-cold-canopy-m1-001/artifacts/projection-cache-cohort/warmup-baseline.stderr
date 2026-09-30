@@ -1,0 +1,4 @@
+
+thread 'm1_coupled_tests::m1_trust_region_projection_cache_benchmark_protocol' (2349335) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:2344:14:
+frozen G4 outcome: IncompleteScope
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

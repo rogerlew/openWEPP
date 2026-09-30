@@ -1,0 +1,10 @@
+{
+  "scope": "Nonphysical mock final JSON PID and disabled optional-counter schema",
+  "exit": 0,
+  "stdout": "{\"batches\": 14, \"measurement_pairs\": 6, \"proposals_per_arm\": 208}\n",
+  "stderr": "",
+  "driver_sha256": "9d1ff46873734ee60c010c0b5e2b96e441ff402ebe814652b20d7e4ae559f4d8",
+  "mock_path": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/clock-protocol-mock/results04",
+  "analysis_exit": 0,
+  "analysis_stderr": ""
+}

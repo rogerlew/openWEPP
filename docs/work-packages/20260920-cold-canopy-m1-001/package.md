@@ -1,5 +1,202 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Projection-cache experiment — verified proposal improvement, 2026-09-30
+
+**Ran:** comparable release median per-proposal CPU cost **3169.913 → 902.169 us**;
+wall median **3177.118 → 904.643 us**. Median paired speedup is **3.503x CPU**
+(range **3.225–3.784x**) and **3.500x wall** (**3.219–3.769x**). Including separately
+measured initialization, CPU is **3269.985 → 1000.631 us**, wall
+**3280.315 → 1007.844 us**; paired speedups **3.256x/3.245x**. This supports further
+bounded cost investigation, not deployment acceptance. The approximately 100x
+proposal improvement aspiration remains far away; no full solve, completed
+OFE-day or 100-year/five-OFE run was measured. Historical instrumented G4
+5.463608ms wall is not the comparable baseline; instrumentation removal receives
+no credit for the cache improvement.
+
+Existing completed-OFE-day CPU ceilings remain stable cold 750 us, mixed 1.5 ms,
+transition 2.5 ms. Retain maps/support<=8, stable median<=2/p95<=4,
+T10/T1<=12, T19/T10<=2.2, warm CPU/wall regression<=5% from six balanced pairs,
+and whole-process memory 128 MiB + 16 MiB/OFE, including induced coupled costs.
+These deployment screens remain **unmeasured/unmet as acceptance evidence** here.
+Do not divide proposal wall time by completed-day CPU ceilings. No additional
+whole-run wall ceiling was recovered; the scale concern is not permission to
+invent one. Original M1/native/production and prior Critical campaign HOLDs remain.
+
+Owner adoption is retained verbatim in [authorization](artifacts/projection-cache-owner-authorization.md).
+The sole change is once-per-damping-search invariant projection reuse in accepted
+private cut09, plus identical benchmark/output plumbing in both detached arms.
+No physics, tolerances, derivative stencils, 48-step search limit, rank/ball/KKT checks,
+BVLS05 eligibility, acceptance predicates, dependencies, production reachability,
+main Rust or legacy run-slot permissions changed. No successor implementation or
+push is authorized. [Prospective intent](artifacts/projection-cache-adopted-intent-record.json)
+preserves the premeasurement declaration; this package remains the only maintained
+narrative.
+
+### Complete finite-cohort cost evidence
+
+One warmup of 16 fresh proposals per arm; six paired batches of 32, alternated
+B/T,T/B,B/T,T/B,B/T,T/B. All 192 measured proposals per arm and both 16-proposal
+warmups match the original diagnostic's complete encoded outcome, bit for bit.
+No evolving state or cross-proposal cache reuse. Tables give **baseline/treatment
+microseconds per proposal**; ratios are within each paired batch, not ratios of
+independently selected medians.
+
+CPU:
+
+| Pair/order | Init B/T us | Proposal B/T us | Proposal speedup | Combined B/T us | Combined speedup |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 B/T | 100.664/99.284 | 3226.784/1000.608 | 3.225x | 3327.448/1099.892 | 3.025x |
+| 2 T/B | 99.480/95.243 | 3113.042/822.596 | 3.784x | 3212.523/917.838 | 3.500x |
+| 3 B/T | 83.810/99.573 | 3071.233/855.868 | 3.588x | 3155.043/955.442 | 3.302x |
+| 4 T/B | 93.149/98.516 | 3088.344/892.516 | 3.460x | 3181.493/991.031 | 3.210x |
+| 5 B/T | 106.670/98.860 | 3290.242/1005.121 | 3.273x | 3396.913/1103.981 | 3.077x |
+| 6 T/B | 108.152/98.410 | 3232.185/911.821 | 3.545x | 3340.337/1010.231 | 3.307x |
+
+Wall:
+
+| Pair/order | Init B/T us | Proposal B/T us | Proposal speedup | Combined B/T us | Combined speedup |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 B/T | 103.894/102.340 | 3235.256/1004.973 | 3.219x | 3339.150/1107.313 | 3.016x |
+| 2 T/B | 102.500/100.817 | 3118.981/827.596 | 3.769x | 3221.481/928.413 | 3.470x |
+| 3 B/T | 89.108/103.347 | 3078.822/859.825 | 3.581x | 3167.929/963.172 | 3.289x |
+| 4 T/B | 99.392/101.738 | 3094.292/895.264 | 3.456x | 3193.684/997.002 | 3.203x |
+| 5 B/T | 107.674/102.174 | 3296.411/1012.015 | 3.257x | 3404.085/1114.190 | 3.055x |
+| 6 T/B | 109.188/104.664 | 3238.294/914.022 | 3.543x | 3347.482/1018.686 | 3.286x |
+
+Initialization medians are 100.072/98.688 us CPU and 103.197/102.257 us wall;
+its paired speedup median/range is 1.029x/[0.842,1.099] CPU and
+1.016x/[0.862,1.054] wall. No initialization improvement is attributed to caching.
+Combined paired speedup ranges are 3.025–3.500x CPU and 3.016–3.470x wall.
+Every raw interval, outcome, order, process/binary identity and batch duration is
+retained in [corrected cohort](artifacts/projection-cache-cohort-corrected/cohort.json)
+and the [cost summary](artifacts/projection-cache-cost-summary.json).
+
+The unchanged [driver](artifacts/projection-cache-timing.py) directly launches each
+release binary and reads supported Linux per-process CPU clocks, with monotonic
+`perf_counter_ns` wall. Both nominal resolutions are 1 ns, not a claim of 1 ns accuracy.
+Measured 32-proposal batches span 2.682–3.461ms initialization CPU and
+26.323–105.288ms proposal CPU (wall 2.851–3.494ms and26.483–105.485ms).
+Startup, fixture parsing, output serialization/comparison and printing are outside
+timing. Common command/marker I/O, CPU snapshot boundary effects and the necessary
+final-output copy remain included in their applicable intervals; scheduler latency
+remains included in wall time, while process CPU excludes descheduled time.
+No overhead is subtracted.
+Combined cost sums the two timed intervals and excludes between-interval waiting.
+Optional capture/counting/logging is off; guards, work budgets and state transitions
+remain. The premeasurement process snapshot found no concurrent Rust build/test commands;
+[host process evidence](artifacts/projection-cache-host-process-checks.json) and
+[environment](artifacts/projection-cache-cohort-corrected/environment.json) retain
+host/affinity/tooling details. No sample was discarded, extended or repeated for noise.
+
+### Numerical evidence, correction and independent review
+
+The original exact G4 endpoint ran once per arm on frozen13, preserving every
+physical assertion. [Diagnostic comparison](artifacts/projection-cache-diagnostic-comparison.json)
+confirms complete face/controller/decision capture, input preservation, G4 result/work
+and bit-encoded outcomes are identical; typed error is null. Actual non-refinement
+projection reconstructions fell **336 → 4**, one per owning search. Refinement RHS
+reconstruction remains separate and unchanged. Static A*V MAC estimate falls
+2,416,680 →28,770 (2,387,910 removed); the owner's 1,380,960 estimate concerned only
+the four 48-step bisections. These operation estimates are not timings or reductions
+in retained conservative budget charges. [Static accounting](artifacts/projection-cache-static-work.json)
+is supported by the new diagnostic count; overlapping work ledgers are not summed.
+
+The first timing attempt on frozen13 failed: 16 baseline inputs initialized, then
+the first proposal's output encoder returned `IncompleteScope` because optional
+`phase_events` was disabled. No `PC_PROP_END`, complete outcome, treatment warmup
+or measured pair existed. [Failed receipt](artifacts/projection-cache-finite-cohort.json)
+and [failed warmup](artifacts/projection-cache-cohort/warmup-baseline.json) remain.
+Both independent reviewers verified this post-proposal observation defect and the
+single permitted affected-arm correction. Frozen14 retains the last successful
+phase/direction in a fixed-size output snapshot on both successful selection
+branches, identically in both arms, without enabling full event capture or changing
+solver arithmetic, guards, or accounted numerical work. Correctness reviewed exact branch/consumer equivalence. No extra
+physical diagnostic was run: the frozen13 outcome is the unchanged oracle, and
+all 416 frozen14 cohort outcomes match it. The corrected baseline warmup consumed
+the sole replay; treatment warmup and every measured pair were first executions.
+No further replay remains. [Corrected receipt](artifacts/projection-cache-finite-cohort-corrected.json)
+confirms unchanged source, pinned inputs and binaries throughout.
+
+Independent correctness `/root/correctness` (rust_code_reviewer/Sol) and QA
+`/root/qa` (rust_qa_reviewer/Terra) reviewed the original arithmetic, owning cache,
+first-error order, separate refinement RHS, shared timing seam and exact terminal
+fix. They rejected premature readiness for insufficient analytic controls,
+discarded initialization state and remaining optional-observer dependencies; the
+same reviewers checked corrections. Earlier cargo/environment, compilation and
+false subnormal test expectations remain in raw receipts. The full original helper
+oracle now matches accepted source after function-name/whitespace normalization;
+independent scalar/radius expectations and changed-input controls supplement it.
+Final independent result disposition: **both approve verified proposal improvement and experiment closure**, with no blocking finding. QA independently recomputed every paired cost/ratio and requested explicit median labeling (fixed). Correctness records one medium, accepted experiment-only duplication: the full original helper oracle must remain test-only and never become a parallel production solver. See [attributable review record](artifacts/projection-cache-independent-reviews.json).
+
+### Terminal validation and custody
+
+**Ran:** frozen14 baseline 115/115 and treatment 120/120 selected Stage1/Stage2
+release numerical tests pass (treatment includes five new cache controls); prior
+debug treatment 120/120 also passes. Both terminal formatting and default library
+checks pass. Strict Clippy exits 101 in each arm with 299 inherited diagnostics;
+same-toolchain original reference also has 299. Source-aware multiset comparison,
+including macro call sites, shows **zero additions/removals**, not merely equal
+counts. This is the prospectively selected bounded inherited-lint disposition,
+not a claim of clean Clippy. The documented `too_many_lines` allowance is limited
+to the unchanged-order lambda helper. See release/format/default/lint receipts and
+[baseline](artifacts/projection-cache-baseline-frozen14-lint-comparison.json)/
+[treatment](artifacts/projection-cache-treatment-frozen14-lint-comparison.json) comparisons.
+
+Risk is **Bounded Component**: the exact diff is private `cfg(test)` staging with
+empty defaults and no production/shared-primitive activation. A0 canonical spectral
+formula, binary64 arithmetic and guard authority are unchanged; A1 touched numeric
+invariants are exercised by the selected tests and real G4 consumer. No changed
+constitutive relationship, conservation operand lineage or external A3 suite posture
+triggers additional external suites/reconstruction/anti-evasion. No dependency,
+manifest, toolchain, unsafe, public serialization, docs API or reverse-consumer
+change triggers cargo-deny, doctest or campaign execution. These applicability
+findings were independently reviewed; prior Critical/full-M1 obligations are not
+discharged. [Terminal impact scan](artifacts/projection-cache-terminal-impact.json)
+finds only the four intended private files, identical shared seams, and no added
+placeholder/unsafe code. This is experiment closure, not campaign/release qualification.
+
+Accepted archive SHA256
+`8c8bb484098c98abb19147fe158bfad3522a5efd8115bb6f31249fcc40a292ad` and source tree
+`04465bc08aa8d991b856a6caf130bc8543c5a2bb6608939bdf6ed9821bb38e3b` were verified;
+the reference remains unchanged. Frozen14 baseline source:
+`52b7cce6e55bca380f82020e809cf0241605b8e65ee80a180f2aae9d69c9118f`;
+treatment: `91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7`.
+[Build identities](artifacts/projection-cache-build-identities14.json) pin both actual
+binaries, Rust 1.95.0 (59807616e), LLVM 21.1.8, Cargo 1.95.0, unchanged thin-LTO/
+codegen-units1/release opt3 settings and the same three staging features.
+Input fixture SHA256 `4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54`;
+typed input/seed bits are also in every outcome. [Timing config](artifacts/projection-cache-timing-config14.json)
+and [646 pins](artifacts/projection-cache-measurement-pins14.json) bind exact inputs,
+shared supports, scripts and binaries.
+
+[Recovery metadata](artifacts/projection-cache-recovery.json), small source overlay,
+accepted base archive and [restore script](artifacts/projection-cache-recover.py)
+reconstruct frozen13 and frozen14 arms; all four reconstructed 771-entry trees were
+[verified exactly](artifacts/projection-cache-recovery-verification.json).
+Example: `.venv/bin/python <artifacts>/projection-cache-recover.py frozen14/treatment <new-directory>`.
+External support symlinks retain recorded pinned targets; they are not bundled
+portable dependencies. Durable originals and binaries remain under
+`/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/`.
+Raw records permit analysis replay, not another physical cohort without authorization.
+
+[Closing ledger](artifacts/projection-cache-final-ledger.json): fixed 03:22 UTC anchor,
+04:52 work cutoff, 05:22 hard deadline; carry 427743.393795 s plus 5543 s charged
+(including the full 1800 s closing allocation) = **433286.393795s**, under 434943.393795 s.
+All elapsed reading, failures, waits and concurrency counted; no old 1122 s added,
+refund or re-anchoring. Charged coverage runs through 04:54:23 UTC; 1657 s remaining
+under the ceiling does not authorize successor work. Only scoped documentation,
+evidence and recovery artifacts are committed locally; unrelated dirty work and
+main Rust are preserved; no push.
+
+**Next-cost recommendation:** the measured 3.5x proposal gain justifies a bounded
+attribution step before selecting another optimization. Remaining observed work
+includes 82 complete evaluator entries for two Jacobian assemblies, four SVDs/
+28 Jacobi sweeps and two refinement entries, with overlapping guard ledgers. The
+next largest elapsed component is **not yet measured**. Attribute Jacobian/core
+assembly versus SVD/search/refinement first; do not assume operation counts rank
+time or start another solver elaboration. Later complete-solve and completed-OFE-day
+cost/closure evidence remains necessary to assess deployment feasibility.
+
 ## Owner priority — practical runtime, reaffirmed 2026-09-29
 
 **Correctness alone is insufficient: a model that cannot meet the adopted
@@ -25,7 +222,7 @@ nor an adopted runtime target. Do not turn its roughly 10-second, 100x-scaled
 value into a new owner-approved ceiling. Recover any prior whole-run target
 from its actual record before using it; do not invent one.
 
-Current evidence: G4 proposal wall 5.463608 ms plus initialization 0.160638 ms;
+Pre-cache historical evidence: G4 proposal wall 5.463608 ms plus initialization 0.160638 ms;
 instrumentation included, CPU unresolved, no complete nonlinear solve or
 completed OFE-day denominator. Therefore deployment feasibility is **UNPROVEN**;
 the proposal wall figure cannot be divided by the slice CPU ceilings to claim

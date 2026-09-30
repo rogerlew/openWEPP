@@ -1,0 +1,111 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.45
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling typenum v1.20.0
+   Compiling serde_core v1.0.228
+   Compiling autocfg v1.5.1
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.117
+   Compiling serde v1.0.228
+   Compiling zmij v1.0.21
+   Compiling serde_derive v1.0.228
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling syn v3.0.3
+   Compiling thiserror v2.0.20
+   Compiling serde_json v1.0.150
+   Compiling thiserror-impl v2.0.20
+   Compiling digest v0.10.7
+   Compiling num-integer v0.1.46
+   Compiling itoa v1.0.18
+   Compiling cpufeatures v0.2.17
+   Compiling cfg-if v1.0.4
+   Compiling memchr v2.8.0
+   Compiling sha2 v0.10.9
+   Compiling num-bigint v0.4.6
+   Compiling openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen06/treatment/crates/openwepp-sim-contract)
+   Compiling base64 v0.22.1
+   Compiling openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen06/treatment/crates/openwepp-unit-boundary)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen06/treatment/crates/openwepp-kernel-contract)
+   Compiling openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen06/treatment/crates/openwepp-coupled-time)
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen06/treatment/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen06/treatment/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find function `m1_trust_region_controller_prepare_for_timing` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3070:29
+     |
+3070 |       let controller = crate::m1_trust_region_controller_prepare_for_timing(&mut adapter)?;
+     |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1506:1
+     |
+1506 | / pub(crate) fn m1_trust_region_controller_run_for_test<E, P, Phase, V>(
+1507 | |     evaluator: &mut V,
+1508 | | ) -> Result<
+1509 | |     super::m1_trust_region_controller_interface::M1TrustRegionControllerRun,
+...    |
+1600 | |     result
+1601 | | }
+     | |_- similarly named function `m1_trust_region_controller_run_for_test` defined here
+     |
+help: a function with a similar name exists
+     |
+3070 -     let controller = crate::m1_trust_region_controller_prepare_for_timing(&mut adapter)?;
+3070 +     let controller = crate::m1_trust_region_controller_run_for_test(&mut adapter)?;
+     |
+help: consider importing this function
+     |
+   3 + use crate::m1_trust_region_controller::m1_trust_region_controller_prepare_for_timing;
+     |
+help: if you import `m1_trust_region_controller_prepare_for_timing`, refer to it directly
+     |
+3070 -     let controller = crate::m1_trust_region_controller_prepare_for_timing(&mut adapter)?;
+3070 +     let controller = m1_trust_region_controller_prepare_for_timing(&mut adapter)?;
+     |
+
+error[E0425]: cannot find function `m1_trust_region_controller_execute_prepared_for_timing` in the crate root
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3083:12
+     |
+3058 | / pub(crate) fn m1_trust_region_phase_capacity_tie_prepare_for_timing(
+3059 | |     input: &M1CoupledColumnInput,
+3060 | |     trial: &M1CoupledColumnTrial,
+3061 | | ) -> Result<M1TrustRegionTimedPrepared, crate::m1_trust_region_controller::M1TrustRegionControllerError<M1PhysicalTrustRegionAda...
+...    |
+3076 | |     })
+3077 | | }
+     | |_- similarly named function `m1_trust_region_phase_capacity_tie_prepare_for_timing` defined here
+...
+3083 |       crate::m1_trust_region_controller_execute_prepared_for_timing(prepared.controller, &mut prepared.adapter)?;
+     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: a function with a similar name exists
+     |
+3083 -     crate::m1_trust_region_controller_execute_prepared_for_timing(prepared.controller, &mut prepared.adapter)?;
+3083 +     crate::m1_trust_region_phase_capacity_tie_prepare_for_timing(prepared.controller, &mut prepared.adapter)?;
+     |
+help: consider importing this function
+     |
+   3 + use crate::m1_trust_region_controller::m1_trust_region_controller_execute_prepared_for_timing;
+     |
+help: if you import `m1_trust_region_controller_execute_prepared_for_timing`, refer to it directly
+     |
+3083 -     crate::m1_trust_region_controller_execute_prepared_for_timing(prepared.controller, &mut prepared.adapter)?;
+3083 +     m1_trust_region_controller_execute_prepared_for_timing(prepared.controller, &mut prepared.adapter)?;
+     |
+
+warning: unused imports: `m1_trust_region_controller_run_for_test`, `m1_trust_region_controller_transition_for_test`, and `m1_trust_region_seeded_entry_guard_for_test`
+  --> crates/openwepp-land-surface-energy/src/lib.rs:49:5
+   |
+49 |     m1_trust_region_controller_run_for_test, m1_trust_region_controller_transition_for_test,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+50 |     m1_trust_region_seeded_entry_guard_for_test,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+For more information about this error, try `rustc --explain E0425`.
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 2 previous errors; 1 warning emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-physical-stage` exited with code 101

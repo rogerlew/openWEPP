@@ -1,0 +1,11 @@
+{
+  "reference_count": 299,
+  "candidate_count": 299,
+  "additions": [],
+  "removals": [],
+  "method": "lint + message + source path/function/content; macro expansion traced to call site; multiset comparison, not count-only",
+  "reference_log": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-reference-lint.stdout",
+  "reference_source": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/reference-validation",
+  "candidate_log": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-baseline-frozen13-lint.stdout",
+  "candidate_source": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen13/baseline"
+}

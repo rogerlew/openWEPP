@@ -1,0 +1,30 @@
+{
+  "arm": "baseline",
+  "count": 16,
+  "label": "warmup-baseline",
+  "argv": [
+    "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/binaries13/baseline",
+    "--exact",
+    "m1_coupled_tests::m1_trust_region_projection_cache_benchmark_protocol",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "binary": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/binaries13/baseline",
+  "binary_sha256": "2ab3bca1993615c5d8b7c99448b01eb806bd0244813a56933a5540618908763d",
+  "pid": 2349334,
+  "cpu_clock_id": -18794678,
+  "cpu_clock_resolution_seconds": 1e-09,
+  "wall_clock_resolution_seconds": 1e-09,
+  "initialization": {
+    "cpu_start_ns": 1490055,
+    "cpu_end_ns": 3106713,
+    "wall_start_ns": 3810703614965535,
+    "wall_end_ns": 3810703616630544,
+    "cpu_ns": 1616658,
+    "wall_ns": 1665009
+  },
+  "error": "RuntimeError('premature EOF: PC_PROP_END')",
+  "stdout_sha256": "cac1643bee1fad249d61be3e6c205fd93e5a6ced13a8b924c32b2754abb7e821",
+  "stderr_sha256": "712b821036c38181f2eac93c5a97b090303fe809becd262956509773bc4ec2f0"
+}

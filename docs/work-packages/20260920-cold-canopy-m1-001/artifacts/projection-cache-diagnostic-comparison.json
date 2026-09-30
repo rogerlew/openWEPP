@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Ran: retained diagnostic record comparison; no new physical execution",
+  "complete_outcome_equal": true,
+  "complete_face_capture_equal": true,
+  "g4_result_work_equal": true,
+  "projection_reconstruction_counts": {
+    "baseline": 336,
+    "treatment": 4
+  },
+  "intentionally_uncompared": [
+    "G4_PROPOSAL_COST.initialization_wall_ns",
+    "G4_PROPOSAL_COST.timing"
+  ],
+  "typed_error": null
+}

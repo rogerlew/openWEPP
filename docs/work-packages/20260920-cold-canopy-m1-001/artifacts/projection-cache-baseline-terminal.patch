@@ -1,0 +1,330 @@
+--- accepted/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ frozen14/baseline/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -1758,8 +1758,13 @@
+ #[cfg(feature = "m1-trust-region-physical-stage")]
+ fn retained_phase_control_input() -> M1CoupledColumnInput {
+     let original: Value = serde_json::from_str(ORIGINAL).expect("original input");
++    retained_phase_control_input_from_original(&original)
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn retained_phase_control_input_from_original(original: &Value) -> M1CoupledColumnInput {
+     M1CoupledColumnInput::from_covered_column(
+-        covered_input(&original),
++        covered_input(original),
+         [
+             M1PhaseReservoirInput::new("stratum-z-upper::forest", 0.018, 0.0),
+             M1PhaseReservoirInput::new("stratum-a-lower::forest", 0.018, 0.0),
+@@ -1767,6 +1772,27 @@
+         conditions(),
+         topology_binding(),
+     )
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn projection_cache_canonical_outcome(
++    phase: &super::M1TrustRegionNaturalTangentObservation,
++    input: &M1CoupledColumnInput,
++    seed: &M1CoupledColumnTrial,
++) -> serde_json::Value {
++    serde_json::json!({
++        "input_fixture_sha256":"4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
++        "authenticated_input_debug":format!("{input:#?}"),
++        "original_trial_seed_bits":super::m1_trial_coordinates_for_test(seed).map(f64::to_bits),
++        "prepared_coordinates_bits":phase.prepared_coordinates.map(f64::to_bits),
++        "selection_operands_bits":phase.final_selection_operands.map(|row| row.map(f64::to_bits)),
++        "raw_jacobian_bits":phase.raw_jacobian.map(|row| row.map(f64::to_bits)),
++        "final_direction_bits":phase.final_direction.map(f64::to_bits),
++        "input_unchanged":phase.input_unchanged,"trial_unchanged":phase.trial_unchanged,
++        "natural_assemblies":phase.natural_assemblies,"selected_assemblies":phase.selected_assemblies,
++        "predictor_selected_probe_entries":phase.predictor_selected_probe_entries,
++        "final_selected_probe_entries":phase.final_selected_probe_entries
++    })
+ }
+ 
+ #[cfg(feature = "m1-trust-region-physical-stage")]
+@@ -2216,7 +2242,9 @@
+ }
+ 
+ #[cfg(feature = "m1-trust-region-physical-stage")]
+-fn assert_retained_phase_capacity_tie(input: &M1CoupledColumnInput) {
++fn assert_retained_phase_capacity_tie(
++    input: &M1CoupledColumnInput,
++) -> super::M1TrustRegionNaturalTangentObservation {
+     let phase = super::m1_trust_region_phase_capacity_tie_for_test(input, &trial())
+         .expect("frozen capacity/phase tie must reach its real phase model");
+     let [mass, enthalpy, drainage, capacity, duration] = phase.final_selection_operands[0];
+@@ -2246,6 +2274,7 @@
+     }
+     assert!(phase.input_unchanged);
+     assert!(phase.trial_unchanged);
++    phase
+ }
+ 
+ #[cfg(feature = "m1-trust-region-physical-stage")]
+@@ -2277,7 +2306,91 @@
+ #[cfg(feature = "m1-trust-region-physical-stage")]
+ #[test]
+ fn m1_trust_region_retained_phase_capacity_tie_uses_actual_model() {
+-    assert_retained_phase_capacity_tie(&retained_phase_control_input());
++    let diagnostic = std::env::var_os("OPENWEPP_PROJECTION_CACHE_DIAGNOSTIC").is_some();
++    if diagnostic {
++        super::m1_trust_region_stage1::reset_lambda_projection_search_entries_for_test();
++        super::m1_trust_region_stage1::set_lambda_projection_capture_for_test(true);
++    }
++    let input = retained_phase_control_input();
++    let seed = trial();
++    let phase = assert_retained_phase_capacity_tie(&input);
++    if diagnostic {
++        eprintln!(
++            "PC_DIAGNOSTIC {}",
++            serde_json::json!({
++                "outcome":projection_cache_canonical_outcome(&phase, &input, &seed),
++                "projection_count_mode":"diagnostic_optional_capture",
++                "projection_count":super::m1_trust_region_stage1::lambda_projection_search_entries_for_test()
++            })
++        );
++        super::m1_trust_region_stage1::set_lambda_projection_capture_for_test(false);
++    }
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++#[test]
++#[ignore = "requires the authorized finite-cohort stdin driver"]
++fn m1_trust_region_projection_cache_benchmark_protocol() {
++    use std::io::{self, BufRead, Write};
++
++    fn marker(text: &str) {
++        println!("{text}");
++        io::stdout().flush().expect("benchmark protocol flush");
++    }
++    fn outcome(
++        prepared: super::M1TrustRegionTimedPrepared,
++    ) -> super::M1TrustRegionNaturalTangentObservation {
++        super::m1_trust_region_phase_capacity_tie_execute_for_timing(prepared)
++            .expect("frozen G4 outcome")
++    }
++
++    let mut lines = io::stdin().lock().lines();
++    let original: Value = serde_json::from_str(ORIGINAL).expect("authenticated original input");
++    let authenticated_input = retained_phase_control_input_from_original(&original);
++    marker(&format!("\nPC_READY {{\"pid\":{}}}", std::process::id()));
++    let init = lines
++        .next()
++        .expect("RUN_INIT line")
++        .expect("RUN_INIT input");
++    let count = init
++        .strip_prefix("RUN_INIT ")
++        .expect("RUN_INIT command")
++        .parse::<usize>()
++        .expect("RUN_INIT count");
++    let prepared: Vec<_> = (0..count)
++        .map(|_| {
++            let input = authenticated_input.clone();
++            super::m1_trust_region_phase_capacity_tie_prepare_for_timing(&input, &trial())
++                .expect("frozen G4 preparation")
++        })
++        .collect();
++    marker("PC_INIT_END");
++    assert_eq!(
++        lines
++            .next()
++            .expect("RUN_PROPOSAL line")
++            .expect("RUN_PROPOSAL input"),
++        "RUN_PROPOSAL"
++    );
++    let outcomes: Vec<_> = prepared.into_iter().map(outcome).collect();
++    marker("PC_PROP_END");
++    assert_eq!(
++        lines.next().expect("DUMP line").expect("DUMP input"),
++        "DUMP"
++    );
++    let seed = trial();
++    let outcomes: Vec<_> = outcomes
++        .into_iter()
++        .map(|phase| projection_cache_canonical_outcome(&phase, &authenticated_input, &seed))
++        .collect();
++    marker(&format!(
++        "PC_RESULT {}",
++        serde_json::json!({"outcomes": outcomes, "projection_counts": vec![Option::<u32>::None; count], "projection_count_mode": "disabled_optional_capture"})
++    ));
++    assert_eq!(
++        lines.next().expect("EXIT line").expect("EXIT input"),
++        "EXIT"
++    );
+ }
+ 
+ #[cfg(feature = "m1-trust-region-physical-stage")]
+--- accepted/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs
++++ frozen14/baseline/crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs
+@@ -1600,6 +1600,43 @@
+     result
+ }
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) struct M1TrustRegionPreparedController<P, Phase> {
++    state: FoundationState<P, Phase>,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_trust_region_controller_prepare_for_timing<E, P, Phase, V>(
++    evaluator: &mut V,
++) -> Result<M1TrustRegionPreparedController<P, Phase>, M1TrustRegionControllerError<E>>
++where
++    V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,
++    P: Clone,
++    Phase: Clone + PartialEq,
++{
++    Ok(M1TrustRegionPreparedController {
++        state: FoundationState::initialize(evaluator)?,
++    })
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_trust_region_controller_execute_prepared_for_timing<E, P, Phase, V>(
++    prepared: M1TrustRegionPreparedController<P, Phase>,
++    evaluator: &mut V,
++) -> Result<(), M1TrustRegionControllerError<E>>
++where
++    V: M1TrustRegionControllerEvaluator<Error = E, Payload = P, Phase = Phase>,
++    P: Clone,
++    Phase: Clone + PartialEq,
++{
++    let mut state = prepared.state;
++    let result = state.transition_model(evaluator).map(|_| ());
++    evaluator.observe_controller_accounting(state.work.clone());
++    evaluator
++        .observe_controller_terminal_state(state.current.coordinates, state.materialization_count);
++    result
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+ pub(crate) fn m1_trust_region_controller_natural_tangent_for_test<E, P, Phase, V>(
+     evaluator: &mut V,
+ ) -> Result<(), M1TrustRegionControllerError<E>>
+--- accepted/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ frozen14/baseline/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -17,6 +17,27 @@
+ use super::{M1TrustRegionMeritInput, M1TrustRegionMeritObservation};
+ 
+ const TWO_POW_53: f64 = 9_007_199_254_740_992.0;
++
++#[cfg(test)]
++thread_local! {
++    static LAMBDA_PROJECTION_SEARCH_ENTRIES: Cell<u32> = const { Cell::new(0) };
++    static LAMBDA_PROJECTION_CAPTURE_ENABLED: Cell<bool> = const { Cell::new(false) };
++}
++
++#[cfg(test)]
++pub(crate) fn lambda_projection_search_entries_for_test() -> u32 {
++    LAMBDA_PROJECTION_SEARCH_ENTRIES.with(Cell::get)
++}
++
++#[cfg(test)]
++pub(crate) fn reset_lambda_projection_search_entries_for_test() {
++    LAMBDA_PROJECTION_SEARCH_ENTRIES.with(|entries| entries.set(0));
++}
++
++#[cfg(test)]
++pub(crate) fn set_lambda_projection_capture_for_test(enabled: bool) {
++    LAMBDA_PROJECTION_CAPTURE_ENABLED.with(|capture| capture.set(enabled));
++}
+ 
+ #[cfg(test)]
+ thread_local! {
+@@ -2625,6 +2646,11 @@
+     guard!();
+     if y.len() != factor.b.len() || !lambda.is_finite() || lambda < 0.0 {
+         return Err("invalid lambda input");
++    }
++    #[cfg(test)]
++    if refinement_work.is_none() && LAMBDA_PROJECTION_CAPTURE_ENABLED.with(Cell::get) {
++        LAMBDA_PROJECTION_SEARCH_ENTRIES
++            .with(|entries| entries.set(entries.get().saturating_add(1)));
+     }
+     let cols = factor.sigma.len();
+     let mut coefficients = vec![0.0; cols];
+--- accepted/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
++++ frozen14/baseline/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
+@@ -2574,6 +2574,8 @@
+     pub(crate) controller_run: Option<M1PhysicalTrustRegionControllerRunObservation>,
+     pub(crate) controller_accounting: Vec<crate::M1TrustRegionWorkObservation>,
+     pub(crate) phase_events: Vec<M1PhysicalTrustRegionPhaseObservation>,
++    // Minimal consumed outcome retained even when optional event capture is off.
++    pub(crate) last_phase_outcome: Option<([M1PhaseJoinSelection; 2], [f64; 21])>,
+ }
+ 
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+@@ -3047,6 +3049,57 @@
+ }
+ 
+ #[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) struct M1TrustRegionTimedPrepared {
++    adapter: M1PhysicalTrustRegionAdapter,
++    controller: crate::m1_trust_region_controller::M1TrustRegionPreparedController<M1PhysicalTrustRegionPayload, [M1PhaseJoinSelection; 2]>,
++    input: M1CoupledColumnInput,
++    prepared_trial: M1CoupledColumnTrial,
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_trust_region_phase_capacity_tie_prepare_for_timing(
++    input: &M1CoupledColumnInput,
++    trial: &M1CoupledColumnTrial,
++) -> Result<M1TrustRegionTimedPrepared, crate::m1_trust_region_controller::M1TrustRegionControllerError<M1PhysicalTrustRegionAdapterOwnError>> {
++    let selection = phase_join_selections(input, trial, &[0.0; 21])
++        .map_err(m1_physical_adapter_phase_failure)
++        .map_err(crate::m1_trust_region_controller::M1TrustRegionControllerError::Own)?;
++    let mut prepared_trial = trial.clone();
++    prepared_trial.coordinates[3] = selection[0].capacity_value;
++    prepared_trial.coordinates[4] = 0.0;
++    prepared_trial.coordinates[5] = 0.0;
++    let mut adapter = M1PhysicalTrustRegionAdapter::new(input.clone(), prepared_trial.clone());
++    let controller = crate::m1_trust_region_controller::m1_trust_region_controller_prepare_for_timing(&mut adapter)?;
++    Ok(M1TrustRegionTimedPrepared {
++        adapter,
++        controller,
++        input: input.clone(),
++        prepared_trial,
++    })
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
++pub(crate) fn m1_trust_region_phase_capacity_tie_execute_for_timing(
++    mut prepared: M1TrustRegionTimedPrepared,
++) -> Result<M1TrustRegionNaturalTangentObservation, crate::m1_trust_region_controller::M1TrustRegionControllerError<M1PhysicalTrustRegionAdapterOwnError>> {
++    crate::m1_trust_region_controller::m1_trust_region_controller_execute_prepared_for_timing(prepared.controller, &mut prepared.adapter)?;
++    let observation = prepared.adapter.observation();
++    let (selections, direction) = observation.last_phase_outcome.ok_or(crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope)?;
++    Ok(M1TrustRegionNaturalTangentObservation {
++        natural_assemblies: observation.natural_assemblies,
++        selected_assemblies: observation.selected_assemblies,
++        predictor_selected_probe_entries: observation.predictor_selected_probe_entries,
++        final_selected_probe_entries: observation.final_selected_probe_entries,
++        raw_jacobian: observation.raw_jacobian.ok_or(crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope)?,
++        prepared_coordinates: prepared.adapter.initial_trial.coordinates,
++        final_selection_operands: selections.map(|selection| [selection.mass, selection.enthalpy, selection.drainage, selection.capacity_value, selection.duration_s]),
++        final_direction: direction,
++        input_unchanged: prepared.adapter.input == prepared.input,
++        trial_unchanged: prepared.adapter.initial_trial == prepared.prepared_trial,
++    })
++}
++
++#[cfg(all(test, feature = "m1-trust-region-physical-stage"))]
+ fn m1_trust_region_physical_adapter_finalize_run_for_test(
+     adapter: &mut M1PhysicalTrustRegionAdapter,
+     run: &crate::m1_trust_region_controller_interface::M1TrustRegionControllerRun,
+@@ -3640,6 +3693,7 @@
+                         natural_cache: true,
+                     });
+             }
++            self.observation.last_phase_outcome = Some((phase, physical_direction));
+             return Ok(phase);
+         }
+         let phase = phase_join_selections(&self.input, &current.payload.trial, &physical_direction)
+@@ -3654,6 +3708,7 @@
+                     natural_cache: false,
+                 });
+         }
++        self.observation.last_phase_outcome = Some((phase, physical_direction));
+         Ok(phase)
+     }
+ 

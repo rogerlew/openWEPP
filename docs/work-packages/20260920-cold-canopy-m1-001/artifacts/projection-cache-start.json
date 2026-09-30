@@ -1,0 +1,11 @@
+{
+  "anchor_utc": "2026-09-30T03:22:00Z",
+  "work_cutoff_utc": "2026-09-30T04:52:00Z",
+  "deadline_utc": "2026-09-30T05:22:00Z",
+  "carry": 427743.393795,
+  "ceiling": 434943.393795,
+  "reserve_seconds": 1800,
+  "reference_entries_verified": 764,
+  "archive_sha256": "8c8bb484098c98abb19147fe158bfad3522a5efd8115bb6f31249fcc40a292ad",
+  "root": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930"
+}

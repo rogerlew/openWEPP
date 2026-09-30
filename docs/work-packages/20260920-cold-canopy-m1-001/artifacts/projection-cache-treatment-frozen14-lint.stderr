@@ -1,0 +1,10 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+    Checking openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-unit-boundary)
+    Checking openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-sim-contract)
+    Checking openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-coupled-time)
+    Checking openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-kernel-contract)
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-vegetation)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy)
+error: could not compile `openwepp-land-surface-energy` (lib) due to 71 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 228 previous errors

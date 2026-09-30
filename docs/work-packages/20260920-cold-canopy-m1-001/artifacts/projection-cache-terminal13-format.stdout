@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/frozen13-c507c1f31913
+  scratch: /tmp/openwepp-roger-frozen13-c507c1f31913
+  cache:   /workdir/.cache/openwepp

@@ -1,0 +1,41 @@
+{
+  "evidence_class": "Static: inferred from accepted historical G4 final multiplier bits and unchanged power-four bracketing; new diagnostic counts must verify",
+  "rows": [
+    {
+      "m": 19,
+      "lambda": 1.0825994957378447e+20,
+      "bracket_expansions_inferred": 34,
+      "baseline_projection_evaluations": 84,
+      "cached_evaluations": 1,
+      "baseline_av_mac_terms": 636804,
+      "cached_av_mac_terms": 7581
+    },
+    {
+      "m": 18,
+      "lambda": 1.0825994940920942e+20,
+      "bracket_expansions_inferred": 34,
+      "baseline_projection_evaluations": 84,
+      "cached_evaluations": 1,
+      "baseline_av_mac_terms": 571536,
+      "cached_av_mac_terms": 6804
+    },
+    {
+      "m": 19,
+      "lambda": 9.225048865823575e+19,
+      "bracket_expansions_inferred": 34,
+      "baseline_projection_evaluations": 84,
+      "cached_evaluations": 1,
+      "baseline_av_mac_terms": 636804,
+      "cached_av_mac_terms": 7581
+    },
+    {
+      "m": 18,
+      "lambda": 9.225048847769377e+19,
+      "bracket_expansions_inferred": 34,
+      "baseline_projection_evaluations": 84,
+      "cached_evaluations": 1,
+      "baseline_av_mac_terms": 571536,
+      "cached_av_mac_terms": 6804
+    }
+  ]
+}

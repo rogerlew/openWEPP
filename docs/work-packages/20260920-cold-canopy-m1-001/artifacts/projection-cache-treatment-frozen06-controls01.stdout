@@ -1,0 +1,4 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/treatment-3782789814a6
+  scratch: /tmp/openwepp-roger-treatment-3782789814a6
+  cache:   /workdir/.cache/openwepp

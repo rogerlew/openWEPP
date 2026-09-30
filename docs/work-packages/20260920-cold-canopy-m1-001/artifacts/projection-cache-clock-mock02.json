@@ -1,0 +1,8 @@
+{
+  "scope": "Nonphysical protocol mock exact framing/count assertions",
+  "exit": 0,
+  "stdout": "{\"batches\": 14, \"measurement_pairs\": 6, \"proposals_per_arm\": 208}\n",
+  "stderr": "",
+  "driver_sha256": "f8852a1bcea708ccb0f0ac504adaa70c316f09495b28156f1182f367d8bddef7",
+  "mock_path": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/clock-protocol-mock/results02"
+}

@@ -1,0 +1,20 @@
+{
+  "evidence_class": "Static: terminal patch scope and authority impact, no physical execution",
+  "changed_rust_files_per_arm": {
+    "baseline": [
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+    ],
+    "treatment": [
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs",
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs"
+    ]
+  },
+  "shared_seam_equal": true,
+  "added_placeholder_or_unsafe_lines": [],
+  "impact": "Private cfg(test) staging only; no manifest, lockfile, lib reachability, external suite fixture/admission, serialization, production publication, docs API or dependency change."
+}

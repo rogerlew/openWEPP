@@ -1,0 +1,149 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling autocfg v1.5.1
+   Compiling serde_core v1.0.228
+    Checking typenum v1.20.0
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.117
+   Compiling zmij v1.0.21
+   Compiling serde v1.0.228
+    Checking crypto-common v0.1.7
+    Checking block-buffer v0.10.4
+   Compiling serde_derive v1.0.228
+   Compiling syn v3.0.3
+   Compiling serde_json v1.0.150
+   Compiling thiserror v2.0.20
+   Compiling thiserror-impl v2.0.20
+    Checking num-integer v0.1.46
+    Checking digest v0.10.7
+    Checking cpufeatures v0.2.17
+    Checking memchr v2.8.0
+    Checking cfg-if v1.0.4
+    Checking itoa v1.0.18
+    Checking sha2 v0.10.9
+    Checking num-bigint v0.4.6
+    Checking openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/baseline/crates/openwepp-sim-contract)
+    Checking openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/baseline/crates/openwepp-unit-boundary)
+    Checking base64 v0.22.1
+    Checking openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/baseline/crates/openwepp-kernel-contract)
+    Checking openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/baseline/crates/openwepp-coupled-time)
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/baseline/crates/openwepp-vegetation)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/baseline/crates/openwepp-land-surface-energy)
+warning: unused variable: `iteration`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4019:5
+     |
+4019 |     iteration: u32,
+     |     ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_iteration`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `corrected_assembly`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4020:5
+     |
+4020 |     corrected_assembly: bool,
+     |     ^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_corrected_assembly`
+
+warning: unused variable: `error`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:5765:21
+     |
+5765 |                 Err(error) => {
+     |                     ^^^^^ help: if this is intentional, prefix it with an underscore: `_error`
+
+warning: unused variable: `error`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:5814:21
+     |
+5814 |                 Err(error) => {
+     |                     ^^^^^ help: if this is intentional, prefix it with an underscore: `_error`
+
+warning: field `linear_dimension` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3826:5
+     |
+3806 | pub struct M1PhaseJoinControllerReport {
+     |            --------------------------- field in this struct
+...
+3826 |     linear_dimension: usize,
+     |     ^^^^^^^^^^^^^^^^
+     |
+     = note: `M1PhaseJoinControllerReport` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib) generated 5 warnings (run `cargo fix --lib -p openwepp-land-surface-energy` to apply 4 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.34s
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.45
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+    Checking typenum v1.20.0
+   Compiling autocfg v1.5.1
+   Compiling serde_core v1.0.228
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.117
+   Compiling zmij v1.0.21
+   Compiling serde v1.0.228
+   Compiling serde_derive v1.0.228
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+   Compiling syn v3.0.3
+   Compiling serde_json v1.0.150
+   Compiling thiserror v2.0.20
+   Compiling thiserror-impl v2.0.20
+    Checking digest v0.10.7
+    Checking num-integer v0.1.46
+    Checking cpufeatures v0.2.17
+    Checking itoa v1.0.18
+    Checking memchr v2.8.0
+    Checking cfg-if v1.0.4
+    Checking sha2 v0.10.9
+    Checking num-bigint v0.4.6
+    Checking openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-sim-contract)
+    Checking openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-unit-boundary)
+    Checking base64 v0.22.1
+    Checking openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-kernel-contract)
+    Checking openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-coupled-time)
+    Checking openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-vegetation)
+    Checking openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy)
+warning: unused variable: `iteration`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4019:5
+     |
+4019 |     iteration: u32,
+     |     ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_iteration`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `corrected_assembly`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4020:5
+     |
+4020 |     corrected_assembly: bool,
+     |     ^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_corrected_assembly`
+
+warning: unused variable: `error`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:5765:21
+     |
+5765 |                 Err(error) => {
+     |                     ^^^^^ help: if this is intentional, prefix it with an underscore: `_error`
+
+warning: unused variable: `error`
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:5814:21
+     |
+5814 |                 Err(error) => {
+     |                     ^^^^^ help: if this is intentional, prefix it with an underscore: `_error`
+
+warning: field `linear_dimension` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3826:5
+     |
+3806 | pub struct M1PhaseJoinControllerReport {
+     |            --------------------------- field in this struct
+...
+3826 |     linear_dimension: usize,
+     |     ^^^^^^^^^^^^^^^^
+     |
+     = note: `M1PhaseJoinControllerReport` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `openwepp-land-surface-energy` (lib) generated 5 warnings (run `cargo fix --lib -p openwepp-land-surface-energy` to apply 4 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.42s

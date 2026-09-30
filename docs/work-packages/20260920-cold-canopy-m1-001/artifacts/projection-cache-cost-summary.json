@@ -1,0 +1,373 @@
+{
+  "evidence_class": "Ran: exact finite-cohort arithmetic reduction, no additional physical execution",
+  "cohort_sha256": "b3ba07a1b91a5e26f75766e67333f65b8c68174fedea4d8882025db0c5bfbac8",
+  "numerical_outcomes_equal": true,
+  "proposals_per_arm": 208,
+  "measured_proposals_per_arm": 192,
+  "pairs": [
+    {
+      "pair": 1,
+      "order": "B/T",
+      "initialization": {
+        "cpu": {
+          "baseline_batch_ns": 3221250,
+          "baseline_us_per_proposal": 100.6640625,
+          "treatment_batch_ns": 3177104,
+          "treatment_us_per_proposal": 99.2845,
+          "paired_speedup": 1.0138950440401069
+        },
+        "wall": {
+          "baseline_batch_ns": 3324604,
+          "baseline_us_per_proposal": 103.893875,
+          "treatment_batch_ns": 3274879,
+          "treatment_us_per_proposal": 102.33996875,
+          "paired_speedup": 1.0151837670949064
+        }
+      },
+      "proposal": {
+        "cpu": {
+          "baseline_batch_ns": 103257090,
+          "baseline_us_per_proposal": 3226.7840625,
+          "treatment_batch_ns": 32019449,
+          "treatment_us_per_proposal": 1000.60778125,
+          "paired_speedup": 3.2248240748927315
+        },
+        "wall": {
+          "baseline_batch_ns": 103528188,
+          "baseline_us_per_proposal": 3235.255875,
+          "treatment_batch_ns": 32159148,
+          "treatment_us_per_proposal": 1004.973375,
+          "paired_speedup": 3.2192453606047025
+        }
+      },
+      "combined": {
+        "cpu": {
+          "baseline_batch_ns": 106478340,
+          "baseline_us_per_proposal": 3327.448125,
+          "treatment_batch_ns": 35196553,
+          "treatment_us_per_proposal": 1099.89228125,
+          "paired_speedup": 3.0252490918641946
+        },
+        "wall": {
+          "baseline_batch_ns": 106852792,
+          "baseline_us_per_proposal": 3339.14975,
+          "treatment_batch_ns": 35434027,
+          "treatment_us_per_proposal": 1107.31334375,
+          "paired_speedup": 3.01554186883698
+        }
+      }
+    },
+    {
+      "pair": 2,
+      "order": "T/B",
+      "initialization": {
+        "cpu": {
+          "treatment_batch_ns": 3047763,
+          "treatment_us_per_proposal": 95.24259375,
+          "baseline_batch_ns": 3183371,
+          "baseline_us_per_proposal": 99.48034375,
+          "paired_speedup": 1.0444942733408076
+        },
+        "wall": {
+          "treatment_batch_ns": 3226152,
+          "treatment_us_per_proposal": 100.81725,
+          "baseline_batch_ns": 3280010,
+          "baseline_us_per_proposal": 102.5003125,
+          "paired_speedup": 1.016694191718183
+        }
+      },
+      "proposal": {
+        "cpu": {
+          "treatment_batch_ns": 26323069,
+          "treatment_us_per_proposal": 822.59590625,
+          "baseline_batch_ns": 99617349,
+          "baseline_us_per_proposal": 3113.04215625,
+          "paired_speedup": 3.7844124102702463
+        },
+        "wall": {
+          "treatment_batch_ns": 26483079,
+          "treatment_us_per_proposal": 827.59621875,
+          "baseline_batch_ns": 99807388,
+          "baseline_us_per_proposal": 3118.980875,
+          "paired_speedup": 3.7687229645767397
+        }
+      },
+      "combined": {
+        "cpu": {
+          "treatment_batch_ns": 29370832,
+          "treatment_us_per_proposal": 917.8385,
+          "baseline_batch_ns": 102800720,
+          "baseline_us_per_proposal": 3212.5225,
+          "paired_speedup": 3.500095605054702
+        },
+        "wall": {
+          "treatment_batch_ns": 29709231,
+          "treatment_us_per_proposal": 928.41346875,
+          "baseline_batch_ns": 103087398,
+          "baseline_us_per_proposal": 3221.4811875,
+          "paired_speedup": 3.469877695588957
+        }
+      }
+    },
+    {
+      "pair": 3,
+      "order": "B/T",
+      "initialization": {
+        "cpu": {
+          "baseline_batch_ns": 2681921,
+          "baseline_us_per_proposal": 83.81003125,
+          "treatment_batch_ns": 3186346,
+          "treatment_us_per_proposal": 99.5733125,
+          "paired_speedup": 0.8416917057971733
+        },
+        "wall": {
+          "baseline_batch_ns": 2851448,
+          "baseline_us_per_proposal": 89.10775,
+          "treatment_batch_ns": 3307097,
+          "treatment_us_per_proposal": 103.34678125,
+          "paired_speedup": 0.8622208541206986
+        }
+      },
+      "proposal": {
+        "cpu": {
+          "baseline_batch_ns": 98279469,
+          "baseline_us_per_proposal": 3071.23340625,
+          "treatment_batch_ns": 27387782,
+          "treatment_us_per_proposal": 855.8681875,
+          "paired_speedup": 3.5884420651515336
+        },
+        "wall": {
+          "baseline_batch_ns": 98522290,
+          "baseline_us_per_proposal": 3078.8215625,
+          "treatment_batch_ns": 27514406,
+          "treatment_us_per_proposal": 859.8251875,
+          "paired_speedup": 3.5807529335723256
+        }
+      },
+      "combined": {
+        "cpu": {
+          "baseline_batch_ns": 100961390,
+          "baseline_us_per_proposal": 3155.0434375,
+          "treatment_batch_ns": 30574128,
+          "treatment_us_per_proposal": 955.4415,
+          "paired_speedup": 3.302183794088911
+        },
+        "wall": {
+          "baseline_batch_ns": 101373738,
+          "baseline_us_per_proposal": 3167.9293125,
+          "treatment_batch_ns": 30821503,
+          "treatment_us_per_proposal": 963.17196875,
+          "paired_speedup": 3.2890588755519157
+        }
+      }
+    },
+    {
+      "pair": 4,
+      "order": "T/B",
+      "initialization": {
+        "cpu": {
+          "treatment_batch_ns": 3152496,
+          "treatment_us_per_proposal": 98.5155,
+          "baseline_batch_ns": 2980777,
+          "baseline_us_per_proposal": 93.14928125,
+          "paired_speedup": 0.9455291933756617
+        },
+        "wall": {
+          "treatment_batch_ns": 3255616,
+          "treatment_us_per_proposal": 101.738,
+          "baseline_batch_ns": 3180538,
+          "baseline_us_per_proposal": 99.3918125,
+          "paired_speedup": 0.9769389264581573
+        }
+      },
+      "proposal": {
+        "cpu": {
+          "treatment_batch_ns": 28560508,
+          "treatment_us_per_proposal": 892.515875,
+          "baseline_batch_ns": 98827002,
+          "baseline_us_per_proposal": 3088.3438125,
+          "paired_speedup": 3.460267653502522
+        },
+        "wall": {
+          "treatment_batch_ns": 28648453,
+          "treatment_us_per_proposal": 895.26415625,
+          "baseline_batch_ns": 99017351,
+          "baseline_us_per_proposal": 3094.29221875,
+          "paired_speedup": 3.456289629321346
+        }
+      },
+      "combined": {
+        "cpu": {
+          "treatment_batch_ns": 31713004,
+          "treatment_us_per_proposal": 991.031375,
+          "baseline_batch_ns": 101807779,
+          "baseline_us_per_proposal": 3181.49309375,
+          "paired_speedup": 3.2102849354794647
+        },
+        "wall": {
+          "treatment_batch_ns": 31904069,
+          "treatment_us_per_proposal": 997.00215625,
+          "baseline_batch_ns": 102197889,
+          "baseline_us_per_proposal": 3193.68403125,
+          "paired_speedup": 3.2032869851177916
+        }
+      }
+    },
+    {
+      "pair": 5,
+      "order": "B/T",
+      "initialization": {
+        "cpu": {
+          "baseline_batch_ns": 3413448,
+          "baseline_us_per_proposal": 106.67025,
+          "treatment_batch_ns": 3163514,
+          "treatment_us_per_proposal": 98.8598125,
+          "paired_speedup": 1.0790051822119326
+        },
+        "wall": {
+          "baseline_batch_ns": 3445583,
+          "baseline_us_per_proposal": 107.67446875,
+          "treatment_batch_ns": 3269584,
+          "treatment_us_per_proposal": 102.1745,
+          "paired_speedup": 1.0538291721515642
+        }
+      },
+      "proposal": {
+        "cpu": {
+          "baseline_batch_ns": 105287757,
+          "baseline_us_per_proposal": 3290.24240625,
+          "treatment_batch_ns": 32163869,
+          "treatment_us_per_proposal": 1005.12090625,
+          "paired_speedup": 3.273479226022218
+        },
+        "wall": {
+          "baseline_batch_ns": 105485148,
+          "baseline_us_per_proposal": 3296.410875,
+          "treatment_batch_ns": 32384485,
+          "treatment_us_per_proposal": 1012.01515625,
+          "paired_speedup": 3.25727421634156
+        }
+      },
+      "combined": {
+        "cpu": {
+          "baseline_batch_ns": 108701205,
+          "baseline_us_per_proposal": 3396.91265625,
+          "treatment_batch_ns": 35327383,
+          "treatment_us_per_proposal": 1103.98071875,
+          "paired_speedup": 3.0769673768362633
+        },
+        "wall": {
+          "baseline_batch_ns": 108930731,
+          "baseline_us_per_proposal": 3404.08534375,
+          "treatment_batch_ns": 35654069,
+          "treatment_us_per_proposal": 1114.18965625,
+          "paired_speedup": 3.055211762786458
+        }
+      }
+    },
+    {
+      "pair": 6,
+      "order": "T/B",
+      "initialization": {
+        "cpu": {
+          "treatment_batch_ns": 3149123,
+          "treatment_us_per_proposal": 98.41009375,
+          "baseline_batch_ns": 3460864,
+          "baseline_us_per_proposal": 108.152,
+          "paired_speedup": 1.09899295772188
+        },
+        "wall": {
+          "treatment_batch_ns": 3349239,
+          "treatment_us_per_proposal": 104.66371875,
+          "baseline_batch_ns": 3494005,
+          "baseline_us_per_proposal": 109.18765625,
+          "paired_speedup": 1.0432235501855796
+        }
+      },
+      "proposal": {
+        "cpu": {
+          "treatment_batch_ns": 29178280,
+          "treatment_us_per_proposal": 911.82125,
+          "baseline_batch_ns": 103429933,
+          "baseline_us_per_proposal": 3232.18540625,
+          "paired_speedup": 3.5447577101871666
+        },
+        "wall": {
+          "treatment_batch_ns": 29248705,
+          "treatment_us_per_proposal": 914.02203125,
+          "baseline_batch_ns": 103625406,
+          "baseline_us_per_proposal": 3238.2939375,
+          "paired_speedup": 3.5429057799311114
+        }
+      },
+      "combined": {
+        "cpu": {
+          "treatment_batch_ns": 32327403,
+          "treatment_us_per_proposal": 1010.23134375,
+          "baseline_batch_ns": 106890797,
+          "baseline_us_per_proposal": 3340.33740625,
+          "paired_speedup": 3.3065073925053614
+        },
+        "wall": {
+          "treatment_batch_ns": 32597944,
+          "treatment_us_per_proposal": 1018.68575,
+          "baseline_batch_ns": 107119411,
+          "baseline_us_per_proposal": 3347.48159375,
+          "paired_speedup": 3.286078747788511
+        }
+      }
+    }
+  ],
+  "summary": {
+    "initialization": {
+      "cpu": {
+        "baseline_us_per_proposal": 100.072203125,
+        "treatment_us_per_proposal": 98.68765625,
+        "median_paired_speedup": 1.0291946586904572,
+        "min_paired_speedup": 0.8416917057971733,
+        "max_paired_speedup": 1.09899295772188
+      },
+      "wall": {
+        "baseline_us_per_proposal": 103.19709375,
+        "treatment_us_per_proposal": 102.257234375,
+        "median_paired_speedup": 1.0159389794065448,
+        "min_paired_speedup": 0.8622208541206986,
+        "max_paired_speedup": 1.0538291721515642
+      }
+    },
+    "proposal": {
+      "cpu": {
+        "baseline_us_per_proposal": 3169.913109375,
+        "treatment_us_per_proposal": 902.1685625,
+        "median_paired_speedup": 3.502512681844844,
+        "min_paired_speedup": 3.2248240748927315,
+        "max_paired_speedup": 3.7844124102702463
+      },
+      "wall": {
+        "baseline_us_per_proposal": 3177.118375,
+        "treatment_us_per_proposal": 904.64309375,
+        "median_paired_speedup": 3.499597704626229,
+        "min_paired_speedup": 3.2192453606047025,
+        "max_paired_speedup": 3.7687229645767397
+      }
+    },
+    "combined": {
+      "cpu": {
+        "baseline_us_per_proposal": 3269.9853125,
+        "treatment_us_per_proposal": 1000.631359375,
+        "median_paired_speedup": 3.256234364784188,
+        "min_paired_speedup": 3.0252490918641946,
+        "max_paired_speedup": 3.500095605054702
+      },
+      "wall": {
+        "baseline_us_per_proposal": 3280.31546875,
+        "treatment_us_per_proposal": 1007.843953125,
+        "median_paired_speedup": 3.244682866453151,
+        "min_paired_speedup": 3.01554186883698,
+        "max_paired_speedup": 3.469877695588957
+      }
+    }
+  },
+  "combined_definition": "Sum of separately measured initialization and proposal intervals; excludes between-interval waits.",
+  "limits": "Proposal costs only. No completed solve/OFE-day/100-year evidence. No historical-observer cost credited to cache."
+}

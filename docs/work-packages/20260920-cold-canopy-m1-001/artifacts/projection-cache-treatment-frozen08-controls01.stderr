@@ -1,0 +1,803 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.45
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling autocfg v1.5.1
+   Compiling typenum v1.20.0
+   Compiling serde_core v1.0.228
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.117
+   Compiling serde v1.0.228
+   Compiling zmij v1.0.21
+   Compiling serde_derive v1.0.228
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling syn v3.0.3
+   Compiling serde_json v1.0.150
+   Compiling thiserror v2.0.20
+   Compiling thiserror-impl v2.0.20
+   Compiling num-integer v0.1.46
+   Compiling digest v0.10.7
+   Compiling cfg-if v1.0.4
+   Compiling cpufeatures v0.2.17
+   Compiling memchr v2.8.0
+   Compiling itoa v1.0.18
+   Compiling sha2 v0.10.9
+   Compiling num-bigint v0.4.6
+   Compiling openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen08/treatment/crates/openwepp-unit-boundary)
+   Compiling base64 v0.22.1
+   Compiling openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen08/treatment/crates/openwepp-sim-contract)
+   Compiling openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen08/treatment/crates/openwepp-coupled-time)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen08/treatment/crates/openwepp-kernel-contract)
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen08/treatment/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen08/treatment/crates/openwepp-land-surface-energy)
+error[E0425]: cannot find type `RefinementWorkLedger` in this scope
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:53:42
+   |
+53 |         mut refinement_work: Option<&mut RefinementWorkLedger>,
+   |                                          ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+28 +     use crate::m1_trust_region_stage1::RefinementWorkLedger;
+   |
+
+error[E0425]: cannot find type `RefinementWorkLedger` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:159:20
+    |
+159 |         work: &mut RefinementWorkLedger,
+    |                    ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementWorkLedger;
+    |
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:160:21
+    |
+160 |     ) -> Result<(), RefinementDot2Reason> {
+    |                     ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Reason;
+    |
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:163:24
+    |
+163 |             return Err(RefinementDot2Reason::NonfiniteOperand);
+    |                        ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Reason;
+    |
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:166:24
+    |
+166 |             return Err(RefinementDot2Reason::SubnormalIntermediate);
+    |                        ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Reason;
+    |
+
+error[E0425]: cannot find type `RefinementWorkLedger` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:175:20
+    |
+175 |         work: &mut RefinementWorkLedger,
+    |                    ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementWorkLedger;
+    |
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:176:21
+    |
+176 |     ) -> Result<(), RefinementDot2Reason> {
+    |                     ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Reason;
+    |
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:179:24
+    |
+179 |             return Err(RefinementDot2Reason::UnderflowToZero);
+    |                        ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Reason;
+    |
+
+error[E0425]: cannot find type `RefinementWorkLedger` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:188:20
+    |
+188 |         work: &mut RefinementWorkLedger,
+    |                    ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementWorkLedger;
+    |
+
+error[E0425]: cannot find type `RefinementWorkLedger` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:218:20
+    |
+218 |         work: &mut RefinementWorkLedger,
+    |                    ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementWorkLedger;
+    |
+
+error[E0425]: cannot find value `BVLS04_POISON` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:245:25
+    |
+245 |             let sigma = BVLS04_POISON.with(|slot| {
+    |                         ^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this constant
+    |
+ 28 +     use crate::m1_trust_region_stage1::BVLS04_POISON;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionBvls04Poison` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:247:41
+    |
+247 |                 if matches!(*slot, Some(M1TrustRegionBvls04Poison::DenominatorOverflow(index)) if index == j) {
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionBvls04Poison`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::M1TrustRegionBvls04Poison;
+    |
+
+error[E0425]: cannot find value `BVLS04_POISON_SITE` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:249:21
+    |
+249 |                     BVLS04_POISON_SITE.with(|site| site.set(Some(j)));
+    |                     ^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this constant
+    |
+ 28 +     use crate::m1_trust_region_stage1::BVLS04_POISON_SITE;
+    |
+
+error[E0425]: cannot find value `BVLS04_POISON_CONSUMED` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:250:21
+    |
+250 | ...   BVLS04_POISON_CONSUMED.with(|seen| *seen.borrow_mut() = Some((f64::MAX.to_bits(), M1TrustRegionRefinementGuardStage::FactorAp...
+    |       ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this constant
+    |
+ 28 +     use crate::m1_trust_region_stage1::BVLS04_POISON_CONSUMED;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:250:103
+    |
+250 | ...4::MAX.to_bits(), M1TrustRegionRefinementGuardStage::FactorApplicationOutput)));
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0425]: cannot find value `BVLS04_POISON` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:270:49
+    |
+270 | ...   #[cfg(test)] let (t, denominator) = BVLS04_POISON.with(|slot| { let mut slot=slot.borrow_mut(); if matches!(*slot,Some(M1Trus...
+    |                                           ^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this constant
+    |
+ 28 +     use crate::m1_trust_region_stage1::BVLS04_POISON;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionBvls04Poison` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:270:132
+    |
+270 | ...); if matches!(*slot,Some(M1TrustRegionBvls04Poison::DivisionNonfinite(index)) if index == j) { *slot=None; BVLS04_POISON_SITE.w...
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionBvls04Poison`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::M1TrustRegionBvls04Poison;
+    |
+
+error[E0425]: cannot find value `BVLS04_POISON_SITE` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:270:214
+    |
+270 | ...inite(index)) if index == j) { *slot=None; BVLS04_POISON_SITE.with(|site| site.set(Some(j))); BVLS04_POISON_CONSUMED.with(|seen|...
+    |                                               ^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this constant
+    |
+ 28 +     use crate::m1_trust_region_stage1::BVLS04_POISON_SITE;
+    |
+
+error[E0425]: cannot find value `BVLS04_POISON_CONSUMED` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:270:265
+    |
+270 | ...SON_SITE.with(|site| site.set(Some(j))); BVLS04_POISON_CONSUMED.with(|seen| *seen.borrow_mut()=Some((f64::MAX.to_bits(),M1TrustR...
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this constant
+    |
+ 28 +     use crate::m1_trust_region_stage1::BVLS04_POISON_CONSUMED;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:270:344
+    |
+270 | ...64::MAX.to_bits(),M1TrustRegionRefinementGuardStage::FactorApplicationOutput))); (f64::MAX,f64::MIN_POSITIVE) } else {(t,denomin...
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0425]: cannot find function `refinement_observe` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:279:9
+    |
+279 |         refinement_observe(|trace| {
+    |         ^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_observe;
+    |
+
+error[E0425]: cannot find value `BVLS04_POISON` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:304:26
+    |
+304 | ...   #[cfg(test)] BVLS04_POISON.with(|slot| { let mut slot=slot.borrow_mut(); if matches!(*slot,Some(M1TrustRegionBvls04Poison::De...
+    |                    ^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this constant
+    |
+ 28 +     use crate::m1_trust_region_stage1::BVLS04_POISON;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionBvls04Poison` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:304:109
+    |
+304 | ...); if matches!(*slot,Some(M1TrustRegionBvls04Poison::DefensiveInverseOutputInvariant(index)) if index == i) { *slot=None; BVLS04...
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionBvls04Poison`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::M1TrustRegionBvls04Poison;
+    |
+
+error[E0425]: cannot find value `BVLS04_POISON_SITE` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:304:205
+    |
+304 | ...riant(index)) if index == i) { *slot=None; BVLS04_POISON_SITE.with(|site| site.set(Some(i))); sum=f64::INFINITY; BVLS04_POISON_C...
+    |                                               ^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this constant
+    |
+ 28 +     use crate::m1_trust_region_stage1::BVLS04_POISON_SITE;
+    |
+
+error[E0425]: cannot find value `BVLS04_POISON_CONSUMED` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:304:275
+    |
+304 | ...| site.set(Some(i))); sum=f64::INFINITY; BVLS04_POISON_CONSUMED.with(|seen| *seen.borrow_mut()=Some((f64::INFINITY.to_bits(),M1T...
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this constant
+    |
+ 28 +     use crate::m1_trust_region_stage1::BVLS04_POISON_CONSUMED;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:304:359
+    |
+304 | ...NFINITY.to_bits(),M1TrustRegionRefinementGuardStage::FactorApplicationOutput))); } });
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0425]: cannot find value `BVLS04_OUTPUT_CHECK_EVENT` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:308:13
+    |
+308 |             BVLS04_OUTPUT_CHECK_EVENT
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this constant
+    |
+ 28 +     use crate::m1_trust_region_stage1::BVLS04_OUTPUT_CHECK_EVENT;
+    |
+
+error[E0425]: cannot find type `RefinementWorkLedger` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:323:20
+    |
+323 |         work: &mut RefinementWorkLedger,
+    |                    ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementWorkLedger;
+    |
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:324:21
+    |
+324 |     ) -> Result<(), RefinementDot2Reason> {
+    |                     ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Reason;
+    |
+
+error[E0433]: cannot find type `RefinementDot2Reason` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:330:24
+    |
+330 |             return Err(RefinementDot2Reason::NonfiniteOperand);
+    |                        ^^^^^^^^^^^^^^^^^^^^ use of undeclared type `RefinementDot2Reason`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Reason;
+    |
+
+error[E0425]: cannot find type `RefinementWorkLedger` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:339:20
+    |
+339 |         work: &mut RefinementWorkLedger,
+    |                    ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementWorkLedger;
+    |
+
+error[E0425]: cannot find type `RefinementDot2Reason` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:340:22
+    |
+340 |     ) -> Result<(), (RefinementDot2Reason, M1TrustRegionRefinementGuardStage)> {
+    |                      ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Reason;
+    |
+
+error[E0425]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:340:44
+    |
+340 |     ) -> Result<(), (RefinementDot2Reason, M1TrustRegionRefinementGuardStage)> {
+    |                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:344:17
+    |
+344 |                 M1TrustRegionRefinementGuardStage::ResidualSourceWeight,
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:350:40
+    |
+350 |             .map_err(|reason| (reason, M1TrustRegionRefinementGuardStage::PrimaryProduct))?;
+    |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:354:40
+    |
+354 |             .map_err(|reason| (reason, M1TrustRegionRefinementGuardStage::Accumulation))
+    |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0425]: cannot find type `RefinementWorkLedger` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:363:20
+    |
+363 |         work: &mut RefinementWorkLedger,
+    |                    ^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementWorkLedger;
+    |
+
+error[E0425]: cannot find type `RefinementDot2Refusal` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:364:27
+    |
+364 |     ) -> Result<Vec<f64>, RefinementDot2Refusal> {
+    |                           ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Refusal;
+    |
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:367:28
+    |
+367 |                   return Err(RefinementDot2Refusal {
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+381 | /             fail!(
+382 | |                 reason,
+383 | |                 M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+384 | |                 None,
+385 | |                 None,
+386 | |                 None
+387 | |             );
+    | |_____________- in this macro invocation
+    |
+    = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Refusal;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:383:17
+    |
+383 |                 M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:367:28
+    |
+367 |                   return Err(RefinementDot2Refusal {
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+393 | /                     fail!(
+394 | |                         reason,
+395 | |                         M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+396 | |                         Some(refinement_face_index(row)),
+397 | |                         Some(refinement_face_index(slot)),
+398 | |                         Some(refinement_face_index(free[slot]))
+399 | |                     );
+    | |_____________________- in this macro invocation
+    |
+    = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Refusal;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:395:25
+    |
+395 |                         M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:396:30
+    |
+396 |                         Some(refinement_face_index(row)),
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:397:30
+    |
+397 |                         Some(refinement_face_index(slot)),
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:398:30
+    |
+398 |                         Some(refinement_face_index(free[slot]))
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:367:28
+    |
+367 |                   return Err(RefinementDot2Refusal {
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+402 | /                     fail!(
+403 | |                         reason,
+404 | |                         M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+405 | |                         Some(refinement_face_index(row)),
+406 | |                         Some(refinement_face_index(slot)),
+407 | |                         Some(refinement_face_index(free[slot]))
+408 | |                     );
+    | |_____________________- in this macro invocation
+    |
+    = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Refusal;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:404:25
+    |
+404 |                         M1TrustRegionRefinementGuardStage::ResidualSourceTerm,
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:405:30
+    |
+405 |                         Some(refinement_face_index(row)),
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:406:30
+    |
+406 |                         Some(refinement_face_index(slot)),
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:407:30
+    |
+407 |                         Some(refinement_face_index(free[slot]))
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:367:28
+    |
+367 |                   return Err(RefinementDot2Refusal {
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+415 | /                     fail!(
+416 | |                         reason,
+417 | |                         M1TrustRegionRefinementGuardStage::PrimaryProduct,
+418 | |                         Some(refinement_face_index(row)),
+419 | |                         Some(refinement_face_index(slot)),
+420 | |                         Some(refinement_face_index(free[slot]))
+421 | |                     );
+    | |_____________________- in this macro invocation
+    |
+    = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Refusal;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:417:25
+    |
+417 |                         M1TrustRegionRefinementGuardStage::PrimaryProduct,
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:418:30
+    |
+418 |                         Some(refinement_face_index(row)),
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:419:30
+    |
+419 |                         Some(refinement_face_index(slot)),
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:420:30
+    |
+420 |                         Some(refinement_face_index(free[slot]))
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:367:28
+    |
+367 |                   return Err(RefinementDot2Refusal {
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+426 | /                     fail!(
+427 | |                         reason,
+428 | |                         M1TrustRegionRefinementGuardStage::Accumulation,
+429 | |                         Some(refinement_face_index(row)),
+430 | |                         Some(refinement_face_index(slot)),
+431 | |                         Some(refinement_face_index(free[slot]))
+432 | |                     );
+    | |_____________________- in this macro invocation
+    |
+    = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Refusal;
+    |
+
+error[E0433]: cannot find type `M1TrustRegionRefinementGuardStage` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:428:25
+    |
+428 |                         M1TrustRegionRefinementGuardStage::Accumulation,
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ use of undeclared type `M1TrustRegionRefinementGuardStage`
+    |
+help: consider importing this enum
+    |
+ 28 +     use crate::M1TrustRegionRefinementGuardStage;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:429:30
+    |
+429 |                         Some(refinement_face_index(row)),
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:430:30
+    |
+430 |                         Some(refinement_face_index(slot)),
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:431:30
+    |
+431 |                         Some(refinement_face_index(free[slot]))
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0422]: cannot find struct, variant or union type `RefinementDot2Refusal` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:367:28
+    |
+367 |                   return Err(RefinementDot2Refusal {
+    |                              ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+...
+438 | /                 fail!(
+439 | |                     reason,
+440 | |                     guard_stage,
+441 | |                     None,
+442 | |                     Some(refinement_face_index(slot)),
+443 | |                     Some(refinement_face_index(free[slot]))
+444 | |                 );
+    | |_________________- in this macro invocation
+    |
+    = note: this error originates in the macro `fail` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider importing this struct
+    |
+ 28 +     use crate::m1_trust_region_stage1::RefinementDot2Refusal;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:442:26
+    |
+442 |                     Some(refinement_face_index(slot)),
+    |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+error[E0425]: cannot find function `refinement_face_index` in this scope
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:443:26
+    |
+443 |                     Some(refinement_face_index(free[slot]))
+    |                          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this function
+    |
+ 28 +     use crate::m1_trust_region_stage1::refinement_face_index;
+    |
+
+warning: unused imports: `m1_trust_region_controller_run_for_test`, `m1_trust_region_controller_transition_for_test`, and `m1_trust_region_seeded_entry_guard_for_test`
+  --> crates/openwepp-land-surface-energy/src/lib.rs:49:5
+   |
+49 |     m1_trust_region_controller_run_for_test, m1_trust_region_controller_transition_for_test,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+50 |     m1_trust_region_seeded_entry_guard_for_test,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0422, E0425, E0433.
+For more information about an error, try `rustc --explain E0422`.
+warning: `openwepp-land-surface-energy` (lib test) generated 1 warning
+error: could not compile `openwepp-land-surface-energy` (lib test) due to 63 previous errors; 1 warning emitted
+error: command `/nix/store/rai05nypxnmj22l65nwsk5xjsaq8s4vc-cargo-1.95.0/bin/cargo test --no-run --message-format json-render-diagnostics --package openwepp-land-surface-energy --lib --features m1-trust-region-physical-stage` exited with code 101

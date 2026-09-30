@@ -1,0 +1,26 @@
+[
+  {
+    "cut": "frozen13/baseline",
+    "source_sha256": "dabaaa16fbadcf8609ab5de09621abd5ec962323c470306b7f6bbeec78d3737b",
+    "entries": 771,
+    "verified": true
+  },
+  {
+    "cut": "frozen13/treatment",
+    "entries": 771,
+    "source_sha256": "5d716dff82175505b3154da4333be0b59a6e4e539d4d9486eead7b5394331d57",
+    "verified": true
+  },
+  {
+    "cut": "frozen14/baseline",
+    "entries": 771,
+    "source_sha256": "52b7cce6e55bca380f82020e809cf0241605b8e65ee80a180f2aae9d69c9118f",
+    "verified": true
+  },
+  {
+    "cut": "frozen14/treatment",
+    "entries": 771,
+    "source_sha256": "91fae0d951262b38dbd06d616f27e2426e474f2206125daab8c774798b2f94a7",
+    "verified": true
+  }
+]

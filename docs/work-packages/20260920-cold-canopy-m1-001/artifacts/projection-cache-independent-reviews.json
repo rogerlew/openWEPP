@@ -1,0 +1,53 @@
+{
+  "evidence_class": "Independent Static reviews and inspection of retained Ran evidence; neither reviewer launched additional tests or physical cases",
+  "correctness": {
+    "reviewer": "/root/correctness",
+    "role": "rust_code_reviewer",
+    "model": "gpt-5.6-sol",
+    "disposition": "Verified proposal improvement; approve experiment closure and preservation",
+    "findings": [
+      {
+        "severity": "medium",
+        "disposition": "accepted experiment-only duplication",
+        "finding": "Full accepted lambda_step body retained as cfg(test) immutable oracle; necessary independent bit-identity reference. Must remain test-only and cannot become parallel production implementation."
+      }
+    ],
+    "verified": [
+      "Complete original diagnostic outcomes, decisions, face/controller capture, result and work equal; typed error null",
+      "Projection reconstructions336 to4, other work identical",
+      "All14 corrected batches and416 outcomes equal original diagnostic oracle; captureoff countsnull",
+      "Source cachebody unchanged13to14; shared seam byteidentical",
+      "Release115baseline/120treatment; formatting/defaultpass; inheritedClippy299both noaddedremoved",
+      "Allfour source recoveries771entries exact"
+    ],
+    "seam_fix": "Independently verified optional phase_events dependency caused post-proposal IncompleteScope; approved identical last-successful-phase snapshot at both success exits. Corrected baseline warmup is sole affected replay; static branch binding accepted instead of tautological synthetic test.",
+    "limits": "Single private cfg(test) G4/one host/proposal costs only. No completed solve/OFE-day/100year/memory/map-count/production acceptance; prior Critical/full-M1 HOLDs remain.",
+    "final_report_check": "Approved report after clarifying scheduler latency is wall-only and fixed output copy does not change solver arithmetic, guards or accounted numerical work.",
+    "final_report_fix_verification": "PASS: same reviewer verified requested final wording fixes; no further changes needed."
+  },
+  "qa": {
+    "reviewer": "/root/qa",
+    "role": "rust_qa_reviewer",
+    "model": "gpt-5.6-terra",
+    "disposition": "PASS, no blocking finding",
+    "findings": [
+      {
+        "severity": "low",
+        "disposition": "fixed in package wording",
+        "finding": "Label absolute costs median per-proposal costs; summary field names omit median."
+      }
+    ],
+    "verified": [
+      "ExactB16/T16 then6alternating32pairs;208proposals/arm192measured",
+      "All416outcomes exactauthorizedoracle; zero stderr optionalcapturedisabled countnull",
+      "All raw timing intervals positive; nominal 1 ns resolutions; direct child PIDs",
+      "Independently recomputed everypairratios mediansminmax andcombined costs, exactagreement",
+      "frozen14 source/binary/config/pins authenticated unchanged; outerreceipt exit0",
+      "Failed13 evidence retained, single affectedbaseline correction, no blending/repeats",
+      "Terminal115/120release fmtdefaultpass; Clippy299reference/candidates noadd/remove"
+    ],
+    "limits": "Proposal/seam CPU andwall includingpipeboundaryoverhead; no complete solve/OFE-day/100year or M1 acceptance.",
+    "final_report_check": "Tables, medians/ranges, recovery links and ledger approved; corrected raw-interval wording and limited no-concurrent-build evidence to premeasurement snapshot.",
+    "final_report_fix_verification": "PASS: same reviewer verified interval/snapshot/wording corrections; no blocking finding."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: read-only source/archive/output/document custody checks; no physical execution",
+  "recorded_utc": "2026-09-30T04:28:05.501127+00:00",
+  "accepted_reference_entries_unchanged": 764,
+  "protected_unrelated_dirty_files": {
+    "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
+    "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082"
+  },
+  "frozen13_and14_entries_match_recovery": true,
+  "recorded_command_output_hashes_checked": 27,
+  "python_scripts_compile": true,
+  "package_front_links_exist": 23,
+  "within_charged_coverage": true,
+  "structured_artifact_and_package_diff_check": "PASS: git diff --cached --check -- *.json *.py *.md",
+  "raw_diff_check": "Unrestricted git diff --cached --check reports native libtest output whitespace/blank EOF and unified-patch context spaces only; exact raw bytes preserved to keep receipt hashes valid."
+}

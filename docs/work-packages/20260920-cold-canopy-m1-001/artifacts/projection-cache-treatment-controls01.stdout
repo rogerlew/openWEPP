@@ -1,0 +1,16 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/treatment-dc3fe446c89e
+  scratch: /tmp/openwepp-roger-treatment-dc3fe446c89e
+  cache:   /workdir/.cache/openwepp
+
+running 2 tests
+test m1_trust_region_stage1::projection_cache_controls::first_lambda_coefficient_refusal_precedes_later_projection_refusal ... FAILED
+test m1_trust_region_stage1::projection_cache_controls::lambda_projection_cache_matches_original_body_bitwise_and_enters_once ... ok
+
+failures:
+
+failures:
+    m1_trust_region_stage1::projection_cache_controls::first_lambda_coefficient_refusal_precedes_later_projection_refusal
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 353 filtered out; finished in 0.00s
+

@@ -1,0 +1,8 @@
+{
+  "scope": "Nonphysical mock: reject unexpected stderr during timing",
+  "exit": 0,
+  "stdout": "{\"batches\": 14, \"measurement_pairs\": 6, \"proposals_per_arm\": 208}\n",
+  "stderr": "",
+  "driver_sha256": "8fa23cacc502de1c3512520bf603f0e297ff32d8cea385c7842f79303d12bb22",
+  "mock_path": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/clock-protocol-mock/results06"
+}

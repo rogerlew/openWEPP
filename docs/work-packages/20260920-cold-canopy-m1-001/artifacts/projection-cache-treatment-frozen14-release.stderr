@@ -1,0 +1,41 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.45
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling autocfg v1.5.1
+   Compiling serde_core v1.0.228
+   Compiling typenum v1.20.0
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.117
+   Compiling zmij v1.0.21
+   Compiling serde v1.0.228
+   Compiling serde_derive v1.0.228
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling syn v3.0.3
+   Compiling serde_json v1.0.150
+   Compiling thiserror v2.0.20
+   Compiling thiserror-impl v2.0.20
+   Compiling num-integer v0.1.46
+   Compiling digest v0.10.7
+   Compiling itoa v1.0.18
+   Compiling cfg-if v1.0.4
+   Compiling memchr v2.8.0
+   Compiling cpufeatures v0.2.17
+   Compiling sha2 v0.10.9
+   Compiling num-bigint v0.4.6
+   Compiling openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-sim-contract)
+   Compiling base64 v0.22.1
+   Compiling openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-unit-boundary)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-kernel-contract)
+   Compiling openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-coupled-time)
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen14/treatment/crates/openwepp-land-surface-energy)
+    Finished `release` profile [optimized] target(s) in 2m 21s
+────────────
+ Nextest run ID 356fd5aa-c2c2-4565-93a1-6d5d30602d75 with nextest profile: default
+    Starting 120 tests across 1 binary (295 tests skipped)
+────────────
+     Summary [   0.129s] 120 tests run: 120 passed, 295 skipped

@@ -1,0 +1,8 @@
+{
+  "scope": "Nonphysical mock with actual child PID/direct executable binding",
+  "exit": 0,
+  "stdout": "{\"batches\": 14, \"measurement_pairs\": 6, \"proposals_per_arm\": 208}\n",
+  "stderr": "",
+  "driver_sha256": "44a0a188fab9a4e5cc8ef3ac2a9140a029643449de237f12f4eb1122c9c343ee",
+  "mock_path": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/clock-protocol-mock/results03"
+}

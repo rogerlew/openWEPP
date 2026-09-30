@@ -1,0 +1,30 @@
+{
+  "features": [
+    "m1-trust-region-physical-stage",
+    "m1-trust-region-analytic-stage",
+    "m1-trust-region-controller-stage"
+  ],
+  "release_profile": {
+    "opt-level": "cargo default 3",
+    "lto": "thin",
+    "codegen-units": 1
+  },
+  "arms": {
+    "baseline": {
+      "binary": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/binaries13/baseline",
+      "binary_sha256": "2ab3bca1993615c5d8b7c99448b01eb806bd0244813a56933a5540618908763d",
+      "built_binary": "/tmp/openwepp-projection-cache-frozen13-baseline-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+      "source": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen13/baseline",
+      "source_sha256": "dabaaa16fbadcf8609ab5de09621abd5ec962323c470306b7f6bbeec78d3737b",
+      "release_receipt": "projection-cache-baseline-frozen13-release.json"
+    },
+    "treatment": {
+      "binary": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/binaries13/treatment",
+      "binary_sha256": "7ea4b4b64c4cc2be43346612b944d632625b25db000df84280526587105cd706",
+      "built_binary": "/tmp/openwepp-projection-cache-frozen13-treatment-target/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+      "source": "/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen13/treatment",
+      "source_sha256": "5d716dff82175505b3154da4333be0b59a6e4e539d4d9486eead7b5394331d57",
+      "release_receipt": "projection-cache-treatment-frozen13-release.json"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-timing.py", line 160, in <module>
+    main()
+  File "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-timing.py", line 148, in main
+    rows.append(run_batch(arm, 16, 'warmup-' + arm, config[arm], args.output))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-timing.py", line 82, in run_batch
+    receipt['proposal'] = interval('RUN_PROPOSAL', 'PC_PROP_END')
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-timing.py", line 72, in interval
+    line_with(marker)
+  File "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/projection-cache-timing.py", line 49, in line_with
+    raise RuntimeError('premature EOF: ' + marker)
+RuntimeError: premature EOF: PC_PROP_END

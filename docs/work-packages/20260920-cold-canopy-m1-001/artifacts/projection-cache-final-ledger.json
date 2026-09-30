@@ -1,0 +1,32 @@
+{
+  "evidence_class": "Ran: fixed-anchor elapsed accounting plus full prospective closing allocation; no refunds/reanchoring",
+  "anchor_utc": "2026-09-30T03:22:00+00:00",
+  "closing_accounted_at_utc": "2026-09-30T04:24:22.465634+00:00",
+  "elapsed_seconds_rounded_up": 3743,
+  "prospective_closing_seconds_charged": 1800,
+  "increment_seconds_charged": 5543,
+  "cumulative_seconds_charged": "433286.393795",
+  "carry_seconds": "427743.393795",
+  "fixed_ceiling_seconds": "434943.393795",
+  "remaining_under_ceiling_seconds": "1657.000000",
+  "charged_coverage_through_utc": "2026-09-30T04:54:23+00:00",
+  "fixed_work_cutoff_utc": "2026-09-30T04:52:00+00:00",
+  "fixed_hard_deadline_utc": "2026-09-30T05:22:00+00:00",
+  "concurrency_and_waits": "All elapsed counted once, including first reading, failures, waits, concurrency, validation and initial preservation. No old1122balance added; no waits/refunds deducted.",
+  "closure_rule": "Full1800second closing allocation is conservatively charged regardless of earlier completion. Greater actual consumption beyond charged coverage must be recorded under unchanged ceiling/deadline. Unused allowance is not successor authorization.",
+  "physical_counts": {
+    "baseline_original_g4_diagnostics": 1,
+    "treatment_original_g4_diagnostics": 1,
+    "failed_baseline_warmup_initializations": 16,
+    "failed_baseline_warmup_proposals_entered": 1,
+    "failed_baseline_warmup_complete_outcomes": 0,
+    "corrected_baseline_warmup": 16,
+    "first_treatment_warmup": 16,
+    "measured_pairs": 6,
+    "measured_proposals_per_arm": 192,
+    "successful_cohort_proposals_per_arm": 208,
+    "corrected_replay_used": 1,
+    "additional_physical_cases": 0
+  },
+  "disposition": "Verified proposal improvement; full M1/production/native adoption remains stopped. No further numerical execution authorized."
+}

@@ -1,0 +1,146 @@
+warning: Git tree '/workdir/openWEPP' is dirty
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling serde_core v1.0.228
+   Compiling autocfg v1.5.1
+   Compiling typenum v1.20.0
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.117
+   Compiling serde v1.0.228
+   Compiling zmij v1.0.21
+   Compiling serde_derive v1.0.228
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling syn v3.0.3
+   Compiling serde_json v1.0.150
+   Compiling thiserror v2.0.20
+   Compiling thiserror-impl v2.0.20
+   Compiling digest v0.10.7
+   Compiling num-integer v0.1.46
+   Compiling memchr v2.8.0
+   Compiling cfg-if v1.0.4
+   Compiling cpufeatures v0.2.17
+   Compiling itoa v1.0.18
+   Compiling sha2 v0.10.9
+   Compiling num-bigint v0.4.6
+   Compiling base64 v0.22.1
+   Compiling openwepp-unit-boundary v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen10/treatment/crates/openwepp-unit-boundary)
+   Compiling openwepp-sim-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen10/treatment/crates/openwepp-sim-contract)
+   Compiling openwepp-coupled-time v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen10/treatment/crates/openwepp-coupled-time)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen10/treatment/crates/openwepp-kernel-contract)
+   Compiling openwepp-vegetation v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen10/treatment/crates/openwepp-vegetation)
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-projection-cache-20260930/frozen10/treatment/crates/openwepp-land-surface-energy)
+warning: unused imports: `m1_trust_region_controller_run_for_test`, `m1_trust_region_controller_transition_for_test`, and `m1_trust_region_seeded_entry_guard_for_test`
+  --> crates/openwepp-land-surface-energy/src/lib.rs:49:5
+   |
+49 |     m1_trust_region_controller_run_for_test, m1_trust_region_controller_transition_for_test,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+50 |     m1_trust_region_seeded_entry_guard_for_test,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: enum `M1TrustRegionControllerOperation` is never used
+   --> crates/openwepp-land-surface-energy/src/lib.rs:177:17
+    |
+177 | pub(crate) enum M1TrustRegionControllerOperation {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `m1_test_last_predictor_lifecycle_for_test` is never used
+  --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:46:15
+   |
+46 | pub(crate) fn m1_test_last_predictor_lifecycle_for_test() -> (u16, u16, u16) {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_controller_transition_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1268:15
+     |
+1268 | pub(crate) fn m1_trust_region_controller_transition_for_test<E, P, Phase, V>(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `m1_trust_region_seeded_entry_guard_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller.rs:1669:15
+     |
+1669 | pub(crate) fn m1_trust_region_seeded_entry_guard_for_test<
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `scaled_step`, `lambda`, `predicted_reduction`, `weighted_jacobian`, and `governed_norms` are never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:182:16
+    |
+181 | pub(crate) struct M1TrustRegionControllerTransition {
+    |                   --------------------------------- fields in this struct
+182 |     pub(super) scaled_step: [f64; M1_TRUST_REGION_CONTROLLER_DIMENSION],
+    |                ^^^^^^^^^^^
+183 |     pub(super) lambda: f64,
+    |                ^^^^^^
+184 |     pub(super) predicted_reduction: f64,
+    |                ^^^^^^^^^^^^^^^^^^^
+...
+189 |     pub(super) weighted_jacobian:
+    |                ^^^^^^^^^^^^^^^^^
+...
+199 |     pub(super) governed_norms: Option<[f64; M1_GOVERNED_STEP_NORMS]>,
+    |                ^^^^^^^^^^^^^^
+    |
+    = note: `M1TrustRegionControllerTransition` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: fields `initial_radius`, `refinement_scalar_operations`, `refinement_guard_events`, `refinement_attempted_entries`, `refinement_denied_entries`, and `work` are never read
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:204:16
+    |
+203 | pub(crate) struct M1TrustRegionControllerRun {
+    |                   -------------------------- fields in this struct
+204 |     pub(super) initial_radius: f64,
+    |                ^^^^^^^^^^^^^^
+...
+207 |     pub(crate) refinement_scalar_operations: u64,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+208 |     pub(crate) refinement_guard_events: u64,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^
+209 |     pub(crate) refinement_attempted_entries: u16,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+210 |     pub(crate) refinement_denied_entries: u16,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+211 |     pub(crate) work: crate::M1TrustRegionWorkObservation,
+    |                ^^^^
+    |
+    = note: `M1TrustRegionControllerRun` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: struct `M1TrustRegionSeededEntryGuard` is never constructed
+   --> crates/openwepp-land-surface-energy/src/m1_trust_region_controller_interface.rs:221:19
+    |
+221 | pub(crate) struct M1TrustRegionSeededEntryGuard<E> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2451:13
+     |
+2451 |     Refused(crate::M1TrustRegionRefusalKind),
+     |     ------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |     |
+     |     field in this variant
+     |
+     = note: `M1PhysicalTrustRegionAdapterOutcome` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+     |
+2451 -     Refused(crate::M1TrustRegionRefusalKind),
+2451 +     Refused(()),
+     |
+
+warning: function `m1_trust_region_physical_adapter_terminal_outcome_for_test` is never used
+    --> crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3120:15
+     |
+3120 | pub(crate) fn m1_trust_region_physical_adapter_terminal_outcome_for_test(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `openwepp-land-surface-energy` (lib test) generated 10 warnings (run `cargo fix --lib -p openwepp-land-surface-energy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 37.65s
+────────────
+ Nextest run ID 0107873a-eec0-4961-8bd2-59548c108afe with nextest profile: default
+    Starting 2 tests across 1 binary (353 tests skipped)
+────────────
+     Summary [   0.006s] 2 tests run: 2 passed, 353 skipped

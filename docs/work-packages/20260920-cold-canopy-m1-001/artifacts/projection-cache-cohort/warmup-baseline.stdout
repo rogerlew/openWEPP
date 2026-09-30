@@ -1,0 +1,14 @@
+
+running 1 test
+test m1_coupled_tests::m1_trust_region_projection_cache_benchmark_protocol ... 
+PC_READY {"pid":2349334}
+PC_INIT_END
+FAILED
+
+failures:
+
+failures:
+    m1_coupled_tests::m1_trust_region_projection_cache_benchmark_protocol
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 409 filtered out; finished in 0.01s
+
