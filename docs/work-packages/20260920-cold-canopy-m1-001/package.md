@@ -1,5 +1,78 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## HOLD disposition and proposed refusal diagnosis — 2026-10-01
+
+Owner requests disposition and continuation-prompt authoring only. The bounded
+C6 execution is preserved at`f393685c7dcf6508d6ecab27908da5bfabd2bc52` and is
+finished; **scientific/runtime acceptance remains HOLD_NO_COMPLETED_DAY**.
+No source change, new solver invocation or measurement is authorized by this
+prompt-authoring task. Accepted six controls remain accepted; historical assertion
+failures/replays and every later numerical negative remain preserved.
+
+The blocker is now the common day-solve path, not control readiness:19A scratch-
+radius refusals,4A final-box refusals,1A M/H-consistency refusal; six reference/
+stability scratch refusals;18B baselines unavailable. Three FULL/P0 A results reuse
+references, so the30negative reference/stability/A entries represent27unique
+physical attempts. These typed outcomes do not establish a faulty guard, an
+oracle error, physical impossibility, or a proven local implementation defect.
+Two independently reconstructed support0 records do not remove the day-level
+hold. No completed-day cost, paired accuracy result or frontier exists.
+
+Disposition of unmet acceptance:
+
+| Obligation | Status / consequence |
+| --- | --- |
+| Six-control readiness | PASS with preserved corrected-replay lineage |
+| Complete reference/stability trajectory | FAIL; accuracy unresolved |
+| Complete A day / paired reduction or tolerance comparison | FAIL; no functioning setting |
+| Matched B baseline / cadence comparison | UNAVAILABLE; no coarse run |
+| Independent day closure / regime transitions | UNMET; only two isolated supports reconstruct |
+| Completed OFE-day / whole-run runtime | UNMEASURED; deployable result not established |
+
+Next direction is a bounded refusal diagnosis and repair-feasibility decision.
+The [proposed prompt](artifacts/refusal-diagnosis-continuation-prompt.md), copied to
+`/tmp/openwepp_cold_canopy_m1_refusal_diagnosis_continuation.md`, first uses retained
+raw evidence/static source. It proposes at most three independently reviewed,
+noninterfering witness captures only for missing operands: cold FULL/P0 scratch,
+transition FULL/P2 final-box, transition REDUCED/P0 M/H consistency. It does not
+propose another full sweep, numerical repair, tolerance change or guard relaxation.
+A known local defect is one possible diagnosis, not an assumption. The resulting
+recommendation must connect a precise correction or replacement decision to
+scientific acceptance and realistic cost; no method change is automatically adopted.
+
+Runtime feasibility remains prerequisite: the500us CPU OFE-day target at1440joint
+solves/day allows0.347222us/solve before any other costs. Current failed-attempt
+CPU4.920672–10.316618ms is an adverse cost signal for this implementation, but is
+not a completed-day benchmark or a lower bound for a redesigned method. Do not
+let successful refusal diagnosis become an unlimited correctness-only campaign.
+
+Proposal preserves ceiling458534.927980s with no new charged seconds. Adoption
+would renew the UTC window from the then-reconciled remaining balance, reserve
+600s closing and cap capture-readiness at600s. Three separately named diagnostic
+captures would have30s each/90s total, with no replay. The previous physical total
+2.265900994s and older0.053829565s remain separate and unchanged; these are not
+reset/refunded. Authoring itself authorizes none of those captures.
+
+Current authoring anchor22:05:00UTC precedes first clock22:05:54. Conservative
+carry456156.069712s covers the prior final21:17:02.489740 sample/return through
+21:18UTC. Inactive owner-decision interval21:18–22:05 is excluded. Current reading,
+writing, review, commit and return remain chargeable under the fixed ceiling.
+
+Static authoring reviews: same independent QA reports PASS for budget/scope/
+lineage; same correctness reports no blocking findings. Its two precision notes
+are incorporated: W1 captures the single reference invocation reused by A, and
+W3 records exact rejecting predicate/call site/raw operands with no phase inferred
+when state construction fails. Frozen operand bits/ordered IDs and strict guard
+comparisons are explicit; the same correctness reviewer verified both wording
+fixes and reports PASS. No capture or solver execution occurred during authoring.
+Repository/tmp prompt bytes and referenced evidence paths match;48unrelated files
+remain unchanged. Changes are confined to this record and the proposed prompt.
+
+Authoring sample **2026-10-01T22:10:26.526941+00:00**: current pickup326.526941s,
+cumulative **456482.596653s**, remaining **2052.331327s** under the
+fixed ceiling. Commit/return tail remains attributable; a future invocation must
+reconcile it before anchoring its window. No new charged allowance was created.
+
 ## C6 continuation result — controls pass; all day candidates fail
 
 **Finite execution finished; scientific/runtime acceptance INCOMPLETE / HOLD.**
