@@ -1,0 +1,11 @@
+{
+  "status": "PASS_PENDING_RECEIPT_REFUSED",
+  "command": [
+    ".venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/dispatch-c6-oracle.py"
+  ],
+  "exit": 1,
+  "error": "Final independent custody approval is required before dispatch",
+  "physical_execution": false,
+  "dispatcher_sha256": "01d63280d6b16e6a11ceec5cbe026ca5eb2d4bacff0ad84241545c1dc096b935"
+}

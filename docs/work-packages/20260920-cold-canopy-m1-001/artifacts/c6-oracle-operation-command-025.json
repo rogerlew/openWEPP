@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-runner.py",
+    "RUN_FRESH_DAYS",
+    "--test-binary",
+    "/workdir/.cache/openwepp/targets/development-treatment-c6-oracle-9f376d2b9f20/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "--kind",
+    "diagnostic",
+    "--cell",
+    "{\"investigation\": \"A\", \"case\": \"C_freeze_then_melt_day\", \"formulation\": \"REDUCED\", \"profile\": \"P0\", \"cadence_seconds\": 60}",
+    "--batch",
+    "0"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-10-01T21:11:03.876996+00:00",
+  "elapsed_seconds": 0.4215499791316688,
+  "exit": 0,
+  "stdout": "{\"batch\":0,\"cap_seconds\":60,\"cell\":{\"cadence_seconds\":60,\"case\":\"C_freeze_then_melt_day\",\"formulation\":\"REDUCED\",\"investigation\":\"A\",\"profile\":\"P0\"},\"charged_seconds\":0.069883599,\"child_process_cpu_seconds\":0.006488225,\"completed_supports\":[0],\"cpu_clock_id\":-3689214,\"cpu_clock_resolution\":1e-09,\"cpu_end_ns\":64003714,\"cpu_start_ns\":57515489,\"day_digests\":[\"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\"],\"first_failures\":[\"support_id=0 controller_error=Own(Coupled(Vegetation(M1Error { code: \\\"VEG-E-142\\\", stage: MhConsistency })))\"],\"fresh_complete_days\":0,\"key\":\"{\\\"batch\\\":0,\\\"cell\\\":{\\\"cadence_seconds\\\":60,\\\"case\\\":\\\"C_freeze_then_melt_day\\\",\\\"formulation\\\":\\\"REDUCED\\\",\\\"investigation\\\":\\\"A\\\",\\\"profile\\\":\\\"P0\\\"},\\\"kind\\\":\\\"diagnostic\\\"}\",\"kind\":\"diagnostic\",\"output\":\"/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-6083bcf6038ac9ddde5f-c6-current-wetness-replay01.json\",\"sample_wall_seconds\":0.006566364,\"status\":\"numerical_or_domain_failure\",\"wall_end_ns\":3958166184638309,\"wall_start_ns\":3958166178071945}\n",
+  "stderr": ""
+}

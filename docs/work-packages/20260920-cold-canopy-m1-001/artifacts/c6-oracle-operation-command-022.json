@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-runner.py",
+    "RUN_FRESH_DAYS",
+    "--test-binary",
+    "/workdir/.cache/openwepp/targets/development-treatment-c6-oracle-9f376d2b9f20/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "--kind",
+    "diagnostic",
+    "--cell",
+    "{\"investigation\": \"A\", \"case\": \"B_mixed_to_liquid_day\", \"formulation\": \"FULL\", \"profile\": \"P3\", \"cadence_seconds\": 60}",
+    "--batch",
+    "0"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-10-01T21:11:02.694003+00:00",
+  "elapsed_seconds": 0.4174752589315176,
+  "exit": 0,
+  "stdout": "{\"batch\":0,\"cap_seconds\":60,\"cell\":{\"cadence_seconds\":60,\"case\":\"B_mixed_to_liquid_day\",\"formulation\":\"FULL\",\"investigation\":\"A\",\"profile\":\"P3\"},\"charged_seconds\":0.065276218,\"child_process_cpu_seconds\":0.00672977,\"completed_supports\":[0],\"cpu_clock_id\":-3688910,\"cpu_clock_resolution\":1e-09,\"cpu_end_ns\":59723733,\"cpu_start_ns\":52993963,\"day_digests\":[\"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\"],\"first_failures\":[\"support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\\\"refinement_scratch_radius\\\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 6, completed_face_pivots: 1, entered_svd_factorizations: 2, raw_residual_max: 76.28317773520257, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 2, completed_face_pivots: 1, total_jacobi_sweeps: 13, refinement_scalar_operations: 3610, refinement_guard_events: 6785, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 2, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2560, coordinate_update_operations: 20, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 42, bvls05_mask_joins_completed: 42, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 1.1355752443965272, original_trust_radius: 8.0, reduced_face_radius: 7.999932994784222, scratch_box_feasible: Some(true) }), budget_refusal: None })\"],\"fresh_complete_days\":0,\"key\":\"{\\\"batch\\\":0,\\\"cell\\\":{\\\"cadence_seconds\\\":60,\\\"case\\\":\\\"B_mixed_to_liquid_day\\\",\\\"formulation\\\":\\\"FULL\\\",\\\"investigation\\\":\\\"A\\\",\\\"profile\\\":\\\"P3\\\"},\\\"kind\\\":\\\"diagnostic\\\"}\",\"kind\":\"diagnostic\",\"output\":\"/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-f94b281a63ce146c3153-c6-current-wetness-replay01.json\",\"sample_wall_seconds\":0.006998439,\"status\":\"numerical_or_domain_failure\",\"wall_end_ns\":3958165003816597,\"wall_start_ns\":3958164996818158}\n",
+  "stderr": ""
+}

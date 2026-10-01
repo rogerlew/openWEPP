@@ -1,0 +1,126 @@
+{
+  "schema": "openwepp.work_package.correctness_review.v1",
+  "reviewer": "/root/correctness",
+  "role": "independent terminal scientific/correctness reviewer",
+  "evidence_class": {
+    "static": "Inspected the exact terminal state, raw operation receipts, summarized results, failure metadata, accepted C6 replay, and terminal QA record.",
+    "ran": "Ran the existing independent Python reconstruction over only the two serialized retained support records. This did not execute the Rust binary, physical model, core, Jacobian, solver, control, reference, stability check, candidate, or timing batch."
+  },
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "status": "UNMET_SCIENTIFIC_AND_RUNTIME_ACCEPTANCE",
+      "title": "The finite schedule produced no complete reference or candidate day, so there is no accuracy/runtime frontier or deployable result.",
+      "locations": [
+        "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-results.json",
+        "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-terminal-state.json"
+      ],
+      "evidence": "C6 passed its sole corrected replay, but all three FULL/P0 references and all three strict stability checks failed at support 0 with typed refinement_scratch_radius negatives. All 24 A cells have numerical/domain-negative disposition, including the three FULL/P0 cells reused from the failed references. All 18 B cells are unavailable because their matched 60-second REDUCED baselines did not complete. Completed days and timing batches are both zero.",
+      "impact": "No reference trajectory exists for accuracy comparison; no candidate completed a day; no cadence comparison, timing distribution, speedup ratio, error/cost frontier, target gap, or deployment acceptance can be calculated. The investigation is terminally INCOMPLETE/HOLD_NO_COMPLETED_DAY.",
+      "disposition": "Preserve the negative finite result. No new method, fix, replay, or additional run is implied or authorized by this review."
+    }
+  ],
+  "reviewed_identity": {
+    "source_tree_sha256": "e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3",
+    "binary_sha256": "c94275f4fe236ef35c5d6c80a42a0f73e59cdad1296afb419a5c817ff95725fb",
+    "fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+    "terminal_state_sha256": "1a299ed8fefb87bee9a6603e580c9cd058ce1828017f5c04923e79a12eef5432",
+    "results_sha256_at_review": "87f88f71768a3ec3aabba7c80921469fa468d67b219bd757f7d625176fefceb8",
+    "c6_pass_raw_sha256": "7a0d48f880a6176adc52f233fbb4842f9aeec7f84a46ca272cf7eee14dbc63dc"
+  },
+  "terminal_execution_review": {
+    "controls": "C1-C6 PASS with the disclosed, preserved C5 and C6 assertion-oracle failures and their separately authorized corrected replays. The corrected C6 replay charged 0.059229624 seconds and passed the complete physical near-bound plus separate synthetic rank-refusal control.",
+    "effective_terminal_operation_counts": {
+      "controls_complete": 6,
+      "references_numerical_or_domain_failure": 3,
+      "stability_numerical_or_domain_failure": 3,
+      "A_numerical_or_domain_failure": 24,
+      "B_unavailable": 18,
+      "new_integrity_failures": 0,
+      "timeouts": 0,
+      "completed_days": 0,
+      "timing_batches": 0,
+      "unique_physical_day_attempts": 27
+    },
+    "failure_taxonomy": {
+      "refinement_scratch_radius": 25,
+      "refinement_final_box": 4,
+      "VEG_E_142_MhConsistency": 1,
+      "detail": "The 25 scratch-radius negatives comprise all six references/stability checks and 19 A cells. The four final-box negatives are C_freeze_then_melt_day FULL/P2, FULL/P3, REDUCED/P1, and REDUCED/P3. The remaining negative is C_freeze_then_melt_day REDUCED/P0: Own(Coupled(Vegetation(M1Error { code: VEG-E-142, stage: MhConsistency }))). This is an explicit typed M/H-consistency domain refusal, not an integrity failure or timeout."
+    },
+    "elapsed_evidence": {
+      "physical_seconds": 2.2659009940000003,
+      "reference_seconds": 0.391434592,
+      "partial_attempt_cpu_range_seconds": [0.004920672, 0.010316618],
+      "partial_attempt_wall_range_seconds": [0.00502467, 0.010381441],
+      "scope": "The CPU/wall ranges measure failed partial attempts only. They contain zero completed OFE-days and cannot be divided into per-day cost, compared as a speedup, or assessed against the 500 us CPU, 550 us wall, regime, century, or other deployment targets."
+    }
+  },
+  "independent_partial_reconstruction": {
+    "tool": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-independent-reconstruction.py",
+    "tool_sha256": "d13fc8575422123bcdd439fe3e613fec92138e1e9d3493d7ebdbee7ba25917f8",
+    "input": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-partial-reconstruction-input.json",
+    "input_sha256": "7b4b76298916e3b6106b827e8281695e0d2c01681b357e7ebbc4a78d295207e7",
+    "report": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-partial-reconstruction-report.json",
+    "report_sha256": "14a872c6dfdbc33a006189655fa4b1a5db63f434c59e0c885719b7fcf475de31",
+    "provenance_binding": "Each report record wraps its unmodified serialized primitive in request metadata read from the same raw operation: run_id cold-canopy-m1-c6-oracle-20261001, formulation REDUCED, cadence 60 seconds, and investigation A. The report therefore groups the two supports by their actual run/formulation/cadence rather than a null default.",
+    "preserved_first_unbound_report": {
+      "input_sha256": "b205efd8043fa45b38f560554bccc60870586a8fc6388706a80bc898de1a277a",
+      "report_sha256": "de99bc6a75a7595b4e185068487097bd041e96c86382a32ee2ace8e07038870f",
+      "disposition": "Retained for audit. Its arithmetic result is the same, but run/formulation/cadence cumulative-group labels were null, so the provenance-bound report is canonical."
+    },
+    "raw_inputs": [
+      {
+        "cell": "B_mixed_to_liquid_day/REDUCED/P0/support0",
+        "raw_sha256": "34e0c62f40279db48d84711f8192d5e478de6c822ad5622a1f7a3887f120fd26"
+      },
+      {
+        "cell": "C_freeze_then_melt_day/REDUCED/P2/support0",
+        "raw_sha256": "c194c0de1b73ccc676c10b054ba6418866823d4fb4f46a1c2e3ae6d177dbb7c5"
+      }
+    ],
+    "result": {
+      "status": "RESOLVED",
+      "record_count": 2,
+      "unresolved_record_count": 0,
+      "invalid_support_order_group_count": 0,
+      "routing_candidate_mismatch_count": 0,
+      "candidate_residual_rows_exact": "42/42",
+      "candidate_normalizer_rows_exact": "42/42",
+      "operand_consistency_checks": "28/28 exact",
+      "routing_operands": "14/14 exact and within arithmetic tolerance"
+    },
+    "closure_evidence": [
+      {
+        "cell": "B_mixed_to_liquid_day/REDUCED/P0/support0",
+        "upper_mass_closure_kg_m2": -2.981209029639942e-14,
+        "upper_enthalpy_closure_j_m2": 6.821210263296962e-13,
+        "lower_mass_closure_kg_m2": -5.194195767943555e-15,
+        "lower_enthalpy_closure_j_m2": 3.637978807091713e-12,
+        "top_rain_transfer_errors": "0 kg/m2 and -1.3322676295501878e-14 J/m2",
+        "upper_downstream_transfer_errors": "-2.0328790734103208e-19 kg/m2 and 3.3306690738754696e-15 J/m2"
+      },
+      {
+        "cell": "C_freeze_then_melt_day/REDUCED/P2/support0",
+        "upper_mass_closure_kg_m2": 1.1209522893240731e-13,
+        "upper_enthalpy_closure_j_m2": 1.2337778571236413e-05,
+        "lower_mass_closure_kg_m2": 1.0574776731359092e-13,
+        "lower_enthalpy_closure_j_m2": 1.1610992260102648e-05,
+        "top_rain_transfer_errors": "0 kg/m2 and 0 J/m2",
+        "upper_downstream_transfer_errors": "0 kg/m2 and 0 J/m2"
+      }
+    ],
+    "scientific_interpretation": "The two accepted support-0 records are internally reproducible from serialized primitive operands: residuals, normalizers, storage/source closure, transfer routing, and duplicated operands agree. This supports only the local arithmetic consistency of those two accepted supports before each next-support failure.",
+    "scope_limit": "Each associated 1,440-support day failed at support 1. These isolated support-0 reconstructions do not establish cross-support M/H continuity, whole-day conservation, complete-day accuracy, formulation equivalence, cadence behavior, stability, runtime, or deployment performance."
+  },
+  "residual_risk_and_missing_tests": [
+    "No strict reference or stability trajectory completed even its first support; reference accuracy remains unresolved for all three physical cases.",
+    "Only two of the A attempts retained one accepted support, and every A cell failed before a complete day. The remaining 18 B cells were unavailable by their frozen baseline rule.",
+    "No valid paired FULL/REDUCED day, no six-batch timing sample, and no completed OFE-day exist. Any accuracy metric, cadence conclusion, speedup ratio, error/cost frontier, or production-runtime claim would be unsupported.",
+    "Historical C5 and initial C6 integrity failures remain part of lineage. No new integrity failure or timeout occurred after the accepted C6 correction."
+  ],
+  "verdict": {
+    "status": "TERMINAL_INCOMPLETE_NEGATIVE_RESULT",
+    "statement": "The corrected six-control gate ultimately passes, and the two retained partial supports independently reconstruct exactly. The scheduled scientific investigation does not pass: references 0/3, stability 0/3, A complete days 0/24, B available cells 0/18, and timing batches 0. No accuracy/runtime frontier, speedup, target compliance, or deployable result is established. Preserve the finite negative result without further method work or execution."
+  }
+}

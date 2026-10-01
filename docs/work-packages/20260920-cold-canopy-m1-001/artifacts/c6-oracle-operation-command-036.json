@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-runner.py",
+    "RUN_FRESH_DAYS",
+    "--test-binary",
+    "/workdir/.cache/openwepp/targets/development-treatment-c6-oracle-9f376d2b9f20/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "--kind",
+    "diagnostic",
+    "--cell",
+    "{\"investigation\": \"B\", \"case\": \"A_cold_ice_day\", \"formulation\": \"REDUCED\", \"profile\": \"P3\", \"cadence_seconds\": 900}",
+    "--batch",
+    "0"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-10-01T21:11:08.185946+00:00",
+  "elapsed_seconds": 0.19373282883316278,
+  "exit": 0,
+  "stdout": "{\"batch\":0,\"cell\":{\"cadence_seconds\":900,\"case\":\"A_cold_ice_day\",\"formulation\":\"REDUCED\",\"investigation\":\"B\",\"profile\":\"P3\"},\"key\":\"{\\\"batch\\\":0,\\\"cell\\\":{\\\"cadence_seconds\\\":900,\\\"case\\\":\\\"A_cold_ice_day\\\",\\\"formulation\\\":\\\"REDUCED\\\",\\\"investigation\\\":\\\"B\\\",\\\"profile\\\":\\\"P3\\\"},\\\"kind\\\":\\\"diagnostic\\\"}\",\"kind\":\"diagnostic\",\"reason\":\"REDUCED matched-profile 60-second diagnostic did not complete\",\"status\":\"unavailable\"}\n",
+  "stderr": ""
+}

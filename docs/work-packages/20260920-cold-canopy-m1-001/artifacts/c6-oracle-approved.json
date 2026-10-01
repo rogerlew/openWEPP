@@ -1,0 +1,41 @@
+{
+  "status": "APPROVED",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment-c6-oracle",
+  "binary_sha256": "c94275f4fe236ef35c5d6c80a42a0f73e59cdad1296afb419a5c817ff95725fb",
+  "artifact_pins": {
+    "separate-accuracy-runner.py": "0d19de8cb0d1817953e101c3890d1575186217a10e69c9d50a420a2fdf321b3c",
+    "separate-accuracy-input-check.json": "7713f550f4cab32062da1742e2abcd35f2c99b80034169e341bd3b02d28ba806",
+    "separate-accuracy-measurement-draft.json": "ee2dcf625813b4d3fbe39fc4fde4002780b536c314069685b23b134f67e83d1f",
+    "separate-accuracy-protocol-draft.json": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e",
+    "separate-accuracy-control-fixtures.json": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+    "separate-accuracy-independent-reconstruction.py": "d13fc8575422123bcdd439fe3e613fec92138e1e9d3493d7ebdbee7ba25917f8",
+    "separate-accuracy-source-custody.py": "bd3cb9c63d9f66a7c6bc7c407615e82de1c1abd47057e8d28424f6641b77a877",
+    "separate-accuracy-build-custody.py": "88f09f4d70cc5d0a3679eba13312324d94611a9cd18ea0a9e3483a33f4722492",
+    "architecture-decision-successor-cases.json": "b3ad4fa07c7748c56df0ad9c2fb681be019e86e9bd9befb97d705eb4d10e2ce8",
+    "original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+    "continuous-fixtures-draft01.json": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1"
+  },
+  "reviewers": [
+    "c6-oracle-correctness-review.json",
+    "c6-oracle-qa-review.json"
+  ],
+  "review_scope": "Owner-authorized C6-only oracle correction/replay; reuse unchanged C1-C5, then original finite schedule within original cumulative and physical limits",
+  "source_archive": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-source-cut02.tar.gz",
+    "sha256": "0ba5b7ad999c30ac5ad475417d3d824cc7feec33114c81b1eecc677a378a9fea"
+  },
+  "source_receipt": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-source-cut02.json",
+    "sha256": "eff8bb2500395013511c0c9633477ebe4a33b8ee41fcbebd11fa01e9d197bd1a"
+  },
+  "build_receipt": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-build.json",
+    "sha256": "737509b0a06f4193e207b0030d0d7b991bc616417719348081c74aa8ee8231a7"
+  },
+  "review_evidence": {
+    "c6-oracle-correctness-review.json": "3959f0899fcdaa07cdcf529cf4fd3cd247e5deceb2bb1cbe0d09a848fcecc8ce",
+    "c6-oracle-qa-review.json": "fd0bfb4e90c4ca0f81570f5ab77cb7a5ad72f7658eaf731905cecc46436453a5"
+  },
+  "binary_path": "/workdir/.cache/openwepp/targets/development-treatment-c6-oracle-9f376d2b9f20/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+  "dispatcher_sha256": "01d63280d6b16e6a11ceec5cbe026ca5eb2d4bacff0ad84241545c1dc096b935"
+}

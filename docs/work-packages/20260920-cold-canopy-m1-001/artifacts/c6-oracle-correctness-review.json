@@ -1,0 +1,78 @@
+{
+  "schema": "openwepp.work_package.correctness_review.v1",
+  "reviewer": "/root/correctness",
+  "role": "independent scientific/correctness reviewer",
+  "evidence_class": {
+    "static": "Reviewed the recovered source, the complete C6 assertion block, its loader/default-state provenance, production phase/capacity/wetness and BVLS certificate/eligibility paths, the frozen fixture, the C5 replay result used only for unchanged-dependency evidence, and source-cut02 custody metadata.",
+    "ran": "No physical, core, Jacobian, solver, control, reference, candidate, or test execution was run by this reviewer. Static byte comparisons and source/fixture inspection only."
+  },
+  "findings": [],
+  "reviewed_identity": {
+    "recovered_parent_source_tree_sha256": "9ce31f5e75721b45af936108824435936ecae3e9dbd072075a3f4a472aae8968",
+    "source_cut02_tree_sha256": "e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3",
+    "source_cut02_archive_sha256": "0ba5b7ad999c30ac5ad475417d3d824cc7feec33114c81b1eecc677a378a9fea",
+    "source_cut02_receipt_sha256": "eff8bb2500395013511c0c9633477ebe4a33b8ee41fcbebd11fa01e9d197bd1a",
+    "source_cut02_entry_count": 772,
+    "test_source_sha256": "28d329be09c69c4736278cdfc658ca963a6609e5bd4f0852157209eaf77c20c0",
+    "fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+    "restored_venv_link": "/workdir/openWEPP/.venv"
+  },
+  "fix_verification": {
+    "status": "ACCEPTED",
+    "scope": "The substantive source change from the authenticated 9ce31 replay source is confined to the C6 test oracle: the three lower-role wet-fraction expectations change from 0x3fc3bfd8fa998876 to 0x3fc74163587b03b8, and their assertion message now names the lower current trial mass. The fixture is byte-identical. The restored .venv link is custody repair, not Rust or fixture behavior.",
+    "operand_proof": "The explicit lower current trial mass remains 0.023 kg/m2 (0x3f978d4fdf3b645a); its beginning reservoir remains 0.018 kg/m2 (0x3f926e978d4fdf3b). C6 overrides only the upper M/H/D and upper beginning reservoir. With capacity 0.2970000000000001 kg/m2 (0x3fd3020c49ba5e37), the canonical evaluation order min(powf(0.023/capacity, 2/3), 1) produces 0.18168298549974593, bits 0x3fc74163587b03b8. The removed bits are the result for the beginning mass and were therefore provenance-wrong.",
+    "unaffected_dependencies": "C1-C5 test bodies, production Rust, and the fixture are unchanged. The earlier C1-C4 PASS receipts and corrected C5 replay PASS remain applicable; this continuation does not authorize or require their rerun."
+  },
+  "c6_complete_static_assertion_audit": {
+    "state_provenance": {
+      "upper_current": "M/H/D bits are 0x3fd3020c49ba5e36/+0/+0. H >= 0 selects Liquid; liquid mass equals M.",
+      "lower_current": "M is 0.023, H is -7917.29 and D is +0. Since H is below -L_f*M (-7675.099999999999), the phase is Ice and liquid mass is +0. The separate beginning state remains M=0.018/H=+0 and is not the current wetness operand.",
+      "capacity_branch": "For both occupancies dt*D is +0 and capacity-liquid_mass is positive, so the strict comparison in evaluate_m1_capacity_residual selects Drainage. Both current states are admissible."
+    },
+    "near_bound_arithmetic": {
+      "capacity_bits": "0x3fd3020c49ba5e37",
+      "upper_mass_bits": "0x3fd3020c49ba5e36",
+      "positive_gap_bits": "0x3c90000000000000",
+      "upper_mass_capacity_ratio_bits": "0x3feffffffffffffe",
+      "upper_wet_fraction_bits": "0x3fefffffffffffff",
+      "lower_wet_fraction_bits": "0x3fc74163587b03b8",
+      "conclusion": "The physical upper state is exactly one binary64 ULP below capacity, with a positive gap and strict wet fraction below 1; no clamp to full wetness occurs. The core JSON, gap, and ratio assertions use these same exact operands."
+    },
+    "provenance_and_certificates": {
+      "role_columns": [0, 1, 2, 6, 7, 8],
+      "structural_area_bits": ["0x0000000000000000", "0x3ff0000000000001", "0x3fd6666666666667", "0x0000000000000000", "0x3ff0000000000001", "0x3fd6666666666667"],
+      "initial_free": [true, true, true, true, true, true],
+      "physical_raw_weighted_zero_certificate": [false, false, false, false, false, false],
+      "mapped_raw_weighted_zero_certificate": [true, false, false, true, false, false],
+      "physical_current_free": [false, false, false, false, false, false],
+      "proof": "The REDUCED pullback removes the two zero-area sun-anchor columns, so mapped Jy columns 0 and 6 are all-row zero while retained mapped columns are not. Physical Jx retains nonzero anchor derivatives, so none of its six role columns is zero. The adapter requires both physical and mapped certificates, leaving all physical_current_free entries false. C5's passed dry reassembly uses the same current trial and geometry and independently confirms these exact certificate arrays; only C6's upper beginning reservoir differs, which changes residual constants but not this Jacobian zero structure."
+    },
+    "held_mask": {
+      "expected": "all 21 false",
+      "proof": "Role eligibility requires positive structural area, exact wet_fraction == 1, initial/current free status, and the zero certificate. Sun roles have zero structural area; every upper role has wet fraction one ULP below 1; every lower role has wet fraction 0x3fc74163587b03b8; and physical_current_free is false for all six. Mapped zero certificates alone cannot create a held coordinate."
+    },
+    "inspection_work": {
+      "role_joins_attempted_completed": [6, 6],
+      "column_entry_tests_attempted_completed": [252, 252],
+      "mask_joins_attempted_completed": [21, 21],
+      "proof": "Six role joins each inspect 21 rows in raw and weighted form, yielding 6*21*2=252 completed entry tests. The ordinary successful 21-column assembly then performs one completed mask join per coordinate."
+    },
+    "synthetic_rank_refusal": {
+      "fixture_shape": [21, 11],
+      "exact_rank": 10,
+      "proof": "Columns 0 through 9 contain an identity 10x10 minor. Column 10 equals column 9 in every row, so rank is exactly 10 and the 11-column face is deficient. The base and objective are zero, the first 11 bounds are -1/+1, and radius is 1. The retained helper enters one initial free-face subproblem and one factorization, then returns typed RankDeficient before a trial/materialization.",
+      "expected_attempted_subproblems": 1,
+      "expected_entered_svd_factorizations": 1,
+      "scope_limit": "This is a separate synthetic rank-refusal seam. It does not assert that the physical near-bound trajectory itself loses rank, and no such same-trajectory claim is required."
+    }
+  },
+  "residual_risk_and_missing_tests": [
+    "The corrected C6 has not yet been executed; this review establishes the oracle and all later expectations statically, conditional on the exact reviewed binary/build and QA custody checks.",
+    "All three references, three stability checks, 24 A cells, and 18 B cells remain unexecuted at this review point. Accuracy, cadence, CPU/wall cost, the error/cost frontier, and deployable runtime targets remain unestablished until authorized measurements produce results.",
+    "The prior C6 failure and its 0.059973032-second charge remain historical evidence. Only the owner-authorized one additional C6-only replay is available; any new assertion or integrity failure must halt without another replay."
+  ],
+  "verdict": {
+    "status": "STATIC_C6_ORACLE_APPROVED_CONDITIONAL_ON_BUILD_AND_QA_CUSTODY",
+    "statement": "No correctness blocker remains in source-cut02. The exact three-literal C6 oracle repair is correct, every later C6 expectation has a static operand proof, and unchanged C1-C5 results remain reusable. A C6-only replay may proceed only after the release no-run build and independent QA bind the exact source, fixture, binary, and runner hashes. This static approval does not claim a C6 execution pass or any accuracy/runtime frontier result."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "anchor_utc": "2026-10-01T21:03:00+00:00",
+  "carry_seconds": 455256.069712,
+  "ceiling_seconds": 458534.92798,
+  "remaining_seconds": 3278.8582679999527,
+  "work_cutoff_utc": "2026-10-01T21:42:38Z",
+  "hard_deadline_utc": "2026-10-01T21:57:38Z",
+  "readiness_deadline_utc": "2026-10-01T21:13:00Z"
+}

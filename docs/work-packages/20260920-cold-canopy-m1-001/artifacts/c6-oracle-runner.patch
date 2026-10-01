@@ -1,0 +1,10 @@
+--- a/separate-accuracy-runner.py
++++ b/separate-accuracy-runner.py
+@@ -228,6 +228,7 @@
+         expected_control = {
+             'c1-oracle-replay01': 'C1_empty_admissible',
+             'c5-mapped-certificate-replay01': 'C5_full_wet_reactivation',
++            'c6-current-wetness-replay01': 'C6_near_bound_rank_refusal',
+         }.get(namespace)
+         if (expected_control is None
+                 or type(cur.get('defect_replay_consumed')) is not int

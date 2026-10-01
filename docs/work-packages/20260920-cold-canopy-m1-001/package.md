@@ -1,5 +1,150 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## C6 continuation result — controls pass; all day candidates fail
+
+**Finite execution finished; scientific/runtime acceptance INCOMPLETE / HOLD.**
+C6's authorized corrected replay PASS (one test), charge0.059229624s under its
+remaining29.940026968s cap. All six controls now have accepted results with both
+C5/C6 corrected-replay histories retained. Readiness accepted at21:10:39.261979UTC,
+459.261979s from anchor, leaving1918.738021s before the900s closing reserve.
+No further replay was used or authorized. Runner reached END after every fixed
+schedule entry received its prescribed disposition; no budget timeout or new
+integrity failure interrupted this run.
+
+**A: no completed day in any of24cells.** Three FULL/P0 cells reuse their failed
+strict references, as frozen;21other A diagnostics execute once. Nineteen cells
+return typed refinement scratch-radius refusal, four return refinement final-box
+refusal, and one returns VEG-E-142 at MhConsistency. All three strict references
+and three stability checks fail with scratch-radius refusal before completing a
+support. Therefore accuracy is unresolved and there is no measured reduction or
+tolerance speedup, nondominated accuracy/cost setting or credible deployment path.
+
+The table gives failure class and completed60s supports before refusal. SR =
+TrustRegionRefinementIndeterminate/refinement_scratch_radius; FB = same typed
+refusal/refinement_final_box; MH = VEG-E-142/MhConsistency. These are actual
+numerical outcomes, not control assertion failures or evidence of impossibility.
+
+| Formulation/profile | A: cold ice | B: mixed-to-liquid | C: freeze-to-melt |
+| --- | --- | --- | --- |
+| FULL P0 | SR /0 | SR /0 | SR /0 |
+| FULL P1 | SR /0 | SR /0 | SR /0 |
+| FULL P2 | SR /0 | SR /0 | FB /0 |
+| FULL P3 | SR /0 | SR /0 | FB /0 |
+| REDUCED P0 | SR /0 | SR /1 | MH /0 |
+| REDUCED P1 | SR /0 | SR /0 | FB /0 |
+| REDUCED P2 | SR /0 | SR /0 | SR /1 |
+| REDUCED P3 | SR /0 | SR /0 | FB /0 |
+
+**B: all18coarse cells unavailable**, because every matching REDUCED P2/P3
+60-second baseline failed. No coarse physical runs occurred, and no cadence
+error or runtime contrast is supported. Six timing batches per completing cell
+remain inapplicable: zero completed days and zero timing batches. Across27unique
+physical day attempts (six reference/stability +21new A), only two supports were
+accepted and serialized. Independent reconstruction resolves both support0
+records:42/42 original residual rows and42/42 normalizers match exactly, with
+28/28 operand-consistency checks exact and zero routing mismatches. No full-day
+closure, transition timing or regime coverage follows.
+
+[Full cell/reference ledger](artifacts/c6-oracle-results.json),
+[raw run evidence](artifacts/c6-oracle-run-evidence.tar.gz),
+[terminal state](artifacts/c6-oracle-terminal-state.json), and49individual command
+receipts preserve inputs, first typed failures, partial records and CPU/wall
+clocks. Partial failed-attempt samples span4.920672–10.316618ms CPU and
+5.024670–10.381441ms wall. These are neither completed-day costs nor valid
+comparative timing batches; they must not be divided into speedup or century
+claims. Full-day temperature/humidity/store/occupancy-flux/ET/transfer/release,
+signed/gross integral, cumulative residual and event-time differences remain
+unresolved because no credible complete reference or candidate exists.
+
+Targets remain500us CPU/550us wall per completed OFE-day; regime750/1500/2500us
+CPU; full10-OFE century182.625s CPU/210s wall. Actual complete-day target gaps,
+native owner/receiver overhead and whole-run cost remain unmeasured. This finite
+protocol demonstrates no functioning setting; further solver work is outside
+this authorization and is not launched despite unused time.
+
+Physical aggregate2.265900994s includes prior0.410551444s and the new C6 replay;
+reference subcharge0.391434592s. Prior historical control0.053829565s remains
+separate. No failed-work refunds. Source remains e900961e...3760c3; binaryc942...25fb;
+fixtureunchanged. No production code, equations, solver, forcing, profile or
+cadence change. Final independent science/evidence review and preservation follow.
+
+Independent [terminal correctness](artifacts/c6-oracle-terminal-correctness-review.json)
+accepts only the two supports' local arithmetic/transfer consistency. In mixed
+REDUCED/P0, maximum absolute occupancy mass/enthalpy closures are2.982e-14kg/m2
+and3.638e-12J/m2; in transition REDUCED/P2 they are1.121e-13kg/m2 and
+1.234e-5J/m2. [Full reconstruction](artifacts/c6-oracle-partial-reconstruction-report.json)
+retains signs, occupancy-specific operands and transfer errors. Each day fails
+at support1, so these checks do not establish within-day continuity or day accuracy.
+
+Same [terminal QA](artifacts/c6-oracle-terminal-qa.json) accepts the exact49-command
+order, cap/replay accounting,48-member run archive, terminal source/build custody,
+and48unrelated files unchanged. Correctness and QA retain acceptanceHOLD; no
+further physical or method work is authorized by leftover budget. Scoped local
+preservation includes recoverable source, all raw negatives and both reviews;
+no push or production adoption.
+
+Final accounting sample **2026-10-01T21:16:47.980385+00:00**: pickup elapsed827.980385s;
+cumulative **456084.050097s** under458534.927980s, remaining
+2450.877883s. All active reading, build, review, measurement,
+reconstruction and waits counted once; final commit/return tail remains charged.
+Execution ended because the finite schedule was exhausted with negative outcomes,
+not because the allowance expired. The remaining balance grants no new methods
+or repeats. Full provenance wrappers now bind partial records to run/REDUCED/60s;
+the earlier reconstruction with null grouping metadata is preserved as unbound
+recording evidence. Primitive operands and physical invocations are unchanged.
+
+## Adopted C6 oracle continuation — 2026-10-01
+
+Owner explicitly invokes `/tmp/openwepp_cold_canopy_m1_c6_oracle_continuation.md`.
+Adopt the [frozen prompt](artifacts/c6-oracle-continuation-prompt.md): detached
+C6-only assertion/operand correction, full static audit of all remaining C6
+assertions, independent correctness and QA, then one additional C6-only replay.
+If it passes, proceed autonomously through the unchanged fixed reference/A/B
+schedule within remaining caps. No fixture/numerical/production changes.
+
+Anchor first reading at21:03:00UTC (first clock21:03:03). Conservative carry
+455256.069712s charges authoring through21:02UTC; owner-decision interval
+21:02–21:03 is excluded. Fixed ceiling458534.927980s leaves3278.858268s, no new
+seconds. Readiness deadline21:13:00UTC; work cutoff**2026-10-01T21:42:38.858268+00:00**;
+hard closing deadline**2026-10-01T21:57:38.858268+00:00**,900s closing reserve. Commands<=180s.
+All current work/waits/concurrency count once. These adopted UTC boundaries
+replace the prior windows without resetting cumulative/physical consumption.
+
+Physical carry0.410551444s of1800; reference0/900. C6 failed0.059973032s remains
+charged; newly authorized C6 replay cap29.940026968s, exactly one invocation.
+Both earlier replay slots remain consumed; no other replay allowed. Preserve all
+HALTED runs. C1–C5 reuse requires reviewed unchanged dependencies. Remaining
+24A/18B cells and three references/three stability checks are NOT RUN at pickup.
+Targets500us CPU/550us wall per completed OFE-day, regime750/1500/2500us CPU,
+century182.625s CPU/210s wall remain unmeasured. Partial coverage at budget expiry
+must be explicit; no promise of completion of all cells.
+
+Implementer owns new isolated source; same correctness audits all operand roles
+and verifies fixes; same QA will verify fresh source/build/runner/counters after
+correctness handoff. No physical preflight. Selected validation is focused format,
+release no-run build, source-bearing inherited lint comparison, exact source/build
+custody and the one formal C6 replay. Historical reviews cover unchanged scope.
+
+Preparation: source cut02 is
+`e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3`,772entries,
+with fixture bytes unchanged and only the C6 assertion file modified (test hash
+28d329be09c69c4736278cdfc658ca963a6609e5bd4f0852157209eaf77c20c0).
+The first preparatory archive had771entries because recovery omitted the original
+`.venv` symlink; exact link restoration completed before final custody, without
+changing Rust or observed build dependencies. Both cuts are retained; only cut02
+is eligible for execution. [Assertion patch](artifacts/c6-oracle-assertions.patch)
+and [final recoverable source](artifacts/c6-oracle-source-cut02.json) bind scope.
+Build and complete independent C6 audit are pending; no physical invocation yet.
+
+Readiness evidence: independent [correctness](artifacts/c6-oracle-correctness-review.json)
+accepts the complete static C6 audit and C1–C5 dependency reuse. Format and release
+no-run build PASS (no tests execute); binary
+c94275f4fe236ef35c5d6c80a42a0f73e59cdad1296afb419a5c817ff95725fb.
+[Build custody](artifacts/c6-oracle-build.json) verifies578pins/60depfiles.
+Clippy exits101 with289diagnostics; the [source-bearing comparison](artifacts/c6-oracle-clippy-compare.json)
+finds289/289,0additions/0removals. Pending-approval dispatcher check refuses
+launch before physical work. Same QA is verifying final readiness/custody.
+
 ## C6 failure disposition and proposed continuation — 2026-10-01
 
 Owner requests disposition and continuation-prompt authoring only. No repair,

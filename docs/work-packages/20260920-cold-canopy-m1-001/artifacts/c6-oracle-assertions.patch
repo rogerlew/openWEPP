@@ -1,0 +1,18 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -8399,11 +8399,11 @@
+                 0x3fef_ffff_ffff_ffff,
+                 0x3fef_ffff_ffff_ffff,
+                 0x3fef_ffff_ffff_ffff,
+-                0x3fc3_bfd8_fa99_8876,
+-                0x3fc3_bfd8_fa99_8876,
+-                0x3fc3_bfd8_fa99_8876,
++                0x3fc7_4163_587b_03b8,
++                0x3fc7_4163_587b_03b8,
++                0x3fc7_4163_587b_03b8,
+             ],
+-            "C6 physical wetness comes from the frozen upper near-bound and lower reservoir operands"
++            "C6 physical wetness uses the upper near-bound trial mass and the lower current trial mass, not its beginning reservoir"
+         );
+         let c6_core: Value =
+             serde_json::from_str(&c6_adapter.observation().rank_capture_core_json_for_test())

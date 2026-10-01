@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Static source/fixture audit; no C6/core/Jacobian execution",
+  "recovered_source_archive_sha256": "68cb662d0b2b1a67f7bfdf661786453e5eb97a08880ffa771af9cb9c1edb27cf",
+  "fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+  "test_source_sha256": "28d329be09c69c4736278cdfc658ca963a6609e5bd4f0852157209eaf77c20c0",
+  "c6_assertion_audit": {
+    "upper_current_trial": {"coordinates": [3, 4, 5], "bits": ["0x3fd3020c49ba5e36", "0x0000000000000000", "0x0000000000000000"], "capacity": "0x3fd3020c49ba5e37", "gap": "0x3c90000000000000", "ratio": "0x3feffffffffffffe", "wet_fraction": "0x3fefffffffffffff"},
+    "lower_current_trial": {"coordinate": 9, "mass_bits": "0x3f978d4fdf3b645a", "mass_decimal": 0.023, "wet_fraction_bits": "0x3fc74163587b03b8", "provenance_slots": [3, 4, 5]},
+    "lower_beginning_reservoir": {"mass_bits": "0x3f926e978d4fdf3b", "mass_decimal": 0.018, "not_the_C6_current_wetness_operand": true},
+    "provenance": {"role_columns": [0, 1, 2, 6, 7, 8], "initial_free": [true, true, true, true, true, true], "physical_current_free": [false, false, false, false, false, false]},
+    "certificates": {"physical_raw_weighted": [false, false, false, false, false, false], "mapped_raw_weighted": [true, false, false, true, false, false], "held_coordinates": "all 21 false", "meaning": "mapped values are Jy all-row zero certificates, not held/free eligibility"},
+    "inspection_work": {"role_attempted_completed": [6, 6], "entry_attempted_completed": [252, 252], "mask_attempted_completed": [21, 21]},
+    "synthetic_rank_seam": "fixture 21x11 duplicate-column rank-ten matrix and typed RankDeficient assertion remain separate and unchanged"
+  }
+}

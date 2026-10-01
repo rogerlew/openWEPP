@@ -1,0 +1,933 @@
+{
+  "disposition": "FINITE_SCHEDULE_FINISHED_WITH_NEGATIVE_RESULTS",
+  "implementation_acceptance": "HOLD_NO_COMPLETED_DAY",
+  "source_tree": "e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3",
+  "binary_sha256": "c94275f4fe236ef35c5d6c80a42a0f73e59cdad1296afb419a5c817ff95725fb",
+  "control_status": "C1-C6_PASS_WITH_DISCLOSED_C5_AND_C6_CORRECTED_REPLAYS",
+  "C6_replay_charge_seconds": 0.059229624,
+  "physical_elapsed_seconds": 2.2659009940000003,
+  "reference_elapsed_seconds": 0.391434592,
+  "historical_prior_control_elapsed_seconds": 0.053829565,
+  "references_and_stability": [
+    {
+      "batch": 0,
+      "cap_seconds": 150,
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0",
+        "stability_variant": "strict_reference"
+      },
+      "charged_seconds": 0.060781705,
+      "child_process_cpu_seconds": 0.006399987,
+      "completed_supports": [
+        0
+      ],
+      "cpu_clock_id": -3686486,
+      "cpu_clock_resolution": 1e-09,
+      "cpu_end_ns": 56751094,
+      "cpu_start_ns": 50351107,
+      "day_digests": [
+        "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      ],
+      "first_failures": [
+        "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 2, entered_svd_factorizations: 3, raw_residual_max: 37.28136632866794, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 3, completed_face_pivots: 2, total_jacobi_sweeps: 22, refinement_scalar_operations: 3403, refinement_guard_events: 6636, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 3, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2356, coordinate_update_operations: 19, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 63, bvls05_mask_joins_completed: 63, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 4027447030223200.0, original_trust_radius: 4.0, reduced_face_radius: 4.0, scratch_box_feasible: Some(true) }), budget_refusal: None })"
+      ],
+      "fresh_complete_days": 0,
+      "key": "{\"batch\":0,\"cell\":{\"cadence_seconds\":60,\"case\":\"A_cold_ice_day\",\"formulation\":\"FULL\",\"investigation\":\"A\",\"profile\":\"P0\",\"stability_variant\":\"strict_reference\"},\"kind\":\"stability\"}",
+      "kind": "stability",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-476615a4d140ca531b69-c6-current-wetness-replay01.json",
+      "sample_wall_seconds": 0.00658727,
+      "status": "numerical_or_domain_failure",
+      "wall_end_ns": 3958156373471429,
+      "wall_start_ns": 3958156366884159
+    },
+    {
+      "batch": 0,
+      "cap_seconds": 150,
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "charged_seconds": 0.070388868,
+      "child_process_cpu_seconds": 0.005648618,
+      "completed_supports": [
+        0
+      ],
+      "cpu_clock_id": -3686150,
+      "cpu_clock_resolution": 1e-09,
+      "cpu_end_ns": 65039678,
+      "cpu_start_ns": 59391060,
+      "day_digests": [
+        "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      ],
+      "first_failures": [
+        "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 2752.0291779285826, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 7884335521576912.0, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })"
+      ],
+      "fresh_complete_days": 0,
+      "key": "{\"batch\":0,\"cell\":{\"cadence_seconds\":60,\"case\":\"A_cold_ice_day\",\"formulation\":\"FULL\",\"investigation\":\"A\",\"profile\":\"P0\"},\"kind\":\"reference\"}",
+      "kind": "reference",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-9eff508eb3c2f3cf9a6f-c6-current-wetness-replay01.json",
+      "sample_wall_seconds": 0.006494959,
+      "status": "numerical_or_domain_failure",
+      "wall_end_ns": 3958155909800863,
+      "wall_start_ns": 3958155903305904
+    },
+    {
+      "batch": 0,
+      "cap_seconds": 150,
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0",
+        "stability_variant": "strict_reference"
+      },
+      "charged_seconds": 0.065210878,
+      "child_process_cpu_seconds": 0.004933083,
+      "completed_supports": [
+        0
+      ],
+      "cpu_clock_id": -3686710,
+      "cpu_clock_resolution": 1e-09,
+      "cpu_end_ns": 60324951,
+      "cpu_start_ns": 55391868,
+      "day_digests": [
+        "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      ],
+      "first_failures": [
+        "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 8, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 679.9352376228999, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 8, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 1.3206836928127468e18, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })"
+      ],
+      "fresh_complete_days": 0,
+      "key": "{\"batch\":0,\"cell\":{\"cadence_seconds\":60,\"case\":\"B_mixed_to_liquid_day\",\"formulation\":\"FULL\",\"investigation\":\"A\",\"profile\":\"P0\",\"stability_variant\":\"strict_reference\"},\"kind\":\"stability\"}",
+      "kind": "stability",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-3fd34fe246c25c5eac7b-c6-current-wetness-replay01.json",
+      "sample_wall_seconds": 0.005165531,
+      "status": "numerical_or_domain_failure",
+      "wall_end_ns": 3958157315040221,
+      "wall_start_ns": 3958157309874690
+    },
+    {
+      "batch": 0,
+      "cap_seconds": 150,
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "charged_seconds": 0.063656078,
+      "child_process_cpu_seconds": 0.005727309,
+      "completed_supports": [
+        0
+      ],
+      "cpu_clock_id": -3686558,
+      "cpu_clock_resolution": 1e-09,
+      "cpu_end_ns": 59234816,
+      "cpu_start_ns": 53507507,
+      "day_digests": [
+        "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      ],
+      "first_failures": [
+        "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 8, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 141.61149682247412, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 8, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 617789946732928.0, original_trust_radius: 2.0, reduced_face_radius: 2.0, scratch_box_feasible: Some(true) }), budget_refusal: None })"
+      ],
+      "fresh_complete_days": 0,
+      "key": "{\"batch\":0,\"cell\":{\"cadence_seconds\":60,\"case\":\"B_mixed_to_liquid_day\",\"formulation\":\"FULL\",\"investigation\":\"A\",\"profile\":\"P0\"},\"kind\":\"reference\"}",
+      "kind": "reference",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-4439882fc8ae5020004e-c6-current-wetness-replay01.json",
+      "sample_wall_seconds": 0.005813886,
+      "status": "numerical_or_domain_failure",
+      "wall_end_ns": 3958156847061189,
+      "wall_start_ns": 3958156841247303
+    },
+    {
+      "batch": 0,
+      "cap_seconds": 150,
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0",
+        "stability_variant": "strict_reference"
+      },
+      "charged_seconds": 0.060991344,
+      "child_process_cpu_seconds": 0.005157662,
+      "completed_supports": [
+        0
+      ],
+      "cpu_clock_id": -3686990,
+      "cpu_clock_resolution": 1e-09,
+      "cpu_end_ns": 56457411,
+      "cpu_start_ns": 51299749,
+      "day_digests": [
+        "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      ],
+      "first_failures": [
+        "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 4486.1108799366975, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 1.5188667631090647e18, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })"
+      ],
+      "fresh_complete_days": 0,
+      "key": "{\"batch\":0,\"cell\":{\"cadence_seconds\":60,\"case\":\"C_freeze_then_melt_day\",\"formulation\":\"FULL\",\"investigation\":\"A\",\"profile\":\"P0\",\"stability_variant\":\"strict_reference\"},\"kind\":\"stability\"}",
+      "kind": "stability",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-bf1a27a6c3affd5baf72-c6-current-wetness-replay01.json",
+      "sample_wall_seconds": 0.005442036,
+      "status": "numerical_or_domain_failure",
+      "wall_end_ns": 3958158268482925,
+      "wall_start_ns": 3958158263040889
+    },
+    {
+      "batch": 0,
+      "cap_seconds": 150,
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "charged_seconds": 0.070405719,
+      "child_process_cpu_seconds": 0.005861428,
+      "completed_supports": [
+        0
+      ],
+      "cpu_clock_id": -3686782,
+      "cpu_clock_resolution": 1e-09,
+      "cpu_end_ns": 65155713,
+      "cpu_start_ns": 59294285,
+      "day_digests": [
+        "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      ],
+      "first_failures": [
+        "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 4486.1108799366975, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 1.5188214891493888e16, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })"
+      ],
+      "fresh_complete_days": 0,
+      "key": "{\"batch\":0,\"cell\":{\"cadence_seconds\":60,\"case\":\"C_freeze_then_melt_day\",\"formulation\":\"FULL\",\"investigation\":\"A\",\"profile\":\"P0\"},\"kind\":\"reference\"}",
+      "kind": "reference",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-ac89876f6632742c0d40-c6-current-wetness-replay01.json",
+      "sample_wall_seconds": 0.006169653,
+      "status": "numerical_or_domain_failure",
+      "wall_end_ns": 3958157782930926,
+      "wall_start_ns": 3958157776761273
+    }
+  ],
+  "cells": [
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": "{\"batch\":0,\"cell\":{\"cadence_seconds\":60,\"case\":\"A_cold_ice_day\",\"formulation\":\"FULL\",\"investigation\":\"A\",\"profile\":\"P0\"},\"kind\":\"reference\"}",
+      "partial_attempt_cpu_seconds": 0.005648618,
+      "partial_attempt_wall_seconds": 0.006494959,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-9eff508eb3c2f3cf9a6f-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.005957197,
+      "partial_attempt_wall_seconds": 0.006043159,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-4ad52f8e5552c88a19df-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.009786448,
+      "partial_attempt_wall_seconds": 0.00989459,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-46447fbe673bf106377b-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.005312599,
+      "partial_attempt_wall_seconds": 0.005495567,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-6c180db842530ce04f46-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.005529801,
+      "partial_attempt_wall_seconds": 0.005838927,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-ae57efccf2c1d329ae92-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.010316618,
+      "partial_attempt_wall_seconds": 0.010381441,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-e5a92eaae246bd1882ba-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.005954127,
+      "partial_attempt_wall_seconds": 0.00617263,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-f7b4339f279cd8eaac3b-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.00615922,
+      "partial_attempt_wall_seconds": 0.006422983,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-81b8d27d09eaf687f611-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        1
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.007401472,
+      "partial_attempt_wall_seconds": 0.007596679,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-c6a3ccdf01efba255b8b-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": "{\"batch\":0,\"cell\":{\"cadence_seconds\":60,\"case\":\"B_mixed_to_liquid_day\",\"formulation\":\"FULL\",\"investigation\":\"A\",\"profile\":\"P0\"},\"kind\":\"reference\"}",
+      "partial_attempt_cpu_seconds": 0.005727309,
+      "partial_attempt_wall_seconds": 0.005813886,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-4439882fc8ae5020004e-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.004920672,
+      "partial_attempt_wall_seconds": 0.00502467,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-b5012b067603fae39e6e-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.005663256,
+      "partial_attempt_wall_seconds": 0.008502611,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-436bad7638f33a37cd8a-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.005888587,
+      "partial_attempt_wall_seconds": 0.006057142,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-11a422b850b8fa92e1aa-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.005882802,
+      "partial_attempt_wall_seconds": 0.006092783,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-985bf7aeefc6fded1dd7-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.00672977,
+      "partial_attempt_wall_seconds": 0.006998439,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-f94b281a63ce146c3153-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.004952909,
+      "partial_attempt_wall_seconds": 0.005904437,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-4e9801d71fb91b18d0e9-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": "{\"batch\":0,\"cell\":{\"cadence_seconds\":60,\"case\":\"C_freeze_then_melt_day\",\"formulation\":\"FULL\",\"investigation\":\"A\",\"profile\":\"P0\"},\"kind\":\"reference\"}",
+      "partial_attempt_cpu_seconds": 0.005861428,
+      "partial_attempt_wall_seconds": 0.006169653,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-ac89876f6632742c0d40-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "VEG-E-142_MhConsistency",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.006488225,
+      "partial_attempt_wall_seconds": 0.006566364,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-6083bcf6038ac9ddde5f-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_final_box",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.006836946,
+      "partial_attempt_wall_seconds": 0.006931538,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-8d750b4d315edd6f7de5-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.006562591,
+      "partial_attempt_wall_seconds": 0.006853674,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-7616a5c8ac9efd4fcaee-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_final_box",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.007721366,
+      "partial_attempt_wall_seconds": 0.008928953,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-31a09ea4c64d90067db2-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_scratch_radius",
+      "completed_supports": [
+        1
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.00681576,
+      "partial_attempt_wall_seconds": 0.006937553,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-0e9bec3f6c47970f289e-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_final_box",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.005801886,
+      "partial_attempt_wall_seconds": 0.006026332,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-1eefe6ca395d8cd5e01f-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "numerical_or_domain_failure",
+      "failure_class": "refinement_final_box",
+      "completed_supports": [
+        0
+      ],
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": 0.00791678,
+      "partial_attempt_wall_seconds": 0.008058736,
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-6a7267fcea7879f26dff-c6-current-wetness-replay01.json"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300,
+      "status": "unavailable",
+      "failure_class": "REDUCED matched-profile 60-second diagnostic did not complete",
+      "completed_supports": null,
+      "complete_days": 0,
+      "reused_reference": null,
+      "partial_attempt_cpu_seconds": null,
+      "partial_attempt_wall_seconds": null,
+      "output": null
+    }
+  ],
+  "A_failure_counts": {
+    "refinement_scratch_radius": 19,
+    "VEG-E-142_MhConsistency": 1,
+    "refinement_final_box": 4
+  },
+  "unique_physical_day_attempts": 27,
+  "retained_completed_supports": 2,
+  "completed_days": 0,
+  "timing_batches": 0,
+  "frontier": [],
+  "frontier_status": "UNMEASURED_NO_COMPLETED_DAY_OR_CREDIBLE_REFERENCE",
+  "A_conclusion": "All24 fixed60second profiles/formulations failed; no valid reduction or tolerance accuracy/runtime ratios",
+  "B_conclusion": "All18 coarse cells unavailable because corresponding REDUCED60second baselines failed; no cadence comparison",
+  "accuracy_metrics": "UNRESOLVED: temperature/humidity/stores, occupancy fluxes/ET, transfers/releases, signed/gross integrals, cumulative residuals and event timing lack completed comparable days",
+  "target_gap": "Unmeasured completed OFEday and century costs; no functioning setting demonstrated",
+  "cpu_wall_limit": "Raw clocks below are partial failed attempts only, not completed-day costs or timing samples",
+  "partial_attempt_cpu_range_seconds": [
+    0.004920672,
+    0.010316618
+  ],
+  "partial_attempt_wall_range_seconds": [
+    0.00502467,
+    0.010381441
+  ],
+  "independent_partial_reconstruction": {
+    "report": "c6-oracle-partial-reconstruction-report.json",
+    "report_sha256": "14a872c6dfdbc33a006189655fa4b1a5db63f434c59e0c885719b7fcf475de31",
+    "status": "RESOLVED",
+    "supports": 2,
+    "residual_rows_exact": 42,
+    "normalizer_rows_exact": 42,
+    "scope": "Only two retained support0 records; no complete-day accuracy or closure"
+  }
+}

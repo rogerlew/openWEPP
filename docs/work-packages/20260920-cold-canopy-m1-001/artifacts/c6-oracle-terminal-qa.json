@@ -1,0 +1,33 @@
+{
+  "schema": "openwepp.work-package.qa-review.v1",
+  "reviewer": "/root/qa",
+  "review_kind": "independent C6 continuation terminal QA review",
+  "evidence_class": "Inspected executed receipts and terminal state; reviewer ran no physical, core, Jacobian, solver, control, reference, candidate, or test command.",
+  "reviewed_at_utc": "2026-10-01T21:14:10Z",
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-runner-state.json",
+      "evidence": "C6 replay passed, but all three strict references, all three stability checks, and all 24 A diagnostics ended as typed numerical_or_domain_failure. All 18 B diagnostics are unavailable because their matched reduced 60-second A baselines did not complete. No complete candidate day or timing batch exists.",
+      "impact": "Accuracy, cadence, CPU/wall cost, error/cost frontier, and deployment targets remain unestablished. The result is incomplete rather than a passing sweep."
+    }
+  ],
+  "non_blocking_debt_followups": [
+    {
+      "finding": "Exact frozen order is preserved: C6-only replay first, then three reference/stability pairs, 24 A diagnostics, and 18 B dispositions. The 49 result-bearing dispatcher receipts all exit 0; dispatcher END/next-operation-none is a nonphysical terminal signal."
+    },
+    {
+      "finding": "No current execution exceeded its cap or timed out. C6 replay completed with charge 0.059229624 against 29.940026968; total physical_seconds is 2.265900994 and reference_seconds is 0.391434592. Historical C5 and initial C6 integrity failures remain preserved as lineage, rather than being new failures in this continuation."
+    },
+    {
+      "finding": "The terminal state retains C1-C5 completion, both earlier replay lineages, the single C6-only authorization, source/build custody and the approved dispatcher path. Independent correctness retains its two support reconstructions; no source change or extra replay follows from this QA review."
+    },
+    {
+      "finding": "Terminal run custody is present: c6-oracle-run-evidence.tar.gz hashes to 7acbe07f32a19ea1091abfd6f9725efdefbffe9f4376e464972caac834ac68e8 and its manifest and tar each contain 48 members, including the final END state, all operation receipts, runner, approval receipt and dispatcher. The results ledger has all 42 scheduled cells: 24 numerical_or_domain_failure and 18 unavailable, with zero completed result records."
+    },
+    {
+      "finding": "Closure custody is complete: c6-oracle-closure-check.json verifies terminal source e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3 (772 entries), binary c94275f4fe236ef35c5d6c80a42a0f73e59cdad1296afb419a5c817ff95725fb (578 pins and 60 depfiles), 48 initial unrelated files unchanged, and scope limited to package.md plus c6-oracle-* evidence with no main Rust."
+    }
+  ],
+  "qa_pass_statement": "QA accepts executed ledger, cap accounting, raw receipt/archive preservation, final source/build custody, unrelated-work preservation, and END disposition for scoped commit. The finite investigation is terminally INCOMPLETE because no reference or candidate completed; no physical correctness, accuracy, runtime, cost, or deployment acceptance follows."
+}

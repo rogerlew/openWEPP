@@ -1,0 +1,1541 @@
+{
+  "authority": "COLD-CANOPY-M1-SEPARATE-ACCURACY-01@b30225ce",
+  "cumulative_ledgers": [
+    {
+      "cadence_seconds": null,
+      "case_id": "B_mixed_to_liquid_day",
+      "formulation": null,
+      "last_support_id": 0,
+      "profile": "P0",
+      "reservoirs": [
+        {
+          "drainage_transfer_enthalpy_j_m2": 0.0,
+          "drainage_transfer_mass_kg_m2": 4.80697781509027e-13,
+          "enthalpy_closure_j_m2": 6.821210263296962e-13,
+          "mass_closure_kg_m2": -2.981209029639942e-14,
+          "source_enthalpy_j_m2": -1291.0496039115753,
+          "source_mass_kg_m2": 0.006874034305157368,
+          "storage_delta_enthalpy_j_m2": -1291.0496039115746,
+          "storage_delta_mass_kg_m2": 0.006874034305127556
+        },
+        {
+          "drainage_transfer_enthalpy_j_m2": 0.0,
+          "drainage_transfer_mass_kg_m2": 5.773664153311375e-14,
+          "enthalpy_closure_j_m2": 3.637978807091713e-12,
+          "mass_closure_kg_m2": -5.194195767943555e-15,
+          "source_enthalpy_j_m2": -1855.7647180583526,
+          "source_mass_kg_m2": 0.0016244402099253774,
+          "storage_delta_enthalpy_j_m2": -1855.764718058349,
+          "storage_delta_mass_kg_m2": 0.0016244402099201832
+        }
+      ],
+      "run_id": null,
+      "stability_variant": "ordinary",
+      "support_count": 1,
+      "support_order_valid": true,
+      "transfer": {
+        "lower_terminal_release_enthalpy_j_m2": 0.0,
+        "lower_terminal_release_mass_kg_m2": 5.773664153311375e-14,
+        "lower_total_incident_enthalpy_j_m2": 50.84821959656947,
+        "lower_total_incident_mass_kg_m2": 0.0024110108868202022,
+        "terminal_lower_bypass_stemflow_enthalpy_j_m2": 3.7496975087610562,
+        "terminal_lower_bypass_stemflow_mass_kg_m2": 0.00017779504548307582,
+        "terminal_lower_bypass_throughfall_enthalpy_j_m2": 25.094129481708606,
+        "terminal_lower_bypass_throughfall_mass_kg_m2": 0.0011898591505405843,
+        "terminal_upper_stemflow_enthalpy_j_m2": 11.908006961281709,
+        "terminal_upper_stemflow_mass_kg_m2": 0.0005646281157554153,
+        "top_rain_debit_credit_error_j_m2": -1.3322676295501878e-14,
+        "top_rain_debit_credit_error_kg_m2": 0.0,
+        "upper_downstream_debit_credit_error_j_m2": 3.3306690738754696e-15,
+        "upper_downstream_debit_credit_error_kg_m2": -2.0328790734103208e-19,
+        "upper_to_lower_intercepted_enthalpy_j_m2": 0.0,
+        "upper_to_lower_intercepted_mass_kg_m2": 3.067134977774564e-13
+      }
+    },
+    {
+      "cadence_seconds": null,
+      "case_id": "C_freeze_then_melt_day",
+      "formulation": null,
+      "last_support_id": 0,
+      "profile": "P2",
+      "reservoirs": [
+        {
+          "drainage_transfer_enthalpy_j_m2": 0.0,
+          "drainage_transfer_mass_kg_m2": 4.1130641374819906e-36,
+          "enthalpy_closure_j_m2": 1.2337778571236413e-05,
+          "mass_closure_kg_m2": 1.1209522893240731e-13,
+          "source_enthalpy_j_m2": -5104.003608682008,
+          "source_mass_kg_m2": -0.0009282649263006671,
+          "storage_delta_enthalpy_j_m2": -5104.00359634423,
+          "storage_delta_mass_kg_m2": -0.0009282649261885718
+        },
+        {
+          "drainage_transfer_enthalpy_j_m2": 0.0,
+          "drainage_transfer_mass_kg_m2": 5.1169551209938377e-36,
+          "enthalpy_closure_j_m2": 1.1610992260102648e-05,
+          "mass_closure_kg_m2": 1.0574776731359092e-13,
+          "source_enthalpy_j_m2": -5025.792724837861,
+          "source_mass_kg_m2": -0.0009184245520184484,
+          "storage_delta_enthalpy_j_m2": -5025.792713226869,
+          "storage_delta_mass_kg_m2": -0.0009184245519127006
+        }
+      ],
+      "run_id": null,
+      "stability_variant": "ordinary",
+      "support_count": 1,
+      "support_order_valid": true,
+      "transfer": {
+        "lower_terminal_release_enthalpy_j_m2": 0.0,
+        "lower_terminal_release_mass_kg_m2": 5.1169551209938377e-36,
+        "lower_total_incident_enthalpy_j_m2": 0.0,
+        "lower_total_incident_mass_kg_m2": 2.624377179836075e-36,
+        "terminal_lower_bypass_stemflow_enthalpy_j_m2": 0.0,
+        "terminal_lower_bypass_stemflow_mass_kg_m2": 1.9352930449396902e-37,
+        "terminal_lower_bypass_throughfall_enthalpy_j_m2": 0.0,
+        "terminal_lower_bypass_throughfall_mass_kg_m2": 1.2951576531519465e-36,
+        "terminal_upper_stemflow_enthalpy_j_m2": 0.0,
+        "terminal_upper_stemflow_mass_kg_m2": 0.0,
+        "top_rain_debit_credit_error_j_m2": 0.0,
+        "top_rain_debit_credit_error_kg_m2": 0.0,
+        "upper_downstream_debit_credit_error_j_m2": 0.0,
+        "upper_downstream_debit_credit_error_kg_m2": 0.0,
+        "upper_to_lower_intercepted_enthalpy_j_m2": 0.0,
+        "upper_to_lower_intercepted_mass_kg_m2": 2.624377179836075e-36
+      }
+    }
+  ],
+  "cumulative_summation": "chronological binary64 addition in input order",
+  "invalid_support_order_group_count": 0,
+  "method": "raw primitive reconstruction; candidate residual/helper exclusion",
+  "record_count": 2,
+  "routing_candidate_mismatch_count": 0,
+  "schema": "openwepp.m1-separate-accuracy-independent-reconstruction.v2",
+  "status": "RESOLVED",
+  "supports": [
+    {
+      "air_density_kg_m3": 1.1152795579543553,
+      "candidate_normalizer_comparison": {
+        "all_exact": true,
+        "rows": [
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.0001e-06,
+            "candidate_bits": "0x3eb0c765943554ec",
+            "exact": true,
+            "reconstructed": 1.0001e-06,
+            "reconstructed_bits": "0x3eb0c765943554ec",
+            "row": 0
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.0018039841692087e-06,
+            "candidate_bits": "0x3eb0ceb7211cd7f8",
+            "exact": true,
+            "reconstructed": 1.0018039841692087e-06,
+            "reconstructed_bits": "0x3eb0ceb7211cd7f8",
+            "row": 1
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.0005565300892695e-06,
+            "candidate_bits": "0x3eb0c95b8a012ba0",
+            "exact": true,
+            "reconstructed": 1.0005565300892695e-06,
+            "reconstructed_bits": "0x3eb0c95b8a012ba0",
+            "row": 2
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 2.4e-10,
+            "candidate_bits": "0x3df07e1fe91b0b70",
+            "exact": true,
+            "reconstructed": 2.4e-10,
+            "reconstructed_bits": "0x3df07e1fe91b0b70",
+            "row": 3
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-06,
+            "candidate_bits": "0x3eb0c6f7a0b5ed8d",
+            "exact": true,
+            "reconstructed": 1e-06,
+            "reconstructed_bits": "0x3eb0c6f7a0b5ed8d",
+            "row": 4
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 5
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.0001e-06,
+            "candidate_bits": "0x3eb0c765943554ec",
+            "exact": true,
+            "reconstructed": 1.0001e-06,
+            "reconstructed_bits": "0x3eb0c765943554ec",
+            "row": 6
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.0015246866116394e-06,
+            "candidate_bits": "0x3eb0cd8409d6d313",
+            "exact": true,
+            "reconstructed": 1.0015246866116394e-06,
+            "reconstructed_bits": "0x3eb0cd8409d6d313",
+            "row": 7
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.0004702274674716e-06,
+            "candidate_bits": "0x3eb0c8fca5f9e26e",
+            "exact": true,
+            "reconstructed": 1.0004702274674716e-06,
+            "reconstructed_bits": "0x3eb0c8fca5f9e26e",
+            "row": 8
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 3e-10,
+            "candidate_bits": "0x3df49da7e361ce4c",
+            "exact": true,
+            "reconstructed": 3e-10,
+            "reconstructed_bits": "0x3df49da7e361ce4c",
+            "row": 9
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-06,
+            "candidate_bits": "0x3eb0c6f7a0b5ed8d",
+            "exact": true,
+            "reconstructed": 1e-06,
+            "reconstructed_bits": "0x3eb0c6f7a0b5ed8d",
+            "row": 10
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 11
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.0350151385222628e-06,
+            "candidate_bits": "0x3eb15d5b2e02bf39",
+            "exact": true,
+            "reconstructed": 1.0350151385222628e-06,
+            "reconstructed_bits": "0x3eb15d5b2e02bf39",
+            "row": 12
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.0487167042567277e-12,
+            "candidate_bits": "0x3d7273000a6351e0",
+            "exact": true,
+            "reconstructed": 1.0487167042567277e-12,
+            "reconstructed_bits": "0x3d7273000a6351e0",
+            "row": 13
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 14
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 15
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 16
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 17
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 18
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 19
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 20
+          }
+        ],
+        "status": "available"
+      },
+      "candidate_residual_comparison": {
+        "all_exact": true,
+        "rows": [
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 0
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -2.9918676603020444e-09,
+            "candidate_bits": "0xbe29b32fc2900000",
+            "exact": true,
+            "reconstructed": -2.9918676603020444e-09,
+            "reconstructed_bits": "0xbe29b32fc2900000",
+            "reconstructed_over_normalizer": -0.0029864800974845254,
+            "row": 1
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -2.7185955708830534e-09,
+            "candidate_bits": "0xbe275a4140000000",
+            "exact": true,
+            "reconstructed": -2.7185955708830534e-09,
+            "reconstructed_bits": "0xbe275a4140000000",
+            "reconstructed_over_normalizer": -0.0027170834321979796,
+            "row": 2
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -2.981209029639942e-14,
+            "candidate_bits": "0xbd20c86000000000",
+            "exact": true,
+            "reconstructed": -2.981209029639942e-14,
+            "reconstructed_bits": "0xbd20c86000000000",
+            "reconstructed_over_normalizer": -0.00012421704290166424,
+            "row": 3
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 6.821210263296962e-13,
+            "candidate_bits": "0x3d68000000000000",
+            "exact": true,
+            "reconstructed": 6.821210263296962e-13,
+            "reconstructed_bits": "0x3d68000000000000",
+            "reconstructed_over_normalizer": 6.821210263296962e-07,
+            "row": 4
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 4.80697781509027e-13,
+            "candidate_bits": "0x3d60e9bd9e793780",
+            "exact": true,
+            "reconstructed": 4.80697781509027e-13,
+            "reconstructed_bits": "0x3d60e9bd9e793780",
+            "reconstructed_over_normalizer": 0.00048069778150902696,
+            "row": 5
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 6
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -2.9907409565370358e-09,
+            "candidate_bits": "0xbe29b0b57b700000",
+            "exact": true,
+            "reconstructed": -2.9907409565370358e-09,
+            "reconstructed_bits": "0xbe29b0b57b700000",
+            "reconstructed_over_normalizer": -0.0029861879557410787,
+            "row": 7
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -2.720397684896625e-09,
+            "candidate_bits": "0xbe275e37c0000000",
+            "exact": true,
+            "reconstructed": -2.720397684896625e-09,
+            "reconstructed_bits": "0xbe275e37c0000000",
+            "reconstructed_over_normalizer": -0.0027191190804176863,
+            "row": 8
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -5.194195767943555e-15,
+            "candidate_bits": "0xbcf7648000000000",
+            "exact": true,
+            "reconstructed": -5.194195767943555e-15,
+            "reconstructed_bits": "0xbcf7648000000000",
+            "reconstructed_over_normalizer": -1.7313985893145183e-05,
+            "row": 9
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 3.637978807091713e-12,
+            "candidate_bits": "0x3d90000000000000",
+            "exact": true,
+            "reconstructed": 3.637978807091713e-12,
+            "reconstructed_bits": "0x3d90000000000000",
+            "reconstructed_over_normalizer": 3.637978807091713e-06,
+            "row": 10
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 5.773664153311375e-14,
+            "candidate_bits": "0x3d30405d0ccf3730",
+            "exact": true,
+            "reconstructed": 5.773664153311375e-14,
+            "reconstructed_bits": "0x3d30405d0ccf3730",
+            "reconstructed_over_normalizer": 5.7736641533113746e-05,
+            "row": 11
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -3.565105544112157e-09,
+            "candidate_bits": "0xbe2e9fc000000000",
+            "exact": true,
+            "reconstructed": -3.565105544112157e-09,
+            "reconstructed_bits": "0xbe2e9fc000000000",
+            "reconstructed_over_normalizer": -0.003444496038195361,
+            "row": 12
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -2.0328790734103208e-20,
+            "candidate_bits": "0xbbd8000000000000",
+            "exact": true,
+            "reconstructed": -2.0328790734103208e-20,
+            "reconstructed_bits": "0xbbd8000000000000",
+            "reconstructed_over_normalizer": -1.9384444484948993e-08,
+            "row": 13
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 14
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 15
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 16
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 17
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 18
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 19
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 20
+          }
+        ],
+        "status": "available"
+      },
+      "case_id": "B_mixed_to_liquid_day",
+      "operand_consistency": [
+        {
+          "check": "dt_matches_interval",
+          "exact": true,
+          "left": 60.0,
+          "occupancy": 0,
+          "right": 60.0
+        },
+        {
+          "check": "ending_mass_matches_coordinate",
+          "exact": true,
+          "left": 0.030874034305127557,
+          "occupancy": 0,
+          "right": 0.030874034305127557
+        },
+        {
+          "check": "ending_enthalpy_matches_coordinate",
+          "exact": true,
+          "left": -5295.449603911575,
+          "occupancy": 0,
+          "right": -5295.449603911575
+        },
+        {
+          "check": "wet_vapor_duplicate_matches",
+          "exact": true,
+          "left": 1.3044541604055926e-05,
+          "occupancy": 0,
+          "right": 1.3044541604055926e-05
+        },
+        {
+          "check": "wet_sensible_duplicate_matches",
+          "exact": true,
+          "left": -3.6336036648543084,
+          "occupancy": 0,
+          "right": -3.6336036648543084
+        },
+        {
+          "check": "wet_longwave_duplicate_matches",
+          "exact": true,
+          "left": 4.781969047501988,
+          "occupancy": 0,
+          "right": 4.781969047501988
+        },
+        {
+          "check": "independent_non_vapor_matches_export",
+          "exact": true,
+          "left": 8.415572712356298,
+          "occupancy": 0,
+          "right": 8.415572712356298
+        },
+        {
+          "check": "dt_matches_interval",
+          "exact": true,
+          "left": 60.0,
+          "occupancy": 1,
+          "right": 60.0
+        },
+        {
+          "check": "ending_mass_matches_coordinate",
+          "exact": true,
+          "left": 0.03162444020992018,
+          "occupancy": 1,
+          "right": 0.03162444020992018
+        },
+        {
+          "check": "ending_enthalpy_matches_coordinate",
+          "exact": true,
+          "left": -6861.264718058349,
+          "occupancy": 1,
+          "right": -6861.264718058349
+        },
+        {
+          "check": "wet_vapor_duplicate_matches",
+          "exact": true,
+          "left": 1.3109511280618135e-05,
+          "occupancy": 1,
+          "right": 1.3109511280618135e-05
+        },
+        {
+          "check": "wet_sensible_duplicate_matches",
+          "exact": true,
+          "left": -3.65170120036199,
+          "occupancy": 1,
+          "right": -3.65170120036199
+        },
+        {
+          "check": "wet_longwave_duplicate_matches",
+          "exact": true,
+          "left": -2.6416957817847333,
+          "occupancy": 1,
+          "right": -2.6416957817847333
+        },
+        {
+          "check": "independent_non_vapor_matches_export",
+          "exact": true,
+          "left": 1.010005418577257,
+          "occupancy": 1,
+          "right": 1.010005418577257
+        }
+      ],
+      "profile": "P0",
+      "reconstructed_normalizers": [
+        1.0001e-06,
+        1.0018039841692087e-06,
+        1.0005565300892695e-06,
+        2.4e-10,
+        1e-06,
+        1e-09,
+        1.0001e-06,
+        1.0015246866116394e-06,
+        1.0004702274674716e-06,
+        3e-10,
+        1e-06,
+        1e-09,
+        1.0350151385222628e-06,
+        1.0487167042567277e-12,
+        1e-09,
+        1e-09,
+        1e-09,
+        1e-09,
+        1e-09,
+        1e-09,
+        1e-09
+      ],
+      "reconstructed_residuals": [
+        0.0,
+        -2.9918676603020444e-09,
+        -2.7185955708830534e-09,
+        -2.981209029639942e-14,
+        6.821210263296962e-13,
+        4.80697781509027e-13,
+        0.0,
+        -2.9907409565370358e-09,
+        -2.720397684896625e-09,
+        -5.194195767943555e-15,
+        3.637978807091713e-12,
+        5.773664153311375e-14,
+        -3.565105544112157e-09,
+        -2.0328790734103208e-20,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reconstructed_scales": [
+        0.0,
+        18.039841692088117,
+        5.565300892695861,
+        0.006874034305157368,
+        1291.0496039115753,
+        0.0,
+        0.0,
+        15.246866116395024,
+        4.7022746747165485,
+        0.0016244402099253774,
+        1855.7647180583526,
+        0.0,
+        350.15138522262953,
+        4.871670425672764e-05,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reconstruction_inputs_exclude": [
+        "residuals",
+        "normalizers",
+        "upper_to_lower_intercepted_mass_kg_m2_s",
+        "upper_to_lower_intercepted_specific_enthalpy_j_kg",
+        "lower_terminal_release_mass_kg_m2_s"
+      ],
+      "reservoir_ledger": [
+        {
+          "drainage_transfer_enthalpy_j_m2": 0.0,
+          "drainage_transfer_mass_kg_m2": 4.80697781509027e-13,
+          "enthalpy_closure_j_m2": 6.821210263296962e-13,
+          "mass_closure_kg_m2": -2.981209029639942e-14,
+          "occupancy": 0,
+          "source_enthalpy_j_m2": -1291.0496039115753,
+          "source_mass_kg_m2": 0.006874034305157368,
+          "storage_delta_enthalpy_j_m2": -1291.0496039115746,
+          "storage_delta_mass_kg_m2": 0.006874034305127556
+        },
+        {
+          "drainage_transfer_enthalpy_j_m2": 0.0,
+          "drainage_transfer_mass_kg_m2": 5.773664153311375e-14,
+          "enthalpy_closure_j_m2": 3.637978807091713e-12,
+          "mass_closure_kg_m2": -5.194195767943555e-15,
+          "occupancy": 1,
+          "source_enthalpy_j_m2": -1855.7647180583526,
+          "source_mass_kg_m2": 0.0016244402099253774,
+          "storage_delta_enthalpy_j_m2": -1855.764718058349,
+          "storage_delta_mass_kg_m2": 0.0016244402099201832
+        }
+      ],
+      "routing_candidate_comparison": {
+        "all_within_arithmetic_tolerance": true,
+        "operands": {
+          "captured_upper_drainage_mass_kg_m2_s": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 5.111891629624273e-15,
+            "candidate_bits": "0x3cf7059c1b21feb7",
+            "exact": true,
+            "reconstructed": 5.111891629624273e-15,
+            "reconstructed_bits": "0x3cf7059c1b21feb7",
+            "within_arithmetic_tolerance": true
+          },
+          "captured_upper_drainage_specific_enthalpy_j_kg": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "within_arithmetic_tolerance": true
+          },
+          "lower_reservoir_incident_mass_kg_m2_s": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 4.01835147803367e-05,
+            "candidate_bits": "0x3f0511570df794a2",
+            "exact": true,
+            "reconstructed": 4.01835147803367e-05,
+            "reconstructed_bits": "0x3f0511570df794a2",
+            "within_arithmetic_tolerance": true
+          },
+          "lower_reservoir_incident_specific_enthalpy_j_kg": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 5.820766091346741e-11,
+            "candidate": 21089.999997317063,
+            "candidate_bits": "0x40d4987ffff4bf38",
+            "exact": true,
+            "reconstructed": 21089.999997317063,
+            "reconstructed_bits": "0x40d4987ffff4bf38",
+            "within_arithmetic_tolerance": true
+          },
+          "lower_reservoir_release_mass_kg_m2_s": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 9.622773588852291e-16,
+            "candidate_bits": "0x3cd155b896325d00",
+            "exact": true,
+            "reconstructed": 9.622773588852291e-16,
+            "reconstructed_bits": "0x3cd155b896325d00",
+            "within_arithmetic_tolerance": true
+          },
+          "upper_reservoir_incident_mass_kg_m2_s": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 0.00012761178003135702,
+            "candidate_bits": "0x3f20b9f0d7f8a9c4",
+            "exact": true,
+            "reconstructed": 0.00012761178003135702,
+            "reconstructed_bits": "0x3f20b9f0d7f8a9c4",
+            "within_arithmetic_tolerance": true
+          },
+          "upper_reservoir_incident_specific_enthalpy_j_kg": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 5.820766091346741e-11,
+            "candidate": 21090.0,
+            "candidate_bits": "0x40d4988000000000",
+            "exact": true,
+            "reconstructed": 21090.0,
+            "reconstructed_bits": "0x40d4988000000000",
+            "within_arithmetic_tolerance": true
+          }
+        }
+      },
+      "stability_variant": "ordinary",
+      "status": "RESOLVED",
+      "support_id": 0,
+      "transfer_ledger": {
+        "lower_terminal_release_enthalpy_j_m2": 0.0,
+        "lower_terminal_release_mass_kg_m2": 5.773664153311375e-14,
+        "lower_total_incident_enthalpy_j_m2": 50.84821959656947,
+        "lower_total_incident_mass_kg_m2": 0.0024110108868202022,
+        "terminal_lower_bypass_stemflow_enthalpy_j_m2": 3.7496975087610562,
+        "terminal_lower_bypass_stemflow_mass_kg_m2": 0.00017779504548307582,
+        "terminal_lower_bypass_throughfall_enthalpy_j_m2": 25.094129481708606,
+        "terminal_lower_bypass_throughfall_mass_kg_m2": 0.0011898591505405843,
+        "terminal_upper_stemflow_enthalpy_j_m2": 11.908006961281709,
+        "terminal_upper_stemflow_mass_kg_m2": 0.0005646281157554153,
+        "top_rain_debit_credit_error_j_m2": -1.3322676295501878e-14,
+        "top_rain_debit_credit_error_kg_m2": 0.0,
+        "upper_downstream_debit_credit_error_j_m2": 3.3306690738754696e-15,
+        "upper_downstream_debit_credit_error_kg_m2": -2.0328790734103208e-19,
+        "upper_to_lower_intercepted_enthalpy_j_m2": 0.0,
+        "upper_to_lower_intercepted_mass_kg_m2": 3.067134977774564e-13
+      }
+    },
+    {
+      "air_density_kg_m3": 1.155468674406098,
+      "candidate_normalizer_comparison": {
+        "all_exact": true,
+        "rows": [
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.010001,
+            "candidate_bits": "0x3f847b677f6b1a2a",
+            "exact": true,
+            "reconstructed": 0.010001,
+            "reconstructed_bits": "0x3f847b677f6b1a2a",
+            "row": 0
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.01000120879006696,
+            "candidate_bits": "0x3f847b838563f40c",
+            "exact": true,
+            "reconstructed": 0.01000120879006696,
+            "reconstructed_bits": "0x3f847b838563f40c",
+            "row": 1
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.010001,
+            "candidate_bits": "0x3f847b677f6b1a2a",
+            "exact": true,
+            "reconstructed": 0.010001,
+            "reconstructed_bits": "0x3f847b677f6b1a2a",
+            "row": 2
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-06,
+            "candidate_bits": "0x3eb0c6f7a0b5ed8d",
+            "exact": true,
+            "reconstructed": 1e-06,
+            "reconstructed_bits": "0x3eb0c6f7a0b5ed8d",
+            "row": 3
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.3337,
+            "candidate_bits": "0x3fd55b573eab367a",
+            "exact": true,
+            "reconstructed": 0.3337,
+            "reconstructed_bits": "0x3fd55b573eab367a",
+            "row": 4
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 2.970000000000001e-06,
+            "candidate_bits": "0x3ec8ea06c46a52b2",
+            "exact": true,
+            "reconstructed": 2.970000000000001e-06,
+            "reconstructed_bits": "0x3ec8ea06c46a52b2",
+            "row": 5
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.010001,
+            "candidate_bits": "0x3f847b677f6b1a2a",
+            "exact": true,
+            "reconstructed": 0.010001,
+            "reconstructed_bits": "0x3f847b677f6b1a2a",
+            "row": 6
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.01000482044403975,
+            "candidate_bits": "0x3f847d6844e04312",
+            "exact": true,
+            "reconstructed": 0.01000482044403975,
+            "reconstructed_bits": "0x3f847d6844e04312",
+            "row": 7
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.010001506881893754,
+            "candidate_bits": "0x3f847bab87bf6415",
+            "exact": true,
+            "reconstructed": 0.010001506881893754,
+            "reconstructed_bits": "0x3f847bab87bf6415",
+            "row": 8
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-06,
+            "candidate_bits": "0x3eb0c6f7a0b5ed8d",
+            "exact": true,
+            "reconstructed": 1e-06,
+            "reconstructed_bits": "0x3eb0c6f7a0b5ed8d",
+            "row": 9
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.3337,
+            "candidate_bits": "0x3fd55b573eab367a",
+            "exact": true,
+            "reconstructed": 0.3337,
+            "reconstructed_bits": "0x3fd55b573eab367a",
+            "row": 10
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 2.970000000000001e-06,
+            "candidate_bits": "0x3ec8ea06c46a52b2",
+            "exact": true,
+            "reconstructed": 2.970000000000001e-06,
+            "reconstructed_bits": "0x3ec8ea06c46a52b2",
+            "row": 11
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.010339229926341445,
+            "candidate_bits": "0x3f852cbbf332189b",
+            "exact": true,
+            "reconstructed": 0.010339229926341445,
+            "reconstructed_bits": "0x3f852cbbf332189b",
+            "row": 12
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.0487167042567277e-08,
+            "candidate_bits": "0x3e4685618cae3d72",
+            "exact": true,
+            "reconstructed": 1.0487167042567277e-08,
+            "reconstructed_bits": "0x3e4685618cae3d72",
+            "row": 13
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 14
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 15
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 16
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 17
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 18
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 19
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1e-09,
+            "candidate_bits": "0x3e112e0be826d695",
+            "exact": true,
+            "reconstructed": 1e-09,
+            "reconstructed_bits": "0x3e112e0be826d695",
+            "row": 20
+          }
+        ],
+        "status": "available"
+      },
+      "candidate_residual_comparison": {
+        "all_exact": true,
+        "rows": [
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 0
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -4.6853572977607547e-07,
+            "candidate_bits": "0xbe9f7161ee81e000",
+            "exact": true,
+            "reconstructed": -4.6853572977607547e-07,
+            "reconstructed_bits": "0xbe9f7161ee81e000",
+            "reconstructed_over_normalizer": -4.684791004877506e-05,
+            "row": 1
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -5.91461233684365e-07,
+            "candidate_bits": "0xbea3d89d01f40000",
+            "exact": true,
+            "reconstructed": -5.91461233684365e-07,
+            "reconstructed_bits": "0xbea3d89d01f40000",
+            "reconstructed_over_normalizer": -5.914020934750175e-05,
+            "row": 2
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.1209522893240731e-13,
+            "candidate_bits": "0x3d3f8d5000000000",
+            "exact": true,
+            "reconstructed": 1.1209522893240731e-13,
+            "reconstructed_bits": "0x3d3f8d5000000000",
+            "reconstructed_over_normalizer": 1.1209522893240731e-07,
+            "row": 3
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.2337778571236413e-05,
+            "candidate_bits": "0x3ee9dfcb60000000",
+            "exact": true,
+            "reconstructed": 1.2337778571236413e-05,
+            "reconstructed_bits": "0x3ee9dfcb60000000",
+            "reconstructed_over_normalizer": 3.6972665781349754e-05,
+            "row": 4
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 4.1130641374819906e-36,
+            "candidate_bits": "0x3895de69ad42c3ca",
+            "exact": true,
+            "reconstructed": 4.1130641374819906e-36,
+            "reconstructed_bits": "0x3895de69ad42c3ca",
+            "reconstructed_over_normalizer": 1.3848700799602656e-30,
+            "row": 5
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 6
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -5.01609692096696e-07,
+            "candidate_bits": "0xbea0d4cb60cd3000",
+            "exact": true,
+            "reconstructed": -5.01609692096696e-07,
+            "reconstructed_bits": "0xbea0d4cb60cd3000",
+            "reconstructed_over_normalizer": -5.0136801045292505e-05,
+            "row": 7
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": -5.875610279426624e-07,
+            "candidate_bits": "0xbea3b71c5d500000",
+            "exact": true,
+            "reconstructed": -5.875610279426624e-07,
+            "reconstructed_bits": "0xbea3b71c5d500000",
+            "reconstructed_over_normalizer": -5.874725027749114e-05,
+            "row": 8
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.0574776731359092e-13,
+            "candidate_bits": "0x3d3dc3ee00000000",
+            "exact": true,
+            "reconstructed": 1.0574776731359092e-13,
+            "reconstructed_bits": "0x3d3dc3ee00000000",
+            "reconstructed_over_normalizer": 1.0574776731359092e-07,
+            "row": 9
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 1.1610992260102648e-05,
+            "candidate_bits": "0x3ee8599aa0000000",
+            "exact": true,
+            "reconstructed": 1.1610992260102648e-05,
+            "reconstructed_bits": "0x3ee8599aa0000000",
+            "reconstructed_over_normalizer": 3.4794702607439764e-05,
+            "row": 10
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 5.1169551209938377e-36,
+            "candidate_bits": "0x389b34d6a161e4f8",
+            "exact": true,
+            "reconstructed": 5.1169551209938377e-36,
+            "reconstructed_bits": "0x389b34d6a161e4f8",
+            "reconstructed_over_normalizer": 1.7228805121191364e-30,
+            "row": 11
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 4.0698658096971485e-06,
+            "candidate_bits": "0x3ed111fc32000000",
+            "exact": true,
+            "reconstructed": 4.0698658096971485e-06,
+            "reconstructed_bits": "0x3ed111fc32000000",
+            "reconstructed_over_normalizer": 0.0003936333594176368,
+            "row": 12
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 6.776263578034403e-21,
+            "candidate_bits": "0x3bc0000000000000",
+            "exact": true,
+            "reconstructed": 6.776263578034403e-21,
+            "reconstructed_bits": "0x3bc0000000000000",
+            "reconstructed_over_normalizer": 6.461481494982997e-13,
+            "row": 13
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 14
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 15
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 16
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 17
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 18
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 19
+          },
+          {
+            "absolute_difference": 0.0,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "reconstructed_over_normalizer": 0.0,
+            "row": 20
+          }
+        ],
+        "status": "available"
+      },
+      "case_id": "C_freeze_then_melt_day",
+      "operand_consistency": [
+        {
+          "check": "dt_matches_interval",
+          "exact": true,
+          "left": 60.0,
+          "occupancy": 0,
+          "right": 60.0
+        },
+        {
+          "check": "ending_mass_matches_coordinate",
+          "exact": true,
+          "left": 0.017071735073811427,
+          "occupancy": 0,
+          "right": 0.017071735073811427
+        },
+        {
+          "check": "ending_enthalpy_matches_coordinate",
+          "exact": true,
+          "left": -5104.00359634423,
+          "occupancy": 0,
+          "right": -5104.00359634423
+        },
+        {
+          "check": "wet_vapor_duplicate_matches",
+          "exact": true,
+          "left": 1.547108210501112e-05,
+          "occupancy": 0,
+          "right": 1.547108210501112e-05
+        },
+        {
+          "check": "wet_sensible_duplicate_matches",
+          "exact": true,
+          "left": 38.79898758240414,
+          "occupancy": 0,
+          "right": 38.79898758240414
+        },
+        {
+          "check": "wet_longwave_duplicate_matches",
+          "exact": true,
+          "left": -7.574562884329858,
+          "occupancy": 0,
+          "right": -7.574562884329858
+        },
+        {
+          "check": "independent_non_vapor_matches_export",
+          "exact": true,
+          "left": -46.373550466733995,
+          "occupancy": 0,
+          "right": -46.373550466733995
+        },
+        {
+          "check": "dt_matches_interval",
+          "exact": true,
+          "left": 60.0,
+          "occupancy": 1,
+          "right": 60.0
+        },
+        {
+          "check": "ending_mass_matches_coordinate",
+          "exact": true,
+          "left": 0.017081575448087298,
+          "occupancy": 1,
+          "right": 0.017081575448087298
+        },
+        {
+          "check": "ending_enthalpy_matches_coordinate",
+          "exact": true,
+          "left": -5025.792713226869,
+          "occupancy": 1,
+          "right": -5025.792713226869
+        },
+        {
+          "check": "wet_vapor_duplicate_matches",
+          "exact": true,
+          "left": 1.530707586697414e-05,
+          "occupancy": 1,
+          "right": 1.530707586697414e-05
+        },
+        {
+          "check": "wet_sensible_duplicate_matches",
+          "exact": true,
+          "left": 38.387686294631095,
+          "occupancy": 1,
+          "right": 38.387686294631095
+        },
+        {
+          "check": "wet_longwave_duplicate_matches",
+          "exact": true,
+          "left": -7.092529042697606,
+          "occupancy": 1,
+          "right": -7.092529042697606
+        },
+        {
+          "check": "independent_non_vapor_matches_export",
+          "exact": true,
+          "left": -45.4802153373287,
+          "occupancy": 1,
+          "right": -45.4802153373287
+        }
+      ],
+      "profile": "P2",
+      "reconstructed_normalizers": [
+        0.010001,
+        0.01000120879006696,
+        0.010001,
+        1e-06,
+        0.3337,
+        2.970000000000001e-06,
+        0.010001,
+        0.01000482044403975,
+        0.010001506881893754,
+        1e-06,
+        0.3337,
+        2.970000000000001e-06,
+        0.010339229926341445,
+        1.0487167042567277e-08,
+        1e-09,
+        1e-09,
+        1e-09,
+        1e-09,
+        1e-09,
+        1e-09,
+        1e-09
+      ],
+      "reconstructed_residuals": [
+        0.0,
+        -4.6853572977607547e-07,
+        -5.91461233684365e-07,
+        1.1209522893240731e-13,
+        1.2337778571236413e-05,
+        4.1130641374819906e-36,
+        0.0,
+        -5.01609692096696e-07,
+        -5.875610279426624e-07,
+        1.0574776731359092e-13,
+        1.1610992260102648e-05,
+        5.1169551209938377e-36,
+        4.0698658096971485e-06,
+        6.776263578034403e-21,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reconstructed_scales": [
+        0.0,
+        1.2087900669602463,
+        0.3781779838514331,
+        0.0009282649263006671,
+        5104.003608682008,
+        0.0,
+        0.0,
+        4.820444039750044,
+        1.5068818937547186,
+        0.0009184245520184484,
+        5025.792724837861,
+        0.0,
+        339.22992634144487,
+        4.871670425672764e-05,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reconstruction_inputs_exclude": [
+        "residuals",
+        "normalizers",
+        "upper_to_lower_intercepted_mass_kg_m2_s",
+        "upper_to_lower_intercepted_specific_enthalpy_j_kg",
+        "lower_terminal_release_mass_kg_m2_s"
+      ],
+      "reservoir_ledger": [
+        {
+          "drainage_transfer_enthalpy_j_m2": 0.0,
+          "drainage_transfer_mass_kg_m2": 4.1130641374819906e-36,
+          "enthalpy_closure_j_m2": 1.2337778571236413e-05,
+          "mass_closure_kg_m2": 1.1209522893240731e-13,
+          "occupancy": 0,
+          "source_enthalpy_j_m2": -5104.003608682008,
+          "source_mass_kg_m2": -0.0009282649263006671,
+          "storage_delta_enthalpy_j_m2": -5104.00359634423,
+          "storage_delta_mass_kg_m2": -0.0009282649261885718
+        },
+        {
+          "drainage_transfer_enthalpy_j_m2": 0.0,
+          "drainage_transfer_mass_kg_m2": 5.1169551209938377e-36,
+          "enthalpy_closure_j_m2": 1.1610992260102648e-05,
+          "mass_closure_kg_m2": 1.0574776731359092e-13,
+          "occupancy": 1,
+          "source_enthalpy_j_m2": -5025.792724837861,
+          "source_mass_kg_m2": -0.0009184245520184484,
+          "storage_delta_enthalpy_j_m2": -5025.792713226869,
+          "storage_delta_mass_kg_m2": -0.0009184245519127006
+        }
+      ],
+      "routing_candidate_comparison": {
+        "all_within_arithmetic_tolerance": true,
+        "operands": {
+          "captured_upper_drainage_mass_kg_m2_s": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 4.373961966393459e-38,
+            "candidate_bits": "0x382dc48439f62489",
+            "exact": true,
+            "reconstructed": 4.373961966393459e-38,
+            "reconstructed_bits": "0x382dc48439f62489",
+            "within_arithmetic_tolerance": true
+          },
+          "captured_upper_drainage_specific_enthalpy_j_kg": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "within_arithmetic_tolerance": true
+          },
+          "lower_reservoir_incident_mass_kg_m2_s": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 4.373961966393459e-38,
+            "candidate_bits": "0x382dc48439f62489",
+            "exact": true,
+            "reconstructed": 4.373961966393459e-38,
+            "reconstructed_bits": "0x382dc48439f62489",
+            "within_arithmetic_tolerance": true
+          },
+          "lower_reservoir_incident_specific_enthalpy_j_kg": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "within_arithmetic_tolerance": true
+          },
+          "lower_reservoir_release_mass_kg_m2_s": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 8.528258534989729e-38,
+            "candidate_bits": "0x383d052934acaff7",
+            "exact": true,
+            "reconstructed": 8.528258534989729e-38,
+            "reconstructed_bits": "0x383d052934acaff7",
+            "within_arithmetic_tolerance": true
+          },
+          "upper_reservoir_incident_mass_kg_m2_s": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "within_arithmetic_tolerance": true
+          },
+          "upper_reservoir_incident_specific_enthalpy_j_kg": {
+            "absolute_difference": 0.0,
+            "arithmetic_tolerance": 3.552713678800501e-15,
+            "candidate": 0.0,
+            "candidate_bits": "0x0000000000000000",
+            "exact": true,
+            "reconstructed": 0.0,
+            "reconstructed_bits": "0x0000000000000000",
+            "within_arithmetic_tolerance": true
+          }
+        }
+      },
+      "stability_variant": "ordinary",
+      "status": "RESOLVED",
+      "support_id": 0,
+      "transfer_ledger": {
+        "lower_terminal_release_enthalpy_j_m2": 0.0,
+        "lower_terminal_release_mass_kg_m2": 5.1169551209938377e-36,
+        "lower_total_incident_enthalpy_j_m2": 0.0,
+        "lower_total_incident_mass_kg_m2": 2.624377179836075e-36,
+        "terminal_lower_bypass_stemflow_enthalpy_j_m2": 0.0,
+        "terminal_lower_bypass_stemflow_mass_kg_m2": 1.9352930449396902e-37,
+        "terminal_lower_bypass_throughfall_enthalpy_j_m2": 0.0,
+        "terminal_lower_bypass_throughfall_mass_kg_m2": 1.2951576531519465e-36,
+        "terminal_upper_stemflow_enthalpy_j_m2": 0.0,
+        "terminal_upper_stemflow_mass_kg_m2": 0.0,
+        "top_rain_debit_credit_error_j_m2": 0.0,
+        "top_rain_debit_credit_error_kg_m2": 0.0,
+        "upper_downstream_debit_credit_error_j_m2": 0.0,
+        "upper_downstream_debit_credit_error_kg_m2": 0.0,
+        "upper_to_lower_intercepted_enthalpy_j_m2": 0.0,
+        "upper_to_lower_intercepted_mass_kg_m2": 2.624377179836075e-36
+      }
+    }
+  ],
+  "unresolved_record_count": 0
+}

@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-runner.py",
+    "RUN_FRESH_DAYS",
+    "--test-binary",
+    "/workdir/.cache/openwepp/targets/development-treatment-c6-oracle-9f376d2b9f20/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "--kind",
+    "control",
+    "--control-id",
+    "C6_near_bound_rank_refusal"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-10-01T21:10:39.294786+00:00",
+  "elapsed_seconds": 0.4023531060665846,
+  "exit": 0,
+  "stdout": "{\"batch\":0,\"cap_seconds\":29.940026968,\"cell\":{\"control_id\":\"C6_near_bound_rank_refusal\"},\"charged_seconds\":0.059229624,\"key\":\"{\\\"batch\\\":0,\\\"cell\\\":{\\\"control_id\\\":\\\"C6_near_bound_rank_refusal\\\"},\\\"kind\\\":\\\"control\\\"}\",\"kind\":\"control\",\"output\":\"/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-9f2951e2eb8e402949f5-c6-current-wetness-replay01.json\",\"status\":\"complete\"}\n",
+  "stderr": ""
+}

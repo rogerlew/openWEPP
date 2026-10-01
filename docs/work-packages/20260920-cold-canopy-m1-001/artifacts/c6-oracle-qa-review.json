@@ -1,0 +1,29 @@
+{
+  "schema": "openwepp.work-package.qa-review.v1",
+  "reviewer": "/root/qa",
+  "review_kind": "independent C6-only replay QA custody review",
+  "evidence_class": "Static: inspected source, runner, state, dispatch, custody and lint receipts; reviewer ran no physical, core, Jacobian, solver, control, reference, candidate, or test command.",
+  "reviewed_at_utc": "2026-10-01T21:09:47Z",
+  "reviewed_identity": {
+    "source_tree_sha256": "e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3",
+    "source_archive_sha256": "0ba5b7ad999c30ac5ad475417d3d824cc7feec33114c81b1eecc677a378a9fea",
+    "fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+    "test_source_sha256": "28d329be09c69c4736278cdfc658ca963a6609e5bd4f0852157209eaf77c20c0",
+    "binary_sha256": "c94275f4fe236ef35c5d6c80a42a0f73e59cdad1296afb419a5c817ff95725fb",
+    "runner_sha256": "0d19de8cb0d1817953e101c3890d1575186217a10e69c9d50a420a2fdf321b3c",
+    "dispatcher_sha256": "01d63280d6b16e6a11ceec5cbe026ca5eb2d4bacff0ad84241545c1dc096b935"
+  },
+  "findings": [],
+  "non_blocking_debt_followups": [
+    {
+      "finding": "C6 source change is confined to the three lower current-wetness literals and assertion provenance message. Correctness independently approved every remaining C6 assertion; fixture and C1-C5 dependency bodies are unchanged."
+    },
+    {
+      "finding": "Runner delta adds only namespace c6-current-wetness-replay01 mapped to C6. State preserves C1-C5 completed records, both prior replay lineages and failed C6 receipt; it reserves exactly one C6 replay and retains physical_seconds 0.410551444, reference_seconds 0 and 1800-second aggregate cap. C6 remaining control cap is 29.940026968."
+    },
+    {
+      "finding": "Dispatch fails closed while receipt status is PENDING_FINAL_QA and binds dispatcher SHA-256 before child launch. Source receipt, build receipt, binary hash and 289-to-289 inherited-Clippy comparison with zero source-bearing additions/removals are present."
+    }
+  ],
+  "qa_pass_statement": "Static QA PASS conditional on sealing the reviewed receipt as APPROVED with this QA artifact hash, the exact build receipt hash 737509b0a06f4193e207b0030d0d7b991bc616417719348081c74aa8ee8231a7, and dispatcher hash 01d63280d6b16e6a11ceec5cbe026ca5eb2d4bacff0ad84241545c1dc096b935. No physical execution or accuracy/runtime acceptance is implied."
+}

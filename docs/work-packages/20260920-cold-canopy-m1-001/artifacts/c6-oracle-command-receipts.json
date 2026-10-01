@@ -1,0 +1,8 @@
+{
+  "schema": "openwepp.command-receipts.v1",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment-c6-oracle",
+  "format": {"argv": ["timeout", "180", "nix", "develop", "--impure", ".", "--command", "cargo", "fmt", "--check"], "exit": 0},
+  "release_no_run": {"argv": ["timeout", "180", "nix", "develop", "--impure", ".", "--command", "cargo", "test", "--offline", "--release", "-p", "openwepp-land-surface-energy", "--lib", "--features", "m1-trust-region-physical-stage,m1-trust-region-analytic-stage,m1-trust-region-controller-stage", "--no-run"], "exit": 0, "cargo_reported_duration": "2m 13s", "controls_or_tests_executed": false, "combined_output": {"path": "c6-oracle-no-run.combined-output.txt", "sha256": "0944af5f6ae8b33ce6951bf7f57216843155ec8d3f7ba56b01515be8bc67eeb1", "stream": "combined tool-returned output; stdout and stderr were not separately retained"}},
+  "clippy": {"argv": ["timeout", "50", "nix", "develop", "--impure", ".", "--command", "cargo", "clippy", "--offline", "--release", "--no-deps", "-p", "openwepp-land-surface-energy", "--lib", "--tests", "--features", "m1-trust-region-physical-stage,m1-trust-region-analytic-stage,m1-trust-region-controller-stage", "--message-format=json", "--", "-D", "warnings"], "exit": 101, "stdout": "c6-oracle-clippy-candidate.jsonl", "stderr": "c6-oracle-clippy-candidate.stderr"},
+  "timestamps": "Tool responses did not retain start/end timestamps; none are inferred."
+}
