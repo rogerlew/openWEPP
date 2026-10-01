@@ -1,5 +1,53 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## C6 failure disposition and proposed continuation — 2026-10-01
+
+Owner requests disposition and continuation-prompt authoring only. No repair,
+replay or physical execution is authorized by this authoring request. The
+experiment remains **INCOMPLETE / HOLD**; evidence preservation is complete at
+`5920da7fa846e48dee993b86ef3bdd0629e883fd`.
+
+Failure classification: detached test-oracle provenance defect. C6's lower
+wetness expectation used beginning mass0.018 rather than current trial mass0.023.
+The implementer and static acceptance review both missed that distinction;
+Astra owns the readiness acceptance failure. The observed failure does not
+establish a physics/solver defect. The later C6 assertions remain unverified by
+execution. C1–C5 accepted results and all failed attempts retain their recorded
+status. No original-row/day reconstruction or accuracy/cost frontier exists.
+
+The [proposed continuation prompt](artifacts/c6-oracle-continuation-prompt.md)
+is copied to `/tmp/openwepp_cold_canopy_m1_c6_oracle_continuation.md` for invocation.
+It proposes a C6-only oracle correction and one additional C6 replay sharing its
+original remaining cap; both consumed historical replay slots remain consumed.
+Before that replay it requires independent static operand-provenance verification
+of every remaining C6 assertion. No fixture or numerical-body change is proposed.
+Only if C6 passes does the unchanged reference/A/B schedule proceed.
+
+Budget proposal: no new charged seconds; fixed ceiling458534.927980s, physical
+carry0.410551444s under1800s, reference0/900s. Invocation would explicitly renew
+UTC deadlines from the then-reconciled remaining balance, retaining900s closing
+reserve and a600s readiness cap. Neither this document nor remaining balance
+itself authorizes execution. Ordinary in-scope work after adoption requires no
+additional confirmation, but no further replay or deadline renewal is implied.
+
+Authoring accounting: conservative carry455016.069712s charges the prior pickup
+through20:49UTC, rounding up its20:48:02.666945 final sample/return tail. Current
+reading anchor20:58:00UTC precedes first clock20:58:39; inactive owner-decision
+time20:49–20:58 is excluded. Charge current reading, authoring, review, commit
+and return; do not create or spend a new execution allowance.
+
+Static prompt review by the same independent QA reviewer: PASS after making
+bounded/partial sweep authorization explicit. Its initial concern summed every
+operation maximum as an additional allowance; clarification preserves the binding
+aggregate cap and requires enough remaining prelaunch time for C6 plus custody.
+No promise of42completed cells is made. Paths and identical repository/tmp prompt
+bytes verified;48unrelated files unchanged; documentation diff check passes.
+
+Authoring charge sampled **2026-10-01T21:01:29.645045+00:00**: 209.645045s this pickup,
+cumulative **455225.714757s**, remaining **3309.213223s** under the
+unchanged ceiling. Commit/return tail remains attributable and must be reconciled
+on invocation. This is authoring evidence, not a new execution clock or grant.
+
 ## Execution01 disposition — C6 failure; replay allowance exhausted
 
 **INCOMPLETE / STOPPED under the adopted failure limit.** C1–C4 PASS;
