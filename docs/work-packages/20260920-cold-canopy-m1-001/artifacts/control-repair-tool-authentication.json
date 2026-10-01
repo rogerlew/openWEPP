@@ -1,0 +1,21 @@
+{
+  "archive_sha256": "4a8fa22a569666f80e155a5cab8c7e9efa62bc705ccfe52fd70cece5c1c3de5f",
+  "current_file_matches": {
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-runner.py": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-results.py": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-independent-reconstruction.py": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-source-custody.py": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-build-custody.py": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-input-check.py": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-input-check.json": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-measurement-draft.json": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-protocol-draft.json": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/architecture-decision-successor-cases.json": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/original-input-reference.json": true,
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/continuous-fixtures-draft01.json": true,
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001.md": true,
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md": true,
+    "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/binding-index.md": true
+  }
+}

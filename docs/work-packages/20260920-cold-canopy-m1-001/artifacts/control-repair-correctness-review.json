@@ -1,0 +1,85 @@
+{
+  "schema": "openwepp.work_package.correctness_review.v1",
+  "reviewer": "/root/correctness",
+  "role": "independent correctness reviewer",
+  "independence": "No authorship, implementation, replacement design, or scientific-direction work was performed.",
+  "reviewed_source": {
+    "historical_cut": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/review-cut03",
+    "declared_tree_sha256": "fb933d74c6964eacc2c1932aa9d1340b1d60fb1e192161ccc8ab50d3d1e09e00",
+    "scope": "Historical C1-C6 controls, C1 repaired-humidity premise, empty-surface guard order, and original C6 near-bound/rank coverage requirement. No later repair cut was accepted because the original C6 prerequisite is unmet before executable readiness."
+  },
+  "evidence_class": {
+    "static": [
+      "Read the adopted continuation, owner authorization, historical fixture, review-cut03 control assertions, retained empty-surface guard, and retained C6 subproblem seam.",
+      "Inspected source and fixture operands only; no control, physical core, Jacobian, Rust test, solver, reference, candidate, diagnostic, or timing workflow was executed."
+    ],
+    "ran": [
+      "A standalone Python binary64 arithmetic reconstruction read the authenticated original-input JSON and evaluated only the published saturation, zero-PAR dry-conductance, air-density, and explicit humidity-balance formulas. It did not call Rust/candidate helpers or any physical evaluator."
+    ]
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "status": "BLOCKING",
+      "title": "C6 proves a synthetic rank refusal but supplies no required near-bound/domain-handling coverage.",
+      "authority": [
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-owner-authorization.md:184",
+        "/tmp/openwepp_cold_canopy_m1_control_repair_continuation.md:70"
+      ],
+      "locations": [
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-control-fixtures.json#/controls/5/synthetic_bvls",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/review-cut03/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3884",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/review-cut03/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8236"
+      ],
+      "evidence": "The frozen C6 operands are f=0, base=0, lower=-1, upper=+1, and radius=1. The helper copies only the synthetic 21-by-11 matrix into a 21-coordinate subproblem, fixes coordinates 11-20 at base, and starts coordinates 0-10 exactly at the midpoint of their boxes. Hence every free coordinate is distance 1 from both bounds. Columns 9 and 10 are equal, so the initial eleven-free-coordinate face is rank ten and the retained factorization returns typed RankDeficient immediately, before any step, candidate, trial, or materialization. The test asserts only RankDeficient, one attempted subproblem, and one SVD entry. This establishes the retained typed rank-refusal seam, but it cannot establish near-bound behavior, bound approach/crossing, domain handling near a bound, or a physical trajectory. C4's capacity tie and C5's one-ULP wet reactivation are separate physical controls and do not bind near-bound BVLS/domain handling to C6. Historical C2-C6 execution is absent.",
+      "required_disposition": "Readiness remains unmet until independently reviewed evidence covers the originally required near-bound/domain-handling portion while preserving the retained typed rank-refusal seam. The missing prerequisite is a prospectively authorized and frozen admissible physical near-bound control case or equivalent already-authoritative evidence, with independently reconstructed bound/domain operands and precise assertions. This review does not prescribe that near-bound evidence and rank loss occur in the same trajectory, and does not authorize designing or retuning a replacement control in the present repair scope."
+    }
+  ],
+  "independent_c1_arithmetic": {
+    "input_change": {
+      "air_specific_humidity_kg_kg": 0.002,
+      "binary64": "0x3f60624dd2f1a9fc"
+    },
+    "result": {
+      "qcan_kg_kg": 0.0004062273082215359,
+      "binary64": "0x3f3a9f5d00e8e3a9",
+      "rho_kg_m3": 1.144030085708415,
+      "humidity_numerator_m_s_kg_kg": 0.00001085362605185815,
+      "humidity_denominator_m_s": 0.026718110358890816
+    },
+    "positive_area_empty_surface_qsat_kg_kg": {
+      "upper_shade_266K": 0.002544468453204015,
+      "upper_stem_268K": 0.0029656490558891725,
+      "lower_shade_267K": 0.0027478721700768018,
+      "lower_stem_270K": 0.0034478739738707472
+    },
+    "conclusion": "The reconstructed qcan is finite, nonnegative, below 0.1, and below every positive-area empty surface saturation. With both occupancies liquid-conducting, finite nonnegative areas, zero M/H, zero top rain, and zero drainage, the repaired C1 seed satisfies the retained empty-surface predicates. This verifies the static premise only, not a control pass. For comparison, the historical qair=0.001 seed reconstructs qcan=-0.0005937253750308246, explaining its valid Domain refusal."
+  },
+  "guard_order": {
+    "location": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/review-cut03/crates/openwepp-vegetation/src/cold_canopy_m1.rs:533",
+    "order": [
+      "liquid_conducting_tissue; failure is VEG-E-140/Condition",
+      "finite nonnegative area and finite 0<=qcan<1; failure is VEG-E-142/Domain",
+      "only for positive area, qcan must not exceed phase-appropriate saturation; failure is VEG-E-142/Domain"
+    ],
+    "c2_static_causality": "At qair=0.1 the independent balance gives qcan=0.09840159026695287 (0x3fb930d8bc122a13). The zero-area upper sun does not trigger supersaturation; the next upper-shade surface has positive area and qsat=0.002544468453204015, so the intended refusal is VEG-E-142 at Domain from the supersaturation predicate. A repaired assertion must preserve this stage and causality, not merely check the error code."
+  },
+  "other_static_premises": {
+    "C3": "M=0.018 and lower H=-333700*M are bit-identical (0xc0b7769999999999); dH=-1/+1 gives the prescribed lower Ice/Mixed directions, while H=+0 with dH=-1/+1 gives Mixed/Liquid. Historical source binds all four selected-side paths, but no execution was performed.",
+    "C4": "capacity and M are bit-identical at 0x3fd3020c49ba5e37; D=0x3ef1111111111111 is positive; min(60*D, capacity-M) is +0.0. Historical assertion accepts any over-capacity materializer error, so the continuation's required typed/stage-specific strengthening still needed verification on a later cut.",
+    "C5": "The next mass is exactly one ULP below capacity (0x3fd3020c49ba5e36 versus 0x3fd3020c49ba5e37); M/C=0.9999999999999998 and wet fraction=0.9999999999999999, so dry roles reactivate in principle. Historical checks use any true certificate/hold and do not identify the expected semantic columns or raw/weighted values, so the continuation's strengthening still needed verification on a later cut."
+  },
+  "fix_verification": {
+    "status": "NOT_APPLICABLE_AFTER_BLOCKER",
+    "statement": "No incoming repair cut can cure the missing original C6 near-bound evidence through assertion-only repair of the retained synthetic midpoint/rank-ten fixture. The parent accepted this prerequisite blocker and stopped broader repair review. No affected implementation fix is approved by this record."
+  },
+  "residual_risk_and_missing_tests": [
+    "No physical or Rust execution evidence was produced or reused as a pass in this review.",
+    "C1-C5 repaired fixture/default/assertion changes were not reviewed on a later immutable cut because readiness is already blocked by C6.",
+    "The retained synthetic C6 typed rank-refusal seam remains statically credible but does not cover near-bound/domain handling."
+  ],
+  "verdict": {
+    "status": "HOLD_READINESS",
+    "statement": "C1's 0.002 humidity premise is independently supported, and the historical C6 typed rank seam is statically present. Readiness is blocked by the precise missing near-bound/domain-handling evidence required by the original sixth control and expressly reopened by the continuation."
+  }
+}

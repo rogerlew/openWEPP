@@ -1,0 +1,16 @@
+{
+  "evidence_class": "Ran: UTC accounting sample; no physical execution",
+  "anchor_utc": "2026-10-01T18:30:00+00:00",
+  "accounted_through_utc": "2026-10-01T18:39:30.807490+00:00",
+  "new_charged_seconds": 570.80749,
+  "prior_execution_carry_seconds": 451334.92798,
+  "cumulative_charged_seconds": 451905.73546999996,
+  "fixed_cumulative_ceiling_seconds": 458534.92798,
+  "remaining_seconds_at_sample": 6629.19251,
+  "new_physical_seconds": 0,
+  "new_replays_consumed": 0,
+  "wait_deductions_seconds": 0,
+  "assessment_prompt_work_prior_to_invocation": "Duration unrecorded; separately unquantified, not invented or treated as banked execution allowance.",
+  "disposition": "INCOMPLETE_HOLD_READINESS_C6",
+  "accounting_limit": "Local commit and return after this UTC sample remain attributable; final response reports later observed elapsed total. No deadline reset or refund."
+}

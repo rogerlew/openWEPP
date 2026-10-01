@@ -1,5 +1,217 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Adopted control repair continuation — 2026-10-01
+
+Owner invocation of `/tmp/openwepp_cold_canopy_m1_control_repair_continuation.md`
+authorizes the bounded fixture/assertion repair and original finite A/B schedule.
+**INCOMPLETE / HOLD — stopped at the explicit readiness prerequisite.** Targets remain 500us CPU /550us
+wall per completed OFE-day, regime CPU ceilings750/1500/2500us, and complete
+10-OFE century182.625s CPU /210s wall. Completed candidate days remain zero;
+proposal/control-process timing is not day cost.
+
+First-work anchor is conservatively **2026-10-01T18:30:00Z**, preceding the first
+clock receipt18:31:25.172444775Z. Hard deadline20:30:00Z, closing begins20:15:00Z;
+readiness deadline19:00:00Z. New allowance7200s,900s reserved closing, carry
+451334.927980s, fixed cumulative ceiling458534.927980s. Historical assessment/
+prompt-authoring duration is not recorded and remains unquantified separately;
+it is not fabricated as execution time. No known greater execution charge has
+been found. Concurrent elapsed work/waits count once; no old remainder is banked.
+
+Starting HEAD is `ce778f386ac73d137c31b31adf1d55b06d33eb60`. Preserve the existing
+assessment and unrelated dirty/untracked files; baseline hashes and package bytes
+are retained under `/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/`.
+Implementation owns only a new detached copy and `control-repair-*` artifacts.
+No branch change, main Rust adoption, authority change or push is authorized.
+
+Intent: authenticate cut03 recovery; change only C1 air humidity to0.002kg/kg;
+freeze all control seed/default bits; strengthen C2/C4/C5 semantic assertions;
+preserve C3 directions and C6 typed rank seam, explicitly reconcile physical
+near-bound coverage. Numerical bodies, solver, derivatives, tolerances, forcing,
+A/B inputs and cadence remain fixed. Static independent arithmetic and domain/
+guard-order checks, focused compilation/format and correctness plus QA review
+must accept readiness before any result-bearing invocation. A readiness failure
+stops execution with its concrete prerequisite. The old runner remains HALTED.
+
+Validation selects bounded detached diagnostic checks and no-new-relevant-lint
+comparison with inherited baseline; unchanged scientific/build evidence may be
+reused only with dependency proof. This is not production or workspace closure.
+Each command is capped180s and must fit before closing. Physical aggregate1800s,
+reference/stability subcap900s, controls30s each, references150s each, cells60s
+including diagnostic/timing. One new defect-only corrected replay total shares
+the affected operation's remaining cap. Old failures/replay stay consumed.
+All six formal controls precede three references/three stability checks and the
+fixed24 A plus18 B cells, with six four-day timing batches for completing cells.
+Integrity failure stops; valid candidate negatives end only their scheduled cell.
+
+Astra orchestrates `/root/implementation` and distinct independent correctness
+and QA review, with at most two children and no nested delegation. The original
+[authorization](artifacts/separate-accuracy-owner-authorization.md) remains binding
+except the adopted fixture/assertion, budget and replay deltas above. Sole live
+record is this package; historical sections below retain their original meaning.
+
+### Readiness stop and preserved result
+
+**Static:** independent correctness `/root/correctness` identifies the required
+C6 near-bound/domain-handling coverage as absent. Its frozen synthetic21x11
+matrix has an identity10 minor and duplicate columns9/10, exactly rank10.
+The synthetic base is0 with bounds[-1,+1], hence at the midpoint, with zero
+residual and radius1. The retained first face refuses rank immediately, before
+any physical trial/materialization. This preserves the typed rank-refusal seam
+but cannot establish near-bound physical behavior. C4's capacity tie and C5's
+one-ULP reactivation do not supply the missing C6 evidence. No frozen admissible
+physical near-bound case or equivalent authoritative evidence was found.
+
+The explicit continuation stop therefore applies. Required prerequisite:
+a prospectively authorized, frozen admissible physical near-bound control or
+equivalent authoritative evidence with independently reconstructed bound/domain
+operands, while retaining the typed rank-refusal seam. This does not prescribe
+that physical rank loss and bound approach occur on the same trajectory. No
+new control was designed, no acceptance requirement waived, and no authority
+was changed. Readiness was rejected before the1800s readiness allowance expired.
+
+[Correctness review](artifacts/control-repair-correctness-review.json) independently
+reconstructs C1 qair0.002 -> qcan0.0004062273082215359kg/kg,
+bits`0x3f3a9f5d00e8e3a9`, below all four positive-area empty-surface bounds.
+C2 remains qcan0.09840159026695287: after skipping zero-area sun, upper shade
+causes the intended Domain supersaturation refusal. These are static arithmetic/
+source results, not executable passes. Full repaired C1–C6 readiness is unaccepted.
+
+The implementer stopped with only one **unused, partial fixture file** added to
+cut03: [control-repair-control-fixtures.json](artifacts/control-repair-control-fixtures.json).
+It contains the authorized C1 humidity change and explicit default trial/
+reservoir bits; the loader and assertions were not changed to consume it.
+No Rust, solver, derivative, tolerance, forcing, cadence, runner, or A/B input
+changed. C2/C4/C5 assertion strengthening and complete fixture integration remain
+NOT IMPLEMENTED. Compilation, format/lint qualification of a repaired harness,
+formal controls, references/stability and candidates are NOT RUN.
+
+**Ran, custody only:** cut04 tool archive SHA and all16 pinned files match.
+[Tool authentication](artifacts/control-repair-tool-authentication.json) records
+this comparison. Cut03 archive metadata were authenticated before recovery.
+[Partial source receipt](artifacts/control-repair-source-cut01.json) and
+[recoverable archive](artifacts/control-repair-source-cut01.tar.gz) preserve
+`efda288cde1200ce90c4e5dc788f61503100a690db191dacdcdd256bcf8ed4af`,772entries.
+Comparison to cut03 proves exactly one added file and no changed/deleted prior
+entry. Source-custody check passes against the terminal isolated working copy.
+
+One setup error followed the pre-existing detached `docs` symlink and created
+`/workdir/openWEPP/docs/docs`; the first cleanup removed the original detached
+link instead. Parent removed only the accidental repository symlink and restored
+the original detached link, then rechecked exact cut01 identity. No target
+contents changed. Rejected cut02 (missing the original link) remains outside the
+repository as a historical cleanup intermediate, not the terminal source.
+
+| Investigation | Coverage | Supported conclusion |
+| --- | --- | --- |
+| A, reduction/tolerance at60s | 0/24 candidate cells; all NOT RUN | Accuracy and completed-day CPU/wall cost unresolved. |
+| B, cadence at300/900/1800s | 0/18 additional cells;60s baselines NOT RUN | No cadence effect or matched-profile comparison measured. |
+
+All three references and three stability checks remain NOT RUN. No new physical
+invocation occurred; new physical charge0s and new replay usage0. Historical
+C1 attempts, consumed replay, control-process0.053829565s and HALTED runner remain
+unchanged. Completed candidate days remain zero; no frontier or credible measured
+deployment path is established. Whole-OFE/century cost, native receiver/owner
+work, scaling, memory and warm-regression obligations remain unresolved.
+
+Independent review disposition: `/root/correctness` upholds C6 readiness HOLD
+and verifies the terminal package's bounded claims; `/root/qa` independently
+upholds that blocker and accepts only cut01 custody and the stop disposition.
+[QA evidence](artifacts/control-repair-qa-review.json) and
+[terminal checks](artifacts/control-repair-terminal-checks.json) preserve scope.
+No reviewer accepts the unused partial fixture as an implemented repair.
+JSON parsing, scoped whitespace, fresh archive recovery, exact source comparison,
+and byte preservation of all48 unrelated dirty files pass. The old fixture,
+runner state and both C1 operation receipts remain HEAD-identical. No production
+or full-workspace correctness result is claimed. Local commit includes the
+pre-existing owner assessment plus this adopted stop record and reviewed evidence;
+unrelated Rust and untracked historical evidence remain outside the commit.
+
+Closing accounting sampled **2026-10-01T18:39:30.807490+00:00**: new elapsed charge
+**570.807490s**, cumulative **451905.735470s**, leaving
+**6629.192510s** under the fixed ceiling. No waits deducted;
+physical charge0s. [Ledger](artifacts/control-repair-closing-ledger.json) distinguishes
+unrecorded prior assessment/prompt time. Commit/return after this sample remain
+chargeable; no unused time authorizes resuming the stopped experiment.
+
+## Continuation disposition — assessment, 2026-10-01
+
+**Static:** source, frozen fixtures, authority, and retained failure logs were
+reviewed for the owner's request to disposition and determine continuation.
+No kernel test, physical probe, reference, or timing run was executed during this
+assessment. **INCOMPLETE / HOLD remains the experimental disposition.** The
+failure is a malformed positive control, not evidence against reduction or
+cadence. The resolution is a bounded control-fixture/assertion repair followed
+by the original investigation; no solver redesign is indicated by this failure.
+
+**Cost remains unresolved:** the targets remain 500us CPU/550us wall per completed
+OFE-day, regime CPU ceilings 750/1500/2500us, and the complete 10-OFE century
+182.625s CPU/210s wall. There are zero completed candidate days and no measured
+accuracy/runtime frontier. Readiness work must remain bounded so that a renewed
+execution can reach cost measurement, rather than another solver-development
+campaign. The recorded one-ULP oracle correction is retained.
+
+The recommended prospective change is **C1 air humidity only: 0.001 -> 0.002
+kg/kg**, binary64 `0x3f60624dd2f1a9fc`. Preserve its snow-vapor boundary, all other
+control operands, and the three A/B day cases. Static reconstruction gives
+`qcan = 0.000406227308221536 kg/kg`; the frozen original gives negative humidity.
+For the retained empty-store temperatures/conductances, the approximate
+air-humidity interval satisfying nonnegative reconstructed humidity and the
+coldest positive-area empty-surface saturation bound is
+`[0.0015937534695139016, 0.003967185661942973] kg/kg`. The proposed value is interior.
+This is a proposed fixture correction, **not an executed or accepted replacement**.
+Zeroing the snow boundary is unnecessary and would enlarge the boundary/receipt
+consistency review. Preserve the failed original fixture and both raw attempts.
+
+Continuation readiness must resolve these concrete items before measurements:
+
+1. Freeze complete control seeds, including temperatures and beginning/trial
+   reservoirs currently inherited from `trial()` and loader defaults. Independently
+   check all six controls' intended domains and guard order before launch; pin
+   values and source identity rather than depending on unstated defaults.
+2. Keep C2's inputs unchanged. Its reconstructed humidity is approximately
+   0.09840159026695287, inside the primitive domain but above empty-surface
+   saturation. Source order reaches the upper-shade empty-surface refusal before
+   dry-leaf evaluation. Strengthen its error assertion to establish Domain stage
+   and that cause; `VEG-E-142` alone does not identify the intended guard.
+3. Strengthen C4's capacity-poison assertion to establish the intended capacity
+   refusal after valid unpoisoned evaluation; `.is_err()` alone is insufficient.
+   Strengthen C5's certificate/held-column assertions to identify the expected
+   semantic dry roles and their raw and weighted certificates, rather than any
+   null role. Preserve actual Jx/Jy and controller-path checks.
+4. Reuse unchanged source cut03, algorithm, profiles, A/B corpus, and prior review
+   evidence. Review the fixture/assertion delta with distinct correctness and
+   QA reviewers, regenerate affected compiled-fixture/build receipts, and freeze
+   custody. Execute the six controls successfully before references or candidates.
+   No clamps, relaxed guards, fallback solver, or post-result case retuning.
+5. Retain the original three strict references, their three stability checks,
+   24 A cells and 18 additional B cells, with prescribed diagnostic/timing
+   repetitions and missing-cell reporting. A readiness failure must retain its
+   evidence and follow the newly adopted finite stop/replay policy.
+
+Attributable static advice from `/root/correctness` found no further seed-domain
+blocker in C3-C6: C3's phase-join bits/directional expectations are consistent;
+C4 has bit-identical mass/capacity and positive drainage; C5's one-ULP mass
+decrement gives wet fraction below one; C6's synthetic matrix has rank ten.
+These are static premises, not executable control passes. C6's current evidence
+is rank refusal, not a demonstrated physical near-bound trajectory. The adviser
+helped design the continuation and this advice does not independently accept a
+future replacement. Root inspected the actual corrected-operation log; the
+original correctness review's stated inability to locate that raw log remains
+a historical evidence limitation, not retroactively an executed review.
+
+The retained local preservation commit is
+`ce778f386ac73d137c31b31adf1d55b06d33eb60`. Reconcile the old ledger to its actual
+reported final handoff at `2026-09-30T23:35:11.534185Z`: execution charge
+10031.534185s, cumulative **451334.927980s**, superseding the earlier as-of ledger
+below. The 4368.465815s unused balance at handoff is not banked authority; the
+old deadline has passed and the sole corrected replay was consumed. The old
+runner remains HALTED and must not be reset. This assessment grants no new run
+allowance. Further execution requires owner adoption of the fixture/assertion
+delta and a finite continuation allowance/deadline with explicit readiness,
+physical-run and replay limits, carrying the reconciled history without refund.
+The present owner request authorizes this disposition assessment, not silent
+renewal of the exhausted execution envelope.
+
 ## Separate accuracy/cost investigations — stopped at control gate, 2026-09-30
 
 **Disposition: INCOMPLETE; single corrected replay exhausted.** The corrected

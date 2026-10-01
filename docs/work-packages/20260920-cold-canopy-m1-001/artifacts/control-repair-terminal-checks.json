@@ -1,0 +1,36 @@
+{
+  "evidence_class": "Ran: source/archive/JSON/Git byte checks only; no physical invocation",
+  "start_utc": "2026-10-01T18:38:23.984127+00:00",
+  "end_utc": "2026-10-01T18:38:24.127281+00:00",
+  "elapsed_seconds": 0.1431599031202495,
+  "commands": [
+    {
+      "argv": [
+        ".venv/bin/python",
+        "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-source-custody.py",
+        "check",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/verified-recovery",
+        "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/control-repair-source-cut01.tar.gz",
+        "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/control-repair-source-cut01.json"
+      ],
+      "cwd": "/workdir/openWEPP",
+      "exit": 0,
+      "stdout": "{\"action\": \"check\", \"source_sha256\": \"efda288cde1200ce90c4e5dc788f61503100a690db191dacdcdd256bcf8ed4af\", \"entries\": 772, \"verified\": true}\n",
+      "stderr": ""
+    }
+  ],
+  "added_source_entries": {
+    "control-repair-control-fixtures.json": "cf635423e94cb949497ff9b482fd52134d29a13b1bc6d9b5af108022179dfe95"
+  },
+  "changed_or_removed_previous_source_entries": [],
+  "unrelated_dirty_files_unchanged": 48,
+  "historical_files_HEAD_identical": [
+    "separate-accuracy-runner-state.json",
+    "separate-accuracy-control-fixtures.json",
+    "separate-accuracy-operation-fe622ef69e1608e12123.json",
+    "separate-accuracy-operation-fe622ef69e1608e12123-c1-oracle-replay01.json"
+  ],
+  "old_runner_phase": "HALTED",
+  "new_physical_invocations": 0,
+  "new_replays_used": 0
+}

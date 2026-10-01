@@ -1,0 +1,43 @@
+{
+  "schema": "openwepp.work-package.qa-review.v1",
+  "reviewer": "/root/qa",
+  "review_kind": "independent QA/evidence review",
+  "evidence_class": "Static",
+  "reviewed_at_utc": "2026-10-01T18:38:45Z",
+  "scope": {
+    "package": "docs/work-packages/20260920-cold-canopy-m1-001",
+    "terminal_partial_source": "artifacts/control-repair-source-cut01.json",
+    "base_source": "artifacts/separate-accuracy-source-cut03.json",
+    "excluded_intermediate": "artifacts/control-repair-source-cut02.json",
+    "claims_reviewed": [
+      "cut01 recoverability and custody",
+      "historical control/source/runner preservation",
+      "C6 readiness coverage",
+      "stop/disposition truthfulness"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/control-repair-control-fixtures.json",
+      "evidence": "C6 is a synthetic 21x11 BVLS matrix with base 0, lower/upper bounds -1/+1, radius 1, and an exact rank-ten construction. It proves only typed rank refusal. It contains no physical state, forcing, mapped control seed, or physical near-bound endpoint/trajectory.",
+      "impact": "The continuation and package require reconciliation of the original physical near-bound control before readiness acceptance. This fixture cannot satisfy that required coverage, so readiness must stop at C6 and no controls, references, candidates, build receipt, or replay may be accepted from this partial repair.",
+      "required_disposition": "HOLD/BLOCKED at C6; retain the fixture as an unused diagnostic seam only. A later authorized scope must provide and review an admissible physical near-bound control, or supply equivalent already-authoritative evidence with independently reconstructed bound/domain operands."
+    }
+  ],
+  "non_blocking_debt_followups": [
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/control-repair-source-cut01.json",
+      "finding": "Static custody is adequate for this partial source: archive SHA-256 is 77c94588a8c0c3d713f768605cdc40abf88f4a34e10ba6543c91fdbb4d52ebf9; manifest source identity is efda288cde1200ce90c4e5dc788f61503100a690db191dacdcdd256bcf8ed4af with 772 entries. Manifest comparison against cut03's 771 entries found one addition only, control-repair-control-fixtures.json, with no cut03-only or changed shared entry. The added fixture digest is cf635423e94cb949497ff9b482fd52134d29a13b1bc6d9b5af108022179dfe95."
+    },
+    {
+      "path": "docs",
+      "finding": "Static filesystem inspection confirms the original docs directory is present and docs/docs is absent after cleanup. This review did not authenticate external symlink targets or a resulting binary; cut01 correctly scopes those as requiring separate pins."
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+      "finding": "The leading readiness-stop record is consistent with the inspected terminal source: it retains the historical runner as HALTED, preserves the two C1 attempts, records 0 new physical charge and replay use, and labels C6 rank refusal rather than physical near-bound evidence. Cut01-to-cut03 custody proves no prior source entry changed; consequently the repair scope has no Rust or harness assertion change. Existing unrelated repository Rust diffs were not attributed to this package. No compiled fixture, build/control execution, format, Clippy, test, or deny evidence was reviewed or run by this reviewer."
+    }
+  ],
+  "qa_pass_statement": "QA accepts the limited custody/preservation record for terminal partial source cut01 and the STOP disposition. QA does not accept the partial fixture as readiness evidence or implementation completion."
+}
