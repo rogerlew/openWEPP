@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Ran: source/archive/input/JSON/byte checks only",
+  "at_utc": "2026-10-01T19:51:11.102780+00:00",
+  "baseline_source_sha256": "fb933d74c6964eacc2c1932aa9d1340b1d60fb1e192161ccc8ab50d3d1e09e00",
+  "terminal_source_sha256": "60c852c029337c07ee8c9d80d8c6f97a4a6251fdf3caabcdee78f61a803385e6",
+  "changes": {
+    "control-repair-control-fixtures.json": {
+      "base": null,
+      "final": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362"
+    },
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": {
+      "base": "9b1301cb8eab6eafa76bff01f155762633106abc144bbad7561f65b61804ea90",
+      "final": "d524756745398be16eccf1117e6d6aac36287fe4e13dfc8e9c120e61aa00a86a"
+    }
+  },
+  "deleted_entries": [],
+  "fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+  "binary_sha256": "0f84a2fa71bce7c5bd4949e99cdeb2d2c12387265e964592874b0ea6b3bb0ffd",
+  "compiled_exact_fixture_bytes_present": true,
+  "unrelated_dirty_files_unchanged": 48,
+  "new_runner_state_exists": false,
+  "new_physical_invocations": 0,
+  "new_replays_used": 0,
+  "readiness_disposition": "INCOMPLETE: final lint/custody check returned19:49:18 after19:49:16 cutoff; QA pending then",
+  "budget_deadline_not_reset": true
+}

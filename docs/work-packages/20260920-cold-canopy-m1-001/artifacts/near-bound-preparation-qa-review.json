@@ -1,0 +1,55 @@
+{
+  "schema": "openwepp.work-package.qa-review.v1",
+  "reviewer": "/root/qa",
+  "review_kind": "independent QA/evidence closure review",
+  "evidence_class": "Static; inspected supplied synthetic-runner receipt only",
+  "reviewed_at_utc": "2026-10-01T19:51:41Z",
+  "scope": {
+    "option": "owner option1 physical near-bound preparation",
+    "reviewed_source": "artifacts/near-bound-preparation-source-cut03.json",
+    "reviewed_runner_identity": "artifacts/near-bound-preparation-runner-identity.json",
+    "excluded_execution": [
+      "physical/core/Jacobian/solver/control/reference/candidate invocation",
+      "Rust test/build execution by this reviewer"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "RESOLVED",
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-preparation-final-no-run-success.json",
+      "evidence": "Same-reviewer verification: the successful Nix `cargo test --offline --release -p openwepp-land-surface-energy --lib ... --no-run` receipt records exit 0, Rust/Cargo 1.95.0, binary 0f84a2fa71bce7c5bd4949e99cdeb2d2c12387265e964592874b0ea6b3bb0ffd, and matching fixture/test hashes. Its combined raw output is preserved, hashes to a8ecde5a1d8d088c202ba0359979b27ff92a37a324be49fd93b6067e4ac903a4, and reports the same executable after a 1m34s release build. Build custody independently pins that binary with 584 files and 66 depfiles. The separate exit-127 receipt remains correctly labeled as a failed non-Nix setup attempt.",
+      "impact": "The raw successful-build receipt gap is resolved for closure evidence. This does not retroactively authorize physical launch."
+    },
+    {
+      "severity": "BLOCKER",
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-preparation-lint-compare-cut02.json",
+      "evidence": "Final cut03 source-bearing multiset comparison now reports 289 reference and 289 candidate diagnostics with zero additions/removals, using lint/message/source path/function/content and macro call-site tracing.",
+      "impact": "The final lint comparison supports inherited-diagnostic treatment; it does not convert the inherited diagnostics into a clean Clippy pass."
+    },
+    {
+      "severity": "BLOCKER",
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-preparation-source-cut03.json",
+      "evidence": "Final source archive custody is static PASS: archive 2f0a47e18672314eeead54ed1d4d56c562025575572c02723333036d428071dd matches tree 60c852c029337c07ee8c9d80d8c6f97a4a6251fdf3caabcdee78f61a803385e6 with 772 entries. The final delta from cut01 is only m1_coupled_tests.rs; the fixture remains d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362. This does not establish compiled-input or binary custody.",
+      "impact": "Archive custody is accepted; build custody separately pins the fixture/test inputs and binary. The readiness cutoff elapsed at 19:49:16.394641Z before the final comparison/build check completed at 19:49:18Z, so this evidence cannot authorize a launch."
+    }
+  ],
+  "non_blocking_debt_followups": [
+    {
+      "path": "artifacts/near-bound-preparation-correctness-review.json",
+      "finding": "Same-reviewer static verification resolves the four prior source assertions: C2 causal operands, C4 completed unpoisoned evaluation, C5 exact dry-role reactivation, and C6 evaluated state/provenance/attempted plus completed counters. It remains static evidence only."
+    },
+    {
+      "path": "artifacts/near-bound-preparation-runner-identity.json",
+      "finding": "The historical runner is byte-identical to option1 (SHA-256 28b20757707ec678f7d25e42c6f594d3d8f81b59a13cbe26757e1547780cdf74). All non-limit/non-status measurement fields are identical; the recorded changes are time boundaries/status only. Lineage retains old HALTED state and prior replay consumption=1, with option1 physical seconds=0 and new replay use=0."
+    },
+    {
+      "path": "artifacts/near-bound-preparation-runner-mock.stdout",
+      "finding": "The synthetic-child mock PASS supports runner custody/replay refusal mechanics only. It is not Rust binary, physical, control, or timing evidence."
+    },
+    {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+      "finding": "The retained readiness budget is internally consistent: prior charge 583.605359s leaves 1216.394641s of the original 1800s cap, with preparation cutoff 2026-10-01T19:49:16.394641Z; cumulative ceiling 458534.927980s and hard/closing deadlines remain unchanged. This review does not infer a new grant or replay."
+    }
+  ],
+  "qa_pass_statement": "QA accepts terminal static source/archive/build-custody, successful no-run compilation receipt, and final lint-comparison evidence for closure only. The preparation missed its fixed readiness cutoff; physical controls, references, candidates, A/B measurements, and replay use remain zero/NOT RUN. Overall experimental disposition is INCOMPLETE/HOLD."
+}

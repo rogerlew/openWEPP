@@ -1,0 +1,7 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/development-treatment-62c9550b2cad
+  scratch: /tmp/openwepp-roger-development-treatment-62c9550b2cad
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment/crates/openwepp-land-surface-energy)
+    Finished `release` profile [optimized] target(s) in 1m 34s
+  Executable unittests src/lib.rs (/workdir/.cache/openwepp/targets/development-treatment-62c9550b2cad/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487)

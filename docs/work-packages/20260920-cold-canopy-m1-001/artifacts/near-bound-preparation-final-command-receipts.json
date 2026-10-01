@@ -1,0 +1,8 @@
+{
+  "schema": "openwepp.command-receipts.v1",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment",
+  "format": {"argv": ["timeout", "180", "nix", "develop", "--impure", ".", "--command", "cargo", "fmt", "--check"], "exit": 0},
+  "clippy_cut03": {"argv": ["timeout", "50", "nix", "develop", "--impure", ".", "--command", "cargo", "clippy", "--offline", "--release", "--no-deps", "-p", "openwepp-land-surface-energy", "--lib", "--tests", "--features", "m1-trust-region-physical-stage,m1-trust-region-analytic-stage,m1-trust-region-controller-stage", "--message-format=json", "--", "-D", "warnings"], "exit": 101, "error_diagnostics": 289, "stdout": "near-bound-preparation-clippy-cut03-candidate.jsonl", "stderr": "near-bound-preparation-clippy-cut03-candidate.stderr", "stdout_sha256": "0e0a344f20507b0df89678c2873415b6df801dde12e23043e0f9c06240dce398", "stderr_sha256": "9afd1a0a9f92ae5f95aa3b16cac664269d91f786f969c8badab6a0dcb7b57e0f"},
+  "preserved_setup_failure": "near-bound-preparation-final-no-run-receipt.txt records the separate non-Nix cargo invocation exit 127; it is not the successful build receipt.",
+  "timestamps": "No start/end timestamps were emitted by the recorded commands; none are inferred."
+}

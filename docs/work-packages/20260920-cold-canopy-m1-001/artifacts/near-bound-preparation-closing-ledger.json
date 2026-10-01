@@ -1,0 +1,15 @@
+{
+  "sample_utc": "2026-10-01T19:53:13.651881+00:00",
+  "resumed_anchor_utc": "2026-10-01T19:29:00+00:00",
+  "resumed_elapsed_charged_seconds": 1453.651881,
+  "prior_final_observed_cumulative_seconds": 451918.533339,
+  "cumulative_charged_seconds": 453372.18522000004,
+  "fixed_ceiling_seconds": 458534.92798,
+  "remaining_at_sample_seconds": 5162.742759999963,
+  "readiness_consumption_policy": "Conservative prior583.605359 plus resumed time;1800s cutoff19:49:16.394641, final comparison/custody returned19:49:18. Closing work remains charged separately after cutoff; no refund or reset.",
+  "new_physical_seconds": 0,
+  "new_replay_usage": 0,
+  "wait_deductions_seconds": 0,
+  "inactive_owner_decision_interval": "Prior final handoff18:39:43.605359 to resumed reading19:29:00; no work process retained during interval. Prior unrecorded assessment/prompt duration remains unquantified.",
+  "accounting_limit": "Commit/return after sample remain chargeable; final response reports final observed sample."
+}

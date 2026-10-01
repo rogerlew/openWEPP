@@ -1,0 +1,94 @@
+{
+  "schema": "openwepp.work_package.correctness_review.v1",
+  "reviewer": "/root/correctness",
+  "role": "independent correctness reviewer",
+  "independence": "No authorship, implementation, replacement-control design, scientific-direction work, or physical execution was performed.",
+  "reviewed_cut": {
+    "path": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment",
+    "status": "FINAL SOURCE STABLE; final packed tree receipt pending parent",
+    "fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+    "test_source_sha256": "d524756745398be16eccf1117e6d6aac36287fe4e13dfc8e9c120e61aa00a86a",
+    "changed_files": [
+      "control-repair-control-fixtures.json",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs"
+    ]
+  },
+  "evidence_class": {
+    "static": [
+      "Inspected the stable cut03 fixture/test delta, the actual adapter evaluation/materialization helper, BVLS05 provenance and work-counter structures, retained empty-surface guards, historical six-control fixture, and adopted package requirements.",
+      "Compared all six control objects to the historical fixture: C2-C5 are byte-structurally unchanged; C1 differs only in its authorized humidity override; C6 adds the authorized physical near-bound derived bits/assertion description while retaining the synthetic rank input.",
+      "Decoded the explicit 21-coordinate seed and two beginning reservoirs and compared every bit against historical trial()/loader values. All 21 trial values match; both beginning reservoirs are 0.018/+0, correcting the rejected partial fixture's lower-reservoir 0.023 error."
+    ],
+    "ran": [
+      "Only standalone JSON, hash, diff, and IEEE-754 checks were run. No Rust test, physical/core/Jacobian/controller workflow, solver, reference, candidate, or timing command was run by this reviewer. Implementer cargo-check and assigned no-run build are third-party evidence and are not counted as reviewer execution."
+    ]
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "status": "RESOLVED",
+      "title": "C6 does not yet bind the complete evaluated near-bound state, provenance, or complete inspection counters.",
+      "locations": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8297",
+        "docs/work-packages/20260920-cold-canopy-m1-001/package.md:56"
+      ],
+      "evidence": "The ordinary physical subcheck correctly observes actual capacity 0x3fd3020c49ba5e37, liquid mass 0x3fd3020c49ba5e36, wet fraction 0x3fefffffffffffff, physical/mapped certificates [false;6], and held [false;21]. Its independent gap 0x3c90000000000000 and ratio 0x3feffffffffffffe are correct. But H=+0 and D=+0 are present only in the fixture, not bound to the adapter's evaluated current coordinates. The assembly exposes actual provenance, but the test does not assert role columns, structural areas, wet fractions, or free-state operands. It asserts only completed 6/252/21 work, allowing mismatched attempted counts to escape.",
+      "required_fix": "Using the existing observation/assembly only, assert evaluated current M/H/D bits, exact relevant provenance (including role columns, structural areas, wet fractions and free-state flags), and attempted as well as completed 6/252/21 counts. Keep the physical subcheck and unchanged synthetic rank seam as separate subchecks inside formal C6; no same-trajectory rank claim is required.",
+      "fix_verification": "RESOLVED on final source: evaluated current coordinates bind M/H/D to [0x3fd3020c49ba5e36,+0,+0]; provenance binds role columns [0,1,2,6,7,8], exact six structural-area bits, initial_free [true;6], physical_current_free [false;6], and all six exact wet-fraction bits; work binds attempted and completed 6/252/21. Capacity, liquid mass, upper wet fraction, independent gap/ratio, both certificate arrays, and held mask remain exact; the synthetic rank seam remains separate."
+    },
+    {
+      "severity": "HIGH",
+      "status": "RESOLVED",
+      "title": "C2's assertion still does not establish the required upper-shade supersaturation cause.",
+      "locations": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7979",
+        "/tmp/openwepp_cold_canopy_m1_control_repair_continuation.md:59"
+      ],
+      "evidence": "The repaired assertion proves the independently reconstructed qcan bits and matches VEG-E-142/Domain, but that code/stage is shared by multiple domain predicates. It never binds the ordered causal operands: upper sun area is zero and therefore skipped, upper shade area is positive, and qcan exceeds qsat at the upper-shade temperature.",
+      "required_fix": "Add independent assertions for zero upper-sun area, positive upper-shade area, and qcan greater than upper-shade saturation, preserving the existing guard order and inputs.",
+      "fix_verification": "RESOLVED on final source: C2 binds zero-area upper sun, positive-area upper shade, the below-freezing Ice saturation phase, and qcan>upper-shade qsat before matching VEG-E-142/Domain."
+    },
+    {
+      "severity": "HIGH",
+      "status": "RESOLVED",
+      "title": "C4 can accept the intended error before successful unpoisoned adapter evaluation is established.",
+      "locations": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8164",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3963"
+      ],
+      "evidence": "The helper sequences adapter.evaluate(initial_coordinates), then applies the one-ULP capacity poison, then materializes. However, the outer test accepts VEG-E-142/Domain from the helper without checking that evaluate completed. An evaluation-time error with that shared code/stage could satisfy the assertion before poisoning. The separate core operand helper does not prove the adapter evaluation/Jacobian path succeeded.",
+      "required_fix": "After the refusal, assert the existing adapter observation shows exactly one completed current evaluation, then retain the typed Domain match and no-materialization assertion.",
+      "fix_verification": "RESOLVED on final source: C4 now requires current_evaluations==1 after the helper refusal, proving the unpoisoned adapter evaluation completed before the capacity poison/materialization refusal; typed Domain and no-materialization checks remain."
+    },
+    {
+      "severity": "MEDIUM",
+      "status": "RESOLVED",
+      "title": "C5's subsequent reactivation remains existential instead of identifying the expected semantic roles.",
+      "locations": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8280",
+        "/tmp/openwepp_cold_canopy_m1_control_repair_continuation.md:66"
+      ],
+      "evidence": "The full-wet side is now exact: both physical and mapped certificates are [false,true,true,false,false,false], and only upper shade/stem columns 1 and 2 are held. The next-state check still accepts any mapped true-to-false transition and merely checks that all held values are false; it does not identify the dry-state physical and mapped certificates.",
+      "required_fix": "Assert dry-state physical and mapped certificate arrays exactly [false;6] and the held mask exactly [false;21], thereby binding reactivation of the named upper shade/stem roles.",
+      "fix_verification": "RESOLVED on final source: C5 now binds dry physical and mapped certificates exactly [false;6] and dry held exactly [false;21], in addition to the already exact full-wet upper shade/stem roles."
+    }
+  ],
+  "verified_static_fixes": {
+    "explicit_defaults": "PASS: all 21 trial-coordinate bits match historical trial(), and both beginning reservoirs match the historical loader's 0.018/+0 values.",
+    "C1": "PASS_STATIC_PREMISE: qair=0.002 is 0x3f60624dd2f1a9fc; prior independent reconstruction gives qcan=0.0004062273082215359 (0x3f3a9f5d00e8e3a9), admissible below every positive-area saturation value. No control execution occurred.",
+    "C2": "PASS_STATIC: exact humidity mapping, ordered zero-area-sun/positive-area-upper-shade Ice supersaturation cause, and typed VEG-E-142/Domain are bound.",
+    "C3": "PASS_STATIC_UNCHANGED: four directional selections/assembly/probe checks and control bytes are unchanged.",
+    "C4": "PASS_STATIC: actual capacity/liquid/rcap operands, one completed unpoisoned adapter evaluation, typed Domain capacity-poison refusal, and no materialization are bound.",
+    "C5": "PASS_STATIC: exact full-wet physical/mapped semantic roles and held columns, plus exact dry physical/mapped [false;6] and held [false;21] reactivation, are bound.",
+    "C6": "PASS_STATIC: the physical one-ULP-below-capacity state is bound through evaluated M/H/D, core capacity/mass/wetness, exact provenance, certificates, held mask, and attempted/completed work; the unchanged synthetic typed rank refusal is separate and makes no physical-rank claim."
+  },
+  "residual_risk_and_missing_tests": [
+    "This is a static source review. All six physical controls, references, candidates, and A/B measurements remain NOT RUN by this reviewer.",
+    "No physical-rank claim is supported or required. The synthetic rank seam supports only typed rank refusal; the physical subcheck supports near-capacity domain/BVLS05 classification.",
+    "Final no-run build, packed source/tree custody, and independent QA remain outside this correctness review and must pass before launch readiness."
+  ],
+  "verdict": {
+    "status": "STATIC_SOURCE_APPROVED_CONDITIONAL",
+    "statement": "No correctness blocker remains in the final stable fixture/test source. All four accepted findings are resolved. Launch readiness remains conditional only on the parent-confirmed final no-run build, immutable packed-source custody, and QA acceptance; this review supplies no physical execution evidence."
+  }
+}

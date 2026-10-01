@@ -1,0 +1,15 @@
+{
+  "schema": "openwepp.command-receipt.v1",
+  "evidence_class": "compilation only; cargo test used --no-run and executed no tests",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment",
+  "source_sha256": {
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "d524756745398be16eccf1117e6d6aac36287fe4e13dfc8e9c120e61aa00a86a",
+    "control-repair-control-fixtures.json": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362"
+  },
+  "argv": ["timeout", "180", "nix", "develop", "--impure", ".", "--command", "cargo", "test", "--offline", "--release", "-p", "openwepp-land-surface-energy", "--lib", "--features", "m1-trust-region-physical-stage,m1-trust-region-analytic-stage,m1-trust-region-controller-stage", "--no-run"],
+  "result": {"exit": 0, "cargo_reported_duration": "1m 34s"},
+  "raw_output": {"path": "near-bound-preparation-final-no-run-success.combined-output.txt", "sha256": "a8ecde5a1d8d088c202ba0359979b27ff92a37a324be49fd93b6067e4ac903a4", "stream": "combined tool-returned output; stdout and stderr were not separately retained"},
+  "binary": {"path": "/workdir/.cache/openwepp/targets/development-treatment-62c9550b2cad/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487", "sha256": "0f84a2fa71bce7c5bd4949e99cdeb2d2c12387265e964592874b0ea6b3bb0ffd", "size_bytes": 10625192, "mtime": "2026-10-01 12:48:14.701833639 -0700"},
+  "toolchain": {"rustc": "1.95.0 (59807616e 2026-04-14)", "cargo": "1.95.0 (f2d3ce0bd 2026-03-21)", "llvm": "21.1.8"},
+  "timestamps": "The shell command output did not record start/end timestamps; none are inferred."
+}

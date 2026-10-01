@@ -1,0 +1,45 @@
+{
+  "checks": {
+    "c1_oracle_replay_marker_refusals": {
+      "detail": {
+        "bool": "RuntimeError: Invalid single-control defect recovery evidence",
+        "missing": "RuntimeError: Invalid single-control defect recovery evidence",
+        "two": "RuntimeError: Invalid single-control defect recovery evidence",
+        "zero": "RuntimeError: Invalid single-control defect recovery evidence"
+      },
+      "status": "PASS"
+    },
+    "c1_oracle_replay_namespace_preserves_charge": {
+      "detail": {
+        "cap_seconds": 29.997980056,
+        "output": "/tmp/separate-accuracy-runner-mock-ndwjfary/separate-accuracy-operation-fe622ef69e1608e12123-c1-oracle-replay01.json",
+        "physical_seconds": 0.016342217
+      },
+      "status": "PASS"
+    },
+    "custody_and_pins_prepost": {
+      "detail": "Synthetic source archive, source receipt, depfile build receipt, binary and all runner artifact pins were accepted before and after each mock operation.",
+      "status": "PASS"
+    },
+    "interrupted_state_refuses_launch": {
+      "detail": {
+        "stderr": "Traceback (most recent call last):\n  File \"/tmp/separate-accuracy-runner-mock-16z8nq7c/separate-accuracy-runner.py\", line 397, in <module>\n    main()\n  File \"/tmp/separate-accuracy-runner-mock-16z8nq7c/separate-accuracy-runner.py\", line 376, in main\n    cur = state()\n          ^^^^^^^\n  File \"/tmp/separate-accuracy-runner-mock-16z8nq7c/separate-accuracy-runner.py\", line 52, in state\n    raise RuntimeError('Interrupted physical operation: preserve state; no automatic retry or further launch')\nRuntimeError: Interrupted physical operation: preserve state; no automatic retry or further launch"
+      },
+      "status": "PASS"
+    },
+    "success_1_diagnostic_plus_6x4": {
+      "detail": {
+        "controls_and_reference_operations": 12,
+        "physical_seconds": 0.38101025299999997,
+        "result_count": 19
+      },
+      "status": "PASS"
+    }
+  },
+  "evidence_class": "Ran: synthetic fake child only; no Rust/binary/physical execution.",
+  "measurement_sha256": "249712153532cb2ecb55c9146d29a8be227dd321ea6e7e944c6c4f2bf6a3fa28",
+  "runner_sha256": "28b20757707ec678f7d25e42c6f594d3d8f81b59a13cbe26757e1547780cdf74",
+  "schema": 1,
+  "status": "PASS",
+  "unimplemented_cli_coverage": []
+}

@@ -1,0 +1,80 @@
+{
+  "evidence_class": "Ran: byte/JSON comparison; no physical execution",
+  "observed_utc": "2026-10-01T19:42:29.032927+00:00",
+  "historical_tools_receipt": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-tools-cut04.json",
+  "files": {
+    "continuous-fixtures-draft01.json": {
+      "byte_identical": true,
+      "sha256": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1"
+    },
+    "separate-accuracy-input-check.json": {
+      "byte_identical": true,
+      "sha256": "7713f550f4cab32062da1742e2abcd35f2c99b80034169e341bd3b02d28ba806"
+    },
+    "separate-accuracy-source-custody.py": {
+      "byte_identical": true,
+      "sha256": "bd3cb9c63d9f66a7c6bc7c407615e82de1c1abd47057e8d28424f6641b77a877"
+    },
+    "separate-accuracy-independent-reconstruction.py": {
+      "byte_identical": true,
+      "sha256": "d13fc8575422123bcdd439fe3e613fec92138e1e9d3493d7ebdbee7ba25917f8"
+    },
+    "separate-accuracy-results.py": {
+      "byte_identical": true,
+      "sha256": "824deb291aa43b3ca1aaefdf586c424b8724b4ebc756de1db1766f152e8dbfc7"
+    },
+    "separate-accuracy-runner-mock-check-receipt.json": {
+      "byte_identical": false,
+      "sha256": "4fff67ec8b4f1aab7c8052a45b236f31617d38d13616ae58a02b63a2e5771466"
+    },
+    "separate-accuracy-runner.py": {
+      "byte_identical": true,
+      "sha256": "28b20757707ec678f7d25e42c6f594d3d8f81b59a13cbe26757e1547780cdf74"
+    },
+    "separate-accuracy-runner-mock-check.py": {
+      "byte_identical": true,
+      "sha256": "8170f2046675c9145c6bf12703d00ce5af85a78623f5a3c465ba3969b5b8961d"
+    },
+    "separate-accuracy-input-check.py": {
+      "byte_identical": true,
+      "sha256": "a1bb9f3e021c7434a381695c6ef9d062fe78b9343280b3c7b240955455d675c6"
+    },
+    "separate-accuracy-build-custody.py": {
+      "byte_identical": true,
+      "sha256": "88f09f4d70cc5d0a3679eba13312324d94611a9cd18ea0a9e3483a33f4722492"
+    },
+    "separate-accuracy-protocol-draft.json": {
+      "byte_identical": true,
+      "sha256": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e"
+    },
+    "original-input-reference.json": {
+      "byte_identical": true,
+      "sha256": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54"
+    },
+    "architecture-decision-successor-cases.json": {
+      "byte_identical": true,
+      "sha256": "b3ad4fa07c7748c56df0ad9c2fb681be019e86e9bd9befb97d705eb4d10e2ce8"
+    }
+  },
+  "measurement_changed_limits": {
+    "anchor_utc": {
+      "old": "2026-09-30T20:48:00Z",
+      "new": "2026-10-01T18:30:00Z"
+    },
+    "readiness_deadline_utc": {
+      "old": "2026-09-30T21:48:00Z",
+      "new": "2026-10-01T19:49:16Z"
+    },
+    "work_cutoff_utc": {
+      "old": "2026-10-01T00:18:00Z",
+      "new": "2026-10-01T20:15:00Z"
+    },
+    "hard_deadline_utc": {
+      "old": "2026-10-01T00:48:00Z",
+      "new": "2026-10-01T20:30:00Z"
+    }
+  },
+  "measurement_status_label_changed": true,
+  "all_nonlimit_nonstatus_measurement_fields_identical": true,
+  "fixture": "Must be rebound to final source after assertion fixes; current copy not launch approval"
+}

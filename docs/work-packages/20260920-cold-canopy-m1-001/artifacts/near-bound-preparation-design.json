@@ -1,0 +1,32 @@
+{
+  "schema": "openwepp.cold_canopy_m1.near_bound_preparation.v1",
+  "evidence_class": "Static and compilation only; no physical core, Jacobian, solver, control, reference, candidate, or timing invocation.",
+  "source": {
+    "resumed_cut01_sha256": "efda288cde1200ce90c4e5dc788f61503100a690db191dacdcdd256bcf8ed4af",
+    "final_test_source_sha256": "d524756745398be16eccf1117e6d6aac36287fe4e13dfc8e9c120e61aa00a86a",
+    "final_fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+    "root": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment"
+  },
+  "c6_two_subchecks": {
+    "physical_near_bound_domain": {
+      "occupancy": 0,
+      "capacity_binary64": "0x3fd3020c49ba5e37",
+      "mass_binary64": "0x3fd3020c49ba5e36",
+      "enthalpy_binary64": "0x0000000000000000",
+      "drainage_binary64": "0x0000000000000000",
+      "static_operands": {
+        "capacity_minus_mass_binary64": "0x3c90000000000000",
+        "mass_over_capacity_binary64": "0x3feffffffffffffe",
+        "wet_fraction_binary64": "0x3fefffffffffffff"
+      },
+      "assertion": "The loaded physical seed is next_down(capacity), remains strictly partially wet without a clamp, and ordinary BVLS05 inspection records all six physical and mapped raw/weighted certificates false, no held coordinate, and completed 6/252/21 role/entry/mask work. It makes no controller-box or rank-loss claim."
+    },
+    "synthetic_rank_refusal": "The prior 21-by-11 duplicate-column rank-ten matrix and typed RankDeficient factorization seam remain unchanged and separate from the physical subcheck."
+  },
+  "c1_to_c5": "C1 uses the authorized 0.002 binary64 humidity; all six controls load explicit complete default trial and beginning-reservoir bits; C2 requires a vegetation Domain error; C4 requires a capacity-poison Domain refusal after unpoisoned capacity observation; C5 names upper shade/stem physical and mapped certificates, holds, and subsequent reactivation.",
+  "validation": {
+    "format": "PASS: cargo fmt through nix develop --impure",
+    "compile": "PASS: cargo check --offline --release -p openwepp-land-surface-energy --tests with the three M1 stage features",
+    "clippy": "RAW_FAIL: final cut03 same-command Clippy emitted 289 error diagnostics and exited 101. The raw candidate and a focused baseline comparison are retained separately; diagnostic count alone does not establish inheritance."
+  }
+}

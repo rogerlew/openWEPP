@@ -1,5 +1,183 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Owner option1 adoption — physical near-bound preparation, 2026-10-01
+
+The owner says **“proceed with 1”**, adopting the proposed bounded completion
+of one physical near-bound control and C2/C4/C5 assertion repairs, with the
+synthetic rank-refusal seam retained separately. The immediate deliverable is
+concrete reviewed preparation. Owner option1 plus the original execution
+authorization permit the fixed measurements after readiness within the existing
+overall ceiling/deadline; no new execution allowance or permission step is added. No solver redesign, forcing/cadence/profile
+change, production adoption or acceptance weakening is authorized.
+
+**INCOMPLETE / readiness time limit — repair implemented, no physical launch.** Targets remain500us CPU /
+550us wall per completed OFE-day, regime750/1500/2500us CPU and complete10-OFE
+century182.625s CPU /210s wall. Zero completed candidate days; accuracy/cost
+frontier and native whole-system costs remain unmeasured.
+
+Starting commit`af46ef5537c8377acd9a7d3e67e780b07b9d3a8b`, recovered partial
+cut01`efda288cde1200ce90c4e5dc788f61503100a690db191dacdcdd256bcf8ed4af`.
+Reuse the isolated development copy after authentication, leaving historical
+sources, archives, old fixture and HALTED runner untouched. The same implementer
+owns detached source, with the same distinct correctness and QA reviewers;
+reviewers do not design the new control. No nested agents or branch switch.
+
+The conservative resumed-reading anchor is19:29:00Z (first clock19:29:40.809475Z).
+Prior final observed charge is583.605359s, cumulative451918.533339s. Preserve the
+fixed458534.927980s cumulative ceiling and20:30Z hard deadline/20:15Z closing.
+No new7200s allowance is inferred. The interval after prior handoff before this
+resumption is inactive owner-decision time, not a running job or deducted command
+wait; earlier assessment/prompt time remains separately unquantified.
+Within the proposed30-minute maximum preparation period, conservatively retain
+the original1800s total readiness cap: at most1216.394641s remains, yielding
+**19:49:16.394641Z preparation cutoff**. No physical/replay allowance is consumed
+or reset by static preparation. Each command<=180s and must fit before cutoff;
+preserve unfinished work if the limit is reached.
+
+Validation intent: freeze exact near-bound physical seed and independent bound/
+domain operands before any result-bearing invocation; retain C6's synthetic
+rank seam as a separate subcheck rather than claim physical rank loss. Integrate
+all explicit control/default/beginning-state bits, C1 qair0.002, specific C2
+Domain/upper-shade cause, C4 successful unpoisoned evaluation before capacity
+poison refusal, and C5 named raw/weighted physical/mapped role certificates,
+held states and reactivation. Preserve C3's four directional probes. Only
+fixture/loading/assertion/test-observation changes; unchanged original21rows,
+solver/derivative/tolerance/reference strategy and A/B case bytes.
+
+Select focused no-run compilation, formatting, source custody, independent
+static arithmetic/domain review and bounded inherited-lint comparison using the
+same baseline command. No physical preflight, control, core, Jacobian, reference
+or candidate invocation during this preparation; the original schedule may
+launch only after accepted readiness within the retained remaining budget. No dependency or science
+contract change is intended, so production/full-workspace/dependency qualification
+is not claimed. Freeze recoverable source and actual compiled-input/binary
+receipts for the concrete proposal; incomplete checks remain explicit.
+
+### Prospective C6 physical case and review conditions
+
+The implementer proposes the original C6 formal slot contain two separately
+named subchecks, with all six formal IDs/order retained. The new physical
+subcheck uses upper liquid mass`0x3fd3020c49ba5e36`, exactly one representable
+value below capacity`0x3fd3020c49ba5e37`, H=D=+0 and explicitly frozen retained
+other coordinates/inputs. The synthetic rank-ten subcheck remains unchanged.
+This is a physical reservoir/capacity-domain boundary, **not** a controller-box
+bound (the mass coordinate is unbounded in that box), and claims no physical
+rank loss or converged trajectory.
+
+Independent correctness `/root/correctness` conditionally accepts the proposed
+coverage before assertion implementation: next_up(M)==C, gap`0x3c90000000000000`,
+M/C=0.9999999999999998 and fwet=0.9999999999999999<1. Acceptance requires binding
+those bits through actual loading/current evaluation and ordinary BVLS05
+inspection, including actual capacity, liquid mass, wet fraction and provenance
+operands, all six physical/mapped certificate results, held state and complete
+inspection counters. Fixture arithmetic and generic “no held columns” alone are
+insufficient. C5 separately proves exact-full holds followed by reactivation;
+C4 separately proves the over-capacity refusal side. These are prospective
+assertions, not executed evidence; same-reviewer source verification remains due.
+
+### First repair cut and affected review
+
+The first implementation freeze is
+[near-bound-preparation-source-cut01](artifacts/near-bound-preparation-source-cut01.json),
+source`5215f570d159c6c629850a9dd2da54171eaf23b4b4f2d915a044a6b1cd6ba8af`.
+It changes only the detached test file and control fixture. Parent and correctness
+found the previously unused fixture's lower **beginning** mass incorrectly used
+the lower **trial** mass0.023; it is corrected to historical0.018 before loading.
+All21 raw trial defaults independently match historical`trial()` binary64 bits.
+No failed executable attempt resulted from that unused partial-data defect.
+
+Correctness rejects initial assertion completeness: C2 must bind zero-area sun,
+positive-area upper shade and its supersaturation inequality; C4 must distinguish
+successful adapter evaluation from a later poison refusal; C5 must assert exact
+physical/mapped dry-role reactivation arrays; C6 must bind evaluated M/H/D,
+actual provenance and attempted/completed inspection counts. The implementer
+owns these routine assertion fixes; the same reviewer verifies them. C6 design
+is accepted conditionally, not yet executable readiness.
+
+Initial format and release`cargo check --tests` succeed. They do not produce
+or execute a release test binary. A distinct no-run release build is in progress.
+Initial Clippy fails; inheritance is unaccepted pending source-bearing same-command
+comparison rather than diagnostic counts alone. No physical invocation occurred.
+
+### Final repaired source and readiness time-limit disposition
+
+The implementer completed the accepted C2/C4/C5/C6 assertion fixes, including
+exact C6 role columns, six structural-area/wetness operands and both free masks.
+Same correctness `/root/correctness` verifies all four findings resolved on
+test-source`d524756745398be16eccf1117e6d6aac36287fe4e13dfc8e9c120e61aa00a86a`
+and fixture`d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362`.
+Its verdict is static source approval, conditional on build/custody and QA,
+not a control or convergence pass. [Review](artifacts/near-bound-preparation-correctness-review.json).
+
+Final [source receipt](artifacts/near-bound-preparation-source-cut03.json) and
+[archive](artifacts/near-bound-preparation-source-cut03.tar.gz) preserve tree
+`60c852c029337c07ee8c9d80d8c6f97a4a6251fdf3caabcdee78f61a803385e6`,772entries.
+Fresh recovery to the durable`frozen-option1` directory matches exactly.
+Compared with original cut03, only the detached test file changes and one local
+fixture is added; production/numerical bodies and A/B inputs are unchanged.
+Earlier preparation cuts remain historical evidence, not launch source.
+
+**Ran, no physical execution:** final release no-run test build succeeds via
+Nix (reported1m34s), with rustc1.95.0/cargo1.95.0. Binary SHA256
+`0f84a2fa71bce7c5bd4949e99cdeb2d2c12387265e964592874b0ea6b3bb0ffd`.
+[Build custody](artifacts/near-bound-preparation-build-cut03.json) verifies584pins
+and66depfiles; parent confirms the exact repaired fixture bytes are embedded.
+The final source's warnings-denied Clippy command fails with289diagnostics
+(67library+222library-test); [source-bearing comparison](artifacts/near-bound-preparation-lint-compare-cut03.json)
+against retained cut07 has289/289, zero additions and zero removals. This supports
+the selected no-new-relevant-diagnostics policy, not a clean lint pass.
+The initial222-total report was incorrect. Preserved setup exit127 and a
+compile-only slice `.map` error are not physical attempts or replay consumption.
+
+**Stop:** the final comparison and post-Clippy custody check returned at
+**19:49:18UTC**, just after the retained**19:49:16.394641UTC** readiness cutoff;
+final QA had not yet accepted the build/lint evidence. Readiness was therefore
+not accepted inside its allowance. No retrospective deadline reset, refunded
+work, automatic continuation or physical launch is permitted by this record.
+Only evidence review/preservation/disposition proceeds in the closing allowance.
+The repaired source is concrete and statically reviewed; a next execution decision
+can bind this source and completed evidence without another control-design task.
+
+[Runner byte identity](artifacts/near-bound-preparation-runner-identity.json)
+confirms the historical script unchanged. Only measurement deadlines changed;
+the42-cell order and all physical/reference/cell caps remain identical.
+[Synthetic mock command](artifacts/near-bound-preparation-runner-mock-command.json)
+and [output](artifacts/near-bound-preparation-runner-mock.stdout) pass only the
+Python mock protocol. No new runner state was created, no READY transition or
+Rust test binary was launched. Old HALTED state and both historical C1 failures
+remain intact. New physical charge0s, new corrected replays used0/1.
+
+A remains0/24 and B0/18, all NOT RUN; three references and three stability checks
+also NOT RUN. No completed candidate day, error/cost frontier, regime coverage
+or demonstrated deployment path exists. The source repair does not establish
+whole-OFE/century performance, native owner/receiver correctness or production
+qualification. [Terminal checks](artifacts/near-bound-preparation-terminal-checks.json)
+bind the exact delta, compiled fixture and unrelated-work preservation.
+
+Terminal QA `/root/qa` verifies final source/correctness, source-bearing lint
+comparison, binary/fixture/build custody and the corrected successful build
+receipt. Its remaining raw-output finding is resolved by the
+[successful merged command output](artifacts/near-bound-preparation-final-no-run-success.combined-output.txt)
+and [receipt](artifacts/near-bound-preparation-final-no-run-success.json), explicitly
+separate from the preserved exit127 setup attempt. No separate stdout/stderr or
+missing start/end timestamp is invented. [Format/Clippy receipts](artifacts/near-bound-preparation-final-command-receipts.json)
+record exact arguments and final raw-log hashes. [QA review](artifacts/near-bound-preparation-qa-review.json)
+accepts evidence for closure only; it does not retroactively admit readiness.
+
+The isolated [run tools](artifacts/near-bound-preparation-run-tools.json) and
+[archive](artifacts/near-bound-preparation-run-tools.tar.gz) are preserved but
+unlaunched. All48 unrelated dirty files remain byte-identical. Scoped local
+commit includes this maintained record, review/command evidence and recoverable
+detached source; no main Rust adoption, branch change or push.
+
+Closing sample**2026-10-01T19:53:13.651881+00:00**: resumed charge**1453.651881s**,
+cumulative**453372.185220s**, balance**5162.742760s** under
+unchanged ceiling458534.927980s; see[ledger](artifacts/near-bound-preparation-closing-ledger.json).
+No waits deducted or physical replay consumed. Commit/return remain chargeable.
+The next owner decision is execution admission for this concrete reviewed cut
+under an explicit remaining/new window, preserving every historical charge,
+physical cap and replay lineage; no further control design is proposed.
+
 ## Adopted control repair continuation — 2026-10-01
 
 Owner invocation of `/tmp/openwepp_cold_canopy_m1_control_repair_continuation.md`

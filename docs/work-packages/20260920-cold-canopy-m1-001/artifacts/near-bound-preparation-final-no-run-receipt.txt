@@ -1,0 +1,7 @@
+2026-10-01T19:46:35Z
+cwd=/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment
+argv=timeout 180 cargo test --offline --release -p openwepp-land-surface-energy --lib --features m1-trust-region-physical-stage,m1-trust-region-analytic-stage,m1-trust-region-controller-stage --no-run
+/bin/bash: line 7: rustc: command not found
+/bin/bash: line 8: cargo: command not found
+timeout: failed to execute process: No such file or directory (os error 2)
+exit=127

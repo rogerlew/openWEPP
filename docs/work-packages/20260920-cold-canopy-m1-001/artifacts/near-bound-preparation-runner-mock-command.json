@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-option1/separate-accuracy-runner-mock-check.py",
+    "--write-receipt"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-10-01T19:40:02.640640+00:00",
+  "elapsed_seconds": 4.346018355805427,
+  "exit_code": 0,
+  "scope": "Synthetic Python child only; no physical evaluation"
+}
