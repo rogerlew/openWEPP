@@ -1,0 +1,1622 @@
+{
+  "evidence_class": "Static extraction from retained executed terminal state; no new physical runs",
+  "physical_attempts": [
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0",
+        "stability_variant": "strict_reference"
+      },
+      "kind": "stability",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-476615a4d140ca531b69-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 2, entered_svd_factorizations: 3, raw_residual_max: 37.28136632866794, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 3, completed_face_pivots: 2, total_jacobi_sweeps: 22, refinement_scalar_operations: 3403, refinement_guard_events: 6636, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 3, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2356, coordinate_update_operations: 19, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 63, bvls05_mask_joins_completed: 63, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 4027447030223200.0, original_trust_radius: 4.0, reduced_face_radius: 4.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 3,
+        "completed_face_pivots": 2,
+        "total_jacobi_sweeps": 22,
+        "refinement_scalar_operations": 3403,
+        "refinement_guard_events": 6636,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 3,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2356,
+        "coordinate_update_operations": 19,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 63,
+        "bvls05_mask_joins_completed": 63,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.006399987,
+      "wall_seconds": 0.00658727,
+      "raw_operation_sha256": "b7f94f6e8ab78ef03b0cc3600eaaeefdd7834724937af0bcde6aa70610420157"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "kind": "reference",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-9eff508eb3c2f3cf9a6f-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 2752.0291779285826, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 7884335521576912.0, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 3825,
+        "refinement_guard_events": 6930,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2772,
+        "coordinate_update_operations": 21,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005648618,
+      "wall_seconds": 0.006494959,
+      "raw_operation_sha256": "63f0fe0fabf0be09f4023e0949516f1c6ea8f75a0673b5e19b8150d8ea7c6860"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P1"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-6c180db842530ce04f46-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 1, entered_svd_factorizations: 2, raw_residual_max: 2752.0291779285826, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 2, completed_face_pivots: 1, total_jacobi_sweeps: 14, refinement_scalar_operations: 3610, refinement_guard_events: 6785, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 2, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2560, coordinate_update_operations: 20, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 42, bvls05_mask_joins_completed: 42, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 240965566089.76636, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 2,
+        "completed_face_pivots": 1,
+        "total_jacobi_sweeps": 14,
+        "refinement_scalar_operations": 3610,
+        "refinement_guard_events": 6785,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 2,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2560,
+        "coordinate_update_operations": 20,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 42,
+        "bvls05_mask_joins_completed": 42,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005312599,
+      "wall_seconds": 0.005495567,
+      "raw_operation_sha256": "9689d9e5cd5bb6a98b800408bc97cb6de09454240f38c193bb0060bd2dd68d52"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P2"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-ae57efccf2c1d329ae92-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 1, entered_svd_factorizations: 2, raw_residual_max: 2752.0291779285826, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 2, completed_face_pivots: 1, total_jacobi_sweeps: 14, refinement_scalar_operations: 3610, refinement_guard_events: 6785, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 2, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2560, coordinate_update_operations: 20, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 42, bvls05_mask_joins_completed: 42, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 63306250.669223845, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 2,
+        "completed_face_pivots": 1,
+        "total_jacobi_sweeps": 14,
+        "refinement_scalar_operations": 3610,
+        "refinement_guard_events": 6785,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 2,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2560,
+        "coordinate_update_operations": 20,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 42,
+        "bvls05_mask_joins_completed": 42,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005529801,
+      "wall_seconds": 0.005838927,
+      "raw_operation_sha256": "f13ca31de8c578725c1e0c3f1a3142c9e9e10ffff345b51099fa70c66c9dbc7a"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P3"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-81b8d27d09eaf687f611-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 2, entered_svd_factorizations: 3, raw_residual_max: 937.5396269927355, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 3, completed_face_pivots: 2, total_jacobi_sweeps: 21, refinement_scalar_operations: 3403, refinement_guard_events: 6624, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 3, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2356, coordinate_update_operations: 19, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 63, bvls05_mask_joins_completed: 63, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, false, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 346.25520837613203, original_trust_radius: 2.0, reduced_face_radius: 1.9999996703339828, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 3,
+        "completed_face_pivots": 2,
+        "total_jacobi_sweeps": 21,
+        "refinement_scalar_operations": 3403,
+        "refinement_guard_events": 6624,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 3,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2356,
+        "coordinate_update_operations": 19,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 63,
+        "bvls05_mask_joins_completed": 63,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.00615922,
+      "wall_seconds": 0.006422983,
+      "raw_operation_sha256": "8be6a809c1d18039555e985229f624b42387d4ec33a39c055a8195bdfd550acd"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-4ad52f8e5552c88a19df-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 2, entered_svd_factorizations: 3, raw_residual_max: 119.09582345192192, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 3, completed_face_pivots: 2, total_jacobi_sweeps: 22, refinement_scalar_operations: 1773, refinement_guard_events: 3826, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 3, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 756, coordinate_update_operations: 9, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 63, bvls05_mask_joins_completed: 63, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, true, true, true, true, false, false, true, true, true, true, false, true, false, false, false, false, false, false, false, false], lambda: 405615593145331.0, original_trust_radius: 2.0, reduced_face_radius: 1.9999991336002714, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 3,
+        "completed_face_pivots": 2,
+        "total_jacobi_sweeps": 22,
+        "refinement_scalar_operations": 1773,
+        "refinement_guard_events": 3826,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 3,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 756,
+        "coordinate_update_operations": 9,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 63,
+        "bvls05_mask_joins_completed": 63,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005957197,
+      "wall_seconds": 0.006043159,
+      "raw_operation_sha256": "4e944f3b887a8a0e1dab2819d0c021afcfe679e873b1a5101a9bf7a7c60fef67"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P1"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-46447fbe673bf106377b-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 6, completed_face_pivots: 4, entered_svd_factorizations: 5, raw_residual_max: 517.5904618569352, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 5, completed_face_pivots: 4, total_jacobi_sweeps: 32, refinement_scalar_operations: 1543, refinement_guard_events: 3688, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 5, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 532, coordinate_update_operations: 7, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 0, bvls05_role_joins_completed: 0, bvls05_column_entry_tests_attempted: 0, bvls05_column_entry_tests_completed: 0, bvls05_mask_joins_attempted: 105, bvls05_mask_joins_completed: 105, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, false, true, true, true, false, false, false, true, true, true, false, true, false, false, false, false, false, false, false, false], lambda: 52286943178.11426, original_trust_radius: 3.0517578125e-5, reduced_face_radius: 3.0517578125e-5, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 5,
+        "completed_face_pivots": 4,
+        "total_jacobi_sweeps": 32,
+        "refinement_scalar_operations": 1543,
+        "refinement_guard_events": 3688,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 5,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 532,
+        "coordinate_update_operations": 7,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 0,
+        "bvls05_role_joins_completed": 0,
+        "bvls05_column_entry_tests_attempted": 0,
+        "bvls05_column_entry_tests_completed": 0,
+        "bvls05_mask_joins_attempted": 105,
+        "bvls05_mask_joins_completed": 105,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.009786448,
+      "wall_seconds": 0.00989459,
+      "raw_operation_sha256": "245764e17a805a64944914a6753fb23daf7bd0256b57147cc5261ca227bc2c48"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P2"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-e5a92eaae246bd1882ba-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 6, completed_face_pivots: 4, entered_svd_factorizations: 5, raw_residual_max: 75.23764216386991, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 5, completed_face_pivots: 4, total_jacobi_sweeps: 32, refinement_scalar_operations: 1543, refinement_guard_events: 3688, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 5, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 532, coordinate_update_operations: 7, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 0, bvls05_role_joins_completed: 0, bvls05_column_entry_tests_attempted: 0, bvls05_column_entry_tests_completed: 0, bvls05_mask_joins_attempted: 105, bvls05_mask_joins_completed: 105, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, false, true, true, true, false, false, false, true, true, true, false, true, false, false, false, false, false, false, false, false], lambda: 196787.61957848677, original_trust_radius: 7.62939453125e-6, reduced_face_radius: 7.62939453125e-6, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 5,
+        "completed_face_pivots": 4,
+        "total_jacobi_sweeps": 32,
+        "refinement_scalar_operations": 1543,
+        "refinement_guard_events": 3688,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 5,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 532,
+        "coordinate_update_operations": 7,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 0,
+        "bvls05_role_joins_completed": 0,
+        "bvls05_column_entry_tests_attempted": 0,
+        "bvls05_column_entry_tests_completed": 0,
+        "bvls05_mask_joins_attempted": 105,
+        "bvls05_mask_joins_completed": 105,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.010316618,
+      "wall_seconds": 0.010381441,
+      "raw_operation_sha256": "102ece61e9f4627ca3a1caccbdd63782581ab30ffdd894a4ee0145b428b226e8"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P3"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-f7b4339f279cd8eaac3b-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 6, completed_face_pivots: 2, entered_svd_factorizations: 3, raw_residual_max: 1016.0236599684088, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 3, completed_face_pivots: 2, total_jacobi_sweeps: 20, refinement_scalar_operations: 1773, refinement_guard_events: 3814, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 3, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 756, coordinate_update_operations: 9, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 63, bvls05_mask_joins_completed: 63, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, true, true, true, true, false, false, true, true, true, true, false, true, false, false, false, false, false, false, false, false], lambda: 363.66875027236347, original_trust_radius: 2.0, reduced_face_radius: 1.9999997759423054, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 3,
+        "completed_face_pivots": 2,
+        "total_jacobi_sweeps": 20,
+        "refinement_scalar_operations": 1773,
+        "refinement_guard_events": 3814,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 3,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 756,
+        "coordinate_update_operations": 9,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 63,
+        "bvls05_mask_joins_completed": 63,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005954127,
+      "wall_seconds": 0.00617263,
+      "raw_operation_sha256": "2a91b9b29422aefd86301a5568efd3d166a0f301f1f233893b1c042a274042e8"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0",
+        "stability_variant": "strict_reference"
+      },
+      "kind": "stability",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-3fd34fe246c25c5eac7b-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 8, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 679.9352376228999, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 8, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 1.3206836928127468e18, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 8,
+        "refinement_scalar_operations": 3825,
+        "refinement_guard_events": 6930,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2772,
+        "coordinate_update_operations": 21,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.004933083,
+      "wall_seconds": 0.005165531,
+      "raw_operation_sha256": "ad0596f66be2c1861831bf45168374253f1ad5f8186e2e5e93235330f67df9f0"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "kind": "reference",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-4439882fc8ae5020004e-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 8, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 141.61149682247412, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 8, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 617789946732928.0, original_trust_radius: 2.0, reduced_face_radius: 2.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 8,
+        "refinement_scalar_operations": 3825,
+        "refinement_guard_events": 6930,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2772,
+        "coordinate_update_operations": 21,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005727309,
+      "wall_seconds": 0.005813886,
+      "raw_operation_sha256": "391ac26ad2ecdc7ea288020d07056864b218500a1291fadadb5ddbae07772c10"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P1"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-b5012b067603fae39e6e-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 679.9352376228999, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 1087747931623.8057, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 3825,
+        "refinement_guard_events": 6930,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2772,
+        "coordinate_update_operations": 21,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.004920672,
+      "wall_seconds": 0.00502467,
+      "raw_operation_sha256": "cb1322a27225966885b3ffb1a198ff8f898a614ec7ae6da9d0dec28e736e462e"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P2"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-985bf7aeefc6fded1dd7-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 240.90826532612493, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 885456.5758992108, original_trust_radius: 4.0, reduced_face_radius: 4.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 3825,
+        "refinement_guard_events": 6930,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2772,
+        "coordinate_update_operations": 21,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005882802,
+      "wall_seconds": 0.006092783,
+      "raw_operation_sha256": "c83185abeb7639ad66c40964a15f4b71592ca0770e25f08b2b7a3afa76a74197"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P3"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-f94b281a63ce146c3153-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 6, completed_face_pivots: 1, entered_svd_factorizations: 2, raw_residual_max: 76.28317773520257, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 2, completed_face_pivots: 1, total_jacobi_sweeps: 13, refinement_scalar_operations: 3610, refinement_guard_events: 6785, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 2, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2560, coordinate_update_operations: 20, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 42, bvls05_mask_joins_completed: 42, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 1.1355752443965272, original_trust_radius: 8.0, reduced_face_radius: 7.999932994784222, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 2,
+        "completed_face_pivots": 1,
+        "total_jacobi_sweeps": 13,
+        "refinement_scalar_operations": 3610,
+        "refinement_guard_events": 6785,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 2,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2560,
+        "coordinate_update_operations": 20,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 42,
+        "bvls05_mask_joins_completed": 42,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.00672977,
+      "wall_seconds": 0.006998439,
+      "raw_operation_sha256": "1a82d7888ff78df586b0fbca8f66e52e721993d7c9a215c6116e26acb5a95fe7"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-c6a3ccdf01efba255b8b-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=1 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 8, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 828.8400054183568, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 8, refinement_scalar_operations: 2035, refinement_guard_events: 3980, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 1012, coordinate_update_operations: 11, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, true, true, true, true, true, false, true, true, true, true, true, true, false, false, false, false, false, false, false, false], lambda: 1.842399701758893e16, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 8,
+        "refinement_scalar_operations": 2035,
+        "refinement_guard_events": 3980,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 1012,
+        "coordinate_update_operations": 11,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.007401472,
+      "wall_seconds": 0.007596679,
+      "raw_operation_sha256": "34e0c62f40279db48d84711f8192d5e478de6c822ad5622a1f7a3887f120fd26"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P1"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-436bad7638f33a37cd8a-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 679.9352376228999, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 2035, refinement_guard_events: 3980, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 1012, coordinate_update_operations: 11, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, true, true, true, true, true, false, true, true, true, true, true, true, false, false, false, false, false, false, false, false], lambda: 1087620883677.0947, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 2035,
+        "refinement_guard_events": 3980,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 1012,
+        "coordinate_update_operations": 11,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005663256,
+      "wall_seconds": 0.008502611,
+      "raw_operation_sha256": "626cce3149fc91ece1e5b719dc12e66485a515f8641ac5b3055c21c97e966298"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P2"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-11a422b850b8fa92e1aa-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 263.2934466596528, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 2035, refinement_guard_events: 3980, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 1012, coordinate_update_operations: 11, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, true, true, true, true, true, false, true, true, true, true, true, true, false, false, false, false, false, false, false, false], lambda: 885988.399218414, original_trust_radius: 4.0, reduced_face_radius: 4.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 2035,
+        "refinement_guard_events": 3980,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 1012,
+        "coordinate_update_operations": 11,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005888587,
+      "wall_seconds": 0.006057142,
+      "raw_operation_sha256": "e2637134f4814d67422428b5861e3f64a11646150f904659f3dd3deece7a0fe4"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "B_mixed_to_liquid_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P3"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-4e9801d71fb91b18d0e9-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 679.9352376228999, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 2035, refinement_guard_events: 3980, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 1012, coordinate_update_operations: 11, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, true, true, true, true, true, false, true, true, true, true, true, true, false, false, false, false, false, false, false, false], lambda: 11980.081204515998, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 2035,
+        "refinement_guard_events": 3980,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 1012,
+        "coordinate_update_operations": 11,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.004952909,
+      "wall_seconds": 0.005904437,
+      "raw_operation_sha256": "86a48c5822f42aacd95eb175f5bc222a89c08fa8804ecc088fcbf298cdcae825"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0",
+        "stability_variant": "strict_reference"
+      },
+      "kind": "stability",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-bf1a27a6c3affd5baf72-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 4486.1108799366975, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 1.5188667631090647e18, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 3825,
+        "refinement_guard_events": 6930,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2772,
+        "coordinate_update_operations": 21,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005157662,
+      "wall_seconds": 0.005442036,
+      "raw_operation_sha256": "2a6a00e17d0522ebbc93ca7f683c0a92fbf08b7591bb228b6d8f4fe5657a30b3"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "kind": "reference",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-ac89876f6632742c0d40-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 4486.1108799366975, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 1.5188214891493888e16, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 3825,
+        "refinement_guard_events": 6930,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2772,
+        "coordinate_update_operations": 21,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005861428,
+      "wall_seconds": 0.006169653,
+      "raw_operation_sha256": "a190f936dc14210d6ec25f14c9a63bdec222700198bfdd1ccfe1ddd3945ee569"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P1"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-7616a5c8ac9efd4fcaee-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 1781.864637742886, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 3825, refinement_guard_events: 6930, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 2772, coordinate_update_operations: 21, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 9817343072.4935, original_trust_radius: 4.0, reduced_face_radius: 4.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 3825,
+        "refinement_guard_events": 6930,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 2772,
+        "coordinate_update_operations": 21,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.006562591,
+      "wall_seconds": 0.006853674,
+      "raw_operation_sha256": "ffc08dac2a9c2a5255214abbe678c9f400421df29de124202ad6266c87ee24c6"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P2"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-31a09ea4c64d90067db2-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_final_box\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 6, completed_face_pivots: 1, entered_svd_factorizations: 2, raw_residual_max: 4.9147058234666474e-5, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 2, completed_face_pivots: 1, total_jacobi_sweeps: 13, refinement_scalar_operations: 50352, refinement_guard_events: 52298, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 0, bvls04_factor_applications: 0, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 0, first_residual_operations: 903, second_dot2_operations: 11403, factor_application_operations: 37920, coordinate_update_operations: 40, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 42, bvls05_mask_joins_completed: 42, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: FinalBox, correction_position: Some(Second), guard_stage: FinalBoxLower, row: None, term: None, coordinate: Some(5), lower_active: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true], lambda: 0.0, original_trust_radius: 8.0, reduced_face_radius: 8.0, scratch_box_feasible: Some(false) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 2,
+        "completed_face_pivots": 1,
+        "total_jacobi_sweeps": 13,
+        "refinement_scalar_operations": 50352,
+        "refinement_guard_events": 52298,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 0,
+        "bvls04_factor_applications": 0,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 0,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 11403,
+        "factor_application_operations": 37920,
+        "coordinate_update_operations": 40,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 42,
+        "bvls05_mask_joins_completed": 42,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.007721366,
+      "wall_seconds": 0.008928953,
+      "raw_operation_sha256": "4e2d7015cb0fda9d7a4b031326ad0e1e53d80c60c49dae06f813372b5e21d869"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P3"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-6a7267fcea7879f26dff-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_final_box\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 6.088566789547258, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 54098, refinement_guard_events: 55996, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 0, bvls04_factor_applications: 0, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 0, first_residual_operations: 903, second_dot2_operations: 11403, factor_application_operations: 41664, coordinate_update_operations: 42, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: FinalBox, correction_position: Some(Second), guard_stage: FinalBoxLower, row: None, term: None, coordinate: Some(11), lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], lambda: 0.0, original_trust_radius: 8.0, reduced_face_radius: 8.0, scratch_box_feasible: Some(false) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 54098,
+        "refinement_guard_events": 55996,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 0,
+        "bvls04_factor_applications": 0,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 0,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 11403,
+        "factor_application_operations": 41664,
+        "coordinate_update_operations": 42,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.00791678,
+      "wall_seconds": 0.008058736,
+      "raw_operation_sha256": "88963cc9714740722ff6e3c67ec421bf905ab7bb320d89cb50259e124d69d983"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-6083bcf6038ac9ddde5f-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Own(Coupled(Vegetation(M1Error { code: \"VEG-E-142\", stage: MhConsistency })))",
+      "work": null,
+      "cpu_seconds": 0.006488225,
+      "wall_seconds": 0.006566364,
+      "raw_operation_sha256": "b8833b952b4d0048f7a91daad168c7cf90b642fd54f36717b85be5a4f00038e3"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P1"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-8d750b4d315edd6f7de5-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_final_box\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 7.681137503823265e-8, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 24558, refinement_guard_events: 26492, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 0, bvls04_factor_applications: 0, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 0, first_residual_operations: 903, second_dot2_operations: 11403, factor_application_operations: 12144, coordinate_update_operations: 22, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: FinalBox, correction_position: Some(Second), guard_stage: FinalBoxLower, row: None, term: None, coordinate: Some(11), lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, true, true, true, true, true, false, true, true, true, true, true, true, false, false, false, false, false, false, false, false], lambda: 0.0, original_trust_radius: 4.0, reduced_face_radius: 4.0, scratch_box_feasible: Some(false) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 24558,
+        "refinement_guard_events": 26492,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 0,
+        "bvls04_factor_applications": 0,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 0,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 11403,
+        "factor_application_operations": 12144,
+        "coordinate_update_operations": 22,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.006836946,
+      "wall_seconds": 0.006931538,
+      "raw_operation_sha256": "930037bad8630bb2fe53d4e9ed4bd2361ab880b33246fa039a9012007edf675b"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P2"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-0e9bec3f6c47970f289e-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=1 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_scratch_radius\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 0, entered_svd_factorizations: 1, raw_residual_max: 4348.913092375087, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 1, completed_face_pivots: 0, total_jacobi_sweeps: 7, refinement_scalar_operations: 2035, refinement_guard_events: 3980, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 1, bvls04_factor_applications: 1, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 3, first_residual_operations: 903, second_dot2_operations: 0, factor_application_operations: 1012, coordinate_update_operations: 11, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 21, bvls05_mask_joins_completed: 21, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: ScratchRadius, correction_position: Some(First), guard_stage: ScratchFullRadius, row: None, term: None, coordinate: None, lower_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, true, true, true, true, true, false, true, true, true, true, true, true, false, false, false, false, false, false, false, false], lambda: 61403035.11648852, original_trust_radius: 1.0, reduced_face_radius: 1.0, scratch_box_feasible: Some(true) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 1,
+        "completed_face_pivots": 0,
+        "total_jacobi_sweeps": 7,
+        "refinement_scalar_operations": 2035,
+        "refinement_guard_events": 3980,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 1,
+        "bvls04_factor_applications": 1,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 3,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 0,
+        "factor_application_operations": 1012,
+        "coordinate_update_operations": 11,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 21,
+        "bvls05_mask_joins_completed": 21,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.00681576,
+      "wall_seconds": 0.006937553,
+      "raw_operation_sha256": "c194c0de1b73ccc676c10b054ba6418866823d4fb4f46a1c2e3ae6d177dbb7c5"
+    },
+    {
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P3"
+      },
+      "kind": "diagnostic",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-c6-oracle/separate-accuracy-operation-1eefe6ca395d8cd5e01f-c6-current-wetness-replay01.json",
+      "first_failure": "support_id=0 controller_error=Subproblem(M1TrustRegionSubproblemRefusal { kind: TrustRegionRefinementIndeterminate, optimality_reason: Some(\"refinement_final_box\"), optimality_coordinate: None, optimality_radius: None, optimality_lambda: None, attempted_subproblems: 1, completed_jacobi_sweeps: 7, completed_face_pivots: 1, entered_svd_factorizations: 2, raw_residual_max: 312.5788447961513, work: M1TrustRegionWorkObservation { stage1_calls: 1, entered_svd_factorizations: 2, completed_face_pivots: 1, total_jacobi_sweeps: 14, refinement_scalar_operations: 22572, refinement_guard_events: 24536, refinement_attempted_entries: 1, refinement_denied_entries: 0, bvls04_positive_entries: 0, bvls04_factor_applications: 0, bvls04_dot2_residual_rows: 0, bvls04_dot2_free_gradients: 0, bvls04_ordered_norms: 0, first_residual_operations: 903, second_dot2_operations: 11403, factor_application_operations: 10160, coordinate_update_operations: 20, whole_kkt_operations: 0, whole_kkt_guard_events: 0, upward_enclosure_operations: 0, upward_enclosure_guard_events: 0, bvls05_role_joins_attempted: 6, bvls05_role_joins_completed: 6, bvls05_column_entry_tests_attempted: 252, bvls05_column_entry_tests_completed: 252, bvls05_mask_joins_attempted: 42, bvls05_mask_joins_completed: 42, bvls05_held_base_copies_attempted: 0, bvls05_held_base_copies_completed: 0 }, refinement: Some(M1TrustRegionRefinementFailureMetadata { reason: FinalBox, correction_position: Some(Second), guard_stage: FinalBoxLower, row: None, term: None, coordinate: Some(5), lower_active: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false], upper_active: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false], free: [false, true, true, true, true, true, false, true, true, true, true, false, true, false, false, false, false, false, false, false, false], lambda: 0.0, original_trust_radius: 8.0, reduced_face_radius: 7.994611448558302, scratch_box_feasible: Some(false) }), budget_refusal: None })",
+      "work": {
+        "stage1_calls": 1,
+        "entered_svd_factorizations": 2,
+        "completed_face_pivots": 1,
+        "total_jacobi_sweeps": 14,
+        "refinement_scalar_operations": 22572,
+        "refinement_guard_events": 24536,
+        "refinement_attempted_entries": 1,
+        "refinement_denied_entries": 0,
+        "bvls04_positive_entries": 0,
+        "bvls04_factor_applications": 0,
+        "bvls04_dot2_residual_rows": 0,
+        "bvls04_dot2_free_gradients": 0,
+        "bvls04_ordered_norms": 0,
+        "first_residual_operations": 903,
+        "second_dot2_operations": 11403,
+        "factor_application_operations": 10160,
+        "coordinate_update_operations": 20,
+        "whole_kkt_operations": 0,
+        "whole_kkt_guard_events": 0,
+        "upward_enclosure_operations": 0,
+        "upward_enclosure_guard_events": 0,
+        "bvls05_role_joins_attempted": 6,
+        "bvls05_role_joins_completed": 6,
+        "bvls05_column_entry_tests_attempted": 252,
+        "bvls05_column_entry_tests_completed": 252,
+        "bvls05_mask_joins_attempted": 42,
+        "bvls05_mask_joins_completed": 42,
+        "bvls05_held_base_copies_attempted": 0,
+        "bvls05_held_base_copies_completed": 0
+      },
+      "cpu_seconds": 0.005801886,
+      "wall_seconds": 0.006026332,
+      "raw_operation_sha256": "a895f937e8f83c18a6d8c435b903643cd8b2e54d14f4a649c226aaaaecd184e0"
+    }
+  ],
+  "work_ranges_over_records_with_counters": {
+    "bvls04_dot2_free_gradients": [
+      0,
+      0
+    ],
+    "bvls04_dot2_residual_rows": [
+      0,
+      0
+    ],
+    "bvls04_factor_applications": [
+      0,
+      1
+    ],
+    "bvls04_ordered_norms": [
+      0,
+      3
+    ],
+    "bvls04_positive_entries": [
+      0,
+      5
+    ],
+    "bvls05_column_entry_tests_attempted": [
+      0,
+      252
+    ],
+    "bvls05_column_entry_tests_completed": [
+      0,
+      252
+    ],
+    "bvls05_held_base_copies_attempted": [
+      0,
+      0
+    ],
+    "bvls05_held_base_copies_completed": [
+      0,
+      0
+    ],
+    "bvls05_mask_joins_attempted": [
+      21,
+      105
+    ],
+    "bvls05_mask_joins_completed": [
+      21,
+      105
+    ],
+    "bvls05_role_joins_attempted": [
+      0,
+      6
+    ],
+    "bvls05_role_joins_completed": [
+      0,
+      6
+    ],
+    "completed_face_pivots": [
+      0,
+      4
+    ],
+    "coordinate_update_operations": [
+      7,
+      42
+    ],
+    "entered_svd_factorizations": [
+      1,
+      5
+    ],
+    "factor_application_operations": [
+      532,
+      41664
+    ],
+    "first_residual_operations": [
+      903,
+      903
+    ],
+    "refinement_attempted_entries": [
+      1,
+      1
+    ],
+    "refinement_denied_entries": [
+      0,
+      0
+    ],
+    "refinement_guard_events": [
+      3688,
+      55996
+    ],
+    "refinement_scalar_operations": [
+      1543,
+      54098
+    ],
+    "second_dot2_operations": [
+      0,
+      11403
+    ],
+    "stage1_calls": [
+      1,
+      1
+    ],
+    "total_jacobi_sweeps": [
+      7,
+      32
+    ],
+    "upward_enclosure_guard_events": [
+      0,
+      0
+    ],
+    "upward_enclosure_operations": [
+      0,
+      0
+    ],
+    "whole_kkt_guard_events": [
+      0,
+      0
+    ],
+    "whole_kkt_operations": [
+      0,
+      0
+    ]
+  },
+  "counter_limit": "Refusal counters describe reached subproblem work, not full failed-attempt totals. Category counters can overlap. No time conversion inferred.",
+  "budget_arithmetic": {
+    "joint_solves_per_day": 1440,
+    "mean_cpu_us_per_solve": 0.3472222222222222,
+    "mean_wall_us_per_solve": 0.3819444444444444,
+    "regime_cpu_us_per_solve": [
+      0.5208333333333334,
+      1.0416666666666667,
+      1.7361111111111112
+    ]
+  },
+  "completed_day_cost": null,
+  "native_owner_receiver_cost": null,
+  "source_pins": {
+    "c6-oracle-terminal-state.json": "1a299ed8fefb87bee9a6603e580c9cd058ce1828017f5c04923e79a12eef5432",
+    "c6-oracle-results.json": "1a15e799ef17d6fbcdd68b3b007b8704451a3c3f26d844f541bd467b7e617626",
+    "cost-attribution-summary.json": "633d039ee9e89c1abb4108c3dd6eac677d524c280d07ec17cbbfc9c3b1950d44",
+    "cost-attribution-decision-bounds.json": "d679861793c9969ff7b2884b26196dc73d3b81f22a111aea3ed2dc62cc74ac67",
+    "cost-attribution-independent-review.json": "3751e9ef5d9e158f6fd3d984581f9dbc5d145d1c973c26a2cda0fef17f65883b"
+  },
+  "historical_component_cost_evidence": {
+    "scope": "Accepted unchanged historical R/D/E G4 fresh proposal seam, not current witness timing or completed day. No new benchmark.",
+    "reference_R_median_us": {
+      "initialization": {
+        "cpu": 100.30534374999999,
+        "wall": 104.387296875
+      },
+      "proposal": {
+        "cpu": 896.6793125,
+        "wall": 901.3091875
+      },
+      "combined": {
+        "cpu": 1000.6180625,
+        "wall": 1010.4266875000001
+      }
+    },
+    "E_exclusive_wall_component_median_us": {
+      "initialization": {
+        "natural_fd_core": {
+          "wall_us": 59.6905625,
+          "calls": 39.0
+        },
+        "unassigned": {
+          "wall_us": 19.52878125,
+          "calls": null
+        },
+        "natural_jacobian": {
+          "wall_us": 15.19,
+          "calls": 1.0
+        },
+        "natural_base_core": {
+          "wall_us": 2.548,
+          "calls": 1.0
+        },
+        "selected_jacobian": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "selected_base_core": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "selected_fd_core": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "other_core": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "stage1": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "svd": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "damping": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "refinement": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "refinement_svd": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "refinement_damping": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "active_kkt": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "acceptance": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        }
+      },
+      "proposal": {
+        "svd": {
+          "wall_us": 327.457,
+          "calls": 4.0
+        },
+        "stage1": {
+          "wall_us": 215.23039062499998,
+          "calls": 2.0
+        },
+        "damping": {
+          "wall_us": 166.52157812500002,
+          "calls": 4.0
+        },
+        "refinement": {
+          "wall_us": 79.161390625,
+          "calls": 4.0
+        },
+        "selected_fd_core": {
+          "wall_us": 34.056515625,
+          "calls": 40.0
+        },
+        "unassigned": {
+          "wall_us": 20.178281249999998,
+          "calls": null
+        },
+        "active_kkt": {
+          "wall_us": 17.249625,
+          "calls": 6.0
+        },
+        "selected_jacobian": {
+          "wall_us": 8.308171875,
+          "calls": 1.0
+        },
+        "selected_base_core": {
+          "wall_us": 1.019890625,
+          "calls": 1.0
+        },
+        "other_core": {
+          "wall_us": 0.9854375,
+          "calls": 1.0
+        },
+        "natural_jacobian": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "natural_base_core": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "natural_fd_core": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "refinement_svd": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "refinement_damping": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "acceptance": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        }
+      },
+      "combined": {
+        "svd": {
+          "wall_us": 327.457,
+          "calls": 4.0
+        },
+        "stage1": {
+          "wall_us": 215.23039062499998,
+          "calls": 2.0
+        },
+        "damping": {
+          "wall_us": 166.52157812500002,
+          "calls": 4.0
+        },
+        "refinement": {
+          "wall_us": 79.161390625,
+          "calls": 4.0
+        },
+        "natural_fd_core": {
+          "wall_us": 59.6905625,
+          "calls": 39.0
+        },
+        "unassigned": {
+          "wall_us": 39.631625,
+          "calls": null
+        },
+        "selected_fd_core": {
+          "wall_us": 34.056515625,
+          "calls": 40.0
+        },
+        "active_kkt": {
+          "wall_us": 17.249625,
+          "calls": 6.0
+        },
+        "natural_jacobian": {
+          "wall_us": 15.19,
+          "calls": 1.0
+        },
+        "selected_jacobian": {
+          "wall_us": 8.308171875,
+          "calls": 1.0
+        },
+        "natural_base_core": {
+          "wall_us": 2.548,
+          "calls": 1.0
+        },
+        "selected_base_core": {
+          "wall_us": 1.019890625,
+          "calls": 1.0
+        },
+        "other_core": {
+          "wall_us": 0.9854375,
+          "calls": 1.0
+        },
+        "refinement_svd": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "refinement_damping": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        },
+        "acceptance": {
+          "wall_us": 0.0,
+          "calls": 0.0
+        }
+      }
+    },
+    "stage1_free_conditional_wall_speedup": {
+      "proposal": 13.367661203451057,
+      "combined": 6.0342073170991615
+    },
+    "limits": "No component CPU attribution. No current complete-day count distribution, native owner/receiver, hydraulics/materialization total, or redesigned-method cost. Nested timing/counter categories cannot be summed; conditional opportunities cannot be multiplied."
+  },
+  "repair_feasibility": "No demonstrated local correction or measured work/cost reduction can be recommended. Strict guard removal would not establish target compliance. A separately authorized observation-only capture would add diagnostics, not reduce physical work; no native cost improvement is claimed.",
+  "fixed_witness_raw_identities": {
+    "W1": {
+      "raw_member": "run-tools-c6-oracle/separate-accuracy-operation-9eff508eb3c2f3cf9a6f-c6-current-wetness-replay01.json",
+      "sha256": "63f0fe0fabf0be09f4023e0949516f1c6ea8f75a0673b5e19b8150d8ea7c6860",
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "A_cold_ice_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "kind": "reference",
+      "support_id": 0
+    },
+    "W2": {
+      "raw_member": "run-tools-c6-oracle/separate-accuracy-operation-31a09ea4c64d90067db2-c6-current-wetness-replay01.json",
+      "sha256": "4e2d7015cb0fda9d7a4b031326ad0e1e53d80c60c49dae06f813372b5e21d869",
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "FULL",
+        "investigation": "A",
+        "profile": "P2"
+      },
+      "kind": "diagnostic",
+      "support_id": 0
+    },
+    "W3": {
+      "raw_member": "run-tools-c6-oracle/separate-accuracy-operation-6083bcf6038ac9ddde5f-c6-current-wetness-replay01.json",
+      "sha256": "b8833b952b4d0048f7a91daad168c7cf90b642fd54f36717b85be5a4f00038e3",
+      "cell": {
+        "cadence_seconds": 60,
+        "case": "C_freeze_then_melt_day",
+        "formulation": "REDUCED",
+        "investigation": "A",
+        "profile": "P0"
+      },
+      "kind": "diagnostic",
+      "support_id": 0
+    }
+  }
+}

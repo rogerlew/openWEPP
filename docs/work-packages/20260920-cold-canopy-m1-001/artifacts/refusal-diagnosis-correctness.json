@@ -1,0 +1,166 @@
+{
+  "reviewer": {
+    "role": "independent correctness/authority reviewer",
+    "task": "/root/correctness",
+    "independence": "No authorship of the recovered source, retained C6 runs, work inventory, or implementation report; no physical, core, Jacobian, or solver command was run."
+  },
+  "evidence_class": "Static review of authenticated retained execution evidence and recovered source; Ran only read-only archive/source receipt authentication and offline metadata decoding. No result-bearing witness was captured.",
+  "scope": {
+    "owner_prompt": "/tmp/openwepp_cold_canopy_m1_refusal_diagnosis_continuation.md",
+    "source_identity": "e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3",
+    "source_path": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-diagnosis-20261001/source",
+    "reviewed_primary_evidence": [
+      "artifacts/c6-oracle-results.json",
+      "artifacts/c6-oracle-terminal-state.json",
+      "artifacts/c6-oracle-terminal-correctness-review.json",
+      "artifacts/c6-oracle-run-evidence.tar.gz",
+      "artifacts/c6-oracle-source-cut02.json",
+      "artifacts/c6-oracle-source-cut02.tar.gz",
+      "artifacts/c6-oracle-partial-reconstruction-input.json",
+      "artifacts/c6-oracle-partial-reconstruction-report.json",
+      "artifacts/refusal-diagnosis-work-inventory.json",
+      "artifacts/refusal-diagnosis-implementation.json"
+    ],
+    "authority": [
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md COLD-CANOPY-M1-TR-SVD-BVLS-03/04",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/interface.md",
+      "docs/specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/common-details.md",
+      "docs/specifications/science-contracts/contracts/SC-VEGETATION-001.md OPENWEPP_C3_WOODY_COLD_M1_V1",
+      "docs/standards/numerical-solver-architecture.md"
+    ]
+  },
+  "authentication": {
+    "source_archive_sha256_ran": "0ba5b7ad999c30ac5ad475417d3d824cc7feec33114c81b1eecc677a378a9fea",
+    "run_archive_sha256_ran": "7acbe07f32a19ea1091abfd6f9725efdefbffe9f4376e464972caac834ac68e8",
+    "source_receipt_entries_independently_verified": 772,
+    "source_receipt_result": "PASS, including exact readlink targets for the seven receipt-recorded links",
+    "instrumentation_diff": "none",
+    "sealed_instrumented_build_receipt": null,
+    "capture_invocations": 0
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "status": "BLOCKS_CAUSAL_OR_REPAIR_CLAIM",
+      "location": [
+        "artifacts/refusal-diagnosis-implementation.json raw_operand_status/instrumentation",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs refinement_check_positive_first_scratch_full_radius/refinement_check_positive_first_scratch_reduced_radius/refinement_check_final_candidate",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs M1PhysicalTrustRegionAdapter and reduced reconstruction"
+      ],
+      "finding": "The retained W1/W2 records identify the reached strict guards but omit the actual compared vectors, sums, norms, bounds, corrections, scales, base, Jacobian and residual operands. No observation-only hook, build receipt, or capture exists. Therefore the required signed violation and ULP distance cannot be reconstructed, and neither rounding/conditioning nor a bad correction/map can be distinguished.",
+      "evidence": "W1 retains ScratchFullRadius, positive lambda, masks, counters, and equal recorded original/reduced radii only. W2 retains FinalBoxLower at coordinate 5, masks, counters, and scratch_box_feasible=false only. The C6 partial-reconstruction operands belong to two accepted REDUCED support-0 records, not these rejected W1/W2 trials.",
+      "required_disposition": "Classify both causes as insufficient evidence. Do not recommend a tolerance, guard, clamp, correction, solver replacement, or replay from these records."
+    },
+    {
+      "severity": "HIGH",
+      "status": "EVIDENCE_GAP; PRIOR_REPORTING_DEFECT_RESOLVED",
+      "location": [
+        "artifacts/refusal-diagnosis-implementation.json static_sites.W3",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs:179",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs:243",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs:436",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs:496",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1225",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2626"
+      ],
+      "finding": "The raw `Own(Coupled(Vegetation(VEG-E-142/MhConsistency))` taxonomy does not encode its call site or predicate. The same code/stage can arise from M/H construction, an empty reservoir where a wet temperature is required, or temperature-Jacobian M/H failure; the adapter can propagate Own during reduced reconstruction, base/core work, phase selection/probing, or candidate evaluation. The implementation report initially narrowed W3 to from_mass_enthalpy, then corrected static_sites.W3 and parent_corrections to state that the phase-join call is only a possible source and the actual call/predicate is unknown.",
+      "evidence": "W3 retains no M/H/T bits, occupancy, coordinate index, phase-join role, proposal/base identity, or work observation. `from_mass_enthalpy` itself has multiple rejecting predicates: nonfinite M/H, M<0, M==0 with H!=0, and a diagnosed temperature outside 258.15..=373.15 K. Other reachable vegetation paths reuse VEG-E-142/MhConsistency. The typed error alone cannot select among them.",
+      "required_disposition": "Verified incorporated: retain `exact call site and rejecting predicate unknown` and do not infer a phase when construction may have failed."
+    },
+    {
+      "severity": "MEDIUM",
+      "status": "RUNTIME_FEASIBILITY_UNESTABLISHED",
+      "location": [
+        "artifacts/refusal-diagnosis-work-inventory.json",
+        "artifacts/c6-oracle-results.json"
+      ],
+      "finding": "The work inventory is useful adverse evidence but cannot support a deployable repair decision. It has 27 unique failed attempts, no completed day, no native owner/receiver cost, and no component timing that maps the observed operation counts to the 0.347222 microsecond mean CPU allowance per joint solve.",
+      "evidence": "Failed partial attempts span 4.920672-10.316618 ms CPU and 5.024670-10.381441 ms wall. Reached refinement counters span 1,543-54,098 scalar operations, 3,688-55,996 guards, 1-5 factorizations, and 7-32 Jacobi sweeps where counters exist. These are partial-failure observations, not completed-solve or completed-day costs, and category counters can overlap.",
+      "required_disposition": "Retain the 500 us CPU/550 us wall OFE-day and regime/century targets. State that feasibility is unestablished and that diagnosis does not authorize a repair or performance campaign."
+    }
+  ],
+  "witness_review": {
+    "W1": {
+      "identity": "A_cold_ice_day FULL/P0 60 s support0, original reference invocation reused by A",
+      "retained_outcome": "TrustRegionRefinementIndeterminate/refinement_scratch_radius, First/ScratchFullRadius; all 21 coordinates free; lambda=7884335521576912.0 (0x433c02c2ea0db7d0); original radius=1.0 (0x3ff0000000000000); reduced radius=1.0; scratch box feasible",
+      "canonical_static_arithmetic": "For positive lambda, p1 is formed from p0 plus the first retained shifted-factor correction. Its ordered full norm is recomputed over coordinates 0..20 and strictly compared as full_norm > input.initial_radius; its ordered free norm is separately compared with solution.radius. Source uses input.initial_radius for the full comparison; no radius-routing defect was found.",
+      "known": "The recorded reason/stage and reached counters are consistent with the canonical BVLS-04 strict scratch-full-radius refusal path.",
+      "unknown": "p0, delta0, p1, ordered square terms/sum/norm, fixed-coordinate contribution, scaled bounds, A/f/J/scales, factor values/order, signed excess, and ULP distance.",
+      "cause": "INSUFFICIENT_EVIDENCE; source-conforming guard outcome is shown, but correctness of the actual proposal and whether the excess is material or rounding-scale are not."
+    },
+    "W2": {
+      "identity": "C_freeze_then_melt_day FULL/P2 60 s support0",
+      "retained_outcome": "TrustRegionRefinementIndeterminate/refinement_final_box, Second/FinalBoxLower at coordinate 5; lambda=+0.0 (0x0000000000000000); original radius=8.0 (0x4020000000000000); reduced radius=8.0; scratch box infeasible; coordinate 11 lower-active after one face pivot",
+      "canonical_static_arithmetic": "The zero-lambda BVLS-03 branch permits private p1 to be box-infeasible between its two corrections. After p2, refinement_box_admit scans coordinates in ascending order and refuses strictly when p2[column] < prepared.scaled_lower[column] or > prepared.scaled_upper[column]. This ordering and refusal match the contract.",
+      "known": "The record identifies the lower-bound comparison at coordinate 5 and a source-conforming final-box refusal class.",
+      "unknown": "p2[5], scaled_lower[5], their binary64 subtraction/ULP distance, p0/p1/delta0/delta1, original physical bound/base/scale map, A/f/J/scales, and whether the second correction or mapping is wrong.",
+      "cause": "INSUFFICIENT_EVIDENCE; no guard defect is demonstrated and no actual inequality reconstruction is possible."
+    },
+    "W3": {
+      "identity": "C_freeze_then_melt_day REDUCED/P0 60 s support0",
+      "retained_outcome": "Own(Coupled(Vegetation(VEG-E-142/MhConsistency))); no work record",
+      "canonical_static_arithmetic": "M1 authority requires M>=0, M=0 implies H=0, and a nonempty equilibrium inverse with a finite admitted temperature. The implementation's from_mass_enthalpy diagnoses liquid/mixed/ice by H relative to 0 and -Lf*M and rejects nonfinite or out-of-domain results, but VEG-E-142/MhConsistency is shared by other M/H-dependent predicates.",
+      "known": "A typed fail-closed M/H-family error occurred before any returned trust-region work observation.",
+      "unknown": "Exact call site, base/proposal/probe role, occupancy/index, M/H/T bits, phase-join provenance, predicate, and whether the reduced map, derivative/control response, or supplied state produced it. Phase is undefined if construction failed.",
+      "cause": "INSUFFICIENT_EVIDENCE; even attribution specifically to from_mass_enthalpy is unproved."
+    }
+  },
+  "noninterference_review": {
+    "status": "PASS_FOR_NO_CHANGE",
+    "statement": "Recovered source matches all 772 receipt entries and has no instrumentation change. Consequently there is no instrumented behavior to approve, no build receipt to seal, and no capture readiness. Zero witness invocations correctly preserves the finite slots rather than spending them without reviewed observation coverage."
+  },
+  "fix_verification": {
+    "evidence_class": "Static same-reviewer reinspection",
+    "artifact": "artifacts/refusal-diagnosis-implementation.json",
+    "status": "PASS",
+    "verified": [
+      "W1 now states that the full p1 norm uses input.initial_radius and the reduced p1 norm separately uses solution.radius; it claims no routing defect or reconstructed violation.",
+      "W2 now acknowledges the retained masks, lambda, radii, correction position and coordinate while preserving that p2/bound/correction operands are absent.",
+      "W3 now enumerates constructor predicates only as static possibilities, identifies phase join only as a possible source, states the actual call/predicate is unknown, and assigns no canonical phase."
+    ],
+    "source_change": "none"
+  },
+  "final_text_verification": {
+    "evidence_class": "Static same-reviewer verification of the leading package terminal disposition and pinned work inventory",
+    "reviewed_text": "docs/work-packages/20260920-cold-canopy-m1-001/package.md from `Diagnostic disposition` through `Independent terminal reviews and exact-diff/accounting checks follow below`",
+    "reviewed_inventory": "artifacts/refusal-diagnosis-work-inventory.json",
+    "status": "PASS",
+    "findings": [],
+    "verified": [
+      "W1 states only the binary64 branch implication full_norm > original radius and explicitly leaves the actual norm, excess magnitude, ULP distance, exact-real comparison, and cause unknown; it preserves the separate full/original and free/reduced radius routes.",
+      "W2 states only the binary64 branch implication p2[5] < scaled_lower[5]. It correctly identifies coordinate 5 statically as first-occupancy drainage, gives the underlying physical unit kg m^-2 s^-1, keeps the compared step/bound dimensionless, and says the actual physical-to-scaled operands and reached map provenance are absent.",
+      "W3 preserves the shared-taxonomy ambiguity, missing call/predicate/operand provenance, and undefined canonical phase when construction may have failed.",
+      "The text does not convert recorded branch direction into a reconstructed subtraction, ULP claim, higher-precision result, conditioning diagnosis, implementation defect, or broader-class generalization.",
+      "The work inventory source pins match the five retained artifact SHA-256 values. Counts and ranges reconcile: 27 unique failed attempts, 26 with counters, 1-5 SVDs, 7-32 sweeps, 1,543-54,098 refinement scalar operations, and 3,688-55,996 guard events; W1 and W2 exact counts match their retained records.",
+      "Historical G4 component costs are clearly labeled as an unchanged different fresh-proposal seam, wall-only for component attribution, conditional rather than forecast, and lacking current completed-day/native owner-receiver cost.",
+      "Recommendation (c) now states that no supported work/cost model establishes feasibility against the 0.347222 microsecond CPU allowance; it does not claim proof that every possible model misses. It retains missing operands and no completed day as separate blockers and launches no repair or follow-on execution."
+    ],
+    "same_reviewer_fix_verification": "PASS after the parent replaced the initially overstrong wording `no supported work/cost model meets` with `no supported work/cost model establishes feasibility against`.",
+    "approval": "No blocking correctness or authority finding remains in the reviewed terminal text. Approval remains limited to the option (c) insufficient-evidence/runtime-feasibility disposition and HOLD_NO_COMPLETED_DAY."
+  },
+  "residual_risk_and_missing_tests": [
+    "No actual W1/W2 inequality operand set exists, so exact, higher-precision, signed-violation, and ULP reconstruction were not performed.",
+    "No W3 call-site or operand capture exists, so the rejecting predicate and state provenance remain unresolved.",
+    "The 22 unique scratch, four final-box, and one M/H failures may share mechanisms within a class, but one uncaptured representative cannot be generalized and cross-profile generalization is unsupported.",
+    "No complete day, matched accuracy comparison, native component cost, or completed-day runtime exists."
+  ],
+  "recommendation": {
+    "option": "c",
+    "statement": "Insufficient evidence and runtime feasibility. No demonstrated local correction or justified replacement is available. The precise missing facts are the naturally reached actual W1/W2 operand streams through the strict comparisons and W3's exact emitting call site plus M/H/T operands/provenance, all under independently reviewed observation-only custody; separately, deployability needs native component cost evidence against the retained per-day budget.",
+    "ordering": [
+      "First resolve W3 emitting predicate/provenance and W1/W2 actual arithmetic without changing guards or solver decisions.",
+      "Then decide whether any class is a bad state/proposal, implementation defect, or conditioning limit.",
+      "Only a separately authorized correction or replacement may establish completed-day correctness and cost."
+    ]
+  },
+  "verdict": {
+    "status": "PASS_ONLY_FOR_NO_CAPTURE_OPTION_C_DISPOSITION",
+    "approval": "No correctness blocker to preserving the authenticated source and returning the corrected insufficient-evidence/runtime-feasibility diagnosis. The implementation report's W1/W2 extent/routing and W3 attribution defects were corrected and verified; it does not claim the missing arithmetic was reconstructed.",
+    "not_approved": [
+      "causal diagnosis of W1, W2, or W3",
+      "any local numerical/physics/guard/tolerance repair",
+      "solver replacement",
+      "runtime feasibility or deployment"
+    ]
+  }
+}

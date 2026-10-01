@@ -1,0 +1,60 @@
+{
+  "evidence_class": "Static",
+  "source_identity": "e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3",
+  "recovered_source": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-diagnosis-20261001/source",
+  "source_custody": {
+    "archive_sha256": "0ba5b7ad999c30ac5ad475417d3d824cc7feec33114c81b1eecc677a378a9fea",
+    "receipt_entries_verified": 772,
+    "archive_members": 765,
+    "receipt_link_restoration": "The archive omitted seven receipt-recorded links. Each was restored only into the new non-symlink source directory with its exact receipt target, then readlink and every regular-file digest were verified.",
+    "restored_links": [
+      ".config",
+      ".venv",
+      "assurance",
+      "docs",
+      "src",
+      "tests",
+      "tools"
+    ]
+  },
+  "run_custody": {
+    "archive_sha256": "7acbe07f32a19ea1091abfd6f9725efdefbffe9f4376e464972caac834ac68e8",
+    "members_verified": 48
+  },
+  "raw_operand_status": {
+    "W1": "Missing: retained result has refusal metadata, masks, lambda and radii but not base/candidate/scratch vectors, corrections, norms, bounds, maps, or binary64 operands.",
+    "W2": "Missing: retained result has final-box metadata, masks, lambda, radii, correction position and coordinate, but not the compared coordinate values, scaled bounds or correction operands.",
+    "W3": "Missing: retained result identifies VEG-E-142/MhConsistency but does not retain rejected M/H/T operands, index, provenance, or call-site role."
+  },
+  "static_sites": {
+    "W1": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8400-8450 computes `(full_norm2, full_norm) = bvls04_ordered_norm(scratch.p1, all 21 IDs)` and strictly refuses when `full_norm > refinement_test_radius`; for normal builds the latter is `input.initial_radius` (refinement_prepare_first_scratch:8255-8287); the reduced free-coordinate norm is separately compared to `solution.radius`. Retained result says FULL/P0 support0, lambda 7884335521576912, original and reduced-face radius 1, all 21 free, first correction and ScratchFullRadius. It does not retain either norm, scratch vector, scaled mapping, or operands, so this establishes the guard only, not a violated numerical inequality or its cause.",
+    "W2": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8740-8795 first admits active coordinates, then calls `refinement_box_admit(prepared, p2, None, work)` and strictly refuses the returned coordinate/stage as FinalBox. Inventory reports FULL/P2 support0, lambda 0, radius 8, lower-active 11/free 20 and final lower coordinate 5. The retained evidence lacks p2, bound, scaled/physical coordinate identity and correction provenance; neither an arithmetic reconstruction nor a broader-class conclusion is supported.",
+    "W3": "crates/openwepp-vegetation/src/cold_canopy_m1.rs:179-200 contains the constructor predicates that can emit `VEG-E-142/MhConsistency`: nonfinite M/H, M<0, M==0 with H!=0, or a nonfinite/out-of-[258.15,373.15] derived wet temperature. `crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:4678-4705` calls it for each occupancy from trial coordinates base+3/base+4 before phase-join classification, with direction base+3..5. The W3 record lacks the rejected trial M/H bits, occupancy/base, direction and original/current provenance, so no canonical phase can be assigned to the rejected state from this evidence and no mapping/derivative defect is demonstrated. The recorded error stage alone does not uniquely identify this call: temperature_jacobian and reservoir residual paths also emit MhConsistency. The phase-join call is a possible source location, not a witnessed call site; the actual predicate remains unknown."
+  },
+  "instrumentation": {
+    "status": "NOT_READY",
+    "changes": [],
+    "reason": "No observation-only capture hook was added before independent design review. The retained operands are insufficient, but a hook must serialize ordered binary64 operands without changing evaluation count, work counters, arithmetic order, precision, or decisions. No result-bearing invocation is authorized before a sealed independent receipt."
+  },
+  "validation": {
+    "performed": [
+      "source receipt hash and all 772 entries",
+      "run receipt hash and all 48 members",
+      "static guard inspection"
+    ],
+    "not_run": [
+      "format",
+      "no-run build",
+      "source-bearing lint comparison",
+      "physical or solver invocation"
+    ],
+    "first_relevant_failure": "Source archive omitted all seven receipt-recorded symlink entries; restored exact links from the receipt as directed, after confirming each recorded target exists."
+  },
+  "disposition": "Insufficient evidence/runtime feasibility. W1/W2 are strictly fail-closed numerical-admission guards whose actual operands are absent; W3 is a typed state-domain guard whose actual triggering predicate, operands and provenance are absent. SC-VEGETATION-001 INV-VEGETATION-072 requires finite scale-aware safeguarded solves with rollback on nonconvergence; nothing in the retained evidence supports loosening any guard. The blocking first fact is a reviewed, noninterfering naturally reached dump of the named first refusal with all requested ordered binary64 operands. Existing test-only refinement trace cannot capture runner execution without new plumbing.",
+  "acceptance_remaining": "Independent review of any detached failure-dump design and sealed custody/build receipt are required before the three fixed, naturally reached witness captures. No numerical repair, guard change, build, or capture occurred.",
+  "parent_corrections": [
+    "Corrected W1 original versus reduced radius routing after parent and independent reviewer inspected source; no routing defect found.",
+    "Removed unsupported unique from_mass_enthalpy attribution for W3; exact rejected call/predicate is unproved.",
+    "Corrected W2 retained-field description: metadata beyond class is present."
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "reviewer": "/root/qa",
+  "role": "independent QA/evidence review",
+  "evidence_class": "Static; no build, lint, test, instrumentation, capture, core, Jacobian, or solver invocation was run by this reviewer",
+  "scope": "QA and evidence review of the owner-invoked refusal diagnosis, its custody/recovery, accounting, static extraction, and work-cost inventory. No production, configuration, package-record, or scientific-authority file was edited.",
+  "findings": [
+    {
+      "severity": "BLOCKER_FOR_REPAIR_OR_ACTUAL_DIAGNOSIS",
+      "paths": [
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-diagnosis-implementation.json",
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-diagnosis-work-inventory.json"
+      ],
+      "evidence": "W1 lacks the ordered scratch/base/candidate operands, corrections, norms and bounds needed to evaluate its strict full-radius inequality. W2 retains failure metadata but lacks p2 and the compared scaled bounds/operands. W3 retains only VEG-E-142/MhConsistency; its M/H/T bits, occupancy, provenance and actual call site are absent, and source inspection shows several possible constructors. Therefore no actual refusal inequality, root cause, phase, local correction, or guard relaxation is established.",
+      "required_disposition": "Option (c): insufficient evidence/runtime feasibility. Any witness capture first needs independently reviewed noninterference and a sealed source/build receipt; this review does not approve instrumentation."
+    },
+    {
+      "severity": "BLOCKER_FOR_RUNTIME_FEASIBILITY_CLAIM",
+      "paths": [
+        "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-diagnosis-work-inventory.json"
+      ],
+      "evidence": "The inventory reports 27 unique failed physical attempts, with partial-attempt CPU 4.920672–10.316618 ms, reached-subproblem counters only, and null completed_day_cost and native_owner_receiver_cost. The 0.347222 us CPU/solve figure is correctly budget arithmetic for 1440 joint solves/day, not a measurement. No completed OFE-day or whole-run feasibility result exists.",
+      "required_disposition": "Keep scientific/runtime HOLD and do not represent the static inventory as an achieved, bounded, or projected deployable runtime."
+    }
+  ],
+  "primary_evidence_checked": {
+    "accounting": {
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-diagnosis-accounting.json",
+      "anchor_utc": "2026-10-01T22:13:00Z",
+      "carry_seconds": 456516.069712,
+      "ceiling_seconds": 458534.92798,
+      "remaining_seconds": 2018.858268,
+      "work_cutoff_utc": "2026-10-01T22:36:38.858268Z",
+      "capture_readiness_deadline_utc": "2026-10-01T22:23:00Z",
+      "diagnostic_capture_seconds": 0
+    },
+    "source_custody": {
+      "receipt": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-source-cut02.json",
+      "archive": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-source-cut02.tar.gz",
+      "archive_sha256_verified": "0ba5b7ad999c30ac5ad475417d3d824cc7feec33114c81b1eecc677a378a9fea",
+      "receipt_entries": 772,
+      "archive_regular_members": 765,
+      "restored_receipt_links": 7,
+      "recovered_source": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-diagnosis-20261001/source",
+      "recovered_source_is_not_symlink": true,
+      "regular_file_digest_check": "PASS: all 765 receipt regular-file digests match the recovered source",
+      "link_target_check": "PASS: .config, .venv, assurance, docs, src, tests and tools each match its receipt-recorded target"
+    },
+    "run_custody": {
+      "receipt": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-run-evidence.json",
+      "archive": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/c6-oracle-run-evidence.tar.gz",
+      "archive_sha256_verified": "7acbe07f32a19ea1091abfd6f9725efdefbffe9f4376e464972caac834ac68e8",
+      "member_digest_check": "PASS: all 48 receipt member digests match archive extraction"
+    },
+    "workspace_custody": "PASS: all 48 paths recorded by initial_dirty_sha256 still match their recorded digest.",
+    "static_source_review": {
+      "W1": "The all-21-ID ordered scratch norm strictly refuses when full_norm > refinement_test_radius; normal flow passes input.initial_radius, while the reduced free-coordinate norm separately uses solution.radius.",
+      "W2": "FinalBox follows active-coordinate admission and uses refinement_box_admit on p2; recorded metadata alone cannot reconstruct the compared values.",
+      "W3": "from_mass_enthalpy has the recorded MhConsistency predicates, but the error stage does not prove which of multiple call sites generated W3."
+    }
+  },
+  "validation_status": {
+    "performed": [
+      "archive SHA-256 and member/receipt cardinality checks",
+      "all recovered regular-file and restored-link checks",
+      "all run-archive member digest checks",
+      "initial dirty-path preservation check",
+      "static guard and call-site inspection",
+      "work-inventory and budget-accounting inspection"
+    ],
+    "not_run": [
+      "cargo fmt",
+      "cargo clippy -D warnings",
+      "cargo test",
+      "cargo deny check",
+      "build or binary authentication",
+      "instrumented witness capture or solver execution"
+    ],
+    "reason_not_run": "No source changes or instrumentation were made. The owner chose static-only refusal disposition before capture readiness expired; the review must not claim a current/authenticated binary or executed workflow."
+  },
+  "non_blocking_debt_followups": [
+    "If a later package authors detached observation, freeze a minimal schema that records every ordered binary64 operand, coordinate/row ID, arithmetic order, predicate/call-site identity, and noninterference counters before invoking W1/W2/W3.",
+    "A later repair-feasibility package must measure a completed day and native owner/receiver cost before making runtime feasibility claims; refusal counters must remain separate from elapsed-cost estimates."
+  ],
+  "same_reviewer_fix_verification": {
+    "scope": "Leading terminal diagnostic disposition in package.md, enriched refusal-diagnosis-work-inventory.json, corrected implementation extraction, and final package-scoped diff.",
+    "result": "PASS_FOR_STATIC_OPTION_C_ONLY",
+    "verified_claims": [
+      "The disposition explicitly records zero W1/W2/W3 captures, zero diagnostic elapsed seconds, NOT_READY instrumentation/build, no sealed capture receipt, and continuing HOLD_NO_COMPLETED_DAY.",
+      "The disposition limits archive recovery to 765 regular members plus seven receipt links, identifies the old binary only as historical, and makes no current build or binary-authentication claim.",
+      "W1 uses input.initial_radius for the full norm; W2 and W3 retain the missing-operand/call-site limits. The prose does not convert a recorded guard branch into an exact numeric reconstruction or a correction claim.",
+      "The enriched inventory values cited for W1 and W2 match the retained records. Historical G4 timing is labeled a different fresh-proposal seam and wall-only component attribution; its conditional speedups are expressly not a CPU or current-method forecast.",
+      "The final package diff is documentation/evidence-only. git diff --check is clean; JSON syntax is valid for the reviewed refusal artifacts."
+    ],
+    "remaining_limits": "This same-reviewer verification does not establish a physical outcome, an executed Rust workflow, a current binary, a completed day, an exact operand inequality, a numerical defect, or runtime feasibility."
+  },
+  "verdict": "QA_PASS_FOR_STATIC_REFUSAL_DISPOSITION_ONLY",
+  "qa_pass_statement": "Custody recovery and static evidence are internally consistent for the limited option-(c) disposition. The review accepts no numerical diagnosis, repair, binary provenance, runtime feasibility, or completed-day claim; those remain blocked by missing operands and unexecuted evidence."
+}

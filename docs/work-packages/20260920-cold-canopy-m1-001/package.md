@@ -1,5 +1,156 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Adopted refusal diagnosis — 2026-10-01
+
+Owner invokes `/tmp/openwepp_cold_canopy_m1_refusal_diagnosis_continuation.md`.
+The adopted delta authorizes static diagnosis plus at most one observation-only
+capture each, in fixed W1/W2/W3 order, if retained operands are insufficient.
+No numerical repair, production adoption, guard/tolerance change, full-day run,
+A/B restart or push. Original protocol and negative results below remain history.
+Main checkout starts at `5eef00eb6bfed1823fbf5b77ce89c955cf9cf089`, the recorded
+C6 commit plus HOLD/prompt record. Preserve unrelated dirty files.
+
+Targets remain 500us CPU/550us wall per completed OFE-day, regime CPU
+750/1500/2500us and 10-OFE,36,525-day century <=182.625s CPU/210s wall.
+At 60s cadence,1440 joint two-occupancy solves leave 0.347222us CPU/solve
+before all other work (regimes 0.520833/1.041667/1.736111us). These are budget
+arithmetic, not measured native costs. Failed partial-attempt CPU
+4.920672–10.316618ms does not establish completed-day cost or speedup.
+
+Intent: authenticate/recover frozen source into a new isolated copy; inspect
+retained guard/mapping operands and work counts; add detached test observation
+only if needed; obtain independent correctness and QA acceptance of sealed
+source/build before any capture. Select focused formatting/no-run build,
+source-bearing baseline/candidate lint comparison and source/build/tool custody
+for instrumentation; offline arithmetic and documentation/reference checks for
+retained evidence. No suite, fixture, authority, numerical or main Rust changes
+are intended, so no physical preflight or unrelated authority campaign is selected.
+Astra owns coordination; one implementer owns detached source, with distinct
+correctness and QA reviewers and no nested delegation.
+
+First reading conservatively anchors at 22:13:00UTC. Carry456516.069712s charges
+prior sample through22:11UTC, including33.473059s commit/return tail; only the
+inactive22:11–22:13 owner-decision interval is excluded. Fixed ceiling458534.927980s
+leaves R=2018.858268s, hard deadline22:46:38.858268UTC, work cutoff22:36:38.858268UTC
+with600s closing reserve. Capture readiness ends22:23UTC (600s from anchor).
+Every command <=180s; witness slots <=30s each/90s aggregate, no retry.
+Historical physical2.265900994s and control0.053829565s remain separate.
+[Accounting and initial custody](artifacts/refusal-diagnosis-accounting.json).
+
+### Diagnostic disposition — insufficient operands; no deployable repair established
+
+**Static:** source/contract inspection and retained execution-evidence analysis.
+**Ran:** archive/member/source/link authentication and offline work-count extraction
+only. No physical invocation, control, core/Jacobian preflight, solver, day or
+benchmark ran. W1/W2/W3 slots consumed **0/0/0**, diagnostic elapsed **0s**.
+Instrumentation/build/captures are **NOT RUN / NOT_READY**. Static source does
+**not** suffice to reconstruct the actual failed inequalities. Necessary rich
+operand/provenance observation could not responsibly be implemented, frozen,
+built and independently reviewed within the600s readiness allowance; the
+implementer returned that assessment before its expiry. No sealed capture receipt
+was approved. This preserves missing acceptance rather than declaring diagnosis
+complete from error strings.
+
+Recovered unchanged source at
+`/home/roger/openwepp-experiments/cold-canopy-m1-refusal-diagnosis-20261001/source`:
+source identity `e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3`,
+fixture `d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362`.
+The retained cut02 archive has765 regular-file members; its receipt has772
+entries including seven links. Exact receipt targets were restored only at absent
+paths inside the new non-symlink source directory, including `.venv`, then all
+entries verified. The original archive/receipt remain the recovery source; no
+frozen source/run/binary directory was changed. Run archive48members verified.
+Old binary identity `c94275f4fe236ef35c5d6c80a42a0f73e59cdad1296afb419a5c817ff95725fb`
+is historical evidence, not a newly authenticated instrumented build.
+[Recovery/static extraction](artifacts/refusal-diagnosis-implementation.json).
+
+| Witness | Proven retained outcome and source predicate | Missing fact / disposition |
+| --- | --- | --- |
+| W1 cold FULL/P0,60s,support0; original reference reused by A | First ordinary shifted correction; ScratchFullRadius; lambda7884335521576912; original/reduced radii1; all21coordinates free. `bvls04_ordered_norm` squares coordinates in ascending order, adds from zero, takes sqrt, then rejects `full_norm > input.initial_radius`. | No p1/norm/correction/J/r/scales bits. Positive signed excess is implied by the recorded branch, but magnitude, ULP distance and exact-real norm are unknown. No demonstrated rounding limit or implementation error. |
+| W2 transition FULL/P2,60s,support0 | Second compensated-residual correction; FinalBoxLower coordinate5; lambda0, original/reduced radii8; lower-active11,20free coordinates. Final active admission precedes ascending exact box check `p2[5] < scaled_lower[5]`. | No p2/bound/correction bits or reached map provenance. Signed p2-minus-bound is negative by recorded branch, but magnitude/ULPs unknown. No demonstrated bad mapping or rounding-only breach. |
+| W3 transition REDUCED/P0,60s,support0 | `Own(Coupled(Vegetation(VEG-E-142,MhConsistency)))`. Constructor rejects nonfinite M/H, negative M, M=0 with H!=0, or derived T outside finite258.15..373.15K. Other derivative/residual sites also emit this stage. | Exact call/predicate, occupancy, beginning/current role, coordinate/raw M/H/T bits and proposal provenance absent. No canonical phase can be assigned to the rejected state. Cannot establish inconsistent state versus derivative/map/control defect. |
+
+For W1 the scaled norm/radii are dimensionless; full and free radii are distinct
+quantities even though both equal1 in this witness. Source routes full norm to
+original radius and free norm separately to reduced-face radius; no routing defect
+was found. W2 compares dimensionless scaled steps/bounds; coordinate5 belongs to
+the first occupancy drainage slot in the declared full ordering, but the actual
+physical-to-scaled operands are not retained. Its physical variable has units
+kg m^-2 s^-1. Scratch box infeasibility is allowed only for W2's zero-lambda
+private p1, while final p2 must be feasible. No tolerance is invented. No exact or
+higher-precision operand reconstruction was possible; nearby synthetic examples
+would not establish these witnesses. Neither witness proves the cause of every
+profile in its refusal class. W3 constructor failure, if established later, leaves
+canonical phase undefined; no clamp or domain-to-convergence relabel is admissible.
+
+Authority inspected: SC-LANDSURFACEENERGY-001 numerical-methods BVLS-03 fixed-face
+and BVLS-04 shifted compensated-refinement rules (ordinary then Dot2 corrections,
+original/free radii, strict scratch/final feasibility, typed refusal),
+SC-VEGETATION-001 cold-canopy M/H equilibrium inverse and guard/rollback rules,
+and numerical-solver-architecture/ADR-0044's single canonical solver constraint.
+No authority, fixture, cadence, numerical-body, tolerance, guard or dependency
+change occurred. Focused Rust formatting/build/lint and A0/A1/A3/anti-evasion
+runs were not triggered by this documentation/evidence-only diff; no passing
+Rust workflow is claimed. Accepted unchanged control and partial reconstruction
+reviews are reused within their original limited scope.
+
+[Measured-work and component-cost inventory](artifacts/refusal-diagnosis-work-inventory.json)
+extracts27unique failed physical attempts,26with subproblem counters. W1 records
+1SVD/7Jacobi sweeps/0face pivots,3825refinement scalar operations and6930guard events;
+W2 records2SVD/13sweeps/1pivot,50352scalar and52298guard events. W3 retains no such
+counters. Across26counter-bearing refusals:1–5SVDs,7–32sweeps,1543–54098refinement
+scalar operations and3688–55996guard events. These are reached-subproblem counts,
+not complete-attempt totals or CPU estimates; counter categories can overlap.
+Existing G4 R medians remain initialization100.305/104.387us CPU/wall,
+proposal896.679/901.309us, combined1000.618/1010.427us. They describe a different
+fresh-proposal seam, not current completed solves. Its instrumented component
+attribution is wall-only; even hypothetical free Stage1 gives conditional
+13.368x proposal/6.034x combined wall speedups for that cohort, not a CPU or
+current-method forecast. Existing observations supply no credible cost of a
+redesigned method and no native owner/receiver or completed-day cost.
+
+**Recommendation (c): insufficient evidence/runtime feasibility.** Do not adopt
+a local numerical correction or replacement from these records. Rank the blockers:
+(1) no supported work/cost model establishes feasibility against the0.347222us CPU
+allowance per joint solve at unchanged cadence; (2) actual refusal operands/call provenance are missing; (3) no complete
+reference/candidate day exists for accuracy or cost comparison. The next bounded
+owner decision is whether to authorize preparation and independent sealing of
+observation-only W1/W2/W3 capture plumbing to obtain those precise facts. Such
+observation retains physical work and adds diagnostic overhead; it promises no
+runtime reduction and is not a deployment recommendation. Any later repair needs
+a demonstrated exact failing operation, unchanged science/guard acceptance,
+expected solve/evaluation/factor counts and a credible total CPU/wall budget
+including native costs before measurements can meaningfully resume. No repair,
+new method, cadence/forcing change or follow-on execution is launched here.
+Scientific/runtime **HOLD_NO_COMPLETED_DAY** remains.
+
+Independent [correctness review](artifacts/refusal-diagnosis-correctness.json)
+(`/root/correctness`) and [QA review](artifacts/refusal-diagnosis-qa.json)
+(`/root/qa`) accept **only option(c)'s static insufficient-evidence disposition**.
+Correctness verified fixes to the implementer's initial full/reduced-radius
+wording, W2 metadata extent, and unsupported unique W3 call attribution; its
+final review also verified that cost language means unestablished feasibility,
+not proof of impossibility. QA independently authenticated all772source entries,
+48run members and48unchanged unrelated dirty files. Both reviewed final claims;
+no causal/repair/runtime approval is implied.
+
+Terminal diff is confined to this package's151-line adopted/result insertion
+and five `refusal-diagnosis-*.json`
+evidence files: accounting, implementation, work-inventory, correctness, QA.
+No tracked Rust/source/contract change belongs to this task. JSON parsing, new
+local-reference existence, and `git diff --check` pass; initial48unrelated paths
+retain their byte hashes. Original archive/receipt and recovered unchanged source
+remain available; no duplicate instrumented archive is needed because no source
+was instrumented. Scoped preservation is local only, with no push.
+
+Final sample22:22:37.186186UTC records cumulative457093.255913s, remaining
+1441.672067s. Conservatively charge commit/return through**22:24:00UTC**:
+current pickup**660s**, cumulative**457176.069712s**, remaining**1358.858268s**
+under458534.927980s. All work and concurrent reviews count once; historical
+physical2.265900994s, historical control0.053829565s and new diagnostics0s remain
+separate. If return exceeds22:24UTC, its excess remains attributable. Stop at
+reviewed insufficient evidence; leftover allowance authorizes no further work.
+
 ## HOLD disposition and proposed refusal diagnosis — 2026-10-01
 
 Owner requests disposition and continuation-prompt authoring only. The bounded
