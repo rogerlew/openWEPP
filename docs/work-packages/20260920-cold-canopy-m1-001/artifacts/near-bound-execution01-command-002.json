@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-runner.py",
+    "RUN_FRESH_DAYS",
+    "--test-binary",
+    "/workdir/.cache/openwepp/targets/development-treatment-62c9550b2cad/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "--kind",
+    "control",
+    "--control-id",
+    "C2_empty_supersaturation_refusal"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-10-01T20:32:18.492258+00:00",
+  "elapsed_seconds": 0.3935057995840907,
+  "exit_code": 0,
+  "stdout": "{\"batch\":0,\"cap_seconds\":30,\"cell\":{\"control_id\":\"C2_empty_supersaturation_refusal\"},\"charged_seconds\":0.059105624,\"key\":\"{\\\"batch\\\":0,\\\"cell\\\":{\\\"control_id\\\":\\\"C2_empty_supersaturation_refusal\\\"},\\\"kind\\\":\\\"control\\\"}\",\"kind\":\"control\",\"output\":\"/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-operation-e11098c65c1747683353.json\",\"status\":\"complete\"}\n",
+  "stderr": ""
+}

@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-runner.py",
+    "RUN_FRESH_DAYS",
+    "--test-binary",
+    "/workdir/.cache/openwepp/targets/development-treatment-62c9550b2cad/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "--kind",
+    "control",
+    "--control-id",
+    "C4_capacity_positive_drainage"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-10-01T20:32:19.299678+00:00",
+  "elapsed_seconds": 0.40519185410812497,
+  "exit_code": 0,
+  "stdout": "{\"batch\":0,\"cap_seconds\":30,\"cell\":{\"control_id\":\"C4_capacity_positive_drainage\"},\"charged_seconds\":0.056382688,\"key\":\"{\\\"batch\\\":0,\\\"cell\\\":{\\\"control_id\\\":\\\"C4_capacity_positive_drainage\\\"},\\\"kind\\\":\\\"control\\\"}\",\"kind\":\"control\",\"output\":\"/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-operation-b85132dc1383bf6873f1.json\",\"status\":\"complete\"}\n",
+  "stderr": ""
+}

@@ -1,0 +1,180 @@
+{
+  "schema": "openwepp.work_package.correctness_review.v1",
+  "reviewer": "/root/correctness",
+  "role": "independent correctness reviewer",
+  "evidence_class": "Static review and reuse of prior accepted review; this reviewer ran no physical, core, Jacobian, solver, control, reference, or candidate execution.",
+  "renewed_authority": {
+    "status": "ACCEPTED_AS_RECORDED_BY_PARENT",
+    "owner_action": "Explicit re-invocation of the original control-repair continuation after the UTC-extension request.",
+    "physical_work_cutoff_utc": "2026-10-01T21:06:00Z",
+    "hard_closing_deadline_utc": "2026-10-01T21:21:00Z",
+    "cumulative_ceiling_seconds": 458534.92798,
+    "new_defect_replays_available": 1,
+    "historical_defect_replays_consumed": 1,
+    "interpretation": "The renewal extends the UTC execution envelope for the unchanged fixed schedule. It does not refund prior charge, erase the historical consumed replay/failures, change source, add tuning, or authorize automatic retry. The one new replay remains usable only after an independently verified implementation or recording defect."
+  },
+  "reused_static_acceptance": {
+    "prior_review": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-preparation-correctness-review.json",
+    "source_tree_sha256": "60c852c029337c07ee8c9d80d8c6f97a4a6251fdf3caabcdee78f61a803385e6",
+    "test_source_sha256": "d524756745398be16eccf1117e6d6aac36287fe4e13dfc8e9c120e61aa00a86a",
+    "fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+    "release_test_binary_sha256": "0f84a2fa71bce7c5bd4949e99cdeb2d2c12387265e964592874b0ea6b3bb0ffd",
+    "statement": "The source, fixture, and binary are unchanged from the reviewed and custody-verified preparation. The prior resolution of C1-C6 static premises and C2/C4/C5/C6 affected fixes therefore transfers without another source review."
+  },
+  "launch_order_review": {
+    "status": "STATICALLY_ACCEPTABLE",
+    "order": [
+      "six formal repaired controls in frozen order",
+      "fixed three-reference and three-stability sweep only if all six controls pass",
+      "fixed negative/end-cell and A/B schedule exactly as the original continuation permits"
+    ],
+    "stop_rules": "Any control failure stops before the fixed sweep unless an independently verified implementation/recording defect legitimately invokes the single renewed replay. Numerical failure, timeout, noise, or an unfavorable result is not replay eligibility."
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "status": "ASSERTION_FIX_SOURCE_APPROVED_PENDING_BUILD_CUSTODY_REPLAY",
+      "title": "C5/C6 REDUCED mapped certificate oracle conflates zero-column certification with semantic hold eligibility.",
+      "locations": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/frozen-option1/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8273",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/frozen-option1/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2738",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/frozen-option1/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5420"
+      ],
+      "evidence": "REDUCED implicit pullback starts Jy at zero and skips eliminated zero-area sun columns 0 and 6. Their mapped raw/weighted zero certificates are therefore true. This does not make them eligible or held: BVLS05 separately requires structural_area>0, and provenance also conjuncts physical and mapped certificates. The observed C5 mapped array [true,true,true,true,false,false] is consistent with source and the physical array that already passed.",
+      "independent_expected_arrays": {
+        "C5_FULL_full_wet_physical": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          false
+        ],
+        "C5_FULL_full_wet_mapped": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          false
+        ],
+        "C5_REDUCED_full_wet_physical": [
+          false,
+          true,
+          true,
+          false,
+          false,
+          false
+        ],
+        "C5_REDUCED_full_wet_mapped": [
+          true,
+          true,
+          true,
+          true,
+          false,
+          false
+        ],
+        "C5_REDUCED_next_physical": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "C5_REDUCED_next_mapped": [
+          true,
+          false,
+          false,
+          true,
+          false,
+          false
+        ],
+        "C5_REDUCED_next_held": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "C6_REDUCED_near_bound_physical": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "C6_REDUCED_near_bound_mapped": [
+          true,
+          false,
+          false,
+          true,
+          false,
+          false
+        ],
+        "C6_REDUCED_near_bound_held": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ]
+      },
+      "required_fix": "Change only the C5/C6 test assertion structure/literals to the exact representation-specific arrays. Preserve production solver, mapping, provenance, fixture, inputs, and all held-state assertions.",
+      "fix_verification": {
+        "candidate_path": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment-c5-certificate-prep",
+        "test_source_sha256": "4c2b3e2b4fb4812d61a84ecb300cdb4314b8cc4f8660016f68f55923bd1438e4",
+        "fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+        "scope": "PASS: whole-tree comparison against frozen-option1 finds only m1_coupled_tests.rs changed. The diff contains only the exact representation-specific C5/C6 mapped-certificate assertion arrays/messages and splits the former shared C5 assertion. C1-C4 and all numerical, mapping, provenance, fixture, and production bytes are unchanged."
+      }
+    }
+  ],
+  "launch_blockers": [
+    "Current runner is correctly HALTED after C5. No fixed sweep or C6 may run until the assertion-only correction is independently reviewed, rebuilt, and custody-bound.",
+    "Only C5 is eligible for the single renewed replay; retain its first failed receipt and 0.058822289-second charge. C1-C4 must not be rerun. C6 remains an unconsumed first attempt after a passing C5 replay."
+  ],
+  "results_review": {
+    "status": "CONTROL_FAILURE_ADJUDICATED_REPLAY_ELIGIBLE",
+    "receipt": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-operation-1501a81a0611eca0471d.json",
+    "observed": "C1-C4 PASS; C5 FAIL at line 8281 because actual REDUCED mapped certificate [true,true,true,true,false,false] differed from the oracle [false,true,true,false,false,false]. C6 and the fixed sweep were not run. Runner HALTED. Physical total 0.291238124 seconds; C5 charge 0.058822289 seconds.",
+    "classification": "The failure is an independently demonstrated test-assertion/recording defect, not a solver, physical-data, numerical-method, or acceptance failure. It qualifies for the one renewed affected-work replay after the narrow fix and fresh review/build/custody.",
+    "unaffected": "C1-C4 passed branches are unaffected by a literal/assertion-only C5/C6 correction and retain their results. C6 has no attempt yet."
+  },
+  "verdict": {
+    "status": "ASSERTION_FIX_SOURCE_APPROVED_PENDING_C5_REPLAY",
+    "statement": "The narrow source correction is correct and eligible for build/custody. After QA accepts the new binary identity, replay only C5 once; on pass, run C6 for its first attempt and then the unchanged fixed sweep."
+  }
+}

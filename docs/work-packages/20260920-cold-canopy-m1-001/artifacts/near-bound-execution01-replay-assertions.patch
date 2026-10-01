@@ -1,0 +1,74 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -8270,22 +8270,34 @@
+                 .expect("C5 dry reassembly");
+         let full_observation = full.observation();
+         let reduced_observation = reduced.observation();
+-        for observation in [full_observation, reduced_observation] {
+-            assert_eq!(
+-                observation
+-                    .bvls05_physical_zero_certificate
+-                    .expect("C5 physical Jx raw/weighted certificate"),
+-                [false, true, true, false, false, false],
+-                "C5 only positive-area upper shade/stem dry roles certify in physical Jx"
+-            );
+-            assert_eq!(
+-                observation
+-                    .bvls05_mapped_zero_certificate
+-                    .expect("C5 mapped Jy raw/weighted certificate"),
+-                [false, true, true, false, false, false],
+-                "C5 preserves the same semantic dry roles after mapping"
+-            );
+-        }
++        assert_eq!(
++            full_observation
++                .bvls05_physical_zero_certificate
++                .expect("C5 FULL physical Jx raw/weighted certificate"),
++            [false, true, true, false, false, false],
++            "C5 FULL physical zero columns identify upper shade/stem"
++        );
++        assert_eq!(
++            full_observation
++                .bvls05_mapped_zero_certificate
++                .expect("C5 FULL mapped Jy raw/weighted certificate"),
++            [false, true, true, false, false, false],
++            "C5 FULL mapping retains its physical zero-column certificate"
++        );
++        assert_eq!(
++            reduced_observation
++                .bvls05_physical_zero_certificate
++                .expect("C5 REDUCED physical Jx raw/weighted certificate"),
++            [false, true, true, false, false, false],
++            "C5 REDUCED physical zero columns remain distinct from mapped eligibility"
++        );
++        assert_eq!(
++            reduced_observation
++                .bvls05_mapped_zero_certificate
++                .expect("C5 REDUCED mapped Jy raw/weighted certificate"),
++            [true, true, true, true, false, false],
++            "C5 REDUCED mapped zero columns are a Jy certificate, not the held-role eligibility mask"
++        );
+         assert_eq!(
+             full_assembly.held,
+             std::array::from_fn(|column| matches!(column, 1 | 2)),
+@@ -8324,7 +8336,8 @@
+             dry.observation()
+                 .bvls05_mapped_zero_certificate
+                 .expect("C5 dry mapped raw/weighted certificate"),
+-            [false; 6]
++            [true, false, false, true, false, false],
++            "C5 dry REDUCED Jy certificate preserves transformed sun zero columns while roles reactivate"
+         );
+         assert_eq!(dry_assembly.held, [false; 21]);
+     }
+@@ -8416,8 +8429,8 @@
+                 .observation()
+                 .bvls05_mapped_zero_certificate
+                 .expect("C6 mapped raw/weighted certificate"),
+-            [false; 6],
+-            "C6 strict partial wetness cannot be clamped into a mapped dry-role hold"
++            [true, false, false, true, false, false],
++            "C6 mapped Jy zero columns are distinct from free-role eligibility and cannot create a hold"
+         );
+         assert_eq!(c6_assembly.held, [false; 21]);
+         assert_eq!(c6_assembly.work.bvls05_role_joins_attempted, 6);

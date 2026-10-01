@@ -1,0 +1,30 @@
+{
+  "schema": "openwepp.work-package.qa-review.v1",
+  "reviewer": "/root/qa",
+  "review_kind": "independent terminal execution QA review",
+  "evidence_class": "Inspected execution receipts and state; reviewer ran no command",
+  "reviewed_at_utc": "2026-10-01T20:47:09Z",
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01-c5-replay/separate-accuracy-runner-state.json",
+      "evidence": "C6 first attempt recorded integrity_failure after C5 replay passed. The failure is an exact C6 lower-reservoir wetness assertion mismatch; C6 charged 0.059973032s under its 30s cap. State is HALTED and the continuation's sole new replay is already consumed by C5.",
+      "impact": "The fixed schedule stops before references, stability checks, candidates, and A/B measurements. No retry or further physical invocation is authorized from this state."
+    }
+  ],
+  "non_blocking_debt_followups": [
+    {
+      "finding": "C5's only authorized replay completed successfully with charge 0.059340288s against remaining cap 29.941177711s. The original failed C5 receipt and charge 0.058822289s remain preserved. C1-C4 completed records remain unchanged."
+    },
+    {
+      "finding": "Final state physical_seconds is 0.410551444: C1-C4 0.232415835, original C5 0.058822289, C5 replay 0.059340288, and C6 0.059973032. Reference seconds are 0. C6 failure leaves three references, three stability checks, 24 A cells, and 18 B cells NOT RUN; no completed candidate day or A/B result exists."
+    },
+    {
+      "finding": "Command receipt numbering 002/003 is explainable: sequence derives from an artifact glob that already included the aggregate command-receipts artifact, not a missing result-bearing invocation. Receipt 002 is C5 replay and 003 is C6 first attempt, with their exact commands, starts, output, exit 0 runner completion, and state-recorded statuses retained."
+    },
+    {
+      "finding": "Closure custody is now present: run-evidence.tar.gz hashes to edd1d728afd31d08c248780e0d10609e23816b5b2f2c5dde0fd28de93b95f983 and contains both execution run directories plus the dispatcher (44 hashed members). Closure-check records working source 9ce31f5e75721b45af936108824435936ecae3e9dbd072075a3f4a472aae8968, replay consumed 1, physical_seconds 0.410551444, 48 preexisting unrelated files unchanged, and scope limited to package.md plus near-bound-execution01* evidence; git diff --check passes."
+    }
+  ],
+  "qa_pass_statement": "Static terminal QA PASS for evidence preservation and disposition: the sealed archive, terminal ledger, source/build custody, and scoped-diff check support the HALTED stop. The investigation is terminally INCOMPLETE/HOLD because C6 failed before the fixed sweep and no replay remains; no physical correctness, accuracy, cost, or deployment acceptance follows."
+}

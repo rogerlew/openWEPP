@@ -1,0 +1,11 @@
+{
+  "reference_count": 289,
+  "candidate_count": 289,
+  "additions": [],
+  "removals": [],
+  "method": "lint + message + source path/function/content; macro expansion traced to call site; multiset comparison, not count-only",
+  "reference_log": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-cut07-clippy.jsonl",
+  "reference_source": "/home/roger/openwepp-experiments/cold-canopy-m1-separate-20260930/review-cut03",
+  "candidate_log": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-execution01-replay-clippy-candidate.jsonl",
+  "candidate_source": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment-c5-certificate-prep"
+}

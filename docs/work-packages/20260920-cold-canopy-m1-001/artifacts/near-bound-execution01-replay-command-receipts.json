@@ -1,0 +1,17 @@
+{
+  "schema": "openwepp.command-receipts.v1",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment-c5-certificate-prep",
+  "format": {
+    "argv": ["timeout", "180", "nix", "develop", "--impure", ".", "--command", "cargo", "fmt", "--check"],
+    "exit": 0,
+    "tool_returned_output": "openWEPP Nix shell with the isolated target/scratch/cache paths; cargo fmt emitted no further output"
+  },
+  "release_no_run": {
+    "argv": ["timeout", "180", "nix", "develop", "--impure", ".", "--command", "cargo", "test", "--offline", "--release", "-p", "openwepp-land-surface-energy", "--lib", "--features", "m1-trust-region-physical-stage,m1-trust-region-analytic-stage,m1-trust-region-controller-stage", "--no-run"],
+    "exit": 0,
+    "cargo_reported_duration": "2m 13s",
+    "controls_or_tests_executed": false,
+    "combined_output": {"path": "near-bound-execution01-replay-no-run.combined-output.txt", "sha256": "ad86f030edaa9e4524e441c72550d6cb7734eceb983d855c71d3daa0fe4e6bf4", "stream": "combined tool-returned output; stdout and stderr were not separately retained"}
+  },
+  "timestamps": "The tool responses did not retain start/end timestamps; none are inferred."
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "openwepp.work-package.qa-review.v1",
+  "reviewer": "/root/qa",
+  "review_kind": "independent C5 replay runner/state QA review",
+  "evidence_class": "Static",
+  "reviewed_at_utc": "2026-10-01T20:42:44Z",
+  "scope": "Replay runner/state/cap only; no physical execution, source build, or test run by reviewer.",
+  "findings": [
+    {
+      "severity": "RESOLVED",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/dispatch-execution01.py",
+      "evidence": "Same-reviewer verification: the dispatcher now refuses launch unless receipt status is exactly APPROVED and receipt dispatcher_sha256 equals its current SHA-256 4d9d381cfb3bf5acb40180c6c0135c4256e2ed9c27e9240b3132978d325a297e, before child launch. This is an external dispatch guard; the frozen runner/binary remains unchanged.",
+      "impact": "The fail-closed launch defect is resolved once the sealed receipt records that exact dispatcher hash and APPROVED status."
+    },
+    {
+      "severity": "RESOLVED",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01-c5-replay/separate-accuracy-runner.py",
+      "evidence": "The runner delta is confined to an explicit namespace-to-control map retaining historical c1-oracle-replay01 and adding c5-mapped-certificate-replay01. The common single-replay validation still requires one preserved control operation, defect_replay_consumed==1, matching control identity, and prior charge before the replay receives remaining cap. Measurement limits are byte-identical to execution01, including UTC 21:06/21:21 and all physical subcaps.",
+      "impact": "The runner permits only the named C5 replay under the reserved slot; it does not reopen C1-C4 or create a general retry path."
+    },
+    {
+      "severity": "RESOLVED",
+      "path": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01-c5-replay/separate-accuracy-runner-state.json",
+      "evidence": "The new READY state preserves C1-C4 completed operations/results and the original failed C5 receipt in failed/results/preserved_defect_operations, while removing only C5 from operations lookup so frozen ordering selects it next. It preserves total prior continuation physical charge 0.291238124s, historical replay=1, original halted-state SHA, and records continuation replay consumed/reserved=1 of maximum=1. C5 remaining cap is 30 - 0.058822289 = 29.941177711 seconds.",
+      "impact": "C5 is the sole eligible replay. C6 remains its first attempt and cannot run unless the C5 replay passes; the old HALTED runner is not modified."
+    }
+  ],
+  "non_blocking_debt_followups": [
+    {
+      "finding": "Correctness accepts the assertion-only candidate test hash 4c2b3e2b4fb4812d61a84ecb300cdb4314b8cc4f8660016f68f55923bd1438e4 and fixture d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362. C1-C4 remain unchanged; C5/C6 mapped-certificate literals are the only asserted source correction."
+    },
+    {
+      "finding": "Replay launch remains conditional on fresh archive/source, compiled fixture, binary, and build-custody receipts for development-treatment-c5-certificate-prep. No old binary may be transferred to this changed test source."
+    },
+    {
+      "finding": "Final replay custody is now static PASS: source archive tree 9ce31f5e75721b45af936108824435936ecae3e9dbd072075a3f4a472aae8968 changes only m1_coupled_tests.rs; build binary e18b99e4bcc3cf3a280315f56f2eab57e02e98906460c5e4dd0e38fdb86c53e6 has 578 pins/60 depfiles including fixture d361 and test 4c2b. Final source-bearing Clippy comparison is 289/289 with zero additions/removals."
+    }
+  ],
+  "qa_pass_statement": "QA PASS for C5 replay launch custody, conditional only on sealing the receipt with status APPROVED, dispatcher SHA-256 4d9d381cfb3bf5acb40180c6c0135c4256e2ed9c27e9240b3132978d325a297e, and this updated review hash. No replay has run, no replay result is accepted, and the fixed UTC deadline and all caps remain unchanged."
+}

@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01-c5-replay/separate-accuracy-runner.py",
+    "RUN_FRESH_DAYS",
+    "--test-binary",
+    "/workdir/.cache/openwepp/targets/development-treatment-c5-certificate-prep-eb6c13b98e87/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "--kind",
+    "control",
+    "--control-id",
+    "C5_full_wet_reactivation"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-10-01T20:43:42.122762+00:00",
+  "elapsed_seconds": 0.41174207674339414,
+  "exit": 0,
+  "stdout": "{\"batch\":0,\"cap_seconds\":29.941177711,\"cell\":{\"control_id\":\"C5_full_wet_reactivation\"},\"charged_seconds\":0.059340288,\"key\":\"{\\\"batch\\\":0,\\\"cell\\\":{\\\"control_id\\\":\\\"C5_full_wet_reactivation\\\"},\\\"kind\\\":\\\"control\\\"}\",\"kind\":\"control\",\"output\":\"/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01-c5-replay/separate-accuracy-operation-1501a81a0611eca0471d-c5-mapped-certificate-replay01.json\",\"status\":\"complete\"}\n",
+  "stderr": ""
+}

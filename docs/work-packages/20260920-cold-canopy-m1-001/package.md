@@ -1,5 +1,169 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Execution01 disposition — C6 failure; replay allowance exhausted
+
+**INCOMPLETE / STOPPED under the adopted failure limit.** C1–C4 PASS;
+C5's independently adjudicated assertion-only corrected replay PASS; C6's first
+formal attempt FAIL. The sole continuation replay is consumed, independently of
+the older consumed replay. The runner is HALTED; no further repair/replay or
+reference/candidate launch is authorized by the remaining wall-time balance.
+No production code, solver, fixture, forcing, tolerance or cadence was changed.
+
+| Scheduled evidence | Outcome |
+| --- | --- |
+| C1–C4 | Four original attempts PASS |
+| C5 | Original assertion FAIL; one corrected replay PASS |
+| C6 | First attempt FAIL at lower-reservoir physical wetness bits |
+| Strict references / stability | 0/3 and0/3 run |
+| A: full/reduced, P0–P3,60s | 0/24 cells run |
+| B: reduced P2/P3,300/900/1800s | 0/18 cells run |
+| Candidate days / timing batches | 0 completed /0 run |
+
+Ran: C6 actual upper wetness bits match, but lower wetness bits are
+4595713839696905144 versus asserted4594726983486244982. Failure occurs before
+later C6 certificate/hold/rank assertions; partial execution does not establish
+complete physical-near-bound/rank control coverage. The failed source and inputs
+remain frozen pending independent terminal diagnosis; no post-result retuning.
+[Raw C6](artifacts/near-bound-execution01-c6-failed.json),
+[terminal state](artifacts/near-bound-execution01-terminal-state.json),
+[all scheduled cells](artifacts/near-bound-execution01-results.json), and
+[run evidence archive](artifacts/near-bound-execution01-run-evidence.tar.gz)
+preserve the original C5 failure, successful replay, failed C6 and both lineages.
+Command002/003 are C5/C6: the dispatcher sequence count included the aggregate
+command-receipts filename; there was no missing command001 physical invocation.
+
+Static: same independent correctness reviewer identifies C6's exact oracle
+provenance error: the assertion uses beginning lower mass0.018kg/m2, producing
+wetness bits0x3fc3bfd8fa998876; actual current trial lower mass is0.023kg/m2,
+producing observed0x3fc74163587b03b8. This diagnosis does not establish a solver
+or physics defect and does not authorize a second correction/replay. C6 passed
+its earlier ordinary-assembly/current-upper-MHD/role-area-free assertions but did
+not reach core capacity/mass, gap/ratio, certificate, held/counter or synthetic
+rank assertions. [Terminal correctness review](artifacts/near-bound-execution01-terminal-correctness-review.json)
+retains overall INCOMPLETE and the missing coverage explicitly.
+
+**A conclusion:** no reduction/tolerance error or runtime contrast is measured.
+**B conclusion:** no matched60s baselines exist, so cadence contrasts are
+unavailable. No error/cost frontier, credible deployment setting, completed-day
+cost, or century extrapolation is supported. Independent original-row/day closure
+reconstruction has no day operands and remains NOT RUN. Targets remain500us CPU /
+550us wall per completed OFE-day; regime750/1500/2500us CPU; full10-OFE century
+182.625s CPU /210s wall. All target gaps remain unmeasured, including native
+owner/receiver costs and actual regime trajectories.
+
+Continuation physical process charge is0.410551444s, including C5 failed
+0.058822289s, replay0.059340288s and C6 failure0.059973032s. Reference charge0s.
+These are control-process elapsed charges, not CPU/day measurements. Historical
+control0.053829565s and old replay remain separately preserved. Caps and source
+custody passed before/after both final controls; neither failure refunds work.
+
+Closing accounting sampled **2026-10-01T20:47:52.492415+00:00**: current pickup
+1252.492415s from20:27UTC; cumulative **454948.562127s** against458534.927980s,
+remaining3586.365853s. This sample includes all current reading,
+review, build, execution, collection and waits once; subsequent commit/return tail
+remains attributable. The stop is the exhausted replay/failure boundary, not the
+wall-time ceiling. No renewed allowance is inferred from the remaining balance.
+All48preexisting unrelated files remain byte-identical. Scoped local preservation
+contains this record, run/raw receipts, independent reviews and recoverable
+corrected detached source; no main Rust or unrelated work is staged, no push.
+
+Terminal independent [QA](artifacts/near-bound-execution01-terminal-qa.json)
+accepts preservation/disposition:44archived members, exact source/build custody,
+42NOT_RUN cells and48unrelated files unchanged. Same correctness and QA retain
+C6 BLOCKER /overall INCOMPLETE. No required closure-evidence gap remains.
+
+## Owner re-invocation — frozen execution01, 2026-10-01
+
+Owner explicitly re-invokes `/tmp/openwepp_cold_canopy_m1_control_repair_continuation.md`
+after the concrete UTC-extension request. This is adopted as **owner-directed
+renewal of execution**, not an automatic deadline reset. Use the proposed
+**21:06UTC work cutoff /21:21UTC closing deadline**, retaining cumulative ceiling
+458534.927980s, physical1800s/reference900s, control30s/reference150s/cell60s,
+command180s and the fixed six-controls/three-reference/three-stability/42-cell
+schedule. The owner-adopted physical near-bound subcheck remains part of C6;
+no solver, forcing, derivative, tolerance, cadence or reference change.
+
+No additional replay is created: historical corrected replay used1 remains used;
+the continuation's one new replay is still unused. Earlier readiness/time-limit
+stops remain historical failures; existing exact-source static reviews and build
+checks are reused now that the owner renews execution admission. Old HALTED runner
+is untouched. New isolated run directory is
+`/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01`.
+Source60c852c029337c07ee8c9d80d8c6f97a4a6251fdf3caabcdee78f61a803385e6,
+fixture d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362 and
+binary0f84a2fa71bce7c5bd4949e99cdeb2d2c12387265e964592874b0ea6b3bb0ffd
+remain frozen. Independent QA checks renewed metadata/custody; correctness reuses
+its accepted source review. No heavy builds run alongside measurements.
+
+Conservative current reading anchor20:27:00UTC precedes first clock20:28:04.262230.
+Conservative prior carry453696.069712s charges the previous pickup through20:26UTC
+(300s from20:21; no refund), including its commit/return tail. This intentionally
+rounds up unobserved return time rather than inventing precision. No7200s is added
+again; fixed ceiling leaves4838.858268s at this anchor, and the adopted UTC window
+is tighter. All current work/waits/concurrency count once. Inactive owner-decision
+time remains separately excluded from active charge; no earlier failed work is
+refunded. Targets remain500us CPU/550us wall per OFE-day, regime750/1500/2500us,
+century182.625s CPU/210s wall. Zero completed candidate days at renewed pickup.
+
+Renewed prelaunch acceptance: same correctness reuses exact-source static
+approval and same QA verifies timing-only renewal, lineage, twelve tool pins,
+compiled fixture and584build pins/66depfiles. [Approved receipt](artifacts/near-bound-execution01-approved.json)
+binds [QA](artifacts/near-bound-execution01-qa-review.json) and
+[correctness](artifacts/near-bound-execution01-correctness-review.json).
+No physical result is implied. The six formal controls may now execute once in
+frozen order, with all previous charges and one unused continuation replay intact.
+
+### Formal controls — C1–C4 pass; C5 assertion failure
+
+**Ran:** C1, C2, C3 and C4 each execute one formal control and PASS on frozen
+source60c852/binary0f84. C5 executes once and FAILS at the mapped raw/weighted
+zero-column assertion: actual`[true,true,true,true,false,false]`, expected
+`[false,true,true,false,false,false]`. [Raw failed C5](artifacts/near-bound-execution01-c5-failed.json)
+and [HALTED state](artifacts/near-bound-execution01-state-c5-failed.json) preserve
+the original attempt. Aggregate control-process elapsed0.291238124s;
+C5 used0.058822289s of its30s cap. These are process/setup/control costs, not
+completed-day CPU or wall costs. C6, references, stability and A/B remain NOT RUN.
+
+The suspected defect is conflating mapped raw-zero columns for eliminated sun
+coordinates with eligible physical dry-role holds. Correctness must independently
+verify the source-derived expectation and affected scope before any correction/
+replay. No numerical/domain failure is being retried on assumption. One new
+continuation replay remains unused. Source/data/solver are frozen; the original
+binary is additionally copied to durable`binaries/execution01-source60c852-tests`.
+If admitted, correction must be assertion-only, preserve C1–C4 dependency-valid
+results, retain C5's consumed charge and keep C6 as its first scheduled invocation.
+
+### Independently adjudicated C5 assertion correction
+
+Static: same correctness reviewer verifies an assertion-only oracle defect.
+REDUCED pullback initializes Jy to zero and omits eliminated columns0/6;
+therefore their mapped zero certificates are true, separately from structural
+eligibility. Frozen FULL physical/mapped certificates remain FTTFFF; REDUCED
+wet physical FTTFFF and mapped TTTTFF; REDUCED dry and C6 physical FFFFFF,
+mapped TFFTFF. Holds and free-mask assertions remain unchanged. No data,
+mathematics or eligibility predicate changes. C1–C4 dependencies remain valid;
+only C5 needs the continuation's single replay. C6 is still its first attempt.
+
+Correction uses isolated `development-treatment-c5-certificate-prep`; original
+source and HALTED state remain immutable. A new `run-tools-execution01-c5-replay`
+copy adds only the explicit C5 replay namespace, retaining historical C1 support.
+Its proposed state retains all original results/failed keys and physical charge,
+removes only C5 from scheduled completed-operation lookup, and reserves the sole
+continuation replay. C5 replay allowance is29.941177711s, not a new30s.
+Approval receipt is absent until corrected source/build and QA custody acceptance.
+
+Ran: corrected detached no-run release build succeeds (no tests execute),
+binary e18b99e4bcc3cf3a280315f56f2eab57e02e98906460c5e4dd0e38fdb86c53e6.
+[Recoverable source](artifacts/near-bound-execution01-replay-source.json) is
+9ce31f5e75721b45af936108824435936ecae3e9dbd072075a3f4a472aae8968,772entries;
+[build custody](artifacts/near-bound-execution01-replay-build.json) verifies578pins/
+60depfiles. Format passes; Clippy exits101 with289 inherited diagnostics and
+[source-bearing comparison](artifacts/near-bound-execution01-replay-clippy-compare.json)
+finds0additions/0removals. No waiver or full-workspace pass is claimed.
+QA's dispatcher approval-status blocker was corrected by an explicit APPROVED
+check plus dispatcher hash binding; its pending-receipt negative check exits1
+before any physical launch. Final QA custody approval precedes replay.
+
 ## Execution assent received after the original launch cutoff — 2026-10-01
 
 Owner says “yes” to running the frozen controls/sweep under remaining original

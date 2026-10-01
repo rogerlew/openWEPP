@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-runner.py",
+    "RUN_FRESH_DAYS",
+    "--test-binary",
+    "/workdir/.cache/openwepp/targets/development-treatment-62c9550b2cad/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "--kind",
+    "control",
+    "--control-id",
+    "C1_empty_admissible"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-10-01T20:31:56.435932+00:00",
+  "elapsed_seconds": 0.39939908822998405,
+  "exit_code": 0,
+  "stdout": "{\"batch\":0,\"cap_seconds\":30,\"cell\":{\"control_id\":\"C1_empty_admissible\"},\"charged_seconds\":0.058649832,\"key\":\"{\\\"batch\\\":0,\\\"cell\\\":{\\\"control_id\\\":\\\"C1_empty_admissible\\\"},\\\"kind\\\":\\\"control\\\"}\",\"kind\":\"control\",\"output\":\"/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-operation-fe622ef69e1608e12123.json\",\"status\":\"complete\"}\n",
+  "stderr": ""
+}

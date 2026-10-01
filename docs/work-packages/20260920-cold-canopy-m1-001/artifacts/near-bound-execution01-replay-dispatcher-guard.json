@@ -1,0 +1,11 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/dispatch-execution01.py"
+  ],
+  "exit": 1,
+  "expected_error": "Final independent custody approval is required before dispatch",
+  "physical_execution": false,
+  "status": "PASS_PENDING_RECEIPT_REFUSED",
+  "dispatcher_sha256": "4d9d381cfb3bf5acb40180c6c0135c4256e2ed9c27e9240b3132978d325a297e"
+}

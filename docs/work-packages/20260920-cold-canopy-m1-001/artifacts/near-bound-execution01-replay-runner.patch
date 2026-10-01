@@ -1,0 +1,21 @@
+--- a/separate-accuracy-runner.py
++++ b/separate-accuracy-runner.py
+@@ -225,12 +225,16 @@
+     namespace = cur.get('verified_defect_namespace', '')
+     if namespace:
+         preserved = cur.get('preserved_defect_operations', [])
+-        if (namespace != 'c1-oracle-replay01'
++        expected_control = {
++            'c1-oracle-replay01': 'C1_empty_admissible',
++            'c5-mapped-certificate-replay01': 'C5_full_wet_reactivation',
++        }.get(namespace)
++        if (expected_control is None
+                 or type(cur.get('defect_replay_consumed')) is not int
+                 or cur['defect_replay_consumed'] != 1
+                 or len(preserved) != 1
+                 or preserved[0]['kind'] != 'control'
+-                or preserved[0]['cell'] != {'control_id': 'C1_empty_admissible'}
++                or preserved[0]['cell'] != {'control_id': expected_control}
+                 or cur['physical_seconds'] < preserved[0]['charged_seconds']):
+             raise RuntimeError('Invalid single-control defect recovery evidence')
+         if kind == 'control' and request == preserved[0]['cell']:

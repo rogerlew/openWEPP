@@ -1,0 +1,489 @@
+{
+  "status": "INCOMPLETE_CONTROL_FAILURE_NO_REPLAY_REMAINING",
+  "controls": [
+    {
+      "batch": 0,
+      "cap_seconds": 30,
+      "cell": {
+        "control_id": "C1_empty_admissible"
+      },
+      "charged_seconds": 0.058649832,
+      "key": "{\"batch\":0,\"cell\":{\"control_id\":\"C1_empty_admissible\"},\"kind\":\"control\"}",
+      "kind": "control",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-operation-fe622ef69e1608e12123.json",
+      "status": "complete"
+    },
+    {
+      "batch": 0,
+      "cap_seconds": 30,
+      "cell": {
+        "control_id": "C2_empty_supersaturation_refusal"
+      },
+      "charged_seconds": 0.059105624,
+      "key": "{\"batch\":0,\"cell\":{\"control_id\":\"C2_empty_supersaturation_refusal\"},\"kind\":\"control\"}",
+      "kind": "control",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-operation-e11098c65c1747683353.json",
+      "status": "complete"
+    },
+    {
+      "batch": 0,
+      "cap_seconds": 30,
+      "cell": {
+        "control_id": "C3_directional_phase_joins"
+      },
+      "charged_seconds": 0.058277691,
+      "key": "{\"batch\":0,\"cell\":{\"control_id\":\"C3_directional_phase_joins\"},\"kind\":\"control\"}",
+      "kind": "control",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-operation-72e5c0569e5aabb3a2c3.json",
+      "status": "complete"
+    },
+    {
+      "batch": 0,
+      "cap_seconds": 30,
+      "cell": {
+        "control_id": "C4_capacity_positive_drainage"
+      },
+      "charged_seconds": 0.056382688,
+      "key": "{\"batch\":0,\"cell\":{\"control_id\":\"C4_capacity_positive_drainage\"},\"kind\":\"control\"}",
+      "kind": "control",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-operation-b85132dc1383bf6873f1.json",
+      "status": "complete"
+    },
+    {
+      "batch": 0,
+      "cap_seconds": 29.941177711,
+      "cell": {
+        "control_id": "C5_full_wet_reactivation"
+      },
+      "charged_seconds": 0.059340288,
+      "key": "{\"batch\":0,\"cell\":{\"control_id\":\"C5_full_wet_reactivation\"},\"kind\":\"control\"}",
+      "kind": "control",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01-c5-replay/separate-accuracy-operation-1501a81a0611eca0471d-c5-mapped-certificate-replay01.json",
+      "status": "complete"
+    },
+    {
+      "batch": 0,
+      "cap_seconds": 30,
+      "cell": {
+        "control_id": "C6_near_bound_rank_refusal"
+      },
+      "charged_seconds": 0.059973032,
+      "key": "{\"batch\":0,\"cell\":{\"control_id\":\"C6_near_bound_rank_refusal\"},\"kind\":\"control\"}",
+      "kind": "control",
+      "output": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01-c5-replay/separate-accuracy-operation-9f2951e2eb8e402949f5-c5-mapped-certificate-replay01.json",
+      "reason": "fixed control failed: \nrunning 1 test\n\nthread 'm1_coupled_tests::m1_separate_accuracy_six_frozen_controls' (428111) panicked at crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8396:9:\nassertion `left == right` failed: C6 physical wetness comes from the frozen upper near-bound and lower reservoir operands\n  left: [4607182418800017407, 4607182418800017407, 4607182418800017407, 4595713839696905144, 4595713839696905144, 4595713839696905144]\n right: [4607182418800017407, 4607182418800017407, 4607182418800017407, 4594726983486244982, 4594726983486244982, 4594726983486244982]\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nm1_coupled_tests::m1_separate_accuracy_six_frozen_controls --- FAILED\n\nfailures:\n\nfailures:\n    m1_coupled_tests::m1_separate_accuracy_six_frozen_controls\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 416 filtered out; finished in 0.06s\n\n",
+      "status": "integrity_failure"
+    }
+  ],
+  "physical_elapsed_seconds": 0.41055144400000004,
+  "reference_elapsed_seconds": 0.0,
+  "prior_historical_control_elapsed_seconds": 0.053829565,
+  "prior_historical_replays_consumed": 1,
+  "continuation_replays_consumed": 1,
+  "references": {
+    "scheduled": 3,
+    "run": 0
+  },
+  "stability": {
+    "scheduled": 3,
+    "run": 0
+  },
+  "cells": [
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "A_cold_ice_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P0",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P1",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "A",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "FULL",
+      "profile": "P3",
+      "cadence_seconds": 60,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "A_cold_ice_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "B_mixed_to_liquid_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P2",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 1800,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 900,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    },
+    {
+      "investigation": "B",
+      "case": "C_freeze_then_melt_day",
+      "formulation": "REDUCED",
+      "profile": "P3",
+      "cadence_seconds": 300,
+      "status": "NOT_RUN",
+      "reason": "C6 control failure; replay allowance exhausted"
+    }
+  ],
+  "completed_candidate_days": 0,
+  "timing_batches": 0,
+  "independent_day_reconstruction": "NOT_RUN_NO_DAY_OPERANDS",
+  "A_conclusion": "No completed cells; reduction/tolerance accuracy or cost ratios unresolved",
+  "B_conclusion": "No matched 60-second baselines; cadence comparisons unavailable",
+  "frontier": "UNMEASURED",
+  "target_cpu_us_per_ofe_day": 500,
+  "target_wall_us_per_ofe_day": 550,
+  "note": "Control process elapsed is not completed-day CPU/wall cost. No physics/solver modification or main Rust adoption.",
+  "C6_static_diagnosis": {
+    "classification": "assertion_oracle_provenance_error",
+    "expected_uses_beginning_lower_mass": 0.018,
+    "actual_uses_current_lower_trial_mass": 0.023,
+    "expected_wet_bits": "0x3fc3bfd8fa998876",
+    "observed_wet_bits": "0x3fc74163587b03b8",
+    "physics_defect_established": false,
+    "further_replay_authorized": false
+  }
+}

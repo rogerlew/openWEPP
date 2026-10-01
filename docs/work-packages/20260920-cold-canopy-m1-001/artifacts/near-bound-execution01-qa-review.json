@@ -1,0 +1,28 @@
+{
+  "schema": "openwepp.work-package.qa-review.v1",
+  "reviewer": "/root/qa",
+  "review_kind": "independent renewed-prelaunch QA review",
+  "evidence_class": "Static",
+  "reviewed_at_utc": "2026-10-01T20:30:29Z",
+  "scope": "Renewed execution01 custody, allowance, runner lineage, and launch readiness only; no physical/test execution by reviewer.",
+  "findings": [
+    {
+      "severity": "RESOLVED",
+      "path": "docs/work-packages/20260920-cold-canopy-m1-001/package.md",
+      "evidence": "The leading package record now identifies the explicit owner re-invocation as adopted, with work cutoff 21:06Z and hard deadline 21:21Z, unchanged cumulative ceiling 458534.927980s and no additional replay. Execution01 measurement limits match those UTC changes only; all physical/reference/cell caps remain unchanged.",
+      "impact": "Renewal authority and finite limits are accepted for the unchanged schedule."
+    },
+    {
+      "severity": "RESOLVED",
+      "path": "artifacts/near-bound-execution01-*",
+      "evidence": "Prelaunch receipt binds source archive/tree 60c852c029337c07ee8c9d80d8c6f97a4a6251fdf3caabcdee78f61a803385e6, fixture d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362, test d524756745398be16eccf1117e6d6aac36287fe4e13dfc8e9c120e61aa00a86a, and binary 0f84a2fa71bce7c5bd4949e99cdeb2d2c12387265e964592874b0ea6b3bb0ffd. Build receipt pins 584 files/66 depfiles. The runner is byte-identical to the historical runner, 12 named tool/input pins are present, and only measurement cutoff/deadline fields changed. NEW state preserves prior HALTED receipt hash, historical replay=1, continuation physical/reference=0, and continuation replay=0 of 1.",
+      "impact": "Custody and lineage are accepted. Parent may seal the approved receipt/status and transition the new state to READY; the old HALTED runner remains untouched."
+    }
+  ],
+  "non_blocking_debt_followups": [
+    {
+      "finding": "Prior terminal QA accepted the exact source/archive, successful no-run binary custody, and final source-bearing lint comparison. Those accepted inputs may be reused only after execution01 explicitly binds them; no old binary receipt may be transferred without that binding."
+    }
+  ],
+  "qa_pass_statement": "QA PASS for renewed execution01 prelaunch custody and finite authority. This accepts only the frozen source/binary/runner/state binding and timely launch envelope; it does not accept any physical outcome. Controls, references, candidates, A/B results, and continuation replay use remain zero/NOT RUN at this review."
+}

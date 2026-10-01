@@ -1,0 +1,68 @@
+{
+  "schema": "openwepp.work_package.correctness_review.v1",
+  "reviewer": "/root/correctness",
+  "role": "independent terminal scientific/correctness reviewer",
+  "evidence_class": {
+    "static": "Inspected the sealed replay source, C6 loader/current-state path, wet-fraction formula, raw C6 failure, terminal runner state, and summarized results.",
+    "ran": "No physical, core, Jacobian, solver, control, reference, or candidate execution was run by this reviewer. A standalone IEEE-754 calculation only distinguished the frozen 0.018 beginning mass from the 0.023 current trial mass."
+  },
+  "reviewed_identity": {
+    "source_tree_sha256": "9ce31f5e75721b45af936108824435936ecae3e9dbd072075a3f4a472aae8968",
+    "test_source_sha256": "4c2b3e2b4fb4812d61a84ecb300cdb4314b8cc4f8660016f68f55923bd1438e4",
+    "fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+    "release_test_binary_sha256": "e18b99e4bcc3cf3a280315f56f2eab57e02e98906460c5e4dd0e38fdb86c53e6",
+    "runner_state_sha256": "d15c24d412bab5b5e8acdfaef1f7bc92ab9d0b7686070d5a8bb11cef92c0a33b",
+    "c5_replay_receipt_sha256": "379e082d18ad09b0690f211d609c76eaeaf3615c3ce4c3ef75bfd20093df321c",
+    "c6_failure_receipt_sha256": "1be44d804184e4764738f4a556ded2631dc6cf25db24510ac224099afee961ee"
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "status": "TERMINAL_CONTROL_FAILURE_NO_REPLAY_REMAINING",
+      "title": "C6 stops on a lower-wetness oracle that uses the beginning mass instead of the current trial mass.",
+      "locations": [
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment-c5-certificate-prep/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:7676",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment-c5-certificate-prep/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:8396",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment-c5-certificate-prep/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1178"
+      ],
+      "evidence": "The explicit default trial coordinate at lower mass index 9 is 0.023 (0x3f978d4fdf3b645a), while the lower beginning reservoir is 0.018 (0x3f926e978d4fdf3b). C6 overrides only upper M/H/D, so its current lower trial remains 0.023. Core wetness uses the current trial reservoir and capacity 0.22*(1.0000000000000002+0.35000000000000003)=0.2970000000000001. The retained formula min((M/C)^(2/3),1) gives 0.18168298549974593, bits 0x3fc74163587b03b8, exactly the observed left value. The asserted 0x3fc3bfd8fa998876 equals the same formula at beginning mass 0.018. This is a test-oracle provenance error, not evidence of changed physics or an incorrect wet-fraction implementation.",
+      "disposition": "No repair or further execution is authorized: the single continuation defect replay was consumed by the successful C5 replay. Preserve the C6 failure and HALTED state. The six-control gate did not pass."
+    }
+  ],
+  "executed_control_disposition": {
+    "C1": "PASS, charged 0.058649832 s",
+    "C2": "PASS, charged 0.059105624 s",
+    "C3": "PASS, charged 0.058277691 s",
+    "C4": "PASS, charged 0.056382688 s",
+    "C5": "Initial assertion-oracle failure preserved; single authorized affected replay PASS, replay charge 0.059340288 s; continuation replay allowance consumed 1/1.",
+    "C6": "First attempt FAIL at the lower wet-fraction literal, charged 0.059973032 s; no replay remains.",
+    "physical_elapsed_seconds": 0.41055144400000004,
+    "runner_phase": "HALTED"
+  },
+  "c6_coverage_reached_before_failure": {
+    "executed_and_asserted": [
+      "ordinary REDUCED BVLS05 assembly returned successfully",
+      "current upper M/H/D bits equal 0x3fd3020c49ba5e36/+0/+0",
+      "role columns, all six structural-area operands, initial-free mask, and physical-current-free mask matched",
+      "upper three provenance wet fractions matched 0x3fefffffffffffff"
+    ],
+    "not_reached_by_this_attempt": [
+      "post-failure core JSON assertions for actual capacity/liquid mass/wet fraction",
+      "independent gap and M/C assertions",
+      "physical and mapped certificate assertions",
+      "held-mask and attempted/completed inspection-counter assertions",
+      "the separate synthetic typed rank-refusal subcheck"
+    ],
+    "interpretation": "The attempt supports partial physical near-capacity path evidence but is not a C6 pass and cannot be used as full near-bound/domain plus rank-seam acceptance. Prior static review remains static evidence only."
+  },
+  "residual_risk_and_missing_tests": [
+    "All three references and three stability trajectories were NOT RUN.",
+    "A remains 0/24 and B remains 0/18; completed candidate days and timing batches are zero.",
+    "There is no independent day reconstruction, accuracy comparison, cadence comparison, CPU/wall measurement, or deployable-cost evidence.",
+    "The accuracy/runtime frontier remains UNMEASURED; the 500 us CPU and 550 us wall per completed OFE-day targets are unevaluated."
+  ],
+  "verdict": {
+    "status": "INCOMPLETE_CONTROL_FAILURE_NO_REPLAY_REMAINING",
+    "statement": "C1-C5 ultimately passed, but C6 did not complete and the only continuation replay is spent. The fixed sweep never began. No accuracy/runtime frontier or readiness claim is supported; preserve the terminal HALTED disposition without further fix or run."
+  }
+}

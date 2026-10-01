@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/workdir/openWEPP/.venv/bin/python",
+    "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-runner.py",
+    "RUN_FRESH_DAYS",
+    "--test-binary",
+    "/workdir/.cache/openwepp/targets/development-treatment-62c9550b2cad/release/deps/openwepp_land_surface_energy-d48ff3e2c6b93487",
+    "--kind",
+    "control",
+    "--control-id",
+    "C3_directional_phase_joins"
+  ],
+  "cwd": "/workdir/openWEPP",
+  "start_utc": "2026-10-01T20:32:18.886099+00:00",
+  "elapsed_seconds": 0.4132401659153402,
+  "exit_code": 0,
+  "stdout": "{\"batch\":0,\"cap_seconds\":30,\"cell\":{\"control_id\":\"C3_directional_phase_joins\"},\"charged_seconds\":0.058277691,\"key\":\"{\\\"batch\\\":0,\\\"cell\\\":{\\\"control_id\\\":\\\"C3_directional_phase_joins\\\"},\\\"kind\\\":\\\"control\\\"}\",\"kind\":\"control\",\"output\":\"/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/run-tools-execution01/separate-accuracy-operation-72e5c0569e5aabb3a2c3.json\",\"status\":\"complete\"}\n",
+  "stderr": ""
+}

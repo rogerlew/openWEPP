@@ -1,0 +1,39 @@
+{
+  "status": "APPROVED_FOR_OWNER_RENEWED_EXECUTION",
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-control-repair-20261001/development-treatment",
+  "binary_sha256": "0f84a2fa71bce7c5bd4949e99cdeb2d2c12387265e964592874b0ea6b3bb0ffd",
+  "artifact_pins": {
+    "separate-accuracy-runner.py": "28b20757707ec678f7d25e42c6f594d3d8f81b59a13cbe26757e1547780cdf74",
+    "separate-accuracy-input-check.json": "7713f550f4cab32062da1742e2abcd35f2c99b80034169e341bd3b02d28ba806",
+    "separate-accuracy-measurement-draft.json": "aeb1c3e947a1e9c9674fcab12027234f1c5c7aaf369735919c399e0724ff30b0",
+    "separate-accuracy-protocol-draft.json": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e",
+    "separate-accuracy-control-fixtures.json": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+    "separate-accuracy-independent-reconstruction.py": "d13fc8575422123bcdd439fe3e613fec92138e1e9d3493d7ebdbee7ba25917f8",
+    "separate-accuracy-source-custody.py": "bd3cb9c63d9f66a7c6bc7c407615e82de1c1abd47057e8d28424f6641b77a877",
+    "separate-accuracy-build-custody.py": "88f09f4d70cc5d0a3679eba13312324d94611a9cd18ea0a9e3483a33f4722492",
+    "architecture-decision-successor-cases.json": "b3ad4fa07c7748c56df0ad9c2fb681be019e86e9bd9befb97d705eb4d10e2ce8",
+    "original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+    "continuous-fixtures-draft01.json": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1"
+  },
+  "reviewers": [
+    "near-bound-execution01-correctness-review.json",
+    "near-bound-execution01-qa-review.json"
+  ],
+  "review_scope": "Owner-renewed frozen six controls then original finite schedule; no added replay or source changes",
+  "source_archive": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-preparation-source-cut03.tar.gz",
+    "sha256": "2f0a47e18672314eeead54ed1d4d56c562025575572c02723333036d428071dd"
+  },
+  "source_receipt": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-preparation-source-cut03.json",
+    "sha256": "5cba344c27b2dc72de0aed901f02cd368171510e9f81e6ae6b99b0044c7fbe2c"
+  },
+  "build_receipt": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-execution01-build.json",
+    "sha256": "e31351a85a9195921d7609dce6914a26828bcae43251f058ab0abed7150a28e6"
+  },
+  "review_evidence": {
+    "near-bound-execution01-correctness-review.json": "ee1350921574da1c9305230ff7c98290b200d51c936a01f585c8a16a04201205",
+    "near-bound-execution01-qa-review.json": "acc5105c8e8404a210714816cc039c98ec0b7226449fd65cf65112772727be2a"
+  }
+}

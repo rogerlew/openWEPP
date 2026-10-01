@@ -1,0 +1,83 @@
+{
+  "source_archive": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-preparation-source-cut03.tar.gz",
+    "sha256": "2f0a47e18672314eeead54ed1d4d56c562025575572c02723333036d428071dd"
+  },
+  "source_receipt": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-preparation-source-cut03.json",
+    "sha256": "5cba344c27b2dc72de0aed901f02cd368171510e9f81e6ae6b99b0044c7fbe2c"
+  },
+  "build_receipt": {
+    "path": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/near-bound-execution01-build.json",
+    "sha256": "e31351a85a9195921d7609dce6914a26828bcae43251f058ab0abed7150a28e6"
+  },
+  "artifact_pins": {
+    "separate-accuracy-runner.py": "28b20757707ec678f7d25e42c6f594d3d8f81b59a13cbe26757e1547780cdf74",
+    "separate-accuracy-input-check.json": "7713f550f4cab32062da1742e2abcd35f2c99b80034169e341bd3b02d28ba806",
+    "separate-accuracy-measurement-draft.json": "aeb1c3e947a1e9c9674fcab12027234f1c5c7aaf369735919c399e0724ff30b0",
+    "separate-accuracy-protocol-draft.json": "3c99c7be66263b864e894c82746bec6fe34ade821e539c9ba534db110585b75e",
+    "separate-accuracy-control-fixtures.json": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+    "separate-accuracy-independent-reconstruction.py": "d13fc8575422123bcdd439fe3e613fec92138e1e9d3493d7ebdbee7ba25917f8",
+    "separate-accuracy-source-custody.py": "bd3cb9c63d9f66a7c6bc7c407615e82de1c1abd47057e8d28424f6641b77a877",
+    "separate-accuracy-build-custody.py": "88f09f4d70cc5d0a3679eba13312324d94611a9cd18ea0a9e3483a33f4722492",
+    "architecture-decision-successor-cases.json": "b3ad4fa07c7748c56df0ad9c2fb681be019e86e9bd9befb97d705eb4d10e2ce8",
+    "original-input-reference.json": "4b324b0a9c136f2203e8073ca260db5be9e7dd07722a37aec60f2cd528be2d54",
+    "continuous-fixtures-draft01.json": "8cf391055e107ca854f72fb1f70a0e78298575ad0d2ede6fa6c9c760c18191e1"
+  },
+  "limits": {
+    "anchor_utc": "2026-10-01T18:30:00Z",
+    "readiness_deadline_utc": "2026-10-01T19:49:16Z",
+    "work_cutoff_utc": "2026-10-01T21:06:00Z",
+    "hard_deadline_utc": "2026-10-01T21:21:00Z",
+    "command_seconds": 180,
+    "all_physical_elapsed_seconds": 1800,
+    "reference_elapsed_seconds": 900,
+    "candidate_cell_elapsed_seconds": 60,
+    "reference_trajectory_seconds": 150,
+    "stability_trajectory_seconds": 150,
+    "control_seconds": 30
+  },
+  "changed_limit_fields": {
+    "work_cutoff_utc": {
+      "old": "2026-10-01T20:15:00Z",
+      "new": "2026-10-01T21:06:00Z"
+    },
+    "hard_deadline_utc": {
+      "old": "2026-10-01T20:30:00Z",
+      "new": "2026-10-01T21:21:00Z"
+    }
+  },
+  "unchanged_other_measurement_fields": true,
+  "runner_byte_identical": true,
+  "state": {
+    "phase": "NEW",
+    "physical_seconds": 0.0,
+    "reference_seconds": 0.0,
+    "operations": {},
+    "completed": [],
+    "failed": [],
+    "results": [],
+    "run_identity": "cold-canopy-m1-execution01-20261001",
+    "prior_halted_state_sha256": "bb30fb6e89e600152765c25384c084b6a050494f24752286e378d7d1b7ceb045",
+    "prior_control_process_elapsed_seconds": 0.053829565,
+    "prior_defect_replays_consumed": 1,
+    "continuation_defect_replays_consumed": 0,
+    "continuation_defect_replays_maximum": 1
+  },
+  "lineage": {
+    "run_identity": "cold-canopy-m1-execution01-20261001",
+    "status": "OWNER_REINVOKED_PENDING_CUSTODY",
+    "prior_state": "/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/separate-accuracy-runner-state.json",
+    "prior_state_sha256": "bb30fb6e89e600152765c25384c084b6a050494f24752286e378d7d1b7ceb045",
+    "prior_control_process_elapsed_seconds": 0.053829565,
+    "prior_defect_replays_consumed": 1,
+    "this_continuation_physical_seconds": 0,
+    "this_continuation_defect_replays_consumed": 0,
+    "maximum_new_defect_replays": 1,
+    "note": "Prior runner remains HALTED. New original scheduled controls then fixed references/cells only after independent readiness. No replay automatically enabled; any verified correction retains prior attempt and shares remaining per-operation cap.",
+    "owner_authorization": "Explicit execute /tmp/openwepp_cold_canopy_m1_control_repair_continuation.md after UTC-extension request",
+    "work_cutoff_utc": "2026-10-01T21:06:00Z",
+    "hard_deadline_utc": "2026-10-01T21:21:00Z"
+  },
+  "physical_launch": "NONE; await reviewers"
+}
