@@ -1,5 +1,30 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Execution assent received after the original launch cutoff — 2026-10-01
+
+Owner says “yes” to running the frozen controls/sweep under remaining original
+limits. First clock on pickup is20:21:48.811170UTC, after the retained20:15UTC
+launch cutoff (hard closing deadline20:30UTC). This assent is not silently
+interpreted as extending either UTC boundary. No physical run started.
+
+Source custody recheck passes tree`60c852c029337c07ee8c9d80d8c6f97a4a6251fdf3caabcdee78f61a803385e6`;
+build custody verifies584pins/66depfiles and binary
+`0f84a2fa71bce7c5bd4949e99cdeb2d2c12387265e964592874b0ea6b3bb0ffd`.
+No experiment process is running; the old runner remains HALTED and the new
+runner-state file does not exist. All counters and prior failures remain intact.
+
+A concrete UTC-only extension is requested and **PENDING**, not adopted:
+physical work cutoff21:06UTC, closing deadline21:21UTC today, retaining cumulative
+ceiling458534.927980s, aggregate physical1800s, reference900s, command180s,
+control30s/reference150s/cell60s, fixed order and existing replay lineage.
+No new charge allowance, source change or automatic retry is proposed.
+
+Conservative pickup anchor20:21:00UTC; sample2026-10-01T20:24:19.878903+00:00 charges
+199.878903s for this pickup, cumulative453595.948615s. Inactive owner-decision
+time between the prior final sample19:53:37.536373 and pickup is not a running
+experiment or deducted command wait. New physical charge remains0s; A0/24 and
+B0/18, controls/references/stability NOT RUN. Further return time remains charged.
+
 ## Owner option1 adoption — physical near-bound preparation, 2026-10-01
 
 The owner says **“proceed with 1”**, adopting the proposed bounded completion
