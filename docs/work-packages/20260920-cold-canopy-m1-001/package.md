@@ -1,5 +1,69 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+
+## HOLD disposition and finalization proposal — 2026-10-02
+
+Owner requests disposition and continuation prompt authoring only.
+**HOLD_NO_COMPLETED_DAY**, class(c), insufficient evidence/runtime feasibility,
+remains at local `f66dc3b3326f0c769c68e5b60d6235ed0e1c1f0b`. Retain the
+reviewed recoverable partial observation, final format PASS, four introduced LSE
+lint failures and65s final-build timeout. No authenticated final binary or capture
+approval exists. W1/W2/W3 remain0/0/0; no source edits, builds or physical workflow
+are authorized by this authoring request. Historical controls remain accepted.
+
+The [proposed finalization continuation](artifacts/refusal-observation-finalization-continuation-prompt.md)
+is also saved byte-identically to
+`/tmp/openwepp_cold_canopy_m1_refusal_observation_finalization_continuation.md`.
+It resumes from source50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5
+and its full archive, preserving accepted hooks while requiring actual-branch
+W1/W2 completeness, actual W3 caller/context provenance, a full schema/byte proof,
+source quality and exact final-source custody before independent sealed approval.
+No numerical repair follows; the same one-shot captures end at reviewed diagnosis
+or honest insufficient evidence. Unmeasured observer overhead remains explicit.
+
+Proposed extension **5400charged seconds once upon invocation**, ceiling
+465734.927980s to471134.927980s. It is unadopted now. The prior50-minute readiness
+attempt left substantive provenance/validation/schema work and only65s for its
+final build. This proposal allows readiness min(4200s,R-1200s), reserves its
+last600s for final checks/review closure, and retains600s closing reserve before
+the hard total deadline. These are finite planning bounds, not a completion or
+runtime guarantee. Latest carry governs future pickup; no refund or slot reset.
+
+Runtime acceptance remains500us CPU/550us wall per completed OFE-day; regime
+CPU750/1500/2500us;10-OFE/36,525-day century182.625s CPU/210s wall.1440joint solves
+share0.347222us CPU each before other work. Missing native costs, completed-day
+feasibility and target gap remain unresolved. Observation/corrected guards alone
+establish no demonstrated physical work reduction. Further solver development or
+benchmarking is not authorized by this proposed diagnosis-only continuation.
+
+Current authoring conservatively anchors15:04UTC, before first clock15:04:55UTC.
+Carry463776.069712s includes prior return through06:16UTC; inactive owner-decision
+interval06:16–15:04UTC is excluded. Existing ceiling remains465734.927980s.
+Selected documentation checks: distinct same-reviewer correctness and QA review,
+repository/tmp equality, references, scoped diff and48unrelated-path hashes.
+No Rust check or physical workflow is selected for this documentation-only scope.
+
+Static independent prompt reviews, message-only: same distinct `/root/correctness`
+reports **PASS, no blocking findings**, accepting preservation of terminal-driven
+completeness, exact provenance, byte-bound obligations, existing fixes, conditional
+allowance and diagnosis-only scope. Same `/root/qa` reports **PASS**, verifying
+source/archive/fixture pickup, truthful final build/lint status, latest-carry
+accounting and unchanged capture limits. Its compressed-number spacing note is
+nonblocking. These are prompt reviews only; they approve no source, build, capture,
+numerical diagnosis or runtime result.
+
+Repository/tmp prompt bytes match; named artifact references exist; scoped diff
+checks and all48unrelated-file hashes pass. Exact current scope is this leading
+HOLD/proposal record and the new prompt artifact. Commit locally; no push.
+
+Conservative authoring charge through **2026-10-02T15:11:00UTC**, including both
+reviews, checks, commit and return tail: pickup420s, cumulative
+**464196.069712s**, remaining **1538.858268s** under unchanged ceiling
+**465734.927980s**. Reconcile any return after15:11UTC. The proposed5400s extension
+is unadopted; future invocation must use this latest carry plus subsequent charges.
+No new physical/control time or slot consumption; historical totals remain
+2.265900994s/0.053829565s. Prior readiness remains expired.
+
 ## Observation completion readiness failed — HOLD, 2026-10-02
 
 **HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility.**
