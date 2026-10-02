@@ -1,0 +1,37 @@
+{
+  "schema": "cold-canopy-m1-refusal-capture-v1",
+  "default_off": true,
+  "cap_bytes": 262144,
+  "cap_basis": {
+    "bounded_arrays": {
+      "coordinates": 21,
+      "jacobian_rows": 21,
+      "mh_events": 16
+    },
+    "static_worst_case_bytes": null,
+    "serialization_assertion": "payload UTF-8 length <= cap",
+    "status": "not derived; no capture permitted"
+  },
+  "unreached": "null records only a naturally unreached copied field; coverage remains incomplete",
+  "witnesses": {
+    "W1": {
+      "representation": "FULL physical identity",
+      "guard": "strict scratch full_norm > initial_radius",
+      "fields": "ordered ids, raw/weighted J/r, normalizers/scales/bounds, p0/r0/h0/delta0/p1, norms, masks, lambda, radii, factor operands/work"
+    },
+    "W2": {
+      "representation": "FULL physical identity",
+      "guard": "strict ascending final-box lower comparison at coordinate 5",
+      "fields": "W1 fields plus r1/h1/inverse intermediates/delta1/p2/final norms"
+    },
+    "W3": {
+      "representation": "REDUCED map supplied by request/profile",
+      "fields": "M/H/T bits, predicate, scoped site, occupancy/index, trial bits, total/truncation and terminal binding"
+    }
+  },
+  "fail_closed": {
+    "truncated_mh_events": "capture incomplete",
+    "observer_lock_failure": "capture incomplete"
+  },
+  "status": "NOT_READY"
+}

@@ -1,0 +1,154 @@
+{
+  "archive_sha256": "4014d7be4fd75525fbf4d016902959b5478d02153ae8fb0cef7137072e180a39",
+  "members": {
+    "checks/baseline-clippy.json": "fd2d98146156fad233dd0bc75ae89a66c8b0b8e37b08e827bebf7df377e1fedb",
+    "checks/baseline-clippy.stderr": "3aec0daa74f7fbe5bee9d9047461d525386a8fe0bacad3486a03cd073786ee04",
+    "checks/baseline-clippy.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/baseline-lse-clippy.json": "dd9f9dc15deb268265099fd3e563f8ba61797832e313080efab59b0cc0d65f26",
+    "checks/baseline-lse-clippy.stderr": "926027734a70f8fbe909bb2c575e246846a030f413f273fa0d726faadda9b053",
+    "checks/baseline-lse-clippy.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/baseline-vegetation-clippy.json": "c88436219035f315661f84d2d2c6ae6070aec13981158a10b46a7291fa22a7cc",
+    "checks/baseline-vegetation-clippy.stderr": "9576f1f7e73fc2bb1ec2336aae60cb485c591eadc60a1b998573411c34057e08",
+    "checks/baseline-vegetation-clippy.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/baseline-vegetation-fresh-clippy.json": "496e4020053a6f2b176670b0f40b64aa18c35dd82519f5d2a3129c870037754e",
+    "checks/baseline-vegetation-fresh-clippy.stderr": "b69b2adc90caed35f8b3a41423ef22493100bf71b65cfda78f087aed5c17efaa",
+    "checks/baseline-vegetation-fresh-clippy.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/candidate-lse-early.json": "04f52af3420d807f45f1c3f8396e8f591823b79f8b74dfbc45ae872e1d3196e1",
+    "checks/candidate-lse-early.stderr": "8d33d1343fc7a68caa48ca851e3059cea6387e39920b94a9d9801eb667f6f7f1",
+    "checks/candidate-lse-early.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/candidate-lse-early02.json": "a11d081f440afaa93c47c74f0f4cc13ae02eb790f2a68b78f20e28db09ab8da6",
+    "checks/candidate-lse-early02.stderr": "f64ccbeef08a2fc304080c4aff94ab73629bdfea8f2fa0ad414ecabc49ea69bd",
+    "checks/candidate-lse-early02.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/candidate-vegetation-early.json": "342cb11f3e984a590918500634b554f3d723002ebe7f98d6ad97d8b4b3fb9a6c",
+    "checks/candidate-vegetation-early.stderr": "3ea9674c3eb49c92ee0d15169615f579e3fa16b7cc4aa63bb969f5fed2b97178",
+    "checks/candidate-vegetation-early.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/candidate-vegetation-early02.json": "009059ac7d8e99760e2b259217040a56c56ec4bb7ee615af81987feec94eef8e",
+    "checks/candidate-vegetation-early02.stderr": "a114f2731b3dfa3a431c8f4d92c3920fb9a0678c56650c9370c0b535e652f740",
+    "checks/candidate-vegetation-early02.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/final-build.json": "c0e3c65b2c70f017cb09ae583e39fba973733b184efdc8a9f66f2cef0bff2c52",
+    "checks/final-build.stderr": "4fed1abc1baeb9133fd2ca7ab946433316ef236f9a75e7ac3e6030d2da4be269",
+    "checks/final-build.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/final-focused-format.json": "c20b32255238aea6f2053b66592c71a5b854be083aa03eff129be7bf40bcbf77",
+    "checks/final-focused-format.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/final-focused-format.stdout": "668e4b9ddb088b319e2201b8ff244a149d819cbdab7bce67a0392e415f054eaa",
+    "checks/final-lse-clippy.json": "b6f5fb069436a73219af3b49fba596cc21b389a910ab6b69eb202defe6f0a36e",
+    "checks/final-lse-clippy.stderr": "3fdb33b482b29696f066d632d4c25240263efb63a061c7ebd44efdffa794ac51",
+    "checks/final-lse-clippy.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "checks/final-vegetation-clippy.json": "335917c7306e86b4ba019b98fa78541f05b355b2e09b883681843f12b98b94a1",
+    "checks/final-vegetation-clippy.stderr": "fd46e7c596cc7b117714dec426a22b6aecc245ab1d5d2ee306013c6baf550891",
+    "checks/final-vegetation-clippy.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build-env.json": "7ae4b9bd27e80bd744dc4f2df5f09b7e6ad4c8b0bb7beef73b8a21ef0481f9d2"
+  },
+  "final_source_sha256": "0d1536541afc6280367f08ceb04e10adc9a9f24e4dfc6eed5a1ea80713eff894",
+  "final_checks": {
+    "final-build.json": {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--no-run",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--features",
+        "m1-trust-region-physical-stage"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/target-candidate",
+      "exit": 0,
+      "start_utc": "2026-10-02T04:25:53.404178+00:00",
+      "elapsed_seconds": 125.14580327318981,
+      "source_before": {
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "2133d2dd95cac0539c347836b09dc765ebf22c84a338500b851aaeb1f83b7c14",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "bcd8f9cbcfeee59e52d9625827e556a0acdbe913e2f7ef1ee60cbf1fcbb21177",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "5cde6a97c65ac4d59c1d7710550fe5235b1c76e3521c73614e1d2eefdf7ce250",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs": "02e65d68cf90ef5d0f5d417e171a5cbfe37e6d5daf9183675b419234c70fc19d"
+      },
+      "source_unchanged": true,
+      "physical_invocations": 0
+    },
+    "final-focused-format.json": {
+      "command": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/target-format",
+      "exit": 1,
+      "start_utc": "2026-10-02T04:25:53.405310+00:00",
+      "elapsed_seconds": 0.31724504195153713,
+      "source_before": {
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "2133d2dd95cac0539c347836b09dc765ebf22c84a338500b851aaeb1f83b7c14",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "bcd8f9cbcfeee59e52d9625827e556a0acdbe913e2f7ef1ee60cbf1fcbb21177",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "5cde6a97c65ac4d59c1d7710550fe5235b1c76e3521c73614e1d2eefdf7ce250",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs": "02e65d68cf90ef5d0f5d417e171a5cbfe37e6d5daf9183675b419234c70fc19d"
+      },
+      "source_unchanged": true,
+      "physical_invocations": 0
+    },
+    "final-lse-clippy.json": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--tests",
+        "--features",
+        "m1-trust-region-physical-stage",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/target-candidate-lint-lse",
+      "exit": 101,
+      "start_utc": "2026-10-02T04:25:53.404401+00:00",
+      "elapsed_seconds": 14.977899410761893,
+      "source_before": {
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "2133d2dd95cac0539c347836b09dc765ebf22c84a338500b851aaeb1f83b7c14",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "bcd8f9cbcfeee59e52d9625827e556a0acdbe913e2f7ef1ee60cbf1fcbb21177",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "5cde6a97c65ac4d59c1d7710550fe5235b1c76e3521c73614e1d2eefdf7ce250",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs": "02e65d68cf90ef5d0f5d417e171a5cbfe37e6d5daf9183675b419234c70fc19d"
+      },
+      "source_unchanged": true,
+      "physical_invocations": 0
+    },
+    "final-vegetation-clippy.json": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-vegetation",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/target-candidate-lint-vegetation",
+      "exit": 101,
+      "start_utc": "2026-10-02T04:25:53.404873+00:00",
+      "elapsed_seconds": 5.487469771876931,
+      "source_before": {
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "2133d2dd95cac0539c347836b09dc765ebf22c84a338500b851aaeb1f83b7c14",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "bcd8f9cbcfeee59e52d9625827e556a0acdbe913e2f7ef1ee60cbf1fcbb21177",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "5cde6a97c65ac4d59c1d7710550fe5235b1c76e3521c73614e1d2eefdf7ce250",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs": "02e65d68cf90ef5d0f5d417e171a5cbfe37e6d5daf9183675b419234c70fc19d"
+      },
+      "source_unchanged": true,
+      "physical_invocations": 0
+    }
+  },
+  "status": "BUILD_ONLY_PASS_FORMAT_AND_NEW_LINT_FAIL_NO_CAPTURE_APPROVAL"
+}

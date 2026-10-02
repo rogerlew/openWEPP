@@ -1,0 +1,34 @@
+{
+  "evidence_class": "Ran: matching source-bearing baseline/candidate Clippy commands. Static: diagnostic/source-location comparison, not count-only acceptance.",
+  "status": "FAIL_NEW_INSTRUMENTATION_DIAGNOSTICS",
+  "checks": [
+    {
+      "package": "vegetation",
+      "baseline_receipt": "baseline-vegetation-fresh-clippy.json",
+      "candidate_receipt": "final-vegetation-clippy.json",
+      "baseline_diagnostics": 1,
+      "candidate_diagnostics": 4,
+      "additional_source_bearing_blocks": [
+        "error: you seem to be trying to use `match` for destructuring a single pattern. Consider using `if let`\n   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:224:9\n    |\n224 | /         match m1_mh_refusal_context().lock() {\n225 | |             Ok(mut slot) => slot.replace(context),\n226 | |             Err(_) => {\n227 | |                 M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);\n...   |\n230 | |         }\n    | |_________^\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#single_match_else\n    = note: `-D clippy::single-match-else` implied by `-D warnings`\n    = help: to override `-D warnings` add `#[allow(clippy::single_match_else)]`\nhelp: try\n    |\n224 ~         if let Ok(mut slot) = m1_mh_refusal_context().lock() { slot.replace(context) } else {\n225 +             M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);\n226 +             None\n227 +         }\n    |\n\n",
+        "error: you seem to be trying to use `match` for destructuring a single pattern. Consider using `if let`\n   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:309:22\n    |\n309 |               context: match m1_mh_refusal_context().lock() {\n    |  ______________________^\n310 | |                 Ok(slot) => slot.clone(),\n311 | |                 Err(_) => {\n312 | |                     M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);\n...   |\n315 | |             },\n    | |_____________^\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#single_match_else\nhelp: try\n    |\n309 ~             context: if let Ok(slot) = m1_mh_refusal_context().lock() { slot.clone() } else {\n310 +                 M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);\n311 +                 None\n312 ~             },\n    |\n\n",
+        "error: unnecessary boolean `not` operation\n   --> crates/openwepp-vegetation/src/cold_canopy_m1.rs:349:21\n    |\n349 | /                     if !temperature_k.is_finite() {\n350 | |                         \"temperature_nonfinite\"\n351 | |                     } else {\n352 | |                         \"temperature_out_of_range\"\n353 | |                     },\n    | |_____________________^\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#if_not_else\n    = note: `-D clippy::if-not-else` implied by `-D warnings`\n    = help: to override `-D warnings` add `#[allow(clippy::if_not_else)]`\nhelp: try\n    |\n349 ~                     if temperature_k.is_finite() {\n350 +                         \"temperature_out_of_range\"\n351 +                     } else {\n352 +                         \"temperature_nonfinite\"\n353 ~                     },\n    |\n\n"
+      ],
+      "baseline_stderr_sha256": "b69b2adc90caed35f8b3a41423ef22493100bf71b65cfda78f087aed5c17efaa",
+      "candidate_stderr_sha256": "fd46e7c596cc7b117714dec426a22b6aecc245ab1d5d2ee306013c6baf550891"
+    },
+    {
+      "package": "lse",
+      "baseline_receipt": "baseline-lse-clippy.json",
+      "candidate_receipt": "final-lse-clippy.json",
+      "baseline_diagnostics": 232,
+      "candidate_diagnostics": 234,
+      "additional_source_bearing_blocks": [
+        "error: consider adding a `;` to the last statement for consistent formatting\n    --> crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1718:17\n     |\n1718 | /                 *trace.borrow_mut() = Some(std::mem::replace(\n1719 | |                     &mut self.input,\n1720 | |                     M1RefusalCaptureTrace {\n1721 | |                         input_raw_residual_bits: [0; 21],\n...    |\n1730 | |                     },\n1731 | |                 ))\n     | |__________________^\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#semicolon_if_nothing_returned\nhelp: add a `;` here\n     |\n1718 |                 *trace.borrow_mut() = Some(std::mem::replace(\n ...\n1730 |                     },\n1731 ~                 ));\n     |\n\n",
+        "error: this function has too many lines (110/100)\n   --> crates/openwepp-land-surface-energy/src/transaction_v3_open.rs:242:5\n    |\n242 |     fn v3_open_transaction_phase_custody_and_rejection() {\n    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_lines\n\n"
+      ],
+      "baseline_stderr_sha256": "926027734a70f8fbe909bb2c575e246846a030f413f273fa0d726faadda9b053",
+      "candidate_stderr_sha256": "3fdb33b482b29696f066d632d4c25240263efb63a061c7ebd44efdffa794ac51"
+    }
+  ],
+  "disposition": "Vegetation observer introduces single_match_else at cold_canopy_m1.rs224/309 and if_not_else at349. LSE serializer introduces too_many_lines (172/100) at m1_trust_region_stage1.rs1510. Extra semicolon report in preexisting materialization-poison test code is not used to waive any failure. No clean/no-new lint acceptance."
+}

@@ -1,0 +1,22 @@
+{
+  "evidence_class": "Ran: archive/member and source/link verification; no physical invocation",
+  "baseline_source_sha256": "e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3",
+  "candidate_source_sha256": "0d1536541afc6280367f08ceb04e10adc9a9f24e4dfc6eed5a1ea80713eff894",
+  "baseline": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-diagnosis-20261001/source",
+  "candidate": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source",
+  "changed_files": [
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+    "crates/openwepp-vegetation/src/cold_canopy_m1.rs"
+  ],
+  "source_archive": "refusal-capture-source-cut01.tar.gz",
+  "source_receipt": "refusal-capture-source-cut01.json",
+  "regular_members_verified": 765,
+  "recorded_links_verified": 7,
+  "patch": "refusal-capture-source.patch",
+  "patch_sha256": "3e3513b27e1bc4e4fb8bd4e29020d7144d4011ed739facde10895e4e899cbebc",
+  "status": "PRESERVED_PARTIAL_NOT_READY",
+  "supersedes": "Initial entry-only recovery/patch; terminal archive and patch now bind all four changed files.",
+  "patch_format": "Zero-context unified diff; git apply --unidiff-zero. Full verified archive is canonical standalone recovery. Context-only spaces removed by generating zero-context diff, no source edit."
+}

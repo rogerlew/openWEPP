@@ -1,0 +1,85 @@
+{
+  "schema": "cold-canopy-m1-refusal-capture-correctness-v3",
+  "reviewer": "/root/correctness",
+  "role": "independent correctness and science-authority review",
+  "findings": [
+    {
+      "severity": "high",
+      "status": "blocks capture readiness; accepted as an explicit reason for terminal incomplete disposition",
+      "location": "crates/openwepp-vegetation/src/cold_canopy_m1.rs:247-319 and crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:1227,1556,1593,2235,2637,2661,4718",
+      "finding": "W3 cannot identify the actual terminal VEG-E-142/MhConsistency event. Only the core constructor calls mark_m1_mh_refusal_terminal; reduced reconstruction, phase-join selection, Jacobian and screening constructors can emit recorded events without an exact join to a propagated terminal error. The vegetation derivative/residual emitters temperature_jacobian_empty, temperature_jacobian_phase_empty, temperature_jacobian_nonfinite, evap_empty_temperature and residual_empty_temperature have no caller context. mark_m1_mh_refusal_terminal mutates the last buffered event rather than an event identity, so it cannot prove that a handled earlier event is the one that propagated. The event schema also lacks beginning/current/trial role, physical/reduced map, proposal direction and derivative provenance. capture_complete does not require one uniquely joined terminal event. A record-lock failure while arming is not itself made an explicit observer error.",
+      "required_before_any_capture": "Bind every reachable MhConsistency emitter to exact caller/site and state role, carry map/proposal/derivative provenance, and join the actually propagated terminal error to its event identity. Require exactly one complete terminal join; fail closed on absence, ambiguity, truncation or every observer lock failure. Preserve undefined phase when construction rejects."
+    },
+    {
+      "severity": "high",
+      "status": "blocks capture readiness; accepted as an explicit reason for terminal incomplete disposition",
+      "location": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1510-1681, crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:2985-3003, and crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:79-179",
+      "finding": "The W1/W2 structured record retains many actual operands but does not freeze all required metadata. Missing structured fields are the selected FULL/REDUCED formulation and logical-to-physical map; an explicitly role-bound base/candidate/scratch/final map; typed terminal refusal, refinement/correction ordinal, ordinary-versus-Dot2 stage, guard stage and failing coordinate; the fixed-coordinate norm contribution or its partial sum; and complete reached refinement work. Only factor_applications plus eligibility scalar/guard counts are structured. The existing refusal ledger also contains total scalar_operations, guard_events, attempted/denied entries, BVLS04 positive entries, factor applications, Dot2 residual rows/free gradients, ordered norms, first-residual operations, second-Dot2 operations, factor-application operations, coordinate updates, whole-KKT operations/guards and upward-enclosure operations/guards, but the capture leaves these inside Debug text. Therefore W1's strict full_norm > input.initial_radius and W2's p2[5] < scaled_lower[5] cannot yet be independently bound to a complete frozen reached-stage record. capture_complete can still be true when refinement_capture is null or required W1/W2 fields are null.",
+      "required_before_any_capture": "Serialize the actual formulation/maps and state roles, typed refusal/stage/correction/coordinate, fixed-coordinate contribution and full reached work ledger. Make witness-specific completeness validate every required reached field and expected terminal guard; null may mean only naturally unreached."
+    },
+    {
+      "severity": "high",
+      "status": "blocks capture readiness; accepted as an explicit reason for terminal incomplete disposition",
+      "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-capture-schema-manifest.json and crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:137-179",
+      "finding": "The fixed 262144-byte output cap has no prospective proof. The manifest records static_worst_case_bytes as null and NOT_READY, while the test checks serialized length only after constructing the result. That assertion cannot establish in advance that every complete maximum-width schema instance, including sixteen M/H events, fits the cap.",
+      "required_before_any_capture": "Derive and independently review a reproducible worst-case byte bound for all keys, punctuation, maximum-width scalars, arrays, optional fields and bounded events, then bind that proof and the exact frozen schema in a sealed receipt."
+    },
+    {
+      "severity": "medium",
+      "status": "blocks an approval claim for the partial candidate but does not prevent preserving it as incomplete evidence",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/checks/final-focused-format.json, final-lse-clippy.json, final-vegetation-clippy.json and docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-capture-lint-comparison.json",
+      "finding": "The frozen source builds in release no-run mode, but focused rustfmt fails and source-bearing Clippy comparison reports new diagnostics: vegetation adds three observer-style findings; LSE adds refusal_capture_json_for_test too_many_lines and a serializer semicolon finding among a noisy inherited-failure baseline. There is no successful format/lint reconciliation or capture-ready sealed receipt.",
+      "required_before_any_capture": "Resolve introduced diagnostics without lint suppression, pass the selected format check, reconcile baseline/candidate lint by source location, and seal the final source/build/tool/input/command/cap/slot/deadline identities for independent approval."
+    }
+  ],
+  "reviewed_at_utc": "2026-10-02T04:29:00Z",
+  "evidence_class": "Static: authenticated baseline, canonical BVLS-03/BVLS-04 and M/H authority, frozen candidate source, schema manifest and package disposition. Ran by this reviewer: offline source diff, source/archive hash comparison and JSON validation only. Inspected coordinator-run no-run build/format/Clippy receipts. No solver, physical witness, control, capture, reconstruction or benchmark invocation.",
+  "reviewed_source": {
+    "baseline": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-diagnosis-20261001/source",
+    "candidate": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source",
+    "source_archive": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-capture-source-cut01.tar.gz",
+    "source_receipt": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-capture-source-cut01.json",
+    "source_sha256": "0d1536541afc6280367f08ceb04e10adc9a9f24e4dfc6eed5a1ea80713eff894",
+    "archive_sha256": "8115ae2cebef4a4c7e62dd228b34e27f73b260d151c17f6dcfc31eca30f10f54",
+    "changed_file_sha256": {
+      "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs": "bcd8f9cbcfeee59e52d9625827e556a0acdbe913e2f7ef1ee60cbf1fcbb21177",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "5cde6a97c65ac4d59c1d7710550fe5235b1c76e3521c73614e1d2eefdf7ce250",
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "2133d2dd95cac0539c347836b09dc765ebf22c84a338500b851aaeb1f83b7c14",
+      "crates/openwepp-vegetation/src/cold_canopy_m1.rs": "02e65d68cf90ef5d0f5d417e171a5cbfe37e6d5daf9183675b419234c70fc19d"
+    }
+  },
+  "authority": [
+    "docs/work-packages/role-review.md",
+    "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-diagnosis-continuation-prompt.md",
+    "/tmp/openwepp_cold_canopy_m1_refusal_capture_continuation.md",
+    "SC-LANDSURFACEENERGY-001 numerical-methods BVLS-03/BVLS-04",
+    "SC-VEGETATION-001 M/H inverse, domain guards and INV-VEGETATION-142"
+  ],
+  "accepted_fix_verification": [
+    "The entry restores the historical second reduced-seed reconstruction immediately before controller entry; the reviewer's earlier objection to that reconstruction is withdrawn.",
+    "The Stage1 refinement observation scope is declared before the capture scope, so reverse drop order lets the capture consume the live trace.",
+    "W2 copies p2 and the active masks immediately before active admission and the ascending final-box scan, preserving the rejected candidate on FinalBoxLower.",
+    "The sequential Map serializer retains raw and weighted J/r, normalizers/scales, input/scaled bounds, base/live state, free/factor data, lambda, distinct original and face radii, p0/p1/p2, corrections, inverse intermediates, masks and squared/unsquared full/reduced norms without the prior json macro recursion failure.",
+    "The fixed-coordinate note now points to captured scaled-step vectors and matching masks in ascending coordinate order; the false generic FULL-map assertion was removed.",
+    "M/H total_count, truncation and observer_error are serialized, and truncation/observer_error make the entry fail after output. Scoped constructor contexts no longer span later unrelated evaluation work."
+  ],
+  "noninterference_assessment": {
+    "static_numerical_assessment": "The default-off Stage1 hooks copy already-computed values and do not feed solver arithmetic, comparison order, state or work ledgers. The W2 pre-guard p2 copy performs no floating arithmetic. The constructor predicate refactor preserves the baseline short-circuit order and rejection taxonomy. The detached observer does add disabled-path atomic checks and capture-path locking/copy overhead, so it cannot be treated as benchmark cost.",
+    "limit": "No physical capture or control ran, final formatting/lint failed, and W3 provenance remains incomplete; this is not capture-readiness approval or empirical noninterference proof."
+  },
+  "validation_evidence": {
+    "release_no_run_build": "PASS, exit 0, 125.14580327318981 seconds, physical invocations 0, frozen source hashes unchanged; coordinator receipt final-build.json and build artifact binary sha256 8ae290a7c5bb7b4e4075899f949bd6a515b8a1d450afb032697ebfe0bbcfe9e7.",
+    "focused_rustfmt": "FAIL, exit 1; frozen source unchanged.",
+    "lse_clippy": "FAIL, exit 101; baseline 232 diagnostics, candidate 234, with introduced capture-source findings.",
+    "vegetation_clippy": "FAIL, exit 101; baseline 1 diagnostic, candidate 4, with three introduced observer-style findings.",
+    "physical_invocations": 0,
+    "witness_slots_consumed": {"W1": 0, "W2": 0, "W3": 0}
+  },
+  "residual_risk_and_missing_tests": [
+    "No actual W1 or W2 bit record exists, so signed violations, ULP distances and exact or higher-precision reconstructions were not performed.",
+    "No actual W3 event exists, so rejecting site, predicate, M/H/T, role, phase status and proposal/map/derivative provenance remain unknown.",
+    "No complete reference/candidate day or native completed-day timing exists; feasibility against 500us CPU/550us wall per completed OFE-day remains unestablished.",
+    "The partial observer source is preserved only in the detached experiment/archive and is not an accepted production or main-checkout change."
+  ],
+  "verdict": "APPROVE_TERMINAL_INCOMPLETE_DISPOSITION_ONLY: the frozen cut may be preserved as partial observation work and the package may close on option (c), insufficient evidence/runtime feasibility, with HOLD_NO_COMPLETED_DAY and zero W1/W2/W3 launches. NOT_READY_FOR_CAPTURE: do not invoke any witness from this source, do not claim arithmetic diagnosis, causal correction, runtime feasibility, or sealed-receipt approval."
+}

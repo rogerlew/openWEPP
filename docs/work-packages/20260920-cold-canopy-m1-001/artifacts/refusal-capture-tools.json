@@ -1,0 +1,43 @@
+{
+  "cargo": {
+    "path": "/nix/store/cavxgwfb7l7akyvvqvnl39d6nw0wckgh-cargo-1.97.1/bin/cargo",
+    "resolved": "/nix/store/cavxgwfb7l7akyvvqvnl39d6nw0wckgh-cargo-1.97.1/bin/cargo",
+    "sha256": "431bc749d662c3b5356b52559d3c312cd8b25bb45969d099ec85c1b9dd972e17",
+    "exit": 0,
+    "version": "cargo 1.97.0 (c980f4866 2026-06-30)",
+    "stderr": ""
+  },
+  "rustc": {
+    "path": "/nix/store/paaihvr59q1101200mabmk7y4yhw42g7-rustc-wrapper-1.97.1/bin/rustc",
+    "resolved": "/nix/store/paaihvr59q1101200mabmk7y4yhw42g7-rustc-wrapper-1.97.1/bin/rustc",
+    "sha256": "d1e06b7c73a05d2c899ae69b0463aa0e3865dd45f929d7044972670b313998b1",
+    "exit": 0,
+    "version": "rustc 1.97.1 (8bab26f4f 2026-07-14) (built from a source tarball)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 21.1.8",
+    "stderr": ""
+  },
+  "rustfmt": {
+    "path": "/nix/store/k2hwcha2p1fy0v0py34vq3jyvwqk339p-rustfmt-1.97.1/bin/rustfmt",
+    "resolved": "/nix/store/k2hwcha2p1fy0v0py34vq3jyvwqk339p-rustfmt-1.97.1/bin/rustfmt",
+    "sha256": "04a0d1cead537f8aade9f00dd1f5ba8110669ccdcf4dd2ae203d7e72958d8ba7",
+    "exit": 0,
+    "version": "rustfmt 1.9.0",
+    "stderr": ""
+  },
+  "cargo-clippy": {
+    "path": "/nix/store/94wbbyb1fzp4cplfs9samki875k9ypg7-clippy-1.97.1/bin/cargo-clippy",
+    "resolved": "/nix/store/94wbbyb1fzp4cplfs9samki875k9ypg7-clippy-1.97.1/bin/cargo-clippy",
+    "sha256": "f6f4f8fa5302ed7b60bdab48979b7f98b91e7cc5e47c2d809090b27d851385e1",
+    "exit": 0,
+    "version": "clippy 0.1.97",
+    "stderr": ""
+  },
+  "cc": {
+    "path": "/nix/store/3d1c302vw7kc8a5vknhmn34c0pd7zm6m-gcc-wrapper-15.3.0/bin/cc",
+    "resolved": "/nix/store/3d1c302vw7kc8a5vknhmn34c0pd7zm6m-gcc-wrapper-15.3.0/bin/gcc",
+    "sha256": "9453ab25e5ba2cc7663d83a80d7f7970b2d2bb500b4bd56958085188f24df83e",
+    "exit": 0,
+    "version": "gcc (GCC) 15.3.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+    "stderr": ""
+  },
+  "note": "Fresh tools used for both baseline/candidate; no physical invocation. Source/build/input pins sealed separately before capture."
+}

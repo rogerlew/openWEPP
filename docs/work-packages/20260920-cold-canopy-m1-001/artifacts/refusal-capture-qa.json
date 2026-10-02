@@ -1,0 +1,118 @@
+{
+  "reviewer": "/root/qa",
+  "role": "secondary QA / evidence review",
+  "evidence_class": "Static: mutable source and retained custody/accounting artifacts; no physical invocation or source mutation",
+  "reviewed_at_utc": "2026-10-02T04:05:00Z",
+  "reviewed_source": {
+    "base": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-diagnosis-20261001/source",
+    "candidate": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source"
+  },
+  "verdict": "NOT_READY: no W1/W2/W3 capture approval and no sealed-receipt approval.",
+  "findings": [
+    {
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:123-137; crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs:3678",
+      "finding": "The candidate IPC extracts the previously mapped seed and calls the controller directly. The frozen full day path re-runs m1_separate_accuracy_reconstruct_reduced immediately before the support controller call. Skipping that call changes the original evaluation count/order even if the resulting coordinates match.",
+      "required_fix": "Restore the second reconstruction at its original position before the one support controller invocation, and bind it in the sealed command/accounting as part of the permitted witness invocation."
+    },
+    {
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:9878-9882,1526-1537",
+      "finding": "The capture scope is declared before the refinement observation scope. Drop order restores the refinement slot before RefusalCaptureScope::drop calls refinement_observation_take(), so the emitted trace can be empty/default rather than the observed refusal values.",
+      "required_fix": "Transfer the trace explicitly while its observation scope is live, or otherwise establish ownership/drop order that preserves the actual trace. Verify the final structured output contains reached values and marks post-refusal fields unreached."
+    },
+    {
+      "severity": "high",
+      "location": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs:138-151",
+      "finding": "The candidate payload renders controller, adapter, refinement, and M/H observations with Debug formatting. That is not a frozen structured schema, does not make required-field completeness mechanically checkable, and does not bind binary64 values, unreached fields, and W3 provenance roles in stable named fields.",
+      "required_fix": "Emit a versioned structured JSON schema with named bit fields, ordered IDs/maps/masks, reached/unreached status, refusal call/predicate provenance, and a preflight field-completeness assertion under the fixed 262144-byte cap."
+    },
+    {
+      "severity": "high",
+      "location": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-capture-recovery.json; /home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/checks/",
+      "finding": "The existing recovery receipt records format, no-run build, and lint as not run, and its patch identity predates the active source changes. Baseline clippy is also inherited-failing: source-bearing LSE --no-deps has 232 diagnostics and fresh vegetation lint has the inherited 137-line v11 diagnostic. No comparable candidate evidence or final source/build/tool/command receipt exists yet.",
+      "required_fix": "After freezing the repaired bytes, run selected no-run format/build and source-bearing comparable baseline/candidate lint checks. Record diagnostic deltas truthfully, then seal final source/build/tool/input/profile/init/fixture/command/output-cap/slot/deadline identities."
+    }
+  ],
+  "confirmed_evidence": {
+    "prior_custody": "PASS for retained archive identity: 48 members and five inventory source pins verified; W1/W2/W3 identities match the stated 60-second support-0 cells.",
+    "accounting": "Current record declares anchor 2026-10-02T03:53Z, carry 457476.069712 s, ceiling 462134.927980 s, readiness deadline 04:33Z, and zero slots consumed.",
+    "lint": "The cached vegetation exit-0 result is unusable. Fresh baseline vegetation lint is source-bearing and fails only inherited v11 too_many_lines; LSE --no-deps is source-bearing and fails with inherited diagnostics."
+  },
+  "withdrawn_preliminary_concern": {
+    "finding": "Observation plumbing must be cfg(test)-only and inaccessible from the normal dependency build.",
+    "disposition": "withdrawn: the adopted prompt permits narrow default-off observation plumbing across the normal dependency build. Final review must instead establish that the disabled path has no decision, evaluation-count, arithmetic-order, precision, work-accounting, or state effect and that capture failure/incompleteness fails explicitly."
+  },
+  "nonblocking_followups": [
+    "Use the full libtest module path with --exact when sealing the capture command; the bare test function name matches zero tests.",
+    "No cargo fmt, clippy, build, test, deny, or capture PASS may be claimed from the present evidence."
+  ],
+  "same_reviewer_followup_static_utc": "2026-10-02T04:24:29Z",
+  "same_reviewer_followup": {
+    "verified_fixes": [
+      "The IPC restores the original second reduced-seed reconstruction immediately before controller entry.",
+      "Stage-1 declares the refinement observation scope before the capture scope, so the capture scope drops first and takes the live trace.",
+      "The IPC emits structured refinement/adapter/M-H fields and marks M-H truncation or observer failure incomplete with a failing assertion.",
+      "M-H context, record, and terminal lock failures now set observer_error."
+    ],
+    "remaining_blocking_findings": [
+      {
+        "severity": "high",
+        "location": "artifacts/refusal-capture-schema-manifest.json",
+        "finding": "The manifest truthfully records static_worst_case_bytes as null and status NOT_READY. No prospective, reproducible bound proves that the complete schema fits the fixed 262144-byte cap.",
+        "required_fix": "Provide and review a bound covering all serialized structures, maximum-width scalar encodings, keys, punctuation, optional/repeated fields, and every bounded event before sealing a receipt."
+      },
+      {
+        "severity": "high",
+        "location": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/checks",
+        "finding": "No final frozen candidate format/no-run build or source-bearing candidate lint comparison/diagnostic reconciliation exists. The latest candidate vegetation lint evidence predates the final source adjustment and contains a new clippy::if_not_else diagnostic; early evidence is explicitly mutable-source-only.",
+        "required_fix": "Freeze the source, execute and record selected final no-run checks, then bind their exact bytes and outcome in the sealed receipt."
+      }
+    ],
+    "verdict": "NOT_READY. The 04:33Z readiness boundary must preserve partial source/evidence and retain zero W1/W2/W3 slots unless the cap proof and final receipt are completed and independently reapproved."
+  },
+  "terminal_partial_preservation_review": {
+    "evidence_class": "Static/Ran no-run checks only; no physical invocation",
+    "reviewed_at_utc": "2026-10-02T04:26:51Z",
+    "custody": {
+      "result": "PASS",
+      "source_archive": "artifacts/refusal-capture-source-cut01.tar.gz",
+      "archive_sha256": "8115ae2cebef4a4c7e62dd228b34e27f73b260d151c17f6dcfc31eca30f10f54",
+      "receipt_entries": 772,
+      "archive_regular_members": 765,
+      "note": "The receipt accounts for seven recorded links; the four frozen changed-file digests agree between the receipt and final no-run check source_before records. Fixture digest remains d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362."
+    },
+    "accounting": {
+      "result": "PASS",
+      "slots": {"W1": 0, "W2": 0, "W3": 0},
+      "note": "The accounting artifact continues to bind the adopted ceiling and readiness deadline; no capture receipt or result exists."
+    },
+    "final_no_run_checks": {
+      "focused_rustfmt_check": "FAIL, exit 1; source digest remained unchanged.",
+      "lse_clippy": "FAIL, exit 101; 234 diagnostics, including inherited baseline failures.",
+      "vegetation_clippy": "FAIL, exit 101; inherited v11 too_many_lines plus newly introduced observer-style diagnostics (including clippy::single_match_else and clippy::if_not_else).",
+      "build": "PASS, exit 0: cargo test --release --no-run -p openwepp-land-surface-energy --features m1-trust-region-physical-stage, 125.145803 s, frozen source unchanged, physical_invocations 0. This is build custody only and does not approve capture."
+    },
+    "remaining_missing_evidence": [
+      "A prospective complete-schema output-cap proof for 262144 bytes; the manifest records static_worst_case_bytes null and NOT_READY.",
+      "W3 complete actual-site provenance: the captured schema lacks the required beginning/current/trial role, proposal/map/derivative provenance, and independently validated unique terminal join across all reachable MhConsistency emitters.",
+      "A sealed receipt binding final source/build/tools/input/profile/init/command/output cap/slots/deadlines after successful applicable no-run checks."
+    ],
+    "verdict": "PASS for honest partial preservation and zero-slot custody; NOT_READY for capture. Option (c), insufficient evidence/runtime feasibility, remains the only supported disposition."
+  },
+  "terminal_same_reviewer_closeout": {
+    "reviewed_at_utc": "2026-10-02T04:29:00Z",
+    "evidence_class": "Ran no-run build/check custody; Static disposition review",
+    "verified": [
+      "refusal-capture-results.json accurately states NOT_READY_PRESERVED_PARTIAL_INSTRUMENTATION, no approved sealed receipt, zero new physical seconds, and W1/W2/W3 each 0 reserved/0 invoked/0 elapsed.",
+      "The final 772-entry source receipt and its archive/patch recovery are bound to source sha256 0d1536541afc6280367f08ceb04e10adc9a9f24e4dfc6eed5a1ea80713eff894; the no-run build binary is custody-only.",
+      "The package leading disposition matches the evidence: it retains HOLD_NO_COMPLETED_DAY, calls the no-run build PASS, preserves direct rustfmt and source-bearing lint failures, and makes no diagnostic-completion claim."
+    ],
+    "checks": {
+      "build": "PASS_BUILD_ONLY: exit 0, 125.145803 s, unchanged source, no physical invocations.",
+      "format": "FAIL: direct four-file rustfmt --check exit 1.",
+      "lint": "FAIL_NEW_INSTRUMENTATION_DIAGNOSTICS: LSE 232 baseline to 234 candidate; vegetation 1 baseline to 4 candidate."
+    },
+    "verdict": "APPROVED_TERMINAL_PARTIAL_PRESERVATION_ONLY. No capture, sealed-receipt, numerical diagnosis, repair, or runtime-feasibility approval follows."
+  }
+}

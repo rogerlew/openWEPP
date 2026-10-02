@@ -1,5 +1,170 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Refusal capture readiness failed — partial source preserved, 2026-10-02
+
+Targets remain **500us CPU /550us wall per completed OFE-day**, regime CPU
+750/1500/2500us, and10-OFE century182.625s CPU/210s wall. At unchanged60s
+cadence1440joint solves share0.347222us CPU/solve before other costs (regimes
+0.520833/1.041667/1.736111us). No credible runtime path or completed day is
+established. Historical4.920672–10.316618ms CPU samples are failed partial
+attempts, not day costs, speedup, or a redesigned-method lower bound.
+
+**Ran:** baseline/archive/link reauthentication; detached observation authoring;
+release no-run compilation; focused format and source-bearing baseline/candidate
+lint; source/build/tool custody. **Static:** independent correctness and QA review.
+**NOT RUN:** W1/W2/W3, physical preflight, numerical reconstruction, control,
+full-day, sweep or benchmark. Slots remain **0/0/0**, new physical elapsed **0s**.
+Historical physical2.265900994s and control0.053829565s remain separate unchanged.
+No approved sealed capture receipt exists. The numerical diagnosis is **incomplete**;
+this is actual partial instrumentation preservation, not a static diagnosis called
+complete. Recommendation remains **(c), insufficient evidence/runtime feasibility**,
+with scientific/runtime **HOLD_NO_COMPLETED_DAY**.
+
+The same sole implementer added a support0-only entry, default-off Stage1 trace
+capture, binary64 serialization and partial cross-crate M/H observation in one
+isolated copy. Independent review caught and verified fixes for historical seed
+replay, trace-drop lifetime, pre-refusal p2 retention, dropped serializer fields,
+and observation-loss reporting. The original suggestion to remove the second
+seed reconstruction was wrong: the same reviewer withdrew it after the full
+historical day path was inspected. No solver, guard threshold, fixture, cadence,
+main-checkout Rust or scientific authority was changed. Detached observation
+noninterference/field completeness is not approved in full.
+
+Remaining blockers, in order:
+
+1. W3 derivative helper provenance and terminal error binding remain incomplete;
+   some contexts still lack actual caller/vector/map/role information. Constructor,
+   screening, reduced-map and phase hooks do not prove which actual event produced
+   the terminal error. A rejected constructor has no inferred canonical phase.
+2. The complete prospective field/hook schema and output-cap sufficiency are not
+   approved. The262144-byte cap and16-event storage bound have no accepted proof
+   of completeness. Required typed refusal/work/map evidence remains subject to
+   the final correctness findings. Null cannot certify an uninstrumented field
+   was unreached.
+3. Final focused formatting and no-new-diagnostics lint acceptance fail. No gate
+   is waived to spend a witness slot. W1/W2 still lack actual captured operand
+   streams: no signed violation, ULP distance or exact/higher-precision comparison
+   can be reported. Potential hooks are not witness evidence.
+4. Even a future guard correction supplies no demonstrated cost reduction. Native
+   owner/receiver costs, completed-day distributions and a supported work/cost
+   model are missing; the remaining deployable gap is unmeasured. Reuse the pinned
+   [work inventory](artifacts/refusal-diagnosis-work-inventory.json) within its
+   partial-attempt/component scope; wall attribution is not CPU cost and proposal
+   cost is not OFE-day or whole-run cost. Resolve causal evidence and a credible
+   cost path before meaningful day/cost comparison. No repair is authorized here.
+
+Frozen observation source:
+`/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source`,
+identity `0d1536541afc6280367f08ceb04e10adc9a9f24e4dfc6eed5a1ea80713eff894`.
+[Recovery](artifacts/refusal-capture-recovery.json),
+[source receipt](artifacts/refusal-capture-source-cut01.json),
+[full source archive](artifacts/refusal-capture-source-cut01.tar.gz), and
+[exact four-file patch](artifacts/refusal-capture-source.patch) preserve765regular
+members and seven exact links without writing through linked directories.
+The authenticated baseline remains unchanged at `e900961e…760c3`; fixture
+`d3616640…d8362` is unchanged. The new build has binary
+`8ae290a7c5bb7b4e4075899f949bd6a515b8a1d450afb032697ebfe0bbcfe9e7`,
+with550pins/35depfiles in [build custody](artifacts/refusal-capture-build.json).
+It is a compiled partial observer, **not an approved capture executable**.
+
+[Final check receipts and raw logs](artifacts/refusal-capture-checks.json)
+bind unchanged frozen source: release no-run **PASS** in125.145803s; direct
+four-file rustfmt **FAIL**; source-bearing LSE Clippy **FAIL**,232baseline versus
+234candidate diagnostics; vegetation **FAIL**,1baseline versus4candidate.
+[Source-bearing comparison](artifacts/refusal-capture-lint-comparison.json)
+identifies introduced serializer length and observer match/if diagnostics.
+Counts alone do not establish inheritance. Earlier `cargo fmt --all` success
+was insufficient for these included files; final direct formatting is decisive.
+The earlier candidate macro-recursion failure, new lint failures and cached-only
+vegetation exit0 remain retained; the cached result is excluded. A mutable-source
+no-run attempt was stopped around175s and supplies no final-source evidence.
+No new lint allowance remains. Every final command is bounded below180s.
+
+Readiness failed within the adopted cap on concrete missing fields/provenance,
+missing cap proof and failed selected checks. Source was frozen before04:27UTC;
+no attempt is made to use the later work window to renew readiness. Recoverable
+partial work is retained; none of the actual W1/W2/W3 numerical questions is
+claimed resolved. Accepted historical controls and the two partial-support
+reconstructions remain accepted only within their unchanged original scope.
+Independent terminal [correctness](artifacts/refusal-capture-correctness.json)
+and [QA](artifacts/refusal-capture-qa.json) approve **partial preservation and
+option(c) only**, bound to the frozen source. Neither approves capture, arithmetic
+diagnosis, repair or runtime feasibility. Correctness additionally identifies
+missing structured W1/W2 formulation/maps, typed refusal/correction/guard/coordinate,
+fixed-step contribution, full work ledger and witness-specific completeness checks.
+These are concrete remaining instrumentation obligations, not reconstructed facts.
+
+Exact terminal repository diff: this package record plus15new
+`artifacts/refusal-capture-*` evidence/recovery files (the previously committed
+continuation prompt is unchanged). Source changes exist only inside the detached
+copy/archive/patch; main Rust, fixtures, authority and all48initial unrelated files
+are preserved. JSON and local-reference checks pass. No authority/anti-evasion
+surface changed, and no physical test was substituted for the selected no-run
+check. Local scoped commit only; no push.
+
+Conservative charge through**2026-10-02T04:35:00UTC**, including reviews and
+commit/return tail: pickup**2520s**, cumulative**459996.069712s**, remaining
+**2138.858268s** below the once-extended**462134.927980s**ceiling.
+[Accounting](artifacts/refusal-capture-accounting.json) retains the03:53anchor,
+04:33readiness deadline and original renewed work/hard deadlines. Any later
+return tail is still charged; unused time does not renew readiness or authorize
+another capture/repair. No source-authoring or build process remains running.
+
+## Adopted sealed refusal capture — 2026-10-02
+
+Owner invokes `/tmp/openwepp_cold_canopy_m1_refusal_capture_continuation.md`.
+Its 3600s extension is adopted once; ceiling462134.927980s. Prior conservative
+carry457476.069712s covers return through03:50UTC; the inactive owner-decision
+interval03:50–03:53UTC is excluded. First reading anchors03:53UTC,
+R4658.858268s; readiness cutoff04:33UTC, work cutoff05:00:38.858268UTC,
+hard deadline05:10:38.858268UTC. All active time and waits count once.
+[Current accounting](artifacts/refusal-capture-accounting.json).
+
+Intent: reauthenticate the preserved C6 source, create one durable mutable
+observation copy, implement default-off diagnostic plumbing and a single-support
+failure dump with complete frozen schema. One implementer and distinct correctness
+and QA reviewers own implementation and independent approval. No physical launch
+until field/noninterference review, format, no-run build, baseline/candidate lint
+comparison and sealed source/build/tool/input/command custody pass. Each command
+is bounded to180s; captures W1/W2/W3 in fixed order have one30s slot each, no retry.
+No repair, main Rust adoption, physics/guard/fixture/cadence change or push.
+Reuse unchanged accepted controls and partial reconstructions within their scope.
+Readiness failure preserves partial source and zero launches, never waived fields.
+
+Targets remain500us CPU/550us wall per complete OFE-day; regime750/1500/2500us
+CPU;10-OFE century182.625s CPU/210s wall.1440 joint solves/day share0.347222us
+CPU/solve before other costs. Failed partial4.920672–10.316618ms CPU is not day
+cost. Observation overhead is not benchmark cost; no guard-only correction
+establishes a credible runtime path. Scientific/runtime HOLD remains pending
+actual operands, reviewed diagnosis and separately authorized complete-day work.
+
+Current readiness work: authenticated the unchanged765regular/seven-link baseline
+and created `/home/roger/openwepp-experiments/cold-canopy-m1-refusal-capture-20261002/source`.
+Parent independently authenticated all48retained run members and five inventory
+pins ([receipt](artifacts/refusal-capture-prior-custody.json)). Initial correctness
+review blocks the entry-only draft for missing evaluation-site bits/provenance;
+an initial seed finding was subsequently withdrawn: the historical day path
+reconstructs twice, and the second call must be retained. Same correctness
+reviewer verified its restoration after parent/QA inspected the full call path.
+Implementation continues within the same04:33readiness deadline; no slot consumed.
+Cargo/cc initially absent from PATH were located in installed Nix1.97.1/GCC15.3
+stores; this was environment friction, not a missing toolchain. Source-bearing
+baseline lint now runs: LSE has232existing diagnostics, vegetation has one
+`v11.rs::validate_resource_custody_core` too-many-lines diagnostic. Comparison
+uses matching `--no-deps` package commands and separate targets, retaining failed
+logs. A cached vegetation exit0 is excluded from source-bearing evidence.
+No lint PASS, instrumented binary, sealed receipt or launch approval is claimed.
+
+Internal reassessment04:14UTC: **CONTINUE** within the unchanged readiness cap.
+The first rich-hook release no-run build passed, but later schema/context edits
+invalidate that binary for capture. Independent correctness identified loss of
+trace at scope drop, post-refusal p2 recording, absent W3 terminal provenance,
+and fields dropped during a macro-size correction. Fixes remain assigned to the
+same sole implementer; no field or review obligation is waived. Early candidate
+lint exposed JSON macro recursion and a new observer lint, both retained as failed
+checks. W3 scope must distinguish handled screening failures from the terminal
+propagating event. No numerical repair or physical invocation has occurred.
+
 ## HOLD disposition and proposed capture continuation — 2026-10-02
 
 Owner requests disposition and prompt authoring only. Diagnosis at

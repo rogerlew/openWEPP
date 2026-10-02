@@ -1,0 +1,80 @@
+{
+  "evidence_class": "Ran: offline authentication of retained C6 run archive and inventory pins; no physical invocation",
+  "archive_sha256": "7acbe07f32a19ea1091abfd6f9725efdefbffe9f4376e464972caac834ac68e8",
+  "members_verified": 48,
+  "witnesses": {
+    "W1": {
+      "identity": {
+        "raw_member": "run-tools-c6-oracle/separate-accuracy-operation-9eff508eb3c2f3cf9a6f-c6-current-wetness-replay01.json",
+        "sha256": "63f0fe0fabf0be09f4023e0949516f1c6ea8f75a0673b5e19b8150d8ea7c6860",
+        "cell": {
+          "cadence_seconds": 60,
+          "case": "A_cold_ice_day",
+          "formulation": "FULL",
+          "investigation": "A",
+          "profile": "P0"
+        },
+        "kind": "reference",
+        "support_id": 0
+      },
+      "raw_keys": [
+        "batch",
+        "kind",
+        "payload",
+        "raw_stdout",
+        "request"
+      ]
+    },
+    "W2": {
+      "identity": {
+        "raw_member": "run-tools-c6-oracle/separate-accuracy-operation-31a09ea4c64d90067db2-c6-current-wetness-replay01.json",
+        "sha256": "4e2d7015cb0fda9d7a4b031326ad0e1e53d80c60c49dae06f813372b5e21d869",
+        "cell": {
+          "cadence_seconds": 60,
+          "case": "C_freeze_then_melt_day",
+          "formulation": "FULL",
+          "investigation": "A",
+          "profile": "P2"
+        },
+        "kind": "diagnostic",
+        "support_id": 0
+      },
+      "raw_keys": [
+        "batch",
+        "kind",
+        "payload",
+        "raw_stdout",
+        "request"
+      ]
+    },
+    "W3": {
+      "identity": {
+        "raw_member": "run-tools-c6-oracle/separate-accuracy-operation-6083bcf6038ac9ddde5f-c6-current-wetness-replay01.json",
+        "sha256": "b8833b952b4d0048f7a91daad168c7cf90b642fd54f36717b85be5a4f00038e3",
+        "cell": {
+          "cadence_seconds": 60,
+          "case": "C_freeze_then_melt_day",
+          "formulation": "REDUCED",
+          "investigation": "A",
+          "profile": "P0"
+        },
+        "kind": "diagnostic",
+        "support_id": 0
+      },
+      "raw_keys": [
+        "batch",
+        "kind",
+        "payload",
+        "raw_stdout",
+        "request"
+      ]
+    }
+  },
+  "inventory_source_pins_verified": {
+    "c6-oracle-terminal-state.json": "1a299ed8fefb87bee9a6603e580c9cd058ce1828017f5c04923e79a12eef5432",
+    "c6-oracle-results.json": "1a15e799ef17d6fbcdd68b3b007b8704451a3c3f26d844f541bd467b7e617626",
+    "cost-attribution-summary.json": "633d039ee9e89c1abb4108c3dd6eac677d524c280d07ec17cbbfc9c3b1950d44",
+    "cost-attribution-decision-bounds.json": "d679861793c9969ff7b2884b26196dc73d3b81f22a111aea3ed2dc62cc74ac67",
+    "cost-attribution-independent-review.json": "3751e9ef5d9e158f6fd3d984581f9dbc5d145d1c973c26a2cda0fef17f65883b"
+  }
+}

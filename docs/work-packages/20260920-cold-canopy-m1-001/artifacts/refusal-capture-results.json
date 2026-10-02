@@ -1,0 +1,40 @@
+{
+  "evidence_class": "Ran: source/archive/build custody and no-run/source-quality commands. Static: partial instrumentation review. No physical invocation or numerical inequality reconstruction.",
+  "status": "NOT_READY_PRESERVED_PARTIAL_INSTRUMENTATION",
+  "scientific_runtime_status": "HOLD_NO_COMPLETED_DAY",
+  "recommendation": "c_insufficient_evidence_runtime_feasibility",
+  "source_sha256": "0d1536541afc6280367f08ceb04e10adc9a9f24e4dfc6eed5a1ea80713eff894",
+  "binary_sha256": "8ae290a7c5bb7b4e4075899f949bd6a515b8a1d450afb032697ebfe0bbcfe9e7",
+  "approved_sealed_capture_receipt": null,
+  "witness_slots": {
+    "W1": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0,
+      "status": "NOT_RUN_READINESS_FAILED"
+    },
+    "W2": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0,
+      "status": "NOT_RUN_READINESS_FAILED"
+    },
+    "W3": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0,
+      "status": "NOT_RUN_READINESS_FAILED"
+    }
+  },
+  "historical_physical_seconds": 2.265900994,
+  "historical_control_seconds": 0.053829565,
+  "new_physical_seconds": 0,
+  "missing_facts": {
+    "W1": "Actual naturally reached p0/correction/p1/norm/radius operand stream and exact signed/ULP/exact-real inequality; potential hooks do not replace capture.",
+    "W2": "Actual p2[5]/scaled_lower[5], corrections, maps and ordered inequality; no actual bit stream collected.",
+    "W3": "Comprehensive actual derivative/caller roles and terminal error provenance plus captured M/H/T bits; no phase inference after failed construction.",
+    "readiness": "Complete reviewed hook/field schema, defensible output bound, successful focused formatting/no-new-lint comparison and approved sealed receipt.",
+    "runtime": "No completed day or credible native work/cost model against adopted targets; no cost reduction supplied by observation."
+  },
+  "follow_on": "No repair, solver replacement, new capture or expanded allowance is implied by preservation."
+}
