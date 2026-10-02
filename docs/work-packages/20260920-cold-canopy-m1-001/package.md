@@ -1,5 +1,128 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Observation completion readiness failed — HOLD, 2026-10-02
+
+**HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility.**
+Targets remain500us CPU/550us wall per completed OFE-day, regime CPU750/1500/2500us,
+and10-OFE/36,525-day century182.625s CPU/210s wall. At60s cadence1440joint solves
+share0.347222us CPU each before other work (regimes0.520833/1.041667/1.736111us).
+Neither completed-day cost nor the remaining target gap is established. Historical
+failed4.920672–10.316618ms CPU partial attempts are not day costs or a lower bound
+on a redesigned method. Observation changes demonstrate no reduction in physical
+work; native component costs and a credible feasible method remain missing.
+
+Readiness expired at **06:10:00UTC** with acceptance gaps. No physical workflow,
+preflight, capture, benchmark or numerical repair ran. W1/W2/W3 slots remain
+**0/0/0**, with no reservations. No approved sealed receipt exists. Historical
+controls and partial reconstructions remain accepted within their original scope.
+Actual W1/W2 bit operands, signed/ULP reconstruction and W3 terminal provenance
+are still absent; no local arithmetic correction or method defect is demonstrated.
+
+The detached partial source is recoverable at
+`/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completion-20261002/source`,
+identity `50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5`.
+The verified [full source archive](artifacts/refusal-completion-source-cut01.tar.gz)
+and [receipt](artifacts/refusal-completion-source-cut01.json) preserve765regular
+files and seven exact links; archive SHA256
+`bb516512924f730ad4ad3cb22b40d0181dec66975127d7dd976194e2ec87fe24`.
+Use these for recovery; [the diff against the authenticated previous partial](artifacts/refusal-completion-vs-partial.patch)
+is supplementary. Exactly four detached files changed: `m1_coupled_tests.rs`,
+`m1_trust_region_stage1.rs`, `solver_covered_evaluation/m1_coupled.rs`, and
+vegetation `cold_canopy_m1.rs`. All other source members, fixture and links match
+the prior partial. No main Rust adoption, dependency, authority, fixture, cadence,
+guard/tolerance/rank change, branch switch or push occurred;48unrelated paths
+retain their pickup hashes.
+
+Retained improvements include structured work/terminal metadata, ordered norm
+intermediates, per-face trace isolation, inactive-observer gating, an error-carried
+M/H event identity, and decomposed field-preserving serialization. Correctness
+accepted the exact error join and observer hook arithmetic placement within their
+reviewed scope. Manual `M1Error` equality preserves code/stage semantics; its
+non-exhaustive Debug rendering adds `..` to diagnostic text. This narrow diagnostic
+delta is explicit, not a claim that every byte of error rendering is unchanged.
+
+Ranked remaining readiness blockers:
+
+1. Actual W3 caller/state-role/map/proposal/direction/FD/pass provenance is incomplete;
+   generic full/trial labels do not identify actual reduced/base/probe callers.
+2. Actual-stage field validation and reached/unreached semantics are incomplete;
+   field declarations and null values alone do not establish capture completeness.
+3. Full field-to-hook schema and reproducible worst-case byte bound are unproved.
+   Prospective1024event/16MiB limits are observation-only drafts, not approved bounds.
+4. Source quality and final build acceptance remain unmet. No final binary is
+   authenticated; all captures remain prohibited on this source.
+
+**Ran:** final focused four-file rustfmt PASS. Final release no-run timed out
+at65.005s with the process group killed, before readiness expired. The shortened
+65s cap was prospective to fit the remaining readiness window; there was no retry.
+Both final Clippy commands completed with exit101 on unchanged final source.
+Source/location comparison matched all232inherited LSE diagnostics and found four
+introduced diagnostics: IPC function113lines, one uninlined format argument, and
+two missing statement semicolons. Vegetation matched its one inherited diagnostic
+and introduced none. This is vegetation no-new-lint evidence, not a clean Clippy
+exit. Intermediate no-run passes and source-drifting checks are retained but do
+not authenticate the final source. No tests or physical workflow were executed.
+
+Exact commands, source identities, exits, comparisons and raw output are in
+[results](artifacts/refusal-completion-results.json) and the
+[61-member checks/helper archive](artifacts/refusal-completion-checks.tar.gz),
+verified against its [member hashes](artifacts/refusal-completion-checks.json).
+Helper/protocol/schema files in that archive remain drafts, explicitly unapproved.
+The earlier helper lock/durable reservation/timeout fixes retain their scoped QA
+acceptance; they provide no permission to launch an incomplete source.
+
+Independent terminal review is **partial preservation only**. Same distinct
+[/root/correctness](artifacts/refusal-completion-correctness.json) accepts the
+error-carried join, per-face reset, actual zero-lambda norm hooks and full BVLS05
+counter serialization. It identifies incomplete W1/W2 operand/ordered-trace/mask
+and stage validation, unconditional `unreached_is_natural_only`, weaker
+`witness_complete`, and W3 completeness that can accept absent or misclassified
+context. Concrete uncovered constructors are at `validate_with_q_guard`, both
+`check_m1_probe_side` cases and its handled tie screen. Ordinary constructors also
+acquire observer atomic/RAII overhead; default-off allocation avoidance is not
+proof of zero runtime overhead or full noninterference. Same distinct
+[/root/qa](artifacts/refusal-completion-qa.json) verifies custody, format, retained
+helper fixes, no captures and the final lint/build failures. Both require HOLD;
+neither approves capture, diagnosis, main adoption or runtime feasibility.
+
+Scoped reference/JSON checks and unrelated-file preservation pass. The initial
+scoped whitespace check flagged unified-diff blank context markers; regenerating
+the supplementary patch with zero context removes that representation-only issue.
+Terminal validation is limited to the stated checks and static reviews; no
+anti-evasion or scientific campaign was triggered by authority/fixture edits,
+because those surfaces did not change. The committed scope is this maintained
+record and `refusal-completion-*` evidence/recovery files only. Next direction
+must address the named missing observation facts and credible runtime feasibility;
+this failed readiness window does not renew itself, authorize a numerical repair,
+or create another capture slot.
+
+Conservative final charge through **2026-10-02T06:16:00UTC** includes implementation,
+checks, concurrent reviews counted once, preservation, commit and return tail:
+current pickup3360s, cumulative **463776.069712s**, remaining **1958.858268s**
+under adopted ceiling465734.927980s. Reconcile any return after06:16UTC. All slots
+and historical physical2.265900994s/control0.053829565s totals remain unchanged.
+The [accounting record](artifacts/refusal-completion-accounting.json) carries the
+anchor, excluded owner-decision interval and exact deadlines. The unused overall
+balance does not override the expired06:10readiness stop.
+
+## Observation completion adopted — 2026-10-02
+
+Owner invocation adopts [the completion continuation](artifacts/refusal-observation-completion-continuation-prompt.md), including its3600s increment once: ceiling465734.927980s. Carry460416.069712s through05:06UTC; documented inactive owner interval05:06–05:20UTC excluded. Conservative execution anchor05:20:00UTC includes first reading; R5318.858268s. Readiness deadline06:10:00UTC, work cutoff06:38:38.858268UTC, hard deadline06:48:38.858268UTC. All active work/waits/concurrency count once, commands and children<=180s.
+
+Intent: complete detached default-off observation only, from authenticated partial source0d1536541afc6280367f08ceb04e10adc9a9f24e4dfc6eed5a1ea80713eff894. Preserve frozen originals; one mutable durable copy. Complete structured W1/W2 metadata/ledger, W3 event provenance, schema/byte bound and source quality before independent correctness/QA sealed approval. Selected checks: direct changed-file rustfmt, release no-run LSE physical-stage build, source-bearing matched clippy with inherited diagnostics reconciled, custody and noninterference. No physical preflight; persistent W1/W2/W3 slots0/0/0, one30s invocation each/90s aggregate only after approval. No main Rust, numerical repair, authority/fixture/cadence change, branch switch or push. Scope ends at reviewed diagnosis or honest readiness failure with recoverable source.
+
+Runtime acceptance remains500us CPU/550us wall per completed OFE-day, regime CPU750/1500/2500us;10-OFE century182.625s CPU/210s wall.1440joint solves share0.347222us CPU each before other work. Failed partial attempts do not establish day cost or redesign feasibility; HOLD persists absent credible runtime evidence. Historical controls remain accepted unchanged.
+
+Two initial compilation cycles exposed observer-only Rust ownership/type errors (E0596 in terminal event lock handling, then E0308/E0507 in norm trace serialization). Internal reassessment continues with concrete ownership fixes in the same allowance; no physical workflow or new scope. Source completeness remains pending. QA resume initially hit the tool thread limit; explicitly interrupting the completed correctness task released capacity and the same QA reviewer resumed. This is orchestration friction, not an acceptance waiver.
+
+Implementation checkpoint: detached W1/W2 work now includes the full structured work ledger, typed refusal metadata and actual zero-lambda p0/p1 norm intermediate copies. Independent correctness accepts the arithmetic hook placement, but requires per-face trace isolation and inactive-observer allocation gating. W3 now carries the exact event ID in the original error through typed wrappers; only the actual returned MhConsistency error finalizes it. Correctness accepts that join mechanism, preserving code/stage equality. The explicit non-exhaustive Debug representation adds `..` only to diagnostic text; review found no control or exact-render comparison depending on it. W3 caller roles/maps/proposals/probes, complete actual-stage validation, serializer quality and the source-bound full byte proof remain unaccepted. No capture approval exists.
+
+The observation cap is prospectively1024events/16MiB payload, pending full-schema bound review. Correctness confirms that a fixed conservative observer cap plus a complete byte proof is admissible: overflow remains a failed, slot-consuming capture; no global physical maximum or truncation-impossible claim is made. The one-shot helper's exclusive reservation lock, durable atomic ledger writes, distinct stdout/stderr caps and29s process/1s cleanup reservation were verified by the same QA reviewer. No invocation has occurred. Local helper/protocol/schema drafts remain explicitly NOT_APPROVED.
+
+An intermediate release no-run passed88.54s on unchanged then-current source; later exit0 builds with concurrent source drift are edit-loop evidence only. Source-bearing edit-loop Clippy matched all232inherited LSE diagnostics and the1inherited vegetation diagnostic, while detecting new observer diagnostics still under correction. None establishes final-source readiness. Repeated partial worker returns are continued as bounded concrete source tasks under the same06:10readiness boundary; they neither complete the objective nor renew time. Internal source timing is reassessed to leave the required final checks; any remaining acceptance gap at06:10 means no captures.
+
+At06:00UTC the serializer correction cycle had stalled despite available readiness time. Astra interrupted the original writer and reassigned only the mechanical field-preserving decomposition to a fresh pinned `implementer`, with one source writer and no nested delegation. The same independent reviewers remain responsible for acceptance/fix verification. This reassignment does not renew the06:10deadline or alter the three unused slots; caller/schema gaps remain independently blocking.
+
 ## HOLD disposition and observation-completion proposal — 2026-10-02
 
 Owner requests disposition and prompt authoring only. Preserve local

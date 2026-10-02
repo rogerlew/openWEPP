@@ -1,0 +1,1863 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -82 +82 @@
+-    const MAX_OUTPUT_BYTES: usize = 262_144;
++    const MAX_OUTPUT_BYTES: usize = 16_777_216;
+@@ -142,0 +143,8 @@
++    let refinement_json =
++        crate::m1_trust_region_stage1::refusal_capture_json_for_test(refinement_capture, witness);
++    let refinement_complete = refinement_json
++        .get("refinement")
++        .and_then(|value| value.get("completeness"))
++        .and_then(|value| value.get("reached_prefix_complete"))
++        .and_then(Value::as_bool)
++        .unwrap_or(false);
+@@ -143,0 +152,16 @@
++    let w3_terminal_complete = mh_refusal
++        .events
++        .iter()
++        .filter(|event| event.terminal_propagated)
++        .count()
++        == 1
++        && mh_refusal.terminal_event_id.is_some_and(|event_id| {
++            mh_refusal
++                .events
++                .iter()
++                .any(|event| event.event_id == event_id && event.terminal_propagated)
++        });
++    let observation_complete = (witness == "W3" || refinement_complete)
++        && !mh_refusal.truncated
++        && !mh_refusal.observer_error
++        && (witness != "W3" || w3_terminal_complete);
+@@ -152 +176 @@
+-        "refinement_capture": crate::m1_trust_region_stage1::refusal_capture_json_for_test(refinement_capture),
++        "refinement_capture": refinement_json,
+@@ -156,2 +180,4 @@
+-        "capture_complete": !mh_refusal.truncated && !mh_refusal.observer_error,
+-        "capture_status": if mh_refusal.truncated || mh_refusal.observer_error { "incomplete" } else { "complete" },
++        "mh_refusal_terminal_event_id": mh_refusal.terminal_event_id,
++        "refinement_capture_present": refinement_complete,
++        "capture_complete": observation_complete,
++        "capture_status": if observation_complete { "complete" } else { "incomplete" },
+@@ -159 +185 @@
+-            "ordinal": ordinal, "mass_bits": value.mass_bits, "enthalpy_bits": value.enthalpy_bits,
++            "ordinal": ordinal, "event_id": value.event_id, "call_id": value.call_id, "mass_bits": value.mass_bits, "enthalpy_bits": value.enthalpy_bits,
+@@ -161 +187 @@
+-            "context": value.context.as_ref().map(|context| serde_json::json!({"site": context.site, "occupancy": context.occupancy, "mass_index": context.mass_index, "enthalpy_index": context.enthalpy_index, "trial_coordinate_bits": context.trial_coordinate_bits})),
++            "context": value.context.as_ref().map(|context| serde_json::json!({"site": context.site, "occupancy": context.occupancy, "mass_index": context.mass_index, "enthalpy_index": context.enthalpy_index, "trial_coordinate_bits": context.trial_coordinate_bits, "state_role": context.state_role, "representation": context.representation, "map_identity": context.map_identity, "proposal_direction_bits": context.proposal_direction_bits, "fd_column": context.fd_column, "fd_side": context.fd_side, "pass": context.pass})),
+@@ -169,4 +195 @@
+-    assert!(
+-        !mh_refusal.truncated && !mh_refusal.observer_error,
+-        "incomplete refusal observation"
+-    );
++    assert!(observation_complete, "incomplete refusal observation");
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -1392,0 +1393,17 @@
++    // Snapshot after the actual refinement call returns (including refusal).
++    // This is copied from the controller ledger, never reconstructed.
++    work: Option<super::M1TrustRegionWorkObservation>,
++    terminal_refusal: Option<Box<super::M1TrustRegionSubproblemRefusal>>,
++    ordered_norms: Vec<RefinementOrderedNormTrace>,
++}
++
++#[cfg(test)]
++#[derive(Clone, Debug)]
++struct RefinementOrderedNormTrace {
++    role: &'static str,
++    coordinate_ids: Vec<usize>,
++    value_bits: Vec<u64>,
++    square_bits: Vec<u64>,
++    running_sum_bits: Vec<u64>,
++    norm2_bits: u64,
++    norm_bits: u64,
+@@ -1470,0 +1488 @@
++    static REFINEMENT_NORM_ROLE: RefCell<Option<&'static str>> = const { RefCell::new(None) };
+@@ -1478,0 +1497,15 @@
++}
++#[cfg(test)]
++struct RefinementNormRoleScope(Option<&'static str>);
++#[cfg(test)]
++impl RefinementNormRoleScope {
++    fn begin(role: &'static str) -> Self {
++        let active = REFINEMENT_OBSERVATION.with(|slot| slot.borrow().is_some());
++        Self(REFINEMENT_NORM_ROLE.with(|slot| slot.replace(active.then_some(role))))
++    }
++}
++#[cfg(test)]
++impl Drop for RefinementNormRoleScope {
++    fn drop(&mut self) {
++        REFINEMENT_NORM_ROLE.with(|slot| *slot.borrow_mut() = self.0.take());
++    }
+@@ -1510,2 +1543,2 @@
+-pub(crate) fn refusal_capture_json_for_test(
+-    value: Option<M1RefusalCaptureTrace>,
++fn refusal_capture_work_json(
++    work: Option<super::M1TrustRegionWorkObservation>,
+@@ -1513,5 +1546,113 @@
+-    use serde_json::{Map, Value};
+-    let Some(value) = value else {
+-        return Value::Null;
+-    };
+-    let trace = value.refinement;
++    serde_json::to_value(work.map(|work| serde_json::json!({
++        "stage1_calls": work.stage1_calls, "entered_svd_factorizations": work.entered_svd_factorizations,
++        "completed_face_pivots": work.completed_face_pivots, "total_jacobi_sweeps": work.total_jacobi_sweeps,
++        "refinement_scalar_operations": work.refinement_scalar_operations, "refinement_guard_events": work.refinement_guard_events,
++        "refinement_attempted_entries": work.refinement_attempted_entries, "refinement_denied_entries": work.refinement_denied_entries,
++        "bvls04_positive_entries": work.bvls04_positive_entries, "bvls04_factor_applications": work.bvls04_factor_applications,
++        "bvls04_dot2_residual_rows": work.bvls04_dot2_residual_rows, "bvls04_dot2_free_gradients": work.bvls04_dot2_free_gradients,
++        "bvls04_ordered_norms": work.bvls04_ordered_norms, "first_residual_operations": work.first_residual_operations,
++        "second_dot2_operations": work.second_dot2_operations, "factor_application_operations": work.factor_application_operations,
++        "coordinate_update_operations": work.coordinate_update_operations, "whole_kkt_operations": work.whole_kkt_operations,
++        "whole_kkt_guard_events": work.whole_kkt_guard_events, "upward_enclosure_operations": work.upward_enclosure_operations,
++        "upward_enclosure_guard_events": work.upward_enclosure_guard_events, "bvls05_role_joins_attempted": work.bvls05_role_joins_attempted,
++        "bvls05_role_joins_completed": work.bvls05_role_joins_completed, "bvls05_column_entry_tests_attempted": work.bvls05_column_entry_tests_attempted,
++        "bvls05_column_entry_tests_completed": work.bvls05_column_entry_tests_completed, "bvls05_mask_joins_attempted": work.bvls05_mask_joins_attempted,
++        "bvls05_mask_joins_completed": work.bvls05_mask_joins_completed, "bvls05_held_base_copies_attempted": work.bvls05_held_base_copies_attempted,
++        "bvls05_held_base_copies_completed": work.bvls05_held_base_copies_completed,
++    }))).expect("capture work ledger")
++}
++
++#[cfg(test)]
++fn add_capture_masks(
++    map: &mut serde_json::Map<String, serde_json::Value>,
++    trace: &RefinementObservationTrace,
++) {
++    for (name, value) in [
++        (
++            "free_mask",
++            serde_json::to_value(trace.free_mask).expect("capture field"),
++        ),
++        (
++            "held_mask",
++            serde_json::to_value(trace.held_mask).expect("capture field"),
++        ),
++        (
++            "lower_mask_p0",
++            serde_json::to_value(trace.lower_mask_p0).expect("capture field"),
++        ),
++        (
++            "upper_mask_p0",
++            serde_json::to_value(trace.upper_mask_p0).expect("capture field"),
++        ),
++        (
++            "lower_mask_p1",
++            serde_json::to_value(trace.lower_mask_p1).expect("capture field"),
++        ),
++        (
++            "upper_mask_p1",
++            serde_json::to_value(trace.upper_mask_p1).expect("capture field"),
++        ),
++        (
++            "lower_mask_p2",
++            serde_json::to_value(trace.lower_mask_p2).expect("capture field"),
++        ),
++        (
++            "upper_mask_p2",
++            serde_json::to_value(trace.upper_mask_p2).expect("capture field"),
++        ),
++        (
++            "lower_mask_exit",
++            serde_json::to_value(trace.lower_mask_exit).expect("capture field"),
++        ),
++        (
++            "upper_mask_exit",
++            serde_json::to_value(trace.upper_mask_exit).expect("capture field"),
++        ),
++    ] {
++        map.insert(name.into(), value);
++    }
++}
++
++#[cfg(test)]
++fn refusal_capture_input_json(value: &M1RefusalCaptureTrace) -> serde_json::Value {
++    serde_json::json!({
++        "coordinate_ids": (0usize..21).collect::<Vec<_>>(), "row_ids": (0usize..21).collect::<Vec<_>>(),
++        "raw_residual_bits": value.input_raw_residual_bits, "raw_jacobian_bits": value.input_raw_jacobian_bits,
++        "normalizer_bits": value.input_normalizer_bits, "scale_bits": value.input_scale_bits,
++        "lower_bits": value.input_lower_bits, "upper_bits": value.input_upper_bits,
++        "base_bits": value.input_base_bits, "initial_radius_bits": value.initial_radius_bits,
++    })
++}
++
++#[cfg(test)]
++fn refusal_capture_terminal_json(
++    refusal: Option<Box<super::M1TrustRegionSubproblemRefusal>>,
++) -> serde_json::Value {
++    serde_json::to_value(refusal.map(|refusal| {
++        let refinement = refusal.refinement.as_ref().map(|metadata| serde_json::json!({
++            "reason": format!("{:?}", metadata.reason), "correction_position": metadata.correction_position.map(|value| format!("{:?}", value)), "guard_stage": format!("{:?}", metadata.guard_stage),
++            "row": metadata.row, "term": metadata.term, "coordinate": metadata.coordinate, "lower_active": metadata.lower_active, "upper_active": metadata.upper_active, "free": metadata.free,
++            "lambda_bits": metadata.lambda.to_bits(), "original_trust_radius_bits": metadata.original_trust_radius.to_bits(), "reduced_face_radius_bits": metadata.reduced_face_radius.to_bits(), "scratch_box_feasible": metadata.scratch_box_feasible,
++        }));
++        serde_json::json!({
++            "kind": format!("{:?}", refusal.kind), "optimality_reason": refusal.optimality_reason, "optimality_coordinate": refusal.optimality_coordinate,
++            "optimality_radius_bits": refusal.optimality_radius.map(|value| value.to_bits()), "optimality_lambda_bits": refusal.optimality_lambda.map(|value| value.to_bits()),
++            "attempted_subproblems": refusal.attempted_subproblems, "completed_jacobi_sweeps": refusal.completed_jacobi_sweeps, "completed_face_pivots": refusal.completed_face_pivots,
++            "entered_svd_factorizations": refusal.entered_svd_factorizations, "raw_residual_max_bits": refusal.raw_residual_max.to_bits(), "refinement": refinement,
++        })
++    })).expect("capture terminal refusal")
++}
++
++#[cfg(test)]
++fn add_refusal_capture_factor_fields(
++    map: &mut serde_json::Map<String, serde_json::Value>,
++    trace: &RefinementObservationTrace,
++) {
++    macro_rules! put {
++        ($name:literal, $v:expr) => {
++            map.insert(
++                $name.into(),
++                serde_json::to_value($v).expect("capture field"),
++            );
++        };
++    }
+@@ -1525,4 +1666,8 @@
+-    let mut input = Map::new();
+-    input.insert(
+-        "coordinate_ids".into(),
+-        serde_json::json!((0usize..21).collect::<Vec<_>>()),
++    put!("free_ids", trace.face_free_ids.clone());
++    put!("factor_order", trace.factor_order.clone());
++    put!("factor_a_bits", trace.factor_a.clone().map(matrix_bits));
++    put!("factor_v_bits", trace.factor_v.clone().map(matrix_bits));
++    put!("factor_sigma_bits", trace.factor_sigma.clone().map(bits));
++    put!(
++        "weighted_residual_bits",
++        trace.weighted_residual.clone().map(bits)
+@@ -1530,48 +1674,0 @@
+-    input.insert(
+-        "row_ids".into(),
+-        serde_json::json!((0usize..21).collect::<Vec<_>>()),
+-    );
+-    input.insert(
+-        "raw_residual_bits".into(),
+-        serde_json::json!(value.input_raw_residual_bits),
+-    );
+-    input.insert(
+-        "raw_jacobian_bits".into(),
+-        serde_json::json!(value.input_raw_jacobian_bits),
+-    );
+-    input.insert(
+-        "normalizer_bits".into(),
+-        serde_json::json!(value.input_normalizer_bits),
+-    );
+-    input.insert(
+-        "scale_bits".into(),
+-        serde_json::json!(value.input_scale_bits),
+-    );
+-    input.insert(
+-        "lower_bits".into(),
+-        serde_json::json!(value.input_lower_bits),
+-    );
+-    input.insert(
+-        "upper_bits".into(),
+-        serde_json::json!(value.input_upper_bits),
+-    );
+-    input.insert("base_bits".into(), serde_json::json!(value.input_base_bits));
+-    input.insert(
+-        "initial_radius_bits".into(),
+-        serde_json::json!(value.initial_radius_bits),
+-    );
+-    let mut r = Map::new();
+-    macro_rules! put {
+-        ($name:literal, $v:expr) => {
+-            r.insert(
+-                $name.into(),
+-                serde_json::to_value($v).expect("capture field"),
+-            );
+-        };
+-    }
+-    put!("free_ids", trace.face_free_ids);
+-    put!("factor_order", trace.factor_order);
+-    put!("factor_a_bits", trace.factor_a.map(matrix_bits));
+-    put!("factor_v_bits", trace.factor_v.map(matrix_bits));
+-    put!("factor_sigma_bits", trace.factor_sigma.map(bits));
+-    put!("weighted_residual_bits", trace.weighted_residual.map(bits));
+@@ -1580 +1677 @@
+-        trace.weighted_matrix.map(matrix_bits)
++        trace.weighted_matrix.clone().map(matrix_bits)
+@@ -1586,2 +1682,0 @@
+-    put!("free_mask", trace.free_mask);
+-    put!("held_mask", trace.held_mask);
+@@ -1589,0 +1685,31 @@
++    put!("factor_identity", trace.factor_identity);
++    put!(
++        "factor_application_identities",
++        trace.factor_application_identities.clone()
++    );
++    put!("factor_applications", trace.factor_applications);
++    put!(
++        "eligibility_scalar_operations",
++        trace.eligibility_scalar_operations
++    );
++    put!("eligibility_guard_events", trace.eligibility_guard_events);
++    put!(
++        "reservation_denial_owner",
++        trace.reservation_denial_owner.map(|v| format!("{v:?}"))
++    );
++}
++
++#[cfg(test)]
++fn add_refusal_capture_first_norm_fields(
++    map: &mut serde_json::Map<String, serde_json::Value>,
++    trace: &RefinementObservationTrace,
++) {
++    macro_rules! put {
++        ($name:literal, $v:expr) => {
++            map.insert(
++                $name.into(),
++                serde_json::to_value($v).expect("capture field"),
++            );
++        };
++    }
++    let bits = |values: Vec<f64>| values.into_iter().map(f64::to_bits).collect::<Vec<_>>();
+@@ -1595 +1721 @@
+-    put!("h0_bits", trace.h0.map(bits));
++    put!("h0_bits", trace.h0.clone().map(bits));
+@@ -1606 +1732 @@
+-    put!("delta0_bits", trace.delta0.map(bits));
++    put!("delta0_bits", trace.delta0.clone().map(bits));
+@@ -1617,0 +1744,16 @@
++}
++
++#[cfg(test)]
++fn add_refusal_capture_second_norm_fields(
++    map: &mut serde_json::Map<String, serde_json::Value>,
++    trace: &RefinementObservationTrace,
++) {
++    macro_rules! put {
++        ($name:literal, $v:expr) => {
++            map.insert(
++                $name.into(),
++                serde_json::to_value($v).expect("capture field"),
++            );
++        };
++    }
++    let bits = |values: Vec<f64>| values.into_iter().map(f64::to_bits).collect::<Vec<_>>();
+@@ -1622,2 +1764,2 @@
+-    put!("h1_bits", trace.h1.map(bits));
+-    put!("inverse_t_bits", trace.inverse_t.map(bits));
++    put!("h1_bits", trace.h1.clone().map(bits));
++    put!("inverse_t_bits", trace.inverse_t.clone().map(bits));
+@@ -1626 +1768 @@
+-        trace.inverse_denominator.map(bits)
++        trace.inverse_denominator.clone().map(bits)
+@@ -1628,2 +1770,2 @@
+-    put!("inverse_z_bits", trace.inverse_z.map(bits));
+-    put!("delta1_bits", trace.delta1.map(bits));
++    put!("inverse_z_bits", trace.inverse_z.clone().map(bits));
++    put!("delta1_bits", trace.delta1.clone().map(bits));
+@@ -1650,4 +1792,124 @@
+-    put!("factor_identity", trace.factor_identity);
+-    put!(
+-        "factor_application_identities",
+-        trace.factor_application_identities
++}
++
++#[cfg(test)]
++fn refusal_capture_completeness_json(
++    trace: &RefinementObservationTrace,
++    witness: &str,
++) -> serde_json::Value {
++    let refinement_complete = match witness {
++        "W1" => {
++            trace.face_free_ids.is_some()
++                && trace.factor_order.is_some()
++                && trace.weighted_residual.is_some()
++                && trace.weighted_matrix.is_some()
++                && trace.scaled_lower_bits.is_some()
++                && trace.scaled_upper_bits.is_some()
++                && trace.free_mask.is_some()
++                && trace.held_mask.is_some()
++                && trace.p0.is_some()
++                && trace.residual0.is_some()
++                && trace.h0.is_some()
++                && trace.delta0.is_some()
++                && trace.p1.is_some()
++                && trace.p1_full_norm2.is_some()
++                && trace.p1_full_norm.is_some()
++                && trace
++                    .ordered_norms
++                    .iter()
++                    .any(|norm| norm.role == "p1_full" && norm.coordinate_ids.len() == 21)
++                && trace.terminal_refusal.is_some()
++        }
++        "W2" => {
++            trace.face_free_ids.is_some()
++                && trace.factor_order.is_some()
++                && trace.weighted_residual.is_some()
++                && trace.weighted_matrix.is_some()
++                && trace.scaled_lower_bits.is_some()
++                && trace.scaled_upper_bits.is_some()
++                && trace.free_mask.is_some()
++                && trace.held_mask.is_some()
++                && trace.p0.is_some()
++                && trace.residual0.is_some()
++                && trace.delta0.is_some()
++                && trace.p1.is_some()
++                && trace.residual1.is_some()
++                && trace.delta1.is_some()
++                && trace.p2.is_some()
++                && trace.lower_mask_p2.is_some()
++                && trace.ordered_norms.iter().any(|norm| {
++                    norm.role == "p0_zero_lambda_eligibility" && norm.coordinate_ids.len() == 21
++                })
++                && trace.ordered_norms.iter().any(|norm| {
++                    norm.role == "p1_zero_lambda_scratch" && norm.coordinate_ids.len() == 21
++                })
++                && trace.terminal_refusal.is_some()
++        }
++        _ => false,
++    };
++    let expected_terminal_match = trace
++        .terminal_refusal
++        .as_ref()
++        .and_then(|refusal| refusal.refinement.as_ref())
++        .is_some_and(|metadata| match witness {
++            "W1" => {
++                matches!(
++                    metadata.correction_position,
++                    Some(super::M1TrustRegionCorrectionPosition::First)
++                ) && matches!(
++                    metadata.guard_stage,
++                    super::M1TrustRegionRefinementGuardStage::ScratchFullRadius
++                )
++            }
++            "W2" => {
++                matches!(
++                    metadata.correction_position,
++                    Some(super::M1TrustRegionCorrectionPosition::Second)
++                ) && matches!(
++                    metadata.guard_stage,
++                    super::M1TrustRegionRefinementGuardStage::FinalBoxLower
++                ) && metadata.coordinate == Some(5)
++            }
++            _ => false,
++        });
++    let reached_fields_present = trace.face_free_ids.is_some()
++        && trace.factor_order.is_some()
++        && trace.scaled_lower_bits.is_some()
++        && trace.scaled_upper_bits.is_some()
++        && trace.p0.is_some()
++        && (witness == "W2" || trace.p0_full_norm.is_some())
++        && trace.live_state_entry.is_some()
++        && trace.work.is_some();
++    let reached_prefix_complete =
++        refinement_complete && reached_fields_present && trace.terminal_refusal.is_some();
++    serde_json::json!({
++        "reached_prefix_complete": reached_prefix_complete, "witness": witness,
++        "witness_complete": refinement_complete, "expected_terminal_match": expected_terminal_match,
++        "unreached_is_natural_only": true, "missing_capture_is_incomplete": !reached_prefix_complete,
++    })
++}
++
++#[cfg(test)]
++pub(crate) fn refusal_capture_json_for_test(
++    value: Option<M1RefusalCaptureTrace>,
++    witness: &str,
++) -> serde_json::Value {
++    use serde_json::{Map, Value};
++    let Some(value) = value else {
++        return Value::Null;
++    };
++    let trace = &value.refinement;
++    let input = refusal_capture_input_json(&value);
++    let mut r = Map::new();
++    // These names describe the already-copied values below.  They are schema
++    // metadata only: the observer never selects a formulation or changes a
++    // controller branch.
++    r.insert(
++        "formulation".into(),
++        Value::String(
++            match witness {
++                "W1" | "W2" => "full",
++                "W3" => "reduced",
++                _ => "unknown",
++            }
++            .into(),
++        ),
+@@ -1655,4 +1917,3 @@
+-    put!("factor_applications", trace.factor_applications);
+-    put!(
+-        "eligibility_scalar_operations",
+-        trace.eligibility_scalar_operations
++    r.insert(
++        "logical_to_physical_map".into(),
++        serde_json::json!((0usize..21).collect::<Vec<_>>()),
+@@ -1660,4 +1921,10 @@
+-    put!("eligibility_guard_events", trace.eligibility_guard_events);
+-    put!(
+-        "reservation_denial_owner",
+-        trace.reservation_denial_owner.map(|v| format!("{v:?}"))
++    r.insert(
++        "state_roles".into(),
++        serde_json::json!({
++            "base_physical": "input.base_bits",
++            "face_start_scaled": "live_state_entry_bits",
++            "initial_scaled": "p0_bits",
++            "private_scratch": "p1_bits",
++            "final_candidate": "p2_bits",
++            "live_face_exit": "live_state_exit_bits",
++        }),
+@@ -1665,8 +1932,34 @@
+-    put!("lower_mask_p0", trace.lower_mask_p0);
+-    put!("upper_mask_p0", trace.upper_mask_p0);
+-    put!("lower_mask_p1", trace.lower_mask_p1);
+-    put!("upper_mask_p1", trace.upper_mask_p1);
+-    put!("lower_mask_p2", trace.lower_mask_p2);
+-    put!("upper_mask_p2", trace.upper_mask_p2);
+-    put!("lower_mask_exit", trace.lower_mask_exit);
+-    put!("upper_mask_exit", trace.upper_mask_exit);
++    add_refusal_capture_factor_fields(&mut r, trace);
++    add_refusal_capture_first_norm_fields(&mut r, trace);
++    add_refusal_capture_second_norm_fields(&mut r, trace);
++    add_capture_masks(&mut r, trace);
++    r.insert(
++        "ordered_norm_traces".into(),
++        serde_json::json!(
++            trace
++                .ordered_norms
++                .iter()
++                .map(|norm| serde_json::json!({
++                    "role": norm.role,
++                    "coordinate_ids": norm.coordinate_ids,
++                    "value_bits": norm.value_bits,
++                    "square_bits": norm.square_bits,
++                    "running_sum_bits": norm.running_sum_bits,
++                    "norm2_bits": norm.norm2_bits,
++                    "norm_bits": norm.norm_bits,
++                }))
++                .collect::<Vec<_>>()
++        ),
++    );
++    r.insert(
++        "work_ledger".into(),
++        refusal_capture_work_json(trace.work.clone()),
++    );
++    r.insert(
++        "terminal_refusal".into(),
++        refusal_capture_terminal_json(trace.terminal_refusal.clone()),
++    );
++    r.insert(
++        "completeness".into(),
++        refusal_capture_completeness_json(trace, witness),
++    );
+@@ -1682 +1975 @@
+-    out.insert("input".into(), Value::Object(input));
++    out.insert("input".into(), input);
+@@ -3684,0 +3978,8 @@
++    #[cfg(test)]
++    let role = REFINEMENT_NORM_ROLE.with(|slot| *slot.borrow());
++    #[cfg(test)]
++    let mut values = Vec::new();
++    #[cfg(test)]
++    let mut squares = Vec::new();
++    #[cfg(test)]
++    let mut running_sums = Vec::new();
+@@ -3706,0 +4008,6 @@
++        #[cfg(test)]
++        if role.is_some() {
++            values.push(x.to_bits());
++            squares.push(sq.to_bits());
++            running_sums.push(sum.to_bits());
++        }
+@@ -3713,0 +4021,14 @@
++        #[cfg(test)]
++        if let Some(role) = role {
++            refinement_observe(|trace| {
++                trace.ordered_norms.push(RefinementOrderedNormTrace {
++                    role,
++                    coordinate_ids: (0..step.len()).collect(),
++                    value_bits: values.clone(),
++                    square_bits: squares.clone(),
++                    running_sum_bits: running_sums.clone(),
++                    norm2_bits: sum.to_bits(),
++                    norm_bits: norm.to_bits(),
++                })
++            });
++        }
+@@ -3723,0 +4045 @@
++    role: &'static str,
+@@ -3726,0 +4049,8 @@
++    #[cfg(test)]
++    let active = REFINEMENT_OBSERVATION.with(|slot| slot.borrow().is_some());
++    #[cfg(test)]
++    let mut values = active.then(|| Vec::with_capacity(coordinates.len()));
++    #[cfg(test)]
++    let mut squares = active.then(|| Vec::with_capacity(coordinates.len()));
++    #[cfg(test)]
++    let mut running_sums = active.then(|| Vec::with_capacity(coordinates.len()));
+@@ -3737,0 +4068,8 @@
++        #[cfg(test)]
++        if let (Some(values), Some(squares), Some(running_sums)) =
++            (&mut values, &mut squares, &mut running_sums)
++        {
++            values.push(p[coordinate].to_bits());
++            squares.push(square.to_bits());
++            running_sums.push(sum.to_bits());
++        }
+@@ -3741,0 +4080,14 @@
++    #[cfg(test)]
++    if let (Some(values), Some(squares), Some(running_sums)) = (values, squares, running_sums) {
++        refinement_observe(|trace| {
++            trace.ordered_norms.push(RefinementOrderedNormTrace {
++                role,
++                coordinate_ids: coordinates.to_vec(),
++                value_bits: values.clone(),
++                square_bits: squares.clone(),
++                running_sum_bits: running_sums.clone(),
++                norm2_bits: sum.to_bits(),
++                norm_bits: norm.to_bits(),
++            });
++        });
++    }
+@@ -7977,18 +8329,20 @@
+-    let (full_norm2, full_norm) = bvls04_ordered_norm(p0, &full_ids, &mut state.refinement_work)
+-        .map_err(|reason| {
+-            refinement_dot2_metadata_refusal(
+-                state,
+-                prepared.raw_max,
+-                solution,
+-                input.initial_radius,
+-                RefinementFailureSite {
+-                    correction_position: None,
+-                    guard_stage: M1TrustRegionRefinementGuardStage::P0FullRadius,
+-                    row: None,
+-                    term: None,
+-                    coordinate: None,
+-                    scratch_box_feasible: None,
+-                },
+-                reason,
+-            )
+-        })?;
++    let (full_norm2, full_norm) =
++        bvls04_ordered_norm(p0, &full_ids, &mut state.refinement_work, "p0_full").map_err(
++            |reason| {
++                refinement_dot2_metadata_refusal(
++                    state,
++                    prepared.raw_max,
++                    solution,
++                    input.initial_radius,
++                    RefinementFailureSite {
++                        correction_position: None,
++                        guard_stage: M1TrustRegionRefinementGuardStage::P0FullRadius,
++                        row: None,
++                        term: None,
++                        coordinate: None,
++                        scratch_box_feasible: None,
++                    },
++                    reason,
++                )
++            },
++        )?;
+@@ -8018,18 +8372,19 @@
+-    let (free_norm2, free_norm) =
+-        bvls04_ordered_norm(p0, &solution.free_ids, &mut state.refinement_work).map_err(
+-            |reason| {
+-                refinement_dot2_metadata_refusal(
+-                    state,
+-                    prepared.raw_max,
+-                    solution,
+-                    input.initial_radius,
+-                    RefinementFailureSite {
+-                        correction_position: None,
+-                        guard_stage: M1TrustRegionRefinementGuardStage::P0ReducedRadius,
+-                        row: None,
+-                        term: None,
+-                        coordinate: None,
+-                        scratch_box_feasible: None,
+-                    },
+-                    reason,
+-                )
++    let (free_norm2, free_norm) = bvls04_ordered_norm(
++        p0,
++        &solution.free_ids,
++        &mut state.refinement_work,
++        "p0_free",
++    )
++    .map_err(|reason| {
++        refinement_dot2_metadata_refusal(
++            state,
++            prepared.raw_max,
++            solution,
++            input.initial_radius,
++            RefinementFailureSite {
++                correction_position: None,
++                guard_stage: M1TrustRegionRefinementGuardStage::P0ReducedRadius,
++                row: None,
++                term: None,
++                coordinate: None,
++                scratch_box_feasible: None,
+@@ -8037 +8392,3 @@
+-        )?;
++            reason,
++        )
++    })?;
+@@ -8147,0 +8505,2 @@
++        #[cfg(test)]
++        let _norm_role = RefinementNormRoleScope::begin("p0_zero_lambda_eligibility");
+@@ -8686,17 +9045,19 @@
+-        bvls04_ordered_norm(&full_p1, &full_ids, &mut state.refinement_work).map_err(|reason| {
+-            refinement_dot2_metadata_refusal(
+-                state,
+-                prepared.raw_max,
+-                solution,
+-                input.initial_radius,
+-                RefinementFailureSite {
+-                    correction_position: Some(M1TrustRegionCorrectionPosition::First),
+-                    guard_stage: M1TrustRegionRefinementGuardStage::ScratchFullRadius,
+-                    row: None,
+-                    term: None,
+-                    coordinate: None,
+-                    scratch_box_feasible: Some(p1_box_feasible),
+-                },
+-                reason,
+-            )
+-        })?;
++        bvls04_ordered_norm(&full_p1, &full_ids, &mut state.refinement_work, "p1_full").map_err(
++            |reason| {
++                refinement_dot2_metadata_refusal(
++                    state,
++                    prepared.raw_max,
++                    solution,
++                    input.initial_radius,
++                    RefinementFailureSite {
++                        correction_position: Some(M1TrustRegionCorrectionPosition::First),
++                        guard_stage: M1TrustRegionRefinementGuardStage::ScratchFullRadius,
++                        row: None,
++                        term: None,
++                        coordinate: None,
++                        scratch_box_feasible: Some(p1_box_feasible),
++                    },
++                    reason,
++                )
++            },
++        )?;
+@@ -8737,18 +9098,19 @@
+-    let (free_norm2, free_norm) =
+-        bvls04_ordered_norm(&scratch.p1, &solution.free_ids, &mut state.refinement_work).map_err(
+-            |reason| {
+-                refinement_dot2_metadata_refusal(
+-                    state,
+-                    prepared.raw_max,
+-                    solution,
+-                    input.initial_radius,
+-                    RefinementFailureSite {
+-                        correction_position: Some(M1TrustRegionCorrectionPosition::First),
+-                        guard_stage: M1TrustRegionRefinementGuardStage::ScratchReducedRadius,
+-                        row: None,
+-                        term: None,
+-                        coordinate: None,
+-                        scratch_box_feasible: Some(p1_box_feasible),
+-                    },
+-                    reason,
+-                )
++    let (free_norm2, free_norm) = bvls04_ordered_norm(
++        &scratch.p1,
++        &solution.free_ids,
++        &mut state.refinement_work,
++        "p1_free",
++    )
++    .map_err(|reason| {
++        refinement_dot2_metadata_refusal(
++            state,
++            prepared.raw_max,
++            solution,
++            input.initial_radius,
++            RefinementFailureSite {
++                correction_position: Some(M1TrustRegionCorrectionPosition::First),
++                guard_stage: M1TrustRegionRefinementGuardStage::ScratchReducedRadius,
++                row: None,
++                term: None,
++                coordinate: None,
++                scratch_box_feasible: Some(p1_box_feasible),
+@@ -8756 +9118,3 @@
+-        )?;
++            reason,
++        )
++    })?;
+@@ -8859,0 +9224,2 @@
++    #[cfg(test)]
++    let _norm_role = RefinementNormRoleScope::begin("p1_zero_lambda_scratch");
+@@ -9099,17 +9465,19 @@
+-        bvls04_ordered_norm(&full_p2, &full_ids, &mut state.refinement_work).map_err(|reason| {
+-            refinement_dot2_metadata_refusal(
+-                state,
+-                prepared.raw_max,
+-                solution,
+-                input.initial_radius,
+-                RefinementFailureSite {
+-                    correction_position: Some(M1TrustRegionCorrectionPosition::Second),
+-                    guard_stage: M1TrustRegionRefinementGuardStage::FinalFullRadius,
+-                    row: None,
+-                    term: None,
+-                    coordinate: None,
+-                    scratch_box_feasible: Some(p1_box_feasible),
+-                },
+-                reason,
+-            )
+-        })?;
++        bvls04_ordered_norm(&full_p2, &full_ids, &mut state.refinement_work, "p2_full").map_err(
++            |reason| {
++                refinement_dot2_metadata_refusal(
++                    state,
++                    prepared.raw_max,
++                    solution,
++                    input.initial_radius,
++                    RefinementFailureSite {
++                        correction_position: Some(M1TrustRegionCorrectionPosition::Second),
++                        guard_stage: M1TrustRegionRefinementGuardStage::FinalFullRadius,
++                        row: None,
++                        term: None,
++                        coordinate: None,
++                        scratch_box_feasible: Some(p1_box_feasible),
++                    },
++                    reason,
++                )
++            },
++        )?;
+@@ -9145,18 +9513,19 @@
+-    let (free_norm2, free_norm) =
+-        bvls04_ordered_norm(p2, &solution.free_ids, &mut state.refinement_work).map_err(
+-            |reason| {
+-                refinement_dot2_metadata_refusal(
+-                    state,
+-                    prepared.raw_max,
+-                    solution,
+-                    input.initial_radius,
+-                    RefinementFailureSite {
+-                        correction_position: Some(M1TrustRegionCorrectionPosition::Second),
+-                        guard_stage: M1TrustRegionRefinementGuardStage::FinalReducedRadius,
+-                        row: None,
+-                        term: None,
+-                        coordinate: None,
+-                        scratch_box_feasible: Some(p1_box_feasible),
+-                    },
+-                    reason,
+-                )
++    let (free_norm2, free_norm) = bvls04_ordered_norm(
++        p2,
++        &solution.free_ids,
++        &mut state.refinement_work,
++        "p2_free",
++    )
++    .map_err(|reason| {
++        refinement_dot2_metadata_refusal(
++            state,
++            prepared.raw_max,
++            solution,
++            input.initial_radius,
++            RefinementFailureSite {
++                correction_position: Some(M1TrustRegionCorrectionPosition::Second),
++                guard_stage: M1TrustRegionRefinementGuardStage::FinalReducedRadius,
++                row: None,
++                term: None,
++                coordinate: None,
++                scratch_box_feasible: Some(p1_box_feasible),
+@@ -9164 +9533,3 @@
+-        )?;
++            reason,
++        )
++    })?;
+@@ -9694,0 +10066,2 @@
++    refinement_observe(|trace| *trace = RefinementObservationTrace::default());
++    #[cfg(test)]
+@@ -9713 +10086,5 @@
+-    refinement_observe(|trace| trace.live_state_exit = Some(state.p.map(f64::to_bits)));
++    refinement_observe(|trace| {
++        trace.live_state_exit = Some(state.p.map(f64::to_bits));
++        trace.work = Some(state_work_observation(state));
++        trace.terminal_refusal = result.as_ref().err().cloned().map(Box::new);
++    });
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
+@@ -934 +934,2 @@
+-            || (reconstructed_enthalpy - reservoir.enthalpy_residual_j_m2).abs() > tolerances[base + 4]
++            || (reconstructed_enthalpy - reservoir.enthalpy_residual_j_m2).abs()
++                > tolerances[base + 4]
+@@ -939 +940,6 @@
+-    let normalized_residuals: Vec<f64> = result.residuals.iter().zip(tolerances).map(|(r, t)| r / t).collect();
++    let normalized_residuals: Vec<f64> = result
++        .residuals
++        .iter()
++        .zip(tolerances)
++        .map(|(r, t)| r / t)
++        .collect();
+@@ -1006,5 +1012,3 @@
+-    let boundary = input
+-        .column
+-        .stage3_lower_boundary
+-        .as_ref()
+-        .ok_or(LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
++    let boundary = input.column.stage3_lower_boundary.as_ref().ok_or(
++        LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"),
++    )?;
+@@ -1012,5 +1016,8 @@
+-    let optical = input
+-        .column
+-        .stage3_optical
+-        .as_ref()
+-        .ok_or(LandSurfaceEnergyError::UnsupportedDomain("m1_diagnostic_envelope"))?;
++    let optical =
++        input
++            .column
++            .stage3_optical
++            .as_ref()
++            .ok_or(LandSurfaceEnergyError::UnsupportedDomain(
++                "m1_diagnostic_envelope",
++            ))?;
+@@ -1075,3 +1082,5 @@
+-        || trial.coordinates.iter().enumerate().any(|(index, value)| {
+-            (check_q || index != 13) && !value.is_finite()
+-        })
++        || trial
++            .coordinates
++            .iter()
++            .enumerate()
++            .any(|(index, value)| (check_q || index != 13) && !value.is_finite())
+@@ -1227 +1236,15 @@
+-                openwepp_vegetation::cold_canopy_m1::M1MhObservationContext { site: "core_reservoir_constructor", occupancy: index, mass_index: base + 3, enthalpy_index: base + 4, trial_coordinate_bits: trial.coordinates.map(f64::to_bits) },
++                openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                    call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++                    site: "core_reservoir_constructor",
++                    occupancy: index,
++                    mass_index: base + 3,
++                    enthalpy_index: base + 4,
++                    trial_coordinate_bits: Some(trial.coordinates.map(f64::to_bits)),
++                    state_role: "trial_candidate",
++                    representation: "full",
++                    map_identity: "full_identity",
++                    proposal_direction_bits: None,
++                    fd_column: None,
++                    fd_side: None,
++                    pass: "core",
++                },
+@@ -1229 +1252,4 @@
+-            M1PhaseReservoir::from_mass_enthalpy(trial.coordinates[base + 3], trial.coordinates[base + 4]).inspect_err(|error| { if error.code() == "VEG-E-142" && error.stage() == openwepp_vegetation::cold_canopy_m1::M1Stage::MhConsistency { openwepp_vegetation::cold_canopy_m1::mark_m1_mh_refusal_terminal(); } })?
++            M1PhaseReservoir::from_mass_enthalpy(
++                trial.coordinates[base + 3],
++                trial.coordinates[base + 4],
++            )?
+@@ -1555,0 +1582 @@
++                call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
+@@ -1560 +1587,8 @@
+-                trial_coordinate_bits: trial.coordinates.map(f64::to_bits),
++                trial_coordinate_bits: Some(trial.coordinates.map(f64::to_bits)),
++                state_role: "fd_screen",
++                representation: "full",
++                map_identity: "full_identity",
++                proposal_direction_bits: None,
++                fd_column: None,
++                fd_side: None,
++                pass: "fd_admissibility",
+@@ -1563 +1597,5 @@
+-        M1PhaseReservoir::from_mass_enthalpy(trial.coordinates[base + 3], trial.coordinates[base + 4]).is_ok()
++        M1PhaseReservoir::from_mass_enthalpy(
++            trial.coordinates[base + 3],
++            trial.coordinates[base + 4],
++        )
++        .is_ok()
+@@ -1593 +1631,15 @@
+-            openwepp_vegetation::cold_canopy_m1::M1MhObservationContext { site: "fd_trial_rejection_reason_constructor", occupancy: base / 6, mass_index: base + 3, enthalpy_index: base + 4, trial_coordinate_bits: trial.coordinates.map(f64::to_bits) },
++            openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++                site: "fd_trial_rejection_reason_constructor",
++                occupancy: base / 6,
++                mass_index: base + 3,
++                enthalpy_index: base + 4,
++                trial_coordinate_bits: Some(trial.coordinates.map(f64::to_bits)),
++                state_role: "fd_screen",
++                representation: "full",
++                map_identity: "full_identity",
++                proposal_direction_bits: None,
++                fd_column: None,
++                fd_side: None,
++                pass: "fd_rejection_reason",
++            },
+@@ -1595 +1647,4 @@
+-        if let Err(error) = M1PhaseReservoir::from_mass_enthalpy(trial.coordinates[base + 3], trial.coordinates[base + 4]) {
++        if let Err(error) = M1PhaseReservoir::from_mass_enthalpy(
++            trial.coordinates[base + 3],
++            trial.coordinates[base + 4],
++        ) {
+@@ -2234,4 +2289,24 @@
+-                let _mh_context = openwepp_vegetation::cold_canopy_m1::scoped_m1_mh_observation_context(
+-                    openwepp_vegetation::cold_canopy_m1::M1MhObservationContext { site: "jacobian_reservoir", occupancy: base / 6, mass_index: base + 3, enthalpy_index: base + 4, trial_coordinate_bits: trial.coordinates.map(f64::to_bits) },
+-                );
+-                M1PhaseReservoir::from_mass_enthalpy(trial.coordinates[base + 3], trial.coordinates[base + 4])?
++                let _mh_context =
++                    openwepp_vegetation::cold_canopy_m1::scoped_m1_mh_observation_context(
++                        openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                            call_id:
++                                openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(
++                                ),
++                            site: "jacobian_reservoir",
++                            occupancy: base / 6,
++                            mass_index: base + 3,
++                            enthalpy_index: base + 4,
++                            trial_coordinate_bits: Some(trial.coordinates.map(f64::to_bits)),
++                            state_role: "jacobian_current",
++                            representation: "full",
++                            map_identity: "full_identity",
++                            proposal_direction_bits: None,
++                            fd_column: Some(column),
++                            fd_side: None,
++                            pass: "jacobian",
++                        },
++                    );
++                M1PhaseReservoir::from_mass_enthalpy(
++                    trial.coordinates[base + 3],
++                    trial.coordinates[base + 4],
++                )?
+@@ -2403,0 +2479,17 @@
++        let _mh_context = openwepp_vegetation::cold_canopy_m1::scoped_m1_mh_observation_context(
++            openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++                site: "materialization_reservoir",
++                occupancy: index,
++                mass_index: base + 3,
++                enthalpy_index: base + 4,
++                trial_coordinate_bits: Some(trial.coordinates.map(f64::to_bits)),
++                state_role: "trial_candidate",
++                representation: "full",
++                map_identity: "full_identity",
++                proposal_direction_bits: None,
++                fd_column: None,
++                fd_side: None,
++                pass: "materialization",
++            },
++        );
+@@ -2463 +2555,4 @@
+-            input, &accepted_result, trial, &evaluation,
++            input,
++            &accepted_result,
++            trial,
++            &evaluation,
+@@ -2591,2 +2686,4 @@
+-            } => matches!(coordinate, 13..=20)
+-                || (zero_area_sun_anchors && matches!(coordinate, 0 | 6)),
++            } => {
++                matches!(coordinate, 13..=20)
++                    || (zero_area_sun_anchors && matches!(coordinate, 0 | 6))
++            }
+@@ -2612 +2709,3 @@
+-    input: &M1CoupledColumnInput, coordinates: [f64; 21], anchors: bool,
++    input: &M1CoupledColumnInput,
++    coordinates: [f64; 21],
++    anchors: bool,
+@@ -2629 +2728,6 @@
+-    if anchors && (!column.occupancies.iter().all(|occupancy| occupancy.sun.leaf_area_m2_m2_tile.is_finite() && occupancy.sun.leaf_area_m2_m2_tile == 0.0) || !coordinates[12].is_finite()) {
++    if anchors
++        && (!column.occupancies.iter().all(|occupancy| {
++            occupancy.sun.leaf_area_m2_m2_tile.is_finite()
++                && occupancy.sun.leaf_area_m2_m2_tile == 0.0
++        }) || !coordinates[12].is_finite())
++    {
+@@ -2637 +2741,15 @@
+-                openwepp_vegetation::cold_canopy_m1::M1MhObservationContext { site: "reduced_reconstruction_reservoir", occupancy: occupancy_index, mass_index: base + 3, enthalpy_index: base + 4, trial_coordinate_bits: coordinates.map(f64::to_bits) },
++                openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                    call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++                    site: "reduced_reconstruction_reservoir",
++                    occupancy: occupancy_index,
++                    mass_index: base + 3,
++                    enthalpy_index: base + 4,
++                    trial_coordinate_bits: Some(coordinates.map(f64::to_bits)),
++                    state_role: "reconstructed",
++                    representation: "reduced",
++                    map_identity: "reduced_request_map",
++                    proposal_direction_bits: None,
++                    fd_column: None,
++                    fd_side: None,
++                    pass: "reconstruction_validation",
++                },
+@@ -2646 +2764,4 @@
+-    let boundary = column.stage3_lower_boundary.as_ref().ok_or_else(domain_error)?;
++    let boundary = column
++        .stage3_lower_boundary
++        .as_ref()
++        .ok_or_else(domain_error)?;
+@@ -2661 +2782,15 @@
+-                openwepp_vegetation::cold_canopy_m1::M1MhObservationContext { site: "reduced_reconstruction_reservoir", occupancy: occupancy_index, mass_index: base + 3, enthalpy_index: base + 4, trial_coordinate_bits: coordinates.map(f64::to_bits) },
++                openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                    call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++                    site: "reduced_reconstruction_reservoir",
++                    occupancy: occupancy_index,
++                    mass_index: base + 3,
++                    enthalpy_index: base + 4,
++                    trial_coordinate_bits: Some(coordinates.map(f64::to_bits)),
++                    state_role: "reconstructed",
++                    representation: "reduced",
++                    map_identity: "reduced_request_map",
++                    proposal_direction_bits: None,
++                    fd_column: None,
++                    fd_side: None,
++                    pass: "reconstruction_humidity",
++                },
+@@ -2669,3 +2804,9 @@
+-                leaf, occupancy.biochemical, coordinates[base + offset], tcan,
+-                column.pressure_pa, column.ca_pa, occupancy.gb_leaf_m_s,
+-                occupancy.g0_umol_m2_s, wet_fraction,
++                leaf,
++                occupancy.biochemical,
++                coordinates[base + offset],
++                tcan,
++                column.pressure_pa,
++                column.ca_pa,
++                occupancy.gb_leaf_m_s,
++                occupancy.g0_umol_m2_s,
++                wet_fraction,
+@@ -2679 +2820,3 @@
+-        } else { M1ExternalPhase::Liquid };
++        } else {
++            M1ExternalPhase::Liquid
++        };
+@@ -2682 +2825,3 @@
+-        if !wet_g.is_finite() || wet_g < 0.0 { return Err(domain_error()); }
++        if !wet_g.is_finite() || wet_g < 0.0 {
++            return Err(domain_error());
++        }
+@@ -2686 +2831,3 @@
+-    if !numerator.is_finite() || !denominator.is_finite() || denominator <= 0.0 { return Err(domain_error()); }
++    if !numerator.is_finite() || !denominator.is_finite() || denominator <= 0.0 {
++        return Err(domain_error());
++    }
+@@ -2688 +2835,3 @@
+-    if !coordinates[13].is_finite() || !(0.0..=0.1).contains(&coordinates[13]) { return Err(domain_error()); }
++    if !coordinates[13].is_finite() || !(0.0..=0.1).contains(&coordinates[13]) {
++        return Err(domain_error());
++    }
+@@ -2690 +2839,3 @@
+-    for soil in 0..6 { coordinates[15 + soil] = column.ground.soil_nodes[soil].beginning_temperature_k; }
++    for soil in 0..6 {
++        coordinates[15 + soil] = column.ground.soil_nodes[soil].beginning_temperature_k;
++    }
+@@ -2693 +2844,3 @@
+-            if occupancy.sun.leaf_area_m2_m2_tile == 0.0 { coordinates[index * 6] = tcan.max(273.15); }
++            if occupancy.sun.leaf_area_m2_m2_tile == 0.0 {
++                coordinates[index * 6] = tcan.max(273.15);
++            }
+@@ -2714,7 +2867,10 @@
+-    if profile == M1SeparateAccuracyProfile::P0 { return m1_tolerances(input, core); }
+-    let (m_abs, m_rel, h_rel, e_abs, e_rel, w_abs, w_rel): (f64, f64, f64, f64, f64, f64, f64) = match profile {
+-        M1SeparateAccuracyProfile::P1 => (1e-8, 1e-6, 1e-6, 1e-4, 1e-8, 1e-10, 1e-7),
+-        M1SeparateAccuracyProfile::P2 => (1e-6, 1e-5, 1e-5, 1e-2, 1e-6, 1e-8, 1e-5),
+-        M1SeparateAccuracyProfile::P3 => (1e-4, 1e-3, 1e-3, 1.0, 1e-4, 1e-6, 1e-3),
+-        M1SeparateAccuracyProfile::P0 => unreachable!(),
+-    };
++    if profile == M1SeparateAccuracyProfile::P0 {
++        return m1_tolerances(input, core);
++    }
++    let (m_abs, m_rel, h_rel, e_abs, e_rel, w_abs, w_rel): (f64, f64, f64, f64, f64, f64, f64) =
++        match profile {
++            M1SeparateAccuracyProfile::P1 => (1e-8, 1e-6, 1e-6, 1e-4, 1e-8, 1e-10, 1e-7),
++            M1SeparateAccuracyProfile::P2 => (1e-6, 1e-5, 1e-5, 1e-2, 1e-6, 1e-8, 1e-5),
++            M1SeparateAccuracyProfile::P3 => (1e-4, 1e-3, 1e-3, 1.0, 1e-4, 1e-6, 1e-3),
++            M1SeparateAccuracyProfile::P0 => unreachable!(),
++        };
+@@ -2722 +2878,3 @@
+-    for row in [0, 1, 2, 6, 7, 8, 12] { values[row] = e_abs + e_rel * core.scales[row].max(1.0); }
++    for row in [0, 1, 2, 6, 7, 8, 12] {
++        values[row] = e_abs + e_rel * core.scales[row].max(1.0);
++    }
+@@ -2727,2 +2885,10 @@
+-        let mass_scale = input.reservoirs[index].mass_kg_m2.abs().max(core.scales[base + 3]).max(1e-9);
+-        let heat_scale = input.reservoirs[index].enthalpy_j_m2.abs().max(core.scales[base + 4]).max(1.0);
++        let mass_scale = input.reservoirs[index]
++            .mass_kg_m2
++            .abs()
++            .max(core.scales[base + 3])
++            .max(1e-9);
++        let heat_scale = input.reservoirs[index]
++            .enthalpy_j_m2
++            .abs()
++            .max(core.scales[base + 4])
++            .max(1.0);
+@@ -2742 +2908,2 @@
+-        return crate::solver::m1_governed_step_thresholds_for_trust_region().map(|value| value / 10.0);
++        return crate::solver::m1_governed_step_thresholds_for_trust_region()
++            .map(|value| value / 10.0);
+@@ -2745 +2912,3 @@
+-        M1SeparateAccuracyProfile::P0 => crate::solver::m1_governed_step_thresholds_for_trust_region(),
++        M1SeparateAccuracyProfile::P0 => {
++            crate::solver::m1_governed_step_thresholds_for_trust_region()
++        }
+@@ -2754 +2923,3 @@
+-    raw: &[[f64; 21]; 21], representation: M1SeparateAccuracyRepresentation, tcan_k: f64,
++    raw: &[[f64; 21]; 21],
++    representation: M1SeparateAccuracyRepresentation,
++    tcan_k: f64,
+@@ -2756 +2927,6 @@
+-    let M1SeparateAccuracyRepresentation::Reduced { zero_area_sun_anchors } = representation else { return Ok(*raw); };
++    let M1SeparateAccuracyRepresentation::Reduced {
++        zero_area_sun_anchors,
++    } = representation
++    else {
++        return Ok(*raw);
++    };
+@@ -2758 +2934,3 @@
+-    if !q_column.is_finite() || q_column >= 0.0 { return Err(M1PhysicalTrustRegionAdapterOwnError::IncompleteScope); }
++    if !q_column.is_finite() || q_column >= 0.0 {
++        return Err(M1PhysicalTrustRegionAdapterOwnError::IncompleteScope);
++    }
+@@ -2762,2 +2940,8 @@
+-        if representation.eliminated(column) { continue; }
+-        let anchor = if zero_area_sun_anchors && column == 12 { anchor_derivative } else { 0.0 };
++        if representation.eliminated(column) {
++            continue;
++        }
++        let anchor = if zero_area_sun_anchors && column == 12 {
++            anchor_derivative
++        } else {
++            0.0
++        };
+@@ -2765 +2949,3 @@
+-        if !dq.is_finite() { return Err(M1PhysicalTrustRegionAdapterOwnError::IncompleteScope); }
++        if !dq.is_finite() {
++            return Err(M1PhysicalTrustRegionAdapterOwnError::IncompleteScope);
++        }
+@@ -2767 +2953,7 @@
+-            projected[row][column] = raw[row][column] + raw[row][13] * dq + if column == 12 { anchor * (raw[row][0] + raw[row][6]) } else { 0.0 };
++            projected[row][column] = raw[row][column]
++                + raw[row][13] * dq
++                + if column == 12 {
++                    anchor * (raw[row][0] + raw[row][6])
++                } else {
++                    0.0
++                };
+@@ -2780 +2972,4 @@
+-    let M1SeparateAccuracyRepresentation::Reduced { zero_area_sun_anchors } = representation else {
++    let M1SeparateAccuracyRepresentation::Reduced {
++        zero_area_sun_anchors,
++    } = representation
++    else {
+@@ -2784 +2979,3 @@
+-    for index in 14..21 { physical[index] = 0.0; }
++    for index in 14..21 {
++        physical[index] = 0.0;
++    }
+@@ -2791 +2988,3 @@
+-    if !denominator.is_finite() || denominator >= 0.0 { return Err(M1PhysicalTrustRegionAdapterOwnError::IncompleteScope); }
++    if !denominator.is_finite() || denominator >= 0.0 {
++        return Err(M1PhysicalTrustRegionAdapterOwnError::IncompleteScope);
++    }
+@@ -2805,2 +3004,4 @@
+-    raw: &[[f64; 21]; 21], representation: M1SeparateAccuracyRepresentation,
+-    coordinates: [f64; 21], logical: [f64; 21],
++    raw: &[[f64; 21]; 21],
++    representation: M1SeparateAccuracyRepresentation,
++    coordinates: [f64; 21],
++    logical: [f64; 21],
+@@ -2958,2 +3159 @@
+-            row[column] == 0.0
+-                && (row[column] / *normalizer * scales[column]) == 0.0
++            row[column] == 0.0 && (row[column] / *normalizer * scales[column]) == 0.0
+@@ -3153,5 +3353 @@
+-        let mapped = m1_separate_accuracy_implicit_pullback(
+-            physical,
+-            self.representation,
+-            tcan_k,
+-        )?;
++        let mapped = m1_separate_accuracy_implicit_pullback(physical, self.representation, tcan_k)?;
+@@ -3187 +3383,3 @@
+-        &self, case_id: String, support_id: u32,
++        &self,
++        case_id: String,
++        support_id: u32,
+@@ -3194,2 +3392,12 @@
+-        let leaf_vapor_kg_m2_s = std::array::from_fn(|i| [evaluation.occupancies[i].sun.vapor_kg_m2_tile_s, evaluation.occupancies[i].shade.vapor_kg_m2_tile_s]);
+-        let leaf_conductance_m_s = std::array::from_fn(|i| [evaluation.occupancies[i].sun.conductance_m_s, evaluation.occupancies[i].shade.conductance_m_s]);
++        let leaf_vapor_kg_m2_s = std::array::from_fn(|i| {
++            [
++                evaluation.occupancies[i].sun.vapor_kg_m2_tile_s,
++                evaluation.occupancies[i].shade.vapor_kg_m2_tile_s,
++            ]
++        });
++        let leaf_conductance_m_s = std::array::from_fn(|i| {
++            [
++                evaluation.occupancies[i].sun.conductance_m_s,
++                evaluation.occupancies[i].shade.conductance_m_s,
++            ]
++        });
+@@ -3208,2 +3416 @@
+-        let upper_to_lower_intercepted_specific_enthalpy_j_kg =
+-            CW * (upper_wet_temperature_k - TF);
++        let upper_to_lower_intercepted_specific_enthalpy_j_kg = CW * (upper_wet_temperature_k - TF);
+@@ -3217,5 +3424,20 @@
+-            case_id, support_id, profile: self.profile, stability_variant: self.stability_variant, free_dimension: self.representation.free_dimension(), coordinates: evaluation.accepted_coordinates,
+-            residuals: core.residuals.clone().try_into().ok()?, normalizers: m1_separate_accuracy_tolerances(&self.input, core, self.profile, self.stability_variant),
+-            interval_s: column.interval_s, pressure_pa: column.pressure_pa, latent_heat_j_kg: column.latent_heat_j_kg,
+-            canopy_to_atmosphere_heat_resistance_s_m: column.canopy_to_atmosphere_heat_resistance_s_m,
+-            canopy_to_atmosphere_vapor_resistance_s_m: column.canopy_to_atmosphere_vapor_resistance_s_m,
++            case_id,
++            support_id,
++            profile: self.profile,
++            stability_variant: self.stability_variant,
++            free_dimension: self.representation.free_dimension(),
++            coordinates: evaluation.accepted_coordinates,
++            residuals: core.residuals.clone().try_into().ok()?,
++            normalizers: m1_separate_accuracy_tolerances(
++                &self.input,
++                core,
++                self.profile,
++                self.stability_variant,
++            ),
++            interval_s: column.interval_s,
++            pressure_pa: column.pressure_pa,
++            latent_heat_j_kg: column.latent_heat_j_kg,
++            canopy_to_atmosphere_heat_resistance_s_m: column
++                .canopy_to_atmosphere_heat_resistance_s_m,
++            canopy_to_atmosphere_vapor_resistance_s_m: column
++                .canopy_to_atmosphere_vapor_resistance_s_m,
+@@ -3223,2 +3445,5 @@
+-            prescribed_soil_temperature_k: std::array::from_fn(|i| column.ground.soil_nodes[i].beginning_temperature_k),
+-            air_temperature_k: column.air_temperature_k, air_humidity_kg_kg: column.air_specific_humidity_kg_kg,
++            prescribed_soil_temperature_k: std::array::from_fn(|i| {
++                column.ground.soil_nodes[i].beginning_temperature_k
++            }),
++            air_temperature_k: column.air_temperature_k,
++            air_humidity_kg_kg: column.air_specific_humidity_kg_kg,
+@@ -3226,2 +3451,5 @@
+-            boundary_sensible_w_m2: boundary.sensible_to_canopy_air_w_m2, boundary_vapor_kg_m2_s: boundary.vapor_to_canopy_air_kg_m2_s,
+-            reservoirs, leaf_vapor_kg_m2_s, leaf_conductance_m_s,
++            boundary_sensible_w_m2: boundary.sensible_to_canopy_air_w_m2,
++            boundary_vapor_kg_m2_s: boundary.vapor_to_canopy_air_kg_m2_s,
++            reservoirs,
++            leaf_vapor_kg_m2_s,
++            leaf_conductance_m_s,
+@@ -3231,3 +3459,18 @@
+-            gb_leaf_m_s: std::array::from_fn(|i| column.occupancies[i].gb_leaf_m_s), gb_stem_m_s: std::array::from_fn(|i| column.occupancies[i].gb_stem_m_s),
+-            structural_area_m2_m2: std::array::from_fn(|i| { let o=&column.occupancies[i]; [o.sun.leaf_area_m2_m2_tile,o.shade.leaf_area_m2_m2_tile,o.stem_area_m2_m2_tile] }),
+-            absorbed_shortwave_w_m2: std::array::from_fn(|i| { let o=&column.occupancies[i]; [o.sun.absorbed_shortwave_w_m2_tile,o.shade.absorbed_shortwave_w_m2_tile,o.stem_absorbed_shortwave_w_m2_tile] }),
++            gb_leaf_m_s: std::array::from_fn(|i| column.occupancies[i].gb_leaf_m_s),
++            gb_stem_m_s: std::array::from_fn(|i| column.occupancies[i].gb_stem_m_s),
++            structural_area_m2_m2: std::array::from_fn(|i| {
++                let o = &column.occupancies[i];
++                [
++                    o.sun.leaf_area_m2_m2_tile,
++                    o.shade.leaf_area_m2_m2_tile,
++                    o.stem_area_m2_m2_tile,
++                ]
++            }),
++            absorbed_shortwave_w_m2: std::array::from_fn(|i| {
++                let o = &column.occupancies[i];
++                [
++                    o.sun.absorbed_shortwave_w_m2_tile,
++                    o.shade.absorbed_shortwave_w_m2_tile,
++                    o.stem_absorbed_shortwave_w_m2_tile,
++                ]
++            }),
+@@ -3242 +3485,3 @@
+-            liquid_interception_fraction: std::array::from_fn(|i| column.occupancies[i].liquid_interception_fraction),
++            liquid_interception_fraction: std::array::from_fn(|i| {
++                column.occupancies[i].liquid_interception_fraction
++            }),
+@@ -3586 +3831,4 @@
+-    controller: crate::m1_trust_region_controller::M1TrustRegionPreparedController<M1PhysicalTrustRegionPayload, [M1PhaseJoinSelection; 2]>,
++    controller: crate::m1_trust_region_controller::M1TrustRegionPreparedController<
++        M1PhysicalTrustRegionPayload,
++        [M1PhaseJoinSelection; 2],
++    >,
+@@ -3595 +3843,6 @@
+-) -> Result<M1TrustRegionTimedPrepared, crate::m1_trust_region_controller::M1TrustRegionControllerError<M1PhysicalTrustRegionAdapterOwnError>> {
++) -> Result<
++    M1TrustRegionTimedPrepared,
++    crate::m1_trust_region_controller::M1TrustRegionControllerError<
++        M1PhysicalTrustRegionAdapterOwnError,
++    >,
++> {
+@@ -3604 +3857,4 @@
+-    let controller = crate::m1_trust_region_controller::m1_trust_region_controller_prepare_for_timing(&mut adapter)?;
++    let controller =
++        crate::m1_trust_region_controller::m1_trust_region_controller_prepare_for_timing(
++            &mut adapter,
++        )?;
+@@ -3616,2 +3872,10 @@
+-) -> Result<M1TrustRegionNaturalTangentObservation, crate::m1_trust_region_controller::M1TrustRegionControllerError<M1PhysicalTrustRegionAdapterOwnError>> {
+-    crate::m1_trust_region_controller::m1_trust_region_controller_execute_prepared_for_timing(prepared.controller, &mut prepared.adapter)?;
++) -> Result<
++    M1TrustRegionNaturalTangentObservation,
++    crate::m1_trust_region_controller::M1TrustRegionControllerError<
++        M1PhysicalTrustRegionAdapterOwnError,
++    >,
++> {
++    crate::m1_trust_region_controller::m1_trust_region_controller_execute_prepared_for_timing(
++        prepared.controller,
++        &mut prepared.adapter,
++    )?;
+@@ -3619 +3883,3 @@
+-    let (selections, direction) = observation.last_phase_outcome.ok_or(crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope)?;
++    let (selections, direction) = observation
++        .last_phase_outcome
++        .ok_or(crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope)?;
+@@ -3625 +3891,3 @@
+-        raw_jacobian: observation.raw_jacobian.ok_or(crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope)?,
++        raw_jacobian: observation.raw_jacobian.ok_or(
++            crate::m1_trust_region_controller::M1TrustRegionControllerError::IncompleteScope,
++        )?,
+@@ -3627 +3895,9 @@
+-        final_selection_operands: selections.map(|selection| [selection.mass, selection.enthalpy, selection.drainage, selection.capacity_value, selection.duration_s]),
++        final_selection_operands: selections.map(|selection| {
++            [
++                selection.mass,
++                selection.enthalpy,
++                selection.drainage,
++                selection.capacity_value,
++                selection.duration_s,
++            ]
++        }),
+@@ -3701,2 +3977,4 @@
+-                support.input.reservoirs[index].mass_kg_m2 = last.reservoirs[index].ending_mass_kg_m2;
+-                support.input.reservoirs[index].enthalpy_j_m2 = last.reservoirs[index].ending_enthalpy_j_m2;
++                support.input.reservoirs[index].mass_kg_m2 =
++                    last.reservoirs[index].ending_mass_kg_m2;
++                support.input.reservoirs[index].enthalpy_j_m2 =
++                    last.reservoirs[index].ending_enthalpy_j_m2;
+@@ -3704 +3982,2 @@
+-                support.seed.coordinates[index * 6 + 4] = last.reservoirs[index].ending_enthalpy_j_m2;
++                support.seed.coordinates[index * 6 + 4] =
++                    last.reservoirs[index].ending_enthalpy_j_m2;
+@@ -3708 +3987,3 @@
+-            &support.input, support.seed.coordinates, true,
++            &support.input,
++            support.seed.coordinates,
++            true,
+@@ -3711 +3992,9 @@
+-            Err(error) => return M1SeparateAccuracyDayOutcome { records, first_failure: Some(format!("support_id={} seed_reconstruction={error:?}", support.support_id)) },
++            Err(error) => {
++                return M1SeparateAccuracyDayOutcome {
++                    records,
++                    first_failure: Some(format!(
++                        "support_id={} seed_reconstruction={error:?}",
++                        support.support_id
++                    )),
++                };
++            }
+@@ -3715 +4004,7 @@
+-            support.case_id.clone(), support.support_id, support.input.clone(), support.seed.clone(), representation, profile, stability_variant,
++            support.case_id.clone(),
++            support.support_id,
++            support.input.clone(),
++            support.seed.clone(),
++            representation,
++            profile,
++            stability_variant,
+@@ -3718 +4013,9 @@
+-            Err(error) => return M1SeparateAccuracyDayOutcome { records, first_failure: Some(format!("support_id={} controller_error={error:?}", support.support_id)) },
++            Err(error) => {
++                return M1SeparateAccuracyDayOutcome {
++                    records,
++                    first_failure: Some(format!(
++                        "support_id={} controller_error={error:?}",
++                        support.support_id
++                    )),
++                };
++            }
+@@ -3738 +4041,4 @@
+-    M1SeparateAccuracyDayOutcome { records, first_failure: None }
++    M1SeparateAccuracyDayOutcome {
++        records,
++        first_failure: None,
++    }
+@@ -3754 +4060,5 @@
+-    (M1PhysicalTrustRegionAdapterOutcome, M1PhysicalTrustRegionAdapterObservation, Option<M1SeparateAccuracyPrimitiveOutput>),
++    (
++        M1PhysicalTrustRegionAdapterOutcome,
++        M1PhysicalTrustRegionAdapterObservation,
++        Option<M1SeparateAccuracyPrimitiveOutput>,
++    ),
+@@ -3805,0 +4116,20 @@
++    let terminal_mh_event_id = match &result {
++        Err(crate::m1_trust_region_controller::M1TrustRegionControllerError::Own(
++            M1PhysicalTrustRegionAdapterOwnError::Coupled(error),
++        )) if matches!(
++            error.as_ref(),
++            M1CoupledError::Vegetation(error)
++                if error.code() == "VEG-E-142"
++                    && error.stage() == openwepp_vegetation::cold_canopy_m1::M1Stage::MhConsistency
++        ) =>
++        {
++            match error.as_ref() {
++                M1CoupledError::Vegetation(error) => error.mh_refusal_event_id(),
++                _ => None,
++            }
++        }
++        _ => None,
++    };
++    if let Some(event_id) = terminal_mh_event_id {
++        openwepp_vegetation::cold_canopy_m1::finalize_m1_mh_refusal_terminal(event_id);
++    }
+@@ -4016,4 +4346,2 @@
+-    let reservoir = M1PhaseReservoir::from_mass_enthalpy(
+-        trial.coordinates[3],
+-        trial.coordinates[4],
+-    )?;
++    let reservoir =
++        M1PhaseReservoir::from_mass_enthalpy(trial.coordinates[3], trial.coordinates[4])?;
+@@ -4023 +4351,6 @@
+-    Ok((result.residuals[5], rcap, capacity, reservoir.liquid_mass_kg_m2()))
++    Ok((
++        result.residuals[5],
++        rcap,
++        capacity,
++        reservoir.liquid_mass_kg_m2(),
++    ))
+@@ -4105,3 +4438,8 @@
+-            M1SeparateAccuracyRepresentation::Reduced { zero_area_sun_anchors } =>
+-                m1_separate_accuracy_reconstruct_reduced(&self.input, self.initial_trial.coordinates, zero_area_sun_anchors)
+-                    .expect("validated detached reduced initial seed"),
++            M1SeparateAccuracyRepresentation::Reduced {
++                zero_area_sun_anchors,
++            } => m1_separate_accuracy_reconstruct_reduced(
++                &self.input,
++                self.initial_trial.coordinates,
++                zero_area_sun_anchors,
++            )
++            .expect("validated detached reduced initial seed"),
+@@ -4172,2 +4510,6 @@
+-        current: &crate::m1_trust_region_controller_interface::M1TrustRegionControllerEvaluation<Self::Payload>,
+-        candidate: &crate::m1_trust_region_controller_interface::M1TrustRegionControllerEvaluation<Self::Payload>,
++        current: &crate::m1_trust_region_controller_interface::M1TrustRegionControllerEvaluation<
++            Self::Payload,
++        >,
++        candidate: &crate::m1_trust_region_controller_interface::M1TrustRegionControllerEvaluation<
++            Self::Payload,
++        >,
+@@ -4196,3 +4538,10 @@
+-        if let M1SeparateAccuracyRepresentation::Reduced { zero_area_sun_anchors } = self.representation {
+-            coordinates = m1_separate_accuracy_reconstruct_reduced(&self.input, coordinates, zero_area_sun_anchors)
+-                .map_err(Self::Error::from)?;
++        if let M1SeparateAccuracyRepresentation::Reduced {
++            zero_area_sun_anchors,
++        } = self.representation
++        {
++            coordinates = m1_separate_accuracy_reconstruct_reduced(
++                &self.input,
++                coordinates,
++                zero_area_sun_anchors,
++            )
++            .map_err(Self::Error::from)?;
+@@ -4225 +4574,6 @@
+-        let normalizers = m1_separate_accuracy_tolerances(&self.input, &core, self.profile, self.stability_variant);
++        let normalizers = m1_separate_accuracy_tolerances(
++            &self.input,
++            &core,
++            self.profile,
++            self.stability_variant,
++        );
+@@ -4295,3 +4649,14 @@
+-    fn pre_evaluator_trial_domain(&mut self, mut coordinates: [f64; 21]) -> Result<bool, Self::Error> {
+-        if let M1SeparateAccuracyRepresentation::Reduced { zero_area_sun_anchors } = self.representation {
+-            coordinates = m1_separate_accuracy_reconstruct_reduced(&self.input, coordinates, zero_area_sun_anchors).map_err(Self::Error::from)?;
++    fn pre_evaluator_trial_domain(
++        &mut self,
++        mut coordinates: [f64; 21],
++    ) -> Result<bool, Self::Error> {
++        if let M1SeparateAccuracyRepresentation::Reduced {
++            zero_area_sun_anchors,
++        } = self.representation
++        {
++            coordinates = m1_separate_accuracy_reconstruct_reduced(
++                &self.input,
++                coordinates,
++                zero_area_sun_anchors,
++            )
++            .map_err(Self::Error::from)?;
+@@ -4335 +4700,3 @@
+-                &self.observation.physical_raw_jacobian
++                &self
++                    .observation
++                    .physical_raw_jacobian
+@@ -4441 +4808,3 @@
+-            &self.observation.physical_raw_jacobian
++            &self
++                .observation
++                .physical_raw_jacobian
+@@ -4501 +4870,3 @@
+-            &self.observation.physical_raw_jacobian
++            &self
++                .observation
++                .physical_raw_jacobian
+@@ -4540 +4911,6 @@
+-            Some(m1_separate_accuracy_tolerances(&self.input, &current.payload.core, self.profile, self.stability_variant)),
++            Some(m1_separate_accuracy_tolerances(
++                &self.input,
++                &current.payload.core,
++                self.profile,
++                self.stability_variant,
++            )),
+@@ -4718 +5094,15 @@
+-            openwepp_vegetation::cold_canopy_m1::M1MhObservationContext { site: "phase_join_selection_reservoir", occupancy: base / 6, mass_index: base + 3, enthalpy_index: base + 4, trial_coordinate_bits: trial.coordinates.map(f64::to_bits) },
++            openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++                site: "phase_join_selection_reservoir",
++                occupancy: base / 6,
++                mass_index: base + 3,
++                enthalpy_index: base + 4,
++                trial_coordinate_bits: Some(trial.coordinates.map(f64::to_bits)),
++                state_role: "phase_selection",
++                representation: "full",
++                map_identity: "full_identity",
++                proposal_direction_bits: Some(direction.map(f64::to_bits)),
++                fd_column: None,
++                fd_side: None,
++                pass: "phase_join_selection",
++            },
+@@ -4720 +5110,4 @@
+-        M1PhaseReservoir::from_mass_enthalpy(trial.coordinates[base + 3], trial.coordinates[base + 4])
++        M1PhaseReservoir::from_mass_enthalpy(
++            trial.coordinates[base + 3],
++            trial.coordinates[base + 4],
++        )
+--- a/crates/openwepp-vegetation/src/cold_canopy_m1.rs
++++ b/crates/openwepp-vegetation/src/cold_canopy_m1.rs
+@@ -89 +89 @@
+-#[derive(Clone, Debug, PartialEq, Eq)]
++#[derive(Clone)]
+@@ -93 +93,17 @@
+-}
++    mh_refusal_event_id: Option<usize>,
++}
++impl std::fmt::Debug for M1Error {
++    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        formatter
++            .debug_struct("M1Error")
++            .field("code", &self.code)
++            .field("stage", &self.stage)
++            .finish_non_exhaustive()
++    }
++}
++impl PartialEq for M1Error {
++    fn eq(&self, other: &Self) -> bool {
++        self.code == other.code && self.stage == other.stage
++    }
++}
++impl Eq for M1Error {}
+@@ -96 +112,5 @@
+-        Self { code, stage }
++        Self {
++            code,
++            stage,
++            mh_refusal_event_id: None,
++        }
+@@ -104,0 +125,9 @@
++    }
++    #[must_use]
++    pub(crate) const fn with_mh_refusal_event(mut self, event_id: Option<usize>) -> Self {
++        self.mh_refusal_event_id = event_id;
++        self
++    }
++    #[must_use]
++    pub const fn mh_refusal_event_id(&self) -> Option<usize> {
++        self.mh_refusal_event_id
+@@ -183,0 +213,2 @@
++    pub event_id: usize,
++    pub call_id: usize,
+@@ -196,0 +228 @@
++    pub terminal_event_id: Option<usize>,
+@@ -199,0 +232,4 @@
++    /// Unique default-off observer call identity allocated by the caller.
++    /// It binds an emitted event to the exact error edge, rather than to a
++    /// mutable position in the buffered event list.
++    pub call_id: usize,
+@@ -204 +240,8 @@
+-    pub trial_coordinate_bits: [u64; 21],
++    pub trial_coordinate_bits: Option<[u64; 21]>,
++    pub state_role: &'static str,
++    pub representation: &'static str,
++    pub map_identity: &'static str,
++    pub proposal_direction_bits: Option<[u64; 21]>,
++    pub fd_column: Option<usize>,
++    pub fd_side: Option<&'static str>,
++    pub pass: &'static str,
+@@ -207 +250,3 @@
+-const M1_MH_REFUSAL_CAP: usize = 16;
++// A deliberately conservative diagnostic-only bound.  Reaching it makes the
++// capture incomplete; it never changes a physical work cap or solver path.
++const M1_MH_REFUSAL_CAP: usize = 1024;
+@@ -208,0 +254 @@
++static M1_MH_REFUSAL_NEXT_CALL: AtomicUsize = AtomicUsize::new(0);
+@@ -210,0 +257 @@
++static M1_MH_REFUSAL_TERMINAL: OnceLock<Mutex<Option<usize>>> = OnceLock::new();
+@@ -219 +266,13 @@
+-pub struct M1MhObservationContextScope(Option<M1MhObservationContext>);
++fn m1_mh_refusal_terminal() -> &'static Mutex<Option<usize>> {
++    M1_MH_REFUSAL_TERMINAL.get_or_init(|| Mutex::new(None))
++}
++#[must_use]
++pub fn next_m1_mh_observation_call_id() -> usize {
++    // Context construction stays inert on the ordinary path.  The scope
++    // assigns an identity only after the observer is known armed.
++    usize::MAX
++}
++pub struct M1MhObservationContextScope {
++    prior: Option<M1MhObservationContext>,
++    pub call_id: usize,
++}
+@@ -221 +280 @@
+-    context: M1MhObservationContext,
++    mut context: M1MhObservationContext,
+@@ -223,7 +282,11 @@
+-    let prior = if M1_MH_REFUSAL_ARMED.load(Ordering::Acquire) {
+-        match m1_mh_refusal_context().lock() {
+-            Ok(mut slot) => slot.replace(context),
+-            Err(_) => {
+-                M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);
+-                None
+-            }
++    let armed = M1_MH_REFUSAL_ARMED.load(Ordering::Acquire);
++    if armed {
++        context.call_id = M1_MH_REFUSAL_NEXT_CALL.fetch_add(1, Ordering::AcqRel);
++    }
++    let call_id = context.call_id;
++    let prior = if armed {
++        if let Ok(mut slot) = m1_mh_refusal_context().lock() {
++            slot.replace(context)
++        } else {
++            M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);
++            None
+@@ -234 +297 @@
+-    M1MhObservationContextScope(prior)
++    M1MhObservationContextScope { prior, call_id }
+@@ -241 +304 @@
+-            *slot = self.0.take();
++            *slot = self.prior.take();
+@@ -247,6 +310,14 @@
+-pub fn mark_m1_mh_refusal_terminal() {
+-    if M1_MH_REFUSAL_TOTAL.load(Ordering::Acquire) <= M1_MH_REFUSAL_CAP {
+-        match m1_mh_refusal_record().lock() {
+-            Ok(mut record) => {
+-                if let Some(last) = record.last_mut() {
+-                    last.terminal_propagated = true;
++/// Commit the exact identity carried by the error that escapes the adapter.
++/// Handled proposal errors never invoke this join.
++pub fn finalize_m1_mh_refusal_terminal(event_id: usize) {
++    match m1_mh_refusal_record().lock() {
++        Ok(mut record) => {
++            let matching: Vec<_> = record
++                .iter()
++                .enumerate()
++                .filter_map(|(index, event)| (event.event_id == event_id).then_some(index))
++                .collect();
++            if matching.len() == 1 {
++                record[matching[0]].terminal_propagated = true;
++                if let Ok(mut terminal) = m1_mh_refusal_terminal().lock() {
++                    *terminal = Some(event_id);
+@@ -255,0 +327,2 @@
++            } else {
++                M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);
+@@ -257,2 +330,2 @@
+-            Err(_) => M1_MH_REFUSAL_ERROR.store(true, Ordering::Release),
+-        }
++        }
++        Err(_) => M1_MH_REFUSAL_ERROR.store(true, Ordering::Release),
+@@ -267,0 +341 @@
++        M1_MH_REFUSAL_NEXT_CALL.store(0, Ordering::Release);
+@@ -270,0 +345,7 @@
++        if let Ok(mut terminal) = m1_mh_refusal_terminal().lock() {
++            *terminal = None;
++        } else {
++            M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);
++        }
++    } else {
++        M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);
+@@ -281,0 +363,7 @@
++    let terminal_event_id = m1_mh_refusal_terminal().lock().map_or_else(
++        |_| {
++            M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);
++            None
++        },
++        |terminal| *terminal,
++    );
+@@ -286,0 +375 @@
++        terminal_event_id,
+@@ -294 +383 @@
+-) {
++) -> Option<usize> {
+@@ -296 +385 @@
+-        return;
++        return None;
+@@ -301 +390 @@
+-        return;
++        return None;
+@@ -304,0 +394,7 @@
++            event_id: ordinal,
++            call_id: if let Ok(slot) = m1_mh_refusal_context().lock() {
++                slot.as_ref().map_or(usize::MAX, |context| context.call_id)
++            } else {
++                M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);
++                usize::MAX
++            },
+@@ -309,6 +405,5 @@
+-            context: match m1_mh_refusal_context().lock() {
+-                Ok(slot) => slot.clone(),
+-                Err(_) => {
+-                    M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);
+-                    None
+-                }
++            context: if let Ok(slot) = m1_mh_refusal_context().lock() {
++                slot.clone()
++            } else {
++                M1_MH_REFUSAL_ERROR.store(true, Ordering::Release);
++                None
+@@ -317,0 +413 @@
++        Some(ordinal)
+@@ -319,0 +416 @@
++        None
+@@ -336,2 +433,5 @@
+-            record_m1_mh_refusal(mass_kg_m2, enthalpy_j_m2, None, predicate);
+-            return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency));
++            return Err(
++                M1Error::new("VEG-E-142", M1Stage::MhConsistency).with_mh_refusal_event(
++                    record_m1_mh_refusal(mass_kg_m2, enthalpy_j_m2, None, predicate),
++                ),
++            );
+@@ -345 +445 @@
+-                record_m1_mh_refusal(
++                let event_id = record_m1_mh_refusal(
+@@ -349 +449 @@
+-                    if !temperature_k.is_finite() {
++                    if (258.15..=373.15).contains(&temperature_k) {
+@@ -355 +455,2 @@
+-                return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency));
++                return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency)
++                    .with_mh_refusal_event(event_id));
+@@ -406,2 +507,5 @@
+-            record_m1_mh_refusal(self.m, self.h, None, "temperature_jacobian_empty");
+-            return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency));
++            return Err(
++                M1Error::new("VEG-E-142", M1Stage::MhConsistency).with_mh_refusal_event(
++                    record_m1_mh_refusal(self.m, self.h, None, "temperature_jacobian_empty"),
++                ),
++            );
+@@ -411,2 +515,7 @@
+-                record_m1_mh_refusal(self.m, self.h, None, "temperature_jacobian_phase_empty");
+-                return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency));
++                return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency)
++                    .with_mh_refusal_event(record_m1_mh_refusal(
++                        self.m,
++                        self.h,
++                        None,
++                        "temperature_jacobian_phase_empty",
++                    )));
+@@ -428,2 +537,5 @@
+-            record_m1_mh_refusal(self.m, self.h, None, "temperature_jacobian_nonfinite");
+-            return Err(M1Error::new("VEG-E-142", M1Stage::MhConsistency));
++            return Err(
++                M1Error::new("VEG-E-142", M1Stage::MhConsistency).with_mh_refusal_event(
++                    record_m1_mh_refusal(self.m, self.h, None, "temperature_jacobian_nonfinite"),
++                ),
++            );
+@@ -601,2 +713,3 @@
+-                record_m1_mh_refusal(reservoir.m, reservoir.h, None, "evap_empty_temperature");
+-                M1Error::new("VEG-E-142", M1Stage::MhConsistency)
++                M1Error::new("VEG-E-142", M1Stage::MhConsistency).with_mh_refusal_event(
++                    record_m1_mh_refusal(reservoir.m, reservoir.h, None, "evap_empty_temperature"),
++                )
+@@ -662 +775 @@
+-        record_m1_mh_refusal(
++        let event_id = record_m1_mh_refusal(
+@@ -668 +781 @@
+-        M1Error::new("VEG-E-142", M1Stage::MhConsistency)
++        M1Error::new("VEG-E-142", M1Stage::MhConsistency).with_mh_refusal_event(event_id)

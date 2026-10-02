@@ -1,0 +1,57 @@
+{
+  "reviewer": "/root/qa",
+  "review_type": "secondary QA terminal partial-preservation review",
+  "evidence_class": "Static: frozen-source, raw receipt, archive, and no-physical-invocation record review. No capture or physical model run was performed.",
+  "reviewed_at_utc": "2026-10-02T06:13:28Z",
+  "frozen_source_sha256": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+  "findings": [
+    {
+      "severity": "BLOCKER",
+      "paths": [
+        "artifacts/refusal-completion-results.json",
+        "artifacts/refusal-completion-pickup.json"
+      ],
+      "finding": "Readiness expired at 2026-10-02T06:10:00Z with W3 caller/role/map/proposal/derivative provenance incomplete, the actual-stage field matrix incomplete, and neither a complete schema nor a worst-case serialized-byte bound proved. These gaps prohibit a capture or sealed diagnostic receipt."
+    },
+    {
+      "severity": "BLOCKER",
+      "paths": [
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+        "artifacts/refusal-completion-results.json"
+      ],
+      "finding": "Final source-bearing LSE Clippy remains failing: 236 diagnostics versus 232 baseline, with four introduced diagnostics: `too_many_lines` in m1_coupled_tests.rs:79, `uninlined_format_args` at m1_trust_region_stage1.rs:1633, and `semicolon_if_nothing_returned` at lines 2011 and 4024. The terminal source does not satisfy the required Clippy gate."
+    },
+    {
+      "severity": "BLOCKER",
+      "paths": [
+        "artifacts/refusal-completion-results.json",
+        "checks/final-no-run.json"
+      ],
+      "finding": "The exact-final `cargo test --release --no-run` check was group-killed at its 65-second cap. There is no authenticated final binary and no final-source test/build completion evidence."
+    }
+  ],
+  "non_blocking_debt_followups": [
+    {
+      "paths": [
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs",
+        "checks/final-vegetation-clippy-comparison.json"
+      ],
+      "finding": "Vegetation Clippy exits 101 on one exact inherited baseline diagnostic (1/1), while its no-new-diagnostic comparison passes. The overall gate failure is attributable to the four introduced LSE diagnostics and the final no-run timeout."
+    },
+    {
+      "paths": [
+        "capture_once.py",
+        "artifacts/refusal-completion-checks.json"
+      ],
+      "finding": "Earlier same-reviewer helper approval is preserved only for the narrow static fixes: nonblocking exclusive ledger lock through reservation/finalization, fsync-plus-atomic-replace ledger persistence, and separate stdout/stderr caps. It does not establish schema completeness, aggregate bound sufficiency, capture authorization, or any runtime result."
+    }
+  ],
+  "verified_partial_preservation": {
+    "format": "PASS: final rustfmt --check exited 0 in 0.266 seconds and the source hash was unchanged.",
+    "custody": "PASS: refusal-completion-source-cut01.tar.gz and its receipt bind frozen source 50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5; the source archive has the recorded SHA-256 bb516512924f730ad4ad3cb22b40d0181dec66975127d7dd976194e2ec87fe24. Raw check archive receipt records no physical invocation.",
+    "accounting": "PASS: W1/W2/W3 each show reserved=0, invocations=0, elapsed_seconds=0; total physical invocations=0."
+  },
+  "disposition": "APPROVED_TERMINAL_PARTIAL_PRESERVATION_ONLY",
+  "qa_pass_statement": "PASS for the honest HOLD record, frozen-source recovery, and zero-slot accounting only. NOT_READY for capture, sealed receipt, diagnostic-completeness claims, numerical diagnosis, or runtime-feasibility claims."
+}

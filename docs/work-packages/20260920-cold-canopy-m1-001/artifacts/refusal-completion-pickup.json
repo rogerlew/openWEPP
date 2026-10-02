@@ -1,0 +1,33 @@
+{
+  "evidence_class": "Ran: static source/archive/fixture/inventory authentication, no physical execution",
+  "baseline_source_sha256": "e900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3",
+  "partial_source_sha256": "0d1536541afc6280367f08ceb04e10adc9a9f24e4dfc6eed5a1ea80713eff894",
+  "regular_members": 765,
+  "links": 7,
+  "all_link_targets_available": true,
+  "fixture_path": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completion-20261002/source/control-repair-control-fixtures.json",
+  "fixture_sha256": "d3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362",
+  "fixture_path_note": "Initial assertion used similarly named repository artifact (cf635423...), failed, then resolved against actual retained build pin. No fixture changed; detached source fixture is the authorized digest.",
+  "reused_inventory": "refusal-diagnosis-work-inventory.json",
+  "inventory_source_pins_verified": {
+    "c6-oracle-terminal-state.json": "1a299ed8fefb87bee9a6603e580c9cd058ce1828017f5c04923e79a12eef5432",
+    "c6-oracle-results.json": "1a15e799ef17d6fbcdd68b3b007b8704451a3c3f26d844f541bd467b7e617626",
+    "cost-attribution-summary.json": "633d039ee9e89c1abb4108c3dd6eac677d524c280d07ec17cbbfc9c3b1950d44",
+    "cost-attribution-decision-bounds.json": "d679861793c9969ff7b2884b26196dc73d3b81f22a111aea3ed2dc62cc74ac67",
+    "cost-attribution-independent-review.json": "3751e9ef5d9e158f6fd3d984581f9dbc5d145d1c973c26a2cda0fef17f65883b"
+  },
+  "budget_arithmetic": {
+    "joint_solves_per_day": 1440,
+    "mean_cpu_us_per_solve": 0.3472222222222222,
+    "mean_wall_us_per_solve": 0.3819444444444444,
+    "regime_cpu_us_per_solve": [
+      0.5208333333333334,
+      1.0416666666666667,
+      1.7361111111111112
+    ]
+  },
+  "completed_day_cost": null,
+  "native_owner_receiver_cost": null,
+  "limits": "No component CPU attribution. No current complete-day count distribution, native owner/receiver, hydraulics/materialization total, or redesigned-method cost. Nested timing/counter categories cannot be summed; conditional opportunities cannot be multiplied.",
+  "historical_cost_claim": "Accepted proposal-seam evidence only; not current witness, completed day or redesigned-method lower bound."
+}

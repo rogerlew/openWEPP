@@ -1,0 +1,187 @@
+{
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "decision_class": "c: insufficient evidence/runtime feasibility",
+  "readiness": "FAILED at2026-10-02T06:10:00Z; no launch",
+  "source_sha256": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+  "changed_detached_files": [
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+    "crates/openwepp-vegetation/src/cold_canopy_m1.rs"
+  ],
+  "checks": {
+    "final-format": {
+      "command": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completion-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completion-20261002/target-format",
+      "start_utc": "2026-10-02T06:08:46.038043+00:00",
+      "source_before": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+      "physical_invocations": 0,
+      "timeout_seconds": 65,
+      "exit": 0,
+      "elapsed_seconds": 0.26564552215859294,
+      "source_after": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "final-no-run": {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--no-run",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--features",
+        "m1-trust-region-physical-stage"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completion-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completion-20261002/target-candidate",
+      "start_utc": "2026-10-02T06:08:46.038043+00:00",
+      "source_before": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+      "physical_invocations": 0,
+      "timeout_seconds": 65,
+      "exit": "TIMEOUT_GROUP_KILLED",
+      "elapsed_seconds": 65.00497685698792,
+      "source_after": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4ce29133cff84e51efc3e9749b4421349eb2d4a80e7bb91dda6d954f4547b4c3"
+    },
+    "final-lse-clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--tests",
+        "--features",
+        "m1-trust-region-physical-stage",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completion-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completion-20261002/target-lint-lse",
+      "start_utc": "2026-10-02T06:08:46.047332+00:00",
+      "source_before": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+      "physical_invocations": 0,
+      "timeout_seconds": 65,
+      "exit": 101,
+      "elapsed_seconds": 10.845486122649163,
+      "source_after": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "88a1834248d14cd8c396d404fe2d6bfa1775d21535bbd716098cb9e866fe366e",
+      "diagnostic_summary": {
+        "baseline_count": 232,
+        "candidate_count": 236,
+        "matched_count": 232
+      },
+      "new_diagnostics": [
+        {
+          "message": "error: this function has too many lines (113/100)",
+          "file": "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+          "line": 79,
+          "column": 1,
+          "lint": "too_many_lines",
+          "baseline_line": null,
+          "classification": "REQUIRES_SOURCE_REVIEW"
+        },
+        {
+          "message": "error: variables can be used directly in the `format!` string",
+          "file": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+          "line": 1633,
+          "column": 121,
+          "lint": "uninlined_format_args",
+          "baseline_line": null,
+          "classification": "REQUIRES_SOURCE_REVIEW"
+        },
+        {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "file": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+          "line": 2011,
+          "column": 17,
+          "lint": "semicolon_if_nothing_returned",
+          "baseline_line": null,
+          "classification": "REQUIRES_SOURCE_REVIEW"
+        },
+        {
+          "message": "error: consider adding a `;` to the last statement for consistent formatting",
+          "file": "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+          "line": 4024,
+          "column": 17,
+          "lint": "semicolon_if_nothing_returned",
+          "baseline_line": null,
+          "classification": "REQUIRES_SOURCE_REVIEW"
+        }
+      ]
+    },
+    "final-vegetation-clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-vegetation",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completion-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completion-20261002/target-lint-vegetation",
+      "start_utc": "2026-10-02T06:08:46.066364+00:00",
+      "source_before": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+      "physical_invocations": 0,
+      "timeout_seconds": 65,
+      "exit": 101,
+      "elapsed_seconds": 5.4259691229090095,
+      "source_after": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2409e9456c344c5b4b95976116c27b4072130fb2076553eab2c1713b9b0fcb7b",
+      "diagnostic_summary": {
+        "baseline_count": 1,
+        "candidate_count": 1,
+        "matched_count": 1
+      },
+      "new_diagnostics": []
+    }
+  },
+  "slots": {
+    "W1": 0,
+    "W2": 0,
+    "W3": 0
+  },
+  "physical_invocations": 0,
+  "approved_sealed_receipt": false,
+  "actual_witness_reconstruction": "NOT RUN: no actual witness operands",
+  "runtime_feasibility": "UNESTABLISHED",
+  "blockers": [
+    "W3 actual caller/role/map/proposal/derivative provenance incomplete",
+    "Actual-stage field completeness matrix incomplete",
+    "Full schema and worst-case serialized byte bound unproved",
+    "Four introduced LSE Clippy diagnostics",
+    "Exact final no-run build timed out; no authenticated final binary"
+  ],
+  "recovery": "refusal-completion-source-cut01.tar.gz plus .json is authoritative; patch supplementary against authenticated partial0d1536541afc6280367f08ceb04e10adc9a9f24e4dfc6eed5a1ea80713eff894",
+  "terminal_diff_reconciled": true,
+  "unrelated_paths_verified": 48,
+  "raw_archive_members_verified": 61
+}
