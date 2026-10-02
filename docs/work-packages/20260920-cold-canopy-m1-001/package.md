@@ -1,5 +1,84 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## HOLD disposition and proposed capture continuation — 2026-10-02
+
+Owner requests disposition and prompt authoring only. Diagnosis at
+`dc4c5a4dfbb8ed5ddccdd4b9eeac541e92a3ea40` is preserved; scientific/runtime
+**HOLD_NO_COMPLETED_DAY** remains. The static attempt authenticated recovery and
+identified missing evidence but did not diagnose the actual arithmetic. No
+instrumentation, new binary or witness capture exists. All three slots remain
+unused; that fact alone does not launch them. No repair is established.
+
+| Acceptance | Disposition |
+| --- | --- |
+| Historical six controls / two partial-support reconstructions | Accepted unchanged within their original scope |
+| Source/run recovery and static guard identification | PASS; original/full versus reduced radius routing is correct |
+| W1 exact scratch-radius excess, ULPs and correction cause | UNMET: actual ordered operands absent |
+| W2 exact final lower-bound violation and correction cause | UNMET: actual p2/bound/correction operands absent |
+| W3 rejected predicate, call site, M/H/T and role provenance | UNMET: MhConsistency is not unique to the constructor |
+| Instrumentation/noninterference/build/sealed receipt | NOT READY / NOT RUN |
+| Complete reference/candidate day and deployable cost | UNMET; no credible feasibility result |
+
+The [proposed continuation](artifacts/refusal-capture-continuation-prompt.md),
+also `/tmp/openwepp_cold_canopy_m1_refusal_capture_continuation.md`, addresses
+observation readiness before the same fixed W1/W2/W3 captures. It preserves
+strict guards, source custody, independent review and actual-operand
+reconstruction. An unexpected accepted support stops without advancing another
+support. W3 must identify whichever site actually rejects rather than assuming
+a constructor failure. No solver repair, tolerance change, measurement campaign
+or deployment is proposed. A static-only stop remains honest incomplete evidence.
+
+A repeated600s readiness cap would not address the demonstrated preparation gap.
+The proposal explicitly adds **3600 charged seconds only upon invocation**, moving
+the ceiling from458534.927980s to462134.927980s once. It proposes readiness
+min(2400s,R-900s),600s closing, and the unchanged30s-per-witness/90s aggregate
+capture allowance. It retains all consumed charges and authoring/return tails.
+These proposed seconds are **not adopted by this prompt-authoring request**.
+This is a finite preparation/capture proposal, not an estimate that readiness or
+scientific diagnosis is guaranteed to finish. Invocation must use the then-latest
+carry; old remaining balances may not be reused.
+
+Runtime HOLD is independent:500us CPU/550us wall per complete OFE-day;
+regime CPU750/1500/2500us;10-OFE century182.625s CPU/210s wall. At unchanged60s
+cadence1440joint solves permit0.347222us CPU each before other work. Recorded
+failed partial-attempt4.920672–10.316618ms CPU and historical proposal/component
+costs cannot establish a completed-day cost or redesigned-method lower bound.
+A successful refusal capture promises no runtime reduction. Any proposed repair
+must still supply a credible work/cost argument and preserve scientific acceptance.
+
+Current authoring conservatively anchors03:45:00UTC, before first clock03:45:05.
+Carry457176.069712s already charges prior return through2026-10-01T22:24UTC;
+inactive owner-decision interval22:24–2026-10-02T03:45UTC is excluded. All current
+reading/writing/review/commit/return is charged against the unchanged458534.927980s
+ceiling. Initial remaining1358.858268s; no new execution is launched. Selected
+checks are independent correctness/QA prompt review, repository/tmp byte equality,
+local-reference checks, unrelated-file preservation and exact scoped diff check.
+
+Static independent prompt reviews (same distinct reviewers, message-only;
+no scientific execution): `/root/correctness` reports **PASS, no blocking findings**:
+"The continuation prompt correctly preserves observation-only scope, exact witness
+identities, zero consumed slots, noninterference review, complete operand capture,
+W3 call-site ambiguity, negative outcomes, strict accounting, and recommendation
+(a)/(b)/(c)." `/root/qa` reports **PASS, no finding**: "It makes the 3,600-second
+extension invocation-only, preserves the witness and no-retry limits, and adds
+readiness safeguards without weakening the HOLD or claiming a repair/runtime
+result." Both reviewed the proposed file against retained primary instructions
+and terminal evidence; review approves wording only. No fix cycle was required.
+
+Repository/tmp prompt bytes match; referenced evidence paths exist; all48initial
+unrelated files retain their recorded hashes. Exact authoring diff is this leading
+package section plus `artifacts/refusal-capture-continuation-prompt.md`; no Rust,
+fixture, authority or execution-evidence change. `git diff --check` passes.
+Scoped local commit only, no push.
+
+Conservative final authoring charge through**2026-10-02T03:50:00UTC** includes
+reading, writing, reviews and commit/return tail: current pickup**300s**, cumulative
+**457476.069712s**, remaining**1058.858268s** under the unchanged458534.927980s
+ceiling. Any return after03:50 remains attributable. No new charged allowance
+has been adopted; a future invocation reconciles this carry and any later tails
+before adding the proposed3600s once. Historical physical2.265900994s,
+historical control0.053829565s and diagnosis captures0s remain unchanged.
+
 ## Adopted refusal diagnosis — 2026-10-01
 
 Owner invokes `/tmp/openwepp_cold_canopy_m1_refusal_diagnosis_continuation.md`.
