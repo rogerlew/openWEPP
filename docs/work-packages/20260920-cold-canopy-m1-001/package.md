@@ -1,5 +1,79 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## HOLD disposition and observation-completion proposal — 2026-10-02
+
+Owner requests disposition and prompt authoring only. Preserve local
+`1e3a92971912b4cef5378a4c57f69c3934681567`: **HOLD_NO_COMPLETED_DAY**;
+option(c), insufficient evidence/runtime feasibility. Partial source and its
+no-run binary are recoverable; neither is approved for capture. No numerical
+repair or diagnosis is demonstrated. Historical controls/partial reconstructions
+remain accepted within their original scope. W1/W2/W3 remain unused0/0/0.
+
+The [proposed continuation](artifacts/refusal-observation-completion-continuation-prompt.md)
+is also saved as
+`/tmp/openwepp_cold_canopy_m1_refusal_observation_completion_continuation.md`.
+It resumes from the retained partial source rather than recreating the entry-only
+draft. It requires structured W1/W2 maps/roles/refusal/work/completeness, W3 exact
+emitter-to-terminal-event provenance (including derivative callers), complete
+schema/output-bound proof, direct formatting, source-bearing lint reconciliation,
+and independent sealed approval before any of the same three one-shot captures.
+It preserves actual binary64 reconstruction and diagnosis-only scope. An unexpected
+outcome is retained without forced classification, retry or later-support execution.
+
+The proposal adds **3600charged seconds only upon invocation**, moving
+462134.927980s to465734.927980s once, and proposes readiness
+min(3000s,R-1200s) with600s closing reserve and unchanged30s/90s witness bounds.
+The prior40-minute readiness attempt did not complete its missing provenance,
+metadata, output bound or quality checks. Reusable partial code, concrete reviewed
+findings and known tool paths now support a bounded completion attempt; a50-minute
+maximum readiness allowance leaves at least20minutes outside readiness for captures,
+reconstruction/review/closure. This is a finite proposal, not a feasibility guarantee.
+No allowance, UTC execution renewal, implementation, build or capture is adopted
+by this authoring request. Future invocation uses the then-latest carry, never an
+old remaining balance or a reset of slots, charges or historical failures.
+
+Runtime HOLD remains independent:500us CPU/550us wall per complete OFE-day;
+regime CPU750/1500/2500us;10-OFE century182.625s CPU/210s wall;1440joint solves
+share0.347222us CPU/solve before other work. Failed partial CPU samples and
+observation overhead establish neither day cost nor a runtime reduction. No
+solver elaboration, repair or benchmark follows from authoring this prompt.
+
+Current authoring conservatively anchors04:59UTC, before first clock04:59:37.
+Carry459996.069712s already charges prior return through04:35UTC; inactive
+owner-decision interval04:35–04:59UTC is excluded. All current reading, authoring,
+reviews, checks, commit and return count against the unchanged462134.927980s
+ceiling; initial remaining2138.858268s. Selected checks are distinct correctness
+and QA prompt review, repository/tmp byte equality, local-reference validation,
+unrelated-file preservation and exact scoped diff. No Rust workflow is selected
+for this documentation-only authoring; no source or evidence outcome is changed.
+
+Static independent prompt reviews (message-only, no execution): same distinct
+`/root/correctness` reports **PASS, no remaining findings**, after verifying the
+wording distinguishes phase-join/probe constructors from vegetation derivative/
+residual emitters. It confirms full operand/provenance requirements, strict guards,
+zero consumed slots and diagnosis-only HOLD. `/root/qa` reports **PASS for prompt
+authoring**, after the pickup was simplified to the verified full archive/receipt,
+with the patch supplementary only. QA confirms invocation-only budget adoption,
+latest carry, fixed persistent slots, caps, source-bearing checks and sealing.
+These approvals concern the proposed wording only; they approve no current source,
+build, capture, repair or runtime claim. The QA nonblocking duplicate-sentence note
+was not reproduced in the final file (one occurrence); no content change was needed.
+
+Repository/tmp prompt bytes match; referenced artifacts exist; all48initial
+unrelated paths retain their recorded hashes. Exact scope is this leading HOLD/
+proposal section and `artifacts/refusal-observation-completion-continuation-prompt.md`.
+No previous evidence, Rust, fixture or authority changes. Scoped diff checks pass;
+local commit only, no push.
+
+Conservative final authoring charge through**2026-10-02T05:06:00UTC** includes
+reading/writing, both reviews, checks and commit/return tail: pickup**420s**,
+cumulative**460416.069712s**, remaining**1718.858268s** under the unchanged
+**462134.927980s**ceiling. Reconcile any return after05:06UTC. Proposed additional
+seconds remain unadopted; a future invocation must use this carry plus any later
+charges, not the prior execution's459996.069712s. No instrumentation or capture
+was launched by this authoring request; slots0/0/0 and historical physical/control
+totals are unchanged.
+
 ## Refusal capture readiness failed — partial source preserved, 2026-10-02
 
 Targets remain **500us CPU /550us wall per completed OFE-day**, regime CPU
