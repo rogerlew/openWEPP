@@ -1,6 +1,85 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
 
+## HOLD disposition and completeness-continuation proposal — 2026-10-02
+
+Owner requests HOLD disposition and continuation prompt authoring only.
+**HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility**
+remains at local `ec95c51dabf7b1f79fcdbca4e8c5d4ed083f52e8`. Final detached source
+and binary custody remain intact; formatting/no-run passed and Clippy has no
+introduced diagnostics. Scientific completeness and terminal QA verification remain
+unmet. W1/W2/W3 stay **0/0/0**; no source edits, builds, physical workflow or new
+execution allowance are adopted by this authoring request.
+
+The [proposed completeness continuation](artifacts/refusal-finalization-continuation-prompt.md)
+is saved byte-identically to
+`/tmp/openwepp_cold_canopy_m1_refusal_completeness_continuation.md`. It resumes from
+cut02 source e7659092…1a6f and the full authenticated archive, preserves accepted
+observation/custody improvements, and requires exact scalar-to-trace joins,
+exhaustive actual-stage field semantics, unambiguous W3 base/input provenance and
+bit-semantic predicate checks before source/binary/schema freeze and independent
+approval. The unavailable final-source QA review remains an unmet obligation;
+prompt review never substitutes for it. Diagnosis remains the stop, with no
+numerical repair or main Rust adoption.
+
+Proposed **5400 charged seconds once upon future invocation**, raising ceiling
+471134.927980s to **476534.927980s**; unadopted now. The last readiness attempt
+improved custody and code quality but did not finish the scientific predicates.
+The proposal requires completion of the field/stage rules before implementation
+is called done, checks reviewer availability early, and preserves finite readiness
+min(4200s,R-1200s), its final600s check/review reserve, and600s closing reserve.
+No duration guarantees completion, waives a blocker, resets slots, or refunds cost.
+
+Runtime acceptance remains500us CPU/550us wall per completed OFE-day, regime CPU
+750/1500/2500us; century182.625s CPU/210s wall. Native costs/completed-day feasibility
+and remaining target gap are unestablished. At60s,1440joint solves share0.347222us
+CPU each before other work. Failed partial attempts and unmeasured observer
+atomic/RAII/map overhead establish neither day costs nor work reduction.
+
+Authoring conservatively anchors **16:47UTC** before first clock16:47:51UTC.
+Prior carry468396.069712s includes the prior return tail through16:32UTC; inactive
+owner-decision interval16:32–16:47UTC is excluded. Selected validation: independent
+prompt correctness and bounded custody/timing QA, repository/tmp equality,
+reference/JSON identity checks, scoped diff and all48unrelated-path hashes.
+No Rust check or physical workflow is selected for documentation-only scope.
+Conservative authoring charge through **16:55UTC**, including prompt review/fixes,
+checks, commit and return: **480s**, cumulative **468876.069712s**, remaining
+**2258.858268s** under unchanged ceiling **471134.927980s**. Reconcile any active
+work after16:55UTC. The proposed5400s extension remains unadopted. This is the
+latest carry for future pickup; prior accounting JSON retains historical values.
+Static independent prompt correctness, `/root/correctness`, initially required
+lambda-specific FinalInstall wording, separate caller trial/input-reservoir source
+roles and vegetation/controller proof pins. All were corrected and verified in
+the same conversation. Final original response:
+
+> **APPROVED — prompt authoring only.**
+>
+> The required wording and source-pin fixes are present. Timing arithmetic is exact, and the `+5400s` extension remains unadopted until invocation. HOLD and all implementation, build, capture, and physical-run restrictions remain intact.
+
+The prior `/root/qa` route again returned `agent thread limit reached`. Bounded
+prompt-only custody/timing review was assigned to `/root/implementer`, which did
+not author this prompt; its source implementation role explicitly excludes it
+from independent scientific/source acceptance. This review is not a substitute
+for unavailable terminal-source QA. Its latest-carry finding was resolved by the
+explicit authoring record above; its historical pickup identity concern was
+clarified: pickup records initial restoration, cut02 records final source, and
+only actual comparison against cut02 can establish current drift.
+
+Final original prompt custody/timing response:
+
+> **Prompt custody/timing approval: PASS, with HOLD retained.**
+>
+> The clarification correctly separates historical pickup identity from final cut02 custody. Current bytes must be compared to cut02 source `e765…1a6f` and archive `3d136…a5502`; the earlier pickup receipt is not drift evidence.
+>
+> Timing wording correctly uses cumulative `468876.069712s` through 16:55 UTC, leaves `2258.858268s` under the unextended ceiling, and requires a fresh reconciliation before R/deadline calculation. The proposed next 5400-second allowance remains unadopted.
+>
+> Remaining blockers are unchanged: scientific completeness, independent terminal QA, sealed approval, and capture authorization.
+
+Repository/tmp bytes, referenced artifacts, source/archive identity text,
+extension/carry arithmetic, scoped diff and all48unrelated hashes pass. Exact
+scope is this leading package disposition and one continuation prompt artifact.
+Commit locally only; no push. No Rust or physical workflow ran.
+
 ## Observation finalization — HOLD, 2026-10-02
 
 **HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility.**
