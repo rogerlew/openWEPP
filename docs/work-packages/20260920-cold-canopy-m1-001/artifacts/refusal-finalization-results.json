@@ -1,0 +1,56 @@
+{
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "decision_class": "c: insufficient evidence/runtime feasibility",
+  "readiness": "FAILED: scientific completeness and terminal QA verification not satisfied; no sealed approval, no launch",
+  "source_sha256": "e76590929f364701480d65088231e7ec9fcdeafa3e75daf58b980149c8881a6f",
+  "recovery": "refusal-finalization-source-cut02.tar.gz plus .json; cut01 superseded, retained",
+  "source_archive_sha256": "3d136a51d8348d8e0564a2405b78b811ae7b4340b2f2d2b59f4b6cf1dcba5502",
+  "changed_detached_files": [
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+    "crates/openwepp-vegetation/src/cold_canopy_m1.rs"
+  ],
+  "physical_invocations": 0,
+  "slots": {
+    "W1": 0,
+    "W2": 0,
+    "W3": 0
+  },
+  "approved_sealed_receipt": false,
+  "actual_witness_reconstruction": "NOT RUN: no actual witness operands",
+  "native_completed_day_cost": "UNESTABLISHED",
+  "runtime_targets": {
+    "OFE_day_CPU_us": 500,
+    "OFE_day_wall_us": 550,
+    "regime_CPU_us": [
+      750,
+      1500,
+      2500
+    ],
+    "century_CPU_seconds": 182.625,
+    "century_wall_seconds": 210,
+    "joint_solves_per_day": 1440,
+    "CPU_us_per_solve_before_other_work": 0.347222
+  },
+  "observer_overhead": "nonzero atomic/RAII/eager mapping overhead, unmeasured; no timing campaign authorized",
+  "remaining_blockers": [
+    "High: scalar norm/norm2 fields are not joined bit-for-bit to ordered traces; exact_norm joins only trace against vector.",
+    "High: zero-lambda second-position OrderedNorm/RadiusComparison do not validate the p2_zero_lambda_final trace; final and early arms still lack exact reached/unreached scalar and later-field conditions.",
+    "High: reduced adapter_base_core mapping is shadowed by nested jacobian_base_core full/full_identity scope.",
+    "High: beginning-input validation exempts trial M/H joins without binding actual input-reservoir source; predicate validation checks names/Option shape, not decoded numerical truth.",
+    "Medium: 219-path table is structurally complete, but optional-stage conditions remain generic and field_status has only ten aggregates.",
+    "Final QA fix verification unavailable; repeated agent thread limit tool rejection. Prior QA HOLD findings reused only within unchanged scope."
+  ],
+  "schema_payload_bound_bytes": 36622107,
+  "output_cap_bytes": 67108864,
+  "natural_event_bound": 1402,
+  "event_cap": 2048,
+  "field_paths": 219,
+  "schema_scientific_status": "DRAFT_NOT_APPROVED",
+  "terminal_diff_reconciled": true,
+  "main_Rust_adoption": false,
+  "unrelated_paths_verified": 48,
+  "capture_workflow_ran": false,
+  "binary_custody_is_not_capture_approval": true
+}

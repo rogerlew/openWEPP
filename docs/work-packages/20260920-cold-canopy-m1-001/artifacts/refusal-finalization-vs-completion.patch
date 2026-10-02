@@ -1,0 +1,1455 @@
+--- a/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -80,17 +80,5 @@
+-    use std::io::{self, BufRead, Write};
+-
+-    const MAX_OUTPUT_BYTES: usize = 16_777_216;
+-    let request_line = io::stdin()
+-        .lock()
+-        .lines()
+-        .next()
+-        .expect("RUN_INIT line")
+-        .expect("RUN_INIT input");
+-    let request: Value = serde_json::from_str(
+-        request_line
+-            .strip_prefix("RUN_INIT ")
+-            .expect("RUN_INIT command"),
+-    )
+-    .expect("capture request JSON");
+-    let witness = request["witness"].as_str().expect("witness");
+-    let (case_id, representation, profile) = match witness {
++    use std::io::{self, Write};
++
++    const MAX_OUTPUT_BYTES: usize = 67_108_864;
++    let witness = m1_refusal_capture_request_witness();
++    let (case_id, representation, profile) = match witness.as_str() {
+@@ -116,3 +104,6 @@
+-    assert_eq!(request["case"].as_str(), Some(case_id));
+-    assert_eq!(request["support_id"].as_u64(), Some(0));
+-    assert_eq!(request["cadence_seconds"].as_u64(), Some(60));
++    let request = serde_json::json!({
++        "witness": witness,
++        "case": case_id,
++        "support_id": 0,
++        "cadence_seconds": 60,
++    });
+@@ -144 +135 @@
+-        crate::m1_trust_region_stage1::refusal_capture_json_for_test(refinement_capture, witness);
++        crate::m1_trust_region_stage1::refusal_capture_json_for_test(refinement_capture, &witness);
+@@ -152,12 +143 @@
+-    let w3_terminal_complete = mh_refusal
+-        .events
+-        .iter()
+-        .filter(|event| event.terminal_propagated)
+-        .count()
+-        == 1
+-        && mh_refusal.terminal_event_id.is_some_and(|event_id| {
+-            mh_refusal
+-                .events
+-                .iter()
+-                .any(|event| event.event_id == event_id && event.terminal_propagated)
+-        });
++    let w3_terminal_complete = m1_refusal_capture_w3_terminal_complete(&mh_refusal);
+@@ -192 +171,0 @@
+-    assert!(text.len() <= MAX_OUTPUT_BYTES, "bounded capture output");
+@@ -194,0 +174 @@
++    assert!(text.len() <= MAX_OUTPUT_BYTES, "bounded capture output");
+@@ -195,0 +176,283 @@
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn m1_refusal_capture_request_witness() -> String {
++    use std::io::{self, BufRead};
++
++    let request_line = io::stdin()
++        .lock()
++        .lines()
++        .next()
++        .expect("RUN_INIT line")
++        .expect("RUN_INIT input");
++    let request: Value = serde_json::from_str(
++        request_line
++            .strip_prefix("RUN_INIT ")
++            .expect("RUN_INIT command"),
++    )
++    .expect("capture request JSON");
++    let object = request.as_object().expect("capture request object");
++    assert_eq!(object.len(), 4, "capture request key count");
++    assert!(
++        object.keys().all(|key| matches!(
++            key.as_str(),
++            "witness" | "case" | "support_id" | "cadence_seconds"
++        )),
++        "capture request has an unknown key"
++    );
++    let witness = object
++        .get("witness")
++        .and_then(Value::as_str)
++        .expect("witness")
++        .to_owned();
++    let (case, support_id, cadence_seconds) = match witness.as_str() {
++        "W1" => ("A_cold_ice_day", 0, 60),
++        "W2" | "W3" => ("C_freeze_then_melt_day", 0, 60),
++        _ => panic!("only frozen W1/W2/W3 witnesses are admissible"),
++    };
++    assert_eq!(object.get("case").and_then(Value::as_str), Some(case));
++    assert_eq!(
++        object.get("support_id").and_then(Value::as_u64),
++        Some(support_id)
++    );
++    assert_eq!(
++        object.get("cadence_seconds").and_then(Value::as_u64),
++        Some(cadence_seconds)
++    );
++    witness
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn m1_refusal_capture_w3_terminal_complete(
++    report: &openwepp_vegetation::cold_canopy_m1::M1MhRefusalReport,
++) -> bool {
++    let terminal: Vec<_> = report
++        .events
++        .iter()
++        .filter(|event| event.terminal_propagated)
++        .collect();
++    let Some(event) = terminal.first() else {
++        return false;
++    };
++    if terminal.len() != 1
++        || report.terminal_event_id != Some(event.event_id)
++        || event.call_id == usize::MAX
++    {
++        return false;
++    }
++    let Some(context) = event.context.as_ref() else {
++        return false;
++    };
++    context.call_id == event.call_id
++        && context.occupancy < 2
++        && context.mass_index == context.occupancy * 6 + 3
++        && context.enthalpy_index == context.occupancy * 6 + 4
++        && context.trial_coordinate_bits.is_some()
++        && report
++            .events
++            .iter()
++            .all(m1_refusal_capture_w3_context_complete)
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn m1_w3_full_context(
++    context: &openwepp_vegetation::cold_canopy_m1::M1MhObservationContext,
++    role: &str,
++    direction: bool,
++    fd_column: bool,
++    fd_side: Option<&str>,
++    pass: &str,
++) -> bool {
++    context.state_role == role
++        && context.representation == "full"
++        && context.map_identity == "full_logical_to_physical_identity"
++        && (context.proposal_direction_bits.is_some() == direction)
++        && (if fd_column {
++            context.fd_column.is_some_and(|column| column < 21)
++        } else {
++            context.fd_column.is_none()
++        })
++        && context.fd_side == fd_side
++        && context.pass == pass
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn m1_w3_primary_site_context(
++    context: &openwepp_vegetation::cold_canopy_m1::M1MhObservationContext,
++) -> bool {
++    match context.site {
++        "validate_with_q_guard_initial_reservoir" => m1_w3_full_context(
++            context,
++            "beginning_input_reservoir",
++            false,
++            false,
++            None,
++            "validate_with_q_guard",
++        ),
++        "jacobian_base_core" => m1_w3_full_context(
++            context,
++            "jacobian_base_trial",
++            false,
++            false,
++            None,
++            "jacobian_base_core",
++        ),
++        "adapter_base_core" => {
++            context.state_role == "adapter_base_trial"
++                && context.proposal_direction_bits.is_none()
++                && context.fd_column.is_none()
++                && context.fd_side.is_none()
++                && context.pass == "adapter_base_evaluation"
++                && matches!(
++                    (context.representation, context.map_identity),
++                    ("full", "full_logical_to_physical_identity")
++                        | ("reduced", "reduced_zero_sun_logical_to_physical_map")
++                )
++        }
++        "adapter_candidate_core" => {
++            context.state_role == "adapter_candidate_trial"
++                && context.proposal_direction_bits.is_none()
++                && context.fd_column.is_none()
++                && context.fd_side.is_none()
++                && context.pass == "adapter_candidate_evaluation"
++                && matches!(
++                    (context.representation, context.map_identity),
++                    ("full", "full_logical_to_physical_identity")
++                        | ("reduced", "reduced_zero_sun_logical_to_physical_map")
++                )
++        }
++        "selected_probe_core" => m1_w3_full_context(
++            context,
++            "selected_probe_candidate",
++            true,
++            false,
++            None,
++            "selected_probe_core",
++        ),
++        "jacobian_reservoir" => m1_w3_full_context(
++            context,
++            "jacobian_base_trial",
++            false,
++            true,
++            None,
++            "jacobian",
++        ),
++        _ => false,
++    }
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn m1_w3_secondary_site_context(
++    context: &openwepp_vegetation::cold_canopy_m1::M1MhObservationContext,
++) -> bool {
++    match context.site {
++        "materialization_reservoir" => m1_w3_full_context(
++            context,
++            "materialization_accepted_trial",
++            false,
++            false,
++            None,
++            "materialization",
++        ),
++        "phase_join_selection_reservoir" => m1_w3_full_context(
++            context,
++            "phase_join_trial",
++            true,
++            false,
++            None,
++            "phase_join_selection",
++        ),
++        "fd_trial_is_admissible_screening_constructor" => m1_w3_full_context(
++            context,
++            "fd_admissibility_trial",
++            false,
++            false,
++            None,
++            "fd_admissibility",
++        ),
++        "fd_core_trial" => {
++            (matches!(context.fd_side, Some("high")) || matches!(context.fd_side, Some("low")))
++                && m1_w3_full_context(
++                    context,
++                    "fd_perturbed_trial",
++                    false,
++                    true,
++                    context.fd_side,
++                    "finite_difference_core",
++                )
++        }
++        "selected_probe_tie_screen_current_reservoir" => m1_w3_full_context(
++            context,
++            "selected_probe_current",
++            true,
++            false,
++            None,
++            "selected_probe_tie_screen",
++        ),
++        "selected_probe_side_candidate_reservoir" => m1_w3_full_context(
++            context,
++            "selected_probe_candidate",
++            true,
++            false,
++            None,
++            "selected_probe_side_candidate",
++        ),
++        "selected_probe_side_current_reservoir" => m1_w3_full_context(
++            context,
++            "selected_probe_current",
++            true,
++            false,
++            None,
++            "selected_probe_side_current",
++        ),
++        "reduced_reconstruction_reservoir" => {
++            context.representation == "reduced"
++                && context.map_identity == "reduced_zero_sun_logical_to_physical_map"
++                && context.proposal_direction_bits.is_none()
++                && context.fd_column.is_none()
++                && context.fd_side.is_none()
++                && matches!(
++                    context.state_role,
++                    "reduced_validation_reconstruction" | "reduced_humidity_reconstruction"
++                )
++                && matches!(
++                    context.pass,
++                    "reconstruction_validation" | "reconstruction_humidity"
++                )
++        }
++        _ => false,
++    }
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn m1_refusal_capture_w3_context_complete(
++    event: &openwepp_vegetation::cold_canopy_m1::M1MhRefusalObservation,
++) -> bool {
++    let Some(context) = event.context.as_ref() else {
++        return false;
++    };
++    if event.call_id == usize::MAX
++        || context.call_id != event.call_id
++        || context.occupancy >= 2
++        || context.mass_index != context.occupancy * 6 + 3
++        || context.enthalpy_index != context.occupancy * 6 + 4
++        || context.trial_coordinate_bits.is_none()
++    {
++        return false;
++    }
++    let trial_join = context.site == "validate_with_q_guard_initial_reservoir"
++        || context.trial_coordinate_bits.is_some_and(|bits| {
++            bits[context.mass_index] == event.mass_bits
++                && bits[context.enthalpy_index] == event.enthalpy_bits
++        });
++    let temperature_shape = match event.predicate {
++        "mass_nonfinite" | "enthalpy_nonfinite" | "mass_negative" | "empty_nonzero_enthalpy" => {
++            event.temperature_bits.is_none()
++        }
++        "temperature_nonfinite" | "temperature_out_of_range" => event.temperature_bits.is_some(),
++        _ => false,
++    };
++    if !trial_join || !temperature_shape {
++        return false;
++    }
++    m1_w3_primary_site_context(context) || m1_w3_secondary_site_context(context)
+--- a/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ b/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -1633 +1633 @@
+-            "reason": format!("{:?}", metadata.reason), "correction_position": metadata.correction_position.map(|value| format!("{:?}", value)), "guard_stage": format!("{:?}", metadata.guard_stage),
++            "reason": format!("{:?}", metadata.reason), "correction_position": metadata.correction_position.map(|value| format!("{value:?}")), "guard_stage": format!("{:?}", metadata.guard_stage),
+@@ -1799,50 +1799,22 @@
+-    let refinement_complete = match witness {
+-        "W1" => {
+-            trace.face_free_ids.is_some()
+-                && trace.factor_order.is_some()
+-                && trace.weighted_residual.is_some()
+-                && trace.weighted_matrix.is_some()
+-                && trace.scaled_lower_bits.is_some()
+-                && trace.scaled_upper_bits.is_some()
+-                && trace.free_mask.is_some()
+-                && trace.held_mask.is_some()
+-                && trace.p0.is_some()
+-                && trace.residual0.is_some()
+-                && trace.h0.is_some()
+-                && trace.delta0.is_some()
+-                && trace.p1.is_some()
+-                && trace.p1_full_norm2.is_some()
+-                && trace.p1_full_norm.is_some()
+-                && trace
+-                    .ordered_norms
+-                    .iter()
+-                    .any(|norm| norm.role == "p1_full" && norm.coordinate_ids.len() == 21)
+-                && trace.terminal_refusal.is_some()
+-        }
+-        "W2" => {
+-            trace.face_free_ids.is_some()
+-                && trace.factor_order.is_some()
+-                && trace.weighted_residual.is_some()
+-                && trace.weighted_matrix.is_some()
+-                && trace.scaled_lower_bits.is_some()
+-                && trace.scaled_upper_bits.is_some()
+-                && trace.free_mask.is_some()
+-                && trace.held_mask.is_some()
+-                && trace.p0.is_some()
+-                && trace.residual0.is_some()
+-                && trace.delta0.is_some()
+-                && trace.p1.is_some()
+-                && trace.residual1.is_some()
+-                && trace.delta1.is_some()
+-                && trace.p2.is_some()
+-                && trace.lower_mask_p2.is_some()
+-                && trace.ordered_norms.iter().any(|norm| {
+-                    norm.role == "p0_zero_lambda_eligibility" && norm.coordinate_ids.len() == 21
+-                })
+-                && trace.ordered_norms.iter().any(|norm| {
+-                    norm.role == "p1_zero_lambda_scratch" && norm.coordinate_ids.len() == 21
+-                })
+-                && trace.terminal_refusal.is_some()
+-        }
+-        _ => false,
+-    };
++    let terminal = trace
++        .terminal_refusal
++        .as_deref()
++        .and_then(|refusal| refusal.refinement.as_ref());
++    let terminal_refusal = trace.terminal_refusal.as_deref();
++    let terminal_metadata_complete = terminal_refusal.is_some_and(|refusal| {
++        matches!(
++            refusal.kind,
++            super::M1TrustRegionRefusalKind::TrustRegionRefinementIndeterminate
++        )
++    }) && terminal.is_some();
++    let refinement_complete = terminal_metadata_complete
++        && refinement_capture_terminal_complete(trace, terminal.map(Box::as_ref))
++        && terminal.is_some_and(|metadata| match metadata.guard_stage {
++            super::M1TrustRegionRefinementGuardStage::ScratchFullRadius => {
++                refinement_capture_w1_complete(trace, Some(metadata.as_ref()))
++            }
++            super::M1TrustRegionRefinementGuardStage::FinalBoxLower => {
++                refinement_capture_w2_complete(trace, Some(metadata.as_ref()))
++            }
++            _ => true,
++        });
+@@ -1874,2 +1846,39 @@
+-    let reached_fields_present = trace.face_free_ids.is_some()
+-        && trace.factor_order.is_some()
++    let actual_stage = terminal.map(|metadata| format!("{:?}", metadata.guard_stage));
++    let reached_prefix_complete = refinement_complete;
++    serde_json::json!({
++        "reached_prefix_complete": reached_prefix_complete, "witness": witness,
++        "actual_terminal_stage": actual_stage,
++        "actual_terminal_kind": terminal_refusal.map(|refusal| format!("{:?}", refusal.kind)),
++        "actual_terminal_reason": terminal.map(|metadata| format!("{:?}", metadata.reason)),
++        "actual_correction_position": terminal.and_then(|metadata| metadata.correction_position).map(|value| format!("{value:?}")),
++        "expected_terminal_match": expected_terminal_match,
++        "actual_branch_complete": refinement_complete,
++        "missing_capture_is_incomplete": !reached_prefix_complete,
++    })
++}
++
++#[cfg(test)]
++fn refinement_capture_common_complete(trace: &RefinementObservationTrace) -> bool {
++    let Some(free_ids) = trace.face_free_ids.as_ref() else {
++        return false;
++    };
++    let Some(order) = trace.factor_order.as_ref() else {
++        return false;
++    };
++    let Some(a) = trace.factor_a.as_ref() else {
++        return false;
++    };
++    let Some(v) = trace.factor_v.as_ref() else {
++        return false;
++    };
++    let Some(sigma) = trace.factor_sigma.as_ref() else {
++        return false;
++    };
++    trace
++        .weighted_residual
++        .as_ref()
++        .is_some_and(|values| values.len() == 21)
++        && trace
++            .weighted_matrix
++            .as_ref()
++            .is_some_and(|matrix| matrix.len() == 21 && matrix.iter().all(|row| row.len() == 21))
+@@ -1878,2 +1887,2 @@
+-        && trace.p0.is_some()
+-        && (witness == "W2" || trace.p0_full_norm.is_some())
++        && trace.free_mask.is_some()
++        && trace.held_mask.is_some()
+@@ -1881,3 +1890,618 @@
+-        && trace.work.is_some();
+-    let reached_prefix_complete =
+-        refinement_complete && reached_fields_present && trace.terminal_refusal.is_some();
++        && trace.live_state_exit.is_some()
++        && trace.factor_applications as usize == trace.factor_application_identities.len()
++        && !free_ids.is_empty()
++        && free_ids.iter().all(|id| *id < 21)
++        && free_ids
++            .iter()
++            .enumerate()
++            .all(|(index, id)| !free_ids[..index].contains(id))
++        && order.len() == free_ids.len()
++        && order.iter().all(|id| *id < free_ids.len())
++        && order
++            .iter()
++            .enumerate()
++            .all(|(index, id)| !order[..index].contains(id))
++        && a.len() == 21
++        && v.len() == free_ids.len()
++        && sigma.len() == free_ids.len()
++        && a.iter().all(|row| row.len() == free_ids.len())
++        && v.iter().all(|row| row.len() == free_ids.len())
++        && trace.work.is_some()
++}
++
++/// Select required copies from the typed terminal guard, never from a witness's
++/// historical outcome.  A stage whose copy boundary was not reached is reported
++/// incomplete; it is not relabelled as the expected refusal.
++#[cfg(test)]
++macro_rules! refinement_capture_terminal_matrix {
++    ($metadata:ident, $common:ident, $boundary:ident, $structural:ident, $p0:ident, $lineage:ident, $applications:ident, $positive_lambda:ident, $zero_lambda:ident, $p0_values:ident, $full:ident, $trace:ident, $first_started:ident, $first_factor_shape:ident, $no_p1:ident, $first_delta:ident, $p1_present:ident, $no_p2:ident, $p1_norms:ident, $first_complete:ident, $second_started:ident, $second_factor_shape:ident, $second_delta:ident, $p2_present:ident) => {
++        match ($metadata.correction_position, $metadata.guard_stage) {
++            // The $p0 assembly is before a copy exists.  Any other None-position
++            // terminal follows the $p0 copy and its lambda-specific norm route.
++            (None, Stage::ActiveFinite | Stage::ActiveEquality) => {
++                $boundary && $structural && $p0 && $lineage && $applications(0)
++            }
++            // $p0 $full/reduced norm failures occur inside the norm itself, before
++            // its scalar copy is recorded; a radius comparison follows a copy.
++            (None, Stage::P0FullRadius | Stage::P0ReducedRadius) => {
++                $positive_lambda
++                    && $boundary
++                    && $structural
++                    && $p0
++                    && $lineage
++                    && refinement_capture_exact_norm($trace, "p0_full", $p0_values, &$full)
++                    && $applications(0)
++            }
++            (None, Stage::OrderedNorm) => {
++                $zero_lambda && $boundary && $structural && $p0 && $lineage && $applications(0)
++            }
++            (None, Stage::RadiusComparison) => $zero_lambda && $common && $applications(0),
++
++            // First residual Dot2 guards happen before either factor application.
++            (
++                Some(Position::First),
++                Stage::ResidualSourceTerm
++                | Stage::ResidualSourceWeight
++                | Stage::PrimaryProduct
++                | Stage::SplitterProduct
++                | Stage::SplitOutput
++                | Stage::EftRemainder
++                | Stage::TwoSumResult
++                | Stage::TwoSumRemainder
++                | Stage::Accumulation,
++            ) => {
++                $common
++                    && $trace.h0.is_none()
++                    && $trace.delta0.is_none()
++                    && $no_p1
++                    && $applications(0)
++            }
++            // A factor may fail after the positive-lambda h0 product but before
++            // the application counter advances.  Zero lambda has no h0 route.
++            (Some(Position::First), Stage::FactorApplicationOutput) => {
++                $common
++                    && $first_started
++                    && $first_factor_shape
++                    && $trace.delta0.is_none()
++                    && $no_p1
++                    && $applications(1)
++            }
++            // Coordinate, first active, and scratch-box guards precede p1.
++            (
++                Some(Position::First),
++                Stage::CoordinateUpdate
++                | Stage::ActiveFinite
++                | Stage::ActiveEquality
++                | Stage::ScratchBoxLower
++                | Stage::ScratchBoxUpper,
++            ) => {
++                $common
++                    && $first_started
++                    && $first_factor_shape
++                    && $first_delta
++                    && $no_p1
++                    && $applications(1)
++            }
++            // Scratch radius and zero-lambda ordered/radius guards are after p1.
++            (
++                Some(Position::First),
++                Stage::ScratchFullRadius
++                | Stage::ScratchReducedRadius
++                | Stage::OrderedNorm
++                | Stage::RadiusComparison,
++            ) => {
++                $common
++                    && $first_started
++                    && $first_factor_shape
++                    && $first_delta
++                    && $p1_present
++                    && $no_p2
++                    && $applications(1)
++                    && match $metadata.guard_stage {
++                        Stage::ScratchFullRadius => {
++                            $positive_lambda
++                                && refinement_capture_exact_norm(
++                                    $trace,
++                                    "p1_full",
++                                    $trace.p1.as_ref().unwrap(),
++                                    &$full,
++                                )
++                        }
++                        Stage::ScratchReducedRadius => $positive_lambda && $p1_norms,
++                        Stage::OrderedNorm | Stage::RadiusComparison => $zero_lambda && $p1_norms,
++                        _ => false,
++                    }
++            }
++
++            // Second residual Dot2 guards occur after a completed first correction,
++            // but before the second factor application.
++            (
++                Some(Position::Second),
++                Stage::ResidualSourceTerm
++                | Stage::ResidualSourceWeight
++                | Stage::PrimaryProduct
++                | Stage::SplitterProduct
++                | Stage::SplitOutput
++                | Stage::EftRemainder
++                | Stage::TwoSumResult
++                | Stage::TwoSumRemainder
++                | Stage::Accumulation,
++            ) => {
++                $common
++                    && $first_complete
++                    && $trace.h1.is_none()
++                    && $trace.delta1.is_none()
++                    && $no_p2
++                    && $applications(1)
++            }
++            (Some(Position::Second), Stage::FactorApplicationOutput) => {
++                $common
++                    && $first_complete
++                    && $second_started
++                    && $second_factor_shape
++                    && $trace.delta1.is_none()
++                    && $no_p2
++                    && $applications(2)
++            }
++            (Some(Position::Second), Stage::CoordinateUpdate) => {
++                $common
++                    && $first_complete
++                    && $second_started
++                    && $second_factor_shape
++                    && $second_delta
++                    && $no_p2
++                    && $applications(2)
++            }
++            // Final active/box/radius/install guards are after the p2 observer
++            // seam.  Positive and zero lambda retain their distinct factor state.
++            (
++                Some(Position::Second),
++                Stage::ActiveFinite
++                | Stage::ActiveEquality
++                | Stage::FinalBoxLower
++                | Stage::FinalBoxUpper
++                | Stage::FinalFullRadius
++                | Stage::FinalReducedRadius
++                | Stage::FinalRadiusCloseness
++                | Stage::FinalInstallEquality
++                | Stage::OrderedNorm
++                | Stage::RadiusComparison,
++            ) => {
++                $common
++                    && $first_complete
++                    && $second_started
++                    && $second_factor_shape
++                    && $second_delta
++                    && $p2_present
++                    && $applications(2)
++                    && match $metadata.guard_stage {
++                        Stage::FinalFullRadius => {
++                            $positive_lambda
++                                && refinement_capture_exact_norm(
++                                    $trace,
++                                    "p2_full",
++                                    $trace.p2.as_ref().unwrap(),
++                                    &$full,
++                                )
++                        }
++                        Stage::ActiveFinite
++                        | Stage::ActiveEquality
++                        | Stage::FinalBoxLower
++                        | Stage::FinalBoxUpper => {
++                            $trace.p2_full_norm.is_none()
++                                && $trace.p2_full_norm2.is_none()
++                                && $trace.p2_reduced_norm.is_none()
++                                && $trace.p2_reduced_norm2.is_none()
++                                && !$trace
++                                    .ordered_norms
++                                    .iter()
++                                    .any(|norm| norm.role == "p2_full" || norm.role == "p2_free")
++                        }
++                        Stage::FinalReducedRadius => {
++                            $positive_lambda
++                                && refinement_capture_exact_norm(
++                                    $trace,
++                                    "p2_full",
++                                    $trace.p2.as_ref().unwrap(),
++                                    &$full,
++                                )
++                                && refinement_capture_exact_norm(
++                                    $trace,
++                                    "p2_free",
++                                    $trace.p2.as_ref().unwrap(),
++                                    $trace.face_free_ids.as_ref().unwrap(),
++                                )
++                        }
++                        Stage::FinalRadiusCloseness | Stage::FinalInstallEquality => {
++                            $positive_lambda
++                                && refinement_capture_exact_norm(
++                                    $trace,
++                                    "p2_full",
++                                    $trace.p2.as_ref().unwrap(),
++                                    &$full,
++                                )
++                                && refinement_capture_exact_norm(
++                                    $trace,
++                                    "p2_free",
++                                    $trace.p2.as_ref().unwrap(),
++                                    $trace.face_free_ids.as_ref().unwrap(),
++                                )
++                                && $trace.remaining_radius.is_some()
++                                && $trace.radius_gap.is_some()
++                                && $trace.radius_tolerance.is_some()
++                        }
++                        Stage::OrderedNorm | Stage::RadiusComparison => $zero_lambda,
++                        _ => false,
++                    }
++            }
++            _ => false,
++        }
++    };
++}
++
++#[cfg(test)]
++fn refinement_capture_lineage_complete(
++    trace: &RefinementObservationTrace,
++    metadata: &super::M1TrustRegionRefinementFailureMetadata,
++) -> bool {
++    let expected_free_ids: Vec<_> = metadata
++        .free
++        .iter()
++        .enumerate()
++        .filter_map(|(index, free)| free.then_some(index))
++        .collect();
++    trace.free_mask == Some(metadata.free)
++        && trace.face_free_ids.as_deref() == Some(expected_free_ids.as_slice())
++        && trace.held_mask.is_some_and(|held| {
++            held.iter()
++                .zip(metadata.free)
++                .all(|(held, free)| *held != free)
++        })
++        && trace.live_state_entry == trace.live_state_exit
++        && trace.lower_mask_p0 == Some(metadata.lower_active)
++        && trace.upper_mask_p0 == Some(metadata.upper_active)
++        && trace
++            .lower_mask_p1
++            .is_none_or(|mask| mask == metadata.lower_active)
++        && trace
++            .upper_mask_p1
++            .is_none_or(|mask| mask == metadata.upper_active)
++        && trace
++            .lower_mask_p2
++            .is_none_or(|mask| mask == metadata.lower_active)
++        && trace
++            .upper_mask_p2
++            .is_none_or(|mask| mask == metadata.upper_active)
++        && trace.lower_mask_exit == Some(metadata.lower_active)
++        && trace.upper_mask_exit == Some(metadata.upper_active)
++}
++
++#[cfg(test)]
++fn refinement_capture_applications_complete(trace: &RefinementObservationTrace, count: u8) -> bool {
++    trace.factor_applications == count
++        && trace.factor_application_identities.len() == usize::from(count)
++        && if count == 0 {
++            trace.factor_identity.is_none()
++        } else {
++            trace.factor_identity.is_some_and(|identity| {
++                trace
++                    .factor_application_identities
++                    .iter()
++                    .all(|seen| *seen == identity)
++            })
++        }
++}
++
++#[cfg(test)]
++fn refinement_capture_no_p1(trace: &RefinementObservationTrace, p1_present: bool) -> bool {
++    !p1_present
++        && trace.p1.is_none()
++        && trace.lower_mask_p1.is_none()
++        && trace.upper_mask_p1.is_none()
++        && trace.residual1.is_none()
++        && trace.h1.is_none()
++        && trace.delta1.is_none()
++        && trace.p2.is_none()
++        && trace.lower_mask_p2.is_none()
++        && trace.upper_mask_p2.is_none()
++        && trace.p2_full_norm.is_none()
++        && trace.p2_full_norm2.is_none()
++        && trace.p2_reduced_norm.is_none()
++        && trace.p2_reduced_norm2.is_none()
++        && trace.remaining_radius.is_none()
++        && trace.radius_gap.is_none()
++        && trace.radius_tolerance.is_none()
++        && !trace
++            .ordered_norms
++            .iter()
++            .any(|norm| norm.role.starts_with("p2_"))
++}
++
++#[cfg(test)]
++fn refinement_capture_no_p2(trace: &RefinementObservationTrace, p2_present: bool) -> bool {
++    !p2_present
++        && trace.p2.is_none()
++        && trace.lower_mask_p2.is_none()
++        && trace.upper_mask_p2.is_none()
++        && trace.p2_full_norm.is_none()
++        && trace.p2_full_norm2.is_none()
++        && trace.p2_reduced_norm.is_none()
++        && trace.p2_reduced_norm2.is_none()
++        && trace.remaining_radius.is_none()
++        && trace.radius_gap.is_none()
++        && trace.radius_tolerance.is_none()
++        && !trace
++            .ordered_norms
++            .iter()
++            .any(|norm| norm.role.starts_with("p2_"))
++}
++
++#[cfg(test)]
++fn refinement_capture_terminal_complete(
++    trace: &RefinementObservationTrace,
++    terminal: Option<&super::M1TrustRegionRefinementFailureMetadata>,
++) -> bool {
++    use super::{
++        M1TrustRegionCorrectionPosition as Position, M1TrustRegionRefinementGuardStage as Stage,
++    };
++    let Some(metadata) = terminal else {
++        return false;
++    };
++    // The metadata position identifies the executed correction.  The guard
++    // stage alone is intentionally insufficient: Dot2 guards recur in p0,
++    // the first residual/factor/update, and the second residual/factor/update.
++    let positive_lambda = metadata.lambda.is_finite() && metadata.lambda > 0.0;
++    let zero_lambda = metadata.lambda == 0.0;
++    if !positive_lambda && !zero_lambda {
++        return false;
++    }
++    let boundary =
++        trace.live_state_entry.is_some() && trace.live_state_exit.is_some() && trace.work.is_some();
++    let structural = refinement_capture_common_complete(trace);
++    // The p0 assembly guard is the one legitimate terminal before p0 exists.
++    if metadata.correction_position.is_none()
++        && matches!(metadata.guard_stage, Stage::P0AssemblyEquality)
++    {
++        return boundary && structural && trace.p0.is_none() && trace.factor_applications == 0;
++    }
++    let Some(p0_values) = trace.p0.as_ref() else {
++        return false;
++    };
++    let full: Vec<_> = (0..21).collect();
++    let Some(free_ids) = trace.face_free_ids.as_ref() else {
++        return false;
++    };
++    let p0 = trace.lower_mask_p0.is_some() && trace.upper_mask_p0.is_some();
++    let p0_norms = if positive_lambda {
++        refinement_capture_exact_norm(trace, "p0_full", p0_values, &full)
++            && refinement_capture_exact_norm(trace, "p0_free", p0_values, free_ids)
++    } else {
++        refinement_capture_exact_norm(trace, "p0_zero_lambda_eligibility", p0_values, &full)
++    };
++    let p1_present =
++        trace.p1.is_some() && trace.lower_mask_p1.is_some() && trace.upper_mask_p1.is_some();
++    let p1_norms = trace.p1.as_ref().is_some_and(|values| {
++        if positive_lambda {
++            refinement_capture_exact_norm(trace, "p1_full", values, &full)
++                && refinement_capture_exact_norm(trace, "p1_free", values, free_ids)
++        } else {
++            refinement_capture_exact_norm(trace, "p1_zero_lambda_scratch", values, &full)
++        }
++    });
++    let p2_present =
++        trace.p2.is_some() && trace.lower_mask_p2.is_some() && trace.upper_mask_p2.is_some();
++    let first_factor_shape = if positive_lambda {
++        trace.h0.is_some()
++            && trace.inverse_t.is_some()
++            && trace.inverse_denominator.is_some()
++            && trace.inverse_z.is_some()
++    } else {
++        trace.h0.is_none()
++    };
++    let second_factor_shape = if positive_lambda {
++        trace.h1.is_some()
++            && trace.inverse_t.is_some()
++            && trace.inverse_denominator.is_some()
++            && trace.inverse_z.is_some()
++    } else {
++        trace.h1.is_none()
++            && trace.inverse_t.is_none()
++            && trace.inverse_denominator.is_none()
++            && trace.inverse_z.is_none()
++    };
++    let lineage = refinement_capture_lineage_complete(trace, metadata);
++    let applications = |count| refinement_capture_applications_complete(trace, count);
++    let no_p1 = refinement_capture_no_p1(trace, p1_present);
++    let no_p2 = refinement_capture_no_p2(trace, p2_present);
++    let first_started = trace.residual0.is_some();
++    let first_delta = trace.delta0.is_some();
++    let first_complete = first_started && first_delta && p1_present && p1_norms;
++    let second_started = trace.residual1.is_some();
++    let second_delta = trace.delta1.is_some();
++    let common = boundary && structural && p0 && p0_norms && lineage;
++
++    refinement_capture_terminal_matrix!(
++        metadata,
++        common,
++        boundary,
++        structural,
++        p0,
++        lineage,
++        applications,
++        positive_lambda,
++        zero_lambda,
++        p0_values,
++        full,
++        trace,
++        first_started,
++        first_factor_shape,
++        no_p1,
++        first_delta,
++        p1_present,
++        no_p2,
++        p1_norms,
++        first_complete,
++        second_started,
++        second_factor_shape,
++        second_delta,
++        p2_present
++    )
++}
++
++#[cfg(test)]
++fn refinement_capture_exact_norm(
++    trace: &RefinementObservationTrace,
++    role: &str,
++    expected: &[f64],
++    coordinate_ids: &[usize],
++) -> bool {
++    let mut matches = trace.ordered_norms.iter().filter(|norm| norm.role == role);
++    let Some(norm) = matches.next() else {
++        return false;
++    };
++    if matches.next().is_some()
++        || norm.coordinate_ids != coordinate_ids
++        || norm.value_bits.len() != coordinate_ids.len()
++        || norm.square_bits.len() != coordinate_ids.len()
++        || norm.running_sum_bits.len() != coordinate_ids.len()
++    {
++        return false;
++    }
++    let mut sum = 0.0;
++    for (((&coordinate, &value_bits), &square_bits), &running_sum_bits) in coordinate_ids
++        .iter()
++        .zip(&norm.value_bits)
++        .zip(&norm.square_bits)
++        .zip(&norm.running_sum_bits)
++    {
++        let value = expected[coordinate];
++        if value.to_bits() != value_bits {
++            return false;
++        }
++        let square = value * value;
++        sum += square;
++        if square.to_bits() != square_bits || sum.to_bits() != running_sum_bits {
++            return false;
++        }
++    }
++    sum.to_bits() == norm.norm2_bits && sum.sqrt().to_bits() == norm.norm_bits
++}
++
++#[cfg(test)]
++fn refinement_capture_w1_complete(
++    trace: &RefinementObservationTrace,
++    terminal: Option<&super::M1TrustRegionRefinementFailureMetadata>,
++) -> bool {
++    let Some(metadata) = terminal else {
++        return false;
++    };
++    let Some(p0) = trace.p0.as_ref() else {
++        return false;
++    };
++    let Some(p1) = trace.p1.as_ref() else {
++        return false;
++    };
++    let Some(free_ids) = trace.face_free_ids.as_ref() else {
++        return false;
++    };
++    let full: Vec<_> = (0..21).collect();
++    matches!(metadata.correction_position, Some(super::M1TrustRegionCorrectionPosition::First))
++        && matches!(metadata.guard_stage, super::M1TrustRegionRefinementGuardStage::ScratchFullRadius)
++        && trace.residual0.is_some()
++        && trace.h0.is_some()
++        && trace.delta0.is_some()
++        && trace.p1_full_norm2.is_some()
++        && trace.p1_full_norm.is_some()
++        && trace.lower_mask_p0.is_some()
++        && trace.upper_mask_p0.is_some()
++        && trace.lower_mask_p1.is_some()
++        && trace.upper_mask_p1.is_some()
++        && refinement_capture_exact_norm(trace, "p0_full", p0, &full)
++        && refinement_capture_exact_norm(trace, "p0_free", p0, free_ids)
++        && refinement_capture_exact_norm(trace, "p1_full", p1, &full)
++        // ScratchFullRadius is checked before the p1 free norm and every
++        // second-correction value.  Their absence is meaningful only here.
++        && trace.p1_reduced_norm.is_none()
++        && trace.p1_reduced_norm2.is_none()
++        && !trace.ordered_norms.iter().any(|norm| norm.role == "p1_free")
++        && trace.p2.is_none()
++        && trace.residual1.is_none()
++        && trace.h1.is_none()
++        && trace.delta1.is_none()
++}
++
++#[cfg(test)]
++fn refinement_capture_w2_complete(
++    trace: &RefinementObservationTrace,
++    terminal: Option<&super::M1TrustRegionRefinementFailureMetadata>,
++) -> bool {
++    let Some(metadata) = terminal else {
++        return false;
++    };
++    let Some(p0) = trace.p0.as_ref() else {
++        return false;
++    };
++    let Some(p1) = trace.p1.as_ref() else {
++        return false;
++    };
++    let Some(p2) = trace.p2.as_ref() else {
++        return false;
++    };
++    let full: Vec<_> = (0..21).collect();
++    let positive_lambda = metadata.lambda != 0.0;
++    matches!(
++        metadata.correction_position,
++        Some(super::M1TrustRegionCorrectionPosition::Second)
++    ) && matches!(
++        metadata.guard_stage,
++        super::M1TrustRegionRefinementGuardStage::FinalBoxLower
++    ) && trace.residual0.is_some()
++        && trace.delta0.is_some()
++        && trace.residual1.is_some()
++        && trace.delta1.is_some()
++        && trace.lower_mask_p0.is_some()
++        && trace.upper_mask_p0.is_some()
++        && trace.lower_mask_p1.is_some()
++        && trace.upper_mask_p1.is_some()
++        && trace.lower_mask_p2.is_some()
++        && trace.upper_mask_p2.is_some()
++        && if positive_lambda {
++            trace.h0.is_some()
++                && trace.h1.is_some()
++                && trace.inverse_t.is_some()
++                && trace.inverse_denominator.is_some()
++                && trace.inverse_z.is_some()
++        } else {
++            trace.h0.is_none()
++                && trace.h1.is_none()
++                && trace.inverse_t.is_none()
++                && trace.inverse_denominator.is_none()
++                && trace.inverse_z.is_none()
++                && refinement_capture_exact_norm(trace, "p0_zero_lambda_eligibility", p0, &full)
++                && refinement_capture_exact_norm(trace, "p1_zero_lambda_scratch", p1, &full)
++        }
++        && trace.p2_full_norm.is_none()
++        && trace.p2_reduced_norm.is_none()
++        && trace.p2_full_norm2.is_none()
++        && trace.p2_reduced_norm2.is_none()
++        && metadata
++            .coordinate
++            .is_some_and(|coordinate| usize::from(coordinate) < p2.len())
++}
++
++#[cfg(test)]
++fn refinement_capture_field_status_json(trace: &RefinementObservationTrace) -> serde_json::Value {
++    let terminal = trace
++        .terminal_refusal
++        .as_deref()
++        .and_then(|refusal| refusal.refinement.as_deref());
++    let complete = refinement_capture_terminal_complete(trace, terminal);
++    let status = |present: bool| {
++        if present {
++            "captured"
++        } else if complete {
++            "unreached_by_actual_terminal"
++        } else {
++            "missing_instrumentation"
++        }
++    };
+@@ -1885,3 +2509,5 @@
+-        "reached_prefix_complete": reached_prefix_complete, "witness": witness,
+-        "witness_complete": refinement_complete, "expected_terminal_match": expected_terminal_match,
+-        "unreached_is_natural_only": true, "missing_capture_is_incomplete": !reached_prefix_complete,
++        "p0": status(trace.p0.is_some()), "residual0": status(trace.residual0.is_some()),
++        "h0": status(trace.h0.is_some()), "delta0": status(trace.delta0.is_some()),
++        "p1": status(trace.p1.is_some()), "residual1": status(trace.residual1.is_some()),
++        "h1": status(trace.h1.is_some()), "inverse": status(trace.inverse_t.is_some()),
++        "delta1": status(trace.delta1.is_some()), "p2": status(trace.p2.is_some())
+@@ -1968,5 +2594,2 @@
+-        "unreached".into(),
+-        Value::String(
+-            "null means the actual refusal returned before that value was naturally evaluated"
+-                .into(),
+-        ),
++        "field_status".into(),
++        refinement_capture_field_status_json(trace),
+@@ -2024 +2647 @@
+-                ))
++                ));
+@@ -4032 +4655 @@
+-                })
++                });
+@@ -9629,0 +10253,2 @@
++    #[cfg(test)]
++    let _norm_role = RefinementNormRoleScope::begin("p2_zero_lambda_final");
+@@ -9903 +10528 @@
+-                ))
++                ));
+@@ -10087,0 +10713,2 @@
++        trace.lower_mask_exit = Some(state.lower_active);
++        trace.upper_mask_exit = Some(state.upper_active);
+--- a/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
++++ b/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
+@@ -1153 +1153,19 @@
+-    for value in &input.reservoirs {
++    for (occupancy, value) in input.reservoirs.iter().enumerate() {
++        let base = occupancy * 6;
++        let _mh_context = openwepp_vegetation::cold_canopy_m1::scoped_m1_mh_observation_context(
++            openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++                site: "validate_with_q_guard_initial_reservoir",
++                occupancy,
++                mass_index: base + 3,
++                enthalpy_index: base + 4,
++                trial_coordinate_bits: Some(trial.coordinates.map(f64::to_bits)),
++                state_role: "beginning_input_reservoir",
++                representation: "full",
++                map_identity: "full_logical_to_physical_identity",
++                proposal_direction_bits: None,
++                fd_column: None,
++                fd_side: None,
++                pass: "validate_with_q_guard",
++            },
++        );
+@@ -1243 +1261 @@
+-                    state_role: "trial_candidate",
++                    state_role: "core_evaluated_trial",
+@@ -1245 +1263 @@
+-                    map_identity: "full_identity",
++                    map_identity: "full_logical_to_physical_identity",
+@@ -1588 +1606 @@
+-                state_role: "fd_screen",
++                state_role: "fd_admissibility_trial",
+@@ -1590 +1608 @@
+-                map_identity: "full_identity",
++                map_identity: "full_logical_to_physical_identity",
+@@ -1602,0 +1621,78 @@
++}
++
++fn m1_fd_core_observation_context(
++    trial: &M1CoupledColumnTrial,
++    column: usize,
++    side: &'static str,
++) -> openwepp_vegetation::cold_canopy_m1::M1MhObservationContextScope {
++    openwepp_vegetation::cold_canopy_m1::scoped_m1_mh_observation_context(
++        openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++            call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++            site: "fd_core_trial",
++            occupancy: 0,
++            mass_index: 3,
++            enthalpy_index: 4,
++            trial_coordinate_bits: Some(trial.coordinates.map(f64::to_bits)),
++            state_role: "fd_perturbed_trial",
++            representation: "full",
++            map_identity: "full_logical_to_physical_identity",
++            proposal_direction_bits: None,
++            fd_column: Some(column),
++            fd_side: Some(side),
++            pass: "finite_difference_core",
++        },
++    )
++}
++
++fn m1_core_parent_observation_context(
++    trial: &M1CoupledColumnTrial,
++    site: &'static str,
++    state_role: &'static str,
++    pass: &'static str,
++) -> openwepp_vegetation::cold_canopy_m1::M1MhObservationContextScope {
++    m1_core_parent_observation_context_with_direction(trial, site, state_role, pass, None)
++}
++fn m1_core_parent_observation_context_with_direction(
++    trial: &M1CoupledColumnTrial,
++    site: &'static str,
++    state_role: &'static str,
++    pass: &'static str,
++    proposal_direction: Option<&[f64; 21]>,
++) -> openwepp_vegetation::cold_canopy_m1::M1MhObservationContextScope {
++    m1_core_parent_observation_context_with_mapping(
++        trial,
++        site,
++        state_role,
++        pass,
++        proposal_direction,
++        "full",
++        "full_logical_to_physical_identity",
++    )
++}
++fn m1_core_parent_observation_context_with_mapping(
++    trial: &M1CoupledColumnTrial,
++    site: &'static str,
++    state_role: &'static str,
++    pass: &'static str,
++    proposal_direction: Option<&[f64; 21]>,
++    representation: &'static str,
++    map_identity: &'static str,
++) -> openwepp_vegetation::cold_canopy_m1::M1MhObservationContextScope {
++    openwepp_vegetation::cold_canopy_m1::scoped_m1_mh_observation_context(
++        openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++            call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++            site,
++            occupancy: 0,
++            mass_index: 3,
++            enthalpy_index: 4,
++            trial_coordinate_bits: Some(trial.coordinates.map(f64::to_bits)),
++            state_role,
++            representation,
++            map_identity,
++            proposal_direction_bits: proposal_direction
++                .map(|direction| direction.map(f64::to_bits)),
++            fd_column: None,
++            fd_side: None,
++            pass,
++        },
++    )
+@@ -1954,3 +2050 @@
+-        d_mass,
+-        d_enthalpy,
+-        d_drainage,
++        [d_mass, d_enthalpy, d_drainage],
+@@ -1959,0 +2054 @@
++        None,
+@@ -2005,3 +2100 @@
+-    dm: f64,
+-    dh: f64,
+-    dd: f64,
++    direction: [f64; 3],
+@@ -2010,0 +2104,6 @@
++    observation: Option<(
++        &M1CoupledColumnTrial,
++        &M1CoupledColumnTrial,
++        &[f64; 21],
++        usize,
++    )>,
+@@ -2011,0 +2111 @@
++    let [dm, dh, dd] = direction;
+@@ -2014,0 +2115,20 @@
++    let candidate_context = observation.map(|(_current, probe, direction, occupancy)| {
++        let offset = occupancy * 6;
++        openwepp_vegetation::cold_canopy_m1::scoped_m1_mh_observation_context(
++            openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++                site: "selected_probe_side_candidate_reservoir",
++                occupancy,
++                mass_index: offset + 3,
++                enthalpy_index: offset + 4,
++                trial_coordinate_bits: Some(probe.coordinates.map(f64::to_bits)),
++                state_role: "selected_probe_candidate",
++                representation: "full",
++                map_identity: "full_logical_to_physical_identity",
++                proposal_direction_bits: Some(direction.map(f64::to_bits)),
++                fd_column: None,
++                fd_side: None,
++                pass: "selected_probe_side_candidate",
++            },
++        )
++    });
+@@ -2043,0 +2164,21 @@
++    drop(candidate_context);
++    let _current_context = observation.map(|(current, _probe, direction, occupancy)| {
++        let offset = occupancy * 6;
++        openwepp_vegetation::cold_canopy_m1::scoped_m1_mh_observation_context(
++            openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++                site: "selected_probe_side_current_reservoir",
++                occupancy,
++                mass_index: offset + 3,
++                enthalpy_index: offset + 4,
++                trial_coordinate_bits: Some(current.coordinates.map(f64::to_bits)),
++                state_role: "selected_probe_current",
++                representation: "full",
++                map_identity: "full_logical_to_physical_identity",
++                proposal_direction_bits: Some(direction.map(f64::to_bits)),
++                fd_column: None,
++                fd_side: None,
++                pass: "selected_probe_side_current",
++            },
++        )
++    });
+@@ -2091 +2232,19 @@
+-    let has_tie = selected.iter().any(|value| {
++    let has_tie = selected.iter().enumerate().any(|(occupancy, value)| {
++        let base = occupancy * 6;
++        let _mh_context = openwepp_vegetation::cold_canopy_m1::scoped_m1_mh_observation_context(
++            openwepp_vegetation::cold_canopy_m1::M1MhObservationContext {
++                call_id: openwepp_vegetation::cold_canopy_m1::next_m1_mh_observation_call_id(),
++                site: "selected_probe_tie_screen_current_reservoir",
++                occupancy,
++                mass_index: base + 3,
++                enthalpy_index: base + 4,
++                trial_coordinate_bits: Some(trial.coordinates.map(f64::to_bits)),
++                state_role: "selected_probe_current",
++                representation: "full",
++                map_identity: "full_logical_to_physical_identity",
++                proposal_direction_bits: Some(direction.map(f64::to_bits)),
++                fd_column: None,
++                fd_side: None,
++                pass: "selected_probe_tie_screen",
++            },
++        );
+@@ -2113,3 +2272,5 @@
+-            direction[offset + 3],
+-            direction[offset + 4],
+-            direction[offset + 5],
++            [
++                direction[offset + 3],
++                direction[offset + 4],
++                direction[offset + 5],
++            ],
+@@ -2118,0 +2280 @@
++            Some((trial, &probe, direction, occupancy)),
+@@ -2160,0 +2323,7 @@
++    let _mh_context = m1_core_parent_observation_context_with_direction(
++        &probe,
++        "selected_probe_core",
++        "selected_probe_candidate",
++        "selected_probe_core",
++        Some(direction),
++    );
+@@ -2175,0 +2345,6 @@
++    let _mh_context = m1_core_parent_observation_context(
++        trial,
++        "jacobian_base_core",
++        "jacobian_base_trial",
++        "jacobian_base_core",
++    );
+@@ -2254,3 +2429,6 @@
+-            fd_trial_is_admissible(&high_trial)
+-                .then(|| core(input, &high_trial))
+-                .transpose()?
++            if fd_trial_is_admissible(&high_trial) {
++                let _mh_context = m1_fd_core_observation_context(&high_trial, column, "high");
++                Some(core(input, &high_trial)?)
++            } else {
++                None
++            }
+@@ -2263,3 +2441,6 @@
+-            fd_trial_is_admissible(&low_trial)
+-                .then(|| core(input, &low_trial))
+-                .transpose()?
++            if fd_trial_is_admissible(&low_trial) {
++                let _mh_context = m1_fd_core_observation_context(&low_trial, column, "low");
++                Some(core(input, &low_trial)?)
++            } else {
++                None
++            }
+@@ -2300 +2481 @@
+-                            state_role: "jacobian_current",
++                            state_role: "jacobian_base_trial",
+@@ -2302 +2483 @@
+-                            map_identity: "full_identity",
++                            map_identity: "full_logical_to_physical_identity",
+@@ -2487 +2668 @@
+-                state_role: "trial_candidate",
++                state_role: "materialization_accepted_trial",
+@@ -2489 +2670 @@
+-                map_identity: "full_identity",
++                map_identity: "full_logical_to_physical_identity",
+@@ -2748 +2929 @@
+-                    state_role: "reconstructed",
++                    state_role: "reduced_validation_reconstruction",
+@@ -2750 +2931 @@
+-                    map_identity: "reduced_request_map",
++                    map_identity: "reduced_zero_sun_logical_to_physical_map",
+@@ -2789 +2970 @@
+-                    state_role: "reconstructed",
++                    state_role: "reduced_humidity_reconstruction",
+@@ -2791 +2972 @@
+-                    map_identity: "reduced_request_map",
++                    map_identity: "reduced_zero_sun_logical_to_physical_map",
+@@ -4537,0 +4719,6 @@
++        let (observation_representation, observation_map) = match self.representation {
++            M1SeparateAccuracyRepresentation::Full => ("full", "full_logical_to_physical_identity"),
++            M1SeparateAccuracyRepresentation::Reduced { .. } => {
++                ("reduced", "reduced_zero_sun_logical_to_physical_map")
++            }
++        };
+@@ -4558,0 +4746,9 @@
++            let _mh_context = m1_core_parent_observation_context_with_mapping(
++                &trial,
++                "adapter_base_core",
++                "adapter_base_trial",
++                "adapter_base_evaluation",
++                None,
++                observation_representation,
++                observation_map,
++            );
+@@ -4562,0 +4759,9 @@
++            let _mh_context = m1_core_parent_observation_context_with_mapping(
++                &trial,
++                "adapter_candidate_core",
++                "adapter_candidate_trial",
++                "adapter_candidate_evaluation",
++                None,
++                observation_representation,
++                observation_map,
++            );
+@@ -5101 +5306 @@
+-                state_role: "phase_selection",
++                state_role: "phase_join_trial",
+@@ -5103 +5308 @@
+-                map_identity: "full_identity",
++                map_identity: "full_logical_to_physical_identity",
+--- a/crates/openwepp-vegetation/src/cold_canopy_m1.rs
++++ b/crates/openwepp-vegetation/src/cold_canopy_m1.rs
+@@ -252 +252 @@
+-const M1_MH_REFUSAL_CAP: usize = 1024;
++const M1_MH_REFUSAL_CAP: usize = 2048;
+@@ -289 +289,27 @@
+-            slot.replace(context)
++            let prior = slot.take();
++            // The core constructor owns the actual M/H call but its caller
++            // owns proposal/FD provenance.  Preserve that parent context for
++            // the emitted event while allocating the constructor's call id.
++            let installed = if context.site == "core_reservoir_constructor" {
++                prior
++                    .as_ref()
++                    .map_or(context.clone(), |parent| M1MhObservationContext {
++                        call_id: context.call_id,
++                        site: parent.site,
++                        occupancy: context.occupancy,
++                        mass_index: context.mass_index,
++                        enthalpy_index: context.enthalpy_index,
++                        trial_coordinate_bits: context.trial_coordinate_bits,
++                        state_role: parent.state_role,
++                        representation: parent.representation,
++                        map_identity: parent.map_identity,
++                        proposal_direction_bits: parent.proposal_direction_bits,
++                        fd_column: parent.fd_column,
++                        fd_side: parent.fd_side,
++                        pass: parent.pass,
++                    })
++            } else {
++                context
++            };
++            *slot = Some(installed);
++            prior

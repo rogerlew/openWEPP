@@ -1,0 +1,21 @@
+{
+  "evidence_class": "Static: independent QA checkpoints, no physical execution",
+  "reviewer": "/root/qa",
+  "independent": true,
+  "last_reviewed_source_sha256": "3c1b0d566bfca398d9262370895b0508b6594345c45c228e692f9a4a958ddb65",
+  "disposition": "HOLD; no capture approval",
+  "final_cut02_fix_verification": "UNAVAILABLE: repeated collaboration.followup_task and send_message requests returned agent thread limit reached; no substitute or inferred approval",
+  "checkpoint_findings": [
+    "Generic optional-field terminal-stage conditions block scientific completeness",
+    "Terminal no-run evidence pending at checkpoint; later parent final build cannot retroactively expand reviewer scope"
+  ],
+  "verified_checkpoint_evidence": [
+    "Regenerated219paths with zero unmapped and current pins",
+    "2048event cap and1402natural bound",
+    "36622107byte bound below64MiB",
+    "Canonical helper uses --ignored, durable locked reservation before launch, exact one selected test and complete marker",
+    "Baseline tool hashes and414 external pins; target-only environment isolation difference documented",
+    "Checkpoint Clippy baseline232 candidate230 matched230 and vegetation1/1 matched1"
+  ],
+  "reuse_limits": "Unchanged helper, schema structure, event/cap proof and baseline custody portions reused. Terminal source changed after checkpoint; required terminal QA verification remains unmet. No readiness or adoption approval."
+}

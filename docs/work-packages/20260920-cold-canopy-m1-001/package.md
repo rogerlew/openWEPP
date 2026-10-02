@@ -1,6 +1,100 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
 
+## Observation finalization — HOLD, 2026-10-02
+
+**HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility.**
+Runtime remains a prerequisite: 500us CPU/550us wall per completed OFE-day,
+regime CPU 750/1500/2500us; 10-OFE/36,525-day century 182.625s CPU/210s wall.
+At 60s cadence, 1440 joint solves share 0.347222us CPU each before other work
+(regimes 0.520833/1.041667/1.736111us). Native completed-day/component cost and
+remaining target gap are unestablished. Historical failed 4.920672–10.316618ms
+CPU partial attempts are not day costs, speedups, or a redesigned-method lower
+bound. Observation changes establish no physical work reduction. Atomic/RAII and
+eager coordinate-map overhead is nonzero and unmeasured; no timing campaign ran.
+
+The invoked continuation adopted **5400 charged seconds once**, ceiling
+471134.927980s, pickup carry 464196.069712s. First-work anchor 15:22UTC gives
+R=6938.858268s; readiness deadline 16:32UTC, final-check reserve from 16:22UTC,
+work cutoff 17:07:38.858268UTC, hard deadline 17:17:38.858268UTC. Exclude only
+inactive owner interval 15:11–15:22UTC. Required completeness/approval failed:
+**no capture, preflight, physical workflow or reconstruction ran; W1/W2/W3 remain
+0/0/0, unreserved.** No approved sealed receipt exists. Further implementation,
+execution or allowance is not automatic; unused total balance does not renew
+readiness. Historical physical/control totals stay 2.265900994s/0.053829565s.
+
+Independent correctness still finds missing scalar norm/norm2-to-trace bit joins,
+incomplete actual-stage reached/unreached predicates (including zero-lambda final
+and early-stage later fields), reduced-base context shadowing by the nested
+Jacobian scope, unbound beginning-input reservoir provenance, and predicate
+validation without decoded numerical truth. The 219-path field table covers every
+serialized path but optional-stage conditions remain generic; ten aggregate status
+fields do not prove exhaustive scientific completeness. Actual W1/W2 operands,
+signed/ULP reconstruction and canonical W3 adjudication remain missing. No local
+numerical correction or method defect is demonstrated; no numerical repair occurred.
+
+Retained improvements: stronger actual-terminal matrix and lineage/application
+checks; final-stage trace and absence checks; the p2 zero-lambda norm hook;
+trial-derived M/H bit joins, effective reduced candidate mapping and separate
+current/probe constructor contexts; canonical four-field IPC request, one-test
+selection with `--ignored`, durable slot reservation, and output preservation before
+overflow failure. Static selected-callgraph event bound 1402 fits the 2048-event
+cap. The type-derived outcome bound and structural JSON arithmetic give
+**36,622,107 bytes < 67,108,864 bytes**. These are prospective draft bounds and
+observation improvements, not capture approval or physical evidence.
+
+Final detached source identity is
+`e76590929f364701480d65088231e7ec9fcdeafa3e75daf58b980149c8881a6f` at
+`/home/roger/openwepp-experiments/cold-canopy-m1-refusal-finalization-20261002/source`.
+The verified [cut02 full source archive](artifacts/refusal-finalization-source-cut02.tar.gz)
+and [receipt](artifacts/refusal-finalization-source-cut02.json) preserve 765 regular
+files and seven exact available links. [The patch](artifacts/refusal-finalization-vs-completion.patch)
+is supplementary against authenticated completion source 50fbfce7…ae5; recover from
+the full archive/receipt, never by writing through existing directory links.
+[Binary custody](artifacts/refusal-finalization-build-cut02.json) authenticates the
+final release no-run binary and 582 pins/60 depfiles; **custody is not approval**.
+Cut01 archive and its separately retained binary remain historical; cut02 only
+extracts unchanged absence predicates to remove a new function-length lint.
+
+Exact terminal detached diff is four files: LSE `m1_coupled_tests.rs`,
+`m1_trust_region_stage1.rs`, `solver_covered_evaluation/m1_coupled.rs`, and vegetation
+`cold_canopy_m1.rs`. All other source entries and seven links match the authenticated
+pickup; source-root fixture remains d3616640…8362. No main Rust adoption, dependency,
+fixture, authority, tolerance/rank/guard, cadence or physical arithmetic change;
+no new lint suppression/global limit, branch change or push. All 48 unrelated paths
+retain pickup hashes. [Diff reconciliation](artifacts/refusal-finalization-diff.json).
+
+**Ran:** direct rustfmt PASS; exact-source release no-run PASS (90.945s); required
+source-bearing release LSE/tests and vegetation/lib Clippy exit101 from inherited
+diagnostics. **Static comparison:** all 230 LSE and one vegetation diagnostics map
+to identical baseline diagnostic/source locations (baseline 232/1); no introduced
+diagnostics. The final four-file source stays unchanged across every final check.
+[Checks](artifacts/refusal-finalization-checks.json) and
+[raw logs/helpers/schema archive](artifacts/refusal-finalization-checks.tar.gz)
+retain every attempt; superseded and source-drifting comparisons are not final
+evidence. No expanded correctness campaign or physical test execution was selected
+for this detached observation-only scope.
+
+Independent same-reviewer [correctness](artifacts/refusal-finalization-correctness.json),
+`/root/correctness`, reviewed cut01 and verified cut02's exact helper extraction:
+**HOLD, no capture/source-adoption approval**. Independent [QA](artifacts/refusal-finalization-qa.json),
+`/root/qa`, reviewed source 3c1b0d…ddb65 and accepted unchanged custody/helper/event/
+byte-bound improvements while retaining scientific completeness blockers. Terminal
+QA re-verification is **unmet**: repeated follow-up requests were rejected with
+`agent thread limit reached`; earlier review is not promoted to final approval.
+Parent final checks do not replace that independence. Both conversations' findings
+are retained with source scopes and same-reviewer fix verification limitations.
+
+[Results](artifacts/refusal-finalization-results.json),
+[pickup](artifacts/refusal-finalization-pickup.json), and
+[accounting](artifacts/refusal-finalization-accounting.json) retain the bounded
+execution record. This leading disposition supersedes the historical proposal and
+completion records below. Scoped documentation/evidence/source recovery is committed
+locally only. Conservatively charged through **16:32UTC**, including final checks, reviews,
+archive validation, commit and return tail: this continuation **4200s**, cumulative
+**468396.069712s**, remaining **2738.858268s** under ceiling **471134.927980s**.
+Reconcile any work after16:32UTC; this remaining total is not renewed readiness.
+
 ## HOLD disposition and finalization proposal — 2026-10-02
 
 Owner requests disposition and continuation prompt authoring only.

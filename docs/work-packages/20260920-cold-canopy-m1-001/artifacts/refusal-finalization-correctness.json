@@ -1,0 +1,26 @@
+{
+  "evidence_class": "Static: independent source/schema review, no physical execution",
+  "reviewer": "/root/correctness",
+  "independent": true,
+  "source_sha256": "e76590929f364701480d65088231e7ec9fcdeafa3e75daf58b980149c8881a6f",
+  "disposition": "HOLD; no capture or source-adoption approval",
+  "cut01_source": "8d471f37516e41b5a48d3b40d9a6d3aab7fad41ce39b299c01a25e3ebad8d5dc",
+  "findings": [
+    "High: scalar norm/norm2 fields are not joined bit-for-bit to ordered traces; exact_norm joins only trace against vector.",
+    "High: zero-lambda second-position OrderedNorm/RadiusComparison do not validate the p2_zero_lambda_final trace; final and early arms still lack exact reached/unreached scalar and later-field conditions.",
+    "High: reduced adapter_base_core mapping is shadowed by nested jacobian_base_core full/full_identity scope.",
+    "High: beginning-input validation exempts trial M/H joins without binding actual input-reservoir source; predicate validation checks names/Option shape, not decoded numerical truth.",
+    "Medium: 219-path table is structurally complete, but optional-stage conditions remain generic and field_status has only ten aggregates."
+  ],
+  "verified_fixes": [
+    "Lineage/application helpers preserve behavior",
+    "Trial-derived M/H events join mass and enthalpy bits",
+    "Candidate reduced mapping effective",
+    "2048 event cap exceeds conservative1402 bound including failed-Jacobian excess",
+    "p2 zero-lambda norm hook present",
+    "Later-field absence/final positive trace validation improved",
+    "Payload bound36622107 below67108864",
+    "No physical arithmetic change found; atomic/RAII/eager mapping overhead unmeasured"
+  ],
+  "same_reviewer_cut02_verbatim": "Static cut02 verification confirms the no_p1 and no_p2 helpers are exact mechanical extractions with no predicate change. Format passed on unchanged source e76590929f364701480d65088231e7ec9fcdeafa3e75daf58b980149c8881a6f. All previously identified correctness blockers remain. Disposition: HOLD; no capture or source-adoption approval."
+}

@@ -1,0 +1,14 @@
+{
+  "source_sha256": "50fbfce7d11bb881ec204f61eb2d3032dab0cdc94c7cc01a222121b19d5c8ae5",
+  "archive_sha256": "bb516512924f730ad4ad3cb22b40d0181dec66975127d7dd976194e2ec87fe24",
+  "regular_members_verified": 765,
+  "exact_links_verified": 7,
+  "all_targets_available": true,
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-finalization-20261002/source",
+  "prior_checks_members_verified": 61,
+  "slots": {
+    "W1": 0,
+    "W2": 0,
+    "W3": 0
+  }
+}
