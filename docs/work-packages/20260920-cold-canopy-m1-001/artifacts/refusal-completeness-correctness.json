@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Static: independent source and/or executed-check evidence review; no physical workflow run by reviewer",
+  "reviewer": "/root/correctness",
+  "independent_of_source_author": true,
+  "source_sha256": "2f7395b2ce41eb81f5d8fb6cf11ccb1514c0d4cb5607687bc53deddf5742bd1c",
+  "status": "HOLD_SCIENTIFIC_COMPLETENESS",
+  "capture_approval": false,
+  "verbatim_response": "Static fix verification on Stage 1 `4eece8d\u2026`: **HOLD remains class (c), insufficient evidence/runtime feasibility.**\n\nVerified:\n\n- `live_state_exit_bits` now uses phase 0, matching the unconditional post-call capture.\n- The three `Vec` clones are confined to `#[cfg(test)]` completed-norm observation and preserve captured values and physical arithmetic.\n- Lint-only tuple/grouping changes do not alter reviewed predicates.\n- W3 files are unchanged from the preceding review.\n\nRemaining correctness blockers:\n\n- Final reduced-radius/closeness fields remain presence-only; `remaining_radius`, `radius_gap`, and `radius_tolerance` lack exact bit joins to actual operands/results.\n- Terminal reason/stage/position, locator fields, and `scratch_box_feasible` semantics remain unvalidated.\n- P0 assembly and other early paths still accept stray norm/application/scalar fields.\n- Factor-output prefixes now enforce counts, residual/H presence, and delta absence, but still omit canonical `factor_identity` joins and correct legacy-inverse association.\n- Field status remains aggregate and path-inaccurate. For example, zero-lambda absent H/inverse fields become `missing_instrumentation`, and an interrupted `FinalFullRadius` can classify the naturally unreached `remaining_radius` as missing. This does not satisfy field-specific actual-stage semantics.\n\nBefore capture, the package still requires these scientific fixes, regenerated source-pinned schema/table/bounds, exact-source checks after the final edit, same-reviewer correctness verification, distinct terminal QA approval, noninterference review acknowledging unmeasured atomic/RAII overhead, and an approved sealed receipt plus capture authorization. No physical workflow was run.",
+  "reused_prior_final_source_scope": {
+    "stage1_previous_hash": "3f6ce56fe11a6e5c32e317ca65f683929896fd71e184ea309fdafd168779d1e7",
+    "unchanged_W3_pins": {
+      "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs": "16a2c455a93c60b9fd967c7d6fd917da7d01585d53f202c7748321f8a2434356",
+      "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs": "058c9746dcc495d9b5a21654dc73af4f7c14900ea4a41878f8dfe43f64295166",
+      "crates/openwepp-vegetation/src/cold_canopy_m1.rs": "019732e6aeb5161903e804df6f2497150b4f9dee515f25806604bdff8362774f"
+    },
+    "verbatim_response_excerpt": "W3\u2019s canonical Jacobian function now carries the actual representation/map pair through its callers; I found no new provenance blocker in that change. The temperature-label rewrite preserves the previously verified predicate behavior.\n\nStatic noninterference remains unchanged: W1/W2 observers are test-gated and do not alter physical arithmetic order. W3\u2019s default-off scopes still incur atomic acquire loads and RAII construction/drop, so no zero-cost claim is supported. No physical workflow was run."
+  }
+}

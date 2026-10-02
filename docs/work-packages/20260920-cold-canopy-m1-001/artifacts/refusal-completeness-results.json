@@ -1,0 +1,66 @@
+{
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "decision_class": "c: insufficient evidence/runtime feasibility",
+  "readiness": "FAILED at19:14UTC: scientific completeness unmet; no approved sealed receipt or physical launch",
+  "source_sha256": "2f7395b2ce41eb81f5d8fb6cf11ccb1514c0d4cb5607687bc53deddf5742bd1c",
+  "source_archive_sha256": "9802b595faf4647965630188a4962e423b29882ff3ab01f00e7849e8840aed21",
+  "recovery": "refusal-completeness-source-cut02.tar.gz plus .json; cut01 superseded and retained",
+  "binary_sha256": "3d341fb4519a0de466f6863606eeade64c0f64d8c1f379021cd2a665b296d723",
+  "build_custody_pins": 609,
+  "changed_detached_files": [
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+    "crates/openwepp-vegetation/src/cold_canopy_m1.rs"
+  ],
+  "physical_invocations": 0,
+  "slots": {
+    "W1": 0,
+    "W2": 0,
+    "W3": 0
+  },
+  "approved_sealed_receipt": false,
+  "actual_witness_reconstruction": "NOT RUN: no result-bearing invocation, actual witness operands unavailable",
+  "remaining_blockers": [
+    "Final reduced-radius/closeness operands and results lack exact bit joins for remaining_radius/radius_gap/radius_tolerance.",
+    "Reachable reason/stage/position taxonomy, locator fields and scratch_box_feasible semantics remain unvalidated.",
+    "P0 assembly and other early paths still accept stray norm/application/scalar evidence.",
+    "Factor-output prefixes omit canonical factor_identity joins and correct association of legacy inverse copies to the applicable snapshot.",
+    "Per-field status keys still use coarse phase rules; zero-lambda H/inverse and interrupted final-radius paths can misclassify naturally unavailable fields."
+  ],
+  "native_completed_day_cost": "UNESTABLISHED",
+  "runtime_targets": {
+    "OFE_day_CPU_us": 500,
+    "OFE_day_wall_us": 550,
+    "regime_CPU_us": [
+      750,
+      1500,
+      2500
+    ],
+    "century_CPU_seconds": 182.625,
+    "century_wall_seconds": 210,
+    "joint_solves_per_day": 1440,
+    "CPU_us_per_solve_before_other_work": 0.347222
+  },
+  "observer_overhead": "Real atomic/RAII/eager-mapping overhead, unmeasured; no zero-cost/work-reduction or speedup claim",
+  "historical_failed_partial_CPU_ms": [
+    4.920672,
+    10.316618
+  ],
+  "partial_cost_evidence_limit": "Not completed-day cost, speedup or a redesigned-method lower bound",
+  "schema_payload_bound_bytes": 36852352,
+  "record_bound_bytes": 36852372,
+  "output_cap_bytes": 67108864,
+  "natural_event_bound": 1402,
+  "event_cap": 2048,
+  "field_paths": 294,
+  "schema_scientific_status": "DRAFT_NOT_APPROVED",
+  "terminal_diff_reconciled": true,
+  "main_Rust_adoption": false,
+  "unrelated_paths_verified": 48,
+  "capture_workflow_ran": false,
+  "correctness": "HOLD; same-reviewer fix verification complete",
+  "qa": "Engineering evidence/custody PASS; scientific HOLD retained",
+  "binary_custody_is_not_capture_approval": true,
+  "no_automatic_continuation_or_extension": true
+}

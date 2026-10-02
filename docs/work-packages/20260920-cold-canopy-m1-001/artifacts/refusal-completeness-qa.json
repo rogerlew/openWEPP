@@ -1,0 +1,10 @@
+{
+  "evidence_class": "Static: independent source and/or executed-check evidence review; no physical workflow run by reviewer",
+  "reviewer": "/root/qa",
+  "independent_of_source_author": true,
+  "source_sha256": "2f7395b2ce41eb81f5d8fb6cf11ccb1514c0d4cb5607687bc53deddf5742bd1c",
+  "status": "ENGINEERING_EVIDENCE_PASS_SCIENTIFIC_HOLD",
+  "capture_approval": false,
+  "verbatim_response": "**QA pass \u2014 candidate06 engineering evidence**\n\n- `cargo test --release --no-run` passed in 92.06s on frozen source `2f7395b2\u2026`; source was unchanged and no physical invocation occurred.\n- Format passed. Clippy comparisons contain no introduced diagnostics.\n- Schema/proof custody is coherent: 294 paths, no missing/unmapped/unresolved entries, current source and proof pins, and 36,852,352-byte payload bound below the 67,108,864-byte cap.\n- The prior E0507 compile errors are resolved.\n\n**HOLD:** W1/W2 scientific completeness remains unresolved. Do not approve a receipt or capture.",
+  "final_build_custody_verbatim": "**QA pass \u2014 final build custody**\n\n[refusal-completeness-build-cut02.json](/workdir/openWEPP/docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-completeness-build-cut02.json) resolves 609 path/hash pins with zero mismatches, including 60 depfiles, final helper/schema/proof artifacts, and candidate06 no-run receipt. Binary SHA is `3d341fb\u2026`.\n\nIt matches candidate06\u2019s frozen source `2f7395b2\u2026` and successful no-run build.\n\nScientific W1/W2 HOLD remains. No capture approval."
+}

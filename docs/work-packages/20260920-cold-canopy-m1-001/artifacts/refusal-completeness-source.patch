@@ -1,0 +1,2134 @@
+--- before/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
++++ after/crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs
+@@ -167 +167 @@
+-            "context": value.context.as_ref().map(|context| serde_json::json!({"site": context.site, "occupancy": context.occupancy, "mass_index": context.mass_index, "enthalpy_index": context.enthalpy_index, "trial_coordinate_bits": context.trial_coordinate_bits, "state_role": context.state_role, "representation": context.representation, "map_identity": context.map_identity, "proposal_direction_bits": context.proposal_direction_bits, "fd_column": context.fd_column, "fd_side": context.fd_side, "pass": context.pass})),
++            "context": value.context.as_ref().map(|context| serde_json::json!({"site": context.site, "occupancy": context.occupancy, "mass_index": context.mass_index, "enthalpy_index": context.enthalpy_index, "trial_coordinate_bits": context.trial_coordinate_bits, "source_mass_bits": context.source_mass_bits, "source_enthalpy_bits": context.source_enthalpy_bits, "state_role": context.state_role, "representation": context.representation, "map_identity": context.map_identity, "proposal_direction_bits": context.proposal_direction_bits, "fd_column": context.fd_column, "fd_side": context.fd_side, "pass": context.pass})),
+@@ -292,10 +292,2 @@
+-        "jacobian_base_core" => m1_w3_full_context(
+-            context,
+-            "jacobian_base_trial",
+-            false,
+-            false,
+-            None,
+-            "jacobian_base_core",
+-        ),
+-        "adapter_base_core" => {
+-            context.state_role == "adapter_base_trial"
++        "jacobian_base_core" => {
++            context.state_role == "jacobian_base_trial"
+@@ -305 +297 @@
+-                && context.pass == "adapter_base_evaluation"
++                && context.pass == "jacobian_base_core"
+@@ -332,8 +324,12 @@
+-        "jacobian_reservoir" => m1_w3_full_context(
+-            context,
+-            "jacobian_base_trial",
+-            false,
+-            true,
+-            None,
+-            "jacobian",
+-        ),
++        "jacobian_reservoir" => {
++            context.state_role == "jacobian_base_trial"
++                && context.proposal_direction_bits.is_none()
++                && context.fd_column.is_some_and(|column| column < 21)
++                && context.fd_side.is_none()
++                && context.pass == "jacobian"
++                && matches!(
++                    (context.representation, context.map_identity),
++                    ("full", "full_logical_to_physical_identity")
++                        | ("reduced", "reduced_zero_sun_logical_to_physical_map")
++                )
++        }
+@@ -357,16 +353,24 @@
+-        "phase_join_selection_reservoir" => m1_w3_full_context(
+-            context,
+-            "phase_join_trial",
+-            true,
+-            false,
+-            None,
+-            "phase_join_selection",
+-        ),
+-        "fd_trial_is_admissible_screening_constructor" => m1_w3_full_context(
+-            context,
+-            "fd_admissibility_trial",
+-            false,
+-            false,
+-            None,
+-            "fd_admissibility",
+-        ),
++        "phase_join_selection_reservoir" => {
++            context.state_role == "phase_join_trial"
++                && context.proposal_direction_bits.is_some()
++                && context.fd_column.is_none()
++                && context.fd_side.is_none()
++                && context.pass == "phase_join_selection"
++                && matches!(
++                    (context.representation, context.map_identity),
++                    ("full", "full_logical_to_physical_identity")
++                        | ("reduced", "reduced_zero_sun_logical_to_physical_map")
++                )
++        }
++        "fd_trial_is_admissible_screening_constructor" => {
++            context.state_role == "fd_admissibility_trial"
++                && context.proposal_direction_bits.is_none()
++                && context.fd_column.is_none()
++                && context.fd_side.is_none()
++                && context.pass == "fd_admissibility"
++                && matches!(
++                    (context.representation, context.map_identity),
++                    ("full", "full_logical_to_physical_identity")
++                        | ("reduced", "reduced_zero_sun_logical_to_physical_map")
++                )
++        }
+@@ -374,8 +378,9 @@
+-            (matches!(context.fd_side, Some("high")) || matches!(context.fd_side, Some("low")))
+-                && m1_w3_full_context(
+-                    context,
+-                    "fd_perturbed_trial",
+-                    false,
+-                    true,
+-                    context.fd_side,
+-                    "finite_difference_core",
++            context.state_role == "fd_perturbed_trial"
++                && context.proposal_direction_bits.is_none()
++                && context.fd_column.is_some_and(|column| column < 21)
++                && matches!(context.fd_side, Some("high" | "low"))
++                && context.pass == "finite_difference_core"
++                && matches!(
++                    (context.representation, context.map_identity),
++                    ("full", "full_logical_to_physical_identity")
++                        | ("reduced", "reduced_zero_sun_logical_to_physical_map")
+@@ -443,8 +448,27 @@
+-    let trial_join = context.site == "validate_with_q_guard_initial_reservoir"
+-        || context.trial_coordinate_bits.is_some_and(|bits| {
+-            bits[context.mass_index] == event.mass_bits
+-                && bits[context.enthalpy_index] == event.enthalpy_bits
+-        });
+-    let temperature_shape = match event.predicate {
+-        "mass_nonfinite" | "enthalpy_nonfinite" | "mass_negative" | "empty_nonzero_enthalpy" => {
+-            event.temperature_bits.is_none()
++    let trial_join = if context.site == "validate_with_q_guard_initial_reservoir" {
++        context.source_mass_bits == Some(event.mass_bits)
++            && context.source_enthalpy_bits == Some(event.enthalpy_bits)
++    } else {
++        context.source_mass_bits.is_none()
++            && context.source_enthalpy_bits.is_none()
++            && context.trial_coordinate_bits.is_some_and(|bits| {
++                bits[context.mass_index] == event.mass_bits
++                    && bits[context.enthalpy_index] == event.enthalpy_bits
++            })
++    };
++    if !trial_join || !m1_refusal_capture_w3_predicate_matches(event) {
++        return false;
++    }
++    m1_w3_primary_site_context(context) || m1_w3_secondary_site_context(context)
++}
++
++#[cfg(feature = "m1-trust-region-physical-stage")]
++fn m1_refusal_capture_w3_predicate_matches(
++    event: &openwepp_vegetation::cold_canopy_m1::M1MhRefusalObservation,
++) -> bool {
++    let mass = f64::from_bits(event.mass_bits);
++    let enthalpy = f64::from_bits(event.enthalpy_bits);
++    match event.predicate {
++        "mass_nonfinite" => !mass.is_finite() && event.temperature_bits.is_none(),
++        "enthalpy_nonfinite" => {
++            mass.is_finite() && !enthalpy.is_finite() && event.temperature_bits.is_none()
+@@ -452 +476,29 @@
+-        "temperature_nonfinite" | "temperature_out_of_range" => event.temperature_bits.is_some(),
++        "mass_negative" => {
++            mass.is_finite()
++                && enthalpy.is_finite()
++                && mass < 0.0
++                && event.temperature_bits.is_none()
++        }
++        "empty_nonzero_enthalpy" => {
++            mass.is_finite()
++                && enthalpy.is_finite()
++                && mass == 0.0
++                && enthalpy != 0.0
++                && event.temperature_bits.is_none()
++        }
++        "temperature_nonfinite" => {
++            mass.is_finite()
++                && enthalpy.is_finite()
++                && mass > 0.0
++                && event
++                    .temperature_bits
++                    .is_some_and(|bits| !f64::from_bits(bits).is_finite())
++        }
++        "temperature_out_of_range" => event.temperature_bits.is_some_and(|bits| {
++            let temperature = f64::from_bits(bits);
++            mass.is_finite()
++                && enthalpy.is_finite()
++                && mass > 0.0
++                && temperature.is_finite()
++                && !(258.15..=373.15).contains(&temperature)
++        }),
+@@ -454,5 +506 @@
+-    };
+-    if !trial_join || !temperature_shape {
+-        return false;
+-    }
+-    m1_w3_primary_site_context(context) || m1_w3_secondary_site_context(context)
++    }
+--- before/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
++++ after/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs
+@@ -1380,0 +1381 @@
++    factor_application_snapshots: Vec<RefinementFactorApplicationSnapshot>,
+@@ -1397,0 +1399,25 @@
++    partial_ordered_norms: Vec<RefinementPartialOrderedNormTrace>,
++}
++
++#[cfg(test)]
++#[derive(Clone, Debug)]
++struct RefinementFactorApplicationSnapshot {
++    ordinal: u8,
++    identity: usize,
++    h_bits: Option<Vec<u64>>,
++    inverse_t_bits: Option<Vec<u64>>,
++    inverse_denominator_bits: Option<Vec<u64>>,
++    inverse_z_bits: Option<Vec<u64>>,
++    delta_bits: Option<Vec<u64>>,
++}
++
++#[cfg(test)]
++#[derive(Clone, Debug)]
++struct RefinementPartialOrderedNormTrace {
++    role: &'static str,
++    coordinate_ids: Vec<usize>,
++    value_bits: Vec<u64>,
++    square_bits: Vec<u64>,
++    running_sum_bits: Vec<u64>,
++    terminal_operation: &'static str,
++    sqrt_bits: Option<u64>,
+@@ -1689,0 +1716,16 @@
++    put!(
++        "factor_application_snapshots",
++        trace
++            .factor_application_snapshots
++            .iter()
++            .map(|snapshot| serde_json::json!({
++                "ordinal": snapshot.ordinal,
++                "identity": snapshot.identity,
++                "h_bits": snapshot.h_bits,
++                "inverse_t_bits": snapshot.inverse_t_bits,
++                "inverse_denominator_bits": snapshot.inverse_denominator_bits,
++                "inverse_z_bits": snapshot.inverse_z_bits,
++                "delta_bits": snapshot.delta_bits,
++            }))
++            .collect::<Vec<_>>()
++    );
+@@ -1790,0 +1833,16 @@
++    );
++    put!(
++        "partial_ordered_norms",
++        trace
++            .partial_ordered_norms
++            .iter()
++            .map(|norm| serde_json::json!({
++                "role": norm.role,
++                "coordinate_ids": norm.coordinate_ids,
++                "value_bits": norm.value_bits,
++                "square_bits": norm.square_bits,
++                "running_sum_bits": norm.running_sum_bits,
++                "terminal_operation": norm.terminal_operation,
++                "sqrt_bits": norm.sqrt_bits,
++            }))
++            .collect::<Vec<_>>()
+@@ -1926 +1984 @@
+-            (None, Stage::P0FullRadius | Stage::P0ReducedRadius) => {
++            (None, Stage::P0FullRadius) => {
+@@ -1931,0 +1990,24 @@
++                    && $applications(0)
++                    && if matches!($metadata.reason, Reason::FinalRadius) {
++                        refinement_capture_exact_norm($trace, "p0_full", $p0_values, &$full)
++                            && refinement_capture_norm_field_join(
++                                $trace,
++                                "p0_full",
++                                $trace.p0_full_norm2,
++                                $trace.p0_full_norm,
++                            )
++                    } else {
++                        $trace.p0_full_norm2.is_none()
++                            && $trace.p0_full_norm.is_none()
++                            && refinement_capture_exact_partial_norm(
++                                $trace, "p0_full", $p0_values, &$full,
++                            )
++                    }
++            }
++            (None, Stage::P0ReducedRadius) => {
++                $positive_lambda
++                    && $boundary
++                    && $structural
++                    && $p0
++                    && $lineage
++                    && $applications(0)
+@@ -1933 +2015,28 @@
+-                    && $applications(0)
++                    && refinement_capture_norm_field_join(
++                        $trace,
++                        "p0_full",
++                        $trace.p0_full_norm2,
++                        $trace.p0_full_norm,
++                    )
++                    && if matches!($metadata.reason, Reason::FinalRadius) {
++                        refinement_capture_exact_norm(
++                            $trace,
++                            "p0_free",
++                            $p0_values,
++                            $trace.face_free_ids.as_ref().unwrap(),
++                        ) && refinement_capture_norm_field_join(
++                            $trace,
++                            "p0_free",
++                            $trace.p0_reduced_norm2,
++                            $trace.p0_reduced_norm,
++                        )
++                    } else {
++                        $trace.p0_reduced_norm2.is_none()
++                            && $trace.p0_reduced_norm.is_none()
++                            && refinement_capture_exact_partial_norm(
++                                $trace,
++                                "p0_free",
++                                $p0_values,
++                                $trace.face_free_ids.as_ref().unwrap(),
++                            )
++                    }
+@@ -1936 +2045,12 @@
+-                $zero_lambda && $boundary && $structural && $p0 && $lineage && $applications(0)
++                $zero_lambda
++                    && $boundary
++                    && $structural
++                    && $p0
++                    && $lineage
++                    && $applications(0)
++                    && refinement_capture_exact_partial_norm(
++                        $trace,
++                        "p0_zero_lambda_eligibility",
++                        $p0_values,
++                        &$full,
++                    )
+@@ -1938 +2058 @@
+-            (None, Stage::RadiusComparison) => $zero_lambda && $common && $applications(0),
++            (None, Stage::RadiusComparison) => false,
+@@ -1953,0 +2074 @@
++                    && $trace.residual0.is_none()
+@@ -1962,0 +2084,5 @@
++                    && $no_p1
++                    && refinement_capture_factor_output_prefix($trace, 1, $positive_lambda)
++            }
++            (Some(Position::First), Stage::CoordinateUpdate) => {
++                $common
+@@ -1965 +2091 @@
+-                    && $trace.delta0.is_none()
++                    && $first_delta
+@@ -1969 +2095 @@
+-            // Coordinate, first active, and scratch-box guards precede p1.
++            // p1 is copied at scratch entry before active and box admission.
+@@ -1972,2 +2098 @@
+-                Stage::CoordinateUpdate
+-                | Stage::ActiveFinite
++                Stage::ActiveFinite
+@@ -1982 +2107,2 @@
+-                    && $no_p1
++                    && $p1_present
++                    && $no_p2
+@@ -1983,0 +2110,12 @@
++                    && $trace.p1_full_norm.is_none()
++                    && $trace.p1_full_norm2.is_none()
++                    && $trace.p1_reduced_norm.is_none()
++                    && $trace.p1_reduced_norm2.is_none()
++                    && !$trace
++                        .ordered_norms
++                        .iter()
++                        .any(|norm| norm.role.starts_with("p1_"))
++                    && !$trace
++                        .partial_ordered_norms
++                        .iter()
++                        .any(|norm| norm.role.starts_with("p1_") || norm.role.starts_with("p2_"))
+@@ -2002,0 +2141,25 @@
++                                && if matches!($metadata.reason, Reason::ScratchRadius) {
++                                    refinement_capture_exact_norm(
++                                        $trace,
++                                        "p1_full",
++                                        $trace.p1.as_ref().unwrap(),
++                                        &$full,
++                                    ) && refinement_capture_norm_field_join(
++                                        $trace,
++                                        "p1_full",
++                                        $trace.p1_full_norm2,
++                                        $trace.p1_full_norm,
++                                    )
++                                } else {
++                                    $trace.p1_full_norm2.is_none()
++                                        && $trace.p1_full_norm.is_none()
++                                        && refinement_capture_exact_partial_norm(
++                                            $trace,
++                                            "p1_full",
++                                            $trace.p1.as_ref().unwrap(),
++                                            &$full,
++                                        )
++                                }
++                        }
++                        Stage::ScratchReducedRadius => {
++                            $positive_lambda
+@@ -2008,0 +2172,28 @@
++                                && refinement_capture_norm_field_join(
++                                    $trace,
++                                    "p1_full",
++                                    $trace.p1_full_norm2,
++                                    $trace.p1_full_norm,
++                                )
++                                && if matches!($metadata.reason, Reason::ScratchRadius) {
++                                    refinement_capture_exact_norm(
++                                        $trace,
++                                        "p1_free",
++                                        $trace.p1.as_ref().unwrap(),
++                                        $trace.face_free_ids.as_ref().unwrap(),
++                                    ) && refinement_capture_norm_field_join(
++                                        $trace,
++                                        "p1_free",
++                                        $trace.p1_reduced_norm2,
++                                        $trace.p1_reduced_norm,
++                                    )
++                                } else {
++                                    $trace.p1_reduced_norm2.is_none()
++                                        && $trace.p1_reduced_norm.is_none()
++                                        && refinement_capture_exact_partial_norm(
++                                            $trace,
++                                            "p1_free",
++                                            $trace.p1.as_ref().unwrap(),
++                                            $trace.face_free_ids.as_ref().unwrap(),
++                                        )
++                                }
+@@ -2010,2 +2201,18 @@
+-                        Stage::ScratchReducedRadius => $positive_lambda && $p1_norms,
+-                        Stage::OrderedNorm | Stage::RadiusComparison => $zero_lambda && $p1_norms,
++                        Stage::OrderedNorm => {
++                            $zero_lambda
++                                && refinement_capture_exact_partial_norm(
++                                    $trace,
++                                    "p1_zero_lambda_scratch",
++                                    $trace.p1.as_ref().unwrap(),
++                                    &$full,
++                                )
++                        }
++                        Stage::RadiusComparison => {
++                            $zero_lambda
++                                && refinement_capture_exact_norm(
++                                    $trace,
++                                    "p1_zero_lambda_scratch",
++                                    $trace.p1.as_ref().unwrap(),
++                                    &$full,
++                                )
++                        }
+@@ -2031,0 +2239 @@
++                    && $trace.residual1.is_none()
+@@ -2040,3 +2247,0 @@
+-                    && $second_started
+-                    && $second_factor_shape
+-                    && $trace.delta1.is_none()
+@@ -2044 +2249 @@
+-                    && $applications(2)
++                    && refinement_capture_factor_output_prefix($trace, 2, $positive_lambda)
+@@ -2077,0 +2283,3 @@
++                        // A Dot2 failure inside the norm has no completed trace or
++                        // scalar copy.  A FinalRadius comparison follows the completed
++                        // ordered norm and its operation-site scalar copy.
+@@ -2080,6 +2288,22 @@
+-                                && refinement_capture_exact_norm(
+-                                    $trace,
+-                                    "p2_full",
+-                                    $trace.p2.as_ref().unwrap(),
+-                                    &$full,
+-                                )
++                                && if matches!($metadata.reason, Reason::FinalRadius) {
++                                    refinement_capture_exact_norm(
++                                        $trace,
++                                        "p2_full",
++                                        $trace.p2.as_ref().unwrap(),
++                                        &$full,
++                                    ) && refinement_capture_norm_field_join(
++                                        $trace,
++                                        "p2_full",
++                                        $trace.p2_full_norm2,
++                                        $trace.p2_full_norm,
++                                    )
++                                } else {
++                                    $trace.p2_full_norm.is_none()
++                                        && $trace.p2_full_norm2.is_none()
++                                        && refinement_capture_exact_partial_norm(
++                                            $trace,
++                                            "p2_full",
++                                            $trace.p2.as_ref().unwrap(),
++                                            &$full,
++                                        )
++                                }
+@@ -2094,0 +2319,3 @@
++                                && $trace.remaining_radius.is_none()
++                                && $trace.radius_gap.is_none()
++                                && $trace.radius_tolerance.is_none()
+@@ -2098 +2325,2 @@
+-                                    .any(|norm| norm.role == "p2_full" || norm.role == "p2_free")
++                                    .any(|norm| matches!(norm.role, "p2_full" | "p2_free" | "p2_zero_lambda_final"))
++                                && !$trace.partial_ordered_norms.iter().any(|norm| matches!(norm.role, "p2_full" | "p2_free" | "p2_zero_lambda_final"))
+@@ -2108 +2336 @@
+-                                && refinement_capture_exact_norm(
++                                && refinement_capture_norm_field_join(
+@@ -2110,3 +2338,3 @@
+-                                    "p2_free",
+-                                    $trace.p2.as_ref().unwrap(),
+-                                    $trace.face_free_ids.as_ref().unwrap(),
++                                    "p2_full",
++                                    $trace.p2_full_norm2,
++                                    $trace.p2_full_norm,
+@@ -2113,0 +2342,23 @@
++                                && if matches!($metadata.reason, Reason::FinalRadius) {
++                                    refinement_capture_exact_norm(
++                                        $trace,
++                                        "p2_free",
++                                        $trace.p2.as_ref().unwrap(),
++                                        $trace.face_free_ids.as_ref().unwrap(),
++                                    ) && refinement_capture_norm_field_join(
++                                        $trace,
++                                        "p2_free",
++                                        $trace.p2_reduced_norm2,
++                                        $trace.p2_reduced_norm,
++                                    ) && $trace.remaining_radius.is_some()
++                                } else {
++                                    $trace.p2_reduced_norm.is_none()
++                                        && $trace.p2_reduced_norm2.is_none()
++                                        && $trace.remaining_radius.is_none()
++                                        && refinement_capture_exact_partial_norm(
++                                            $trace,
++                                            "p2_free",
++                                            $trace.p2.as_ref().unwrap(),
++                                            $trace.face_free_ids.as_ref().unwrap(),
++                                        )
++                                }
+@@ -2115 +2366 @@
+-                        Stage::FinalRadiusCloseness | Stage::FinalInstallEquality => {
++                        Stage::FinalRadiusCloseness => {
+@@ -2122,0 +2374,6 @@
++                                && refinement_capture_norm_field_join(
++                                    $trace,
++                                    "p2_full",
++                                    $trace.p2_full_norm2,
++                                    $trace.p2_full_norm,
++                                )
+@@ -2128,0 +2386,6 @@
++                                && refinement_capture_norm_field_join(
++                                    $trace,
++                                    "p2_free",
++                                    $trace.p2_reduced_norm2,
++                                    $trace.p2_reduced_norm,
++                                )
+@@ -2130,2 +2393,11 @@
+-                                && $trace.radius_gap.is_some()
+-                                && $trace.radius_tolerance.is_some()
++                                // The observer copies each operand immediately after the
++                                // actual arithmetic operation, so guard failure can stop
++                                // before gap, after gap, or after tolerance.
++                                && match $metadata.reason {
++                                    Reason::FinalRadius => $trace.radius_gap.is_some() && $trace.radius_tolerance.is_some(),
++                                    Reason::NonfiniteOperand | Reason::SplitterOverflow | Reason::UnderflowToZero | Reason::SubnormalIntermediate => matches!(
++                                        ($trace.radius_gap, $trace.radius_tolerance),
++                                        (None, None) | (Some(_), None | Some(_))
++                                    ),
++                                    _ => false,
++                                }
+@@ -2133 +2405,34 @@
+-                        Stage::OrderedNorm | Stage::RadiusComparison => $zero_lambda,
++                        Stage::FinalInstallEquality => {
++                            $zero_lambda
++                                && refinement_capture_exact_norm(
++                                    $trace,
++                                    "p2_zero_lambda_final",
++                                    $trace.p2.as_ref().unwrap(),
++                                    &$full,
++                                )
++                                && $trace.p2_full_norm.is_none()
++                                && $trace.p2_full_norm2.is_none()
++                                && $trace.p2_reduced_norm.is_none()
++                                && $trace.p2_reduced_norm2.is_none()
++                                && $trace.remaining_radius.is_none()
++                                && $trace.radius_gap.is_none()
++                                && $trace.radius_tolerance.is_none()
++                        }
++                        Stage::OrderedNorm => {
++                            $zero_lambda
++                                && refinement_capture_exact_partial_norm(
++                                    $trace,
++                                    "p2_zero_lambda_final",
++                                    $trace.p2.as_ref().unwrap(),
++                                    &$full,
++                                )
++                        }
++                        Stage::RadiusComparison => {
++                            $zero_lambda
++                                && refinement_capture_exact_norm(
++                                    $trace,
++                                    "p2_zero_lambda_final",
++                                    $trace.p2.as_ref().unwrap(),
++                                    &$full,
++                                )
++                        }
+@@ -2179,0 +2485,152 @@
++fn refinement_capture_factor_snapshot_complete(
++    trace: &RefinementObservationTrace,
++    ordinal: u8,
++    require_inverse: bool,
++) -> bool {
++    let Some(snapshot) = trace
++        .factor_application_snapshots
++        .get(usize::from(ordinal - 1))
++    else {
++        return false;
++    };
++    let h = match ordinal {
++        1 => trace.h0.as_ref(),
++        2 => trace.h1.as_ref(),
++        _ => return false,
++    };
++    let delta = match ordinal {
++        1 => trace.delta0.as_ref(),
++        2 => trace.delta1.as_ref(),
++        _ => return false,
++    };
++    let bits = |values: &[f64]| {
++        values
++            .iter()
++            .map(|value| value.to_bits())
++            .collect::<Vec<_>>()
++    };
++    trace.factor_application_snapshots.len() == usize::from(trace.factor_applications)
++        && trace
++            .factor_application_snapshots
++            .iter()
++            .enumerate()
++            .all(|(index, entry)| {
++                Some(entry.ordinal) == u8::try_from(index + 1).ok()
++                    && trace.factor_application_identities.get(index) == Some(&entry.identity)
++            })
++        && snapshot.h_bits == h.map(|values| bits(values))
++        && snapshot.delta_bits == delta.map(|values| bits(values))
++        && if require_inverse {
++            let copied = snapshot.inverse_t_bits.is_some()
++                && snapshot.inverse_denominator_bits.is_some()
++                && snapshot.inverse_z_bits.is_some();
++            copied
++                && if ordinal == trace.factor_applications {
++                    snapshot.inverse_t_bits.as_ref().is_some_and(|values| {
++                        trace
++                            .inverse_t
++                            .as_ref()
++                            .is_some_and(|legacy| *values == bits(legacy))
++                    }) && snapshot
++                        .inverse_denominator_bits
++                        .as_ref()
++                        .is_some_and(|values| {
++                            trace
++                                .inverse_denominator
++                                .as_ref()
++                                .is_some_and(|legacy| *values == bits(legacy))
++                        })
++                        && snapshot.inverse_z_bits.as_ref().is_some_and(|values| {
++                            trace
++                                .inverse_z
++                                .as_ref()
++                                .is_some_and(|legacy| *values == bits(legacy))
++                        })
++                } else {
++                    true
++                }
++        } else {
++            snapshot.h_bits.is_none()
++                && snapshot.inverse_t_bits.is_none()
++                && snapshot.inverse_denominator_bits.is_none()
++                && snapshot.inverse_z_bits.is_none()
++        }
++}
++
++#[cfg(test)]
++fn refinement_capture_factor_output_prefix(
++    trace: &RefinementObservationTrace,
++    ordinal: u8,
++    positive_lambda: bool,
++) -> bool {
++    let residual = match ordinal {
++        1 => trace.residual0.is_some(),
++        2 => trace.residual1.is_some(),
++        _ => false,
++    };
++    let h = match ordinal {
++        1 => trace.h0.as_ref(),
++        2 => trace.h1.as_ref(),
++        _ => return false,
++    };
++    let delta = match ordinal {
++        1 => trace.delta0.as_ref(),
++        2 => trace.delta1.as_ref(),
++        _ => return false,
++    };
++    if trace.factor_applications == 0 {
++        return !positive_lambda
++            && !residual
++            && trace.factor_identity.is_none()
++            && trace.factor_application_identities.is_empty()
++            && trace.factor_application_snapshots.is_empty();
++    }
++    if trace.factor_applications != ordinal
++        || trace.factor_application_identities.len() != usize::from(ordinal)
++        || trace.factor_application_snapshots.len() != usize::from(ordinal)
++    {
++        return false;
++    }
++    let Some(snapshot) = trace
++        .factor_application_snapshots
++        .get(usize::from(ordinal - 1))
++    else {
++        return false;
++    };
++    let bits = |values: &[f64]| {
++        values
++            .iter()
++            .map(|value| value.to_bits())
++            .collect::<Vec<_>>()
++    };
++    snapshot.ordinal == ordinal
++        && trace
++            .factor_application_identities
++            .get(usize::from(ordinal - 1))
++            == Some(&snapshot.identity)
++        && if positive_lambda {
++            residual
++                && h.is_some()
++                && snapshot.h_bits == h.map(|values| bits(values))
++                && if snapshot.inverse_t_bits.is_none() {
++                    snapshot.inverse_denominator_bits.is_none()
++                        && snapshot.inverse_z_bits.is_none()
++                        && snapshot.delta_bits.is_none()
++                        && delta.is_none()
++                } else if delta.is_none() {
++                    snapshot.inverse_denominator_bits.is_some()
++                        && snapshot.inverse_z_bits.is_some()
++                        && snapshot.delta_bits.is_none()
++                } else {
++                    snapshot.delta_bits == delta.map(|values| bits(values))
++                }
++        } else {
++            snapshot.h_bits.is_none()
++                && snapshot.inverse_t_bits.is_none()
++                && snapshot.inverse_denominator_bits.is_none()
++                && snapshot.inverse_z_bits.is_none()
++                && snapshot.delta_bits == delta.map(|values| bits(values))
++        }
++}
++
++#[cfg(test)]
+@@ -2182,0 +2640 @@
++        && trace.factor_application_snapshots.len() == usize::from(count)
+@@ -2217 +2675,5 @@
+-            .any(|norm| norm.role.starts_with("p2_"))
++            .any(|norm| norm.role.starts_with("p1_") || norm.role.starts_with("p2_"))
++        && !trace
++            .partial_ordered_norms
++            .iter()
++            .any(|norm| norm.role.starts_with("p1_") || norm.role.starts_with("p2_"))
+@@ -2236,0 +2699,4 @@
++        && !trace
++            .partial_ordered_norms
++            .iter()
++            .any(|norm| norm.role.starts_with("p2_"))
+@@ -2244,3 +2710 @@
+-    use super::{
+-        M1TrustRegionCorrectionPosition as Position, M1TrustRegionRefinementGuardStage as Stage,
+-    };
++    use super::M1TrustRegionRefinementGuardStage as Stage;
+@@ -2265,2 +2729,40 @@
+-        return boundary && structural && trace.p0.is_none() && trace.factor_applications == 0;
+-    }
++        return boundary
++            && trace.p0.is_none()
++            && trace.factor_applications == 0
++            && refinement_capture_no_p1(trace, false)
++            && refinement_capture_no_p2(trace, false);
++    }
++    refinement_capture_terminal_prefix_complete(
++        trace,
++        metadata,
++        RefinementCapturePrefixFlags {
++            boundary,
++            structural,
++            lambda: (positive_lambda, zero_lambda),
++        },
++    )
++}
++
++#[cfg(test)]
++#[derive(Clone, Copy)]
++struct RefinementCapturePrefixFlags {
++    boundary: bool,
++    structural: bool,
++    lambda: (bool, bool),
++}
++
++#[cfg(test)]
++fn refinement_capture_terminal_prefix_complete(
++    trace: &RefinementObservationTrace,
++    metadata: &super::M1TrustRegionRefinementFailureMetadata,
++    flags: RefinementCapturePrefixFlags,
++) -> bool {
++    use super::{
++        M1TrustRegionCorrectionPosition as Position, M1TrustRegionRefinementGuardStage as Stage,
++        M1TrustRegionRefinementReason as Reason,
++    };
++    let RefinementCapturePrefixFlags {
++        boundary,
++        structural,
++        lambda: (positive_lambda, zero_lambda),
++    } = flags;
+@@ -2275,6 +2777,2 @@
+-    let p0_norms = if positive_lambda {
+-        refinement_capture_exact_norm(trace, "p0_full", p0_values, &full)
+-            && refinement_capture_exact_norm(trace, "p0_free", p0_values, free_ids)
+-    } else {
+-        refinement_capture_exact_norm(trace, "p0_zero_lambda_eligibility", p0_values, &full)
+-    };
++    let (p0_norms, p1_norms) =
++        refinement_capture_prefix_norms(trace, p0_values, free_ids, &full, positive_lambda);
+@@ -2283,8 +2780,0 @@
+-    let p1_norms = trace.p1.as_ref().is_some_and(|values| {
+-        if positive_lambda {
+-            refinement_capture_exact_norm(trace, "p1_full", values, &full)
+-                && refinement_capture_exact_norm(trace, "p1_free", values, free_ids)
+-        } else {
+-            refinement_capture_exact_norm(trace, "p1_zero_lambda_scratch", values, &full)
+-        }
+-    });
+@@ -2294,4 +2784 @@
+-        trace.h0.is_some()
+-            && trace.inverse_t.is_some()
+-            && trace.inverse_denominator.is_some()
+-            && trace.inverse_z.is_some()
++        trace.h0.is_some() && refinement_capture_factor_snapshot_complete(trace, 1, true)
+@@ -2299 +2786 @@
+-        trace.h0.is_none()
++        trace.h0.is_none() && refinement_capture_factor_snapshot_complete(trace, 1, false)
+@@ -2302,4 +2789 @@
+-        trace.h1.is_some()
+-            && trace.inverse_t.is_some()
+-            && trace.inverse_denominator.is_some()
+-            && trace.inverse_z.is_some()
++        trace.h1.is_some() && refinement_capture_factor_snapshot_complete(trace, 2, true)
+@@ -2307,4 +2791 @@
+-        trace.h1.is_none()
+-            && trace.inverse_t.is_none()
+-            && trace.inverse_denominator.is_none()
+-            && trace.inverse_z.is_none()
++        trace.h1.is_none() && refinement_capture_factor_snapshot_complete(trace, 2, false)
+@@ -2318 +2799,2 @@
+-    let first_complete = first_started && first_delta && p1_present && p1_norms;
++    let first_complete =
++        first_started && first_factor_shape && first_delta && p1_present && p1_norms;
+@@ -2321,0 +2804,3 @@
++    if !refinement_capture_norm_roles_are_stage_bounded(trace, metadata) {
++        return false;
++    }
+@@ -2351,0 +2837,125 @@
++fn refinement_capture_norm_roles_are_stage_bounded(
++    trace: &RefinementObservationTrace,
++    metadata: &super::M1TrustRegionRefinementFailureMetadata,
++) -> bool {
++    use super::{
++        M1TrustRegionCorrectionPosition as Position, M1TrustRegionRefinementGuardStage as Stage,
++    };
++    let allowed: &[&str] = match (
++        metadata.correction_position,
++        metadata.lambda == 0.0,
++        metadata.guard_stage,
++    ) {
++        (None, true, Stage::OrderedNorm) => &["p0_zero_lambda_eligibility"],
++        (None, false, Stage::P0FullRadius) => &["p0_full"],
++        (None, false, Stage::P0ReducedRadius) => &["p0_full", "p0_free"],
++        (None, _, _) => &[],
++        (Some(Position::First), true, Stage::OrderedNorm | Stage::RadiusComparison) => {
++            &["p0_zero_lambda_eligibility", "p1_zero_lambda_scratch"]
++        }
++        (Some(Position::First), true, _) => &["p0_zero_lambda_eligibility"],
++        (Some(Position::First), false, Stage::ScratchFullRadius) => {
++            &["p0_full", "p0_free", "p1_full"]
++        }
++        (Some(Position::First), false, Stage::ScratchReducedRadius) => {
++            &["p0_full", "p0_free", "p1_full", "p1_free"]
++        }
++        (Some(Position::First), false, _) => &["p0_full", "p0_free"],
++        (
++            Some(Position::Second),
++            true,
++            Stage::OrderedNorm | Stage::RadiusComparison | Stage::FinalInstallEquality,
++        ) => &[
++            "p0_zero_lambda_eligibility",
++            "p1_zero_lambda_scratch",
++            "p2_zero_lambda_final",
++        ],
++        (Some(Position::Second), true, _) => {
++            &["p0_zero_lambda_eligibility", "p1_zero_lambda_scratch"]
++        }
++        (Some(Position::Second), false, Stage::FinalFullRadius) => {
++            &["p0_full", "p0_free", "p1_full", "p1_free", "p2_full"]
++        }
++        (
++            Some(Position::Second),
++            false,
++            Stage::FinalReducedRadius | Stage::FinalRadiusCloseness | Stage::FinalInstallEquality,
++        ) => &[
++            "p0_full", "p0_free", "p1_full", "p1_free", "p2_full", "p2_free",
++        ],
++        (Some(Position::Second), false, _) => &["p0_full", "p0_free", "p1_full", "p1_free"],
++    };
++    let exact_once = |role: &str| {
++        trace
++            .ordered_norms
++            .iter()
++            .filter(|entry| entry.role == role)
++            .count()
++            + trace
++                .partial_ordered_norms
++                .iter()
++                .filter(|entry| entry.role == role)
++                .count()
++            <= 1
++    };
++    trace
++        .ordered_norms
++        .iter()
++        .all(|entry| allowed.contains(&entry.role))
++        && trace
++            .partial_ordered_norms
++            .iter()
++            .all(|entry| allowed.contains(&entry.role))
++        && allowed.iter().all(|role| exact_once(role))
++}
++
++#[cfg(test)]
++fn refinement_capture_prefix_norms(
++    trace: &RefinementObservationTrace,
++    p0: &[f64; 21],
++    free_ids: &[usize],
++    full: &[usize],
++    positive_lambda: bool,
++) -> (bool, bool) {
++    let p0_complete = if positive_lambda {
++        refinement_capture_exact_norm(trace, "p0_full", p0, full)
++            && refinement_capture_norm_field_join(
++                trace,
++                "p0_full",
++                trace.p0_full_norm2,
++                trace.p0_full_norm,
++            )
++            && refinement_capture_exact_norm(trace, "p0_free", p0, free_ids)
++            && refinement_capture_norm_field_join(
++                trace,
++                "p0_free",
++                trace.p0_reduced_norm2,
++                trace.p0_reduced_norm,
++            )
++    } else {
++        refinement_capture_exact_norm(trace, "p0_zero_lambda_eligibility", p0, full)
++    };
++    let p1_complete = trace.p1.as_ref().is_some_and(|p1| {
++        if positive_lambda {
++            refinement_capture_exact_norm(trace, "p1_full", p1, full)
++                && refinement_capture_norm_field_join(
++                    trace,
++                    "p1_full",
++                    trace.p1_full_norm2,
++                    trace.p1_full_norm,
++                )
++                && refinement_capture_exact_norm(trace, "p1_free", p1, free_ids)
++                && refinement_capture_norm_field_join(
++                    trace,
++                    "p1_free",
++                    trace.p1_reduced_norm2,
++                    trace.p1_reduced_norm,
++                )
++        } else {
++            refinement_capture_exact_norm(trace, "p1_zero_lambda_scratch", p1, full)
++        }
++    });
++    (p0_complete, p1_complete)
++}
++
++#[cfg(test)]
+@@ -2387,0 +2998,95 @@
++}
++
++#[cfg(test)]
++fn refinement_capture_exact_partial_norm(
++    trace: &RefinementObservationTrace,
++    role: &str,
++    expected: &[f64],
++    coordinate_ids: &[usize],
++) -> bool {
++    if trace.ordered_norms.iter().any(|norm| norm.role == role) {
++        return false;
++    }
++    let mut partials = trace
++        .partial_ordered_norms
++        .iter()
++        .filter(|norm| norm.role == role);
++    let Some(partial) = partials.next() else {
++        return false;
++    };
++    if partials.next().is_some()
++        || partial.value_bits.len() > coordinate_ids.len()
++        || partial.coordinate_ids.len() != partial.value_bits.len()
++        || partial.square_bits.len() > partial.value_bits.len()
++        || partial.running_sum_bits.len() > partial.square_bits.len()
++        || partial.coordinate_ids != coordinate_ids[..partial.value_bits.len()]
++    {
++        return false;
++    }
++    let mut sum = 0.0;
++    for index in 0..partial.value_bits.len() {
++        let value = expected[coordinate_ids[index]];
++        if partial.value_bits[index] != value.to_bits() {
++            return false;
++        }
++        let square = value * value;
++        if index < partial.square_bits.len() && partial.square_bits[index] != square.to_bits() {
++            return false;
++        }
++        sum += square;
++        if index < partial.running_sum_bits.len()
++            && partial.running_sum_bits[index] != sum.to_bits()
++        {
++            return false;
++        }
++    }
++    let zero_role = matches!(
++        role,
++        "p0_zero_lambda_eligibility" | "p1_zero_lambda_scratch" | "p2_zero_lambda_final"
++    );
++    match partial.terminal_operation {
++        "coordinate" => !zero_role && partial.value_bits.is_empty() && partial.sqrt_bits.is_none(),
++        "value_guard" => {
++            !zero_role
++                && partial.square_bits.len() + 1 == partial.value_bits.len()
++                && partial.running_sum_bits.len() == partial.square_bits.len()
++                && partial.sqrt_bits.is_none()
++        }
++        "square_guard" => {
++            partial.square_bits.len() == partial.value_bits.len()
++                && partial.running_sum_bits.len() + 1 == partial.square_bits.len()
++                && partial.sqrt_bits.is_none()
++        }
++        "running_sum_guard" => {
++            partial.running_sum_bits.len() == partial.square_bits.len()
++                && partial.square_bits.len() == partial.value_bits.len()
++                && partial.sqrt_bits.is_none()
++        }
++        "sqrt_guard" => {
++            !zero_role
++                && partial.value_bits.len() == coordinate_ids.len()
++                && partial.square_bits.len() == coordinate_ids.len()
++                && partial.running_sum_bits.len() == coordinate_ids.len()
++                && partial.sqrt_bits == Some(sum.sqrt().to_bits())
++        }
++        _ => false,
++    }
++}
++
++#[cfg(test)]
++fn refinement_capture_norm_field_join(
++    trace: &RefinementObservationTrace,
++    role: &str,
++    norm2: Option<f64>,
++    norm: Option<f64>,
++) -> bool {
++    let mut matches = trace
++        .ordered_norms
++        .iter()
++        .filter(|entry| entry.role == role);
++    let Some(entry) = matches.next() else {
++        return false;
++    };
++    matches.next().is_none()
++        && norm2.is_some_and(|value| value.to_bits() == entry.norm2_bits)
++        && norm.is_some_and(|value| value.to_bits() == entry.norm_bits)
+@@ -2419,0 +3125 @@
++        && refinement_capture_norm_field_join(trace, "p0_full", trace.p0_full_norm2, trace.p0_full_norm)
+@@ -2420,0 +3127 @@
++        && refinement_capture_norm_field_join(trace, "p0_free", trace.p0_reduced_norm2, trace.p0_reduced_norm)
+@@ -2421,0 +3129 @@
++        && refinement_capture_norm_field_join(trace, "p1_full", trace.p1_full_norm2, trace.p1_full_norm)
+@@ -2473,0 +3182,38 @@
++                && refinement_capture_exact_norm(trace, "p0_full", p0, &full)
++                && refinement_capture_norm_field_join(
++                    trace,
++                    "p0_full",
++                    trace.p0_full_norm2,
++                    trace.p0_full_norm,
++                )
++                && refinement_capture_exact_norm(
++                    trace,
++                    "p0_free",
++                    p0,
++                    trace.face_free_ids.as_ref().unwrap(),
++                )
++                && refinement_capture_norm_field_join(
++                    trace,
++                    "p0_free",
++                    trace.p0_reduced_norm2,
++                    trace.p0_reduced_norm,
++                )
++                && refinement_capture_exact_norm(trace, "p1_full", p1, &full)
++                && refinement_capture_norm_field_join(
++                    trace,
++                    "p1_full",
++                    trace.p1_full_norm2,
++                    trace.p1_full_norm,
++                )
++                && refinement_capture_exact_norm(
++                    trace,
++                    "p1_free",
++                    p1,
++                    trace.face_free_ids.as_ref().unwrap(),
++                )
++                && refinement_capture_norm_field_join(
++                    trace,
++                    "p1_free",
++                    trace.p1_reduced_norm2,
++                    trace.p1_reduced_norm,
++                )
+@@ -2493 +3239,4 @@
+-fn refinement_capture_field_status_json(trace: &RefinementObservationTrace) -> serde_json::Value {
++fn refinement_capture_status_phase(trace: &RefinementObservationTrace) -> u8 {
++    use super::{
++        M1TrustRegionCorrectionPosition as Position, M1TrustRegionRefinementGuardStage as Stage,
++    };
+@@ -2498,16 +3247,56 @@
+-    let complete = refinement_capture_terminal_complete(trace, terminal);
+-    let status = |present: bool| {
+-        if present {
+-            "captured"
+-        } else if complete {
+-            "unreached_by_actual_terminal"
+-        } else {
+-            "missing_instrumentation"
+-        }
+-    };
+-    serde_json::json!({
+-        "p0": status(trace.p0.is_some()), "residual0": status(trace.residual0.is_some()),
+-        "h0": status(trace.h0.is_some()), "delta0": status(trace.delta0.is_some()),
+-        "p1": status(trace.p1.is_some()), "residual1": status(trace.residual1.is_some()),
+-        "h1": status(trace.h1.is_some()), "inverse": status(trace.inverse_t.is_some()),
+-        "delta1": status(trace.delta1.is_some()), "p2": status(trace.p2.is_some())
++    terminal.map_or(0, |metadata| {
++        match (metadata.correction_position, metadata.guard_stage) {
++            (None, Stage::ActiveFinite | Stage::ActiveEquality) => 1,
++            (
++                None,
++                Stage::P0FullRadius
++                | Stage::P0ReducedRadius
++                | Stage::OrderedNorm
++                | Stage::RadiusComparison,
++            ) => 2,
++            (
++                Some(Position::First),
++                Stage::ResidualSourceTerm
++                | Stage::ResidualSourceWeight
++                | Stage::PrimaryProduct
++                | Stage::SplitterProduct
++                | Stage::SplitOutput
++                | Stage::EftRemainder
++                | Stage::TwoSumResult
++                | Stage::TwoSumRemainder
++                | Stage::Accumulation,
++            ) => 3,
++            (Some(Position::First), Stage::FactorApplicationOutput) => 4,
++            (Some(Position::First), Stage::CoordinateUpdate) => 5,
++            (
++                Some(Position::First),
++                Stage::ActiveFinite
++                | Stage::ActiveEquality
++                | Stage::ScratchBoxLower
++                | Stage::ScratchBoxUpper,
++            ) => 6,
++            (Some(Position::First), _) => 7,
++            (
++                Some(Position::Second),
++                Stage::ResidualSourceTerm
++                | Stage::ResidualSourceWeight
++                | Stage::PrimaryProduct
++                | Stage::SplitterProduct
++                | Stage::SplitOutput
++                | Stage::EftRemainder
++                | Stage::TwoSumResult
++                | Stage::TwoSumRemainder
++                | Stage::Accumulation,
++            ) => 8,
++            (Some(Position::Second), Stage::FactorApplicationOutput) => 9,
++            (Some(Position::Second), Stage::CoordinateUpdate) => 10,
++            (
++                Some(Position::Second),
++                Stage::ActiveFinite
++                | Stage::ActiveEquality
++                | Stage::FinalBoxLower
++                | Stage::FinalBoxUpper,
++            ) => 11,
++            (Some(Position::Second), _) => 12,
++            (None, _) => 0,
++        }
+@@ -2514,0 +3304,349 @@
++}
++
++#[cfg(test)]
++fn refinement_capture_field_status(
++    trace: &RefinementObservationTrace,
++    present: bool,
++    required_phase: u8,
++    roles: &[&str],
++) -> &'static str {
++    use super::M1TrustRegionRefinementGuardStage as Stage;
++    let terminal = trace
++        .terminal_refusal
++        .as_deref()
++        .and_then(|refusal| refusal.refinement.as_deref());
++    let phase = refinement_capture_status_phase(trace);
++    let positive_only = roles.iter().any(|role| {
++        matches!(
++            *role,
++            "p0_full" | "p0_free" | "p1_full" | "p1_free" | "p2_full" | "p2_free"
++        )
++    });
++    let stops_before_free = terminal.is_some_and(|metadata| {
++        matches!(
++            metadata.guard_stage,
++            Stage::P0FullRadius | Stage::ScratchFullRadius | Stage::FinalFullRadius
++        )
++    }) && roles
++        .iter()
++        .any(|role| matches!(*role, "p0_free" | "p1_free" | "p2_free"));
++    if present && phase < required_phase {
++        "contradictory_stray_presence"
++    } else if present {
++        "captured"
++    } else if terminal.is_some_and(|metadata| metadata.lambda == 0.0) && positive_only {
++        "inapplicable_zero_lambda"
++    } else if trace
++        .partial_ordered_norms
++        .iter()
++        .any(|entry| roles.contains(&entry.role))
++    {
++        "interrupted"
++    } else if terminal.is_none() {
++        "missing_terminal_metadata"
++    } else if stops_before_free || phase < required_phase {
++        "naturally_unreached"
++    } else {
++        "missing_instrumentation"
++    }
++}
++
++#[cfg(test)]
++fn refinement_capture_status_insert(
++    fields: &mut serde_json::Map<String, serde_json::Value>,
++    trace: &RefinementObservationTrace,
++    name: &str,
++    present: bool,
++    phase: u8,
++    roles: &[&str],
++) {
++    fields.insert(
++        name.into(),
++        serde_json::Value::String(
++            refinement_capture_field_status(trace, present, phase, roles).into(),
++        ),
++    );
++}
++
++#[cfg(test)]
++fn refinement_capture_status_structure(
++    fields: &mut serde_json::Map<String, serde_json::Value>,
++    trace: &RefinementObservationTrace,
++) {
++    macro_rules! put {
++        ($n:literal,$p:expr,$phase:expr) => {
++            refinement_capture_status_insert(fields, trace, $n, $p, $phase, &[])
++        };
++    }
++    put!("free_ids", trace.face_free_ids.is_some(), 0);
++    put!("factor_order", trace.factor_order.is_some(), 0);
++    put!("factor_a_bits", trace.factor_a.is_some(), 0);
++    put!("factor_v_bits", trace.factor_v.is_some(), 0);
++    put!("factor_sigma_bits", trace.factor_sigma.is_some(), 0);
++    put!(
++        "weighted_residual_bits",
++        trace.weighted_residual.is_some(),
++        0
++    );
++    put!("weighted_matrix_bits", trace.weighted_matrix.is_some(), 0);
++    put!("scaled_lower_bits", trace.scaled_lower_bits.is_some(), 0);
++    put!("scaled_upper_bits", trace.scaled_upper_bits.is_some(), 0);
++    put!("lambda_bits", trace.lambda_bits.is_some(), 0);
++    put!(
++        "reduced_face_radius_bits",
++        trace.reduced_face_radius_bits.is_some(),
++        0
++    );
++    put!("live_state_entry_bits", trace.live_state_entry.is_some(), 0);
++    put!("live_state_exit_bits", trace.live_state_exit.is_some(), 0);
++    put!("lower_mask_exit", trace.lower_mask_exit.is_some(), 0);
++    put!("upper_mask_exit", trace.upper_mask_exit.is_some(), 0);
++    put!("factor_identity", trace.factor_identity.is_some(), 3);
++    put!(
++        "factor_application_identities",
++        !trace.factor_application_identities.is_empty(),
++        4
++    );
++    put!(
++        "factor_application_snapshots",
++        !trace.factor_application_snapshots.is_empty(),
++        4
++    );
++    put!("factor_applications", trace.factor_applications > 0, 4);
++    put!(
++        "eligibility_scalar_operations",
++        trace.eligibility_scalar_operations.is_some(),
++        2
++    );
++    put!(
++        "eligibility_guard_events",
++        trace.eligibility_guard_events.is_some(),
++        2
++    );
++    put!(
++        "reservation_denial_owner",
++        trace.reservation_denial_owner.is_some(),
++        2
++    );
++}
++
++#[cfg(test)]
++fn refinement_capture_status_steps(
++    fields: &mut serde_json::Map<String, serde_json::Value>,
++    trace: &RefinementObservationTrace,
++) {
++    macro_rules! put { ($n:literal,$p:expr,$phase:expr,[$($r:literal),*]) => { refinement_capture_status_insert(fields, trace, $n, $p, $phase, &[$($r),*]) }; }
++    put!("p0_bits", trace.p0.is_some(), 1, []);
++    put!(
++        "p0_full_norm2_bits",
++        trace.p0_full_norm2.is_some(),
++        2,
++        ["p0_full"]
++    );
++    put!(
++        "p0_full_norm_bits",
++        trace.p0_full_norm.is_some(),
++        2,
++        ["p0_full"]
++    );
++    put!(
++        "p0_reduced_norm2_bits",
++        trace.p0_reduced_norm2.is_some(),
++        2,
++        ["p0_free"]
++    );
++    put!(
++        "p0_reduced_norm_bits",
++        trace.p0_reduced_norm.is_some(),
++        2,
++        ["p0_free"]
++    );
++    put!("lower_mask_p0", trace.lower_mask_p0.is_some(), 1, []);
++    put!("upper_mask_p0", trace.upper_mask_p0.is_some(), 1, []);
++    put!("residual0_bits", trace.residual0.is_some(), 3, []);
++    put!("h0_bits", trace.h0.is_some(), 4, []);
++    put!("delta0_bits", trace.delta0.is_some(), 5, []);
++    put!("p1_bits", trace.p1.is_some(), 6, []);
++    put!(
++        "p1_full_norm2_bits",
++        trace.p1_full_norm2.is_some(),
++        7,
++        ["p1_full"]
++    );
++    put!(
++        "p1_full_norm_bits",
++        trace.p1_full_norm.is_some(),
++        7,
++        ["p1_full"]
++    );
++    put!(
++        "p1_reduced_norm2_bits",
++        trace.p1_reduced_norm2.is_some(),
++        7,
++        ["p1_free"]
++    );
++    put!(
++        "p1_reduced_norm_bits",
++        trace.p1_reduced_norm.is_some(),
++        7,
++        ["p1_free"]
++    );
++    put!("lower_mask_p1", trace.lower_mask_p1.is_some(), 6, []);
++    put!("upper_mask_p1", trace.upper_mask_p1.is_some(), 6, []);
++    refinement_capture_status_final_steps(fields, trace);
++}
++
++#[cfg(test)]
++fn refinement_capture_status_final_steps(
++    fields: &mut serde_json::Map<String, serde_json::Value>,
++    trace: &RefinementObservationTrace,
++) {
++    macro_rules! put { ($n:literal,$p:expr,$phase:expr,[$($r:literal),*]) => { refinement_capture_status_insert(fields, trace, $n, $p, $phase, &[$($r),*]) }; }
++    put!("residual1_bits", trace.residual1.is_some(), 8, []);
++    put!("h1_bits", trace.h1.is_some(), 9, []);
++    put!("delta1_bits", trace.delta1.is_some(), 10, []);
++    put!("p2_bits", trace.p2.is_some(), 11, []);
++    put!(
++        "p2_full_norm2_bits",
++        trace.p2_full_norm2.is_some(),
++        12,
++        ["p2_full"]
++    );
++    put!(
++        "p2_full_norm_bits",
++        trace.p2_full_norm.is_some(),
++        12,
++        ["p2_full"]
++    );
++    put!(
++        "p2_reduced_norm2_bits",
++        trace.p2_reduced_norm2.is_some(),
++        12,
++        ["p2_free"]
++    );
++    put!(
++        "p2_reduced_norm_bits",
++        trace.p2_reduced_norm.is_some(),
++        12,
++        ["p2_free"]
++    );
++    put!("lower_mask_p2", trace.lower_mask_p2.is_some(), 11, []);
++    put!("upper_mask_p2", trace.upper_mask_p2.is_some(), 11, []);
++    put!(
++        "remaining_radius_bits",
++        trace.remaining_radius.is_some(),
++        12,
++        []
++    );
++    put!("radius_gap_bits", trace.radius_gap.is_some(), 12, []);
++    put!(
++        "radius_tolerance_bits",
++        trace.radius_tolerance.is_some(),
++        12,
++        []
++    );
++}
++
++#[cfg(test)]
++fn refinement_capture_status_inverse_and_traces(
++    fields: &mut serde_json::Map<String, serde_json::Value>,
++    trace: &RefinementObservationTrace,
++) {
++    for ordinal in 1..=2_u8 {
++        let snapshot = trace
++            .factor_application_snapshots
++            .get(usize::from(ordinal - 1));
++        let prefix = format!("factor_application_snapshot_{ordinal}");
++        let phase = if ordinal == 1 { 4 } else { 9 };
++        for (suffix, present) in [
++            ("h_bits", snapshot.is_some_and(|item| item.h_bits.is_some())),
++            (
++                "inverse_t_bits",
++                snapshot.is_some_and(|item| item.inverse_t_bits.is_some()),
++            ),
++            (
++                "inverse_denominator_bits",
++                snapshot.is_some_and(|item| item.inverse_denominator_bits.is_some()),
++            ),
++            (
++                "inverse_z_bits",
++                snapshot.is_some_and(|item| item.inverse_z_bits.is_some()),
++            ),
++            (
++                "delta_bits",
++                snapshot.is_some_and(|item| item.delta_bits.is_some()),
++            ),
++        ] {
++            refinement_capture_status_insert(
++                fields,
++                trace,
++                &format!("{prefix}_{suffix}"),
++                present,
++                if suffix == "delta_bits" {
++                    phase + 1
++                } else {
++                    phase
++                },
++                &[],
++            );
++        }
++    }
++    refinement_capture_status_insert(
++        fields,
++        trace,
++        "inverse_t_bits",
++        trace.inverse_t.is_some(),
++        4,
++        &[],
++    );
++    refinement_capture_status_insert(
++        fields,
++        trace,
++        "inverse_denominator_bits",
++        trace.inverse_denominator.is_some(),
++        4,
++        &[],
++    );
++    refinement_capture_status_insert(
++        fields,
++        trace,
++        "inverse_z_bits",
++        trace.inverse_z.is_some(),
++        4,
++        &[],
++    );
++    refinement_capture_status_insert(
++        fields,
++        trace,
++        "ordered_norm_traces",
++        !trace.ordered_norms.is_empty(),
++        2,
++        &[],
++    );
++    refinement_capture_status_insert(
++        fields,
++        trace,
++        "partial_ordered_norms",
++        !trace.partial_ordered_norms.is_empty(),
++        2,
++        &[
++            "p0_full",
++            "p0_free",
++            "p0_zero_lambda_eligibility",
++            "p1_full",
++            "p1_free",
++            "p1_zero_lambda_scratch",
++            "p2_full",
++            "p2_free",
++            "p2_zero_lambda_final",
++        ],
++    );
++}
++
++#[cfg(test)]
++fn refinement_capture_field_status_json(trace: &RefinementObservationTrace) -> serde_json::Value {
++    let mut fields = serde_json::Map::new();
++    refinement_capture_status_structure(&mut fields, trace);
++    refinement_capture_status_steps(&mut fields, trace);
++    refinement_capture_status_inverse_and_traces(&mut fields, trace);
++    serde_json::Value::Object(fields)
+@@ -4360,0 +5499,19 @@
++#[cfg(test)]
++fn refinement_observe_shifted_inverse(trace_t: &[f64], trace_denominator: &[f64], z: &[f64]) {
++    refinement_observe(|trace| {
++        trace.inverse_t = Some(trace_t.to_vec());
++        trace.inverse_denominator = Some(trace_denominator.to_vec());
++        trace.inverse_z = Some(z.to_vec());
++        if let Some(snapshot) = trace.factor_application_snapshots.last_mut() {
++            snapshot.inverse_t_bits = Some(trace_t.iter().map(|value| value.to_bits()).collect());
++            snapshot.inverse_denominator_bits = Some(
++                trace_denominator
++                    .iter()
++                    .map(|value| value.to_bits())
++                    .collect(),
++            );
++            snapshot.inverse_z_bits = Some(z.iter().map(|value| value.to_bits()).collect());
++        }
++    });
++}
++
+@@ -4426,5 +5583 @@
+-    refinement_observe(|trace| {
+-        trace.inverse_t = Some(trace_t.clone());
+-        trace.inverse_denominator = Some(trace_denominator.clone());
+-        trace.inverse_z = Some(z.clone());
+-    });
++    refinement_observe_shifted_inverse(&trace_t, &trace_denominator, &z);
+@@ -4609,0 +5763,17 @@
++    #[cfg(test)]
++    macro_rules! partial {
++        ($operation:literal) => {
++            if let Some(role) = role {
++                let ids: Vec<usize> = (0..step.len()).collect();
++                refinement_observe_partial_ordered_norm(
++                    role,
++                    &ids,
++                    &values,
++                    &squares,
++                    &running_sums,
++                    $operation,
++                    None,
++                );
++            }
++        };
++    }
+@@ -4615,16 +5784,0 @@
+-        if let Some(work) = refinement_work.as_deref_mut() {
+-            work.guard();
+-        }
+-        if !sq.is_finite() {
+-            return Err("nonfinite norm");
+-        }
+-        if let Some(work) = refinement_work.as_deref_mut() {
+-            work.scalar();
+-        }
+-        sum += sq;
+-        if let Some(work) = refinement_work.as_deref_mut() {
+-            work.guard();
+-        }
+-        if !sum.is_finite() {
+-            return Err("nonfinite norm");
+-        }
+@@ -4634,0 +5789,15 @@
++        }
++        if let Some(work) = refinement_work.as_deref_mut() {
++            work.guard();
++        }
++        if !sq.is_finite() {
++            #[cfg(test)]
++            partial!("square_guard");
++            return Err("nonfinite norm");
++        }
++        if let Some(work) = refinement_work.as_deref_mut() {
++            work.scalar();
++        }
++        sum += sq;
++        #[cfg(test)]
++        if role.is_some() {
+@@ -4635,0 +5805,8 @@
++        }
++        if let Some(work) = refinement_work.as_deref_mut() {
++            work.guard();
++        }
++        if !sum.is_finite() {
++            #[cfg(test)]
++            partial!("running_sum_guard");
++            return Err("nonfinite norm");
+@@ -4659,0 +5837,13 @@
++        #[cfg(test)]
++        if let Some(role) = role {
++            let ids: Vec<usize> = (0..step.len()).collect();
++            refinement_observe_partial_ordered_norm(
++                role,
++                &ids,
++                values.as_ref(),
++                squares.as_ref(),
++                running_sums.as_ref(),
++                "sqrt_guard",
++                Some(norm.to_bits()),
++            );
++        }
+@@ -4660,0 +5851,73 @@
++    }
++}
++
++#[cfg(test)]
++fn refinement_observe_partial_ordered_norm(
++    role: &'static str,
++    coordinates: &[usize],
++    values: &[u64],
++    squares: &[u64],
++    running_sums: &[u64],
++    terminal_operation: &'static str,
++    sqrt_bits: Option<u64>,
++) {
++    refinement_observe(|trace| {
++        trace
++            .partial_ordered_norms
++            .push(RefinementPartialOrderedNormTrace {
++                role,
++                coordinate_ids: coordinates[..values.len()].to_vec(),
++                value_bits: values.to_vec(),
++                square_bits: squares.to_vec(),
++                running_sum_bits: running_sums.to_vec(),
++                terminal_operation,
++                sqrt_bits,
++            });
++    });
++}
++
++#[cfg(test)]
++fn refinement_observe_partial_ordered_norm_if_active(
++    role: &'static str,
++    coordinates: &[usize],
++    values: Option<&Vec<u64>>,
++    squares: Option<&Vec<u64>>,
++    running_sums: Option<&Vec<u64>>,
++    operation: &'static str,
++    sqrt_bits: Option<u64>,
++) {
++    if let (Some(values), Some(squares), Some(running_sums)) = (values, squares, running_sums) {
++        refinement_observe_partial_ordered_norm(
++            role,
++            coordinates,
++            values,
++            squares,
++            running_sums,
++            operation,
++            sqrt_bits,
++        );
++    }
++}
++
++#[cfg(test)]
++fn refinement_observe_completed_ordered_norm(
++    role: &'static str,
++    coordinates: &[usize],
++    values: Option<Vec<u64>>,
++    squares: Option<Vec<u64>>,
++    running_sums: Option<Vec<u64>>,
++    norm2: f64,
++    norm: f64,
++) {
++    if let (Some(values), Some(squares), Some(running_sums)) = (values, squares, running_sums) {
++        refinement_observe(|trace| {
++            trace.ordered_norms.push(RefinementOrderedNormTrace {
++                role,
++                coordinate_ids: coordinates.to_vec(),
++                value_bits: values.clone(),
++                square_bits: squares.clone(),
++                running_sum_bits: running_sums.clone(),
++                norm2_bits: norm2.to_bits(),
++                norm_bits: norm.to_bits(),
++            });
++        });
+@@ -4679,0 +5943,14 @@
++    #[cfg(test)]
++    macro_rules! partial {
++        ($operation:literal) => {
++            refinement_observe_partial_ordered_norm_if_active(
++                role,
++                coordinates,
++                values.as_ref(),
++                squares.as_ref(),
++                running_sums.as_ref(),
++                $operation,
++                None,
++            );
++        };
++    }
+@@ -4681,0 +5959,2 @@
++            #[cfg(test)]
++            partial!("coordinate");
+@@ -4684 +5963,9 @@
+-        bvls04_normal_or_signed_zero(p[coordinate], work)?;
++        #[cfg(test)]
++        if let Some(values) = &mut values {
++            values.push(p[coordinate].to_bits());
++        }
++        if let Err(reason) = bvls04_normal_or_signed_zero(p[coordinate], work) {
++            #[cfg(test)]
++            partial!("value_guard");
++            return Err(reason);
++        }
+@@ -4687 +5974,9 @@
+-        bvls04_product_guard(p[coordinate], p[coordinate], square, work)?;
++        #[cfg(test)]
++        if let Some(squares) = &mut squares {
++            squares.push(square.to_bits());
++        }
++        if let Err(reason) = bvls04_product_guard(p[coordinate], p[coordinate], square, work) {
++            #[cfg(test)]
++            partial!("square_guard");
++            return Err(reason);
++        }
+@@ -4690 +5985,13 @@
+-        bvls04_normal_or_signed_zero(sum, work)?;
++        #[cfg(test)]
++        if let Some(running_sums) = &mut running_sums {
++            running_sums.push(sum.to_bits());
++        }
++        if let Err(reason) = bvls04_normal_or_signed_zero(sum, work) {
++            #[cfg(test)]
++            partial!("running_sum_guard");
++            return Err(reason);
++        }
++    }
++    work.scalar();
++    let norm = sum.sqrt();
++    if let Err(reason) = bvls04_normal_or_signed_zero(norm, work) {
+@@ -4693 +6000 @@
+-            (&mut values, &mut squares, &mut running_sums)
++            (&values, &squares, &running_sums)
+@@ -4695,8 +6002,12 @@
+-            values.push(p[coordinate].to_bits());
+-            squares.push(square.to_bits());
+-            running_sums.push(sum.to_bits());
+-        }
+-    }
+-    work.scalar();
+-    let norm = sum.sqrt();
+-    bvls04_normal_or_signed_zero(norm, work)?;
++            refinement_observe_partial_ordered_norm(
++                role,
++                coordinates,
++                values,
++                squares,
++                running_sums,
++                "sqrt_guard",
++                Some(norm.to_bits()),
++            );
++        }
++        return Err(reason);
++    }
+@@ -4704,13 +6015,9 @@
+-    if let (Some(values), Some(squares), Some(running_sums)) = (values, squares, running_sums) {
+-        refinement_observe(|trace| {
+-            trace.ordered_norms.push(RefinementOrderedNormTrace {
+-                role,
+-                coordinate_ids: coordinates.to_vec(),
+-                value_bits: values.clone(),
+-                square_bits: squares.clone(),
+-                running_sum_bits: running_sums.clone(),
+-                norm2_bits: sum.to_bits(),
+-                norm_bits: norm.to_bits(),
+-            });
+-        });
+-    }
++    refinement_observe_completed_ordered_norm(
++        role,
++        coordinates,
++        values,
++        squares,
++        running_sums,
++        sum,
++        norm,
++    );
+@@ -9254,0 +10562,22 @@
++#[cfg(test)]
++fn refinement_observe_factor_application(
++    trace: &mut RefinementObservationTrace,
++    factor: &JacobiFactor,
++    h: Option<&[f64]>,
++) {
++    trace.factor_applications += 1;
++    let identity = std::ptr::from_ref(factor) as usize;
++    trace.factor_application_identities.push(identity);
++    trace
++        .factor_application_snapshots
++        .push(RefinementFactorApplicationSnapshot {
++            ordinal: trace.factor_applications,
++            identity,
++            h_bits: h.map(|values| values.iter().map(|value| value.to_bits()).collect()),
++            inverse_t_bits: None,
++            inverse_denominator_bits: None,
++            inverse_z_bits: None,
++            delta_bits: None,
++        });
++}
++
+@@ -9297,6 +10626 @@
+-        refinement_observe(|trace| {
+-            trace.factor_applications += 1;
+-            trace
+-                .factor_application_identities
+-                .push(std::ptr::from_ref(factor) as usize);
+-        });
++        refinement_observe(|trace| refinement_observe_factor_application(trace, factor, Some(&h0)));
+@@ -9311,6 +10635 @@
+-        refinement_observe(|trace| {
+-            trace.factor_applications += 1;
+-            trace
+-                .factor_application_identities
+-                .push(std::ptr::from_ref(factor) as usize);
+-        });
++        refinement_observe(|trace| refinement_observe_factor_application(trace, factor, None));
+@@ -9345 +10664,6 @@
+-    refinement_observe(|trace| trace.delta0 = Some(delta0.clone()));
++    refinement_observe(|trace| {
++        trace.delta0 = Some(delta0.clone());
++        if let Some(snapshot) = trace.factor_application_snapshots.last_mut() {
++            snapshot.delta_bits = Some(delta0.iter().map(|value| value.to_bits()).collect());
++        }
++    });
+@@ -9399,6 +10723 @@
+-        refinement_observe(|trace| {
+-            trace.factor_applications += 1;
+-            trace
+-                .factor_application_identities
+-                .push(std::ptr::from_ref(factor) as usize);
+-        });
++        refinement_observe(|trace| refinement_observe_factor_application(trace, factor, Some(&h1)));
+@@ -9413,6 +10732 @@
+-        refinement_observe(|trace| {
+-            trace.factor_applications += 1;
+-            trace
+-                .factor_application_identities
+-                .push(std::ptr::from_ref(factor) as usize);
+-        });
++        refinement_observe(|trace| refinement_observe_factor_application(trace, factor, None));
+@@ -9447 +10761,6 @@
+-    refinement_observe(|trace| trace.delta1 = Some(delta1.clone()));
++    refinement_observe(|trace| {
++        trace.delta1 = Some(delta1.clone());
++        if let Some(snapshot) = trace.factor_application_snapshots.last_mut() {
++            snapshot.delta_bits = Some(delta1.iter().map(|value| value.to_bits()).collect());
++        }
++    });
+@@ -9804,0 +11124,8 @@
++    #[cfg(test)]
++    refinement_observe(|trace| {
++        // p1 exists before the first active and box admissions; preserve that
++        // reached prefix when either admission itself refuses.
++        trace.p1 = Some(scratch.p1);
++        trace.lower_mask_p1 = Some(state.lower_active);
++        trace.upper_mask_p1 = Some(state.upper_active);
++    });
+@@ -9821,6 +11147,0 @@
+-    #[cfg(test)]
+-    refinement_observe(|trace| {
+-        trace.p1 = Some(scratch.p1);
+-        trace.lower_mask_p1 = Some(state.lower_active);
+-        trace.upper_mask_p1 = Some(state.upper_active);
+-    });
+@@ -10107,0 +11429,5 @@
++    #[cfg(test)]
++    refinement_observe(|trace| {
++        trace.p2_full_norm2 = Some(full_norm2);
++        trace.p2_full_norm = Some(full_norm);
++    });
+@@ -10185 +11511 @@
+-        trace.remaining_radius = Some(solution.radius);
++        trace.remaining_radius = Some(reduced_radius);
+@@ -10335,0 +11662,2 @@
++    #[cfg(test)]
++    refinement_observe(|trace| trace.radius_gap = Some(gap));
+@@ -10362,0 +11691,2 @@
++    #[cfg(test)]
++    refinement_observe(|trace| trace.radius_tolerance = Some(tolerance));
+@@ -10367,5 +11696,0 @@
+-    #[cfg(test)]
+-    refinement_observe(|trace| {
+-        trace.radius_gap = Some(gap);
+-        trace.radius_tolerance = Some(tolerance);
+-    });
+@@ -10416 +11741 @@
+-        let (full_norm2, full_norm) =
++        let (_full_norm2, _full_norm) =
+@@ -10418,5 +11742,0 @@
+-        #[cfg(test)]
+-        refinement_observe(|trace| {
+-            trace.p2_full_norm2 = Some(full_norm2);
+-            trace.p2_full_norm = Some(full_norm);
+-        });
+--- before/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
++++ after/crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs
+@@ -1161,0 +1162,2 @@
++                source_mass_bits: Some(value.mass_kg_m2.to_bits()),
++                source_enthalpy_bits: Some(value.enthalpy_j_m2.to_bits()),
+@@ -1259,0 +1262,2 @@
++                    source_mass_bits: None,
++                    source_enthalpy_bits: None,
+@@ -1585,0 +1590,8 @@
++    fd_trial_is_admissible_with_mapping(trial, "full", "full_logical_to_physical_identity")
++}
++
++fn fd_trial_is_admissible_with_mapping(
++    trial: &M1CoupledColumnTrial,
++    representation: &'static str,
++    map_identity: &'static str,
++) -> bool {
+@@ -1604,0 +1617,2 @@
++                source_mass_bits: None,
++                source_enthalpy_bits: None,
+@@ -1607,2 +1621,2 @@
+-                representation: "full",
+-                map_identity: "full_logical_to_physical_identity",
++                representation,
++                map_identity,
+@@ -1626,0 +1641,2 @@
++    representation: &'static str,
++    map_identity: &'static str,
+@@ -1634,0 +1651,2 @@
++            source_mass_bits: None,
++            source_enthalpy_bits: None,
+@@ -1637,2 +1655,2 @@
+-            representation: "full",
+-            map_identity: "full_logical_to_physical_identity",
++            representation,
++            map_identity,
+@@ -1647,8 +1664,0 @@
+-fn m1_core_parent_observation_context(
+-    trial: &M1CoupledColumnTrial,
+-    site: &'static str,
+-    state_role: &'static str,
+-    pass: &'static str,
+-) -> openwepp_vegetation::cold_canopy_m1::M1MhObservationContextScope {
+-    m1_core_parent_observation_context_with_direction(trial, site, state_role, pass, None)
+-}
+@@ -1687,0 +1698,2 @@
++            source_mass_bits: None,
++            source_enthalpy_bits: None,
+@@ -1732,0 +1745,2 @@
++                source_mass_bits: None,
++                source_enthalpy_bits: None,
+@@ -2123,0 +2138,2 @@
++                source_mass_bits: None,
++                source_enthalpy_bits: None,
+@@ -2173,0 +2190,2 @@
++                source_mass_bits: None,
++                source_enthalpy_bits: None,
+@@ -2240,0 +2259,2 @@
++                source_mass_bits: None,
++                source_enthalpy_bits: None,
+@@ -2337,0 +2358,2 @@
++    representation: &'static str,
++    map_identity: &'static str,
+@@ -2345 +2367 @@
+-    let _mh_context = m1_core_parent_observation_context(
++    let _mh_context = m1_core_parent_observation_context_with_mapping(
+@@ -2349,0 +2372,3 @@
++        None,
++        representation,
++        map_identity,
+@@ -2429,2 +2454,8 @@
+-            if fd_trial_is_admissible(&high_trial) {
+-                let _mh_context = m1_fd_core_observation_context(&high_trial, column, "high");
++            if fd_trial_is_admissible_with_mapping(&high_trial, representation, map_identity) {
++                let _mh_context = m1_fd_core_observation_context(
++                    &high_trial,
++                    column,
++                    "high",
++                    representation,
++                    map_identity,
++                );
+@@ -2441,2 +2472,8 @@
+-            if fd_trial_is_admissible(&low_trial) {
+-                let _mh_context = m1_fd_core_observation_context(&low_trial, column, "low");
++            if fd_trial_is_admissible_with_mapping(&low_trial, representation, map_identity) {
++                let _mh_context = m1_fd_core_observation_context(
++                    &low_trial,
++                    column,
++                    "low",
++                    representation,
++                    map_identity,
++                );
+@@ -2479,0 +2517,2 @@
++                            source_mass_bits: None,
++                            source_enthalpy_bits: None,
+@@ -2482,2 +2521,2 @@
+-                            representation: "full",
+-                            map_identity: "full_logical_to_physical_identity",
++                            representation,
++                            map_identity,
+@@ -2666,0 +2706,2 @@
++                source_mass_bits: None,
++                source_enthalpy_bits: None,
+@@ -2765 +2806,7 @@
+-    let (result, jacobian, _) = evaluate_core_with_jacobian(input, trial, None)?;
++    let (result, jacobian, _) = evaluate_core_with_jacobian(
++        input,
++        trial,
++        None,
++        "full",
++        "full_logical_to_physical_identity",
++    )?;
+@@ -2927,0 +2975,2 @@
++                    source_mass_bits: None,
++                    source_enthalpy_bits: None,
+@@ -2968,0 +3018,2 @@
++                    source_mass_bits: None,
++                    source_enthalpy_bits: None,
+@@ -4739,2 +4790,8 @@
+-            let natural_phase = phase_join_selections(&self.input, &trial, &[0.0; 21])
+-                .map_err(m1_physical_adapter_phase_failure)?;
++            let natural_phase = phase_join_selections_with_mapping(
++                &self.input,
++                &trial,
++                &[0.0; 21],
++                observation_representation,
++                observation_map,
++            )
++            .map_err(m1_physical_adapter_phase_failure)?;
+@@ -4755,2 +4812,8 @@
+-            let (core, raw_jacobian, _) = evaluate_core_with_jacobian(&self.input, &trial, None)
+-                .map_err(Self::Error::from)?;
++            let (core, raw_jacobian, _) = evaluate_core_with_jacobian(
++                &self.input,
++                &trial,
++                None,
++                observation_representation,
++                observation_map,
++            )
++            .map_err(Self::Error::from)?;
+@@ -4915,0 +4979,6 @@
++        let (observation_representation, observation_map) = match self.representation {
++            M1SeparateAccuracyRepresentation::Full => ("full", "full_logical_to_physical_identity"),
++            M1SeparateAccuracyRepresentation::Reduced { .. } => {
++                ("reduced", "reduced_zero_sun_logical_to_physical_map")
++            }
++        };
+@@ -4919,0 +4989,2 @@
++            observation_representation,
++            observation_map,
+@@ -5294,0 +5366,16 @@
++    phase_join_selections_with_mapping(
++        input,
++        trial,
++        direction,
++        "full",
++        "full_logical_to_physical_identity",
++    )
++}
++
++fn phase_join_selections_with_mapping(
++    input: &M1CoupledColumnInput,
++    trial: &M1CoupledColumnTrial,
++    direction: &[f64; 21],
++    representation: &'static str,
++    map_identity: &'static str,
++) -> Result<[M1PhaseJoinSelection; 2], M1PhaseJoinFailure> {
+@@ -5304,0 +5392,2 @@
++                source_mass_bits: None,
++                source_enthalpy_bits: None,
+@@ -5307,2 +5396,2 @@
+-                representation: "full",
+-                map_identity: "full_logical_to_physical_identity",
++                representation,
++                map_identity,
+@@ -5762,3 +5851,8 @@
+-    let (mut base, mut raw_jacobian, mut normalized_jacobian) =
+-        evaluate_core_with_jacobian(input, trial, None)
+-            .map_err(|error| M1PhaseJoinControllerError { error, activity })?;
++    let (mut base, mut raw_jacobian, mut normalized_jacobian) = evaluate_core_with_jacobian(
++        input,
++        trial,
++        None,
++        "full",
++        "full_logical_to_physical_identity",
++    )
++    .map_err(|error| M1PhaseJoinControllerError { error, activity })?;
+@@ -5829,0 +5924,2 @@
++            "full",
++            "full_logical_to_physical_identity",
+--- before/crates/openwepp-vegetation/src/cold_canopy_m1.rs
++++ after/crates/openwepp-vegetation/src/cold_canopy_m1.rs
+@@ -240,0 +241,2 @@
++    pub source_mass_bits: Option<u64>,
++    pub source_enthalpy_bits: Option<u64>,
+@@ -302,0 +305,2 @@
++                        source_mass_bits: context.source_mass_bits,
++                        source_enthalpy_bits: context.source_enthalpy_bits,
+@@ -475 +479,3 @@
+-                    if (258.15..=373.15).contains(&temperature_k) {
++                    if temperature_k.is_finite() {
++                        "temperature_out_of_range"
++                    } else {
+@@ -477,2 +482,0 @@
+-                    } else {
+-                        "temperature_out_of_range"

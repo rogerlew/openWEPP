@@ -1,0 +1,41 @@
+{
+  "source_sha256": "2f7395b2ce41eb81f5d8fb6cf11ccb1514c0d4cb5607687bc53deddf5742bd1c",
+  "invocation_base_source_sha256": "e76590929f364701480d65088231e7ec9fcdeafa3e75daf58b980149c8881a6f",
+  "changed_detached_files": [
+    "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+    "crates/openwepp-vegetation/src/cold_canopy_m1.rs"
+  ],
+  "regular_files": 765,
+  "symlinks": {
+    ".config": {
+      "link": "/workdir/openWEPP/.config"
+    },
+    ".venv": {
+      "link": "/workdir/openWEPP/.venv"
+    },
+    "assurance": {
+      "link": "/workdir/openWEPP/assurance"
+    },
+    "docs": {
+      "link": "/workdir/openWEPP/docs"
+    },
+    "src": {
+      "link": "/workdir/openWEPP/src"
+    },
+    "tests": {
+      "link": "/workdir/openwepp-experiments/b01-wb14-cadence/native-context-restoration-reader-20260916/tests"
+    },
+    "tools": {
+      "link": "/workdir/openWEPP/tools"
+    }
+  },
+  "symlink_targets_available": true,
+  "unrelated_paths_verified": 48,
+  "unrelated_mismatches": [],
+  "added_lint_suppression_lines": [],
+  "terminal_cut": "cut02",
+  "main_Rust_adoption": false,
+  "patch_is_supplementary_full_archive_is_recovery": true
+}

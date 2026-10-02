@@ -1,6 +1,98 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
 
+## Completeness continuation disposition — HOLD, 2026-10-02
+
+**HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility.**
+The owner-invoked completeness continuation reached its **19:14UTC readiness
+limit** without scientific completeness or approved capture receipt. Source and
+capture work stopped. W1/W2/W3 remain **0/0/0**; no physical invocation, actual
+witness reconstruction, numerical repair or main Rust adoption occurred.
+[Results](artifacts/refusal-completeness-results.json) retain the decision.
+
+Runtime remains a prerequisite: **500us CPU/550us wall per completed OFE-day**,
+regimes750/1500/2500us CPU;10-OFE century182.625s CPU/210s wall. Native completed-day
+costs, feasibility and the target gap remain unestablished. At60s,1440joint solves
+share0.347222us CPU each before other work. Historical failed partial attempts of
+4.920672–10.316618ms CPU are not completed-day cost, speedup or a redesigned-method
+lower bound. The observer scopes retain real, unmeasured atomic/RAII/eager-mapping
+overhead. These changes establish no physical work reduction.
+
+The detached observation source now retains interrupted ordered-norm prefixes,
+per-application factor snapshots, reached norm scalar/trace joins, immediate
+radius gap/tolerance copies, and beginning-input reservoir M/H bits distinct from
+caller trial coordinates. W3 mapping is preserved through reduced Jacobian,
+finite-difference screening/core and phase-selection contexts; canonical predicate
+truth, source/trial separation and exact terminal-event joins received static
+correctness verification. The extra Jacobian forwarding wrapper was removed;
+physical call count, arithmetic order, guards and work counters were preserved.
+The final diff affects only the same four detached Rust files.
+
+Independent correctness reviewer `/root/correctness` verified accepted fixes and
+retained five substantive blockers: final radius operands/results lack exact bit
+joins; reachable reason/stage/position, locator and scratch-box semantics are not
+fully validated; early branches admit stray evidence; factor identity and legacy
+inverse-to-snapshot associations remain incomplete; per-field status keys still
+use phase rules that misclassify some actual branches. The live-exit phase error
+and observation-closure compilation error were corrected, but they do not resolve
+those broader requirements. See the attributable [correctness review](artifacts/refusal-completeness-correctness.json).
+
+Distinct reviewer `/root/qa` verified final engineering evidence and custody,
+including the compile fix and609build/input pins, while explicitly retaining
+scientific HOLD and declining capture approval. [QA review](artifacts/refusal-completeness-qa.json).
+Both reviews reused unchanged findings and performed same-reviewer fix verification;
+neither source authorship nor a successful build substitutes for acceptance.
+
+Final candidate06 source **2f7395b2ce41eb81f5d8fb6cf11ccb1514c0d4cb5607687bc53deddf5742bd1c**
+passed direct Rustfmt on all four include files and release LSE feature
+`cargo test --no-run` in **92.062384s**. Required release Clippy commands exited101
+on inherited diagnostics: LSE230/230 and vegetation1/1 match the authenticated
+baseline by diagnostic identity and unchanged source line; **no introduced
+Clippy diagnostics** remain. These are non-physical validators; the capture
+workflow was **NOT RUN**. Intermediate compile/lint/format failures are preserved,
+including the superseded incorrect Rustfmt edition2021 invocation. Final checks
+use edition2024 and actual Nix tools/environment with separate writable targets.
+[Check receipts](artifacts/refusal-completeness-checks.json).
+
+The final draft schema/table covers294paths with no structural missing/unmapped
+entries. Its source-bound payload maximum is36,852,352bytes, below67,108,864bytes;
+the full record maximum is36,852,372bytes. The type-derived outcome bound remains
+331,670bytes, the selected event bound1402 within2048, and independently reviewed
+collection caps are6completed norms/6partial norms/2factor snapshots per retained
+face. Structural coverage is not scientific completeness: all remain unapproved
+for capture. The locked helper's optimized-Python and absent-approval rejection
+checks made no launch or ledger change. No approved receipt was created.
+
+Recovery is the full [source cut02 archive](artifacts/refusal-completeness-source-cut02.tar.gz)
+with its [receipt](artifacts/refusal-completeness-source-cut02.json):765regular files
+and7exact links with available targets. Cut01 is superseded and retained. The
+[build receipt](artifacts/refusal-completeness-build-cut02.json) binds60depfiles,
+609pins and exact binary3d341fb4519a0de466f6863606eeade64c0f64d8c1f379021cd2a665b296d723.
+The195-member [raw checks/helpers archive](artifacts/refusal-completeness-checks.tar.gz)
+and [receipt](artifacts/refusal-completeness-checks-archive.json) preserve final and
+historical evidence with explicit draft/superseded status. The supplementary
+[patch](artifacts/refusal-completeness-source.patch) is not the recovery source.
+[Terminal diff](artifacts/refusal-completeness-diff.json) confirms four detached
+changes, no added lint suppressions, and all48unrelated workspace paths unchanged.
+Main Rust files, prior local commits and branch state were preserved; no push.
+
+The invocation adopted5400seconds once, ceiling476534.927980s, from latest
+carry468876.069712s. First-work anchor18:04UTC gave R7658.858268s; final-check reserve
+began19:04UTC and readiness expired19:14UTC. Work cutoff20:01:38.858268UTC and hard
+deadline20:11:38.858268UTC never renew readiness. Only the documented inactive
+owner-decision interval16:55–18:04UTC is excluded; all active work, waits and
+concurrent wall time count once. Conservative charge through**19:18UTC**, including
+custody checks, local commit and return, is**4440s**: cumulative**473316.069712s**,
+remaining**3218.858268s**. [Accounting](artifacts/refusal-completeness-accounting.json)
+and [pickup](artifacts/refusal-completeness-pickup.json). Unused balance grants no
+new readiness window, source work, physical slot reset or automatic continuation.
+
+The missing facts are complete actual-stage observation validity, actual W1/W2
+inequalities and W3 terminal evidence, followed by native cost/feasibility evidence
+within separately authorized scope. This run cannot distinguish a demonstrated
+local numerical correction from a demonstrated method issue. No numerical repair,
+replacement method or additional allowance is adopted by this disposition.
+
 ## HOLD disposition and completeness-continuation proposal — 2026-10-02
 
 Owner requests HOLD disposition and continuation prompt authoring only.
