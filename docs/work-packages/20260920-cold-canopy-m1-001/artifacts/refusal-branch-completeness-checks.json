@@ -1,0 +1,142 @@
+{
+  "evidence_class": "Ran: nonphysical exact-source checks and offline proofs only",
+  "source_sha256": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+  "checks": {
+    "rustfmt": {
+      "command": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+        "crates/openwepp-land-surface-energy/src/m1_coupled_tests.rs",
+        "crates/openwepp-land-surface-energy/src/solver_covered_evaluation/m1_coupled.rs",
+        "crates/openwepp-vegetation/src/cold_canopy_m1.rs"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/target-candidate",
+      "start_utc": "2026-10-02T20:56:58.419208+00:00",
+      "source_before": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 0,
+      "elapsed_seconds": 0.3155236509628594,
+      "source_after": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "no-run": {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--no-run",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--features",
+        "m1-trust-region-physical-stage"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/target-candidate",
+      "start_utc": "2026-10-02T20:56:58.449076+00:00",
+      "source_before": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 0,
+      "elapsed_seconds": 91.76814748905599,
+      "source_after": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4b1b0d8fd3f3973688eca211786b81ae74c638b4282a15e22f7da58fa00677f7"
+    },
+    "lse-clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--tests",
+        "--features",
+        "m1-trust-region-physical-stage",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/target-lint-lse",
+      "start_utc": "2026-10-02T20:56:58.432935+00:00",
+      "source_before": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 101,
+      "elapsed_seconds": 10.758884957060218,
+      "source_after": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "950bb77a6d1dead5b65bc217f8ce802d1c1d98becf30168def3ae8a323c498f1"
+    },
+    "vegetation-clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-vegetation",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/target-lint-vegetation",
+      "start_utc": "2026-10-02T20:56:58.464995+00:00",
+      "source_before": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 101,
+      "elapsed_seconds": 5.48782472172752,
+      "source_after": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "dacf1095d15c51106d7788214a2150d6c853a087a0f6efea2fbd81ce61d15187"
+    }
+  },
+  "lint_baseline_comparison": {
+    "lse": {
+      "baseline_count": 232,
+      "candidate_count": 230,
+      "matched_count": 230,
+      "unmatched_candidate_count": 0
+    },
+    "vegetation": {
+      "baseline_count": 1,
+      "candidate_count": 1,
+      "matched_count": 1,
+      "unmatched_candidate_count": 0
+    }
+  },
+  "lint_interpretation": "Clippy exits101 retain inherited diagnostics; no unmatched candidate diagnostics, no suppression or threshold change.",
+  "schema_paths": 294,
+  "payload_bound_bytes": 36852352,
+  "payload_cap_bytes": 67108864,
+  "outcome_debug_bound_bytes": 331670,
+  "event_bound": 1402,
+  "event_cap": 2048,
+  "collection_caps": {
+    "completed": 6,
+    "partial": 6,
+    "factor_snapshots": 2
+  },
+  "scientific_completeness": "FAIL: structural coverage is not scientific acceptance",
+  "physical_invocations": 0,
+  "not_run": [
+    "physical preflight/tests",
+    "W1/W2/W3 result-bearing binary invocations",
+    "actual-witness independent reconstruction",
+    "completed OFE-day/timing/comparator/campaign"
+  ]
+}

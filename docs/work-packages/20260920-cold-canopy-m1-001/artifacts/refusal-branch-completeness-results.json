@@ -1,0 +1,42 @@
+{
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "classification": "c: insufficient evidence/runtime feasibility",
+  "source_sha256": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+  "stage1_sha256": "06a772c6dfd327bfe6c987bceeb038e2df17ae4f818f36938ab50cb4c051b540",
+  "source_archive_sha256": "deae589e016ff71d9ff7ba26688fdf66366a38fb9afca2cc8c92295c3e5deefa",
+  "build_custody_receipt": "refusal-branch-completeness-build-cut02.json",
+  "binary_sha256": "eab5ee238940659b9df3f2998c41576fc467295aa50852b55159f45b1b46735e",
+  "inventory_discovery_approved_sha256": "8e8b9f00cf8a6519f0a1e662a94c71cf406ad479a5ab8d32d7b6af88ebc92ac4",
+  "scientific_completeness_approved": false,
+  "final_qa_available": false,
+  "approved_capture_receipt_exists": false,
+  "slots": {
+    "W1": 0,
+    "W2": 0,
+    "W3": 0
+  },
+  "physical_invocations": 0,
+  "main_rust_adoption": false,
+  "numerical_repair": false,
+  "runtime_targets": {
+    "completed_OFE_day_CPU_us": 500,
+    "completed_OFE_day_wall_us": 550,
+    "regime_CPU_us": [
+      750,
+      1500,
+      2500
+    ],
+    "ten_OFE_century_CPU_s": 182.625,
+    "ten_OFE_century_wall_s": 210,
+    "CPU_us_per_solve_before_other_work": 0.347222
+  },
+  "runtime_evidence": "Native completed-day cost, feasibility and target gap remain unestablished. Failed partial CPU costs 4.920672\u201310.316618ms are not completed-day cost, speedup or redesigned-method lower bound; observer overhead unmeasured.",
+  "open_scientific_classes": [
+    "exact terminal stage/reason/locator relations",
+    "distinct residual/H0/H1 and factor identity/legacy prefixes",
+    "actual radius rejection inequalities",
+    "early stray fields",
+    "atomic branch-specific field statuses"
+  ],
+  "stop": "Core source authoring stopped by20:55UTC; only one semantics-preserving final lint fix followed inside final-check/review reserve. No source/capture approval; no readiness renewal or automatic continuation."
+}

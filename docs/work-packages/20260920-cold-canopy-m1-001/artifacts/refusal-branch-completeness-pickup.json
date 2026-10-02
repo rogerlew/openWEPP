@@ -1,0 +1,23 @@
+{
+  "source_sha256": "2f7395b2ce41eb81f5d8fb6cf11ccb1514c0d4cb5607687bc53deddf5742bd1c",
+  "archive_sha256": "9802b595faf4647965630188a4962e423b29882ff3ab01f00e7849e8840aed21",
+  "regular_members_verified": 765,
+  "exact_links_verified": 7,
+  "all_targets_available": true,
+  "prior_check_members_verified": 195,
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/source",
+  "build_custody_verified": true,
+  "final_source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/source",
+  "final_source_sha256": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+  "final_source_archive": "refusal-branch-completeness-source-cut02.tar.gz",
+  "final_source_receipt": "refusal-branch-completeness-source-cut02.json",
+  "final_build_receipt": "refusal-branch-completeness-build-cut02.json",
+  "final_binary_path": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/frozen-binaries/cut02/openwepp_land_surface_energy-70194d0f8e103327",
+  "final_binary_sha256": "eab5ee238940659b9df3f2998c41576fc467295aa50852b55159f45b1b46735e",
+  "status": "HOLD_NOT_APPROVED_FOR_CAPTURE",
+  "next_action": "Owner direction required for any further source continuation/readiness allowance; preserve inventory and five unresolved scientific classes, plus unavailable QA. No automatic continuation.",
+  "latest_carry_seconds": 478236.069712,
+  "charged_through_utc": "2026-10-02T21:10:00+00:00",
+  "raw_checks_archive": "refusal-branch-completeness-checks.tar.gz",
+  "raw_checks_receipt": "refusal-branch-completeness-checks-archive.json"
+}

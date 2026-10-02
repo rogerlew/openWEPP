@@ -1,6 +1,91 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
 
+## Branch-completeness continuation disposition — HOLD, 2026-10-02
+
+**HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility.**
+The invoked continuation produced an independently accepted terminal inventory and
+partial detached diagnostic fixes, but scientific completeness remains unmet.
+Core source authoring stopped by20:55UTC; one semantics-preserving lint correction
+followed inside the final-check/review reserve. No approved capture receipt was
+sealed. W1/W2/W3 remain**0/0/0**; no physical workflow, actual-witness reconstruction,
+numerical repair, main Rust adoption, campaign, branch switch or push occurred.
+[Results](artifacts/refusal-branch-completeness-results.json).
+
+Runtime remains a prerequisite:500us CPU/550us wall per completed OFE-day;
+regimes750/1500/2500us CPU;10-OFE century182.625s CPU/210s wall. At60s,1440solves share
+0.347222us CPU before other work. Native completed-day cost, feasibility and target
+gap remain unestablished. Failed partial4.920672–10.316618ms CPU is neither completed
+day cost nor speedup/method lower bound. Atomic/RAII/eager-map observer overhead
+remains real and unmeasured; these diagnostic edits establish no work reduction.
+
+Independent correctness approved discovery inventory8e8b9f00…92ac4 against source
+4eece8d5…55665 after replacing coarse matrices with actual-callgraph prerequisite,
+reason, locator and retained-prefix evidence. Defensive/impossible terminals remain
+explicitly classified; physical guards were not removed. The approved inventory,
+holistic proofs and review originals are retained in the
+[284-member raw evidence archive](artifacts/refusal-branch-completeness-checks.tar.gz)
+and its [authenticated receipt](artifacts/refusal-branch-completeness-checks-archive.json).
+Only root canonical schema/type-bound/field-table outputs regenerated for cut02
+are current; nested historical/interim/legacy proof files are not final authority.
+
+The detached stage1 changes repair the held/free lineage (`held` is a subset of raw
+`free`; face IDs select `free && !held`), add default-false terminal filtering,
+strengthen factor identity/legacy-inverse and some early-stray checks, and reproduce
+remaining-radius/gap/tolerance bits. Same-reviewer final
+[correctness review](artifacts/refusal-branch-completeness-correctness.json) verifies
+the held/free fix and static noninterference, but retains five high blockers:
+
+- Exact stage/reason/atomic locator relations remain incomplete.
+- Residual/H0/H1 prefixes and factor identity/legacy associations remain branch-inexact.
+- Radius operands are joined, but actual rejection inequalities are not validated.
+- Early p0 paths still admit later stray evidence.
+- Field statuses still retain coarse phase rules and misclassify several prefixes.
+
+The final lint-only cut was verified by the same correctness reviewer; it does not
+resolve those blockers. The existing `/root/qa` thread could not be resumed: the
+agent tool returned `agent thread limit reached`. Its earlier helper review found
+a missing raw payload-cap check and replacement UTF-8 decoding. The parent fixed
+both, and two no-launch rejection checks plus five isolated parser cases passed;
+required independent fix/final-source verification remains unavailable, with no
+substitute approval claimed. [QA status](artifacts/refusal-branch-completeness-qa.json).
+
+[Ran checks](artifacts/refusal-branch-completeness-checks.json): all four changed
+include files pass rustfmt; final release no-run build passes in91.768147s. Clippy
+still exits101 with230LSE/1vegetation diagnostics, all exact matches to retained
+baseline source/diagnostics (baseline232/1); no unmatched diagnostic, suppression or
+limit change remains. Source was unchanged throughout each final check. Offline
+proofs cover294paths,36,852,352payload bytes below67,108,864; type-derived outcome
+331,670bytes, event bound1402within2048, and6/6/2collection caps. This structural
+coverage is not scientific completeness. No physical test/comparator/timing run was
+performed; actual comparisons cannot be independently reconstructed without capture.
+
+Final durable source is
+`/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/source`,
+identity**63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6**;
+stage1**06a772c6dfd327bfe6c987bceeb038e2df17ae4f818f36938ab50cb4c051b540**.
+[Full cut02 archive](artifacts/refusal-branch-completeness-source-cut02.tar.gz) and
+[receipt](artifacts/refusal-branch-completeness-source-cut02.json) preserve765regular
+files and7exact links, archive SHAdeae589e…eefa. The final binary is retained under
+`frozen-binaries/cut02` in that experiment root, SHAeab5ee238940659b9df3f2998c41576fc467295aa50852b55159f45b1b46735e.
+[Build custody](artifacts/refusal-branch-completeness-build-cut02.json) authenticates
+611pins/60depfiles; it is not approval. Prior trees/binaries and interim cut01 are
+preserved. The [supplementary patch](artifacts/refusal-branch-completeness.patch)
+has the available prior cut02 base2f7395b2…bd1c. The
+[terminal diff](artifacts/refusal-branch-completeness-diff.json) changes only detached
+stage1 and verifies all48unrelated main-worktree paths remain unchanged.
+
+[Accounting](artifacts/refusal-branch-completeness-accounting.json): adopted5400s
+once; ceiling481934.927980s. Carry473736.069712s plus conservative4500s active charge
+through**21:10UTC** (including checks, review, preservation, local commit and return)
+is**478236.069712s**, leaving**3698.858268s**. Exclude only inactive owner-decision
+19:37–19:55UTC; count all active/waits/concurrent wall once. Extend carry if actual
+work runs later. Readiness remains21:05UTC, work cutoff22:01:38.858268UTC and hard
+deadline22:11:38.858268UTC; unused balance does not renew readiness. Scoped
+preservation is local only. [Pickup](artifacts/refusal-branch-completeness-pickup.json)
+records exact source/binary/archive state. Further continuation or allowance needs
+owner direction; none is automatically authored or adopted.
+
 ## HOLD disposition and branch-completeness proposal — 2026-10-02
 
 Owner requests HOLD and continuation-prompt authoring only. **HOLD_NO_COMPLETED_DAY;
@@ -1442,7 +1527,7 @@ C6 BLOCKER /overall INCOMPLETE. No required closure-evidence gap remains.
 Owner explicitly re-invokes `/tmp/openwepp_cold_canopy_m1_control_repair_continuation.md`
 after the concrete UTC-extension request. This is adopted as **owner-directed
 renewal of execution**, not an automatic deadline reset. Use the proposed
-**21:06UTC work cutoff /21:21UTC closing deadline**, retaining cumulative ceiling
+**21:10UTC work cutoff /21:21UTC closing deadline**, retaining cumulative ceiling
 458534.927980s, physical1800s/reference900s, control30s/reference150s/cell60s,
 command180s and the fixed six-controls/three-reference/three-stability/42-cell
 schedule. The owner-adopted physical near-bound subcheck remains part of C6;
@@ -1543,7 +1628,7 @@ No experiment process is running; the old runner remains HALTED and the new
 runner-state file does not exist. All counters and prior failures remain intact.
 
 A concrete UTC-only extension is requested and **PENDING**, not adopted:
-physical work cutoff21:06UTC, closing deadline21:21UTC today, retaining cumulative
+physical work cutoff21:10UTC, closing deadline21:21UTC today, retaining cumulative
 ceiling458534.927980s, aggregate physical1800s, reference900s, command180s,
 control30s/reference150s/cell60s, fixed order and existing replay lineage.
 No new charge allowance, source change or automatic retry is proposed.

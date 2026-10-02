@@ -1,0 +1,114 @@
+{
+  "reviewer": "/root/correctness",
+  "review_kind": "same-reviewer final static source fix verification",
+  "evidence_class": "Static",
+  "candidate": {
+    "source_root": "source",
+    "whole_source_sha256": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+    "stage1_path": "source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+    "stage1_sha256": "06a772c6dfd327bfe6c987bceeb038e2df17ae4f818f36938ab50cb4c051b540",
+    "baseline_stage1_sha256": "4eece8d500edd319086f5f1ec24bd51b9995d1e00d59a9a44ffbe02001955665"
+  },
+  "authority_evidence": {
+    "approved_inventory_sha256": "8e8b9f00cf8a6519f0a1e662a94c71cf406ad479a5ab8d32d7b6af88ebc92ac4",
+    "inventory_approval": "inventory-current-correctness.json",
+    "holistic_inventory_proof": "inventory-correctness-31fd3875be45.json",
+    "partial_review": "source-partial-correctness.json"
+  },
+  "verified_fixes": [
+    {
+      "location": "m1_trust_region_stage1.rs:3280-3296",
+      "status": "PASS",
+      "finding": "Final cut02 removes explicit false match arms for coordinate, value_guard, and sqrt_guard. The wildcard arm returns the same false result, so this lint-only change preserves the selected-path partial-norm predicate and every HOLD finding."
+    },
+    {
+      "location": "m1_trust_region_stage1.rs:2448",
+      "status": "PASS",
+      "finding": "Held is required to be a subset of the raw free mask and face_free_ids is exactly the ordered free-and-not-held subset; p0, optional p1/p2, and exit mask joins remain coherent."
+    },
+    {
+      "location": "m1_trust_region_stage1.rs:2809",
+      "status": "PARTIAL PASS",
+      "finding": "The terminal selector is now default-false and excludes several defensive-only families. It no longer has the prior blacklist/default-accept failure."
+    },
+    {
+      "location": "m1_trust_region_stage1.rs:2493",
+      "status": "PARTIAL PASS",
+      "finding": "Final reduced-radius metadata is bit-joined to the copied operand, and final closeness gap and tolerance are reconstructed with the source operation order."
+    },
+    {
+      "location": "m1_trust_region_stage1.rs:2637",
+      "status": "PARTIAL PASS",
+      "finding": "Positive factor-output snapshots require one canonical factor identity and associate the current legacy inverse with the applicable snapshot; a second pre-inverse failure retains the first snapshot's legacy inverse."
+    },
+    {
+      "location": "m1_trust_region_stage1.rs:2753",
+      "status": "PASS",
+      "finding": "No-p1 now rejects stray p1 norm scalars, and early ActiveFinite handling rejects p0 norm scalars and p0 norm traces."
+    },
+    {
+      "location": "m1_trust_region_stage1.rs:3237",
+      "status": "PASS",
+      "finding": "Selected-path partial norm validation rejects coordinate, value-guard, and sqrt-guard terminals that the approved prerequisite proof classified unreachable."
+    }
+  ],
+  "blocking_findings": [
+    {
+      "id": "C1-terminal-relation",
+      "severity": "high",
+      "location": "m1_trust_region_stage1.rs:2809-2945",
+      "status": "OPEN",
+      "finding": "The default-false selector still does not implement the approved atomic relation. Its shared dot reason set rejects valid SplitterProduct/SplitterOverflow and admits impossible reason/stage pairs, including SplitterProduct/NonfiniteOperand, SplitOutput/UnderflowToZero, TwoSum*/UnderflowToZero, Accumulation/UnderflowToZero, and first ResidualSourceTerm NonfiniteOperand/UnderflowToZero. Generic locator tests reject valid source term-zero/coordinate-none and residual final-add locators, H0 shift locators, and all H1 row-none locators, while omitting exact term bounds and coordinate joins to term-1 or face_free_ids[slot]. Positive second-position arithmetic, factor, update, and box branches also accept scratch_box_feasible=false although their selected path requires true.",
+      "required_fix": "Implement the exact lambda, position, stage, reason, and locator union from the approved 109-row inventory, with trace/free-id joins where the locator depends on the selected face."
+    },
+    {
+      "id": "C2-prefix-factor-lineage",
+      "severity": "high",
+      "location": "m1_trust_region_stage1.rs:1974-2442,2637-2748,2992-3050",
+      "status": "OPEN",
+      "finding": "The prefix matrix still merges residual failures with H0/H1 failures. It requires residual0 or residual1 absent, so actual H0/H1 terminals after the residual copy are rejected. The count-zero application helper now leaves factor_identity unconstrained: None-position p0 terminals can carry a stray identity, while first residual/H0 terminals can omit the identity copied before the residual. Zero-lambda prefixes do not globally reject stray legacy inverse fields, and the zero FactorOutput branch itself does not require legacy inverse absence.",
+      "required_fix": "Split pre-factor p0, first residual, H0, second residual, and H1 prefixes. Require factor identity absence before retrieval and exact presence afterward; require zero-path legacy inverse absence and preserve ordinal-specific positive legacy associations."
+    },
+    {
+      "id": "C3-radius-terminal-predicates",
+      "severity": "high",
+      "location": "m1_trust_region_stage1.rs:1974-2442,2493-2522",
+      "status": "OPEN",
+      "finding": "The new helper proves operand bit identities but not the terminal guard result. FinalReducedRadius does not require p2 free norm greater than the copied remaining radius, and FinalRadiusCloseness does not require gap greater than tolerance. The other retained p0, scratch, final-full, and zero-lambda radius-comparison arms likewise validate copied norms without asserting their source comparison against the applicable original or reduced radius.",
+      "required_fix": "Join every comparison terminal to its actual operands and exact ordered comparison; for selected final closeness require gap > tolerance."
+    },
+    {
+      "id": "C4-early-stray-fields",
+      "severity": "high",
+      "location": "m1_trust_region_stage1.rs:1974-2088,2730-2806",
+      "status": "OPEN",
+      "finding": "Early absence checks remain incomplete. None-position p0 arms do not reject later residual0, h0, delta0, p1/p2, factor identity, or associated later scalar fields. Relaxing applications(0) to count/vector checks fixes the immediate false rejection but permits both missing post-factor identity and stray pre-factor identity.",
+      "required_fix": "Apply branch-specific exact absence/presence predicates at every early copy boundary rather than using one count-zero helper for both pre-factor and post-factor states."
+    },
+    {
+      "id": "C5-field-status-semantics",
+      "severity": "high",
+      "location": "m1_trust_region_stage1.rs:3458-3905",
+      "status": "OPEN",
+      "finding": "Field status is still derived mainly from a coarse stage phase rather than the atomic terminal row. A positive pre-inverse factor refusal labels absent legacy inverse fields missing_instrumentation instead of naturally interrupted; a zero snapshot h absence is not classified inapplicable; a delta copied before FactorOutput validation is labeled contradictory because the shared stage rank precedes delta; and an absent partial-norm aggregate after a completed norm can be labeled missing. The special handling for outer fields, zero legacy H/inverse fields, and final radius operands does not resolve the remaining branch-specific cases.",
+      "required_fix": "Derive each field status from the approved atomic terminal row and its exact reached/absent/partial sets; remove phase inference as the authority."
+    }
+  ],
+  "noninterference": {
+    "static_result": "PASS within reviewed diff",
+    "evidence": "All reviewed terminal-diff changes are cfg(test) capture validation, serialization-status, or observer-proof helpers. No production numerical arithmetic, guard precedence, state update, solver branch, or physical materialization code changed in this cut.",
+    "limit": "The test capture path performs additional predicate, vector, and JSON-status work. No runtime or physical workflow was executed, so no zero-overhead or measured-cost claim is made."
+  },
+  "validation": {
+    "reviewer_ran": "Read-only static source and diff inspection only.",
+    "not_run": [
+      "physical workflow",
+      "capture workflow",
+      "comparator workflow",
+      "tests or builds by this reviewer"
+    ],
+    "independence_limit": "The separate QA reviewer was unavailable; this same-reviewer record does not replace any required independent QA approval."
+  },
+  "disposition": "HOLD",
+  "approval": "No source completeness, science acceptance, capture authorization, package closure, or physical-run approval."
+}

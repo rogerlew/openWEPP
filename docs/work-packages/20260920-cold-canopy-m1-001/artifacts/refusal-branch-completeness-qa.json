@@ -1,0 +1,18 @@
+{
+  "evidence_class": "Static: earlier /root/qa helper review plus explicit unavailable final verification",
+  "disposition": "NOT_APPROVED_MISSING_FINAL_QA",
+  "reviewer": "/root/qa",
+  "final_source_sha256": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+  "original_helper_review": {
+    "initial_decision": "PASS helper readiness only, reopened for payload validation",
+    "helper_initial_sha256": "f5d96ea38b00c98ef960954c36b35a3095e24b4a48b9a1eb54745435e6fe474f",
+    "original_followup_response": "BLOCKER \u2014 helper payload validation\ncapture_once.py caps stdout transport but does not enforce the marker payload\u2019s raw byte length against payload_cap_bytes. A payload between 67,108,864 and 67,174,400 bytes could pass.\nIt also uses replacement UTF-8 decoding before JSON parsing. Validate the sole marker from raw stdout bytes, enforce its raw length, and strictly decode it before parsing. Re-run nonphysical rejection checks after the helper change.",
+    "fix_sha256": "4bf7c0e3785d8120c099fcfd0c5a7df685bd8e7ceecb034e3cce92407fffe378",
+    "fix_verification": "PENDING: followup_task and send_message to existing /root/qa returned agent thread limit reached; no substitute approval claimed"
+  },
+  "route_failure": "Existing /root/qa followup_task/send_message repeatedly returned agent thread limit reached; no replacement approval claimed.",
+  "parent_fix_checks": "helper-preapproval-rejection.json: two no-launch rejections and five isolated raw-output parser cases passed; not independent fix verification or scientific review.",
+  "source_scientific_approval": false,
+  "capture_approval": false,
+  "reuse_limit": "Prior W3 review can be reused only for unchanged claims; it does not cover the new W1/W2 predicates or helper fixes."
+}
