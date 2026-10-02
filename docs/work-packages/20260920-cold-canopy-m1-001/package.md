@@ -1,6 +1,138 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
 
+## HOLD disposition and atomic-terminal continuation proposal — 2026-10-02
+
+Owner requests HOLD and continuation-prompt authoring only. **HOLD_NO_COMPLETED_DAY;
+class(c), insufficient evidence/runtime feasibility** remains at local
+`fcc9c1a5199a50be7888100ec570ebfcdebffab0`. W1/W2/W3 remain **0/0/0**.
+No implementation, build, physical workflow, readiness renewal or extension is
+adopted by this authoring turn. Runtime targets remain 500us CPU/550us wall per
+completed OFE-day; regimes 750/1500/2500us CPU; 10-OFE century 182.625s CPU/210s wall.
+The 1440-solve/day share is 0.347222us CPU before other work. Native completed-day
+cost, feasibility and target gap remain unestablished; failed partial costs and
+unmeasured observer overhead establish neither day cost nor speedup.
+
+The [continuation prompt](artifacts/refusal-branch-completeness-continuation-prompt.md)
+is copied exactly to
+`/tmp/openwepp_cold_canopy_m1_refusal_atomic_terminal_continuation.md`.
+This package remains the sole maintained execution contract. The execution and
+older proposal sections below are historical where superseded here.
+
+Authoring first-work anchor is 23:35UTC (first clock 23:35:13UTC). Prior carry
+478236.069712s already charges execution through 21:10UTC. Exclude only inactive
+owner-decision interval 21:10–23:35UTC. Conservative current charge through
+**23:43UTC**, including review, checks, preservation, commit and return, is 480s:
+latest cumulative **478716.069712s**, leaving **3218.858268s** under the unchanged
+481934.927980s ceiling. Count all active work/waits/concurrent wall once. Extend
+this carry if work runs later; never refund or reset. Future pickup uses this
+newer carry plus later active work, not the prior pickup JSON's old carry.
+
+Both existing independent reviewers passed the proposed wording only:
+`/root/correctness` verified C1–C5, inventory and scientific bounds; `/root/qa`
+verified custody, timing and conditional capture. The QA thread was available for
+this wording review; that does not verify prior helper fixes or final source.
+[Original review responses and authoring accounting](artifacts/refusal-branch-completeness-continuation-review.json)
+are retained. Executor checks passed prompt byte equality, final archive hashes,
+new links, scoped diff whitespace and all 48 unrelated-path hashes. No source,
+science or capture approval is granted by these wording reviews.
+
+### Proposed atomic-terminal execution contract — future invocation only
+
+Future owner invocation adopts only this bounded detached observation continuation,
+conditional original W1/W2/W3 captures and diagnosis-only stop. Preserve all scope,
+authority, acceptance, exact-command, initialization, custody, scientific
+noninterference, checks, independent reconstruction and exclusion requirements in
+the earlier **Proposed execution contract** under **HOLD disposition and
+branch-completeness proposal** below. This section supersedes its pickup, already
+completed inventory-discovery task and future timing; it does not relax acceptance.
+No numerical repair, main Rust adoption, new physical evaluation, poison hook,
+fallback, relaxed guard, campaign, full day, timing sweep or additional slot.
+
+Authenticate the final branch-completeness cut02, not the older input identity
+in `refusal-branch-completeness-pickup.json`'s `source_sha256` field. Use its
+`final_source_*` fields and the source archive/receipt:
+`refusal-branch-completeness-source-cut02.tar.gz`, SHA
+`deae589e016ff71d9ff7ba26688fdf66366a38fb9afca2cc8c92295c3e5deefa`;
+whole source `63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6`;
+stage1 `06a772c6dfd327bfe6c987bceeb038e2df17ae4f818f36938ab50cb4c051b540`.
+Frozen root is
+`/home/roger/openwepp-experiments/cold-canopy-m1-refusal-branch-completeness-20261002/source`.
+Restore one new durable mutable copy after authentication; retain frozen source,
+binary and prior evidence. The final build receipt authenticates 611pins/60depfiles;
+it is not approval. Authenticate the 284-member raw checks archive with its
+receipt. Preserve the existing C6 baseline, fixture, Nix tools, environment and
+isolated-target requirements. New source requires its own exact-source binary.
+
+Reuse the independently approved 109-row discovery inventory
+`8e8b9f00cf8a6519f0a1e662a94c71cf406ad479a5ab8d32d7b6af88ebc92ac4`, retained as
+`inventory-approved-discovery.json` in the experiment root/raw archive, with its
+original source and review bindings. Current `terminal-inventory.json` includes
+final-source binding. Review only affected relationships if observation changes;
+do not restart discovery or treat the old review as approval of new predicates.
+Before editing, recover the exact five findings C1–C5 and required fixes from
+`artifacts/refusal-branch-completeness-correctness.json`:
+
+1. Implement exact lambda/position/stage/reason/atomic locator relations, including
+   valid SplitterOverflow and source/final-add/H0/H1 locators, term bounds and
+   face-free-ID joins. Reject impossible pairs and false second-position scratch
+   feasibility. A default-false switch alone is insufficient.
+2. Separate pre-factor p0, first residual, H0, second residual and H1 prefixes;
+   enforce factor identity at its actual copy boundary, exact per-application
+   lineage and global zero-lambda legacy-inverse absence. Preserve positive
+   ordinal-specific inverse associations; missing-copy equality is not evidence.
+3. Validate the actual comparison at every radius rejection, not only operand
+   bits: include final reduced free norm > remaining radius and closeness
+   gap > tolerance, plus applicable p0/scratch/full/zero comparisons in source order.
+4. Enforce exact early presence/absence sets for all later vectors, identities,
+   traces and scalars. Count-zero applications cannot distinguish pre-factor from
+   post-factor states. Reconcile these rules with item 2 rather than adding exceptions.
+5. Derive every field status from the exact atomic terminal and reached/partial/
+   absent sets. Remove coarse phase inference as authority, including positive
+   pre-inverse, zero H, delta copied before FactorOutput validation, and completed
+   norm without a partial aggregate. Status and acceptance must agree.
+
+Preserve accepted held/free lineage and numerical noninterference. Freeze a coherent
+branch model before implementation; avoid serial coarse-matrix patches. Retain
+all applicable full schema/type/event/collection proofs and source pins; regenerate
+against the final cut. Structural coverage is not scientific completeness.
+Reuse exact unchanged check/review evidence only within its proven scope.
+
+Use one implementer and two independent complementary reviewers under repository
+roles, at most two concurrent children, one writer and no nested spawning. Establish
+review availability early. Reuse existing reviewers for their affected fix scopes.
+The prior QA thread returned `agent thread limit reached`: do not repeatedly retry,
+substitute parent approval, or claim a new reviewer verified that reviewer's fixes.
+If required independent final QA/fix verification remains unavailable, preserve HOLD
+without captures. The parent's raw payload-cap/strict-UTF8 fixes have only isolated
+parser/no-launch checks; independent verification is still required. Review helper
+custody, locked durable reservation, -O rejection, independent stdout/payload caps,
+strict parsing, slot persistence and absolute deadlines before receipt sealing.
+
+Upon this future invocation only, propose **+5400 charged seconds once**, raising
+ceiling 481934.927980s to **487334.927980s**. The prior +5400 was already adopted;
+do not apply it again. This new proposal is neither a refund nor a guarantee.
+Reconcile latest carry plus later active work at first work, including reading;
+R = new ceiling minus carry. If R <=1200s, preserve and return without launch.
+Otherwise hard deadline = start + R; work cutoff = hard deadline minus600s;
+readiness = start + min(4200s, R-1200s). Stop core source authoring 600s before
+readiness and reserve that period for final exact-source checks, both reviews,
+fix verification and a sealed approved receipt. Bound every command/delegate
+command to <=180s and its remaining deadline. A necessary correction reopens
+its affected checks/reviews within the same window. Failed readiness stops
+implementation and captures; remaining balance does not renew readiness.
+Count all active work/waits/concurrent wall once. Further continuation is not automatic.
+
+Only complete independent scientific/noninterference and QA approval plus a sealed
+exact-source receipt can release the unchanged persistent W1/W2/W3 slots. No receipt
+currently exists. Retain fixed order, exact direct-binary test/argv/stdin, original
+fixture/init/60s/support0, 30s each/90s aggregate, durable reservation before launch,
+no retries, raw-output preservation and independent reached-bit reconstruction
+specified below. Stop at diagnosis with reviewed evidence and scoped local commit;
+no push or branch switch. If any criterion is unmet, preserve recoverable source,
+raw checks, reviewer findings, ledger and HOLD without unsupported scientific or
+runtime conclusions.
+
 ## Branch-completeness continuation disposition — HOLD, 2026-10-02
 
 **HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility.**

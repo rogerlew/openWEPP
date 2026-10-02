@@ -1,0 +1,48 @@
+{
+  "evidence_class": "Static independent prompt wording reviews; executor ran artifact/path/hash/diff checks only",
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "authoring_anchor_utc": "2026-10-02T23:35:00Z",
+  "charged_through_utc": "2026-10-02T23:43:00Z",
+  "prior_carry_seconds": 478236.069712,
+  "authoring_charge_seconds": 480,
+  "latest_carry_seconds": 478716.069712,
+  "unchanged_ceiling_seconds": 481934.92798,
+  "remaining_seconds": 3218.858268,
+  "excluded_inactive_owner_decision_interval": [
+    "2026-10-02T21:10:00Z",
+    "2026-10-02T23:35:00Z"
+  ],
+  "proposed_only_extension_seconds": 5400,
+  "proposed_only_ceiling_seconds": 487334.92798,
+  "physical_slots": [
+    0,
+    0,
+    0
+  ],
+  "reviews": [
+    {
+      "reviewer": "/root/correctness",
+      "result": "PASS_WORDING_ONLY",
+      "original_response": "Static prompt wording PASS. Leading package section and thin continuation prompt faithfully preserve final C1\u2013C5, approved 109-row inventory SHA 8e8b9f..., held/free/noninterference gains without treating them as completion, missing independent QA, W1/W2/W3=0/0/0, conditional-capture gate, diagnosis-only stop, and all no-repair/no-new-evaluation/no-expanded-campaign restrictions. Accounting is internally correct: 478236.069712 + 480 = 478716.069712; 481934.927980 - carry = 3218.858268; proposed one-time +5400 gives 487334.927980, expressly unadopted until invocation and not a replay of the prior extension. R/readiness/core-stop/work-cutoff/hard-deadline formulas retain 1200s and 600s reserves and <=180s command bounds. Final cut02/source/archive pins are current. Approval is prompt wording only, not source/capture/science approval."
+    },
+    {
+      "reviewer": "/root/qa",
+      "result": "PASS_WORDING_ONLY",
+      "original_response": "Static prompt review PASS. Leading atomic-terminal proposal clearly remains authoring-only HOLD: slots 0/0/0, no implementation/build/physical run, no sealed receipt, and missing independent final QA explicitly remains a capture blocker with no parent/retry substitute. Custody references resolve: branch cut02 archive exists and hashes `deae589e\u2026`, final source/stage identities and 611-pin/60-depfile build distinction are stated; new source still requires its own binary. Timing is coherent: 478716.069712 carry leaves 3218.858268 under 481934.927980; one future-only +5400 produces 487334.927980 (nominal 8618.858268 before latest-carry reconciliation), without reapplying the prior extension. Prompt mirrors these constraints. No QA blocker; this does not approve implementation or capture."
+    }
+  ],
+  "checks": [
+    "repository/tmp prompt byte equality",
+    "final source and raw checks archive hashes",
+    "new package link existence",
+    "48 unrelated dirty-path hashes unchanged",
+    "scoped diff whitespace"
+  ],
+  "not_run": [
+    "source changes",
+    "Rust build/tests",
+    "physical captures",
+    "timing/comparator campaigns"
+  ],
+  "qa_availability_note": "Existing QA thread resumed for wording review this turn; this does not verify prior helper fixes or final source."
+}
