@@ -1,6 +1,184 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
 
+## HOLD disposition and branch-completeness proposal — 2026-10-02
+
+Owner requests HOLD and continuation-prompt authoring only. **HOLD_NO_COMPLETED_DAY;
+class(c), insufficient evidence/runtime feasibility** remains at local
+`c9bf9784671e2a9ee8f7e43165cf853fba2119c7`. No source edits, builds, physical workflow,
+readiness renewal or extension are adopted by authoring. W1/W2/W3 stay0/0/0.
+The [continuation prompt](artifacts/refusal-completeness-continuation-prompt.md)
+is copied exactly to
+`/tmp/openwepp_cold_canopy_m1_refusal_branch_completeness_continuation.md`.
+
+Runtime targets and missing native cost/feasibility remain as recorded below:
+500us CPU/550us wall per complete OFE-day; regimes750/1500/2500us CPU;
+century182.625s CPU/210s wall. At60s,1440solves share0.347222us CPU before other work.
+Failed partial costs and unmeasured observer overhead establish no work reduction.
+
+Authoring anchors19:30UTC before first clock19:30:51UTC. Prior carry473316.069712s
+includes execution and return through19:18UTC; inactive owner-decision interval
+19:18–19:30UTC is excluded. Charge all current active work/waits/concurrent wall
+once. Conservative authoring charge through**19:37UTC**, including independent
+prompt reviews, verification, local commit and return, is**420s**: cumulative
+**473736.069712s**, remaining**2798.858268s** under unchanged ceiling
+**476534.927980s**. Extend this carry if actual work runs later. Execution accounting
+below remains historical; future pickup uses this newer carry, never its old
+`carry_seconds` field. Selected authoring checks: two independent prompt reviews,
+source/receipt identity references, repository/tmp equality, scoped diff and
+48unrelated-path hashes. No Rust build or physical workflow was run.
+Both same-conversation independent reviewers passed the proposed wording only:
+`/root/correctness` confirmed all five scientific findings and preserved bounds;
+`/root/qa` confirmed custody/timing and conditional approval. Their
+[original responses and authoring accounting](artifacts/refusal-completeness-continuation-review.json)
+are retained. Prompt equality, source/archive identity, new references and all48
+unrelated hashes passed. These reviews approve neither source nor physical capture.
+
+### Proposed execution contract — adopted only by future owner invocation
+
+Resume this package's bounded detached, default-off observation work, followed by
+conditional one-shot W1/W2/W3 and diagnosis-only disposition. Prior diagnosis,
+capture, observation-completion, finalization and completeness continuation
+instructions remain binding; this proposal changes pickup, remaining work and
+future timing only. The previous readiness expired. Unused balance cannot renew
+it; no allowance or physical slot is reset. Preserve numerical science, guards,
+rank/tolerance/cadence/fixtures, physical arithmetic/precision/order/work counts,
+error-carried event identity, handled events, per-face reset, full BVLS05 ledger,
+historical double seed mapping and explicit observer failures. No numerical
+repair, fallback, added physical evaluation, poison hook, dependency, main Rust
+adoption, campaign or timing run. Manual error equality remains code/stage equality;
+diagnostic Debug `..` remains a documented difference.
+
+Authenticate the retained tree
+`/home/roger/openwepp-experiments/cold-canopy-m1-refusal-completeness-20261002/source`
+against final cut02: source2f7395b2ce41eb81f5d8fb6cf11ccb1514c0d4cb5607687bc53deddf5742bd1c,
+archive9802b595faf4647965630188a4962e423b29882ff3ab01f00e7849e8840aed21.
+Use the full source archive/receipt,765regular files and7exact available links;
+restore one new durable mutable copy, never extract through an existing directory
+symlink. Preserve frozen trees/binaries; the patch is supplementary. Retain C6
+baselinee900961e8e7b902f1cc13e01344275769e4241d3f4f1cf4e6b0a399ab03760c3
+and source-root fixtured3616640db3e7c689162fcf5fa0e71c76ecd9b068beb070cacf3157fc97d8362.
+Authenticate the195-member checks archive using its receipt, actual Nix tools,
+environment and isolated targets. Cut02 binary3d341fb… has609pins/60depfiles and a
+92.062384s no-run pass, but no capture approval. New source needs its own exact-source
+binary. Reuse accepted W3 and engineering review only for unchanged claims.
+
+Finish the five final correctness findings as one coherent actual-terminal model:
+
+1. Build a finite inventory from actual reached rejection sites before changing
+   predicates. Enumerate reachable lambda branch, correction position, guard stage,
+   reason, locator fields and scratch-box feasibility, including None-position
+   structural/eligibility failures and every interrupted operation prefix.
+   Reject impossible combinations rather than admitting generic reason/stage arms.
+   Keep this evidence with the source-bound field table; package.md stays the live
+   narrative. Do not replace authority with the inventory.
+2. Replace coarse phase-rank status rules with field-specific actual-branch rules.
+   Each serialized operand, mask, scalar, trace and per-application snapshot member
+   must be reached, interrupted, naturally unavailable or contradictory for that
+   exact terminal. Null or presence alone proves neither absence nor completeness.
+   Require unconditional outer exit/work copies at every entered-face return.
+   Zero-lambda H/inverse/positive-radius fields are naturally inapplicable; a failed
+   full norm cannot require later free/radius operands. Derive statuses and the
+   acceptance predicate from compatible rules, not independent permissive rankings.
+3. Close every early-path stray-evidence hole, including P0 assembly's special
+   return bypassing global roles/application vectors, None-position active failures
+   accepting P0 norm scalars, and first residual/factor/update failures accepting
+   P1 norm scalars. Enforce exact completed/partial role sets and coordinate/order/
+   scalar bit joins for positive and zero lambda, first/second correction, ordinary
+   and Dot2 stages. Positive norm partial labels must correspond to reachable
+   operations with the already validated coordinate lists. Preserve final box
+   before P2 norm ordering and the zero-lambda final-install trace requirements.
+4. Finish canonical factor identity and per-application joins: exact count/ordinal/
+   identity/vector lengths, A/V/sigma identity, residual/H/delta/inverse bits and
+   naturally unavailable prefixes. Legacy inverse must be absent before the first
+   inverse completes, match snapshot1 during an interrupted second inverse, and
+   match snapshot2 once that inverse completes. Never equate missing copies through
+   `None == None` or borrow a later/earlier application's operands without lineage.
+5. Join remaining_radius to the actual reduced-radius comparison operand and
+   available terminal metadata. Independently reproduce radius_gap and
+   radius_tolerance from captured operands in the exact source binary64 operation
+   order and bit-compare reached results. Distinguish failure before gap, after gap
+   but before tolerance, and after tolerance using actual reason/operands. Record
+   any genuinely missing copy only at its existing physical operation site; never
+   compute an unreached physical stage to populate a diagnostic field.
+
+Astra owns complete deliverables and routine correction. Use one implementer,
+two distinct independent reviewers, at most two concurrent children and no nested
+spawning under the governing role routes. Partial worker returns are checkpoints,
+not completion. At repeated failed correction cycles, reassess the unresolved
+branch model and change the concrete approach rather than adding another coarse
+matrix patch. Reuse the same reviewers for fix verification, establish availability
+early, and preserve missing independence as HOLD. Do not spend the entire source
+window on serial lint fixes while scientific completeness stays unresolved.
+
+Regenerate and review every final schema/table/proof against the frozen source.
+294paths and36,852,352payload bytes describe only the prior shape; structural
+coverage is not scientific completeness. Recheck the type-derived331,670byte
+outcome,1402event bound within2048, and6/6/2collection caps when their premises change.
+Pin vegetation/controller/controller-interface sources, all serializer helpers,
+fixture, schema, bound helper and proof artifacts. Use canonical
+`schema-bound-draft.json`, with its schema/helper hashes, and
+`outcome-type-bound-draft.json`; archive `interim-*` and legacy outcome bounds are
+not final evidence. Recover `status_keys.py` and the exact-pin assertions in
+`proof_inputs.py`; extend extraction for any new serializer form. Count every key,
+punctuation, escaped string, scalar, optional and sequence before freezing the
+67,108,864byte payload cap. No truncation, dropped fields or post-result cap change.
+
+Required final checks: direct `rustfmt --check --edition 2024` on every changed
+include file; release `cargo test --no-run -p openwepp-land-surface-energy --features
+m1-trust-region-physical-stage`; release `cargo clippy --no-deps` for LSE `--tests`
+with that feature and vegetation `--lib`, both `-- -D warnings`. Use authenticated
+actual Nix tools/environment and separate writable targets. Baseline232LSE/1veg
+may be reused only with unchanged command/tools/inputs and documented isolated
+target difference; final prior230/1 were all exact source/diagnostic matches.
+Compare source/content/dependency surface, not counts. No suppression/limit increase.
+Preserve default-off noninterference and unmeasured atomic/RAII/eager-map overhead.
+No physical preflight disguised as checks.
+
+Upon future invocation only, propose adding**5400charged seconds once**, raising
+ceiling476534.927980s to**481934.927980s**. This is no refund/reset and does not
+guarantee completion. Reconcile the latest carry including this authoring and any
+later active work, then R=new ceiling minus carry at first work, including reading.
+If R<=1200s, preserve/return without launch. Otherwise hard deadline=start+R, work
+cutoff=hard deadline minus600s, readiness=start+min(4200s,R-1200s). Reserve readiness's
+last600s for exact-source checks, both reviews, fix verification and approved sealed
+receipt. All active work/waits/concurrent wall count once; exclude only documented
+inactive owner-decision intervals. Every command, including delegates, must fit
+its deadline and be bounded to<=180s. Necessary fixes reopen affected checks/reviews
+inside the same readiness window. If readiness fails, stop implementation/captures,
+preserve and return HOLD; unused total balance cannot override it. No continuation
+or further allowance is automatic.
+
+Before any capture require independent scientific completeness/noninterference
+approval and one approved sealed receipt binding final source, binary, tools,
+fixture/init/profile, exact command/stdin, schema/bounds, persistent ledger and
+deadlines. Build custody is not approval. Revalidate changed helper inputs while
+preserving locked durable reservation, separate output limits and fail-closed
+optimized-Python rejection. Direct authenticated binary only; exact test
+`m1_coupled_tests::m1_refusal_capture_support0_ipc` with `--exact --ignored --nocapture
+--test-threads=1`. Zero selected tests, absent/duplicate marker, incomplete output
+or cap excess fails and preserves raw output/slot consumption.
+
+Same persistent slots0/0/0, fixed order: W1 A_cold_ice_day FULL/P0 (reuse original A
+reference); W2 C_freeze_then_melt_day FULL/P2; W3 same C REDUCED/P0. Original init,
+60s,support0; one result-bearing invocation each,30elapsed seconds each/90aggregate,
+reserve before launch, no retry. Preserve earlier/different refusal, timeout,
+incomplete output or unexpected acceptance unchanged. Independent remaining slots
+may proceed only within custody/integrity/time; no later support, full day, sweep,
+extra seed, control/timing campaign or relaxed acceptance.
+
+Independently reconstruct actual reached W1/W2 comparisons from retained bits in
+binary64 order, ordinary/Dot2 distinction, signed violation and units, ULP distance
+and useful exact/high-precision operand arithmetic. No synthetic substitute witness
+or evaluation of unreached stages. Adjudicate actual W3 predicate/caller against
+canonical science. Stop at reviewed diagnosis: demonstrated local correction with
+precise function/contract/test and cost implications; demonstrated method issue
+requiring separately authorized replacement; or insufficient evidence/runtime
+feasibility naming missing facts. Do not implement numerical repair. Reconcile
+terminal diff/checks/reviews, preserve full source/binary/evidence and charged time
+in package.md, and commit scoped preservation locally only. Preserve unrelated
+work and prior commits; no branch change or push.
+
 ## Completeness continuation disposition — HOLD, 2026-10-02
 
 **HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility.**

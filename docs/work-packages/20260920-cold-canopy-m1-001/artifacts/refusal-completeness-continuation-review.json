@@ -1,0 +1,37 @@
+{
+  "evidence_class": "Static: independent continuation-wording reviews; Ran: prompt equality, reference/hash and scoped preservation checks only",
+  "prompt_sha256": "96ed7be6a4c9944f1c59fff197a0b5379abd2d671bef09562ae8c03f88d82716",
+  "reviewed_package_section": "HOLD disposition and branch-completeness proposal \u2014 2026-10-02, including Proposed execution contract",
+  "reviews": [
+    {
+      "reviewer": "/root/correctness",
+      "status": "PASS_PROMPT_ONLY",
+      "verbatim_response": "**PASS \u2014 independent prompt review only.**\n\nThe proposed contract faithfully covers all five remaining blockers:\n\n- actual terminal taxonomy and locator/scratch-box semantics,\n- field-specific branch statuses,\n- early stray evidence and reachable partial-norm labels,\n- factor identity and legacy inverse lineage,\n- exact remaining-radius, gap, and tolerance bit joins.\n\nIt preserves W3, noninterference review, custody, exact-source gates, independent fix verification, slots `0/0/0`, and the prohibition on capture before sealed approval. Timing is consistent: future ceiling `481934.927980s`; current carry `473736.069712s`; current unextended remainder `2798.858268s`.\n\nThis approves the continuation wording only. Current source and physical capture remain unapproved."
+    },
+    {
+      "reviewer": "/root/qa",
+      "status": "PASS_PROMPT_ONLY",
+      "verbatim_response": "**QA pass \u2014 continuation authoring only**\n\nThe leading package section and continuation prompt retain HOLD, 0/0/0 slots, no source/build/physical work, and no capture approval. The +5400-second extension is future-invocation-only.\n\nTiming arithmetic and final cut02 custody references are coherent. Scientific completeness and sealed-receipt requirements remain blocking."
+    }
+  ],
+  "current_disposition": "HOLD_NO_COMPLETED_DAY",
+  "source_work_authorized_now": false,
+  "capture_approved": false,
+  "extension_adopted_now": false,
+  "authoring_anchor_utc": "2026-10-02T19:30:00Z",
+  "prior_carry_seconds": 473316.069712,
+  "inactive_owner_decision_interval": [
+    "2026-10-02T19:18:00Z",
+    "2026-10-02T19:30:00Z"
+  ],
+  "charged_through_utc": "2026-10-02T19:37:00Z",
+  "authoring_charge_seconds": 420,
+  "cumulative_charged_seconds": 473736.069712,
+  "current_ceiling_seconds": 476534.92798,
+  "current_remaining_seconds": 2798.858268,
+  "proposed_future_extension_seconds": 5400,
+  "proposed_future_ceiling_seconds": 481934.92798,
+  "physical_invocations": 0,
+  "repository_tmp_equal": true,
+  "unrelated_path_hashes_verified": 48
+}
