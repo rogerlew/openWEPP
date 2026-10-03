@@ -1,5 +1,115 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## HOLD disposition and cut11 continuation proposal — 2026-10-03
+
+Owner requested HOLD and continuation-prompt authoring only. **HOLD_NO_COMPLETED_DAY,
+class(c)** remains at local `c2b52e141`. C1–C4 have bounded static acceptance; C5,
+full locator/status controls,10new lint findings and final independent QA remain
+unmet. W1/W2/W3 remain0/0/0. This authoring performs no implementation, build,
+physical run, readiness renewal or time extension. Runtime targets and unestablished
+completed-day feasibility remain exactly as recorded in **Terminal HOLD** below.
+
+The [thin continuation prompt](artifacts/refusal-successor-resumption-prompt.md)
+is copied byte-for-byte to `/tmp/openwepp_cold_canopy_m1_refusal_successor_resumption.md`.
+This package is the sole maintained execution contract. The following is a proposal
+until a future owner invocation; wording review never approves source or captures.
+
+Static wording review: `/root/successor_correctness` ACCEPT with no blocking
+fidelity defect; this approves wording only. `/root/successor_qa` reactivation
+returned `agent thread limit reached`; no QA wording approval is claimed and no
+unavailable route was repeatedly retried. [Original response and check record](artifacts/refusal-successor-resumption-review.json)
+retain the limitation. Ran executor checks: prompt byte equality, new links/section
+reference, retained archive hashes,48unrelated path hashes and diff whitespace PASS.
+No source/build/physical workflow ran. The proposal is unexecuted; both independent
+execution review routes remain a prerequisite before future core edits.
+
+### Proposed cut11 continuation — future invocation only
+
+Resume the complete inherited detached observation scope, with these updated
+pickup, pending-work and future timing provisions. All non-superseded requirements
+in **Proposed reviewer succession and resumption**, **Proposed atomic-terminal
+execution contract** and **Proposed execution contract** remain binding. No new
+physics, numerical repair, main Rust adoption, fixture/guard/tolerance changes,
+additional physical evaluation, campaign, full day, timing sweep or new slots.
+Stop at reviewed diagnosis or preserved HOLD and a scoped local commit; no push.
+
+Authenticate cut11 using `artifacts/refusal-successor-final.json` final_source_*
+fields, source/archive receipt,362-member raw archive and582-pin/35-depfile build
+custody. Whole source `d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d`,
+stage1 `85d80b02d121ff788d5cafe4d2f45d6b5411deb1e66a26e81e43e2b29b134e16`,
+frozen binary `e04c3bb9a2009e45a9a9e60ca7ab093280ec3a9d8000befea02c2d1e6c4757ab`.
+Preserve `/home/roger/openwepp-experiments/cold-canopy-m1-refusal-successor-20261003`
+and recover one new durable mutable source copy from the authenticated archive.
+Do not execute the old binary against new source. Preserve the explicit candidate05
+source-recovery gap; cut11 is fully recoverable and is the implementation pickup.
+Reuse the approved109-row inventory and unchanged helper/event/type/collection
+reviews only within their proven scope; regenerate affected final-source proofs.
+
+Before core edits, establish both independent review routes and explicit ownership
+of the original C1–C5 and helper findings, final cut11 response and remaining fixes.
+Prefer live `/root/successor_correctness` and `/root/successor_qa`; the last QA
+reactivation failed with an agent-thread limit. Do not repeatedly retry that error.
+If a historical conversation is unavailable, the inherited explicit succession
+rule permits a fresh independent reviewer in the same pinned role, with ownership
+accepted before implementation. Runtime capacity failures still require a working
+route, never self-review or an extra concurrent child. Missing either route returns
+HOLD before core edits. Retain one implementer, one source writer, at most two
+concurrent children and no nested spawning; serialize phases as needed. Same
+reviewers verify their assigned fixes through final disposition.
+
+Close C5 from actual operation/copy boundaries, not another stage-only table:
+positive first FactorOutput before/after inverse; zero FactorOutput before/after
+delta validation; completed full-radius comparison versus interrupted norm
+arithmetic. Presence may distinguish an explicitly authorized prefix alternative,
+but cannot itself prove an expected field was reached. Acceptance and every field
+status must use the same terminal relation and detect missing/stray evidence.
+Preserve C1–C4 and noninterference; reopen only affected prior acceptance claims.
+
+Complete metadata-only controls for all locator alternatives, especially residual
+term-zero versus interior, H0 matrix versus shift, H1 inner versus final-add,
+nonidentity free IDs, scratch alternatives, and impossible tuples. Assert missing
+required and stray unexpected fields and factor/norm interruption boundaries.
+Keep107refinement rows separate from2WorkCap rows; sampling one locator per row
+is not full coverage. These controls may use inert metadata/traces but no solver,
+physical preflight, poison hooks or extra evaluator calls. Remove all10new Clippy
+findings without lint suppression or weakening checks. Failed current requirements
+remain required, not future campaign deferrals.
+
+Run exact final changed-file edition2024 rustfmt, release physical-stage no-run,
+exact metadata controls, and matched warnings-denied LSE/vegetation Clippy using
+separate targets where necessary to avoid cached dependency-only success. Preserve
+raw output, source before/after, binary, tools/dependency pins and matched inherited
+lint evidence; structural proofs and successful compilation do not establish
+scientific completeness. Complete independent correctness/noninterference and
+QA of the final affected source, helpers, proofs, custody and checks. Preserve
+recoverable source for each result-bearing handback before subsequent edits.
+
+No capture without both final approvals and a sealed exact-source receipt before
+readiness. Keep the original persistent ledger/locked reservation and fixed W1/W2/W3
+order, fixture/init/60s/support0, argv/stdin, one invocation each,30s each/90s total,
+no retries and absolute deadlines. Independently reconstruct reached evidence and
+stop under all inherited integrity/diagnosis conditions. Do not reset slots or
+use a fresh invocation as a new physical allowance.
+
+Future invocation takes a first-work anchor and reconciles latest carry including
+all authoring/later work. Ceiling remains487334.927980s; **no extension**. Let
+R=ceiling minus latest carry. If R<=1200s, preserve and return without launch.
+Otherwise owner invocation adopts one fresh bounded window: hard deadline=start+R;
+work cutoff=hard deadline−600s; readiness=start+min(4200s,R−1200s);
+core authoring stops600s before readiness. That final600s is for exact checks,
+independent reviews, fix verification and sealing, not renewed core implementation.
+Every command/delegate command<=180s and its remaining deadline. Count reading,
+work, waits and concurrent wall once. No renewal, refund or automatic continuation.
+Any unmet acceptance or missed readiness returns preserved HOLD without captures.
+
+Authoring accounting: first-work anchor07:33UTC; prior carry483936.069712s already
+charges through05:48UTC. Exclude only inactive owner-decision interval05:48–07:33.
+Conservative charge through **07:38UTC**, including review/checks/local commit and
+return, is300s: newest cumulative **484236.069712s**, remaining **3098.858268s**.
+Extend if actual work exceeds07:38; no refund. At this carry the proposed future
+window is1898.858268s to readiness,1298.858268s to core stop; these are estimates,
+recomputed from actual latest carry at invocation, not deadlines adopted now.
+
 ## Terminal HOLD — atomic-terminal successor invocation, 2026-10-03
 
 **HOLD_NO_COMPLETED_DAY, class(c)**. C1–C4 pass final independent static review;

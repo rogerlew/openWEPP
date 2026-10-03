@@ -113,5 +113,20 @@
       "source_authoring_stop_utc": "2026-10-02T20:55:00+00:00",
       "last_source_change": "Semantics-preserving one-line lint fix inside final-check/review reserve; no core source/capture continuation."
     }
-  ]
+  ],
+  "authoring_after_terminal_hold": {
+    "request": "HOLD and continuation prompt authoring only",
+    "anchor_utc": "2026-10-03T07:33:00+00:00",
+    "charged_through_utc": "2026-10-03T07:38:00+00:00",
+    "charge_seconds": 300,
+    "prior_cumulative_seconds": 483936.069712,
+    "cumulative_charged_seconds": 484236.069712,
+    "remaining_seconds": 3098.858268,
+    "inactive_owner_decision_interval": [
+      "2026-10-03T05:48:00+00:00",
+      "2026-10-03T07:33:00+00:00"
+    ],
+    "extension_seconds": 0,
+    "note": "Terminal invocation accounting retained above. Latest pickup must include this authoring carry and later active work. No future readiness window adopted by authoring; extend if work exceeds07:38."
+  }
 }
