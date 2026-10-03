@@ -21,9 +21,9 @@ complete proposal below and its **new+5400charged seconds exactly once**. Ceilin
 anchor20:33UTC, R6458.858268s. Only inactive owner interval19:45–20:33 was excluded.
 Adopted core stop21:33UTC, readiness21:43UTC, work cutoff22:10:38.858268UTC,
 hard deadline22:20:38.858268UTC; no older deadline or extension was replayed.
-Conservative charge through **21:28UTC**, including preservation/local commit/return,
-is3300s: cumulative **489576.069712s**, remaining **3158.858268s**. Extend if actual
-work exceeds21:28; no refund. [Original locked ledger](artifacts/refusal-branch-completeness-accounting.json)
+Conservative charge through **21:29UTC**, including preservation/local commit/return,
+is3360s: cumulative **489636.069712s**, remaining **3098.858268s**. Extend if actual
+work exceeds21:29; no refund. [Original locked ledger](artifacts/refusal-branch-completeness-accounting.json)
 retains all prior accounting and unchanged slots. No further allowance is adopted.
 
 Intent declared before edits was the complete detached observation acceptance:

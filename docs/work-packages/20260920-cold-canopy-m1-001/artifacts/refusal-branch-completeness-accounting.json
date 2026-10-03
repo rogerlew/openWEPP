@@ -78,11 +78,11 @@
     }
   },
   "physical_invocations": 0,
-  "charged_through_utc": "2026-10-03T21:28:00+00:00",
-  "current_invocation_charge_seconds": 3300.0,
-  "cumulative_charged_seconds": 489576.069712,
-  "remaining_seconds": 3158.8582679999527,
-  "charge_method": "Conservative continuous wall from20:33 through21:28, including reading, work, waits, concurrent work counted once, preservation/local commit/return. Extend if actual work exceeds bound; no refund.",
+  "charged_through_utc": "2026-10-03T21:29:00+00:00",
+  "current_invocation_charge_seconds": 3360,
+  "cumulative_charged_seconds": 489636.069712,
+  "remaining_seconds": 3098.858268,
+  "charge_method": "Conservative continuous wall from20:33 through21:29, including reading, work, waits, concurrent work counted once, preservation/local commit/return. Extend if actual work exceeds bound; no refund.",
   "disposition": "HOLD_NO_COMPLETED_DAY",
   "capture_approved": false,
   "prior_accounting": {

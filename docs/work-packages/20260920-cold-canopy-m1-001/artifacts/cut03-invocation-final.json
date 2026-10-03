@@ -172,9 +172,9 @@
     "Final-source schema/status/field/type/event/collection proof regeneration",
     "Both final independent approvals and sealed receipt before any original capture"
   ],
-  "charged_through_utc": "2026-10-03T21:28:00+00:00",
-  "current_invocation_charge_seconds": 3300.0,
-  "cumulative_charged_seconds": 489576.069712,
-  "remaining_seconds": 3158.8582679999527,
+  "charged_through_utc": "2026-10-03T21:29:00+00:00",
+  "current_invocation_charge_seconds": 3360,
+  "cumulative_charged_seconds": 489636.069712,
+  "remaining_seconds": 3098.858268,
   "ceiling_seconds": 492734.92798
 }
