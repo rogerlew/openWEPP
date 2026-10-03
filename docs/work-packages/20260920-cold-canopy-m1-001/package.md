@@ -1,5 +1,100 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Owner-directed agent recovery and continuation — 2026-10-03
+
+**HOLD_NO_COMPLETED_DAY, class(c)**. Independent review routes were recovered and
+both reviewed final Cut03; this stop is **failed source/validation acceptance**,
+not missing reviewers. Core edits stopped before15:47:38UTC. W1/W2/W3 remain
+**0/0/0**, no capture approval, no physical invocation and no new binary.
+Targets/cost limits below remain unchanged; completed-day feasibility is unknown.
+
+Final Cut03 source **640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d**,
+stage1 **aacd2276c14593156372862e45349b4eb671ce0996f7574ab76ed31d851b9413**,
+froze15:46:13UTC. Only detached cfg(test) observation/status/control code changed.
+It retains prior application copy joins, adds reason-sensitive FinalFullRadius
+status handling and an inert FactorOutput control. These remain **incomplete and
+unaccepted**: presence-based reach, None==None delta equality, inverse ordinal
+mixing, P0/Scratch completed-norm statuses and parallel terminal models remain.
+The original inventory test still samples locators; descriptor-presence checks
+and helper-boolean tests do not satisfy exhaustive missing/stray status controls.
+No main Rust adoption or numerical repair occurred.
+
+Ran exact unchanged-source checks: edition2024 rustfmt **PASS0.215s**; release
+physical-stage no-run **FAIL101,49.500s**, E0277 at stage1 lines3821/3836 because
+ordinal/copy_ordinal infer as i32 and cannot feed usize::from. **Metadata tests
+BLOCKED; zero tests executed** because no binary exists. LSE warnings-denied
+Clippy **FAIL101,14.370s**, with26exact inherited diagnostics plus those2compiler
+errors in a partial diagnostic inventory; this does not establish new-lint cleanup
+or bounded inherited-lint acceptance. Isolated vegetation Clippy **FAIL101,11.490s**,
+1exact inherited match. No source correction was made after the core cutoff.
+[Final machine record](artifacts/cut11-resumed-final.json) retains exact commands,
+source before/after and raw hashes. No failed requirement is waived.
+
+Ran offline proof regeneration:8/8PASS,294paths,6/6/2collection caps,331670-byte
+outcome and36852352-byte payload below67108864cap. First attempt failed on a
+missing relocated historical schema-authority input; its exact bytes were recovered
+from the authenticated prior raw archive, and the failed receipt is retained.
+These are structural bounds only; schema remains DRAFT_NOT_APPROVED. Both independent
+reviews retain HIGH/HOLD. Correctness preserves C1–C4 and noninterference statically
+but rejects C5/copy/norm/locator/shared-model gaps. QA also verifies the compile and
+validation failures. [Original final responses and ownership](artifacts/cut11-resumed-reviews.json)
+preserve the same correctness owner and explicitly accepted successor QA; no
+parent self-review substitutes for them.
+
+Full [Cut03 source archive](artifacts/cut11-resumed-source-cut03.tar.gz) and
+[receipt](artifacts/cut11-resumed-source-cut03.json) authenticate765regular files
+and7links. Earlier resumed [Cut02 archive](artifacts/cut11-resumed-source-cut02.tar.gz)
+and [receipt](artifacts/cut11-resumed-source-cut02.json) preserve its handback before
+further edits. [Final supplementary diff](artifacts/cut11-resumed-final.patch) is
+against unchanged authenticated cut11. Original cut11 and partial01 stay preserved;
+the historical candidate05 recovery gap remains explicit. [70-member raw archive](artifacts/cut11-resumed-raw-final.tar.gz)
+and [index](artifacts/cut11-resumed-raw-final.json) retain exact current checks and
+proofs, plus clearly distinguished historical helper inputs. [Failed-build input
+pins](artifacts/cut11-resumed-failed-build-inputs.json) authenticate696observed
+inputs and102depfiles with no unresolved paths; this is **not successful build
+custody**, and no old binary may stand in for Cut03. Frozen sources remain durable
+under the recorded experiment root. Final source/archive/diff/JSON/link checks and
+48unrelated-path hashes pass; scoped commit only, no branch change or push.
+
+Conservative charge through **15:55UTC**, including final preservation/local
+commit/return:900s resumed invocation; cumulative **485976.069712s**, remaining
+**1358.858268s** under unchanged487334.927980s ceiling. Extend if actual work exceeds
+15:55; no refund. No automatic readiness renewal or time extension. The remaining
+balance cannot authorize further core work after this stop. Remaining acceptance
+is the typed compilation correction, complete shared terminal relation and C5,
+exhaustive locator/status controls, new-lint cleanup, exact tests/checks and dual
+final approval before any original conditional capture. Stop at preserved HOLD;
+no further execution or successor scope is adopted by this record.
+
+Owner said “cull agents and continue” after local f3667e540. Existing children
+were completed; interruption confirmed no active work, and this runtime exposes
+no delete operation. Former QA was absent from the live list. Fresh independent
+`/root/cut11_qa_resumed` accepted all original/helper/QA finding ownership;
+`/root/cut11_correctness` resumed same-reviewer C1–C5 ownership before core edits.
+This explicit owner continuation adopts the recorded remaining-budget formula;
+it grants no charged-time extension. Prior HOLD remains historical and no current
+source or capture approval follows from restored routes.
+
+Conservative first-work anchor **15:40UTC**; prior carry **485076.069712s**,
+remaining **2258.858268s**, ceiling **487334.927980s**. Exclude inactive owner interval
+07:58–15:40 only. Core stop **15:47:38.858268UTC**, readiness **15:57:38.858268UTC**,
+work cutoff **16:07:38.858268UTC**, hard deadline **16:17:38.858268UTC**.
+Count all work/waits/concurrent wall once. No automatic renewal; commands<=180s
+and remaining deadline. Targets remain500us CPU/550us wall per completed OFE-day,
+regimes750/1500/2500us CPU, century182.625s CPU/210s wall; completed-day feasibility
+and cost gap remain unestablished. Original W1/W2/W3 remain0/0/0.
+
+Intent remains complete inherited detached observation acceptance: replace partial
+C5 presence-based exceptions with shared terminal/copy expectations, exhaustive
+locator/status controls, new-lint cleanup, exact format/release no-run/metadata/
+matched Clippy, affected proofs and independent final review. Use the same durable
+mutable source; partial01 archive preserves prior handback. No physical preflight,
+production science/main Rust changes, numerical repair, new slots or push.
+Working review routes and dual final approval/receipt before readiness remain
+prerequisites. Initial resumed reviewers retain HIGH/HOLD on partial01; no prior
+acceptance is extended to its unvalidated edits. Same implementer remains sole
+source writer; parent owns checks/custody and stops at diagnosis or preserved HOLD.
+
 ## Cut11 continuation invocation — 2026-10-03
 
 **HOLD_NO_COMPLETED_DAY, class(c)**. Both successors initially accepted ownership,

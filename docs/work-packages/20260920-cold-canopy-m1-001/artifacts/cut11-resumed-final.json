@@ -1,0 +1,161 @@
+{
+  "evidence_class": "Ran: exact-source format/no-run/Clippy/proof/custody checks; Static: independent final reviews; no metadata or physical execution",
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "classification": "class(c), insufficient evidence/runtime feasibility",
+  "final_source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/source",
+  "final_source_sha256": "640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d",
+  "final_source_stage1_sha256": "aacd2276c14593156372862e45349b4eb671ce0996f7574ab76ed31d851b9413",
+  "source_archive_sha256": "53d1bf42817f51f62575c47526c11d8c51505b4702dcaed5bd88fbcc161f89ab",
+  "raw_archive_sha256": "f662f79d6ac0adfb973e2bbbfa4df237d19a154d4a8568dc14c132e9dcf883a6",
+  "raw_members": 70,
+  "changed_paths": [
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+  ],
+  "checks": {
+    "format": {
+      "command": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/target-format",
+      "start_utc": "2026-10-03T15:47:33.649399+00:00",
+      "source_before": "640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 0,
+      "elapsed_seconds": 0.2150549218058586,
+      "source_after": "640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "no-run": {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--no-run",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--features",
+        "m1-trust-region-physical-stage"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/target-candidate",
+      "start_utc": "2026-10-03T15:47:31.258077+00:00",
+      "source_before": "640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 101,
+      "elapsed_seconds": 49.49962262855843,
+      "source_after": "640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "144d118a72bb1793104d8d0164e1a37ab76a62a0eb1d14bdffd41be9f51cfcb8"
+    },
+    "lse-clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--tests",
+        "--features",
+        "m1-trust-region-physical-stage",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/target-lint-lse",
+      "start_utc": "2026-10-03T15:46:46.100453+00:00",
+      "source_before": "640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 101,
+      "elapsed_seconds": 14.370297016110271,
+      "source_after": "640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d8b30e8af706c31af200bb2b0462bdb399d4789e4b8b4ffb2a8e165dea34b7a4"
+    },
+    "vegetation-clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-vegetation",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/target-lint-vegetation",
+      "start_utc": "2026-10-03T15:47:32.457475+00:00",
+      "source_before": "640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 101,
+      "elapsed_seconds": 11.490203455090523,
+      "source_after": "640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0eeb8a3f40a00e88a50f623ebb81ad606e8c2edb479a38162def7fb5d3499339"
+    }
+  },
+  "metadata_controls": "BLOCKED by failed compilation; zero tests executed",
+  "binary": null,
+  "proof_generation": "8/8pass after recovery of exact historical input; structural only",
+  "reviews": "Correctness and QA HIGH/HOLD; completed final review routes, no approval",
+  "physical_invocations": 0,
+  "capture_approved": false,
+  "remaining_requirements": [
+    "Compile errors E0277 at ordinal/copy_ordinal conversion",
+    "Shared terminal/copy relation for acceptance and every field status",
+    "C5 missing/stray and ordinal/full-radius boundaries",
+    "Exhaustive107refinement-row locator/status controls separate from2WorkCap rows",
+    "All new-lint cleanup and complete matched lint evidence",
+    "Passing metadata controls",
+    "Dual final approval/sealed receipt before conditional original captures"
+  ],
+  "source_recovery": "Full cut02 and cut03 source archives; original cut11 and partial01 preserved; historical candidate05 gap unchanged",
+  "charged_through_utc": "2026-10-03T15:55:00+00:00",
+  "cumulative_charged_seconds": 485976.069712,
+  "remaining_seconds": 1358.858268,
+  "slots": {
+    "W1": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W2": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W3": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    }
+  },
+  "terminal_preservation_checks": {
+    "unrelated_paths": "48unchanged",
+    "original_cut11_source": "unchanged",
+    "cut03_tree_and_archives": "PASS765regular7links",
+    "failed_build_observed_pins": "PASS696pins102depfiles; no binary",
+    "JSON_and_record_links": "PASS",
+    "scoped_diff_whitespace": "PASS",
+    "staged_before_this_scope": "empty",
+    "main_rust_adoption": false
+  }
+}
