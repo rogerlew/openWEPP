@@ -1,14 +1,14 @@
 {
-  "anchor_utc": "2026-10-03T04:38:00+00:00",
-  "carry_seconds": 479736.069712,
+  "anchor_utc": "2026-10-03T07:44:00+00:00",
+  "carry_seconds": 484236.069712,
   "extension_seconds_adopted_once": 0,
   "ceiling_seconds": 487334.92798,
-  "R_seconds": 7598.858268,
-  "readiness_deadline_utc": "2026-10-03T05:48:00+00:00",
-  "final_check_reserve_start_utc": "2026-10-03T05:38:00+00:00",
-  "hard_deadline_utc": "2026-10-03T06:44:38.858268+00:00",
-  "work_cutoff_utc": "2026-10-03T06:34:38.858268+00:00",
-  "initial_head": "593eaf7fc",
+  "R_seconds": 3098.858268,
+  "readiness_deadline_utc": "2026-10-03T08:15:38.858268+00:00",
+  "final_check_reserve_start_utc": "2026-10-03T08:05:38.858268+00:00",
+  "hard_deadline_utc": "2026-10-03T08:35:38.858268+00:00",
+  "work_cutoff_utc": "2026-10-03T08:25:38.858268+00:00",
+  "initial_head": "3f258ba148e00c66f7829830b2b83b7ce4f5967c",
   "initial_dirty_sha256": {
     "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
     "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082",
@@ -77,15 +77,15 @@
     }
   },
   "physical_invocations": 0,
-  "charged_through_utc": "2026-10-03T05:48:00+00:00",
-  "current_invocation_charge_seconds": 4200,
-  "cumulative_charged_seconds": 483936.069712,
-  "remaining_seconds": 3398.858268,
-  "charge_method": "Conservative charge04:38\u201305:48UTC including reading, edits, commands, waits, concurrent wall once, reviews, archives, checks, localcommit and return. Prior conservative carry retained without refund. Extend if actual work exceeds05:48; no extension/renewal.",
+  "charged_through_utc": "2026-10-03T07:58:00+00:00",
+  "current_invocation_charge_seconds": 840,
+  "cumulative_charged_seconds": 485076.069712,
+  "remaining_seconds": 2258.858268,
+  "charge_method": "Conservative07:44\u201307:58UTC charge including reading, work, waits/concurrent wall once, reviews, preservation, local commit and return; retain prior authoring carry. Extend if actual work exceeds07:58; no refund/extension.",
   "disposition": "HOLD_NO_COMPLETED_DAY",
   "capture_approved": false,
-  "source_authoring_stop_utc": "2026-10-03T05:38:00+00:00",
-  "last_source_change": "Finalcut11 frozen05:37:20UTC before05:38 authoringstop. No further core edits. C5 and requiredvalidation remain unmet.",
+  "source_authoring_stop_utc": "2026-10-03T08:05:38.858268+00:00",
+  "last_source_change": "Partial01 frozen at07:52:11UTC following QA reactivation thread-limit failure; no further source edits.",
   "prior_accounting": [
     {
       "anchor_utc": "2026-10-02T19:55:00+00:00",
@@ -112,21 +112,47 @@
       "capture_approved": false,
       "source_authoring_stop_utc": "2026-10-02T20:55:00+00:00",
       "last_source_change": "Semantics-preserving one-line lint fix inside final-check/review reserve; no core source/capture continuation."
+    },
+    {
+      "anchor_utc": "2026-10-03T04:38:00+00:00",
+      "carry_seconds": 479736.069712,
+      "extension_seconds_adopted_once": 0,
+      "ceiling_seconds": 487334.92798,
+      "R_seconds": 7598.858268,
+      "readiness_deadline_utc": "2026-10-03T05:48:00+00:00",
+      "final_check_reserve_start_utc": "2026-10-03T05:38:00+00:00",
+      "hard_deadline_utc": "2026-10-03T06:44:38.858268+00:00",
+      "work_cutoff_utc": "2026-10-03T06:34:38.858268+00:00",
+      "initial_head": "593eaf7fc",
+      "physical_invocations": 0,
+      "charged_through_utc": "2026-10-03T05:48:00+00:00",
+      "current_invocation_charge_seconds": 4200,
+      "cumulative_charged_seconds": 483936.069712,
+      "remaining_seconds": 3398.858268,
+      "charge_method": "Conservative charge04:38\u201305:48UTC including reading, edits, commands, waits, concurrent wall once, reviews, archives, checks, localcommit and return. Prior conservative carry retained without refund. Extend if actual work exceeds05:48; no extension/renewal.",
+      "disposition": "HOLD_NO_COMPLETED_DAY",
+      "capture_approved": false,
+      "source_authoring_stop_utc": "2026-10-03T05:38:00+00:00",
+      "last_source_change": "Finalcut11 frozen05:37:20UTC before05:38 authoringstop. No further core edits. C5 and requiredvalidation remain unmet.",
+      "authoring_after_terminal_hold": {
+        "request": "HOLD and continuation prompt authoring only",
+        "anchor_utc": "2026-10-03T07:33:00+00:00",
+        "charged_through_utc": "2026-10-03T07:38:00+00:00",
+        "charge_seconds": 300,
+        "prior_cumulative_seconds": 483936.069712,
+        "cumulative_charged_seconds": 484236.069712,
+        "remaining_seconds": 3098.858268,
+        "inactive_owner_decision_interval": [
+          "2026-10-03T05:48:00+00:00",
+          "2026-10-03T07:33:00+00:00"
+        ],
+        "extension_seconds": 0,
+        "note": "Terminal invocation accounting retained above. Latest pickup must include this authoring carry and later active work. No future readiness window adopted by authoring; extend if work exceeds07:38."
+      }
     }
   ],
-  "authoring_after_terminal_hold": {
-    "request": "HOLD and continuation prompt authoring only",
-    "anchor_utc": "2026-10-03T07:33:00+00:00",
-    "charged_through_utc": "2026-10-03T07:38:00+00:00",
-    "charge_seconds": 300,
-    "prior_cumulative_seconds": 483936.069712,
-    "cumulative_charged_seconds": 484236.069712,
-    "remaining_seconds": 3098.858268,
-    "inactive_owner_decision_interval": [
-      "2026-10-03T05:48:00+00:00",
-      "2026-10-03T07:33:00+00:00"
-    ],
-    "extension_seconds": 0,
-    "note": "Terminal invocation accounting retained above. Latest pickup must include this authoring carry and later active work. No future readiness window adopted by authoring; extend if work exceeds07:38."
-  }
+  "inactive_owner_decision_interval": [
+    "2026-10-03T07:38:00+00:00",
+    "2026-10-03T07:44:00+00:00"
+  ]
 }

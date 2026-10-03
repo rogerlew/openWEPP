@@ -1,5 +1,92 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Cut11 continuation invocation — 2026-10-03
+
+**HOLD_NO_COMPLETED_DAY, class(c)**. Both successors initially accepted ownership,
+but the first QA reactivation returned `agent thread limit reached`. No retry or
+substitute approval was attempted. This invokes the adopted missing-final-QA stop;
+source edits stopped immediately. W1/W2/W3 remain **0/0/0**, no capture approved.
+C5 and full controls remain incomplete; no fix is accepted on the partial source.
+
+Static: initial correctness review retains C1–C4/noninterference only for unchanged
+cut11 scope and identifies shared-relation/per-member status gaps. Initial QA
+confirms sampled locators, omitted scratch negatives, missing/stray status-control
+gaps and10new lint findings. [Review responses and tool failure](artifacts/cut11-continuation-reviews.json)
+retain successor identities/ownership and the implementer's stopped handback.
+Final partial-source correctness and QA were **NOT COMPLETED**.
+
+Only detached `m1_trust_region_stage1.rs` changed. Partial01 adds copy-presence-based
+FactorOutput status handling, adjusts FinalFullRadius norm classification and adds
+an inventory-presence control. These are **unvalidated partial edits**, not a
+completed shared terminal relation or exhaustive metadata/status controls. C5,
+full locator/status acceptance and new-lint cleanup remain required. No main Rust
+adoption, numerical repair, branch change or push occurred.
+
+Ran preservation checks authenticate the full partial01 archive (765regular files,
+7links) against the new durable tree and reconcile the exact one-file source diff.
+Whole source **7ffa5b8a3c63509a39c79d4a2dd5cbc71426765f2ca1d1add43798ee7bea0113**;
+stage1 **f7cf32d47d6bc8df04db27136f89c1886330c3447cfd527a50145e8d9b2b9d85**.
+[Full source archive](artifacts/cut11-continuation-source-partial01.tar.gz),
+[source receipt](artifacts/cut11-continuation-source-partial01.json),
+[supplementary diff against preserved cut11](artifacts/cut11-continuation-partial01.patch)
+and [terminal check record](artifacts/cut11-continuation-terminal-checks.json)
+retain exact recovery. Original cut11 source, binary and582-pin build custody remain
+unchanged and reauthenticated. No partial01 binary exists; never use cut11's binary
+as evidence for partial01. Candidate05's earlier recovery gap remains unchanged.
+
+The [helper-input archive](artifacts/cut11-continuation-helper-inputs.tar.gz) and
+[53-member receipt](artifacts/cut11-continuation-helper-inputs.json) preserve relocated
+helpers/inputs. Copied historical JSON statuses are **not new executed evidence**.
+New baseline authentication rechecks e900 source,414external pins,7raw logs and5Nix
+tools with identical environment except isolated targets. Helper reactivation
+failed before review; no final helpers/proofs/checks/custody approval is claimed.
+Exact rustfmt, release no-run, metadata controls, LSE/vegetation Clippy, final proof
+regeneration and physical workflows were **NOT RUN** after the stop. Implementer
+reported cargo absent from its ambient PATH; authenticated Nix tools are retained,
+so this is not a claimed missing-tool blocker or failed build. No check was waived.
+
+Conservative charge through **07:58UTC**, including preservation/local commit/return:
+840s this invocation; cumulative **485076.069712s**, remaining **2258.858268s** under
+unchanged487334.927980s ceiling. Extend if actual work exceeds07:58; no refund.
+The original locked ledger preserves all prior accounting and unconsumed slots.
+Remaining budget does not override this stop or renew readiness. Further execution
+needs owner direction and working independent final-review routes; no continuation
+or additional allowance is adopted. Scoped preservation is local only.
+
+Owner invoked `/tmp/openwepp_cold_canopy_m1_refusal_successor_resumption.md`;
+the cut11 proposal below is adopted for this invocation. HOLD_NO_COMPLETED_DAY,
+class(c), remains pending acceptance. Targets remain 500us CPU/550us wall per
+completed OFE-day; regimes750/1500/2500us CPU; century182.625s CPU/210s wall.
+Completed-day cost, feasibility and gap remain unestablished. W1/W2/W3 stay0/0/0.
+
+Conservative first-work anchor **07:44:00UTC**, prior authoring carry
+**484236.069712s**, ceiling **487334.927980s**, R **3098.858268s**.
+Exclude only inactive owner-decision interval07:38–07:44. No extension or refund.
+Core stop **08:05:38.858268UTC**, readiness **08:15:38.858268UTC**,
+work cutoff **08:25:38.858268UTC**, hard deadline **08:35:38.858268UTC**.
+Count all work, waits and concurrent wall once; commands<=180s and remaining deadline.
+
+Intent before edits: authenticate final cut11 source/raw/build custody, restore
+one durable mutable copy, close C5 operation/copy-boundary statuses, complete all
+metadata locator/status controls, remove10new lint findings, regenerate affected
+proofs and run exact edition2024 rustfmt, release physical-stage no-run, metadata
+controls and matched warnings-denied LSE/vegetation Clippy. Independent correctness
+and QA own final fixes, noninterference, helpers and custody. Preserve inherited
+acceptance and exclusions; no physical preflight or main Rust edits. Only both
+final approvals and sealed receipt before readiness can release original captures.
+Stop at diagnosis or preserved HOLD and scoped local commit, no push.
+
+Fresh successor routes `/root/cut11_correctness` and `/root/cut11_qa` are assigned
+original C1–C5 and helper/QA ownership respectively; historical conversations are
+not available in this fresh session. Both successors explicitly accepted ownership before core edits.
+`/root/cut11_implementer` is the sole source writer in
+`/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/source`.
+[Ran pickup authentication](artifacts/cut11-continuation-pickup.json) verifies
+772source entries,362raw members,582build pins/548resolutions and the frozen binary;
+new source recovery matches cut11 exactly. Existing frozen evidence is unchanged.
+Selected validation is detached diagnostic-only; no production impact is intended.
+Final diff and independent noninterference review must confirm that classification.
+
 ## HOLD disposition and cut11 continuation proposal — 2026-10-03
 
 Owner requested HOLD and continuation-prompt authoring only. **HOLD_NO_COMPLETED_DAY,

@@ -1,0 +1,25 @@
+{
+  "evidence_class": "Ran: terminal diff and full archive member authentication; Static: unvalidated partial observation change",
+  "changed_source_paths": [
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+  ],
+  "source_sha256": "7ffa5b8a3c63509a39c79d4a2dd5cbc71426765f2ca1d1add43798ee7bea0113",
+  "stage1_sha256": "f7cf32d47d6bc8df04db27136f89c1886330c3447cfd527a50145e8d9b2b9d85",
+  "archive_sha256": "998c45d8985ba0605fe32cd3f266d4455bd48029b6dec894e8fa85fbed642482",
+  "verified_regular_members": 765,
+  "verified_links": 7,
+  "format": "NOT RUN",
+  "build": "NOT RUN",
+  "metadata_controls": "NOT RUN",
+  "clippy": "NOT RUN",
+  "independent_final_review": "NOT COMPLETED; QA reactivation tool failure",
+  "physical_invocations": 0,
+  "capture_approved": false,
+  "unrelated_paths_unchanged": 48,
+  "original_cut11_source_unchanged": true,
+  "original_build_custody_rechecked": "582pins35depfiles PASS",
+  "record_links": "PASS",
+  "json_parse": "PASS",
+  "scoped_diff_whitespace": "PASS",
+  "staged_before_this_scope": "empty"
+}

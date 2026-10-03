@@ -1,0 +1,124 @@
+--- /home/roger/openwepp-experiments/cold-canopy-m1-refusal-successor-20261003/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs	2026-10-02 22:37:12.928783279 -0700
++++ /home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs	2026-10-03 00:52:11.367362026 -0700
+@@ -3755,2 +3755,7 @@
+-    let reaches = terminal
+-        .is_some_and(|metadata| refinement_capture_terminal_reaches_field(trace, metadata, name));
++    let reaches = terminal.is_some_and(|metadata| {
++        if metadata.guard_stage == Stage::FactorApplicationOutput {
++            refinement_capture_factor_output_field_reached(trace, metadata, name)
++        } else {
++            refinement_capture_terminal_reaches_field(trace, metadata, name)
++        }
++    });
+@@ -3797,0 +3803,54 @@
++/// Factor-output terminals share a guard-stage name but have different copy
++/// boundaries.  The trace itself records each completed copy, so status must
++/// use that operation evidence instead of treating the entire stage as one
++/// boundary.
++#[cfg(test)]
++fn refinement_capture_factor_output_field_reached(
++    trace: &RefinementObservationTrace,
++    metadata: &super::M1TrustRegionRefinementFailureMetadata,
++    name: &str,
++) -> bool {
++    use super::M1TrustRegionCorrectionPosition as Position;
++    let ordinal = match metadata.correction_position {
++        Some(Position::First) => 1,
++        Some(Position::Second) => 2,
++        None => return refinement_capture_terminal_reaches_field(trace, metadata, name),
++    };
++    let snapshot = trace
++        .factor_application_snapshots
++        .get(usize::from(ordinal - 1));
++    let inverse_copy = snapshot.is_some_and(|entry| {
++        entry.inverse_t_bits.is_some()
++            && entry.inverse_denominator_bits.is_some()
++            && entry.inverse_z_bits.is_some()
++            && refinement_capture_legacy_inverse_matches(trace, entry)
++    });
++    let delta_copy = snapshot.is_some_and(|entry| {
++        let delta = if ordinal == 1 {
++            trace.delta0.as_ref()
++        } else {
++            trace.delta1.as_ref()
++        };
++        entry.delta_bits
++            == delta.map(|values| values.iter().map(|value| value.to_bits()).collect())
++    });
++    match name {
++        "inverse_t_bits" | "inverse_denominator_bits" | "inverse_z_bits" => inverse_copy,
++        "factor_application_snapshot_1_inverse_t_bits"
++        | "factor_application_snapshot_1_inverse_denominator_bits"
++        | "factor_application_snapshot_1_inverse_z_bits" => ordinal == 1 && inverse_copy,
++        "factor_application_snapshot_2_inverse_t_bits"
++        | "factor_application_snapshot_2_inverse_denominator_bits"
++        | "factor_application_snapshot_2_inverse_z_bits" => ordinal == 2 && inverse_copy,
++        "delta0_bits" => ordinal == 1 && delta_copy,
++        "delta1_bits" => ordinal == 2 && delta_copy,
++        "factor_application_snapshot_1_delta_bits" => ordinal == 1 && delta_copy,
++        "factor_application_snapshot_2_delta_bits" => ordinal == 2 && delta_copy,
++        "factor_application_snapshot_1_h_bits" => ordinal >= 1
++            && snapshot.is_some_and(|entry| entry.h_bits.is_some()),
++        "factor_application_snapshot_2_h_bits" => ordinal >= 2
++            && snapshot.is_some_and(|entry| entry.h_bits.is_some()),
++        _ => refinement_capture_terminal_reaches_field(trace, metadata, name),
++    }
++}
++
+@@ -4052,0 +4112 @@
++                | Stage::FinalFullRadius
+@@ -4064 +4123,0 @@
+-                | Stage::FinalFullRadius
+@@ -4278,0 +4338,52 @@
++}
++
++/// Keep every approved locator alternative explicit in the detached inventory.
++/// This is a metadata-only guard: it neither drives nor invokes the evaluator.
++#[cfg(test)]
++#[test]
++fn m1_refinement_inventory_locator_alternatives_control() {
++    let inventory: serde_json::Value = serde_json::from_str(include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../../inventory-approved-discovery.json"
++    )))
++    .expect("approved inventory is valid JSON");
++    let entries = inventory["entries"]
++        .as_array()
++        .expect("approved inventory entries array");
++    let mut residual_term_zero = false;
++    let mut residual_interior = false;
++    let mut h0_matrix = false;
++    let mut h0_shift = false;
++    let mut h1_inner = false;
++    let mut h1_final_add = false;
++    let mut nonidentity_free_id = false;
++    let mut scratch_false = false;
++    let mut scratch_true = false;
++    for entry in entries.iter().filter(|entry| entry["stage"] != "not-applicable") {
++        let locator = &entry["locator"];
++        let alternatives = locator["variants"]
++            .as_array()
++            .or_else(|| locator["term_coordinate"].as_array());
++        for alternative in alternatives.into_iter().flatten() {
++            let operation = alternative["operation"].as_str();
++            h0_matrix |= operation == Some("matrix");
++            h0_shift |= operation == Some("shift");
++            let term = alternative["term"].as_u64();
++            residual_term_zero |= term == Some(0);
++            residual_interior |= term.is_some_and(|value| value > 0);
++            let coordinate = alternative["coordinate"].as_str();
++            nonidentity_free_id |= coordinate.is_some_and(|value| value.contains("free_ids"));
++        }
++        let term = locator["term"].as_str();
++        h1_inner |= term.is_some_and(|value| value.contains("inner"));
++        h1_final_add |= term.is_some_and(|value| value.contains("final-add"));
++        if let Some(values) = locator["scratch_box_feasible"].as_array() {
++            scratch_false |= values.iter().any(|value| value == false);
++            scratch_true |= values.iter().any(|value| value == true);
++        }
++    }
++    assert!(residual_term_zero && residual_interior);
++    assert!(h0_matrix && h0_shift);
++    assert!(h1_inner && h1_final_add);
++    assert!(nonidentity_free_id);
++    assert!(scratch_false && scratch_true);

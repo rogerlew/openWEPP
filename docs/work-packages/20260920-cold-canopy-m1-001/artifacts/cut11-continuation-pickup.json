@@ -1,0 +1,14 @@
+{
+  "evidence_class": "Ran: pickup source/raw/build authentication, not capture approval",
+  "utc": "2026-10-03T07:48:51.539555+00:00",
+  "source_sha256": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d",
+  "stage1_sha256": "85d80b02d121ff788d5cafe4d2f45d6b5411deb1e66a26e81e43e2b29b134e16",
+  "source_entries": 772,
+  "raw_members": 362,
+  "build_pins": 582,
+  "build_resolutions": 548,
+  "depfiles_recorded": 35,
+  "binary_sha256": "e04c3bb9a2009e45a9a9e60ca7ab093280ec3a9d8000befea02c2d1e6c4757ab",
+  "recovered_root": "/home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/source",
+  "physical_invocations": 0
+}
