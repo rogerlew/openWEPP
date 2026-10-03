@@ -1,0 +1,51 @@
+{
+  "evidence_class": "Static independent wording reviews; executor ran prompt/path/hash/diff checks only",
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "authoring_anchor_utc": "2026-10-03T04:35:00Z",
+  "charged_through_utc": "2026-10-03T04:42:00Z",
+  "prior_carry_seconds": 479316.069712,
+  "authoring_charge_seconds": 420,
+  "latest_carry_seconds": 479736.069712,
+  "unchanged_ceiling_seconds": 487334.92798,
+  "remaining_seconds": 7598.858268,
+  "excluded_inactive_owner_decision_interval": [
+    "2026-10-03T00:55:00Z",
+    "2026-10-03T04:35:00Z"
+  ],
+  "additional_extension_proposed_seconds": 0,
+  "slots": [
+    0,
+    0,
+    0
+  ],
+  "reviews": [
+    {
+      "reviewer": "/root/continuation_wording_correctness",
+      "role": "fresh independent correctness wording reviewer, not original source reviewer",
+      "result": "PASS_WORDING_ONLY",
+      "original_response": "Static: **PASS \u2014 no wording blockers.**\n\nThe proposal and thin prompt:\n\n- Preserve HOLD and all open C1\u2013C5 findings.\n- Assign future successor reviewers explicit, independent ownership without treating them as original reviewers or waiving findings.\n- Reuse the approved 109-row inventory only within its proven scope.\n- Preserve science/noninterference boundaries and exact-source verification.\n- Keep W1/W2/W3 conditional on both approvals and a sealed receipt.\n- Stop at reviewed diagnosis or preserved HOLD, with no numerical repair or expanded physical work.\n\nResidual risk: source correctness, helper QA, captures, and runtime feasibility remain unverified and explicitly open. No tests or workflows were run for this static wording review."
+    },
+    {
+      "reviewer": "/root/continuation_wording_qa",
+      "role": "fresh independent QA wording reviewer, not original source reviewer",
+      "result": "PASS_WORDING_ONLY",
+      "original_response": "Static wording review: **PASS**.\n\nThe new proposal preserves HOLD and missing independent QA as a capture blocker; pins custody to final cut02 and `final_source_*`; makes successor reviewers fresh, independent owners of prior findings/fixes; and keeps capture conditional on both approvals plus a sealed exact-source receipt. It sets no new extension beyond **487334.927980s**, forbids reapplying +5400s, and creates readiness only on future owner invocation.\n\nThe prior **479316.069712s** carry through 00:55 and the 04:35Z authoring anchor are stated correctly. The final authoring carry and this wording-review result remain intentionally pending recording below the proposal. The thin prompt is identical to its `/tmp` copy.",
+      "final_accounting_response": "Static wording review: **PASS**.\n\nThe added accounting is internally consistent: 04:35\u219204:42 is 420s; 479316.069712s + 420s = 479736.069712s; the unchanged 487334.927980s ceiling leaves 7598.858268s. It preserves no-refund/no-current-window language and requires future-first-work recalculation from this carry plus later active work."
+    }
+  ],
+  "checks": [
+    "repository/tmp prompt byte equality",
+    "two retained archive hashes",
+    "new package links",
+    "48 unrelated-path hashes unchanged",
+    "scoped diff whitespace"
+  ],
+  "not_run": [
+    "Rust/source changes",
+    "Rust build or tests",
+    "physical captures",
+    "actual-witness reconstruction",
+    "timing/comparator/campaign"
+  ],
+  "approval_limit": "Wording only; successor source/fix verification is proposed for future owner invocation and has not occurred"
+}

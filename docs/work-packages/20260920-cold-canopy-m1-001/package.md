@@ -1,5 +1,117 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## HOLD disposition and reviewer-succession continuation proposal — 2026-10-03
+
+Owner requests HOLD and continuation-prompt authoring only. **HOLD_NO_COMPLETED_DAY;
+class(c), insufficient evidence/runtime feasibility** remains at local `d792234f1`.
+C1–C5 remain open; W1/W2/W3 remain **0/0/0**. This authoring adopts no source work,
+build, physical invocation, review substitution, readiness renewal or extension.
+Runtime targets remain 500us CPU/550us wall per completed OFE-day, regimes
+750/1500/2500us CPU, and 10-OFE century 182.625s CPU/210s wall; the 1440-solve/day
+share is 0.347222us CPU. Native completed-day cost, feasibility and target gap
+remain unestablished. Custody success is not scientific or runtime acceptance.
+
+The [thin continuation prompt](artifacts/refusal-atomic-terminal-resumption-prompt.md)
+is copied exactly to `/tmp/openwepp_cold_canopy_m1_refusal_atomic_terminal_resumption.md`.
+This package remains the sole maintained contract. This proposal changes only
+reviewer succession, current pickup/accounting and future readiness. All remaining
+scope and acceptance in **Proposed atomic-terminal execution contract** and its
+inherited **Proposed execution contract** remain binding. Neither their older
+extension proposals nor their expired deadlines are replayed.
+
+### Proposed reviewer succession and resumption — future invocation only
+
+Upon future owner invocation, resume the complete detached observation objective:
+close C1–C5, perform final exact-source checks and independent reviews, conditionally
+use the original W1/W2/W3 slots, independently reconstruct actual reached evidence,
+and stop at reviewed diagnosis or preserved HOLD. No numerical repair, main Rust
+adoption, guard/tolerance/fixture change, added physical evaluation, fallback,
+new physical slot, full day, campaign or timing sweep. Preserve one durable mutable
+source copy, frozen sources/binaries, actual-operation order and noninterference.
+
+The last invocation verified source/archive/build custody but stopped because both
+prior reviewer paths were absent in this session. Future invocation explicitly
+adopts **reviewer succession for unavailable prior conversations**: try an existing
+reviewer only if a live matching conversation is available; do not repeatedly retry
+an absent path. Otherwise assign two distinct fresh independent reviewers using
+repository correctness and QA roles. The specific risk is interrupted ownership of
+C1–C5 and helper fixes, not a generic extra verifier wave. Identify them as successor
+reviewers; never claim they are the original conversations or that prior wording
+approval accepted source. Neither may have authored or materially designed the
+implementation/helper under review. One implementer, at most two concurrent
+children, one source writer and no nested spawning remain binding.
+
+Before core implementation, establish both review routes and have each successor
+accept explicit ownership of the original findings in their scope, original
+responses, reviewed source identity, primary source/evidence and pending fixes.
+Correctness owns C1–C5, exact atomic branch model, affected inventory relationships,
+held/free lineage and scientific noninterference. QA owns helper payload-cap and
+strict-UTF8 fixes, custody/locked reservation, optimized-Python rejection, separate
+stdout/payload caps, parsing, durable slots, absolute deadlines, schema/type/event/
+collection proofs and exact-source check receipts. Each independently verifies the
+actual fixes and final affected source; successors keep ownership through this
+invocation's correction loop. Unchanged accepted evidence may be reused only within
+its proven scope. The original approved 109-row discovery inventory is reused,
+not rediscovered; structural coverage and build success never prove completeness.
+If either independent role cannot be established or any required final verification
+fails/is missing, preserve HOLD without captures. Parent approval cannot substitute.
+This future-only succession rule supersedes the earlier demand for the unavailable
+original conversations; it does not waive any finding or acceptance requirement.
+
+Pickup is `d792234f1` plus this authoring record. Use final cut02 source
+`63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6`, stage1
+`06a772c6dfd327bfe6c987bceeb038e2df17ae4f818f36938ab50cb4c051b540`, source archive
+`deae589e016ff71d9ff7ba26688fdf66366a38fb9afca2cc8c92295c3e5deefa` and approved
+inventory `8e8b9f00cf8a6519f0a1e662a94c71cf406ad479a5ab8d32d7b6af88ebc92ac4`.
+Authenticate the recorded durable frozen root, raw archive and build custody using
+`refusal-atomic-terminal-pickup-hold.json` and its underlying receipts. Older pickup
+`source_sha256` is the input cut; use `final_source_*` for the final cut. Preserve
+C6 baseline, fixture, Nix tools/environment and isolated target requirements. A
+changed source needs its own exact-source binary, final proofs and affected review.
+
+**No additional charged-time extension is proposed.** Ceiling stays
+**487334.927980s**; the last +5400s was already adopted. At future first work,
+including reading, reconcile the newest authoring carry plus later active work;
+R = ceiling minus carry. If R <=1200s, preserve and return without launch. Otherwise
+future invocation explicitly adopts one fresh bounded readiness window:
+hard deadline = start + R; work cutoff = hard deadline minus600s;
+readiness = start + min(4200s, R-1200s); core authoring stops600s before readiness.
+The final600s readiness reserve is for exact-source checks, both independent reviews,
+fix verification and sealed approval. All commands/delegate commands are bounded
+to <=180s and their remaining deadline. Corrections reopen affected checks/reviews
+inside that same window. Failure does not renew readiness. Count active work,
+waits and concurrent wall once; no refund, slot reset or automatic continuation.
+
+No approved capture receipt exists. Only complete independent scientific/
+noninterference and QA approval plus a sealed exact-source receipt may release
+captures. Preserve fixed W1/W2/W3 order, exact direct-binary test/argv/stdin, original
+fixture/init/60s/support0, one invocation each,30s each/90s aggregate, durable
+reservation before launch, no retries and raw output. Retain independent reached-bit
+reconstruction and all conditional capture/integrity stops from the inherited
+contract. End at diagnosis and scoped local commit; no push or branch switch.
+
+Authoring uses conservative first-work anchor **2026-10-03T04:35:00Z** (first clock
+04:36:14Z). Prior carry **479316.069712s** includes work charged through00:55Z;
+exclude only inactive owner-decision interval00:55–04:35Z. Charge all active work,
+waits and concurrent wall once. No execution approval follows from authoring or its wording reviews.
+
+Authoring charge through **04:42Z**, including wording review, checks, preservation,
+local commit and return, is conservatively **420s**: newest cumulative
+**479736.069712s**, leaving **7598.858268s** under unchanged **487334.927980s**.
+Extend this carry if actual work runs later; no refunds. Future execution uses this
+carry plus later active work, not the older pickup JSON's carry. The nominal
+remaining balance permits the proposed4200s readiness window with required reserves;
+actual deadlines must be derived at future first work. No window is adopted now.
+
+Both fresh independent wording reviewers passed: `/root/continuation_wording_correctness`
+verified C1–C5/scope preservation; `/root/continuation_wording_qa` verified custody,
+succession, conditional capture and timing. [Original responses and accounting](artifacts/refusal-atomic-terminal-resumption-review.json)
+are retained. These are wording reviews only, not original-reviewer fix verification
+or implementation/capture approval. Executor checks passed prompt byte equality,
+retained archive hashes, new links, scoped diff whitespace and48unrelated-path hashes.
+No Rust build, physical workflow or numerical change was performed. Authoring is
+preserved by scoped local commit only; no push or branch switch.
+
 ## Atomic-terminal invocation — preserved HOLD, 2026-10-03
 
 **HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility.**
