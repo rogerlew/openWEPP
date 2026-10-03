@@ -1,5 +1,99 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Cut03 continuation disposition — HOLD, 2026-10-03
+
+**HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
+Final correctness rejects C5/full controls; final QA reactivation failed with
+`agent thread limit reached`. No identical retry or parent substitution occurred.
+This invokes the adopted failed-acceptance/missing-final-independence stop before
+readiness. Source edits and captures stopped; **W1/W2/W3 remain0/0/0**. No physical
+preflight, witness capture, numerical repair, main Rust adoption, branch switch or
+push occurred. Unused balance does not renew this stopped invocation.
+
+Targets remain **500us CPU/550us wall per completed OFE-day**, regimes750/1500/2500us
+CPU, century182.625s CPU/210s wall. Completed-day cost, feasibility and target gap
+remain unestablished. Observation changes and compile times establish no physical
+speedup or deployability.
+
+Owner invoked `/tmp/openwepp_cold_canopy_m1_cut03_resumption.md`, adopting the
+complete proposal below and its **new+5400charged seconds exactly once**. Ceiling
+**492734.927980s**, prior authoring carry486276.069712s, conservative first-work
+anchor20:33UTC, R6458.858268s. Only inactive owner interval19:45–20:33 was excluded.
+Adopted core stop21:33UTC, readiness21:43UTC, work cutoff22:10:38.858268UTC,
+hard deadline22:20:38.858268UTC; no older deadline or extension was replayed.
+Conservative charge through **21:28UTC**, including preservation/local commit/return,
+is3300s: cumulative **489576.069712s**, remaining **3158.858268s**. Extend if actual
+work exceeds21:28; no refund. [Original locked ledger](artifacts/refusal-branch-completeness-accounting.json)
+retains all prior accounting and unchanged slots. No further allowance is adopted.
+
+Intent declared before edits was the complete detached observation acceptance:
+typed compile correction, one shared terminal/copy relation, all C5 fixes,
+exhaustive metadata-only locator/status controls, introduced-lint cleanup, exact
+checks/proofs/custody and complementary independent review; conditional original
+captures only after both final approvals/sealing. Physics/arithmetic order,
+fixtures/guards/tolerances/cadence and production activation were excluded.
+The final diff remains one detached stage1 file; selected validation was bounded
+nonphysical diagnostics, with independent noninterference review. No applicable
+requirement is waived or retrospectively deferred by this HOLD.
+
+[Ran pickup authentication](artifacts/cut03-invocation-pickup.json) verified Cut03's
+772source entries, source/raw archives and70raw members before recovering one new
+mutable copy. Baseline e900,414external pins,7raw logs and5actual Nix tools were
+reauthenticated with identical environment except required isolated targets.
+Original Cut03/cut11/partial/Cut02 custody and the candidate05 historical recovery
+gap remain preserved; original Cut03's failed-build pins were never treated as
+successful build custody.49unrelated dirty/untracked paths remain unchanged.
+
+Fresh independent successors `/root/cut03_correctness` and `/root/cut03_qa` accepted
+original/final Cut03 findings and same-reviewer fix ownership before core edits,
+in repository correctness and QA pinned roles. `/root/cut03_implementer` initially
+owned the sole source writer. After repeated incomplete returns on helper extraction
+with no reported runtime blocker, it was interrupted, not deleted; sole writer
+ownership transferred to `/root/cut03_finish` in the same pinned role. There was
+only one active implementer/writer, at most two concurrent children and no nested
+spawning. Review ownership/deadlines stayed unchanged. Named tool roles supply the
+requested routing; no separate model telemetry is claimed.
+
+The final26 cut restores typed compilation and adds observed per-ordinal copy
+boundaries, generic legacy-inverse lineage handling, mixed norm-prefix status
+handling, broader numeric locator controls and selected public-status regressions.
+These are **partial accepted fixes, not completed C5 acceptance**. The final
+[correctness response](artifacts/cut03-invocation-final-correctness.txt) rejects the
+remaining parallel acceptance/status models and the107-row control's failure to
+verify reached/absent/partial roles, full terminal acceptance and the complete
+public status map. Zero-lambda ordinal2/norm/impossible-tuple controls remain
+incomplete. C1–C4 and static production noninterference retain acceptance.
+[Review record](artifacts/cut03-invocation-reviews.json) preserves original findings,
+same-reviewer checks, helper reviews and the exact final-QA tool failure. Earlier
+QA helper acceptance is not final source QA or capture approval.
+
+Ran exact **final26** edition2024 rustfmt PASS and release physical-stage no-run
+PASS (**137.335s**). Matched warnings-denied LSE tests Clippy FAIL:240diagnostics,
+230exact inherited matches and **10introduced diagnostics**. Vegetation lib Clippy
+FAIL with its1exact inherited diagnostic. Raw failures remain preserved; counts
+alone are not lint acceptance. Final metadata execution and final proof regeneration
+were **NOT RUN after the missing-QA stop**. Checkpoint22 had5metadata controls PASS
+and1factor-control FAIL; its later bit-fixture correction compiled in final26 but
+was not retested. Checkpoint06's8/8 structural proofs are interim evidence only,
+not final-source completeness. No test or proof PASS is transferred across changed
+source. [Final results](artifacts/cut03-invocation-final.json) bind exact commands,
+source-before/after, tools, outcomes and remaining requirements.
+
+Final source **2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9**,
+stage1 **990cffea5771a54f749691b106d75a4e442c0280550853124d3bdbfe9ef7eba6**,
+preserved in the [full source archive](artifacts/cut03-invocation-final-source.tar.gz)
+and [772-entry receipt](artifacts/cut03-invocation-final-source.json); the
+[one-file diff](artifacts/cut03-invocation-final.patch) is supplementary. Frozen root
+`/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/source`
+and the separate mutable copy remain durable. New exact binary
+**95d6e9e790bb8f07ddcf6d47f1d617054943e83b3c7ec07379d9288f5d14df36**
+is preserved in that frozen root's sibling target-candidate; [build custody](artifacts/cut03-invocation-final-build-inputs.json)
+authenticates560pins/35depfiles. This binary is not approved for physical execution.
+[302-member raw archive](artifacts/cut03-invocation-raw-final.tar.gz) and
+[receipt](artifacts/cut03-invocation-raw-final.json) retain interim full-source cuts,
+failures, helpers, check logs and original review responses. Scoped preservation
+is committed locally only; no publication or successful scientific diagnosis is claimed.
+
 ## HOLD disposition and Cut03 continuation proposal — 2026-10-03
 
 Owner requests HOLD and continuation-prompt authoring only. **HOLD_NO_COMPLETED_DAY,

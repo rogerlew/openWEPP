@@ -1,0 +1,39 @@
+Static: final independent correctness review of immutable final26. No Rust build, test, lint, solver, evaluator, capture helper, poison hook, fixture, or physical workflow was run by this reviewer.
+
+Reviewed identity and scope
+
+- Frozen source: /home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/source
+- Source receipt: frozen/cut03-implementer-20261003-factor-bit-fixture-v26-source.json
+- Receipt whole-source SHA-256: 2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9
+- Stage1 SHA-256: 990cffea5771a54f749691b106d75a4e442c0280550853124d3bdbfe9ef7eba6
+- Source archive SHA-256, independently matched to its receipt: 90e2adad40bc67041d9376cad0626cd5c02b8f1a81fa780e78aa6504f2753caf
+- Exact diff against authenticated original Cut03 changes only crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs: 823 insertions, 193 deletions. The changes are confined to `cfg(test)` observation/capture/control definitions or `cfg(test)` statements at existing operation sites.
+
+Findings
+
+HIGH — The invoked package's required single C5 terminal/copy authority remains absent. `RefinementCaptureTerminalCopyRelation` still contains only `expected_application_count` and `factor_output_ordinal` (crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4231-4274). Acceptance independently reconstructs stage/reason/norm/copy behavior in `refinement_capture_terminal_prefix_complete` and its terminal matrix (lines 2000-2468 and 3254-3337). Public status independently reconstructs it again in `refinement_capture_factor_output_field_reached`, `refinement_capture_terminal_reaches_field`, and `refinement_capture_norm_trace_reached` (lines 3857-4230). This is substantial duplicated contract logic with silent-divergence risk, not the required shared per-field terminal/copy descriptor used by acceptance, expected application count, and every field status. The historical second-ordinal generic-inverse disagreement was one realized example of that risk; repairing that branch does not satisfy the architectural acceptance requirement.
+
+HIGH — The claimed exhaustive inventory/status acceptance control is still only exhaustive for locator selection. `m1_refinement_atomic_terminal_inventory_schema_control` checks that `reached`, `absent`, and `partial_roles` exist and have container shape (lines 4281-4308), but no code consumes their members. Its generated row/term/coordinate/scratch variants call only `refinement_capture_selected_terminal_kind` (lines 4318-4462). It never constructs the expected trace for each of the 107 refinement rows, calls `refinement_capture_terminal_complete`, or compares the full public `field_status` map to `reached`/`absent`/`partial_roles`. The FactorOutput control similarly calls the private factor prefix and selected status keys (lines 4807-5019), not full terminal acceptance and every public status on the same trace. Missing-required, stray-unexpected, and acceptance/status agreement therefore remain unproved over the approved inventory.
+
+MEDIUM — Boundary controls remain incomplete even after v23-v26. The new public mixed-norm test (lines 5021-5101) correctly covers one positive first-position `ScratchFullRadius`/`NonfiniteOperand` trace with a completed P0 prefix and partial P1 norm, including missing-collection statuses. It does not cover completed comparison reasons, P0, reduced Scratch, Final full/reduced, zero-lambda ordered norms, or the scalar norm status members. The FactorOutput control still exercises zero-lambda before/after delta only at ordinal 1, leaving zero-lambda ordinal 2 and prior/current delta association without direct acceptance/public-status coverage. Invalid tuple checks remain selected examples rather than the required exhaustive numeric/null/range/cross-product complement.
+
+HIGH — Required final independent closure is unavailable. Parent reports that the final QA follow-up failed with `agent thread limit reached`; no retry or substitution is authorized. Earlier QA helper reviews explicitly were not final source approval. Thus final QA source/noninterference/control/proof/custody approval is not completed, independently requiring HOLD under the invoked package.
+
+Verified final26 corrections and retained acceptance
+
+- The synthetic FactorOutput fixture now stores actual `f64::to_bits()` values for H0/H1, so its private factor-prefix assertions no longer fail solely because integer literals were used as raw bit patterns (lines 4830 and 4904).
+- The second-positive-application generic inverse behavior remains coherent: `BeforeInverse` associates generic legacy inverse fields with completed ordinal 1, while `AfterInverse` associates them with ordinal 2. The operation-site marker distinguishes pre-copy, post-inverse, and post-delta boundaries without using optional-field presence to create the boundary.
+- The None/None delta defect, prior/current ordinal H/inverse/delta association defects, and the specific completed-plus-partial Scratch norm status defect found in earlier checkpoints are corrected in the reviewed source.
+- Inventory valid-domain construction covers the encoded row/term/coordinate ranges, H0 slot-to-free-ID association, H1 free-ID alternatives, and scratch alternatives. The selected dependent-locator negatives are valid but do not close the exhaustive-status or exhaustive-impossible-tuple requirements above.
+- C1-C4 remain accepted within their previously reviewed static scope. The final diff introduces no production arithmetic, clamp/guard precedence, unit conversion, solver-flow, fixture, cadence, tolerance, or production serialization change. Static production noninterference therefore passes for this source diff. C5 remains open.
+- QA's bounded helper preparation found the draft schema/field-condition/protocol changes structurally reasonable, but those reviews expressly supplied no final source or capture authority.
+
+Residual risk and missing evidence
+
+- Parent-owned final26 no-run, metadata controls, warnings-denied LSE/vegetation lint, regenerated schema/status/field/type/event/collection proofs, and final binary custody were still running or pending when the source was rejected. Earlier-checkpoint results do not bind final26. Later successful compilation or lint cannot cure the two source/control findings above.
+- The source-only receipt authenticates final26 and its archive but expressly leaves external symlink targets and the resulting binary to separate input/build pins. No final sealed exact-source/binary/capture receipt was available or approved.
+- W1/W2/W3 remain unauthorized. This review supplies no capture readiness or physical-run approval.
+
+Disposition
+
+REJECT / HOLD_NO_COMPLETED_DAY. No correctness approval for final26. The unified C5 descriptor, inventory-driven full acceptance/public-status proof, remaining boundary/impossible-tuple controls, and required final independent QA closure are unmet. Under the owner-explicit failed-acceptance stop, do not launch metadata capture or W1/W2/W3.

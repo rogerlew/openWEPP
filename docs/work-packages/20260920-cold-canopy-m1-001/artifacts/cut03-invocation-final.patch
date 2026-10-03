@@ -1,0 +1,1074 @@
+--- /home/roger/openwepp-experiments/cold-canopy-m1-cut11-continuation-20261003/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs	2026-10-03 08:46:13.848753984 -0700
++++ /home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs	2026-10-03 14:15:20.579944849 -0700
+@@ -1382,0 +1383,4 @@
++    // This is an operation-site marker, not a deduction from optional copied
++    // fields.  It makes a missing copy distinguishable from a terminal that
++    // occurred before that copy.
++    factor_output_copy_boundary: Option<(u8, RefinementFactorOutputCopyBoundary)>,
+@@ -1414,0 +1419,8 @@
++#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
++enum RefinementFactorOutputCopyBoundary {
++    BeforeInverse,
++    AfterInverse,
++    AfterDelta,
++}
++
++#[cfg(test)]
+@@ -1731,0 +1744,15 @@
++    put!(
++        "factor_output_copy_boundary",
++        trace
++            .factor_output_copy_boundary
++            .map(|(ordinal, boundary)| {
++                serde_json::json!({
++                    "ordinal": ordinal,
++                    "boundary": match boundary {
++                        RefinementFactorOutputCopyBoundary::BeforeInverse => "before_inverse",
++                        RefinementFactorOutputCopyBoundary::AfterInverse => "after_inverse",
++                        RefinementFactorOutputCopyBoundary::AfterDelta => "after_delta",
++                    },
++                })
++            })
++    );
+@@ -2087 +2114 @@
+-                    && refinement_capture_factor_output_prefix($trace, 1, $positive_lambda)
++                    && refinement_capture_factor_output_prefix($trace, $metadata, 1, $positive_lambda)
+@@ -2248 +2275 @@
+-                    && refinement_capture_factor_output_prefix($trace, 2, $positive_lambda)
++                    && refinement_capture_factor_output_prefix($trace, $metadata, 2, $positive_lambda)
+@@ -2643,0 +2671 @@
++    metadata: &super::M1TrustRegionRefinementFailureMetadata,
+@@ -2646,0 +2675,3 @@
++    if refinement_capture_terminal_copy_relation(metadata).factor_output_ordinal != Some(ordinal) {
++        return false;
++    }
+@@ -2663,2 +2693,0 @@
+-        // Selected zero-lambda FactorOutput always entered lambda_step and has
+-        // its ordinal-one snapshot; a count-zero terminal is not complete.
+@@ -2684,0 +2714,4 @@
++    let boundary = match trace.factor_output_copy_boundary {
++        Some((marked_ordinal, boundary)) if marked_ordinal == ordinal => boundary,
++        _ => return false,
++    };
+@@ -2702 +2735,2 @@
+-                    snapshot.inverse_denominator_bits.is_none()
++                    boundary == RefinementFactorOutputCopyBoundary::BeforeInverse
++                        && snapshot.inverse_denominator_bits.is_none()
+@@ -2717 +2751,2 @@
+-                    snapshot.inverse_denominator_bits.is_some()
++                    boundary == RefinementFactorOutputCopyBoundary::AfterInverse
++                        && snapshot.inverse_denominator_bits.is_some()
+@@ -2722 +2756,0 @@
+-                    // Positive FactorOutput never follows a delta copy.
+@@ -2730 +2764,10 @@
+-                && snapshot.delta_bits == delta.map(|values| bits(values))
++                && match delta {
++                    Some(values) => {
++                        boundary == RefinementFactorOutputCopyBoundary::AfterDelta
++                            && snapshot.delta_bits == Some(bits(values))
++                    }
++                    None => {
++                        boundary == RefinementFactorOutputCopyBoundary::BeforeInverse
++                            && snapshot.delta_bits.is_none()
++                    }
++                }
+@@ -2995 +3037,0 @@
+-        Stage::ResidualSourceTerm => false,
+@@ -3251 +3293,5 @@
+-    let applications = |count| refinement_capture_applications_complete(trace, count);
++    let relation = refinement_capture_terminal_copy_relation(metadata);
++    let applications = |count| {
++        count == relation.expected_application_count
++            && refinement_capture_applications_complete(trace, relation.expected_application_count)
++    };
+@@ -3731,6 +3777 @@
+-        return match (expected, present) {
+-            (true, true) => "captured",
+-            (true, false) => "missing_instrumentation",
+-            (false, true) => "contradictory_stray_presence",
+-            (false, false) => "naturally_unreached",
+-        };
++        return refinement_capture_expected_field_status(expected, present);
+@@ -3754,0 +3796,6 @@
++    if name == "factor_output_copy_boundary" {
++        let expected = terminal.is_some_and(|metadata| {
++            refinement_capture_terminal_copy_relation(metadata).expected_application_count > 0
++        });
++        return refinement_capture_expected_field_status(expected, present);
++    }
+@@ -3762,3 +3808,0 @@
+-    let snapshot_prefix_reached = name.starts_with("factor_application_snapshot_")
+-        && (name.contains("_1_") && !trace.factor_application_snapshots.is_empty()
+-            || name.contains("_2_") && trace.factor_application_snapshots.len() >= 2);
+@@ -3771,18 +3815 @@
+-    } else if !present
+-        && snapshot_prefix_reached
+-        && !name.ends_with("_h_bits")
+-        && terminal.is_some_and(|metadata| {
+-            metadata.guard_stage
+-                == super::M1TrustRegionRefinementGuardStage::FactorApplicationOutput
+-        })
+-    {
+-        // The ordinal snapshot was copied but this member's physical substep
+-        // did not complete (for example a pre-inverse FactorOutput terminal).
+-        "interrupted"
+-    } else if !present
+-        && name.starts_with("inverse_")
+-        && terminal.is_some_and(|metadata| {
+-            metadata.guard_stage
+-                == super::M1TrustRegionRefinementGuardStage::FactorApplicationOutput
+-        })
+-    {
++    } else if refinement_capture_factor_field_interrupted(terminal, reaches, name) {
+@@ -3802,0 +3830,32 @@
++#[cfg(test)]
++fn refinement_capture_expected_field_status(expected: bool, present: bool) -> &'static str {
++    match (expected, present) {
++        (true, true) => "captured",
++        (true, false) => "missing_instrumentation",
++        (false, true) => "contradictory_stray_presence",
++        (false, false) => "naturally_unreached",
++    }
++}
++
++#[cfg(test)]
++fn refinement_capture_factor_field_interrupted(
++    terminal: Option<&super::M1TrustRegionRefinementFailureMetadata>,
++    reaches: bool,
++    name: &str,
++) -> bool {
++    use super::M1TrustRegionRefinementGuardStage as Stage;
++    terminal.is_some_and(|metadata| {
++        metadata.guard_stage == Stage::FactorApplicationOutput
++            && !reaches
++            && (matches!(
++                name,
++                "inverse_t_bits"
++                    | "inverse_denominator_bits"
++                    | "inverse_z_bits"
++                    | "delta0_bits"
++                    | "delta1_bits"
++            ) || name.starts_with("factor_application_snapshot_")
++                && (name.contains("_inverse_") || name.ends_with("_delta_bits")))
++    })
++}
++
+@@ -3813,5 +3872,3 @@
+-    use super::M1TrustRegionCorrectionPosition as Position;
+-    let ordinal = match metadata.correction_position {
+-        Some(Position::First) => 1,
+-        Some(Position::Second) => 2,
+-        None => return refinement_capture_terminal_reaches_field(trace, metadata, name),
++    let relation = refinement_capture_terminal_copy_relation(metadata);
++    let Some(ordinal) = relation.factor_output_ordinal else {
++        return refinement_capture_terminal_reaches_field(trace, metadata, name);
+@@ -3819,22 +3876,3 @@
+-    let snapshot = trace
+-        .factor_application_snapshots
+-        .get(usize::from(ordinal - 1));
+-    let inverse_copy = trace.factor_application_snapshots.iter().any(|entry| {
+-        entry.inverse_t_bits.is_some()
+-            && entry.inverse_denominator_bits.is_some()
+-            && entry.inverse_z_bits.is_some()
+-            && refinement_capture_legacy_inverse_matches(trace, entry)
+-    });
+-    let delta_copy = |copy_ordinal| {
+-        let delta = if copy_ordinal == 1 {
+-            trace.delta0.as_ref()
+-        } else {
+-            trace.delta1.as_ref()
+-        };
+-        trace
+-            .factor_application_snapshots
+-            .get(usize::from(copy_ordinal - 1))
+-            .is_some_and(|entry| {
+-                entry.delta_bits
+-                    == delta.map(|values| values.iter().map(|value| value.to_bits()).collect())
+-            })
++    let marked_boundary = match trace.factor_output_copy_boundary {
++        Some((marked_ordinal, boundary)) if marked_ordinal == ordinal => boundary,
++        _ => return false,
+@@ -3841,0 +3880,34 @@
++    let generic_inverse = matches!(
++        name,
++        "inverse_t_bits" | "inverse_denominator_bits" | "inverse_z_bits"
++    );
++    // The legacy inverse fields are overwritten only by the current inverse
++    // copy.  At a second application BeforeInverse terminal they therefore
++    // still represent the completed first application.
++    let target = if generic_inverse
++        && ordinal > 1
++        && marked_boundary == RefinementFactorOutputCopyBoundary::BeforeInverse
++    {
++        ordinal - 1
++    } else if name.contains("snapshot_1_") || name == "delta0_bits" {
++        1
++    } else if name.contains("snapshot_2_") || name == "delta1_bits" {
++        2
++    } else {
++        ordinal
++    };
++    if target > ordinal {
++        return false;
++    }
++    // Earlier applications are complete before a later one can start.  The
++    // current application's operation-site marker is recorded independently
++    // of its optional field copies, so an omitted required field remains a
++    // missing-instrumentation status rather than changing reachability.
++    let boundary = if target < ordinal {
++        RefinementFactorOutputCopyBoundary::AfterDelta
++    } else {
++        marked_boundary
++    };
++    let inverse_copy =
++        metadata.lambda > 0.0 && boundary >= RefinementFactorOutputCopyBoundary::AfterInverse;
++    let delta_copy = boundary >= RefinementFactorOutputCopyBoundary::AfterDelta;
+@@ -3846 +3918 @@
+-        | "factor_application_snapshot_1_inverse_z_bits" => ordinal == 1 && inverse_copy,
++        | "factor_application_snapshot_1_inverse_z_bits" => target == 1 && inverse_copy,
+@@ -3849,8 +3921,5 @@
+-        | "factor_application_snapshot_2_inverse_z_bits" => ordinal == 2 && inverse_copy,
+-        "delta0_bits" | "factor_application_snapshot_1_delta_bits" => delta_copy(1),
+-        "delta1_bits" | "factor_application_snapshot_2_delta_bits" => delta_copy(2),
+-        "factor_application_snapshot_1_h_bits" => {
+-            ordinal >= 1 && snapshot.is_some_and(|entry| entry.h_bits.is_some())
+-        }
+-        "factor_application_snapshot_2_h_bits" => {
+-            ordinal >= 2 && snapshot.is_some_and(|entry| entry.h_bits.is_some())
++        | "factor_application_snapshot_2_inverse_z_bits" => target == 2 && inverse_copy,
++        "delta0_bits" | "factor_application_snapshot_1_delta_bits" => target == 1 && delta_copy,
++        "delta1_bits" | "factor_application_snapshot_2_delta_bits" => target == 2 && delta_copy,
++        "factor_application_snapshot_1_h_bits" | "factor_application_snapshot_2_h_bits" => {
++            metadata.lambda > 0.0
+@@ -3875,0 +3945 @@
++    let relation = refinement_capture_terminal_copy_relation(metadata);
+@@ -3877 +3947 @@
+-    let expected_applications = refinement_capture_expected_application_count(metadata);
++    let expected_applications = relation.expected_application_count;
+@@ -3908,0 +3979 @@
++        "factor_output_copy_boundary" => expected_applications > 0,
+@@ -4112,25 +4183,2 @@
+-        "ordered_norm_traces" => {
+-            matches!(
+-                stage,
+-                Stage::P0ReducedRadius
+-                    | Stage::ScratchReducedRadius
+-                    | Stage::FinalReducedRadius
+-                    | Stage::FinalRadiusCloseness
+-                    | Stage::FinalInstallEquality
+-                    | Stage::RadiusComparison
+-            ) || stage == Stage::FinalFullRadius
+-                && metadata.reason == super::M1TrustRegionRefinementReason::FinalRadius
+-        }
+-        "partial_ordered_norms" => {
+-            matches!(
+-                stage,
+-                Stage::P0FullRadius
+-                    | Stage::P0ReducedRadius
+-                    | Stage::ScratchFullRadius
+-                    | Stage::ScratchReducedRadius
+-                    | Stage::FinalFullRadius
+-                    | Stage::FinalReducedRadius
+-                    | Stage::OrderedNorm
+-            ) && !(stage == Stage::FinalFullRadius
+-                && metadata.reason == super::M1TrustRegionRefinementReason::FinalRadius)
+-        }
++        "ordered_norm_traces" => refinement_capture_norm_trace_reached(metadata, false),
++        "partial_ordered_norms" => refinement_capture_norm_trace_reached(metadata, true),
+@@ -4142 +4190,54 @@
+-fn refinement_capture_expected_application_count(
++fn refinement_capture_norm_trace_reached(
++    metadata: &super::M1TrustRegionRefinementFailureMetadata,
++    partial: bool,
++) -> bool {
++    use super::{M1TrustRegionRefinementGuardStage as Stage, M1TrustRegionRefinementReason};
++    let comparison = matches!(
++        metadata.guard_stage,
++        Stage::RadiusComparison | Stage::FinalRadiusCloseness | Stage::FinalInstallEquality
++    ) || matches!(
++        metadata.reason,
++        M1TrustRegionRefinementReason::FinalRadius | M1TrustRegionRefinementReason::ScratchRadius
++    );
++    if !partial
++        && matches!(
++            metadata.guard_stage,
++            Stage::P0ReducedRadius
++                | Stage::ScratchFullRadius
++                | Stage::ScratchReducedRadius
++                | Stage::FinalFullRadius
++                | Stage::FinalReducedRadius
++        )
++        || metadata.guard_stage == Stage::OrderedNorm && metadata.correction_position.is_some()
++    {
++        return true;
++    }
++    if comparison {
++        return !partial;
++    }
++    partial
++        && matches!(
++            metadata.guard_stage,
++            Stage::P0FullRadius
++                | Stage::P0ReducedRadius
++                | Stage::ScratchFullRadius
++                | Stage::ScratchReducedRadius
++                | Stage::FinalFullRadius
++                | Stage::FinalReducedRadius
++                | Stage::OrderedNorm
++        )
++}
++
++/// The one terminal/copy relation used by acceptance, expected application
++/// counts, and field-status classification.  It is deliberately derived from
++/// the typed terminal metadata only: copied witness fields may corroborate a
++/// relation but never create one.
++#[cfg(test)]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++struct RefinementCaptureTerminalCopyRelation {
++    expected_application_count: u8,
++    factor_output_ordinal: Option<u8>,
++}
++
++#[cfg(test)]
++fn refinement_capture_terminal_copy_relation(
+@@ -4144 +4245 @@
+-) -> u8 {
++) -> RefinementCaptureTerminalCopyRelation {
+@@ -4160 +4261 @@
+-    match metadata.correction_position {
++    let expected_application_count = match metadata.correction_position {
+@@ -4165,0 +4267,6 @@
++    };
++    RefinementCaptureTerminalCopyRelation {
++        expected_application_count,
++        factor_output_ordinal: (metadata.guard_stage == Stage::FactorApplicationOutput)
++            .then_some(expected_application_count)
++            .filter(|ordinal| *ordinal > 0),
+@@ -4218,17 +4325 @@
+-            let h1 = position == Some(super::M1TrustRegionCorrectionPosition::Second)
+-                && entry["lambda"] == "positive"
+-                && locator["row"].is_null()
+-                && matches!(
+-                    stage,
+-                    "PrimaryProduct"
+-                        | "SplitterProduct"
+-                        | "SplitOutput"
+-                        | "EftRemainder"
+-                        | "TwoSumResult"
+-                        | "TwoSumRemainder"
+-                        | "Accumulation"
+-                );
+-            let locator_variant = locator["variants"]
+-                .as_array()
+-                .and_then(|items| items.first());
+-            let term_coordinate = locator["term_coordinate"]
++            let alternatives = locator["variants"]
+@@ -4236,23 +4327,38 @@
+-                .and_then(|items| items.iter().find(|item| item["term"].as_str().is_some()));
+-            let term_descriptor = locator["term"]
+-                .as_str()
+-                .or_else(|| locator_variant.and_then(|item| item["term"].as_str()))
+-                .or_else(|| term_coordinate.and_then(|item| item["term"].as_str()));
+-            let term = locator["term"]
+-                .as_u64()
+-                .map(|value| value as u8)
+-                .or_else(|| {
+-                    term_descriptor.map(|value| {
+-                        if value.contains("0..21") || value.contains("slot") {
+-                            0
+-                        } else {
+-                            1
+-                        }
+-                    })
+-                });
+-            let coordinate_descriptor = locator["coordinate"]
+-                .as_str()
+-                .or_else(|| locator_variant.and_then(|item| item["coordinate"].as_str()))
+-                .or_else(|| term_coordinate.and_then(|item| item["coordinate"].as_str()));
+-            let coordinate =
+-                if h1 || coordinate_descriptor.is_some_and(|value| value.contains("free_ids")) {
++                .or_else(|| locator["term_coordinate"].as_array());
++            let locator_variants: Vec<_> =
++                alternatives.map_or_else(|| vec![None], |items| items.iter().map(Some).collect());
++            for locator_variant in locator_variants {
++                let row_descriptor = locator["row"]
++                    .as_str()
++                    .or_else(|| locator_variant.and_then(|item| item["row"].as_str()));
++                let h1 = position == Some(super::M1TrustRegionCorrectionPosition::Second)
++                    && entry["lambda"] == "positive"
++                    && row_descriptor.is_none()
++                    && matches!(
++                        stage,
++                        "PrimaryProduct"
++                            | "SplitterProduct"
++                            | "SplitOutput"
++                            | "EftRemainder"
++                            | "TwoSumResult"
++                            | "TwoSumRemainder"
++                            | "Accumulation"
++                    );
++                let term_descriptor = locator["term"]
++                    .as_str()
++                    .or_else(|| locator_variant.and_then(|item| item["term"].as_str()));
++                let term = locator_variant
++                    .and_then(|item| item["term"].as_u64())
++                    .or_else(|| locator["term"].as_u64())
++                    .map(|value| u8::try_from(value).expect("approved term fits u8"))
++                    .or_else(|| {
++                        term_descriptor.map(|value| {
++                            u8::from(!(value.contains("0..21") || value.contains("slot")))
++                        })
++                    });
++                let coordinate_descriptor = locator["coordinate"]
++                    .as_str()
++                    .or_else(|| locator_variant.and_then(|item| item["coordinate"].as_str()));
++                let coordinate = if h1
++                    || coordinate_descriptor.is_some_and(|value| value.contains("free_ids"))
++                {
+@@ -4267,15 +4373,29 @@
+-            let metadata = super::M1TrustRegionRefinementFailureMetadata {
+-                reason: m1_refinement_inventory_reason(reason),
+-                correction_position: position,
+-                guard_stage: m1_refinement_inventory_stage(stage),
+-                row: locator["row"]
+-                    .as_str()
+-                    .or_else(|| locator_variant.and_then(|item| item["row"].as_str()))
+-                    .map(|_| 0),
+-                term,
+-                coordinate,
+-                lower_active: [false; 21],
+-                upper_active: [false; 21],
+-                free: [true; 21],
+-                lambda: if entry["lambda"] == "positive" {
+-                    1.0
++                let metadata = super::M1TrustRegionRefinementFailureMetadata {
++                    reason: m1_refinement_inventory_reason(reason),
++                    correction_position: position,
++                    guard_stage: m1_refinement_inventory_stage(stage),
++                    row: row_descriptor.map(|_| 0),
++                    term,
++                    coordinate,
++                    lower_active: [false; 21],
++                    upper_active: [false; 21],
++                    free: [true; 21],
++                    lambda: if entry["lambda"] == "positive" {
++                        1.0
++                    } else {
++                        0.0
++                    },
++                    original_trust_radius: 1.0,
++                    reduced_face_radius: 1.0,
++                    scratch_box_feasible: locator["scratch_box_feasible"].as_bool().or_else(|| {
++                        locator["scratch_box_feasible"]
++                            .as_array()
++                            .map(|_| entry["lambda"] == "positive")
++                    }),
++                };
++                let trace = RefinementObservationTrace {
++                    face_free_ids: Some(vec![2, 5, 9]),
++                    ..Default::default()
++                };
++                let rows: Vec<_> = if row_descriptor.is_some() {
++                    (0..21_u8).map(Some).collect()
+@@ -4283,23 +4403,5 @@
+-                    0.0
+-                },
+-                original_trust_radius: 1.0,
+-                reduced_face_radius: 1.0,
+-                scratch_box_feasible: locator["scratch_box_feasible"].as_bool().or_else(|| {
+-                    locator["scratch_box_feasible"]
+-                        .as_array()
+-                        .map(|_| entry["lambda"] == "positive")
+-                }),
+-            };
+-            let trace = RefinementObservationTrace {
+-                face_free_ids: Some(vec![2, 5, 9]),
+-                ..Default::default()
+-            };
+-            assert!(
+-                refinement_capture_selected_terminal_kind(&metadata, &trace),
+-                "approved row rejected: {}",
+-                entry["id"]
+-            );
+-            if locator["scratch_box_feasible"].is_array() {
+-                for scratch_box_feasible in [false, true] {
+-                    if entry["lambda"] == "positive" && !scratch_box_feasible {
+-                        continue;
++                    vec![metadata.row]
++                };
++                let terms: Vec<_> = match term_descriptor {
++                    Some(value) if value.contains("null final") => {
++                        std::iter::once(None).chain((1..=21_u8).map(Some)).collect()
+@@ -4307,6 +4409,9 @@
+-                    let mut variant = metadata.clone();
+-                    variant.scratch_box_feasible = Some(scratch_box_feasible);
+-                    assert!(
+-                        refinement_capture_selected_terminal_kind(&variant, &trace),
+-                        "approved scratch variant rejected: {}",
+-                        entry["id"]
++                    Some(value) if value.contains("0..21") => (0..=21_u8).map(Some).collect(),
++                    Some(value) if value.contains("1..21") => (1..=21_u8).map(Some).collect(),
++                    Some(value) if value.contains("slot") => (0..3_u8).map(Some).collect(),
++                    _ => vec![metadata.term],
++                };
++                let scratch_values: Vec<_> =
++                    locator["scratch_box_feasible"].as_array().map_or_else(
++                        || vec![metadata.scratch_box_feasible],
++                        |_| vec![Some(false), Some(true)],
+@@ -4313,0 +4419,44 @@
++                for row in rows {
++                    for term in &terms {
++                        let coordinates: Vec<_> = if coordinate_descriptor
++                            .is_some_and(|value| value.contains("free_ids"))
++                            && term_descriptor.is_some_and(|value| value.contains("slot"))
++                        {
++                            vec![term.and_then(|slot| [2, 5, 9].get(usize::from(slot)).copied())]
++                        } else if coordinate_descriptor
++                            .is_some_and(|value| value.contains("free_ids"))
++                        {
++                            vec![Some(2), Some(5), Some(9)]
++                        } else if coordinate_descriptor
++                            .is_some_and(|value| value.contains("term-1"))
++                        {
++                            vec![term.and_then(|value| (value > 0).then(|| value - 1))]
++                        } else if coordinate_descriptor == Some("0..20") {
++                            (0..21_u8).map(Some).collect()
++                        } else {
++                            vec![metadata.coordinate]
++                        };
++                        for coordinate in coordinates {
++                            for scratch_box_feasible in &scratch_values {
++                                let mut variant = metadata.clone();
++                                variant.row = row;
++                                variant.term = *term;
++                                variant.coordinate = coordinate;
++                                variant.scratch_box_feasible = *scratch_box_feasible;
++                                let accepted =
++                                    refinement_capture_selected_terminal_kind(&variant, &trace);
++                                if entry["lambda"] == "positive"
++                                    && *scratch_box_feasible == Some(false)
++                                    && metadata.scratch_box_feasible != Some(false)
++                                {
++                                    assert!(
++                                        !accepted,
++                                        "impossible positive/false scratch accepted: {}",
++                                        entry["id"]
++                                    );
++                                } else {
++                                    assert!(accepted, "approved locator rejected: {}", entry["id"]);
++                                }
++                            }
++                        }
++                    }
+@@ -4363,2 +4511,0 @@
+-    let mut residual_term_zero = false;
+-    let mut residual_interior = false;
+@@ -4384,3 +4530,0 @@
+-            let term = alternative["term"].as_u64();
+-            residual_term_zero |= term == Some(0);
+-            residual_interior |= term.is_some_and(|value| value > 0);
+@@ -4398 +4541,0 @@
+-    assert!(residual_term_zero && residual_interior);
+@@ -4404,0 +4548,257 @@
++/// Keep the inventory's alternative encoding structurally complete.  Semantic
++/// locator acceptance is exercised by the atomic-terminal control above.
++#[cfg(test)]
++#[test]
++fn m1_refinement_inventory_alternative_shape_control() {
++    let inventory: serde_json::Value = serde_json::from_str(include_str!(concat!(
++        env!("CARGO_MANIFEST_DIR"),
++        "/../../../inventory-approved-discovery.json"
++    )))
++    .expect("approved inventory is valid JSON");
++    let entries = inventory["entries"]
++        .as_array()
++        .expect("approved inventory entries array");
++    let mut refinement_rows = 0_usize;
++    let mut work_cap_rows = 0_usize;
++    let mut locator_alternatives = 0_usize;
++    let mut scratch_alternatives = 0_usize;
++    for entry in entries {
++        let locator = &entry["locator"];
++        if entry["stage"] == "not-applicable" {
++            work_cap_rows += 1;
++            assert_eq!(entry["position"], "not-refinement");
++            assert_eq!(entry["reason"], "not-applicable");
++            continue;
++        }
++        refinement_rows += 1;
++        let alternatives = locator["variants"]
++            .as_array()
++            .or_else(|| locator["term_coordinate"].as_array());
++        if let Some(alternatives) = alternatives {
++            assert!(!alternatives.is_empty(), "empty locator alternative set");
++            for alternative in alternatives {
++                assert!(
++                    alternative.is_object(),
++                    "locator alternative is not an object"
++                );
++                locator_alternatives += 1;
++            }
++        } else {
++            locator_alternatives += 1;
++        }
++        match locator["scratch_box_feasible"].as_array() {
++            Some(values) => {
++                assert!(!values.is_empty(), "empty scratch alternative set");
++                for value in values {
++                    assert!(value.is_boolean(), "scratch alternative is not boolean");
++                    scratch_alternatives += 1;
++                }
++            }
++            None => scratch_alternatives += 1,
++        }
++    }
++    assert_eq!((refinement_rows, work_cap_rows), (107, 2));
++    assert!(locator_alternatives > refinement_rows);
++    assert!(scratch_alternatives > refinement_rows);
++}
++
++/// Concrete metadata controls for the locator alternatives that share a
++/// guard-stage name but select distinct operation sites.
++#[cfg(test)]
++#[test]
++fn m1_refinement_inventory_locator_semantics_control() {
++    use super::{
++        M1TrustRegionCorrectionPosition as Position, M1TrustRegionRefinementGuardStage as Stage,
++        M1TrustRegionRefinementReason as Reason,
++    };
++    let trace = RefinementObservationTrace {
++        face_free_ids: Some(vec![2, 5, 9]),
++        ..Default::default()
++    };
++    let metadata = |position, stage, reason, row, term, coordinate, lambda, scratch| {
++        super::M1TrustRegionRefinementFailureMetadata {
++            reason,
++            correction_position: position,
++            guard_stage: stage,
++            row,
++            term,
++            coordinate,
++            lower_active: [false; 21],
++            upper_active: [false; 21],
++            free: [true; 21],
++            lambda,
++            original_trust_radius: 1.0,
++            reduced_face_radius: 1.0,
++            scratch_box_feasible: scratch,
++        }
++    };
++    for (term, coordinate) in [(0, None), (1, Some(0))] {
++        let residual = metadata(
++            Some(Position::First),
++            Stage::ResidualSourceTerm,
++            Reason::SubnormalIntermediate,
++            Some(0),
++            Some(term),
++            coordinate,
++            1.0,
++            None,
++        );
++        assert!(refinement_capture_selected_terminal_kind(&residual, &trace));
++    }
++    let impossible_residual = metadata(
++        Some(Position::First),
++        Stage::ResidualSourceTerm,
++        Reason::SubnormalIntermediate,
++        Some(0),
++        Some(0),
++        Some(1),
++        1.0,
++        None,
++    );
++    assert!(!refinement_capture_selected_terminal_kind(
++        &impossible_residual,
++        &trace
++    ));
++    for row in [Some(0), None] {
++        let h0 = metadata(
++            Some(Position::First),
++            Stage::PrimaryProduct,
++            Reason::NonfiniteOperand,
++            row,
++            Some(0),
++            Some(2),
++            1.0,
++            None,
++        );
++        assert!(refinement_capture_selected_terminal_kind(&h0, &trace));
++    }
++    let impossible_h0_slot = metadata(
++        Some(Position::First),
++        Stage::PrimaryProduct,
++        Reason::NonfiniteOperand,
++        Some(0),
++        Some(0),
++        Some(5),
++        1.0,
++        None,
++    );
++    assert!(!refinement_capture_selected_terminal_kind(
++        &impossible_h0_slot,
++        &trace
++    ));
++    for (stage, term) in [
++        (Stage::PrimaryProduct, Some(0)),
++        (Stage::Accumulation, None),
++    ] {
++        let h1 = metadata(
++            Some(Position::Second),
++            stage,
++            Reason::NonfiniteOperand,
++            None,
++            term,
++            Some(2),
++            1.0,
++            Some(true),
++        );
++        assert!(refinement_capture_selected_terminal_kind(&h1, &trace));
++    }
++    let impossible_scratch = metadata(
++        Some(Position::First),
++        Stage::OrderedNorm,
++        Reason::NonfiniteOperand,
++        None,
++        None,
++        None,
++        1.0,
++        Some(false),
++    );
++    assert!(!refinement_capture_selected_terminal_kind(
++        &impossible_scratch,
++        &trace
++    ));
++}
++
++#[cfg(test)]
++#[test]
++fn m1_refinement_inventory_locator_numeric_domains_control() {
++    use super::{
++        M1TrustRegionCorrectionPosition as Position, M1TrustRegionRefinementGuardStage as Stage,
++        M1TrustRegionRefinementReason as Reason,
++    };
++    let trace = RefinementObservationTrace {
++        face_free_ids: Some(vec![2, 5, 9]),
++        ..Default::default()
++    };
++    let terminal = |stage, row, term, coordinate| super::M1TrustRegionRefinementFailureMetadata {
++        reason: Reason::NonfiniteOperand,
++        correction_position: Some(Position::Second),
++        guard_stage: stage,
++        row,
++        term,
++        coordinate,
++        lower_active: [false; 21],
++        upper_active: [false; 21],
++        free: [true; 21],
++        lambda: 1.0,
++        original_trust_radius: 1.0,
++        reduced_face_radius: 1.0,
++        scratch_box_feasible: Some(true),
++    };
++    for row in 0..21_u8 {
++        for term in 1..=21_u8 {
++            let residual = super::M1TrustRegionRefinementFailureMetadata {
++                reason: Reason::NonfiniteOperand,
++                correction_position: Some(Position::First),
++                guard_stage: Stage::PrimaryProduct,
++                row: Some(row),
++                term: Some(term),
++                coordinate: Some(term - 1),
++                lower_active: [false; 21],
++                upper_active: [false; 21],
++                free: [true; 21],
++                lambda: 1.0,
++                original_trust_radius: 1.0,
++                reduced_face_radius: 1.0,
++                scratch_box_feasible: None,
++            };
++            assert!(refinement_capture_selected_terminal_kind(&residual, &trace));
++        }
++    }
++    for (slot, coordinate) in [(0_u8, 2_u8), (1, 5), (2, 9)] {
++        for row in 0..21_u8 {
++            let matrix = super::M1TrustRegionRefinementFailureMetadata {
++                reason: Reason::NonfiniteOperand,
++                correction_position: Some(Position::First),
++                guard_stage: Stage::PrimaryProduct,
++                row: Some(row),
++                term: Some(slot),
++                coordinate: Some(coordinate),
++                lower_active: [false; 21],
++                upper_active: [false; 21],
++                free: [true; 21],
++                lambda: 1.0,
++                original_trust_radius: 1.0,
++                reduced_face_radius: 1.0,
++                scratch_box_feasible: None,
++            };
++            assert!(refinement_capture_selected_terminal_kind(&matrix, &trace));
++        }
++        for term in 0..=21_u8 {
++            assert!(refinement_capture_selected_terminal_kind(
++                &terminal(Stage::PrimaryProduct, None, Some(term), Some(coordinate)),
++                &trace
++            ));
++        }
++        for term in 1..=21_u8 {
++            assert!(refinement_capture_selected_terminal_kind(
++                &terminal(Stage::Accumulation, None, Some(term), Some(coordinate)),
++                &trace
++            ));
++        }
++        assert!(refinement_capture_selected_terminal_kind(
++            &terminal(Stage::Accumulation, None, None, Some(coordinate)),
++            &trace
++        ));
++    }
++}
++
+@@ -4433 +4833 @@
+-            h_bits: Some(vec![1]),
++            h_bits: Some(vec![1.0_f64.to_bits()]),
+@@ -4438,0 +4839,34 @@
++    trace.factor_applications = 1;
++    trace.factor_output_copy_boundary =
++        Some((1, RefinementFactorOutputCopyBoundary::BeforeInverse));
++    trace.terminal_refusal = Some(Box::new(super::M1TrustRegionSubproblemRefusal {
++        kind: super::M1TrustRegionRefusalKind::TrustRegionRefinementIndeterminate,
++        optimality_reason: None,
++        optimality_coordinate: None,
++        optimality_radius: None,
++        optimality_lambda: None,
++        attempted_subproblems: 0,
++        completed_jacobi_sweeps: 0,
++        completed_face_pivots: 0,
++        entered_svd_factorizations: 0,
++        raw_residual_max: 0.0,
++        work: Box::default(),
++        refinement: Some(Box::new(metadata.clone())),
++        #[cfg(feature = "m1-trust-region-physical-stage")]
++        budget_refusal: None,
++    }));
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(statuses["inverse_t_bits"], "interrupted");
++    assert_eq!(statuses["factor_output_copy_boundary"], "captured");
++    trace.factor_output_copy_boundary = None;
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(
++        statuses["factor_output_copy_boundary"],
++        "missing_instrumentation"
++    );
++    trace.factor_output_copy_boundary =
++        Some((1, RefinementFactorOutputCopyBoundary::BeforeInverse));
++    trace.inverse_t = Some(vec![1.0]);
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(statuses["inverse_t_bits"], "contradictory_stray_presence");
++    trace.inverse_t = None;
+@@ -4453,0 +4888 @@
++    trace.factor_output_copy_boundary = Some((1, RefinementFactorOutputCopyBoundary::AfterInverse));
+@@ -4458,0 +4894,67 @@
++    trace.inverse_denominator = None;
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(
++        statuses["inverse_denominator_bits"],
++        "missing_instrumentation"
++    );
++    trace.inverse_denominator = Some(vec![2.0]);
++    metadata.correction_position = Some(Position::Second);
++    trace
++        .factor_application_snapshots
++        .push(RefinementFactorApplicationSnapshot {
++            ordinal: 2,
++            identity: 7,
++            h_bits: Some(vec![4.0_f64.to_bits()]),
++            inverse_t_bits: None,
++            inverse_denominator_bits: None,
++            inverse_z_bits: None,
++            delta_bits: None,
++        });
++    trace.factor_application_identities = vec![7, 7];
++    trace.factor_applications = 2;
++    trace.factor_identity = Some(7);
++    trace.residual1 = Some([0.0; 21]);
++    trace.h1 = Some(vec![4.0]);
++    trace.factor_output_copy_boundary =
++        Some((2, RefinementFactorOutputCopyBoundary::BeforeInverse));
++    trace
++        .terminal_refusal
++        .as_mut()
++        .expect("terminal refusal")
++        .refinement = Some(Box::new(metadata.clone()));
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert!(refinement_capture_factor_output_prefix(
++        &trace, &metadata, 2, true
++    ));
++    assert_eq!(statuses["inverse_t_bits"], "captured");
++    assert_eq!(statuses["inverse_denominator_bits"], "captured");
++    assert_eq!(statuses["inverse_z_bits"], "captured");
++    assert_eq!(
++        statuses["factor_application_snapshot_1_inverse_t_bits"],
++        "captured"
++    );
++    assert_eq!(
++        statuses["factor_application_snapshot_2_inverse_t_bits"],
++        "interrupted"
++    );
++    trace.factor_application_snapshots[0].inverse_t_bits = None;
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(
++        statuses["factor_application_snapshot_1_inverse_t_bits"],
++        "missing_instrumentation"
++    );
++    trace.factor_application_snapshots[0].inverse_t_bits = Some(vec![1.0_f64.to_bits()]);
++    trace.factor_application_snapshots[1].inverse_t_bits = Some(vec![4.0_f64.to_bits()]);
++    trace.factor_application_snapshots[1].inverse_denominator_bits = Some(vec![5.0_f64.to_bits()]);
++    trace.factor_application_snapshots[1].inverse_z_bits = Some(vec![6.0_f64.to_bits()]);
++    trace.inverse_t = Some(vec![4.0]);
++    trace.inverse_denominator = Some(vec![5.0]);
++    trace.inverse_z = Some(vec![6.0]);
++    trace.factor_output_copy_boundary = Some((2, RefinementFactorOutputCopyBoundary::AfterInverse));
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert!(refinement_capture_factor_output_prefix(
++        &trace, &metadata, 2, true
++    ));
++    assert_eq!(statuses["inverse_t_bits"], "captured");
++    assert_eq!(statuses["inverse_denominator_bits"], "captured");
++    assert_eq!(statuses["inverse_z_bits"], "captured");
+@@ -4459,0 +4962,27 @@
++    metadata.correction_position = Some(Position::First);
++    trace.factor_application_snapshots.truncate(1);
++    trace.factor_application_identities.truncate(1);
++    trace.factor_applications = 1;
++    trace.factor_output_copy_boundary =
++        Some((1, RefinementFactorOutputCopyBoundary::BeforeInverse));
++    trace
++        .terminal_refusal
++        .as_mut()
++        .expect("terminal refusal")
++        .refinement = Some(Box::new(metadata.clone()));
++    trace.inverse_t = None;
++    trace.inverse_denominator = None;
++    trace.inverse_z = None;
++    trace.delta0 = None;
++    trace.factor_application_snapshots[0].delta_bits = None;
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(statuses["delta0_bits"], "interrupted");
++    trace.delta0 = Some(vec![4.0]);
++    trace.factor_application_snapshots[0].delta_bits = Some(vec![4.0_f64.to_bits()]);
++    trace.factor_output_copy_boundary = Some((1, RefinementFactorOutputCopyBoundary::AfterDelta));
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(statuses["delta0_bits"], "captured");
++    trace.delta0 = None;
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(statuses["delta0_bits"], "missing_instrumentation");
++    trace.delta0 = Some(vec![4.0]);
+@@ -4470,0 +5000,2 @@
++    trace.factor_output_copy_boundary =
++        Some((1, RefinementFactorOutputCopyBoundary::BeforeInverse));
+@@ -4481,0 +5013 @@
++    trace.factor_output_copy_boundary = Some((1, RefinementFactorOutputCopyBoundary::AfterDelta));
+@@ -4488,0 +5021,82 @@
++/// Completed ordered prefixes and the current partial norm are both real
++/// observations at full-radius terminals.  Status must preserve each member
++/// of that mixed collection instead of classifying the prefix as stray.
++#[cfg(test)]
++#[test]
++fn m1_refinement_mixed_norm_prefix_status_control() {
++    use super::{
++        M1TrustRegionCorrectionPosition as Position, M1TrustRegionRefinementGuardStage as Stage,
++        M1TrustRegionRefinementReason as Reason,
++    };
++    let metadata = super::M1TrustRegionRefinementFailureMetadata {
++        reason: Reason::NonfiniteOperand,
++        correction_position: Some(Position::First),
++        guard_stage: Stage::ScratchFullRadius,
++        row: None,
++        term: None,
++        coordinate: None,
++        lower_active: [false; 21],
++        upper_active: [false; 21],
++        free: [true; 21],
++        lambda: 1.0,
++        original_trust_radius: 1.0,
++        reduced_face_radius: 1.0,
++        scratch_box_feasible: Some(true),
++    };
++    let mut trace = RefinementObservationTrace {
++        terminal_refusal: Some(Box::new(super::M1TrustRegionSubproblemRefusal {
++            kind: super::M1TrustRegionRefusalKind::TrustRegionRefinementIndeterminate,
++            optimality_reason: None,
++            optimality_coordinate: None,
++            optimality_radius: None,
++            optimality_lambda: None,
++            attempted_subproblems: 0,
++            completed_jacobi_sweeps: 0,
++            completed_face_pivots: 0,
++            entered_svd_factorizations: 0,
++            raw_residual_max: 0.0,
++            work: Box::default(),
++            refinement: Some(Box::new(metadata)),
++            #[cfg(feature = "m1-trust-region-physical-stage")]
++            budget_refusal: None,
++        })),
++        ordered_norms: vec![RefinementOrderedNormTrace {
++            role: "p0_full",
++            coordinate_ids: vec![0],
++            value_bits: vec![0],
++            square_bits: vec![0],
++            running_sum_bits: vec![0],
++            norm2_bits: 0,
++            norm_bits: 0,
++        }],
++        partial_ordered_norms: vec![RefinementPartialOrderedNormTrace {
++            role: "p1_full",
++            coordinate_ids: vec![0],
++            value_bits: vec![0],
++            square_bits: vec![0],
++            running_sum_bits: vec![0],
++            terminal_operation: "square_guard",
++            sqrt_bits: None,
++        }],
++        ..Default::default()
++    };
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(statuses["ordered_norm_traces"], "captured");
++    assert_eq!(statuses["partial_ordered_norms"], "captured");
++    trace.ordered_norms.clear();
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(statuses["ordered_norm_traces"], "missing_instrumentation");
++    trace.ordered_norms.push(RefinementOrderedNormTrace {
++        role: "p0_full",
++        coordinate_ids: vec![0],
++        value_bits: vec![0],
++        square_bits: vec![0],
++        running_sum_bits: vec![0],
++        norm2_bits: 0,
++        norm_bits: 0,
++    });
++    trace.partial_ordered_norms.clear();
++    let statuses = refinement_capture_field_status_json(&trace);
++    assert_eq!(statuses["partial_ordered_norms"], "missing_instrumentation");
++}
++
+@@ -4598,0 +5213,5 @@
++    put!(
++        "factor_output_copy_boundary",
++        trace.factor_output_copy_boundary.is_some(),
++        4
++    );
+@@ -6698,0 +7318,3 @@
++        if let Some((_, boundary)) = trace.factor_output_copy_boundary.as_mut() {
++            *boundary = RefinementFactorOutputCopyBoundary::AfterInverse;
++        }
+@@ -11765,0 +12388,4 @@
++    trace.factor_output_copy_boundary = Some((
++        trace.factor_applications,
++        RefinementFactorOutputCopyBoundary::BeforeInverse,
++    ));
+@@ -11852,0 +12479,2 @@
++        trace.factor_output_copy_boundary =
++            Some((1, RefinementFactorOutputCopyBoundary::AfterDelta));
+@@ -11949,0 +12578,2 @@
++        trace.factor_output_copy_boundary =
++            Some((2, RefinementFactorOutputCopyBoundary::AfterDelta));

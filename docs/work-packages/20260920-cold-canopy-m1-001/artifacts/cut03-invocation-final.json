@@ -1,0 +1,180 @@
+{
+  "evidence_class": "Ran: exact final rustfmt/release no-run/Clippy/source-build-raw custody; Static: final correctness review. Final metadata/proof workflows not run after missing-QA stop.",
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "classification": "class(c), insufficient evidence/runtime feasibility",
+  "stop": "Final QA reactivation failed with agent thread limit reached; final correctness independently rejects C5/full controls. No retry or parent substitution.",
+  "final_source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/source",
+  "final_mutable_root": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/source",
+  "final_source_sha256": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+  "final_source_stage1_sha256": "990cffea5771a54f749691b106d75a4e442c0280550853124d3bdbfe9ef7eba6",
+  "source_archive_sha256": "90e2adad40bc67041d9376cad0626cd5c02b8f1a81fa780e78aa6504f2753caf",
+  "raw_archive_sha256": "015c918229b5015bcbd31cd27083a18098f8ffd5a84ffc5f7d456f5360d74e36",
+  "raw_members": 302,
+  "build_pins": 560,
+  "depfiles": 35,
+  "binary_path": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/target-candidate/release/deps/openwepp_land_surface_energy-70194d0f8e103327",
+  "binary_sha256": "95d6e9e790bb8f07ddcf6d47f1d617054943e83b3c7ec07379d9288f5d14df36",
+  "checks": {
+    "format": {
+      "command": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/target-format",
+      "start_utc": "2026-10-03T21:18:10.193574+00:00",
+      "source_before": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 0,
+      "elapsed_seconds": 0.4559134221635759,
+      "source_after": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "no-run": {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--no-run",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--features",
+        "m1-trust-region-physical-stage"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/target-candidate",
+      "start_utc": "2026-10-03T21:18:10.130884+00:00",
+      "source_before": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 0,
+      "elapsed_seconds": 137.33510024519637,
+      "source_after": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "06ec94465766ddee7b0f221a85ebd9654ae732ffbd97814ea1fc3a6136465827"
+    },
+    "lse-clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--tests",
+        "--features",
+        "m1-trust-region-physical-stage",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/target-lint-lse",
+      "start_utc": "2026-10-03T21:18:10.152770+00:00",
+      "source_before": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 101,
+      "elapsed_seconds": 24.989583091344684,
+      "source_after": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "594d4e59c7aecb3bc60812c93ddb0a63ade3a68e30e11718a9832a8ffbe49993"
+    },
+    "vegetation-clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-vegetation",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/target-lint-vegetation",
+      "start_utc": "2026-10-03T21:18:10.171519+00:00",
+      "source_before": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 101,
+      "elapsed_seconds": 14.823815034236759,
+      "source_after": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "11ac0c4cb8820453dc518c53b133e743f063e964773bee86cf268b852a08e430"
+    }
+  },
+  "lint": {
+    "lse": {
+      "diagnostics": 240,
+      "exact_inherited": 230,
+      "introduced": 10,
+      "exit": 101
+    },
+    "vegetation": {
+      "diagnostics": 1,
+      "exact_inherited": 1,
+      "introduced": 0,
+      "exit": 101
+    }
+  },
+  "final_metadata": "NOT_RUN after final QA stop; checkpoint22 was5PASS1FAIL, bound only to checkpoint22",
+  "final_proofs": "NOT_REGENERATED after stop; checkpoint06 8/8 structural passes not final-source approval",
+  "reviews": {
+    "correctness": "REJECT / HOLD_NO_COMPLETED_DAY",
+    "qa": "NOT_COMPLETED: agent thread limit reached"
+  },
+  "physical_invocations": 0,
+  "capture_approved": false,
+  "slots": {
+    "W1": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W2": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W3": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    }
+  },
+  "changed_paths": [
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+  ],
+  "preservation": {
+    "unrelated_paths_unchanged": 49,
+    "original_cut03_unchanged": true,
+    "historical_candidate05_gap": "unchanged",
+    "main_rust_adoption": false,
+    "push": false
+  },
+  "remaining_requirements": [
+    "One shared per-field terminal/copy relation replacing parallel acceptance/status semantics",
+    "Full107-row reached/absent/partial-role acceptance and public-status controls, separate2WorkCap rows",
+    "Remaining ordinal/norm/impossible-tuple controls and executed final metadata",
+    "10introduced lint diagnostics",
+    "Final-source schema/status/field/type/event/collection proof regeneration",
+    "Both final independent approvals and sealed receipt before any original capture"
+  ],
+  "charged_through_utc": "2026-10-03T21:28:00+00:00",
+  "current_invocation_charge_seconds": 3300.0,
+  "cumulative_charged_seconds": 489576.069712,
+  "remaining_seconds": 3158.8582679999527,
+  "ceiling_seconds": 492734.92798
+}
