@@ -1,5 +1,137 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## HOLD disposition and Cut03 continuation proposal — 2026-10-03
+
+Owner requests HOLD and continuation-prompt authoring only. **HOLD_NO_COMPLETED_DAY,
+class(c)** remains at local `fa1cb7980`; both final reviewers rejected Cut03 on
+source/validation acceptance. Reviewer routes were available at that disposition.
+W1/W2/W3 remain **0/0/0**, no approved capture receipt and no Cut03 binary. This
+turn authorizes no implementation, build, physical run, readiness renewal or
+charged-time extension. Runtime targets remain500us CPU/550us wall per completed
+OFE-day; regimes750/1500/2500us CPU; century182.625s CPU/210s wall. Completed-day
+cost, feasibility and target gap remain unestablished.
+
+The [thin continuation prompt](artifacts/cut03-resumption-prompt.md) is copied
+byte-for-byte to `/tmp/openwepp_cold_canopy_m1_cut03_resumption.md`. This record is
+the sole maintained execution contract. The following is **a proposal until owner
+invocation**; wording approval is not source acceptance or physical-run approval.
+
+Static wording reviews: `/root/cut11_correctness` and `/root/cut11_qa_resumed`
+both **ACCEPT** with no blocking fidelity finding. [Original responses and executor
+checks](artifacts/cut03-resumption-wording-review.json) preserve their limited scope:
+wording only, not source/build/capture approval. Ran prompt byte equality, new
+links/section reference, retained source/raw archive hashes,48unrelated-path hashes
+and scoped diff whitespace PASS. Scoped authoring is committed locally; no push.
+
+### Proposed Cut03 continuation — future invocation only
+
+Upon invocation, execute the complete inherited detached observation scope in
+**Proposed cut11 continuation**, **Proposed reviewer succession and resumption**,
+**Proposed atomic-terminal execution contract** and **Proposed execution contract**,
+with only the pickup, explicit new allowance and timing below superseding older
+proposals. Do not replay any historical extension or deadline. No numerical repair,
+production/main Rust adoption, physics/fixture/guard/tolerance/cadence change,
+extra physical evaluation, campaign, full day, timing sweep or new physical slot.
+Stop at independently reviewed diagnosis or preserved HOLD and scoped local commit;
+no push or branch switch.
+
+Authenticate `artifacts/cut11-resumed-final.json` final_source_* fields and linked
+Cut03 source/raw receipts: whole source
+`640903addbe7d04c62c664013ad5e112c82d8c4f62e4dde5a56e48da41fcae8d`, stage1
+`aacd2276c14593156372862e45349b4eb671ce0996f7574ab76ed31d851b9413`.
+The full archive preserves765regular files/7links;70-member raw evidence includes
+current `resumed03-*` checks and clearly distinguished historical inputs. The
+696observed failed-build pins/102depfiles are **not successful build custody**.
+No Cut03 binary exists: never use an older binary as its result. Preserve cut11,
+partial01, Cut02 and Cut03 custody plus the explicit historical candidate05 recovery
+gap. Recover one new durable mutable copy from authenticated Cut03; freeze each
+result-bearing handback before further edits. Approved109-row inventory and C1–C4
+review may be reused only within their proven scope; no C5 approval is inherited.
+
+Before core edits establish both independent routes and ownership of original
+findings and final Cut03 reviews in `artifacts/cut11-resumed-reviews.json`.
+Prefer live `/root/cut11_correctness` and `/root/cut11_qa_resumed`; if absent, use
+the inherited explicit independent-successor rule in the same pinned roles.
+Initial route availability is not final review. Keep one implementer, one source
+writer, at most two concurrent children and no nested spawning; serialize phases.
+Do not claim completed agents were deleted when the runtime only supports
+interruption. A thread-limit error is not cured by repeated identical retries;
+missing required final independence returns HOLD without captures. Same assigned
+reviewers verify their fixes and final affected source; no parent substitution.
+
+First restore typed compilation at stage1 ordinal/copy_ordinal conversions
+(E0277, Cut03 lines3821/3836), without weakening guards or checks. Then implement
+one shared terminal/copy descriptor used by acceptance, expected application count
+and every field status. Replace superseded parallel reach/phase exceptions rather
+than adding another presence-derived patch. Its expectations must follow actual
+operation/copy boundaries; observed presence alone cannot prove a required copy was
+reached. Close all recorded C5 defects: None==None delta equality; distinct prior
+completed versus current interrupted application copies; per-ordinal inverse/H/
+delta associations; positive FactorOutput before/after inverse and zero FactorOutput
+before/after delta copy/validation; completed P0/Scratch/Final full-radius
+comparisons versus interrupted arithmetic. Preserve C1–C4/noninterference and
+reopen only affected acceptance claims.
+
+Finish the **full** metadata-only control scope: every actual locator alternative
+across107refinement rows, separately accounting for2WorkCap rows; residual zero/
+interior terms, H0 matrix/shift, H1 inner/final-add, nonidentity free IDs, all scratch
+alternatives and impossible tuples. Positive/false scratch is an impossible-tuple
+rejection obligation, not an approved missing row. Assert missing-required and
+stray-unexpected field statuses and factor/norm interruption boundaries. Existing
+`.first()` sampling, descriptor-text existence and helper-boolean self-presence
+checks are not acceptance. Controls may construct inert metadata/traces only;
+no evaluator, solver, poison hook, physical preflight or extra physical calls.
+Clear all introduced lint diagnostics without suppression or relaxing checks;
+Cut03's partial26baseline+2compiler-error output does not establish lint cleanup.
+
+Run exact edition2024 changed-file rustfmt, release physical-stage no-run, all
+metadata controls with nonzero selected counts, and matched warnings-denied LSE
+`--tests` with the physical-stage feature and vegetation `--lib` Clippy. Retain
+separate writable targets, authenticated Nix tools/environment and matched inherited
+source/diagnostic evidence. Baseline232LSE/1vegetation is reused only within its
+proven scope; final success cannot be inferred from counts or dependency-cache
+success. Preserve raw failures, exact source before/after, tools/dependency pins
+and the actual new binary. Regenerate affected schema/status/field/type/event/
+collection proofs; restore required historical inputs from authenticated raw
+custody before generation. Structural bounds and compilation never prove scientific
+completeness. Both reviewers must approve final source, noninterference, controls,
+helpers, proofs and custody before a sealed exact-source receipt can be approved.
+
+Only after both final approvals and receipt sealing before readiness may the
+original locked persistent ledger release W1/W2/W3 in fixed order. Keep original
+fixture/init/60s/support0, exact direct binary/argv/stdin, one invocation each,
+30s each/90s aggregate, no retry, no preflight or slot reset, absolute deadlines
+and all inherited integrity/diagnosis stops. Independently reconstruct reached
+operand evidence; do not compute unreached stages or manufacture witnesses.
+Stop at diagnosis; no numerical fix follows automatically.
+
+**New proposed allowance, not adopted by this authoring:** future invocation adds
+**5400charged seconds exactly once** to the current487334.927980s ceiling, yielding
+**492734.927980s**. This is a new explicit proposal, not replay of an older5400s
+extension, a refund or a readiness reset within an active invocation. Reconcile
+newest authoring carry plus later active work at first work, including reading.
+If this proposal was already invoked, reuse its adopted ceiling and consumed
+ledger; never add it twice. Let R=adopted ceiling minus latest carry. If R<=1800s,
+preserve HOLD without core launch: the inherited1200s threshold alone does not
+leave a positive600s-before-readiness core window. Otherwise use one bounded window:
+hard deadline=start+R; work cutoff=hard deadline−600s;
+readiness=start+min(4200s,R−1200s); core stop=readiness−600s.
+The final600s is reserved for exact checks/reviews/fix verification and sealing,
+not new core implementation. Every command<=180s and remaining deadline. Count
+reading, work, waits and concurrent wall once. Missed readiness or unmet acceptance
+returns preserved HOLD; no automatic extension, renewal, retry or continuation.
+Without explicit future adoption of this new allowance, the unchanged ceiling
+cannot support this core continuation; do not launch it under an expired window.
+
+Authoring accounting: conservative first-work anchor **19:40UTC**; prior carry
+**485976.069712s**, already charged through15:55UTC. Exclude only inactive owner
+interval15:55–19:40. Conservative charge through **19:45UTC**, including wording
+reviews/checks/local commit/return, is300s: newest cumulative **486276.069712s**,
+remaining **1058.858268s** under unchanged **487334.927980s** ceiling. Extend if
+actual work exceeds19:45; no refund. At that carry the proposed future allowance
+would leave6458.858268s and a3600s core/4200s readiness window; these are estimates,
+not deadlines adopted now. No implementation or physical workflow ran this turn.
+
 ## Owner-directed agent recovery and continuation — 2026-10-03
 
 **HOLD_NO_COMPLETED_DAY, class(c)**. Independent review routes were recovered and

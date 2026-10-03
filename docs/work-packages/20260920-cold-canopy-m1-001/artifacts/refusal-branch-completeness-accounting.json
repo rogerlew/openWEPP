@@ -180,5 +180,22 @@
   "inactive_owner_decision_interval": [
     "2026-10-03T07:58:00+00:00",
     "2026-10-03T15:40:00+00:00"
-  ]
+  ],
+  "authoring_after_terminal_hold": {
+    "request": "HOLD disposition and continuation prompt authoring only",
+    "anchor_utc": "2026-10-03T19:40:00+00:00",
+    "charged_through_utc": "2026-10-03T19:45:00+00:00",
+    "charge_seconds": 300,
+    "prior_cumulative_seconds": 485976.069712,
+    "cumulative_charged_seconds": 486276.069712,
+    "remaining_seconds": 1058.858268,
+    "inactive_owner_decision_interval": [
+      "2026-10-03T15:55:00+00:00",
+      "2026-10-03T19:40:00+00:00"
+    ],
+    "extension_seconds_adopted": 0,
+    "proposed_future_extension_seconds": 5400,
+    "proposed_future_ceiling_seconds": 492734.92798,
+    "note": "No current implementation/capture/readiness/extension. Future explicit invocation may adopt new proposal exactly once. Extend if authoring exceeds19:45; no refund."
+  }
 }

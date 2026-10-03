@@ -1,0 +1,28 @@
+{
+  "evidence_class": "Static: two independent wording reviews; Ran: executor authoring checks only",
+  "correctness": {
+    "identity": "/root/cut11_correctness",
+    "original_response": "Static wording review: **ACCEPT with no blocking fidelity defect.**\n\nThe package and continuation prompt faithfully preserve:\n\n- Cut03\u2019s compile failure, absent binary, blocked controls, and incomplete lint evidence.\n- C1\u2013C4\u2019s bounded reuse and every outstanding C5/shared-model/control defect.\n- Dual independent review and same-reviewer fix verification.\n- HOLD status, zero physical slots consumed, and no current source or capture approval.\n- The proposed one-time future `+5400s` allowance while leaving the current ceiling unchanged.\n- The `R <= 1800s` stop, which preserves a positive core window and the final 600-second review reserve.\n\nThis approves wording only."
+  },
+  "qa": {
+    "identity": "/root/cut11_qa_resumed",
+    "original_response": "Static wording review: **ACCEPT**.\n\nThe proposal accurately preserves Cut03\u2019s HOLD, failed compile, blocked metadata controls, lint limits, proof scope, custody, dual-review requirement, and conditional captures. Accounting and the future-only +5400-second proposal are consistent; the `R <= 1800s` no-core guard is correct. The prompt matches its `/tmp` copy byte-for-byte."
+  },
+  "checks": {
+    "prompt_byte_equality": "PASS",
+    "new_links_and_section_reference": "PASS",
+    "retained_source_and_raw_archive_hashes": "PASS",
+    "48_unrelated_path_hashes": "PASS",
+    "scoped_diff_whitespace": "PASS"
+  },
+  "source_or_capture_approval": false,
+  "implementation_build_or_physical_workflow_ran": false,
+  "current_ceiling_seconds": 487334.92798,
+  "newest_cumulative_seconds": 486276.069712,
+  "remaining_seconds": 1058.858268,
+  "charged_through_utc": "2026-10-03T19:45:00+00:00",
+  "future_allowance_proposed_not_adopted": {
+    "seconds": 5400,
+    "ceiling": 492734.92798
+  }
+}
