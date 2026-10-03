@@ -1,0 +1,88 @@
+{
+  "evidence_class": "Ran: exact-source validation and custody; Static: independent correctness review; no physical capture",
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "classification": "class(c), insufficient evidence/runtime feasibility",
+  "final_source_sha256": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d",
+  "final_source_stage1_sha256": "85d80b02d121ff788d5cafe4d2f45d6b5411deb1e66a26e81e43e2b29b134e16",
+  "final_source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-successor-20261003/source",
+  "source_archive_sha256": "b0ef4771490263d4302c841e1fa66f89aac255e562843fff376cbea16a433fda",
+  "raw_archive_sha256": "3f6b2217c726b100cc336502a5f91bd58b933b6189b899624d85b43b7bbe8a29",
+  "binary_path": "/home/roger/openwepp-experiments/cold-canopy-m1-refusal-successor-20261003/frozen-binaries/final11",
+  "binary_sha256": "e04c3bb9a2009e45a9a9e60ca7ab093280ec3a9d8000befea02c2d1e6c4757ab",
+  "checks": {
+    "final11-no-run": {
+      "exit": 0,
+      "elapsed_seconds": 91.07599937915802,
+      "source_before": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d",
+      "source_after": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d"
+    },
+    "final11-format": {
+      "exit": 0,
+      "elapsed_seconds": 0.1654138439334929,
+      "source_before": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d",
+      "source_after": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d"
+    },
+    "final11-metadata": {
+      "exit": 0,
+      "elapsed_seconds": 0.07149432087317109,
+      "source_before": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d",
+      "source_after": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d"
+    },
+    "final11-lse-clippy": {
+      "exit": 101,
+      "elapsed_seconds": 17.67468883888796,
+      "source_before": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d",
+      "source_after": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d"
+    },
+    "final11-vegetation-matched-clippy": {
+      "exit": 101,
+      "elapsed_seconds": 4.831859954167157,
+      "source_before": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d",
+      "source_after": "d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d"
+    }
+  },
+  "review": {
+    "correctness": "C1\u2013C4 static PASS; C5 HIGH/HOLD; noninterference static PASS",
+    "qa": "Earlier unchanged helper/event scopes PASS; final reactivation blocked by agent thread limit, final exact-cut QA NOT COMPLETED"
+  },
+  "remaining": [
+    "C5 positive factor-output post-inverse legacy status",
+    "C5 zero factor-output delta interruption/copy status",
+    "C5 completed versus partial full-radius norm statuses",
+    "Missing residual term-zero/H0 shift/H1 final-add inventory variants and status negative controls",
+    "10 new LSE Clippy diagnostics beyond230 matched inherited",
+    "Final exact-cut independent QA unavailable"
+  ],
+  "physical_invocations": 0,
+  "slots": {
+    "W1": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W2": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W3": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    }
+  },
+  "capture_approved": false,
+  "charged_through_utc": "2026-10-03T05:48:00+00:00",
+  "cumulative_charged_seconds": 483936.069712,
+  "remaining_seconds": 3398.858268,
+  "source_recovery_limit": "Candidate05 exact source not snapshotted before handback; finalcut11 full source and build custody preserved.",
+  "terminal_preservation_checks": {
+    "source_archive_and_actual_tree": "PASS772entries",
+    "build_custody": "PASS582pins35depfiles",
+    "raw_archive": "PASS362members",
+    "unrelated_dirty_paths": "PASS48unchanged",
+    "diff_whitespace": "PASS",
+    "staged_before_this_scope": "empty",
+    "main_rust_adoption": false
+  }
+}

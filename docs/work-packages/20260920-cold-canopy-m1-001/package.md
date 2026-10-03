@@ -1,5 +1,244 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Terminal HOLD — atomic-terminal successor invocation, 2026-10-03
+
+**HOLD_NO_COMPLETED_DAY, class(c)**. C1–C4 pass final independent static review;
+**C5 remains HIGH/open**, required validation is incomplete, and captures are not
+approved. W1/W2/W3 remain **0/0/0**. No physical evaluation, numerical repair,
+main Rust adoption, branch switch or push occurred. Targets remain500us CPU/550us
+wall per completed OFE-day; regimes750/1500/2500us CPU; 10-OFE century182.625s CPU/
+210s wall. Completed-day cost, feasibility and target gap remain unestablished.
+
+Final detached cut11 froze at05:37:20UTC, before05:38 core stop:
+whole source `d0ea14c3f7864bef523facfae855fe0739360b2a30f317210a44c36ee52c269d`,
+stage1 `85d80b02d121ff788d5cafe4d2f45d6b5411deb1e66a26e81e43e2b29b134e16`.
+Only detached cfg(test) observation/status/validation and metadata-test code changed;
+helper corrections are isolated transport/parser/custody logic. Static independent
+noninterference PASS; no production science behavior or performance claim follows.
+
+Ran on that exact unchanged cut: release physical-stage **no-run PASS91.076s**,
+edition2024 format PASS, exact release metadata selector test **PASS1test** (0.071s).
+The test covers107refinement rows and recognizes2non-refinement WorkCap rows; it
+samples aggregate locators and does not establish full branch/status equivalence.
+LSE warnings-denied Clippy **FAIL240**,230exact inherited plus10new diagnostics.
+Vegetation isolated-target matched Clippy **FAIL1**,1exact inherited. An earlier
+shared-target vegetation invocation returned cached success without target analysis;
+it is not used for acceptance. No failing requirement is deferred or waived.
+
+Final correctness owner `/root/successor_correctness` verifies C1–C4 statically but
+retains C5: first-positive FactorOutput post-inverse legacy fields are incorrectly
+contradictory; zero FactorOutput copied deltas/interruption are misclassified;
+completed full-radius norm traces are treated as absent while partial traces are
+incorrectly required. Inventory controls still omit residual term-zero, H0 shift,
+H1 final-add alternatives and missing/stray status assertions. The same reviewer’s
+[final response](artifacts/refusal-successor-reviews.json) owns these findings.
+Same QA successor’s earlier helper-check02 and unchanged event/type/collection
+review remains valid only in its reviewed scope. Three final reactivation attempts
+failed with `agent thread limit reached`, including after other children completed;
+final exact-cut QA remains **unmet**, with no substitute or parent signoff.
+
+Ran: regenerated schema/proofs have218keys/294paths,6/6/2collection bounds,
+331670-byte Debug envelope and36852352-byte payload bound below67108864cap.
+These are structural bounds, not scientific completeness. Unchanged approved
+1402-event/2048-cap proof is retained within its source premises. Frozen binary
+`e04c3bb9a2009e45a9a9e60ca7ab093280ec3a9d8000befea02c2d1e6c4757ab`
+has582build/tool/protocol pins and35depfiles. [Source custody](artifacts/refusal-successor-source-final11.json),
+[full source archive](artifacts/refusal-successor-source-final11.tar.gz),
+[build custody](artifacts/refusal-successor-build-final11.json),
+[raw evidence](artifacts/refusal-successor-checks-final11.tar.gz) and its
+[verified362-member index](artifacts/refusal-successor-checks-final11.json) preserve
+recovery. [Final machine record](artifacts/refusal-successor-final.json) identifies
+final fields rather than historical input pins. Candidate05 exact source was not
+snapshotted before handback; its hashes/raw checks remain, an explicit recovery gap.
+
+Terminal reconciliation: exact detached diff remains diagnostic-only per independent
+review; main-repo changes are this record, accounting and necessary custody/raw
+artifacts. Final source/build custody rechecks, diff whitespace and all48unrelated
+path hashes PASS. Existing staged index was empty; commit scope excludes unrelated
+Rust and historical untracked work. Local commit only.
+
+No sealed approved receipt exists. The adopted readiness ends05:48UTC without
+renewal; no physical slot was reserved. Conservative charge through05:48UTC,
+including preservation/local commit/return, is4200s for this invocation:
+**483936.069712s cumulative**, **3398.858268s remaining** under487334.927980s ceiling.
+No extension or refund. Extend accounting if actual work exceeds05:48. This is a
+bounded HOLD disposition, not completed scientific acceptance. Any further core
+execution requires owner direction; preserve the same outstanding C5/validation
+requirements and available reviewer ownership, with no implied fresh allowance.
+
+## Atomic-terminal successor invocation — 2026-10-03
+
+Owner invoked `/tmp/openwepp_cold_canopy_m1_refusal_atomic_terminal_resumption.md`.
+The reviewer-succession contract below is adopted; no time extension is reapplied.
+Pickup is local `593eaf7fc` following `d792234f1`. HOLD_NO_COMPLETED_DAY, class(c),
+remains until evidence supports a diagnosis. Targets: 500us CPU/550us wall per
+completed OFE-day, regimes750/1500/2500us CPU, century182.625s CPU/210s wall;
+native completed-day cost and feasibility remain unestablished.
+
+Intent before edits: authenticate final cut02/source/raw archives and build pins,
+establish successor ownership, restore one durable mutable copy, close C1–C5 as
+one atomic-terminal observation model, regenerate affected proofs and run exact
+changed-file rustfmt, release physical-stage no-run and matched warnings-denied
+LSE/vegetation Clippy. Retain bounded inherited-lint acceptance and independent
+scientific noninterference review. No production/main Rust, physics, fixtures,
+guards, tolerances or numerical solver changes. Writes are detached observation
+source/helpers/proofs plus this record and necessary raw evidence. No physical
+preflight. Original W1/W2/W3 remain0/0/0; only dual independent final approval and
+a sealed exact-source receipt permit their original one-shot30s captures.
+
+Successor roles assigned: `/root/successor_correctness` (C1–C5, atomic branch,
+lineage and noninterference) and `/root/successor_qa` (helper fixes, custody,
+proofs and exact-source receipts). These are distinct fresh source reviewers,
+not historical conversations or wording reviewers. Ownership acceptance precedes
+core implementation. Same successors retain fix-verification responsibility.
+
+Conservative first-reading anchor **2026-10-03T04:38:00Z**; newest retained carry
+**479736.069712s**, ceiling **487334.927980s**, R **7598.858268s**. The prior
+04:42Z conservative authoring charge overlaps this anchor; retain that upper
+bound without refund and charge this invocation from04:38Z conservatively.
+Core authoring stops **05:38Z**, readiness **05:48Z**, work cutoff
+**06:34:38.858268Z**, hard deadline **06:44:38.858268Z**. All work/waits/concurrent
+wall counts once within this invocation; every command/delegate command<=180s
+and its remaining deadline. No readiness renewal, slot reset, branch switch or
+push. Stop at reviewed diagnosis or preserved HOLD and scoped local commit.
+
+Both successor reviewers explicitly accepted their original scopes before core
+implementation. Initial source reviews retain all C1–C5 as HIGH/open. Successor
+QA additionally identified transport-cap writes up to one chunk past the cap,
+permissive marker/JSON parsing, and the need to bind the helper to this invocation.
+These findings are in-scope capture-readiness blockers, not physical-run approval.
+`/root/atomic_implementer` is the sole Rust source writer in
+`/home/roger/openwepp-experiments/cold-canopy-m1-refusal-successor-20261003/source`;
+parent defers helper source corrections until that writer freezes.
+
+Ran: [pickup authentication](artifacts/refusal-successor-pickup.json) verifies
+765source members,7links,284raw members,611build pins,568resolutions and the approved
+109-row inventory. One new mutable copy was recovered and byte-authenticated;
+frozen cut02 remains unchanged. Baseline e900 source,414external pins,7raw baseline
+files,5Nix tools and48unrelated worktree paths also reauthenticated; raw record is
+`successor-baseline-authentication.json` in the durable successor root. Matching
+custody is not completeness, scientific approval, runtime feasibility or a capture.
+
+Candidate01 is frozen at whole source `af9d9efe1883a0266e01a3e0361e09d030fee9acf9baf04ba9c9d0804946e4f2`,
+stage1 `bcb7b829df4fda95417056acf4060584c50395df987228ec58aba8ed619cb352`.
+Ran: release physical-stage **no-run PASS136.016s**, source unchanged; this is
+compilation, not capture. Direct edition2024 rustfmt **FAIL**; the implementer's
+earlier format command did not establish required-format acceptance. LSE Clippy
+**FAIL235diagnostics**,230exact inherited matches plus5new; vegetation **FAIL1**,
+1exact inherited match. Same command/tools/source/dependency comparison retained.
+All raw receipts are `checks/candidate01-*` in the successor root. No retry of a
+physical workflow occurred. Parent identified unresolved C5 copy/ordinal errors;
+same successor correctness is inspecting the complete candidate before correction.
+
+The source writer paused explicitly for serialized parent helper corrections and
+resumed only after handback. Helper parser rejects invalid UTF8, NaN, duplicate
+keys, unrecognized framing, trailing content and cap excess; validates full frozen
+schema/branch flags/event joins; capture transport caps saved bytes and retains the
+extra observed overflow byte in failure metadata. Offline FinalReducedRadius now
+uses `remaining_radius_bits`. Successor QA verified those changes, then found stale
+absolute-deadline checks and post-launch-only schema custody. Parent corrected both:
+schema is pinned/parsed before reservation; time is checked under the lock before
+reservation and again immediately before Popen. Crossing after reservation consumes
+the slot with no launch/retry. QA verified both fixes; required exact-helper evidence
+was rerun as `helper-check02.json`:13isolated checks and optimized-Python rejection,
+zero physical invocations. Helper approval does not replace scientific review.
+
+Offline proof regeneration retains294mapped paths,218keys,36,852,352payload bytes
+under67,108,864,331,670type bytes and6/6/2collection bounds. First schema-bound
+invocation omitted its required filename argument and failed; preserved corrected
+invocation passed. Source pins/structural coverage are not C1–C5 completeness.
+Successor QA directly checked unchanged Debug/materializer/loader and collection
+premises; its exact1402event conclusion remains bounded by the retained handled/
+propagated source classification. Final source rebinding/review remains required.
+
+Same successor correctness rejected candidate01 across all five original findings;
+[attributable review responses](artifacts/refusal-successor-reviews.json) retain the
+findings. First failed correction cycle is preserved. Candidate02 is now frozen at
+stage1 `6386f0e5c2bbeef1c75cc79d5502324fe477fef2d721d22ed3b1bd6fea8939a3`,
+whole `760e00da99d9e68bd0e490d74b6e34c03efe4f4d8bc4ba056989b0e3cec3fd02`.
+Exact edition2024 rustfmt PASS; build/lint and same-reviewer verification underway.
+No source edit may occur during checks/review without explicit parent handback.
+
+Successor QA explicitly corrected its provisional claim that no1402event review
+was retained. `refusal-finalization-qa.json` accepts unchanged1402/2048proof;
+`refusal-completeness-correctness.json` binds unchanged W3 inputs. QA verified
+controller, coupled, vegetation and test hashes match and accepts scoped reuse,
+subject to final pin equivalence. Its latest helper evidence verdict is PASS on
+`helper-check02.json`. Full source approval and exact final checks remain pending.
+Persistent original accounting file is updated for this invocation with prior
+accounting retained; W1/W2/W3 slots were not replaced or reset and remain0/0/0.
+
+Candidate02 no-run **FAIL E0425**,7.397s; Clippy also stops at the undefined `dot`
+reference, so its partial27diagnostics are not an inherited-lint acceptance result.
+Source stayed unchanged throughout both checks. Correctness again returns HOLD:
+H1 confuses inner Dot2 term with outer free slot; zero radius predicates and exact
+snapshot/norm status remain incomplete. C2/C4 prefix/identity/zero-inverse fixes
+improved but do not close the full scope. Both failed cuts and reviews are retained.
+
+After two unsuccessful correction cycles, Astra reassessed: **CONTINUE** within
+unchanged bounds, with a specific changed implementation approach. The same writer
+must replace coarse string/stage/default-true status routing with explicit atomic
+field expectations using metadata plus ordinal snapshot/copy-prefix alternatives,
+shared with acceptance. Correct source locators and omitted zero comparisons first;
+do not keep applying isolated phase-map patches. Same correctness owns verification.
+Candidate03 targeted before05:22Z; the owner05:38source stop/05:48readiness binds
+regardless of internal targets. No new time, evaluation, physical slot or approval.
+
+Validation refinement before additional execution: Astra authorizes a focused
+metadata-only selector/status control using the unchanged approved109-row inventory
+and impossible metadata combinations. It may construct inert metadata/trace values
+and call diagnostic predicates only; no solver, physical evaluator, instrumentation
+poison, new physical fixture or substitute witness is permitted. Implementer must
+report the exact selector/callgraph; parent inspects it before a bounded exact
+binary invocation. This addresses the repeated C1/C5 regression gap and is separate
+from the three unchanged physical slots. Final source/build custody includes any
+new test input. Required release build, lint, proofs and independent reviews remain.
+
+Candidate03 (whole`d5c9cc67989edc48ad9e5d744ba557e0323e87b05ec910f886a349dace702b18`,
+stage1`5981012b1ed584f39d0a23e8508a5965737e2ab04ed3f9050ea5540fdbe983e9`)
+passes exact rustfmt and release no-run91.234s. LSE Clippy FAIL234:230exact
+inherited matches and4introduced diagnostics. Same correctness accepts C3's
+rejecting comparisons and C4's early absence within dependencies, and retains
+noninterference PASS; C1/C2 still have locator/impossible-prefix defects and C5
+self-presence-derived statuses remain incompatible with acceptance. Source and
+reviews are preserved; no scientific approval follows from build success.
+
+Same writer continues candidate04 with explicit expected application/ordinal/norm
+states, exact locator boundaries and metadata-only regression evidence. The test
+is now a material current acceptance requirement after repeated relation failures;
+it was authorized but not yet added in candidate03. Parent rejects treating an
+internal worker estimate as an early owner stop. Scope/deadlines remain unchanged;
+final source must be frozen with time for checks and independent verification.
+
+Candidate04 (whole`9f387a161bb7f04e55de9d3ad82f8909e97f3adaf0cbfc3eed8e36dc73805728`,
+stage1`468fbe8c425205cf7e1338bd84ffbc9dec124174e28045264a7ab913660bd83a`)
+passes no-run91.184s and format; Clippy FAIL234 includes230inherited/4new.
+Parent inspected the new exact metadata control callgraph: JSON parsing, enum/
+locator construction and diagnostic selector only. Ran exact direct-binary test
+`m1_trust_region_stage1::m1_refinement_atomic_terminal_inventory_schema_control`:
+**FAIL1test**,0.012337s, first approved P0FullRadius/NonfiniteOperand row rejected
+because test mapper misread JSON-null fields. Raw stdout/stderr/command/source/binary
+are retained under `checks/candidate04-metadata.*`. Physical slots remain0/0/0.
+
+Same correctness conditionally accepts C1–C4 source fixes, pending corrected
+inventory validation. C5 still derives reach from field presence, mislabeling
+missing required snapshots/inverse/delta/norm traces and stray early fields; early
+eligibility and reservation ownership are also incorrect. Same writer receives
+explicit terminal-derived application/ordinal/norm expectations and typed JSON
+mapping correction, with nonidentity free IDs and missing/stray status controls.
+No source/capture approval; no failed test is waived or converted to success.
+
+Candidate05 debug no-run PASS31.132s but metadata FAIL on second-zero factor
+scratch-array mapping; Clippy FAIL237=230inherited+7new. Candidate06 debug no-run
+PASS4.731s but metadata FAIL on first-residual-positive/ResidualSourceTerm/
+SubnormalIntermediate. Candidate07 debug no-run FAIL E0308 (u8/usize mapper);
+candidate08 corrects the type. These failures are not physical invocations.
+All raw checks are retained under successor `checks/`; source patches for cuts01–04,
+06 onward are retained against frozen cut02. Candidate05 exact source was not
+snapshotted before handback; its hashes/raw checks remain, a recovery limitation.
+The writer has until05:38 to finish required metadata variants/status controls;
+no failed acceptance is waived and no extension is adopted.
+
 ## HOLD disposition and reviewer-succession continuation proposal — 2026-10-03
 
 Owner requests HOLD and continuation-prompt authoring only. **HOLD_NO_COMPLETED_DAY;

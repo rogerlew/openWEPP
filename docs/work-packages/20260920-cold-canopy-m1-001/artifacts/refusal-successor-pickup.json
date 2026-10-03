@@ -1,0 +1,26 @@
+{
+  "source_sha256": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+  "archives": {
+    "refusal-branch-completeness-source-cut02": {
+      "sha256": "deae589e016ff71d9ff7ba26688fdf66366a38fb9afca2cc8c92295c3e5deefa",
+      "verified_members": 765
+    },
+    "refusal-branch-completeness-checks": {
+      "sha256": "8e1fcae0bb8e17c7c5720f172d3c543a38ba1c57d0041a4e8083c4e21da87221",
+      "verified_members": 284
+    }
+  },
+  "binary_sha256": "eab5ee238940659b9df3f2998c41576fc467295aa50852b55159f45b1b46735e",
+  "build_pins": 611,
+  "resolutions": 568,
+  "links": {
+    ".config": true,
+    ".venv": true,
+    "assurance": true,
+    "docs": true,
+    "src": true,
+    "tests": true,
+    "tools": true
+  },
+  "approved_inventory_sha256": "8e8b9f00cf8a6519f0a1e662a94c71cf406ad479a5ab8d32d7b6af88ebc92ac4"
+}

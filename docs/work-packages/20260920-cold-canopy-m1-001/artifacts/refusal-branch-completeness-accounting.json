@@ -1,18 +1,14 @@
 {
-  "anchor_utc": "2026-10-02T19:55:00+00:00",
-  "carry_seconds": 473736.069712,
-  "extension_seconds_adopted_once": 5400,
-  "ceiling_seconds": 481934.92798,
-  "R_seconds": 8198.858268,
-  "readiness_deadline_utc": "2026-10-02T21:05:00+00:00",
-  "final_check_reserve_start_utc": "2026-10-02T20:55:00+00:00",
-  "hard_deadline_utc": "2026-10-02T22:11:38.858268+00:00",
-  "work_cutoff_utc": "2026-10-02T22:01:38.858268+00:00",
-  "inactive_owner_decision_interval": [
-    "2026-10-02T19:37:00Z",
-    "2026-10-02T19:55:00+00:00"
-  ],
-  "initial_head": "a4d2a2137f2082e555cf5dbb61f8cf90aaa411e8",
+  "anchor_utc": "2026-10-03T04:38:00+00:00",
+  "carry_seconds": 479736.069712,
+  "extension_seconds_adopted_once": 0,
+  "ceiling_seconds": 487334.92798,
+  "R_seconds": 7598.858268,
+  "readiness_deadline_utc": "2026-10-03T05:48:00+00:00",
+  "final_check_reserve_start_utc": "2026-10-03T05:38:00+00:00",
+  "hard_deadline_utc": "2026-10-03T06:44:38.858268+00:00",
+  "work_cutoff_utc": "2026-10-03T06:34:38.858268+00:00",
+  "initial_head": "593eaf7fc",
   "initial_dirty_sha256": {
     "crates/openwepp-land-surface-energy/src/covered_natural_limit_diagnostic_parity_tests.rs": "ccf9f75248e3c2e26f57fcf7a1fb74a6ccb42f716f8c0cf58ac9aacacca7d91c",
     "tests/integration/advisory_linter_authority_contract.rs": "c0e28067a8668773da25027a7b1c2f98b6d8a16acebed3c136054eb19c50a082",
@@ -81,13 +77,41 @@
     }
   },
   "physical_invocations": 0,
-  "charged_through_utc": "2026-10-02T21:10:00+00:00",
-  "current_invocation_charge_seconds": 4500,
-  "cumulative_charged_seconds": 478236.069712,
-  "remaining_seconds": 3698.858268,
-  "charge_method": "Conservative active charge from19:55 through21:10UTC including reading, all waits/concurrent wall counted once, review, checks, preservation, local commit and return; exclude only documented19:37\u201319:55 inactive owner-decision interval. Extend carry if actual work exceeds21:10; no refund/reset.",
+  "charged_through_utc": "2026-10-03T05:48:00+00:00",
+  "current_invocation_charge_seconds": 4200,
+  "cumulative_charged_seconds": 483936.069712,
+  "remaining_seconds": 3398.858268,
+  "charge_method": "Conservative charge04:38\u201305:48UTC including reading, edits, commands, waits, concurrent wall once, reviews, archives, checks, localcommit and return. Prior conservative carry retained without refund. Extend if actual work exceeds05:48; no extension/renewal.",
   "disposition": "HOLD_NO_COMPLETED_DAY",
   "capture_approved": false,
-  "source_authoring_stop_utc": "2026-10-02T20:55:00+00:00",
-  "last_source_change": "Semantics-preserving one-line lint fix inside final-check/review reserve; no core source/capture continuation."
+  "source_authoring_stop_utc": "2026-10-03T05:38:00+00:00",
+  "last_source_change": "Finalcut11 frozen05:37:20UTC before05:38 authoringstop. No further core edits. C5 and requiredvalidation remain unmet.",
+  "prior_accounting": [
+    {
+      "anchor_utc": "2026-10-02T19:55:00+00:00",
+      "carry_seconds": 473736.069712,
+      "extension_seconds_adopted_once": 5400,
+      "ceiling_seconds": 481934.92798,
+      "R_seconds": 8198.858268,
+      "readiness_deadline_utc": "2026-10-02T21:05:00+00:00",
+      "final_check_reserve_start_utc": "2026-10-02T20:55:00+00:00",
+      "hard_deadline_utc": "2026-10-02T22:11:38.858268+00:00",
+      "work_cutoff_utc": "2026-10-02T22:01:38.858268+00:00",
+      "inactive_owner_decision_interval": [
+        "2026-10-02T19:37:00Z",
+        "2026-10-02T19:55:00+00:00"
+      ],
+      "initial_head": "a4d2a2137f2082e555cf5dbb61f8cf90aaa411e8",
+      "physical_invocations": 0,
+      "charged_through_utc": "2026-10-02T21:10:00+00:00",
+      "current_invocation_charge_seconds": 4500,
+      "cumulative_charged_seconds": 478236.069712,
+      "remaining_seconds": 3698.858268,
+      "charge_method": "Conservative active charge from19:55 through21:10UTC including reading, all waits/concurrent wall counted once, review, checks, preservation, local commit and return; exclude only documented19:37\u201319:55 inactive owner-decision interval. Extend carry if actual work exceeds21:10; no refund/reset.",
+      "disposition": "HOLD_NO_COMPLETED_DAY",
+      "capture_approved": false,
+      "source_authoring_stop_utc": "2026-10-02T20:55:00+00:00",
+      "last_source_change": "Semantics-preserving one-line lint fix inside final-check/review reserve; no core source/capture continuation."
+    }
+  ]
 }

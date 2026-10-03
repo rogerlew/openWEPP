@@ -1,0 +1,59 @@
+{
+  "evidence_class": "Static: attributable successor review responses; no physical workflow",
+  "successors": {
+    "correctness": "/root/successor_correctness",
+    "qa": "/root/successor_qa"
+  },
+  "ownership": "Both explicitly accepted original findings, source/evidence and fix-verification ownership before implementation; neither authored implementation/helper",
+  "records": [
+    {
+      "reviewer": "/root/successor_correctness",
+      "source_stage1_sha256": "bcb7b829df4fda95417056acf4060584c50395df987228ec58aba8ed619cb352",
+      "verdict": "HOLD",
+      "response": "Static review of candidate01 stage1 bcb7b829\u2026b352; no physical workflow, build, or tests run by this reviewer.\nHigh \u2014 C1: The selector still diverges from the 109-row inventory. It admits impossible SplitterOverflow combinations, has incorrect second residual/H1 reason sets, rejects valid term-zero and final-add locators, permits positive second residuals with scratch=false, and rejects valid zero-lambda second branches with scratch=false.\nHigh \u2014 C2/C4: First residual/H0 and second residual/H1 remain merged because their prefix helpers never test residual0 or residual1. Completed zero-lambda paths also still permit stray legacy inverse fields outside FactorOutput.\nHigh \u2014 C3: FinalRadiusCloseness is made impossible by requiring free_norm > radius after FinalReducedRadius already established the opposite. Zero-lambda scratch/final radius terminals still omit their rejecting comparisons.\nHigh \u2014 C5: Reachability still uses parallel coarse mappings. It conflates delta with p1/p2 copy boundaries, ignores correction position for completed application and residual/H fields, misses zero snapshot H inapplicability, treats pre-inverse absence as missing instrumentation, and broadly requires p1/p2 and norm fields before their copy sites.\nStatic noninterference passes: substantive changes remain in cfg(test) capture/status logic; other differences are test-code formatting. No production arithmetic, guard, tolerance, branch, fixture, or physical evaluation changed.\nMissing evidence includes exhaustive accepted/rejected evaluation of all 109 rows and impossible pairs, plus proof that field status and acceptance derive identical reached/partial/absent states.\nHOLD. C1\u2013C5 remain open; no source-completeness or capture approval. I retain final fix-verification ownership.",
+      "response_format": "Original final-response prose retained with Markdown link/format removal; same findings"
+    },
+    {
+      "reviewer": "/root/successor_qa",
+      "scope": "corrected helper and unchanged event proof",
+      "verdict": "PASS within scope; no capture approval",
+      "response": "Correction \u2014 event proof reuse passes. I found the retained evidence and verified source equivalence.\nrefusal-finalization-qa.json explicitly verifies the 2048 cap and 1402 natural bound, with reuse limited to unchanged event/cap proof. refusal-completeness-correctness.json binds unchanged W3 pins.\nCurrent frozen hashes match: controller 9637b174\u2026, coupled 058c9746\u2026, vegetation 019732e6\u2026, and tests 16a2c455\u2026. I found no changed premise. Reuse is acceptable if final exact-source custody confirms those files remain unchanged.\nHelper evidence remains PASS: helper-check02.json pins the corrected helpers and records 13 isolated rejection cases, optimized-Python rejection, and zero slots.",
+      "response_format": "Original final-response prose retained with Markdown link/format removal",
+      "supersedes": "Earlier QA no-retained-event-review claim was explicitly retracted after locating retained approved review and verifying unchanged dependencies; no requirement waived"
+    },
+    {
+      "reviewer": "/root/successor_correctness",
+      "source_stage1_sha256": "6386f0e5c2bbeef1c75cc79d5502324fe477fef2d721d22ed3b1bd6fea8939a3",
+      "verdict": "HOLD",
+      "response": "Static review of candidate02 stage1 6386f0e5\u202639a3.\nHigh \u2014 compile failure: Undefined dot at m1_trust_region_stage1.rs:3034; parent no-run/clippy confirmed E0425.\nHigh \u2014 C1: H1 incorrectly joins the inner Dot2 term to the outer free-coordinate slot, rejects valid H1 final-add locators, and the generic residual locator admits an impossible second-residual term-zero Accumulation case.\nHigh \u2014 C3: Zero-lambda scratch and final RadiusComparison branches authenticate norms without proving norm > original_trust_radius.\nHigh \u2014 C5: Status remains incompatible with accepted terminal prefixes. Stage-only rules misclassify application fields during second Dot2, residual copies, FactorOutput deltas, ordinal snapshots, legacy inverses, and norm fields. In particular, identical FactorApplicationOutput metadata must be distinguished by the captured snapshot/copy prefix; requiring delta for every such terminal rejects valid pre-copy failures.\nC2/C4 partial: Pre-factor absence, factor identity, global zero-inverse absence, and basic residual/H prefix separation improved, but the incorrect H1 relation and incompatible status model prevent closure.\nStatic noninterference passes: changes remain confined to cfg(test) observation logic.\nMissing evidence remains a compiling exact-source cut plus complete 109-row acceptance/status equivalence. HOLD; no source-completeness or capture approval. I retain final verification ownership.",
+      "response_format": "Original final-response prose with Markdown formatting/link removal"
+    },
+    {
+      "reviewer": "/root/successor_correctness",
+      "source_stage1_sha256": "5981012b1ed584f39d0a23e8508a5965737e2ab04ed3f9050ea5540fdbe983e9",
+      "verdict": "HOLD",
+      "response": "Static review of candidate03 stage1 5981012b\u202683e9. Parent reports rustfmt and no-run passed; four new clippy findings remain.\nHigh \u2014 C1/C2: H1 still lacks per-stage term bounds and permits invalid final-add coordinates. The residual locator admits an impossible second-residual term-zero Accumulation. Positive FactorApplicationOutput still accepts an impossible delta-present validation prefix.\nHigh \u2014 C5: Field status derives reachability from the field\u2019s own presence for snapshots, inverse/delta members, application aggregates, and norm traces. This labels missing required evidence as naturally unreached and stray early evidence as captured, while acceptance rejects the same trace.\nC3: Static pass. Positive, zero-lambda, reduced-radius, and closeness comparisons now validate the rejecting side and operation-order operands.\nC4: Static pass within dependencies; exact early absence rules are corrected, pending the H1 relation fix.\nNoninterference: Static pass. Changes remain in cfg(test) diagnostics.\nThe missing metadata-only 109-row accepted/impossible test is material because the remaining defects are exact-relation failures.\nHOLD; C1, C2, and C5 remain open. No source-completeness or capture approval. I retain final verification ownership.",
+      "response_format": "Original final-response prose with Markdown formatting removed"
+    },
+    {
+      "reviewer": "/root/successor_correctness",
+      "source_stage1_sha256": "468fbe8c425205cf7e1338bd84ffbc9dec124174e28045264a7ab913660bd83a",
+      "verdict": "HOLD_C5_AND_VALIDATION",
+      "response": "Static review of Candidate04 (468fbe8\u2026).\nHigh \u2014 C5 remains open: snapshot reach uses vector length; legacy inverse, delta, ordered norms, and partial norms use their own presence. Missing required fields can become naturally_unreached; stray fields can become captured. Eligibility counters and reservation_denial_owner are unconditionally considered reached, despite differing copy boundaries and reservation ownership. FactorOutput interruption logic cannot detect a wholly missing required snapshot or an unexpected ordinal.\nHigh \u2014 inventory test is invalid and fails: it detects JSON key text rather than typed values, mapping term:null and scratch_box_feasible:null as present. Parent ran it and observed failure on the first approved row. Identity free IDs also hide H1 mapping regressions, and the test lacks missing/stray status cases.\nC1\u2013C4: Static source inspection found the substantive fixes coherent: exact reason/locator sets, residual/H0/H1 prefix separation, free-coordinate joins, positive FactorOutput delta rejection, radius comparisons, and early absence checks. Approval remains conditional on a corrected 109-row test.\nRequired evidence remains a typed JSON mapper, nonidentity free IDs such as [2,5,9], and explicit status assertions for missing required and stray unexpected fields. No physical or capture workflow was run.\nDisposition: HOLD on C5 and failed validation; C1\u2013C4 conditionally accepted.",
+      "response_format": "Original final-response prose with Markdown formatting/link removal"
+    },
+    {
+      "reviewer": "/root/successor_correctness",
+      "source_stage1_sha256": "85d80b02d121ff788d5cafe4d2f45d6b5411deb1e66a26e81e43e2b29b134e16",
+      "verdict": "HOLD C5; C1\u2013C4 static PASS",
+      "response_format": "Verbatim final response",
+      "response": "Static final review of cut11 (`85d80b02\u2026`):\n\n- **High \u2014 C5 remains open.**\n  - First positive FactorOutput after-inverse marks the present legacy inverse contradictory because all first FactorOutput inverse fields are declared unreachable.\n  - Zero FactorOutput validation-subnormal marks copied `delta0`/`delta1` contradictory; lambda-step failure marks absent delta naturally unreached instead of interrupted.\n  - Completed full-radius comparison terminals omit `ordered_norm_traces` from expected reachability.\n  - `partial_ordered_norms` depends only on stage, so completed full-radius comparisons incorrectly require a partial trace.\n\n- **Validation gap:** The inventory test now uses typed JSON and nonidentity free IDs, but samples only one locator from aggregate rows. It omits residual term-zero, H0 shift, and H1 final-add variants. Status missing/stray controls are also absent.\n\n- **C1\u2013C4:** Accepted by static source inspection.\n\n- **Noninterference:** PASS by static patch inspection. Changes are confined to `cfg(test)` capture, validation, status helpers, and tests. No production physical arithmetic or solver path changed.\n\nNo physical, capture, or comparator workflow was run by this reviewer.\n\n**Disposition: HOLD on C5; C1\u2013C4 approved within the stated evidence limit.**"
+    }
+  ],
+  "final_qa_route": {
+    "status": "UNAVAILABLE_AFTER_EARLIER_SCOPE_PASS",
+    "attempts": 3,
+    "tool_error": "agent thread limit reached",
+    "note": "Final QA reactivation failed with implementer active, after implementer completed, and after correctness completed. No replacement reviewer or parent approval; earlier helper/event proof review retained only in its unchanged scope."
+  }
+}
