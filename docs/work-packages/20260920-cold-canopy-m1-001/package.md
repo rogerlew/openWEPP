@@ -1,5 +1,62 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Atomic-terminal invocation — preserved HOLD, 2026-10-03
+
+**HOLD_NO_COMPLETED_DAY; class(c), insufficient evidence/runtime feasibility.**
+Owner invoked `/tmp/openwepp_cold_canopy_m1_refusal_atomic_terminal_continuation.md`.
+The bounded continuation and its one new +5400s allowance are adopted once;
+the preceding extension is not reapplied. Pickup HEAD is
+`35803bc413e24b3687beda069f5075a5ba244f71`, the prompt-record successor of `fcc9c1a`.
+The proposal below is now historical as a proposal; its execution constraints
+remain binding. This invocation stopped at its missing-independent-review condition.
+C1–C5 and independent helper/final QA remain unmet. W1/W2/W3 remain **0/0/0**.
+
+Runtime targets remain 500us CPU/550us wall per completed OFE-day; regimes
+750/1500/2500us CPU; 10-OFE century 182.625s CPU/210s wall. The 1440-solve/day
+share remains 0.347222us CPU before other work. Native completed-day cost,
+feasibility and target gap remain unestablished; no new performance evidence.
+
+Intent before edits: authenticate final cut02 and retained evidence, establish
+required same-reviewer availability, then execute only within the adopted contract.
+Actual write scope is this record and one pickup/accounting JSON. Selected checks
+are source/archive/build-pin authentication, persistent-slot and approval inspection,
+48 unrelated-path hashes, JSON parsing, record references and scoped diff whitespace.
+No implementation, mutable source restoration, build, physical invocation or
+actual-witness reconstruction was performed after the review prerequisite failed.
+
+Each original reviewer was contacted once through `followup_task`: `/root/qa`
+and `/root/correctness` both returned `live agent path ... not found`. This is
+current session unavailability, distinct from the earlier thread-limit error.
+No repeated attempt or substitute same-reviewer approval was claimed. The adopted
+contract explicitly requires: “If required independent final QA/fix verification
+remains unavailable, preserve HOLD without captures.” Original responses/findings
+remain preserved; no fix is closed and no sealed approved receipt exists.
+Remaining work is C1–C5 implementation, exact-source checks, required independent
+fix/final verification, then conditional original captures and reviewed diagnosis.
+It cannot be completed under this invocation's unavailable review prerequisite.
+
+Ran: [pickup authentication and accounting](artifacts/refusal-atomic-terminal-pickup-hold.json)
+verifies final source `63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6`,
+all 765 regular source files and seven exact available links, all 765 source-archive
+members and 284 raw-check members, retained binary `eab5ee23…735e`, all 611 build
+pins and 568 path resolutions, approved inventory `8e8b9f00…92ac4`, and all 48
+unrelated main-worktree paths. The prior build receipt records 60 depfiles;
+no new build is claimed. These checks establish custody, not scientific approval.
+The frozen source, binary and original evidence remain at their recorded durable
+paths; no new source copy is necessary for this stopped invocation.
+
+Accounting uses a conservative **2026-10-03T00:45:00Z** first-work anchor, earlier
+than the first observed clock at 00:49:13Z, to include all initial reading.
+Exclude only inactive owner-decision time from prior charged-through 23:43Z to
+that anchor. Carry is **478716.069712s**; new ceiling **487334.927980s** gives
+R **8618.858268s**. The adopted formula gives core-authoring stop 01:45Z,
+readiness 01:55Z, work cutoff 02:58:38.858268Z and hard deadline 03:08:38.858268Z.
+This earlier review-unavailability stop does not renew any window.
+Conservative charge through **00:55Z**, including preservation, local commit and
+return, is **600s**; latest cumulative **479316.069712s**, remaining
+**8018.858268s**. Count all active work/waits/concurrent wall once; extend carry
+if actual work exceeds 00:55Z. No refund, slot reset or automatic continuation.
+Disposition is locally preserved and scoped for local commit only; no push.
 
 ## HOLD disposition and atomic-terminal continuation proposal — 2026-10-02
 

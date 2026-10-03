@@ -1,0 +1,86 @@
+{
+  "evidence_class": "Ran: read-only source, archive, binary, build-pin and unrelated-path authentication; no physical or Rust workflow",
+  "source_sha256": "63c3dac861cc9d11999cafd34b1b6e89fdafc170b7d92dbbdec8caf34b4009e6",
+  "regular_files": 765,
+  "links": {
+    ".config": true,
+    ".venv": true,
+    "assurance": true,
+    "docs": true,
+    "src": true,
+    "tests": true,
+    "tools": true
+  },
+  "archives": {
+    "source-cut02": {
+      "sha256": "deae589e016ff71d9ff7ba26688fdf66366a38fb9afca2cc8c92295c3e5deefa",
+      "verified_members": 765
+    },
+    "checks": {
+      "sha256": "8e1fcae0bb8e17c7c5720f172d3c543a38ba1c57d0041a4e8083c4e21da87221",
+      "verified_members": 284
+    }
+  },
+  "binary_sha256": "eab5ee238940659b9df3f2998c41576fc467295aa50852b55159f45b1b46735e",
+  "build_pins_checked": 611,
+  "build_pin_failures": [],
+  "resolutions_checked": 568,
+  "resolution_failures": [],
+  "recorded_depfile_count": 60,
+  "approved_inventory_sha256": "8e8b9f00cf8a6519f0a1e662a94c71cf406ad479a5ab8d32d7b6af88ebc92ac4",
+  "unrelated_paths_verified": 48,
+  "slots": {
+    "W1": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W2": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W3": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    }
+  },
+  "approved_receipt_exists": false,
+  "reviewer_resume_errors": {
+    "/root/qa": "live agent path `/root/qa` not found",
+    "/root/correctness": "live agent path `/root/correctness` not found"
+  },
+  "reviewer_retries": 0,
+  "implementation": "NOT RUN: adopted missing-independent-fix-verification HOLD condition",
+  "captures": "NOT RUN",
+  "open_findings": [
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5"
+  ],
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "accounting": {
+    "anchor_utc": "2026-10-03T00:45:00Z",
+    "anchor_basis": "Conservative earlier anchor than first observed clock 00:49:13Z, covering initial reading",
+    "carry_seconds": 478716.069712,
+    "extension_seconds_adopted_once": 5400,
+    "ceiling_seconds": 487334.92798,
+    "R_seconds": 8618.858268,
+    "core_authoring_stop_utc": "2026-10-03T01:45:00Z",
+    "readiness_deadline_utc": "2026-10-03T01:55:00Z",
+    "work_cutoff_utc": "2026-10-03T02:58:38.858268Z",
+    "hard_deadline_utc": "2026-10-03T03:08:38.858268Z",
+    "charged_through_utc": "2026-10-03T00:55:00Z",
+    "invocation_charge_seconds": 600,
+    "latest_carry_seconds": 479316.069712,
+    "remaining_seconds": 8018.858268,
+    "excluded_inactive_owner_decision_interval": [
+      "2026-10-02T23:43:00Z",
+      "2026-10-03T00:45:00Z"
+    ],
+    "charge_policy": "All active and wait/concurrent wall counted once; extend if actual return exceeds charged-through; no refund or automatic continuation"
+  }
+}
