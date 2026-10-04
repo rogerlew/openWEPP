@@ -1,0 +1,48 @@
+QA successor availability and helper/custody preparation record — /root/terminal_qa
+
+Availability and ownership
+
+Available as the independent QA successor route. I accept ownership of inherited C5 controls: one per-field terminal/copy/norm-role authority; exhaustive 107-row inert traces; full terminal acceptance and complete public status-map value comparisons; missing-required and stray-unexpected injections. I also own helper behavior, strict UTF-8/payload/stdout bounds, parsing, durable slots/reservations, absolute deadlines, optimized-Python rejection, sealed source/binary/helper/fixture/ledger custody, exact final-source formatting, matched lint evidence, metadata controls, and regenerated schema/status/field/type/event/collection proofs.
+
+I accept final verification of all fixes against the exact affected source and custody receipts. I am independent of the prior writers, /root/cut26_architecture_advice, and the correctness route; parent approval and prior wording review cannot substitute for acceptance. This is availability and finding ownership only: it grants no source, metadata, custody, binary, readiness, or capture approval. No source edits or build/physical workflows were run by this reviewer.
+
+Inherited blockers at route establishment: duplicated terminal-content versus descriptor/status authority; inadequate full-inventory controls; rustfmt failure; ten unmatched LSE Clippy diagnostics; and failed vegetation Clippy gate. The historical automatic 3,000-line closure finding is withdrawn by the final QA addendum; substantive semantic duplication remains blocking.
+
+Initial helper/custody preparation review — before correction
+
+Static: inspected copied Cut26 helpers, QA helper report, pickup/final receipts, protocol, and original persistent ledger. No helper, solver, capture, source, configuration, ledger, or package edit was made by this reviewer; no build or physical workflow was run.
+
+Findings:
+
+HIGH — `check.py:16` and `run_metadata.py:43` were stale at readiness `2026-10-04T05:28:00+00:00`; both had to bind the original persistent ledger readiness `2026-10-04T06:53:38.858268+00:00`.
+
+HIGH — `protocol-draft.json:18-19` was stale at capture cutoff `2026-10-04T06:18:38.858268+00:00` and readiness `2026-10-04T05:28:00+00:00`; it had to bind work cutoff `2026-10-04T07:03:38.858268+00:00` and the same `06:53:38.858268Z` readiness. The hard deadline `07:13:38.858268Z` is not a capture cutoff.
+
+HIGH — `capture_once.py:10` named absent stale `refusal-successor-approved.json`. It had to require a new sealed final approval receipt, only after all required reviews/checks, binding current source, binary, schema, fixture, helper hashes, original persistent ledger path/anchor/ceiling, readiness, and work cutoff. Failed/HOLD receipts cannot satisfy correctness or QA approval.
+
+The original persistent ledger was independently inspected: `extension_seconds_adopted_once` remains 0 at the active level; W1/W2/W3 have zero reservations/invocations; `physical_invocations` is 0; `capture_approved` is false; readiness is `06:53:38.858268Z`; work cutoff is `07:03:38.858268Z`; hard deadline is `07:13:38.858268Z`. It remains authoritative; no reset is authorized.
+
+Retained helper strengths: `capture_once.py` rejects optimized Python, validates direct binary/argv/pins, locks and durably reserves before launch, enforces W1→W3 order and the 90-second aggregate, rechecks the 30-second launch deadline, caps stdout/stderr, and preserves slot consumption on failure. `capture_payload.py` retains strict UTF-8, duplicate-key, nonstandard-constant, framing, schema, and payload-cap rejection. `run_metadata.py` only permits named inert controls and validates source/binary/build pins before execution.
+
+Correction verification — scoped disposition
+
+Static: verified the requested literal replacements only. `check.py:16` and `run_metadata.py:43` now bind readiness `2026-10-04T06:53:38.858268+00:00`. `protocol-draft.json:18-19` now binds work cutoff `2026-10-04T07:03:38.858268+00:00` and readiness `2026-10-04T06:53:38.858268+00:00`. `capture_once.py:10` now requires `terminal-plan-approved.json`.
+
+Ran evidence supplied by the parent: syntax compilation PASS. This reviewer did not rerun it. Static: `terminal-plan-approved.json` is absent, so `capture_once.py` remains fail-closed before approval validation, locking, reservation, or launch. No stale old deadline or `refusal-successor-approved.json` reference remains in the six helper/protocol files inspected.
+
+PASS within the bounded helper/custody preparation scope. The three stale-binding findings are corrected. This is not final source QA or capture approval. The changed `check.py`, `run_metadata.py`, `capture_once.py`, and protocol require final hash binding in the sealed receipt. Unchanged `capture_payload.py` and `reconstruct.py` are reusable only if their hashes remain identical. The metadata whitelist must be updated and reviewed after source static inspection; final source/gate/proof/custody checks and both final approvals remain required.
+
+Final helper hashes after correction
+
+* `check.py`: `0646747bb91a713982b3b83cb9139f1489812066ac1a8d816bbe736e72363306`
+* `run_metadata.py`: `ec6c725a1e555965923ee74fe433bf575ad836de1e57806d041108d299373115`
+* `capture_once.py`: `0533471a674a320b1cb443a33d83ef1bcee4d31316f0d2c9790e6875ac59deb5`
+* `protocol-draft.json`: `385de96b1aa74a1fc09355321f1051a3982c4c97b3694815c7cd8da1955b33f6`
+* unchanged `capture_payload.py`: `0c67e3ad69c2cae87eeae977e76b491767befc8c182c559a09104e01cc6b5af3`
+* unchanged `reconstruct.py`: `a4cbce24fc47c169f9de336471b855d32283d6ccf7905f441d442c8f71759745`
+
+Available for same-reviewer final helper/custody verification.
+
+Parent-reported terminal stop
+
+Parent reports that correctness-route reactivation through `followup_task` failed with the exact runtime reason `agent thread limit reached`. The owner applied the missing-independence stop at 05:59UTC and the implementer was interrupted immediately. This is parent-reported runtime evidence, not independent final-source review: no source, build, metadata, capture, readiness, binary, custody, or final QA approval follows from this helper record. The disposition is HOLD with no retry or substitution.

@@ -1,0 +1,12 @@
+{
+  "source_sha256": "b5274ad01ab31ad22f501763874e54f3a083c5db5473ad03bc94da8ef971e1e5",
+  "verified_source_entries": 772,
+  "verified_raw_members": 292,
+  "verified_build_pins": 560,
+  "recorded_depfiles": 35,
+  "binary_verified": true,
+  "source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/source",
+  "independent_correctness": "/root/terminal_correctness",
+  "independent_qa": "/root/terminal_qa",
+  "availability_only_not_approval": true
+}

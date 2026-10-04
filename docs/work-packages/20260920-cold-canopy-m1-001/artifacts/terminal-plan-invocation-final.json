@@ -1,0 +1,61 @@
+{
+  "evidence_class": "Ran source/raw/build-input pickup authentication, helper syntax compile, source preservation and unrelated identity checks; Static partial diff inspection and bounded independent QA helper verification. No Rust build/test/lint/metadata/proof/physical workflow.",
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "classification": "class(c), insufficient evidence/runtime feasibility",
+  "stop_reason": "collab tool failed: agent thread limit reached",
+  "partial_source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/partial01/source",
+  "mutable_root": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/source",
+  "source_sha256": "2a9347e26f0fc4548a233cba5fcabccc7f01139df7818693d94d80d854fb0dae",
+  "stage1_sha256": "6400fa371c8cf2217a99f5df0e9584b0321a398f12090e4575148bc4a8936752",
+  "source_entries": 772,
+  "source_archive_sha256": "9870f48f494f1288b48bc1b80f727697e940c0ddf59e7e785aca3c949e359441",
+  "raw_archive_sha256": "fc1ecc5183bb6ba0de66d2f0b054a3ec9c98721d0ac8c80e0f927d0217ad1fa0",
+  "raw_members": 33,
+  "changed_source_paths": [
+    "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+  ],
+  "new_binary": null,
+  "checks": {
+    "rustfmt": "NOT_RUN after missing-independence stop",
+    "release_physical_stage_no_run": "NOT_RUN after missing-independence stop",
+    "lse_clippy": "NOT_RUN after missing-independence stop",
+    "vegetation_clippy": "NOT_RUN after missing-independence stop",
+    "inert_metadata": "NOT_RUN after missing-independence stop",
+    "final_proofs": "NOT_RUN after missing-independence stop"
+  },
+  "final_reviews": {
+    "correctness": "UNMET route reactivation failed",
+    "qa": "UNMET final-source; bounded helper prep PASS only"
+  },
+  "slots": {
+    "W1": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W2": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W3": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    }
+  },
+  "physical_invocations": 0,
+  "capture_approved": false,
+  "main_rust_adoption": false,
+  "push": false,
+  "cumulative_charged_seconds": 493956.069712,
+  "remaining_seconds": 4178.858268,
+  "ceiling_seconds": 498134.92798,
+  "charged_through_utc": "2026-10-04T06:04:00+00:00",
+  "remaining_requirements": [
+    "Complete single per-field terminal/copy/norm/content authority",
+    "Independent107row all-locator full traces/full-status values/missing-stray controls plus2WorkCap accounting",
+    "Exact format/lint/no-run/metadata/proofs/custody",
+    "Both final independent approvals and sealed receipt before any original slot release"
+  ]
+}

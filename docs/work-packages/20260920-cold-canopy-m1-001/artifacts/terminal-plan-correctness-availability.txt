@@ -1,0 +1,12 @@
+Static route establishment only.
+
+`/root/terminal_correctness` is **AVAILABLE** as the independent correctness successor. I accept:
+
+- Inherited C1–C5 and final cut26 correctness findings.
+- Lineage, science-contract, and noninterference review scope.
+- Same-reviewer verification of accepted fixes.
+- Final review of the exact source, helpers, controls, proofs, and custody.
+
+I am independent of prior authors, implementers, and `/root/cut26_architecture_advice`, and distinct from QA.
+
+This is **availability and findings ownership only**. It is not source approval, fix acceptance, readiness, or capture authorization. No edits or build, test, metadata, or physical workflows were performed. Corrected-source evidence remains pending.

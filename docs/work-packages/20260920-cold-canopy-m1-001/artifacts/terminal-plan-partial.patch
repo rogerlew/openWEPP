@@ -1,0 +1,210 @@
+--- /home/roger/openwepp-experiments/cold-canopy-m1-cut26-resumption-20261004/frozen/final/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs	2026-10-03 21:46:41.957755088 -0700
++++ /home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/partial01/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs	2026-10-03 22:59:09.459538733 -0700
+@@ -3789 +3788,0 @@
+-    _legacy_phase: u8,
+@@ -3918 +3917 @@
+-        } else if self.field_content_required(trace, name) {
++        } else if self.field_required(trace, name) {
+@@ -3958 +3957 @@
+-            return if self.field_content_required(trace, name) {
++            return if self.field_required(trace, name) {
+@@ -4016 +4015 @@
+-            _ => self.field_content_required(trace, name),
++            _ => self.field_required(trace, name),
+@@ -4042 +4041 @@
+-    fn field_content_required(self, trace: &RefinementObservationTrace, name: &str) -> bool {
++    fn field_required(self, trace: &RefinementObservationTrace, name: &str) -> bool {
+@@ -4290,2 +4289,2 @@
+-            "ordered_norm_traces" => refinement_capture_norm_trace_reached(metadata, false),
+-            "partial_ordered_norms" => refinement_capture_norm_trace_reached(metadata, true),
++            "ordered_norm_traces" => !self.completed_norm_roles.is_empty(),
++            "partial_ordered_norms" => !self.partial_norm_roles.is_empty(),
+@@ -4297,42 +4295,0 @@
+-#[cfg(test)]
+-fn refinement_capture_norm_trace_reached(
+-    metadata: &super::M1TrustRegionRefinementFailureMetadata,
+-    partial: bool,
+-) -> bool {
+-    use super::{M1TrustRegionRefinementGuardStage as Stage, M1TrustRegionRefinementReason};
+-    let comparison = matches!(
+-        metadata.guard_stage,
+-        Stage::RadiusComparison | Stage::FinalRadiusCloseness | Stage::FinalInstallEquality
+-    ) || matches!(
+-        metadata.reason,
+-        M1TrustRegionRefinementReason::FinalRadius | M1TrustRegionRefinementReason::ScratchRadius
+-    );
+-    if !partial
+-        && matches!(
+-            metadata.guard_stage,
+-            Stage::P0ReducedRadius
+-                | Stage::ScratchFullRadius
+-                | Stage::ScratchReducedRadius
+-                | Stage::FinalFullRadius
+-                | Stage::FinalReducedRadius
+-        )
+-        || metadata.guard_stage == Stage::OrderedNorm && metadata.correction_position.is_some()
+-    {
+-        return true;
+-    }
+-    if comparison {
+-        return !partial;
+-    }
+-    partial
+-        && matches!(
+-            metadata.guard_stage,
+-            Stage::P0FullRadius
+-                | Stage::P0ReducedRadius
+-                | Stage::ScratchFullRadius
+-                | Stage::ScratchReducedRadius
+-                | Stage::FinalFullRadius
+-                | Stage::FinalReducedRadius
+-                | Stage::OrderedNorm
+-        )
+-}
+-
+@@ -5438 +5394,0 @@
+-    phase: u8,
+@@ -5444 +5400 @@
+-            refinement_capture_field_status(trace, name, present, phase, roles).into(),
++            refinement_capture_field_status(trace, name, present, roles).into(),
+@@ -5455,2 +5411,2 @@
+-        ($n:literal,$p:expr,$phase:expr) => {
+-            refinement_capture_status_insert(fields, trace, $n, $p, $phase, &[])
++        ($n:literal,$p:expr) => {
++            refinement_capture_status_insert(fields, trace, $n, $p, &[])
+@@ -5459,5 +5415,5 @@
+-    put!("free_ids", trace.face_free_ids.is_some(), 0);
+-    put!("factor_order", trace.factor_order.is_some(), 0);
+-    put!("factor_a_bits", trace.factor_a.is_some(), 0);
+-    put!("factor_v_bits", trace.factor_v.is_some(), 0);
+-    put!("factor_sigma_bits", trace.factor_sigma.is_some(), 0);
++    put!("free_ids", trace.face_free_ids.is_some());
++    put!("factor_order", trace.factor_order.is_some());
++    put!("factor_a_bits", trace.factor_a.is_some());
++    put!("factor_v_bits", trace.factor_v.is_some());
++    put!("factor_sigma_bits", trace.factor_sigma.is_some());
+@@ -5466,2 +5422 @@
+-        trace.weighted_residual.is_some(),
+-        0
++        trace.weighted_residual.is_some()
+@@ -5469,4 +5424,4 @@
+-    put!("weighted_matrix_bits", trace.weighted_matrix.is_some(), 0);
+-    put!("scaled_lower_bits", trace.scaled_lower_bits.is_some(), 0);
+-    put!("scaled_upper_bits", trace.scaled_upper_bits.is_some(), 0);
+-    put!("lambda_bits", trace.lambda_bits.is_some(), 0);
++    put!("weighted_matrix_bits", trace.weighted_matrix.is_some());
++    put!("scaled_lower_bits", trace.scaled_lower_bits.is_some());
++    put!("scaled_upper_bits", trace.scaled_upper_bits.is_some());
++    put!("lambda_bits", trace.lambda_bits.is_some());
+@@ -5475,2 +5430 @@
+-        trace.reduced_face_radius_bits.is_some(),
+-        0
++        trace.reduced_face_radius_bits.is_some()
+@@ -5478,5 +5432,5 @@
+-    put!("live_state_entry_bits", trace.live_state_entry.is_some(), 0);
+-    put!("live_state_exit_bits", trace.live_state_exit.is_some(), 0);
+-    put!("lower_mask_exit", trace.lower_mask_exit.is_some(), 0);
+-    put!("upper_mask_exit", trace.upper_mask_exit.is_some(), 0);
+-    put!("factor_identity", trace.factor_identity.is_some(), 3);
++    put!("live_state_entry_bits", trace.live_state_entry.is_some());
++    put!("live_state_exit_bits", trace.live_state_exit.is_some());
++    put!("lower_mask_exit", trace.lower_mask_exit.is_some());
++    put!("upper_mask_exit", trace.upper_mask_exit.is_some());
++    put!("factor_identity", trace.factor_identity.is_some());
+@@ -5485,2 +5439 @@
+-        !trace.factor_application_identities.is_empty(),
+-        4
++        !trace.factor_application_identities.is_empty()
+@@ -5490,2 +5443 @@
+-        !trace.factor_application_snapshots.is_empty(),
+-        4
++        !trace.factor_application_snapshots.is_empty()
+@@ -5495,2 +5447 @@
+-        trace.factor_output_copy_boundary.is_some(),
+-        4
++        trace.factor_output_copy_boundary.is_some()
+@@ -5498 +5449 @@
+-    put!("factor_applications", trace.factor_applications > 0, 4);
++    put!("factor_applications", trace.factor_applications > 0);
+@@ -5501,2 +5452 @@
+-        trace.eligibility_scalar_operations.is_some(),
+-        2
++        trace.eligibility_scalar_operations.is_some()
+@@ -5506,2 +5456 @@
+-        trace.eligibility_guard_events.is_some(),
+-        2
++        trace.eligibility_guard_events.is_some()
+@@ -5511,2 +5460 @@
+-        trace.reservation_denial_owner.is_some(),
+-        2
++        trace.reservation_denial_owner.is_some()
+@@ -5521,2 +5469,2 @@
+-    macro_rules! put { ($n:literal,$p:expr,$phase:expr,[$($r:literal),*]) => { refinement_capture_status_insert(fields, trace, $n, $p, $phase, &[$($r),*]) }; }
+-    put!("p0_bits", trace.p0.is_some(), 1, []);
++    macro_rules! put { ($n:literal,$p:expr,[$($r:literal),*]) => { refinement_capture_status_insert(fields, trace, $n, $p, &[$($r),*]) }; }
++    put!("p0_bits", trace.p0.is_some(), []);
+@@ -5526 +5473,0 @@
+-        2,
+@@ -5532 +5478,0 @@
+-        2,
+@@ -5538 +5483,0 @@
+-        2,
+@@ -5544 +5488,0 @@
+-        2,
+@@ -5547,6 +5491,6 @@
+-    put!("lower_mask_p0", trace.lower_mask_p0.is_some(), 1, []);
+-    put!("upper_mask_p0", trace.upper_mask_p0.is_some(), 1, []);
+-    put!("residual0_bits", trace.residual0.is_some(), 3, []);
+-    put!("h0_bits", trace.h0.is_some(), 4, []);
+-    put!("delta0_bits", trace.delta0.is_some(), 5, []);
+-    put!("p1_bits", trace.p1.is_some(), 6, []);
++    put!("lower_mask_p0", trace.lower_mask_p0.is_some(), []);
++    put!("upper_mask_p0", trace.upper_mask_p0.is_some(), []);
++    put!("residual0_bits", trace.residual0.is_some(), []);
++    put!("h0_bits", trace.h0.is_some(), []);
++    put!("delta0_bits", trace.delta0.is_some(), []);
++    put!("p1_bits", trace.p1.is_some(), []);
+@@ -5556 +5499,0 @@
+-        7,
+@@ -5562 +5504,0 @@
+-        7,
+@@ -5568 +5509,0 @@
+-        7,
+@@ -5574 +5514,0 @@
+-        7,
+@@ -5577,2 +5517,2 @@
+-    put!("lower_mask_p1", trace.lower_mask_p1.is_some(), 6, []);
+-    put!("upper_mask_p1", trace.upper_mask_p1.is_some(), 6, []);
++    put!("lower_mask_p1", trace.lower_mask_p1.is_some(), []);
++    put!("upper_mask_p1", trace.upper_mask_p1.is_some(), []);
+@@ -5587,5 +5527,5 @@
+-    macro_rules! put { ($n:literal,$p:expr,$phase:expr,[$($r:literal),*]) => { refinement_capture_status_insert(fields, trace, $n, $p, $phase, &[$($r),*]) }; }
+-    put!("residual1_bits", trace.residual1.is_some(), 8, []);
+-    put!("h1_bits", trace.h1.is_some(), 9, []);
+-    put!("delta1_bits", trace.delta1.is_some(), 10, []);
+-    put!("p2_bits", trace.p2.is_some(), 11, []);
++    macro_rules! put { ($n:literal,$p:expr,[$($r:literal),*]) => { refinement_capture_status_insert(fields, trace, $n, $p, &[$($r),*]) }; }
++    put!("residual1_bits", trace.residual1.is_some(), []);
++    put!("h1_bits", trace.h1.is_some(), []);
++    put!("delta1_bits", trace.delta1.is_some(), []);
++    put!("p2_bits", trace.p2.is_some(), []);
+@@ -5595 +5534,0 @@
+-        12,
+@@ -5601 +5539,0 @@
+-        12,
+@@ -5607 +5544,0 @@
+-        12,
+@@ -5613 +5549,0 @@
+-        12,
+@@ -5616,2 +5552,2 @@
+-    put!("lower_mask_p2", trace.lower_mask_p2.is_some(), 11, []);
+-    put!("upper_mask_p2", trace.upper_mask_p2.is_some(), 11, []);
++    put!("lower_mask_p2", trace.lower_mask_p2.is_some(), []);
++    put!("upper_mask_p2", trace.upper_mask_p2.is_some(), []);
+@@ -5621 +5556,0 @@
+-        12,
+@@ -5624 +5559 @@
+-    put!("radius_gap_bits", trace.radius_gap.is_some(), 12, []);
++    put!("radius_gap_bits", trace.radius_gap.is_some(), []);
+@@ -5628 +5562,0 @@
+-        12,

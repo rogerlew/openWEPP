@@ -1,0 +1,17 @@
+{
+  "correctness_route": "/root/terminal_correctness",
+  "qa_route": "/root/terminal_qa",
+  "both_established_before_core_edits": true,
+  "correctness_reactivation_action": "collaboration.followup_task",
+  "reactivation_task": "Read-only pickup reuse review before forthcoming checkpoint; no design/source edits",
+  "tool_result": "collab tool failed: agent thread limit reached",
+  "stop_utc": "2026-10-04T05:59:00+00:00",
+  "identical_retry_attempted": false,
+  "writer_interrupted": true,
+  "writer_state": "interrupted",
+  "parent_substitution": false,
+  "final_source_correctness": "UNMET",
+  "final_source_qa": "UNMET",
+  "qa_helper_preparation": "PASS bounded only",
+  "physical_invocations": 0
+}

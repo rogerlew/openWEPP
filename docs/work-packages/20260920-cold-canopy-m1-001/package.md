@@ -1,5 +1,107 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Terminal-plan invocation disposition — HOLD, 2026-10-04
+
+**HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
+Both independent successors initially accepted finding ownership before core edits,
+but reactivating `/root/terminal_correctness` failed with **agent thread limit
+reached**. The explicit missing-independence stop applies. The implementer was
+interrupted at05:59UTC; no identical retry or parent substitution followed.
+Initial availability was not final approval. W1/W2/W3 remain **0/0/0**; no physical
+preflight, capture, retry or approved receipt exists.
+
+Targets remain500us CPU/550us wall per completed OFE-day, regimes750/1500/2500us
+CPU, century182.625s CPU/210s wall. Completed-day cost, feasibility and gap remain
+unestablished. No numerical repair, main Rust adoption, branch switch or push.
+
+[Final record](artifacts/terminal-plan-invocation-final.json) binds the partial
+source and NOT_RUN checks. Static diff inspection: the partial detached stage1
+change removes unused phase arguments, renames one required-field method, and
+routes aggregate norm-presence classification through planned role arrays. This
+is **not** the complete single-authority replacement, and no complete inventory
+trace/status/injection controls were delivered before interruption. C5 and all
+inherited acceptance gaps remain open; no fix or scientific completeness is claimed.
+
+**NOT RUN** on the partial source: rustfmt, release physical-stage no-run, both
+warnings-denied Clippy commands, inert metadata, final structural proofs and
+physical workflows. No new binary exists. Earlier cut26 build/proof passes do not
+transfer; its rustfmt/lint failures and both final rejections remain visible below.
+Ran pickup authentication of772source entries/292raw members/560build pins and
+compiled binary,5actual tool hashes, unchanged build environment and49unrelated
+path identities; helper syntax compilation and preservation checks PASS.
+The initial artifact whitespace check flagged ordinary blank patch-context lines;
+the supplementary patch was regenerated with zero context. Final staged whitespace,
+new links, accounting, exact scope and source/archive checks PASS.
+
+[Review route evidence](artifacts/terminal-plan-review-route-stop.json) records
+initial ownership and the runtime failure. The [correctness availability response](artifacts/terminal-plan-correctness-availability.txt)
+is availability only. [Same-QA helper review](artifacts/terminal-plan-qa-helper-review.txt)
+verifies corrected check/metadata/protocol deadlines and the new absent approval
+receipt binding, within bounded helper preparation only. Final-source correctness
+and QA remain **UNMET**. No additional review or continuation is inferred.
+
+Partial source **2a9347e26f0fc4548a233cba5fcabccc7f01139df7818693d94d80d854fb0dae**,
+stage1 **6400fa371c8cf2217a99f5df0e9584b0321a398f12090e4575148bc4a8936752**,
+is preserved in the [full archive](artifacts/terminal-plan-partial-source.tar.gz),
+[772-entry receipt](artifacts/terminal-plan-partial-source.json), and durable root
+`/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/partial01/source`.
+The [supplementary zero-context diff](artifacts/terminal-plan-partial.patch) is against
+cut26 final (apply with `--unidiff-zero`); full archive is canonical. [33-member raw archive](artifacts/terminal-plan-raw.tar.gz)
+and [receipt](artifacts/terminal-plan-raw.json) preserve helpers, original review
+responses, partial diff and historical proof input. Prior cut26 source/binary/raw
+custody and the historical candidate05 recovery gap are preserved. No caches were
+deleted. All49unrelated dirty/untracked paths remain unchanged.
+
+Conservative05:50–06:04UTC charge **840s**, including reading, work, waits/concurrent
+wall once, reviews, checks, preservation, scoped local commit and return, adds to
+493116.069712s: cumulative **493956.069712s**, remaining **4178.858268s** under
+unchanged ceiling **498134.927980s**. Extend if actual work exceeds06:04; no refund.
+The original locked ledger retains prior accounting/slots. This invocation is
+stopped; unused balance does not renew readiness or authorize further execution.
+
+## Terminal-plan invocation — 2026-10-04
+
+Owner invoked `/tmp/openwepp_cold_canopy_m1_terminal_plan_resumption.md`;
+the complete terminal-plan continuation and inherited scope below are adopted.
+**HOLD_NO_COMPLETED_DAY** remains pending acceptance. Targets remain500us CPU/
+550us wall per completed OFE-day, regimes750/1500/2500us CPU, century182.625s CPU/
+210s wall; completed-day cost, feasibility and gap remain unestablished.
+W1/W2/W3 remain0/0/0, no capture approval.
+
+Conservative first-reading anchor05:50UTC; latest carry493116.069712s, unchanged
+ceiling498134.927980s, R5018.858268s; no extension. Exclude inactive owner interval
+05:18–05:50UTC. Core stop06:43:38.858268UTC, readiness06:53:38.858268UTC,
+work cutoff07:03:38.858268UTC, hard deadline07:13:38.858268UTC.
+All reading/work/waits/concurrent wall count once, commands<=180s and deadline.
+The original locked ledger retains all prior accounting and untouched slots.
+
+Intent before edits: replace duplicated terminal/content/norm reach with the single
+per-field authority, complete independent all-row full acceptance/status/injection
+controls, correct formatting/new lint, then exact checks/proofs/custody and both
+final reviews. One detached source writer; no numerical repair, production/main
+Rust adoption, physics/arithmetic/order/work-counter/fixture/guard/tolerance/
+cadence/dependency changes, branch switch or push. Scoped local commit at disposition.
+Validation: exact edition2024 rustfmt, release physical-stage no-run, all inert
+metadata controls, matched warnings-denied LSE tests/physical-stage and vegetation
+lib Clippy, affected schema/status/field/type/event/collection proofs. Test-only
+observation scope requires independent noninterference review; any production
+impact triggers conservative escalation. Inherited lint failures remain failures.
+
+Both independent successor routes accepted findings ownership BEFORE core edits:
+`/root/terminal_correctness` (rust_code_reviewer), inherited C1–C5/lineage/
+noninterference; `/root/terminal_qa` (rust_qa_reviewer), full controls/helpers/
+checks/proofs/custody. Both accept same-reviewer fix/final verification and are
+independent of the authors/design advisers and each other. Availability is not
+approval. Prior cut26 routes are absent in this session; explicit succession applies.
+
+Ran [pickup authentication](artifacts/terminal-plan-invocation-pickup.json):772source
+entries,292raw members,560build pins and compiled binary match recorded identities;
+35depfiles are recorded in the successful-build receipt. Recovered one new mutable
+copy at `/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/source`.
+Frozen source/binary/raw evidence and historical candidate05 gap remain intact.
+Storage inspection reports1.1GB available; coordinate builds and remove only proven
+generated caches if needed, preserving all source/binary/evidence custody.
+
 ## HOLD disposition and terminal-plan continuation proposal — 2026-10-04
 
 **HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
