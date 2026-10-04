@@ -1,0 +1,27 @@
+Static + inspected-run-evidence final QA review — /root/cut26_qa
+
+Scope and identity
+
+Reviewed frozen final source `/home/roger/openwepp-experiments/cold-canopy-m1-cut26-resumption-20261004/frozen/final/source`: 772 custody entries and whole-source SHA-256 `b5274ad01ab31ad22f501763874e54f3a083c5db5473ad03bc94da8ef971e1e5`; reviewed stage1 SHA-256 `0d76afc4b08077bfc21b86ade2be73450bfc1eb1d99499d9d93890e6a83957ad`. This is same-reviewer final QA verification after the helper/deadline/custody preparation review. No source, helper, configuration, protocol, ledger, or package edit was made by this reviewer; no solver or physical capture was run.
+
+Ran evidence inspected: frozen `format.json`, warnings-denied LSE and vegetation Clippy receipts, proof receipt and raw outputs. The receipt-backed proof scripts all exited 0 against the reviewed stage1. They do not establish full terminal acceptance/status behavior. Helper preparation remains limited to its earlier receipt: current deadline-bound helper hashes are `check.py` b0eddca47ad6c1bcfb7b23ad1e55f144e71fa9b822450fddd4d5053ab6515a38, `run_metadata.py` d6e32d922a483e054d7b712d2992256658fa001af4cd23f55a0e0a0849cfee9c, `capture_once.py` 57eb650fa132c776932d40f1350da33acfd4d45350cc9459ed44e26d7f959f71, `capture_payload.py` 0c67e3ad69c2cae87eeae977e76b491767befc8c182c559a09104e01cc6b5af3, and `reconstruct.py` a4cbce24fc47c169f9de336471b855d32283d6ccf7905f441d442c8f71759745. No helper receipt authorizes capture.
+
+Findings
+
+HIGH — `crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4718` does not supply the required inventory-driven full acceptance/public-status control. `m1_refinement_inventory_semantic_groups_control` aggregates `reached`, `absent`, and `partial_roles` text into sets, verifies a few representative members, and stops. It constructs no expected trace for any of the 107 refinement rows, never calls `refinement_capture_terminal_complete`, never compares the complete `field_status` map to each row’s groups, and has no missing-required or stray-unexpected injection. The new test is inert: it uses embedded JSON and `BTreeSet` only, with no evaluator, solver, fixture, or capture invocation. Its inertness is acceptable; its coverage is not sufficient for C5.
+
+HIGH — The single descriptor is only partial terminal authority. `refinement_capture_terminal_field_descriptor` and `RefinementCaptureTerminalPlan::field_state` at lines 3837–4069 give public statuses a typed required/interrupted/absent projection and terminal acceptance consumes the status map at lines 3206–3267. However, terminal content/operation requirements remain independently reconstructed by `refinement_capture_terminal_content_obligations!` and its plan-derived prefix flags beginning at line 1997. The descriptor does not itself describe complete norm roles or all operation/copy content, so the required one per-field terminal/copy/norm-role authority is not established. The existing FactorOutput control is stronger than checkpoint03: it covers marker loss, ordinal two, prior/current inverse lineage, and zero-lambda delta state. It still is a selected synthetic trace, not the required full inventory trace/status/injection proof.
+
+HIGH — Required formatting and lint gates fail for the frozen source. `checks/format.json` records `rustfmt --check --edition 2024 crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs` exit 1 with unchanged source. `checks/lse-clippy.json` records warnings-denied release LSE tests Clippy exit 101; `checks/vegetation-clippy.json` records vegetation library Clippy exit 101. The raw diagnostics show the expected inherited LSE warnings and the inherited vegetation `too_many_lines` failure; no comparison receipt establishes that all introduced diagnostics are cleared. A failed current required gate cannot be passed through inherited classification.
+
+HIGH — The modified stage1 module is 17,923 lines. `source/crates/AGENTS.md` requires a refactor before closure for a 3,000+ nonexempt file. No documented exemption or disposition was presented in the final evidence. The current descriptor, terminal-content macro, field-state implementation, and control suite increase the concentration of test-only terminal semantics in this one module, which makes regression review and future extension difficult.
+
+Non-blocking retained strengths / follow-ups
+
+- Static noninterference remains limited to test-gated observation/control code; this QA review found no production solver, arithmetic, cadence, tolerance, fixture, or capture-launch change in the reviewed terminal-control diff.
+- The final helper deadline bindings remain internally coherent with readiness 05:28Z and cutoff 06:18:38.858268Z, and `capture_once.py` still requires a separately sealed correctness/QA approval before reservation or launch. Rebind helpers, exact binary, source receipt, raw evidence and approvals only after a passing final control/gate cut.
+- Proof scripts passed against the frozen stage1, but schema/collection proofs cannot substitute for exhaustive terminal acceptance and public-status behavior tests.
+
+Disposition
+
+REJECT / HOLD_NO_COMPLETED_DAY. C5 full-control acceptance, required format/lint gates, and the 3,000+-line module closure requirement are unmet. This review grants no source readiness, sealed custody approval, metadata acceptance, binary approval, or W1/W2/W3 capture approval.

@@ -1,5 +1,156 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Final26 invocation disposition — HOLD, 2026-10-04
+
+**HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
+Both final independent reviewers reject C5/full controls. No complete single
+per-field terminal/copy/norm-role authority was delivered; final source retains
+parallel reach decisions. The107-row inventory still lacks complete inert traces,
+full terminal acceptance/entire status-map comparisons and missing/stray injections.
+Exact rustfmt also fails, and10 LSE lint diagnostics remain unmatched to baseline.
+This invokes the adopted failed-final-acceptance stop; source authoring and captures
+are stopped. **W1/W2/W3 remain0/0/0**, no preflight or retry, no capture approval.
+Unused balance does not renew the stopped invocation.
+
+Targets remain **500us CPU/550us wall per completed OFE-day**, regimes750/1500/2500us
+CPU, century182.625s CPU/210s wall. Completed-day cost, feasibility and target gap
+remain **unestablished**. These observation changes establish no physical speedup.
+No numerical repair, main Rust adoption, branch switch or push occurred.
+
+[Final results](artifacts/cut26-invocation-final.json) bind actual final source and
+checks. Ran release physical-stage no-run **PASS137.843s** with no source drift;
+exact edition2024 rustfmt **FAIL exit1**; matched warnings-denied LSE tests Clippy
+**FAIL240 diagnostics,230 exact inherited/10 unmatched**; vegetation lib Clippy
+**FAIL1 exact inherited diagnostic**. Failures are not passes by classification.
+Seven final offline proof scripts PASS:298 schema paths, no unmapped fields or
+unresolved conditions, payload bound36,852,930bytes within67,108,864; type331,670,
+collection6/6/2 and unchanged selected event1402 bounds remain structural evidence.
+They do not establish complete field-status or norm/copy behavior acceptance.
+**Final metadata NOT RUN** after both final rejection stops; checkpoint01's
+6PASS/1FAIL is not transferred to changed final source. New semantic-group and
+key-inventory controls are partial; inertness is not exhaustive acceptance.
+
+[Correctness](artifacts/cut26-invocation-final-correctness.txt) and
+[QA](artifacts/cut26-invocation-final-qa.txt) retain same-successor fix ownership.
+Correctness accepts exact0/1/2 application count centralization, concrete norm role
+arrays, removal of the parallel factor helper from selected controls and explicit
+status keys, plus C1–C4 and static production noninterference within reviewed scope.
+Neither accepts C5/full controls. The [same-QA addendum](artifacts/cut26-invocation-final-qa-addendum.txt)
+withdraws an automatic3k-line closure finding drawn from historical archived
+instructions: current governing guides treat size as a maintenance signal, with
+no authorized size-refactor package. Substantive duplicate logic remains blocking.
+[Review record](artifacts/cut26-invocation-reviews.json) preserves attributable evidence.
+
+Repeated partial writer handbacks prompted reassessment, bounded architecture
+advice and one authenticated writer transfer in the same pinned role. Both writers
+ultimately returned without the required coherent replacement/full controls.
+No review/model availability failure occurred; no parent review substituted.
+Final source was frozen for acceptance; both independent final rejections establish
+HOLD without claiming scientific impossibility or exhausting the allowance.
+Checkpoint02 release/Clippy failed from disk exhaustion after separate debug targets;
+only1.5GB of generated incremental caches were removed, preserving source/binaries/
+raw logs, and the new final source received the exact required successful no-run.
+An interim schema-bound invocation omitted its required argument, failed, and was
+corrected; final proof commands include the argument. All raw failures remain.
+
+Final source **b5274ad01ab31ad22f501763874e54f3a083c5db5473ad03bc94da8ef971e1e5**,
+stage1 **0d76afc4b08077bfc21b86ade2be73450bfc1eb1d99499d9d93890e6a83957ad**,
+is preserved in the [full archive](artifacts/cut26-invocation-final-source.tar.gz),
+[772-entry receipt](artifacts/cut26-invocation-final-source.json) and durable root
+`/home/roger/openwepp-experiments/cold-canopy-m1-cut26-resumption-20261004/frozen/final/source`.
+The [supplementary zero-context diff](artifacts/cut26-invocation-final.patch) is
+against authenticated final26 (apply with `--unidiff-zero`); full archive is canonical.
+The one changed source file is detached test-only stage1 observation/control code.
+Binary **fc306c1b4ea49e47f680b860efdf1e1e7f4ac8f6311d488b7eb61d1126251e57**
+is retained at the frozen root's sibling target-candidate, with
+[560-pin/35-depfile successful build custody](artifacts/cut26-invocation-final-build-inputs.json).
+It is compiled, not approved. [292-member raw archive](artifacts/cut26-invocation-raw-final.tar.gz)
+and [receipt](artifacts/cut26-invocation-raw-final.json) preserve interim source cuts,
+helpers, failures, proofs and original review responses. Final26 and all older
+custody remain unchanged, including the historical candidate05 recovery gap.
+All49 unrelated dirty/untracked paths are unchanged. Scoped preservation is local;
+no publication, scientific diagnosis success or production qualification is claimed.
+
+Owner invocation adopted the NEW+5400 seconds once, ceiling **498134.927980s**.
+Carry490296.069712s plus conservative04:18–04:58UTC charge2400s yields
+**492696.069712s**, leaving **5438.858268s**. This includes reading, work, waits,
+concurrent wall once, checks/reviews, preservation/local commit and return.
+Extend if actual work exceeds04:58; no refund or automatic renewal. The original
+locked ledger retains prior accounting and unchanged slots. No new continuation
+allowance or prompt is adopted by this disposition.
+
+## Final26 invocation execution record — 2026-10-04
+
+Owner invoked `/tmp/openwepp_cold_canopy_m1_cut26_resumption.md`: adopt its new
++5400 charged seconds exactly once, ceiling **498134.927980s**, carry
+**490296.069712s**, R **7838.858268s**. Conservative first-reading anchor04:18UTC;
+core stop05:18UTC, readiness05:28UTC, work cutoff06:18:38.858268UTC,
+hard deadline06:28:38.858268UTC. Exclude only inactive owner interval02:02–04:18.
+Charge reading/work/waits/concurrent wall once; every command<=180s and deadline.
+Targets remain500us CPU/550us wall per completed OFE-day, regimes750/1500/2500us
+CPU, century182.625s CPU/210s wall. Cost, feasibility and gap remain unestablished.
+W1/W2/W3 remain0/0/0; no capture approval.
+
+Intent before core edits: complete the adopted shared per-field descriptor and
+full inventory/terminal/status boundary controls, clear introduced lint, regenerate
+exact proofs/checks/custody, obtain both final approvals; only then conditional
+original captures. Detached stage1 observation/control changes only; no physics,
+arithmetic/order/work-counter/fixture/guard/tolerance/cadence/dependency changes,
+main Rust adoption, branch switch or push. Scoped local preservation commit.
+Use prescribed exact rustfmt, release physical-stage no-run, all inert metadata,
+matched warnings-denied LSE tests and vegetation lib Clippy; retain inherited
+failures as failures. Regenerate affected schema/status/field/type/event/collection
+proofs. Test-only bounded observation intent retains independent noninterference
+review; actual production impact would require conservative escalation.
+
+Both independent successors established before edits: `/root/cut26_correctness`
+(`rust_code_reviewer`) owns inherited C1–C5, lineage and noninterference;
+`/root/cut26_qa` (`rust_qa_reviewer`) owns controls/helpers/checks/proofs/custody.
+Both accept same-reviewer fix and final verification, independent of authors and
+each other. Availability is not approval. No nested agents; one source writer.
+[Ran pickup authentication](artifacts/cut26-invocation-pickup.json) verifies772source
+entries,302raw members,560build pins/35depfiles and exact compiled binary. One new
+durable mutable source recovered at
+`/home/roger/openwepp-experiments/cold-canopy-m1-cut26-resumption-20261004/source`.
+Older source/evidence and candidate05 historical gap remain preserved.
+
+QA helper preparation PASS within bounded scope: actual helper/deadline/ledger
+review and syntax compilation only; no final source/capture approval.
+[Review evidence](artifacts/cut26-invocation-reviews.json) retains exact helper hashes.
+Ran baseline772-entry identity,5 actual tool hashes, identical recorded environment
+and49 unrelated-path identities PASS.
+
+Checkpoint01 source54ad9741…e2d4c is frozen/recoverable; no-run PASS135.281s,
+Clippy FAIL240diagnostics (230exact matches/10unmatched). Inert metadata6PASS/1FAIL:
+factor-copy control returns naturally_unreached where missing_instrumentation was
+required. Correctness rejects the wrapper architecture and witness-derived states;
+static test-only noninterference passes. Same implementer corrects the shared model;
+this checkpoint is not final acceptance. Fix02 is separately preserved, not yet
+built/reviewed; no pass transfers. Duplicate implementer no-run was canceled before
+result collection; its raw logs are retained, not counted as a completed check.
+
+Orchestrator reassessment after repeated partial handbacks: continue same pinned
+implementer/source writer, because exact count and missing-marker/partial-norm
+fixes show bounded progress and no runtime blocker was reported. The next cohesive
+cut must remove remaining prefix reach/norm-role duplication and construct full
+inventory traces/status injections, not add another wrapper. WIP b4ec0fcf… is
+frozen but not built/accepted; source window and acceptance remain unchanged.
+
+Named architectural escalation: `/root/cut26_architecture_advice` in the pinned
+science-adviser role reviews the persistent C5 duplicated-authority blocker and
+inventory-group expansion, read-only, bounded to concrete direction. It is a design
+adviser and cannot satisfy either independent acceptance role. Implementer remains
+sole writer; original successor reviewers retain fix ownership. No new scientific
+method or changed acceptance is authorized.
+
+At04:39UTC, repeated incomplete handbacks still had the old matrix intact and no
+full controls. No runtime blocker was reported. Orchestrator authenticated WIP
+f817c81e…326a4f (772entries/archive) before interrupting/completing the old writer
+and transferring sole source ownership to `/root/cut26_finish`, same pinned
+implementer role. This is a writer transfer, not deletion or scope/budget renewal.
+Both independent reviewers retain original findings/fix ownership; at most two
+children run concurrently and no nested agents are used.
+
 ## HOLD disposition and final26 continuation proposal — 2026-10-04
 
 **HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**

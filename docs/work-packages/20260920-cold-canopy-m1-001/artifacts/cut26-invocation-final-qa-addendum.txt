@@ -1,0 +1,11 @@
+Final QA addendum — /root/cut26_qa
+
+This addendum corrects, but does not replace, `qa-final.txt`.
+
+Revised finding: the standalone 17,923-line count is not a closure blocker for this package. The active `/workdir/openWEPP/crates/AGENTS.md` says file length is a maintenance signal rather than an automatic closure gate, and `docs/work-packages/AGENTS.md` says file length and coverage/CRAP do not require an unrelated refactor. The frozen source copy of `crates/AGENTS.md` had stale stricter wording and is source-custody evidence, not the current governing instruction. No size-reduction package or refactor scope was adopted. I therefore withdraw the automatic 3,000+-line closure claim from the final QA finding.
+
+The concrete maintainability finding remains: the terminal-content macro/prefix model and descriptor/public-status model are separate semantic representations, and the inventory semantic-groups control does not prove full terminal acceptance/status behavior for all approved rows. This is material to the assigned C5 closure and remains blocking independently of module size.
+
+Additional inspected evidence: final `no-run.json` records a release physical-stage no-run build PASS (exit 0, 137.843s) against unchanged frozen source `b5274ad01ab31ad22f501763874e54f3a083c5db5473ad03bc94da8ef971e1e5`, with zero physical invocations. Final LSE comparison records 240 candidate diagnostics, 230 exact inherited matches, and 10 candidate diagnostics without an exact inherited match; final vegetation comparison is 1/1 exact inherited. Both warnings-denied Clippy commands still exit 101, and `rustfmt --check` still exits 1. These gates remain failed; inherited classification and a successful no-run build do not make them pass.
+
+Disposition unchanged: REJECT / HOLD_NO_COMPLETED_DAY. The C5 full-control deficiency and format/lint failures remain blockers. No capture, source-readiness, binary, custody, metadata, or W1/W2/W3 approval is granted.

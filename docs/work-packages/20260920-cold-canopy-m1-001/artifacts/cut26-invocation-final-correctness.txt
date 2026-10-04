@@ -1,0 +1,39 @@
+Static: final independent correctness/source-control review of immutable cut26 final. Ran: SHA-256 authentication and source-tree/diff inspection only. No Rust build, test, lint, metadata control, proof generator, solver, evaluator, poison hook, capture helper, or physical workflow was run by this reviewer.
+
+Reviewed identity and scope
+
+- Reviewer: /root/cut26_correctness, pinned rust_code_reviewer and independent successor to the final26 authors, implementers, design advice, and prior /root/cut03_correctness conversation.
+- Frozen source: /home/roger/openwepp-experiments/cold-canopy-m1-cut26-resumption-20261004/frozen/final/source
+- Receipt whole-source SHA-256: b5274ad01ab31ad22f501763874e54f3a083c5db5473ad03bc94da8ef971e1e5
+- Stage1 SHA-256: 0d76afc4b08077bfc21b86ade2be73450bfc1eb1d99499d9d93890e6a83957ad
+- Archive SHA-256, independently matched to its receipt: dc4c89c24465f8d59a440996da516657f4777ce1522c3716e3c4391319dbd358
+- The exact tree diff against original final26 changes only crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs. Substantive terminal-plan/control changes are cfg(test); remaining broad changes are rustfmt-only. Static production arithmetic, guard/clamp order, solver flow, unit conversion, cadence, tolerance, serialization, and fixture noninterference therefore pass in this source scope.
+
+Findings
+
+HIGH — The required single C5 reach/phase authority is still absent. `refinement_capture_terminal_complete` consumes the plan for exact application count and calls the public-status completeness check, but then `refinement_capture_terminal_content_complete` independently reconstructs terminal reach from trace presence and feeds the renamed `refinement_capture_terminal_content_obligations!` phase matrix (m1_trust_region_stage1.rs:3206-3376). The matrix still branches on position/stage and requires or forbids the same public observations classified by `RefinementCaptureTerminalPlan::field_state`: examples include direct scalar/trace norm absence at lines 2002-2007, p1/p2 reach and norm absence at lines 2107-2146, and p2/norm/radius presence at lines 2285-2455. Passing `plan.metadata` into this old matrix does not make its reach decisions consume `plan.field_state`; the matrix remains a second acceptance authority capable of diverging silently from every public status. This is the inherited C5 architectural blocker, not content-only validation.
+
+HIGH — The required 107-row inventory-driven full acceptance/status control is absent. `m1_refinement_atomic_terminal_inventory_schema_control` expands locator alternatives and calls only `refinement_capture_selected_terminal_kind` (lines 4495-4710). It never constructs a complete inert trace for each refinement row, invokes `refinement_capture_terminal_complete`, or compares the complete public `field_status` map to that row's `reached`, `absent`, and `partial_roles`. `m1_refinement_inventory_semantic_groups_control` only aggregates those arrays into sets and asserts a few members exist (lines 4718-4770); it does not consume any row's members as expected outcomes. The added `refinement_capture_assert_full_public_status_map` checks only the fixed set of keys, not any status value, and is called for only the factor-boundary and one mixed-norm test (lines 5131, 5363, 5742-5824). Missing-required and stray-unexpected injections are therefore not checked against terminal acceptance plus the complete status map on the same 107 traces.
+
+HIGH — Norm plan and content remain duplicate authorities. The final plan now carries concrete completed/partial role arrays and `refinement_capture_norm_roles_are_plan_bounded` verifies their presence, which fixes the checkpoint03 generic-role defect. However that validator still independently reconstructs a second `allowed` role matrix from position/lambda/stage (lines 3380-3462), while the phase matrix separately selects and validates norm content and scalar presence. Public scalar norm status remains selected by a separate stage/reason match in `field_content_required` (lines 4246-4292), rather than deriving Required/Interrupted/Absent from the plan's completed/partial role arrays. Thus the same norm boundary is encoded in at least three places. Substantial duplicated science-contract logic remains a high-severity silent-divergence risk under the package's C5 requirement.
+
+MEDIUM — The public status classifier retains unreachable duplicated snapshot logic. `field_content_required` returns for every `factor_application_snapshot_*` name at lines 4050-4052, so its later snapshot H/inverse/delta match arms at lines 4222-4245 cannot execute. The final cut correctly removed the separate factor-control helper and now tests the real plan, but this dead mirrored classification remains and has no explicit justification.
+
+Accepted final fixes within demonstrated static scope
+
+- Exact expected factor-application count 0/1/2 is now taken from the plan and enforced by `refinement_capture_applications_complete`; the prior boolean-only count join is fixed.
+- Missing factor-output marker and H classification no longer use the removed parallel test helper. Factor controls call the real plan and cover selected first/second ordinal, inverse, delta, and missing-marker statuses.
+- Concrete positive- and zero-lambda completed/partial norm-role arrays replace the generic `terminal_norm` placeholder and are checked for exactly one planned trace member.
+- The public-status key inventory is explicit, preventing a newly added key from being silently omitted from that narrow key-set assertion.
+- C1-C4 remain accepted within their inherited static scope. No final-source production behavior change was found.
+
+Residual risk and missing evidence
+
+- No complete inert trace/status/acceptance control exists for all 107 refinement rows or their locator alternatives. The selected factor and mixed-norm traces do not substitute for this requirement.
+- Completed comparisons; P0, Scratch and Final full/reduced norms; zero-lambda ordered/scalar norms; zero-lambda ordinal-2 before/after-delta and prior/current association; and exhaustive impossible numeric/null/range/cross-dependent tuples remain without demonstrated final full-map acceptance controls.
+- Final exact builds, warnings-denied lint, metadata execution, proof regeneration, binary/build-input custody, and final independent QA were not available to this review. A successful result cannot cure the source/control blockers above; any failure adds evidence against acceptance.
+- W1/W2/W3 remain 0/0/0 and unauthorized. This report supplies no readiness or physical-capture approval.
+
+Disposition
+
+REJECT / HOLD_NO_COMPLETED_DAY. The final source does not satisfy inherited C5 or the required exhaustive full-control acceptance. Preserve the failed-acceptance owner stop; do not launch metadata capture, physical preflight, or W1/W2/W3. Same-reviewer fix ownership was retained through this final source review, but no further coherent source deliverable exists in this invocation.

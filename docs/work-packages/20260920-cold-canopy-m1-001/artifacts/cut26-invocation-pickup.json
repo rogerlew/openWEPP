@@ -1,0 +1,10 @@
+{
+  "source_sha256": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+  "source_entries": 772,
+  "raw_members": 302,
+  "build_pins": 560,
+  "depfiles": 35,
+  "binary_sha256": "95d6e9e790bb8f07ddcf6d47f1d617054943e83b3c7ec07379d9288f5d14df36",
+  "mutable_root": "/home/roger/openwepp-experiments/cold-canopy-m1-cut26-resumption-20261004/source",
+  "verified": true
+}

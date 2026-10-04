@@ -1,0 +1,52 @@
+{
+  "qa_helper_preparation": {
+    "reviewer": "/root/cut26_qa",
+    "scope": "Helper/deadline/custody preparation only; not final source or capture approval",
+    "evidence_class": "Static actual helpers and receipts; Ran syntax compilation only",
+    "verdict": "PASS within bounded reuse scope",
+    "blocking_findings": [],
+    "required_final": [
+      "frozen changed source and exact binary",
+      "regenerated final proofs/metadata/gates",
+      "final source QA",
+      "sealed receipt binding current helpers/source/binary/schema/fixture/ledger/raw outputs"
+    ],
+    "helper_hashes": {
+      "check.py": "b0eddca47ad6c1bcfb7b23ad1e55f144e71fa9b822450fddd4d5053ab6515a38",
+      "run_metadata.py": "d6e32d922a483e054d7b712d2992256658fa001af4cd23f55a0e0a0849cfee9c",
+      "capture_once.py": "57eb650fa132c776932d40f1350da33acfd4d45350cc9459ed44e26d7f959f71",
+      "capture_payload.py": "0c67e3ad69c2cae87eeae977e76b491767befc8c182c559a09104e01cc6b5af3",
+      "reconstruct.py": "a4cbce24fc47c169f9de336471b855d32283d6ccf7905f441d442c8f71759745",
+      "protocol-draft.json": "ca78ed8c3ef03db50a7e5201ad07a17622b3ff4a94741298db7f8718e34f36cf"
+    }
+  },
+  "correctness_checkpoint01": {
+    "reviewer": "/root/cut26_correctness",
+    "source_sha256": "54ad9741cf643b1759c83f07b9756eaa99b3e2d71ac75f53fee6b75f3ede2d4c",
+    "verdict": "REJECT architectural C5; checkpoint correction remains active",
+    "original_response": "/home/roger/openwepp-experiments/cold-canopy-m1-cut26-resumption-20261004/correctness-checkpoint01.txt",
+    "blockers": [
+      "facade over parallel prefix/reach authority; exact count remains independent",
+      "missing/wrong factor copy marker changes expected field states",
+      "norm interruption derives from present witness",
+      "dead mirrored snapshot reach arms"
+    ],
+    "noninterference": "PASS static bounded test-only diff",
+    "same_reviewer_fix_ownership": true
+  },
+  "correctness_final": {
+    "reviewer": "/root/cut26_correctness",
+    "verdict": "REJECT / HOLD_NO_COMPLETED_DAY",
+    "report": "cut26-invocation-final-correctness.txt",
+    "sha256": "87c4b6156a6ca8e4ce147c2bf6aecf57e8efb3572001f3e209e4190660156254"
+  },
+  "qa_final": {
+    "reviewer": "/root/cut26_qa",
+    "verdict": "REJECT / HOLD_NO_COMPLETED_DAY",
+    "report": "cut26-invocation-final-qa.txt",
+    "sha256": "a1d2e73efb475392f9c357e72ecf828c3dbdc1bdf6fee1f3d989c64e49400876",
+    "addendum": "cut26-invocation-final-qa-addendum.txt",
+    "addendum_sha256": "b97034cb4b0cc159635b068cd914d2add8e39fc8a8f6de047f102e96f2dca651",
+    "withdrawn_finding": "Automatic3k line-count closure from historical source snapshot; current scope treats size as signal."
+  }
+}
