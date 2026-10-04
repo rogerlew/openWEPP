@@ -1,0 +1,19 @@
+Reviewer: /root/replacement_correctness. Original same-reviewer response retained below.
+
+Static focused review of stage1 `8c91ad4c…b76e`; inspected supplied no-run and 30-control receipts. No Rust command run by this reviewer.
+
+Findings:
+
+- **HIGH — required invalid-tuple evidence remains incomplete** in `m1_trust_region_stage1.rs:6481-6643`. The exhaustive controls cover every inventory locator and every 68-field presence mutation, but do not yet drive numeric/null/range/cross-dependent invalid metadata through full terminal acceptance and compare the complete resulting public map. Add full-terminal cases for invalid lambda/domain values, locator null/range combinations, reason-stage-scratch conflicts, mismatched marker ordinal/boundary, application/snapshot ordinal-count conflicts, H/free-ID joins, generic-inverse ownership, norm role/domain, and scalar/copy bit mismatches.
+
+- **MEDIUM — scalar obligations remain duplicated** at lines 3621-3679 and 4121-4148. `refinement_capture_norm_obligation` owns each role’s scalar binding, while `refinement_capture_build_obligations` independently repeats the role-to-field table to assign public states. This can make content validation and public status diverge. Derive scalar field states directly from `norm_obligations`.
+
+- **MEDIUM — H reach remains selected outside the eager model** at lines 2463-2585, 2770-2788, 2889-2893, and 3727-3801. Terminal selection, family resolution, and content validation separately call the H locator predicates/free-ID join. Store the resolved H locator and required join in the terminal model, then let content validate that record without reselecting H0/H1 reach.
+
+- **MEDIUM — factor-output boundary semantics remain duplicated** at lines 2200-2311, 3036-3067, and 3820-3920. The eager field records and explicit generic-inverse owner select copy obligations, but `refinement_capture_factor_output_prefix` still branches on optional inverse/delta witness presence to reconstruct before-inverse/after-inverse/after-delta behavior. Make content validation consume the resolved per-member states and owner directly.
+
+The cut is a substantive C5 replacement: `field_state` is now a pure lookup over 68 eager records; acceptance and every public status consume that model; norm vector/domain/completion, application count, refusing comparison, and generic inverse ownership are explicit. The three prior HIGH fixes remain intact.
+
+Supplied evidence records release no-run PASS, 567 pins/35 depfiles, and all 30 inert controls PASS on whole source `b2eb742b…051d`. The five oracle families and partitioned mutation controls provide meaningful all-row/all-locator presence evidence. Clippy still fails with 62 unmatched diagnostics, and final proof tables are absent.
+
+Focused disposition: continue with the bounded corrections above. No final correctness approval issued.

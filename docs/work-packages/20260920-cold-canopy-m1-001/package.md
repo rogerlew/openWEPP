@@ -243,6 +243,575 @@ work exceeds17:53; no refund. Original locked ledger retains all prior consumpti
 and physical slots0/0/0. Fresh execution uses this latest carry plus later work;
 it does not adopt the43200s extension a second time or reuse an expired deadline.
 
+## Cohesive replacement terminal disposition — HOLD, 2026-10-04
+
+**Ran:** the detached replacement, all31 inert controls and seven structural proofs
+are implemented and exercised on the final source. **Replacement acceptance remains
+BLOCKED by unavailable independent final review.** Overall disposition remains
+**HOLD_NO_COMPLETED_DAY**: LSE230 and vegetation1 inherited warnings-denied failures
+also remain FAIL. No approved seal, physical evaluation, main Rust adoption or push.
+W1/W2/W3 remain **0/0/0**. Targets remain500us CPU/550us wall per completed OFE-day,
+regimes750/1500/2500us CPU, century182.625s CPU/210s wall. Completed-day measured cost,
+feasibility and remaining target gap are **UNESTABLISHED**; build/control elapsed
+times are not physical-model performance evidence.
+
+### Delivered source and checks
+
+The eager resolved model owns all68 per-field states, application/copy boundaries,
+per-ordinal snapshots and generic-inverse ownership, norm/scalar bindings and
+refusing comparisons. Acceptance/content/status consumers use those resolved
+records; the superseded content macro and deferred field-selection switches are
+deleted. The independent literal field universe and inventory-semantic oracle
+cover107refinement rows and30,312locator alternatives, with2,061,216presence mutations;
+2WorkCap rows and25impossible descriptors remain explicit. Full-terminal invalid
+numeric/null/range/cross-dependent, H/free-ID, copy/owner, norm/scalar and compound
+boundary controls remain present. All four oversized controls were extracted with
+all172 `assert!`,675 `assert_eq!` and10 `assert_ne!` occurrences retained from the
+quality-transfer cut; these counts are a narrow loss check, not semantic proof.
+
+[Final validation](artifacts/replacement-final-validation.json) and
+[31-control index](artifacts/replacement-final-results.json) bind whole source
+`65db8dd85aa101c528b8919313815bc315326f86ab79e31128cb0147e4306cec`, stage1
+`37f0c76fc7581a68e00d8604bb0d51c22aaee2208480397e788cadb562b6537c`, and binary
+`dda720267c05ffcaafb3b748aab7a9175d2744048f86992453fb33cf86431d86`.
+Changed-file edition2024 format PASS; release physical-stage no-run PASS94.814664s;
+all31 explicitly selected inert controls PASS with nonzero counts and authenticated
+stdout/stderr. Successful build custody records567pins/35depfiles. Exact matched
+release Clippy results are **LSE FAIL230/230 inherited, vegetation FAIL1/1 inherited,
+zero new unmatched diagnostics**. No lint suppression or threshold relaxation.
+
+All seven structural helpers PASS on the final source; actual result inspection
+finds298mapped field paths, no unmapped/unresolved paths, no missing serializer/schema
+keys, and payload bound36,852,930bytes (record36,852,950) below the unchanged67,108,864cap.
+Draft/unapproved proof labels remain intact. Capture/check/reconstruction helper
+identities retain the prior helper-only UTF8/framing/cap/optimized-Python checks;
+status extraction changes and the31-control whitelist remain in the final helper
+bundle for independent review. Exact entry comparison against checkpoint03 changes
+only Stage1 among772entries, and the entire physical suffix from
+`fn refine_face_before_crossing(` is byte-identical (SHA256
+`4f8fc5a82fa5b3145ceb22f8120c2866c0016595ab2f950b53a89850bfcd2c47`).
+
+### Independent acceptance and recovery
+
+The same [correctness](artifacts/replacement-eager-model-correctness-review.txt) and
+[QA](artifacts/replacement-eager-model-qa-review.txt) reviewers' focused findings
+remain attributed and owned. Their requested model/control corrections are
+implemented and executed, but **neither final verification nor final approval was
+obtained**. Two successor-writer spawn attempts and same-correctness reactivation
+failed with `agent thread limit reached`, including after parked writers were
+interrupted; unchanged capacity retries were not repeated. Available implementers
+completed the remaining work serially. Authors/parent do not substitute for either
+independent review. The final source, controls, changed helpers, proofs and custody
+therefore still require both independent final reviews. The inherited231diagnostic
+cleanup is outside this replacement's authorized scope and remains a separate
+whole-package capture prerequisite, with no waiver or attempted physical diagnosis.
+
+[Final source archive](artifacts/replacement-final-source.tar.gz) and
+[772-entry receipt](artifacts/replacement-final-source.json) were restored and verified
+at `/workdir/.cache/openwepp/cold-canopy-m1-replacement-final-recovery-20261004`.
+The sole detached source remains at
+`/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source`.
+[Raw evidence archive](artifacts/replacement-final-evidence.tar.gz) and
+[member receipt](artifacts/replacement-final-evidence.json) preserve1626verified
+members: raw failures/successes, final and intermediate checks, helpers, proofs,
+original lint-comparison inputs and the exact final compiled binary. Historical
+source cuts remain retained. Final scoped preservation keeps all49unrelated paths
+unchanged. One local package/evidence commit only; no push. The original fixed
+clock and one-time extension remain binding; no continuation prompt or allowance
+is created. Charge through23:29UTC includes final preservation, lock reconciliation, commit
+and return reserve: invocation18,900s, cumulative515,856.069712s, remaining
+25,478.858268s under the unchanged541,334.927980s ceiling. Extend if actual work
+exceeds23:29; no refund. The original locked ledger and final validation receipt
+retain the fixed05:14UTC source cutoff and06:14UTC hard deadline.
+Post-commit preservation found an extra empty `.json.lock` used by late parent
+bookkeeping. The actual capture lock is `refusal-branch-completeness-accounting.lock`.
+No capture or concurrent ledger writer ran. Parent revalidated zero slots and
+consumption, atomically reconciled the terminal ledger under the canonical lock,
+and removed only its own empty unused lock. This correction is preserved in the
+ledger and final validation; the same single local commit is amended.
+
+## Cohesive replacement invocation — 2026-10-04
+
+Ran pickup comparison: all772 mutable source entries match the retained checkpoint03
+receipt, with no drift. Reuse the authenticated mutable root above. First-reading
+anchor conservatively18:14UTC; carry496956.069712s, ceiling541334.927980s,
+R44378.858268s, W43200s. Hard deadline2026-10-05 06:14UTC;
+source/control/review correction cutoff05:14UTC; final hour preservation only.
+The17:53–18:14 inactive owner interval is excluded. No extension is added again.
+Original slots remain0/0/0 and capture remains unapproved.
+
+Intent: implement the full resolved obligation replacement, independent exhaustive
+inert controls, and10in-scope lint corrections in the single detached mutable source;
+retain all numerical/physical boundaries. Selected checks and acceptance are exactly
+those in the owner-adopted section above. Main-checkout changes are limited to package,
+locked accounting and evidence. Storage:733MiB free on home filesystem,16GiB on
+/workdir; build targets require coordinated placement before compilation.
+Independent successor routes `/root/replacement_correctness` and
+`/root/replacement_qa` accepted inherited finding ownership before edits and remain
+assigned for same-reviewer fixes and final review. Sole source writer is
+`/root/replacement_writer`, repository-pinned implementer role; no nested agents.
+Both successors retain C5/model, exhaustive controls and unmatched lint obligations;
+QA additionally owns helper/proof/custody evidence. Four checkpoint03 fixes remain
+accepted within their previous narrow scope, subject to affected verification.
+
+Ran [pickup authentication](artifacts/replacement-invocation-pickup.json): source
+and raw archives match, all190raw members and564build pins plus old binary and
+5Nix tools match. Build targets are separate writable directories under
+`/workdir/.cache/openwepp/targets/cold-canopy-m1-replacement`. Copied nonphysical
+check/proof helpers to the mutable root parent; check and inert-test deadlines bind
+05:14UTC. No frozen helper was changed. Detached helper paths have no ancestor
+AGENTS.md; repository discovery rejects external paths, so package/root guidance
+continues to govern those helper adaptations.
+Targets and unmeasured completed-day feasibility remain as stated above.
+
+QA helper preparation found missing active capture-side copies and a null readiness
+binding. Copied those helpers/protocol without executing them; only the approval
+receipt name becomes `replacement-approved.json` and protocol readiness/capture
+cutoffs become05:14UTC. The locked ledger readiness uses the same preservation
+cutoff, not an imported historical formula. All captures and reconstruction must
+still finish before that cutoff; no seal exists and prerequisites remain unmet.
+
+### Invocation preparation evidence and current implementation
+
+QA `/root/replacement_qa` verified the helper fixes in the same successor
+conversation: no blocking helper-preparation finding remains. This is static
+preparation only; final whitelist, source/build/proof and acceptance remain pending.
+Ran [helper checks](artifacts/replacement-helper-checks.json): strict UTF8,
+duplicate/nonstandard JSON rejection, payload cap, marker/framing checks, syntax,
+and optimized-Python rejection before any launch PASS; original slots remain0/0/0.
+No physical preflight or invocation occurred.
+
+The first writer no-run failed on the recovered root's absent external
+`inventory-approved-discovery.json`, not Rust semantics. Restored the exact file
+from frozen checkpoint03 after authenticating against its build pins,
+SHA256`8e8b9f00cf8a6519f0a1e662a94c71cf406ad479a5ab8d32d7b6af88ebc92ac4`.
+Raw failure remains in mutable-root `checks/replacement-model-no-run.*`.
+Initial renamed-model/public-map integration is not milestone acceptance while the
+old content matrix remains. Writer continues the complete replacement.
+
+### Internal implementation reassessment — 18:30UTC
+
+Writer twice returned before the requested complete-model boundary; parent resumed
+the same writer with concrete bounded tasks rather than accepting a partial result.
+The subsequent mechanical deletion removed the old content macro and compiles, but
+the writer identifies missing migrated operand checks (factor prefixes, partial norm
+arithmetic and final-radius operands). This interim cut is explicitly unapproved
+and is not a completed milestone. Continue restoring every former predicate through
+model-driven content validators, accounting for the deleted matrix predicates before
+first correctness review. No physical execution, seal or acceptance is permitted.
+This is an internal reassessment, not a renewed allowance or owner handback.
+
+### Supported writer transfer
+
+Repeated incomplete returns from `/root/replacement_writer` did not execute the
+concrete predicate-restoration assignment. Preserved its unapproved source before
+transfer in [full source archive](artifacts/replacement-writer-transfer-source.tar.gz)
+and [772-entry receipt](artifacts/replacement-writer-transfer-source.json), identity
+`223ced93ea829772cd7c8927b8548b1c4c2e7f2cf4a09ae96fd99b3985a68381`.
+Packing verified the source unchanged. The retained exact checkpoint03 archive
+also remains available as the full pre-edit baseline.
+`/root/replacement_writer_integrated` is now the sole source writer with the same
+repository-pinned implementer role and unchanged scope/deadline. Prior writer is
+idle with write ownership revoked. Both independent reviewer successors are retained.
+Transfer grants no acceptance and no renewed allowance.
+
+### Replacement writer progress — integrated model under correction
+
+The replacement writer reports restored norm arithmetic/scalar joins, partial traces,
+factor snapshot/identity/inverse/delta boundaries, lineage/free-ID and final-radius
+checks. Metadata resolution now occurs once per status-map operation and the same
+resolved object is passed through acceptance. The old content macro and duplicate
+prefix-norm switch are deleted. Norm-role/scalar binding and predicate-coverage audit
+remain in progress; there is no milestone acceptance yet.
+Parent inspected successful no-run receipts in mutable-root `checks/`; two overlapped
+on the same target and the writer was directed to serialize/await future checks.
+A mutating rustfmt receipt is edit-loop evidence only, not final formatting validation.
+All required final checks remain pending. Baseline serializer extraction retained
+[68 public status keys](artifacts/replacement-baseline-status-keys.json), and
+[tool resolution](artifacts/replacement-tool-resolution.json) confirms all5 pinned
+Nix tools with no inherited compiler flags/wrappers. Neither proves control completeness.
+
+### First integrated model review cut
+
+Writer parked at stage1 SHA256`641968041043bcc51b8f988448ac0cf18e48d78707b703d48273af2bdd754b3a`,
+whole-source`1a128f6468727b870a2c2b234ae3be279b625859bd0b7ca029e92db617812338`.
+The first correctness reactivation hit `agent thread limit reached`; interrupting
+the parked writer freed capacity and the same correctness successor resumed.
+No independent route was replaced or acceptance inferred.
+
+Ran release no-run PASS91.089649s (`checks/replacement_writer_integrated_v5.json`);
+bound35depfiles/567pins and binary`6e514bbfb168d47813178e81e33f90ecb0fc8f43dca937efcc68d8079e6d1a2d`
+in `checks/model-build-inputs.json`. Ran all8 inherited inert controls PASS, exactly
+one test selected per invocation, no source drift (`checks/model-metadata.json`).
+Seven test bodies are unchanged except whitespace; factor-copy control only changes
+the resolver name. These remain narrow regression, not exhaustive controls.
+Ran edition2024 rustfmt FAIL: prior mutating formatting lacked the edition argument.
+Ran required LSE Clippy FAIL244diagnostics,230exact inherited and14unmatched, retained
+in `checks/model-review-clippy-comparison.json`. Correctness review and writer fixes
+remain pending; no approval/seal/capture. The initially reported E0282 raw log was
+accidentally overwritten by the writer retry: retain it only as transcript evidence
+(`let coordinates = |role|` needed `role: &str`), not as preserved execution evidence.
+Subsequent named build/format/lint failures and successes remain retained.
+
+### First-model correctness findings and correction assignment
+
+Static independent [correctness review](artifacts/replacement-model-correctness-review.txt)
+rejects the current model cut with3HIGH findings: ordinary completed norm scalar joins
+are bypassed while zero-lambda roles are wrongly rejected; refusal-side radius
+comparisons were lost; and second factor-output validation skips the prior completed
+first snapshot. These are concrete predicate regressions despite the8narrow passes.
+The same writer is correcting them through resolved obligations and targeted inert
+full-terminal regressions, followed by same-reviewer verification. Duplicate p0 norm
+validation must also consolidate. Full107-row controls,14unmatched lint corrections,
+edition2024 formatting and final evidence/reviews remain required. Review findings
+are correction inputs within the existing allowance, not a terminal handback.
+
+### Corrected-model execution and continued fixes
+
+Correction builds4–6 had source drift and are retained only as edit-loop evidence;
+parent took ownership of source-stable builds while the writer parks. Stable cut
+`ce10d155d29933fbe03afb9f47a74e2afe58aba0e3e29b8224f8a1eee20ce0d1`
+built PASS103.937685s with567pins/35depfiles, binary
+`60ea2390d27b5b4a5425a9845770c163751f7c1792bb6c25477224c80c1f1764`.
+The comparison helper and ordinary full-terminal scalar/comparison controls PASS;
+zero-lambda and ordinal2 full-terminal positive assertions FAIL. Exact raw results
+remain `checks/correction-targeted*` and `checks/correction-ordinal2*`.
+
+Writer diagnosed missing eligibility observations in the fixtures and a genuine
+model bug requiring snapshot2 delta after only1zero-lambda application. Corrected
+that ordinal boundary, predecessor/shape/radius fixture joins and added discriminating
+full-terminal tests. Parent had rejected an earlier test mutation that changed only
+norm bits without preserving arithmetic; replacement tests use self-consistent
+exact-binary interior operands and include p1scalar corruption.
+Latest parked source`3ac9a8d32d5b6b52676089f48a0c3d2de8f74f87e12ffc324afe177abf16d4a6`
+is building and under same-correctness verification. No milestone acceptance yet.
+A [mid-correction source archive](artifacts/replacement-correction-progress-source.tar.gz)
+and [receipt](artifacts/replacement-correction-progress-source.json) retain identity
+`6b82368dcefd1a0feeea2010b736ffe59ad5f8a401ee7f095edd3c15e9ee8c79`;
+this is progress preservation, not the earlier ce10failed-test source.
+
+Parent expanded the inert whitelist by4 statically inspected metadata-only tests.
+The status-key extractor now accounts for the resolved argument and helper suffix;
+it recovers all68baseline keys exactly. This helper adaptation changes no field or
+bound; final regenerated proofs and QA review remain pending.
+
+### Model correction checkpoint and full-control assignment
+
+Ran source-stable release no-run PASS91.332827s and all12inert metadata controls
+PASS (8inherited plus4targeted), whole-source
+`3ac9a8d32d5b6b52676089f48a0c3d2de8f74f87e12ffc324afe177abf16d4a6`,
+binary`0a5f9142ba2ffb61080832243b2740c22e3484fc323c8862e66ae78aa5192385`.
+Same [correctness reviewer verified all3original HIGH fixes](artifacts/replacement-model-correctness-fix-review.txt).
+Remaining HIGH full-inventory controls and MEDIUM metadata/public-map seam and
+zero-lambda ordinal2 direct controls prevent overall model acceptance. Real caller
+metadata ownership is consistent; the current targeted fixtures bypass that seam.
+
+Preserved this substantive model checkpoint in [source archive](artifacts/replacement-model-checkpoint-source.tar.gz)
+and [772-entry receipt](artifacts/replacement-model-checkpoint-source.json) before
+resuming the same writer on the full107-row/all-locator independent oracle, exact
+68-key map values, required removals/stray injections,2WorkCap rows and impossible
+controls. Parent owns long builds and inert execution on parked cuts. Required lint,
+proofs, both final reviews and final custody remain pending. No physical slots used.
+
+### Continuing model and exhaustive-control obligations
+
+Parent integration inspection identified that the current resolved model still
+stores raw metadata and recomputes some field/copy decisions during queries.
+Writer confirms this remains a C5 gap: explicit per-field/copy/norm records must be
+resolved once, then consumed by public status/count/content paths. Macro removal
+and verified code fixes do not by themselves complete the owner requirement.
+The same writer is building the independent inventory semantic-group oracle and
+trace/mutation layer, then will finish this resolution refactor against those
+independent controls. No implementation model may supply the expected status map.
+
+### Eager model migration — correction in progress, 21:00UTC
+
+The writer deleted the legacy field-selection methods and introduced eager68-field
+records plus norm completion/vector/domain/scalar bindings. This is a substantive
+migration in progress, not C5 acceptance. `model02-no-run` failed four mechanical
+compile errors; `model03-no-run` passed95.230577s on whole source
+`d45e87d8858b605f4077f5e246f0c999749c527f4e5db002a92c6f9f5747787f`,
+stage1`413b2eec153f613730df47f0cac7890b5abf68e067f5944492903a87f4b4010c`,
+with567pins/35depfiles and binary
+`7355d482fb09f56f6a2c004c5cb42b1f658d10c52f85a7a7fd5d4c77e8fb859b`.
+All five baseline inventory families then FAIL: grouped construction lost retained
+post-application copy-marker obligations and future-ordinal zero-lambda H/inverse
+inapplicability. Parent's preliminary static suggestions for those two states were
+incorrect and explicitly withdrawn after the controls disproved them. The independent
+oracle is unchanged; restore the prior verified semantics. Raw results and compact
+`checks/model03-family-failure-summary.json` remain in the mutable-root parent.
+
+Explicit generic-inverse owner/content records and residual-prefix consumers still
+need completion. Continue their correction, then strengthen existing numeric/null/
+range/cross-dependent negatives through accepted full-terminal fixtures. No physical
+workflow ran; slots0/0/0 and no approved seal remain. Fixed cutoff05:14UTC and deadline
+06:14UTC are unchanged. This internal correction grants no new allowance.
+
+### Eager model checkpoint — all controls pass, independent feedback pending
+
+Ran `model04-no-run` PASS95.271986s on whole source
+`b2eb742ba3941dd1df2a8f4758b311da15d974c76f9c2de183cc11826c51051d`,
+stage1`8c91ad4cf34759cce43fb2723e419ec42b85eb46301aef1f4b4805ef38f0b76e`.
+[Full772-entry archive](artifacts/replacement-eager-model-checkpoint-source.tar.gz)
+and [verified receipt](artifacts/replacement-eager-model-checkpoint-source.json)
+preserve the actual eager-table/copy-owner/norm-record cut. All30inertcontrols PASS
+on binary`a3b42d77254529afc4f2088709c89edf13b7b50d777c714834bbd6500f9f13da`;
+[results index](artifacts/replacement-eager-model-checkpoint-results.json) binds each
+exact test to its receipt and the567-pin/35-depfile custody. The107-row independent
+oracle and2,061,216member mutations remain unchanged.
+
+Required LSE Clippy remains FAIL292diagnostics:230exact inherited plus62unmatched,
+all scoped to the observation/control work. Remaining integration includes one norm
+scalar-binding authority, model-selected H/free-ID joins, full-terminal numeric/null/
+range/cross-dependent negatives, cohesive lint correction, final proofs/custody and
+both independent final reviews. Correctness resumed for focused eager-model feedback;
+QA concurrent activation hit capacity, so review is serialized without replacing
+review ownership. This checkpoint is not milestone or capture acceptance.
+
+### Independent eager-model feedback and correction assignment
+
+Same [correctness reviewer](artifacts/replacement-eager-model-correctness-review.txt)
+confirms a substantive eager C5 replacement and retains the prior three HIGH fixes,
+but requires full-terminal invalid numeric/tuple/value tests (HIGH) and elimination
+of duplicate scalar bindings, H reach selection and copy-boundary content selection
+(three MEDIUM findings). Same [QA reviewer](artifacts/replacement-eager-model-qa-review.txt)
+confirms all-row/all-locator full-map presence coverage and identifies another HIGH:
+the oracle field universe delegates to the implementation registry. Bind its68keys
+independently to retained approved evidence, with explicit semantic disposition for
+every key and unknown-key rejection. Both retain same-reviewer fix/final ownership.
+No independent final acceptance is issued.
+
+Writer resumes the complete correction set plus62unmatched lint diagnostics under
+the same fixed allowance. Full-terminal negatives must start from accepted traces,
+mutate values/metadata with trace-owned metadata synchronized, reject corrupt cases,
+and compare the entire expected public map. Retain valid null final-add and zero-lambda
+scratch-false cases. The largest current mutation test is27.401s within its fixed30s
+cap; references replace large model copies as part of lint cleanup without changing
+that cap or claiming physical performance. Source/proofs/controls will be rebound
+and rechecked after edits. No physical evaluation is authorized by these corrections.
+
+### Preserved review-fix writer transfer
+
+The integrated writer made the model-duplication/key-universe changes and added
+initial full-terminal negative cases, then explicitly reported inability to complete
+the required per-case baseline correction. Its latest unbuilt cut is preserved in
+[full source archive](artifacts/replacement-review-fixes-transfer-source.tar.gz) and
+[verified772-entry receipt](artifacts/replacement-review-fixes-transfer-source.json):
+whole`db12d955cf974e4db1e96f39effa5074d7eaeec912cbb360cbd9505e22540843`,
+stage1`a2c18c4e21f08bc13336ff8d025059707368e4dc4d82426c371f88c8f387983f`.
+A numeric-case mutation currently assigns an already-null coordinate, and another
+changes norm-role obligations while retaining the old expected map; these are known
+unresolved test defects, not passing evidence. Prior model04 remains the last passing
+full-control checkpoint.
+
+`/root/replacement_writer_closure` is now the sole pinned implementer. Both earlier
+writers are interrupted/idle with write ownership revoked. The successor receives
+concrete fixture/control/model/lint corrections and the same independent reviewers;
+parent still owns checks and integration. No additional allowance, scope expansion,
+physical slot or approval accompanies this supported transfer.
+
+### Full-terminal invalid-value controls — active correction evidence
+
+`model05` and `model06` release no-run builds and all five valid inventory families
+PASS on their exact stable sources, but the strengthened numeric and semantics
+controls FAIL. They expose accepted zero original-radius metadata, then accepted
+infinite reduced-radius metadata, plus test expectation defects for wrong marker
+and interrupted inverse-copy injection. The writer corrects detached observation
+validation against the existing finite positive trust/remaining-radius authority
+(numerical-methods deterministic bounded subproblem steps1/3); physical solver
+arithmetic, gates and radius trajectory are unchanged. Per-case full-map expectations
+must follow independent copy semantics, not the invalid trace's implementation output.
+Actual H0/H1 free-ID joins and distinguishable generic-inverse owner cases remain
+required. Raw `checks/model05-*` and `checks/model06-*` failures/successes are retained.
+
+Two-cycle reassessment: these are concrete bounded observation/control corrections;
+continue within the existing envelope, then complete all scoped lint and same-reviewer
+verification. No acceptance is inferred from the valid-baseline passes. The last
+all30-control checkpoint remains model04; original physical slots remain0/0/0.
+
+### Negative-control checkpoint — all30pass, copy-relation audit continues
+
+Ran `model08-no-run` PASS95.736184s and all30inertcontrols PASS, including the new
+numeric, H-slot, norm, lineage, scalar and distinguishable snapshot-owner negatives.
+Whole source`1220fb82ec8c17a6a418006b68f1a58a548872e5af3ab8750d3c2e4091a5ff4b`,
+stage1`4e213e653fbc2af46627dae0ba4756c5ccd310c7eff7e0d092795718864d278c`,
+binary`61bbefc03ebb7e1da91e5544696813bebbc2997790330099010dc25d81431644`.
+[Verified772-entry source](artifacts/replacement-negative-controls-checkpoint-source.json),
+[full archive](artifacts/replacement-negative-controls-checkpoint-source.tar.gz) and
+[all-control index](artifacts/replacement-negative-controls-checkpoint-results.json)
+retain this substantive cut. LSE Clippy FAIL309=230exact inherited+79unmatched.
+
+Static parent audit found a remaining coordinated-corruption gap despite these passes:
+new factor-output content could accept a positive-lambda AfterDelta or zero-lambda
+AfterInverse marker if the other copied fields matched its generated states. Restore
+the old canonical valid-boundary relation in the resolved copy record and add compound
+full-terminal negatives. Also validate completed-application markers against the
+unchanged producer's `(count,AfterDelta)` assignment rather than mere presence.
+This is a correction input, not checkpoint acceptance. Finish the remaining selected-
+terminal H-resolution duplication and all79scoped lint diagnostics; both independent
+reviewers retain final verification ownership. No physical invocation or seal exists.
+
+### Compound copy-boundary controls — all31pass, consolidation active
+
+Ran `model09-no-run` PASS95.583473s, all five inventory families and all26other
+inert controls PASS. The new compound control rejects positive AfterDelta and zero
+AfterInverse output markers with otherwise matching copies, and contradictory
+markers on completed applications; every mutant checks the full expected public
+map. Whole source`3edfcd4be0e840f3596705700c28cf1691a5bca8460da7df13aa4a724f8bb0be`,
+stage1`67f4fe0a773bd91254c78344fa50cb8d48289c847ffe523b60b77a26896266b6`,
+binary`8afe2d37e4767e3a1e1f826c9a87a127b2044f6bfe160401192cf0ac4dbadcee`.
+Exact receipts remain in the detached root `checks/model09-*`, including567pins
+and35depfiles. The whitelist now has31explicitly inspected inert controls; its
+previous30-control bytes are retained as `checks/model08-run-metadata-preserved.py`.
+
+LSE Clippy FAIL311=230exact inherited+81unmatched. Sole writer continues cohesive
+borrowed-model/typed-family extraction, once-resolved H selection and all scoped
+lint corrections. Final proofs and same-reviewer acceptance remain pending. The
+locked ledger's active initial HEAD was reconciled to the already recorded execution
+HEAD246c3b824f5c92afff5a0464813ff68f7b98aa7d; inherited bc0c0f749 is retained historically.
+No time grant, fixed deadline, physical slot or acceptance changed.
+
+Writer edit-loop friction: `writer10-clippy` omitted required `--release --no-deps`
+and checked inherited vegetation before LSE; its FAIL is preserved but is not the
+required LSE result. The corrected command uses the existing `/workdir` lint target.
+Only its proven new failed99MiB debug cache was removed; raw receipt/output and all
+source/build custody remain. `checks/writer10-generated-cache-cleanup.json` records
+that bounded cleanup. Borrow migration continues before the next exact check.
+
+### Consolidated resolved model — all31pass, scoped lint remains
+
+Ran `model10-no-run` PASS94.994583s and all31inertcontrols PASS after the full
+borrow migration and once-resolved H-selector change. Only the terminal family
+resolver calls H0/H1 locator predicates; selection and content consume its record.
+Generic inverse ownership before the first inverse is now explicitly absent.
+Whole source`1e8c32e4543cad696aeba7309dfe04d1fb55238dd382c17ae9b591b5a8b4d349`,
+stage1`e9c46008eda13d42b8b95405efd095e75e966075af543c7c966b446084944f03`,
+binary`06d2a20e1b1b330548ea8c8c419be69dd1c23607487286c48d0b5b6b1aa311c2`.
+[Recoverable source](artifacts/replacement-consolidated-model-checkpoint-source.tar.gz),
+[source custody](artifacts/replacement-consolidated-model-checkpoint-source.json),
+and [all-control index](artifacts/replacement-consolidated-model-checkpoint-results.json)
+preserve this substantive cut. Exact controls retain567pins/35depfiles.
+
+Independent postprocessing of authenticated raw mutation stderr confirms10disjoint
+partitions covering all107refinement rows,30312unique locator alternatives and
+2061216field-presence mutations (`checks/model10-coverage.json`). This reconstructs
+coverage bookkeeping, not physical science. Static772-entry comparison finds only
+stage1 changed; its physical suffix beginning `refine_face_before_crossing` remains
+byte-identical, SHA`4f8fc5a82fa5b3145ceb22f8120c2866c0016595ab2f950b53a89850bfcd2c47`
+(`checks/model10-noninterference.json`).
+
+Writer11's initial borrowed cut had E0308 type errors; its contrary initial agent
+summary was corrected against raw diagnostics before proceeding. Writer12 and13b
+compile, with LSE Clippy FAIL290=230exact inherited+60scoped. Mechanical corrections
+and cohesive helper/family extraction continue; final proof tables and both
+same-reviewer verifications remain required. No capture approval or performance
+claim follows from this checkpoint.
+
+### Core and first-control extraction — all31pass, structural proofs checked
+
+The writer extracted the core validators and field-family builder, grouped candidate
+and final-comparison reach coherently, and split the inventory schema/semantic-group
+controls. Pure `field_state` now borrows the resolved model and accepts only a field
+name. Dead trace/role arguments were removed from the descriptor/status insertion
+chain; the serializer helper now recognizes both actual old and new call forms.
+An initial comparison incorrectly applied the later helper dialect to checkpoint03's
+legacy direct inserts (63 versus68 extracted); that failed comparison is retained.
+The corrected comparison uses authenticated model10 serializer bytes and the frozen
+explicit68-key list: all three key sets agree (`checks/model11-status-key-extraction.json`).
+Previous helper bytes are preserved before this narrow adaptation.
+
+Ran `model11-no-run` PASS94.011656s and all31inertcontrols PASS, with full coverage
+bookkeeping unchanged107rows/30312locators/2061216presence mutations. Whole source
+`5edad87f7b68796793f8cf9f59c65ccf84f12d6fce2ffc6dbc52b0fb59e14f99`, stage1
+`847522a0bd313323dd61db1670b1c4a24e9fee24cf2b9a26dbbd115dcdaadf3f`, binary
+`d25abc52b4c7d85881f9a66a01937ee805bfec87d8ec900290d2df464e958ef7`.
+Raw `checks/model11-*` bind these checks; this remains an intermediate cut.
+Writer20's extracted closure lifetime failed compilation and is retained; writer20b
+compiles and reports LSE Clippy FAIL238=230exact inherited+8oversized scoped helpers.
+
+All seven existing offline structural proof helpers ran successfully on model11.
+Parent inspection confirms298field paths, no unmapped paths, no unresolved conditions,
+no missing schema keys or schema keys without serializer locations. Payload bound
+36852930bytes fits the unchanged67108864byte cap (`checks/model11-proofs/`). These
+are draft structural bounds/mappings, not scientific completeness, physical evidence
+or approval. Final source edits require regeneration and both same-reviewer checks.
+Source ownership resumes for the remaining eight cohesive helper extractions;
+no physical invocation, cap change, approval seal or main Rust adoption occurred.
+
+### Remaining control extraction — preserved writer transfer
+
+Writer21 completed the independent group/status oracle extraction; writer22b completed
+application fixture and WorkCap extraction. The introduced duplicate-name compile
+failure in writer22 is retained. Writer22b compiles with LSE Clippy FAIL234=230exact
+inherited+4oversized controls. The only remaining scoped diagnostics are the impossible-
+tuple, locator-semantics, numeric-domain and factor-output-boundary controls. Their
+assertions, cases, full-terminal calls and whole-map comparisons must all survive
+cohesive extraction. No additional scientific implementation is requested.
+
+After repeated no-edit handbacks, including a narrowed single-control assignment,
+`/root/replacement_writer_closure` explicitly could not complete this extraction in
+its turns. Its write ownership is revoked and the agent is interrupted. Preserve its
+completed work before a fresh pinned implementer continues the four bounded controls.
+[Verified772-entry transfer receipt](artifacts/replacement-quality-transfer-source.json)
+and [full source](artifacts/replacement-quality-transfer-source.tar.gz) bind whole
+`936a93c810735c311e1936294ce652426cb11cd1cd5a4952c32217a9753fd2da`, stage1
+`e51f1de7da0a6296fca21764dbce1909f56b1d982f5f48dd9e4b9b5b77088f59`.
+This matches the unchanged writer22b Clippy source; it has not yet received a new
+release no-run/all31 run. Model11 remains the latest all31/proof pass. The parent
+continues integration/checks only, with the same independent reviewers, original
+fixed deadline/allowance, no physical slot use and no main Rust adoption.
+
+### Tool-capacity obstruction and available-writer reuse — 22:48UTC
+
+Two fresh pinned-implementer spawn attempts failed with `agent thread limit reached`,
+including after parked writers were interrupted. Reactivating the same correctness
+reviewer also failed with that tool error. No new reviewer or writer was created;
+interruption did not release thread capacity. Do not repeatedly retry unchanged errors.
+Final independent review remains blocked, and neither authors nor the parent count
+as substitutes. The available original pinned implementer `/root/replacement_writer`
+now holds sole Rust write ownership for the four remaining control extractions;
+`/root/replacement_writer_closure` remains revoked. Its first inspection-only handback
+was followed by a concrete bounded category extraction assignment. Parent continues
+checks/evidence, with no second Rust writer. The preserved transfer receipt above
+remains the recoverable starting cut. This is not a new time allowance or acceptance.
+
+### Control extraction checkpoint — 23:04UTC
+
+The available original writer completed impossible-tuple dispatch/case extraction
+and numeric-domain/range extraction. Parent inspected the source and required
+completion where helpers initially duplicated old bodies. Writer23 introduced
+three small warnings, corrected in source; writer24's helper-name mismatch and
+unused imports are retained as compile-failure evidence. Parent writer25 release
+Clippy on stable whole source
+`e81ede8dc178388ae3fea0cabdcc798d8d467f0dfedfa8d886f7492721a091f8`
+compiles and reports FAIL232:230 exact inherited diagnostic/source-line matches
+plus only two scoped `too_many_lines` findings, locator-semantics363 and factor-
+output-boundary241. Impossible/numeric controls and their helpers now meet the
+lint limits; all31 execution must still be repeated after the final extraction.
+Raw writer23/24/25 outputs and comparisons remain in the detached checks directory.
+The baseline diagnostics and21 original source files used for exact comparison
+are additionally preserved under `checks/inherited-lint-baseline-inputs` for final
+custody. Continue the two concrete test extractions with the same sole writer;
+independent review remains blocked by the unchanged tool-capacity failure.
+
+### Final quality correction transfer — 23:12UTC
+
+Writer26 compiles with230 exact inherited diagnostics and four scoped corrections:
+H-case helper109lines, copy-boundary main102lines and two displaced doc-comment
+blank lines. All four original control extractions are wired. The later scratch
+split copied residual assertions along with fixture setup; parent inspection
+requires removing those duplicated residual blocks from H/scratch helpers while
+retaining the original selected-cases checks. Repeated no-edit cleanup handbacks
+trigger a preserved transfer: original writer is revoked/interrupted, and available
+`/root/replacement_writer_closure` resumes sole ownership of these bounded remaining
+corrections. No fresh agent spawn or independent-review retry occurs.
+[Verified source receipt](artifacts/replacement-final-quality-transfer-source.json)
+and [full source](artifacts/replacement-final-quality-transfer-source.tar.gz) preserve
+whole `9ccfb6114da757d63d202623aa7394f0f035587d1cd49e7eaa371149d2e08ede`
+with772entries. This post-writer26 cut is not yet compiled or fully tested. Complete
+corrections and exact checks under the same fixed clock; independent review remains
+unavailable and HOLD remains mandatory.
+
 ## Recovered-terminal invocation disposition — HOLD, 2026-10-04
 
 **HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
@@ -466,6 +1035,157 @@ section reference, source/raw archive hashes,49unrelated path identities,
 accounting/slot checks and scoped diff whitespace PASS. Terminal authoring diff
 is limited to this package, thin prompt, two wording responses and the original
 locked-ledger authoring carry. Scoped local commit; no push.
+
+### Internal reassessment — 19:16UTC
+
+The first60active minutes leave concrete in-scope work; continue without renewed
+allowance or owner handback. The current inventory builder is an unvalidated
+intermediate control, not exhaustive acceptance: range/partial-operation expansion,
+nonidentity domains, full field mutations and per-row WorkCap retention remain.
+Parent static inspection identified sampled range values, a permissive unknown-group
+default and overly broad positive/false-scratch rejection for correction. The resolved
+model still needs eager per-field records rather than query-time reach selection.
+Writer retains sole source ownership; parent owns bounded builds and inert execution.
+Final lint/proofs/custody and both same-reviewer dispositions remain pending.
+Original slots remain0/0/0; no seal, physical invocation or runtime feasibility claim.
+
+### Independent inventory controls — first compiled domain cut
+
+Ran `domain01-no-run` FAIL on fixture numeric/lifetime errors; fixed source then
+`domain02-no-run` PASS92.703s with unchanged whole-source
+`11c14d68596c1ab2e3829ecad9faf8c07f719cb5a2ba455ed4231b30790d449c`,
+stage1`4425b4e21d3e3002ad4a440148d64176efbff83c4c31a5436cc2bd9b94941c82`.
+Successful binary`14d734e2dd148d31097402a8b4bb973ae78a7e2cf845c948629aa53366d9a856`
+is bound by567pins/35depfiles in mutable-root`checks/domain02-build-inputs.json`.
+Parent statically inspected and whitelisted five inert oracle family wrappers plus
+the separate WorkCap control before building. No physical workflow is reachable
+from those fixture/control helpers.
+
+Ran each of five oracle families with nonzero1test counts and unchanged source:
+all FAIL on their first baseline trace. Raw receipts/stdout/stderr are retained as
+`checks/domain02-{p0,first_residual_h0,first_factor_scratch,second_residual_h1,second_factor_final}*`.
+The failures identify incomplete predecessor/group expansion, missing eligibility
+observations, incorrect snapshot/generic-inverse copy boundaries and a non-refusing
+P0 comparison fixture. Writer is correcting the inert independent builder; these
+results do not establish exhaustive controls or justify weakened acceptance.
+Full mutations, eager resolved records, lint corrections and final reviews remain.
+
+### Broad baseline-control correction reassessment
+
+Ran `domain03-no-run` PASS92.750s (whole`b74328150acba1985eb9f56f5be416e3ce0c903b1cd8c3324e76bcb1446b7e0b`),
+then five families FAIL. Ran `domain04-no-run` PASS92.989s
+(whole`857af6b3e69cf57ff254879db2eaeeb9abe00ea6b4b4f2262ce6e0e4cc33a445`,
+stage1`774505a1dd6e8462be1b3a838272b3e0492354b5be204f6655370f8a64bc1daa`,
+binary`6c83ebf8d5674311c0c539263f9634b66fdb2a34775cc8a54c43f2c7188c3328`).
+Each successful build has its own567pin/35depfile receipt; no source edits overlapped.
+The fourth cut accumulates full family diagnostics, preserving every failing identity:
+23/5745/99/24231/208 failures respectively, within fixed test timeouts. All five tests
+have nonzero1test counts; all FAIL. Full raw logs and grouped signatures remain in
+mutable-root`checks/domain04-*`, including`domain04-failure-summary.json`.
+
+After these unsuccessful correction cycles, continue a concrete in-scope correction:
+construct dimensionally coherent nonidentity fixtures and cumulative predecessor
+obligations; fix zero-lambda exact statuses and the true positive snapshot-delta and
+second-ordinal inverse-copy model defects. Parent traced common/lineage validators:
+full weighted matrix stays21×21; factor A is21×m, V m×m, sigma/vector copies m,
+order is a local permutation, and held is a subset of raw free, not its complement.
+These joins must be satisfied by fixtures, never relaxed in acceptance. The writer
+remains sole source author; no allowance renewal. Whole-map equality, full mutations,
+eager records, lint/proofs/custody and independent final acceptance remain pending.
+
+### Inventory baseline checkpoint — all five families pass
+
+Ran stable `domain05-no-run` FAIL on a misplaced fixture width declaration; removed
+the unrelated insertion and corrected the intended fixture helper. Subsequent
+`domain06` through`domain09` builds PASS and inert family failures are preserved in
+mutable-root`checks/` with exact pins and full diagnostic identities. Parent traced
+and writer corrected the zero-application identity contradiction: factor identity
+may already be copied before application1, independently of application count.
+Positive copied snapshot deltas and current/prior inverse copy ownership were also
+corrected without altering physical solver functions. Independent oracle corrections
+retain exact inapplicable/interrupted states and coherent cumulative predecessor
+semantics; fixture repairs retain the existing dimensional/bit/arithmetic validators.
+
+Ran `domain10-no-run` PASS93.121s with unchanged whole source
+`297198eb8f39118c9aa17c936162025cdef834296212fa1d2165eb3b9b340985`,
+stage1`756239d8a3a887d115c08992f4b3bddb287d3636c4feaaf0a916954c594c1ce1`,
+binary`188877b39d6e6d7a9edef2939f765c57bd98cee95caf281a4280816e9a388996`.
+`checks/domain10-build-inputs.json` pins567inputs/35depfiles. Ran all five partitioned
+inventory baseline families PASS (nonzero1test each), comparing full acceptance and
+exact symmetric-key public maps for every constructed locator identity. Ran all12
+existing/targeted inert controls PASS, retained in`domain10-regression-{0,4,8}*`.
+This is baseline-builder progress, not full exhaustive-controls or C5 acceptance.
+
+Preserved [772-entry full source](artifacts/replacement-domain-baseline-source.tar.gz)
+and [verified receipt](artifacts/replacement-domain-baseline-source.json) before
+resuming writer ownership. The next concrete task is each required-member removal
+and applicable stray injection on every baseline trace, with independently expected
+full resulting maps and exact inventory/locator coverage. Per-row WorkCap retention,
+impossible tuples, eager resolved records, scoped lint/proofs and same-reviewer final
+acceptance remain outstanding. All physical slots remain0/0/0; no capture seal.
+
+### Mutation execution checkpoint and continuing correction
+
+Parent statically inspected eleven new inert mutation/coverage entry points and
+extended the explicit helper whitelist before the build. Ten prospective partitions
+separate five families by lambda; no cap was changed. Ran `mutation01-no-run`
+PASS94.402s with unchanged whole`197b5c53918f5cfb99cd34722eca64b16fe85aaac1e77c5c086256e52e908c81`,
+stage1`32498ec620f25826677aabe8ab7e2714e36b1b1c724c0b52b3c8c8be17e46f25`,
+binary`ec89da9940b7c562fea49ff1c35f95f2653187d6fcc9431bacd455327ae0bc19`.
+The corresponding build receipt retains567pins/35depfiles; all five baseline families
+PASS again. Ran partition coverage PASS with disjoint union107rows and explicit
+locator identities. Mutation P0 positive/zero and first/second residual zero PASS;
+second-residual zero took22.737s, below the unchanged30s per-test bound.
+
+Six mutation partitions FAIL with nonzero test counts and unchanged source. Raw
+logs and exact status differences remain in`checks/mutation01-*`, summarized in
+`mutation01-failure-summary.json`. Two expose a model defect: deleting free IDs
+erases the H0/H1 residual-copy obligation because reach selection depends on the
+missing operand. Four expose an incomplete independent marker-loss oracle: existing
+ordinal delta vectors/snapshots must become conservatively required when the copy
+marker is missing, including zero lambda; H/inverse remain zero-inapplicable.
+Continue these concrete in-scope corrections without new allowance. The baseline
+archive remains the tested recoverable cut; mutation acceptance is incomplete.
+WorkCap/impossible controls, eager records, lint/proofs and final reviews remain.
+
+### Complete inert-control checkpoint — same source, C5 still pending
+
+`mutation02` exposed a first-residual/H0 metadata-classification overlap; corrected
+without weakening free-ID joins. `mutation03` passed all baselines and the six prior
+failed mutation partitions, then the older impossible-slot selector regression
+exposed a missing selector guard. Restored that guard independently of public reach.
+Expanded WorkCap into two typed outer refusals with retained work/counters/masks/roles.
+Parent rejected initially mislabeled impossible-case fixtures; writer rebound exact
+inventory row IDs and expanded compound family descriptors. `controls01` passed
+selector/impossible controls but found a wrong test serialization path for WorkCap;
+corrected the test to use the separate existing work serializer without format change.
+All failures remain in mutable-root`checks/`; no physical invocation occurred.
+
+Ran `controls02-no-run` PASS95.182s unchanged whole source
+`388d6221aae331ee3b9c4cedd1d965b964585a2ed8d2cb10179d933159854e33`,
+stage1`c7903a57d83457755281550ba75021f1063d619f828612ac2695da0f2e6b1ac9`,
+binary`1ba33b1038aeb4aa2516ee99add904c929bc42b61a6cb21653dd7a85cff3e64f`,
+with567pins/35depfiles. Ran all30distinct whitelisted inert controls on this same
+source PASS:12old/targeted,5baseline families,10mutation partitions,107-row partition
+coverage,2-row WorkCap and25-descriptor impossible control with expanded variants.
+Mutation coverage is30,312locator cases ×68members =2,061,216checks; exact row/locator
+identities and nonzero counts are retained. These are inert check costs, not physical
+OFE-day performance. No cap changed.
+
+Preserved [full controls checkpoint source](artifacts/replacement-controls-checkpoint-source.tar.gz)
+and [772-entry receipt](artifacts/replacement-controls-checkpoint-source.json).
+Ran warnings-denied LSE Clippy FAIL273diagnostics; exact source-line comparison
+matches230inherited and leaves43unmatched, all in scope. Raw report and comparison
+are`checks/controls02-clippy-lse*`. Inherited failures remain failed gates.
+
+Writer resumes actual C5 eager-record replacement: all per-field/copy/count/generic
+inverse obligations resolved once, followed by explicit norm vector/domain/completion
+roles/scalar bindings and comparison obligations. Existing query-time stage matrices
+must be deleted, not wrapped or renamed. Full controls provide correction evidence;
+passing them alone does not satisfy architecture acceptance. Scoped lint, final
+proofs/custody and both independent reviews remain. Reviewer message routing while
+writer active returned the known thread-capacity error; no repeated retry. Park/interrupt
+writer before same-reviewer reactivation as earlier in this invocation. No new allowance.
 
 ## Recovered terminal-plan final disposition — HOLD, 2026-10-04
 

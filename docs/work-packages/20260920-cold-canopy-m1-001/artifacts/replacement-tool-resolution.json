@@ -1,0 +1,20 @@
+{
+  "resolved_tools": {
+    "cargo": "/nix/store/cavxgwfb7l7akyvvqvnl39d6nw0wckgh-cargo-1.97.1/bin/cargo",
+    "rustc": "/nix/store/paaihvr59q1101200mabmk7y4yhw42g7-rustc-wrapper-1.97.1/bin/rustc",
+    "rustfmt": "/nix/store/k2hwcha2p1fy0v0py34vq3jyvwqk339p-rustfmt-1.97.1/bin/rustfmt",
+    "cargo-clippy": "/nix/store/94wbbyb1fzp4cplfs9samki875k9ypg7-clippy-1.97.1/bin/cargo-clippy",
+    "cc": "/nix/store/3d1c302vw7kc8a5vknhmn34c0pd7zm6m-gcc-wrapper-15.3.0/bin/gcc"
+  },
+  "inherited_relevant_environment": {
+    "RUSTFLAGS": null,
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "RUSTC": null,
+    "RUSTC_WRAPPER": null,
+    "RUSTC_WORKSPACE_WRAPPER": null,
+    "CARGO_BUILD_TARGET": null,
+    "CARGO_INCREMENTAL": null,
+    "CARGO_BUILD_JOBS": null
+  },
+  "environment_file_sha256": "a31ee5ce60bb9b2c73d9d7f3f2c0df45d43d7561a19b8327fc3ff49ce8fa51c0"
+}

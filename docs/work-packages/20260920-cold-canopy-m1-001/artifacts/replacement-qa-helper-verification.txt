@@ -1,0 +1,14 @@
+Reviewer: /root/replacement_qa. Original same-reviewer response retained verbatim below.
+
+Static same-reviewer verification complete. No helper executed, source inspected, or file changed.
+
+No blocking helper-preparation finding remains.
+
+- `capture_payload.py`, `reconstruct.py`, and `proof_inputs.py` are byte-identical to checkpoint03.
+- `capture_once.py` has exactly one change: it requires absent `artifacts/replacement-approved.json` instead of `terminal-plan-approved.json`.
+- `protocol-draft.json` has exactly two changes: readiness and capture deadlines both bind `2026-10-05T05:14:00+00:00`.
+- Earlier prepared `check.py` and `run_metadata.py` likewise only bind that active cutoff.
+- The ledger now consistently binds `readiness_deadline_utc` and `work_cutoff_utc` to `05:14Z`, with hard deadline `06:14Z`. This satisfies `capture_once.py`’s exact receipt-to-ledger equality checks and the plan’s requirement to seal, capture, and reconstruct before the preservation cutoff.
+- `replacement-approved.json` is absent in both artifact and invocation locations. The capture path remains fail-closed.
+
+The copied helper set is source-independent and ready for later final validation: final approval must hash-bind these exact invocation-root helpers, protocol, exact source/binary/schema/fixture, and active ledger. The pending new-controls whitelist and all source, gate, proof, custody, and final-review checks remain prerequisites; this is not final source or capture approval.

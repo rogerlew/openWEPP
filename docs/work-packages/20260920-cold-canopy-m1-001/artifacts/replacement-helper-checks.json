@@ -1,0 +1,34 @@
+{
+  "evidence_class": "Ran helper-only syntax/parsing and optimized-Python early rejection; no physical invocation",
+  "utc": "2026-10-04T18:22:48.466201+00:00",
+  "results": {
+    "utf8": "PASS",
+    "duplicate": "PASS",
+    "nonstandard": "PASS",
+    "payload_cap": "PASS",
+    "duplicate_marker": "PASS",
+    "framing": "PASS",
+    "helper_syntax": "PASS",
+    "optimized_python_rejected_before_launch": "PASS",
+    "slots_still_zero": "PASS"
+  },
+  "helper_sha256": {
+    "check.py": "0552360bbfc725127fea3a05a5053bbbbfb757a95400c6ef0bed7c424d9d43ae",
+    "collection_bounds.py": "506e17ae30ba42c8f19782fdf8bfc167c4fd909de6496ba04d24596f4f1af18c",
+    "schema_bound.py": "c7519cca16fd5f1d6287fd3ecfd7106314ca60c1018767fde9d94b0c7168b10b",
+    "status_keys.py": "24e01bda8271dcb69bf18df44e4f5cf136a64a2a011a04909f5453e612396845",
+    "compare_lint.py": "e34aad0d6af22aa2ef47da277341021a0fc8cc700dd84298cc933e6fe812edac",
+    "run_metadata.py": "dfb7f6cb44f7464f9472a9ab27b39ed1d7834fa68f31372b96f190a2ec0ed48d",
+    "build_schema.py": "889f55d6287a3240ebdf509ef8e0668f4b0d81e1abb683437516873a281dff4c",
+    "field_table.py": "a53a6a97ad769b88cce1d249c14dc100a0220ecbe548f3b66a7b9188af2417d1",
+    "schema_coverage.py": "f88fc9bb89fb81a04f9c7377462d4992bda14f8571495bbe843080cbd8bb6885",
+    "capture_once.py": "2699ef4d1fdc4a9fcf891c2658c9f203b73d9c77bfc96db8b2a474afb1ac672f",
+    "proof_inputs.py": "3744a45df5dadc1ef2b3e82cf24e4a3944e6181fe92fc0ad91ce5317d58cbc94",
+    "capture_payload.py": "0c67e3ad69c2cae87eeae977e76b491767befc8c182c559a09104e01cc6b5af3",
+    "outcome_type_bound.py": "9a51fe91f6db917620af9296a09bfe214af606d6d66f1c0d10142f04a068d285",
+    "reconstruct.py": "a4cbce24fc47c169f9de336471b855d32283d6ccf7905f441d442c8f71759745"
+  },
+  "optimized_exit": 1,
+  "optimized_stderr": "Optimized Python is prohibited; no capture launch\n",
+  "physical_invocations": 0
+}

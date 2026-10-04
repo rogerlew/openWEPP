@@ -1,0 +1,11 @@
+{
+  "tools_verified": 5,
+  "terminal-plan-recovery-final-source_archive_sha256": "d5560a321ea9df981817929771e97e35a1d4e269a678cc04f9facb305211c594",
+  "terminal-plan-recovery-raw_archive_sha256": "b7a12d78811374b1e931a917b8f0181a3ecc692deb5143526d01c36a7c1104a6",
+  "mutable_source_entries_verified": 772,
+  "source_sha256": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+  "build_pins_verified": 564,
+  "depfiles_recorded": 35,
+  "binary_sha256": "d80306cffbb6a33d8bfd8f8ed7d345ab67cc349e57763e846c62a045255650cc",
+  "raw_members_verified": 190
+}

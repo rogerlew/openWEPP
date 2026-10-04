@@ -1,0 +1,426 @@
+{
+  "evidence_class": "Static: baseline emitted key extraction only, not status-value or scientific completeness evidence",
+  "source": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs",
+  "sha256": "d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8",
+  "keys": {
+    "free_ids": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5380
+      }
+    ],
+    "factor_order": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5381
+      }
+    ],
+    "factor_a_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5382
+      }
+    ],
+    "factor_v_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5383
+      }
+    ],
+    "factor_sigma_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5384
+      }
+    ],
+    "weighted_residual_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5385
+      }
+    ],
+    "weighted_matrix_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5386
+      }
+    ],
+    "scaled_lower_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5387
+      }
+    ],
+    "scaled_upper_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5388
+      }
+    ],
+    "lambda_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5389
+      }
+    ],
+    "reduced_face_radius_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5390
+      }
+    ],
+    "live_state_entry_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5394
+      }
+    ],
+    "live_state_exit_bits": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5395
+      }
+    ],
+    "lower_mask_exit": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5396
+      }
+    ],
+    "upper_mask_exit": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5397
+      }
+    ],
+    "factor_identity": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5398
+      }
+    ],
+    "factor_application_identities": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5399
+      }
+    ],
+    "factor_application_snapshots": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5403
+      }
+    ],
+    "factor_output_copy_boundary": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5407
+      }
+    ],
+    "factor_applications": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5411
+      }
+    ],
+    "eligibility_scalar_operations": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5412
+      }
+    ],
+    "eligibility_guard_events": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5416
+      }
+    ],
+    "reservation_denial_owner": [
+      {
+        "function": "refinement_capture_status_structure",
+        "line": 5420
+      }
+    ],
+    "p0_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5432
+      }
+    ],
+    "p0_full_norm2_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5433
+      }
+    ],
+    "p0_full_norm_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5438
+      }
+    ],
+    "p0_reduced_norm2_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5443
+      }
+    ],
+    "p0_reduced_norm_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5448
+      }
+    ],
+    "lower_mask_p0": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5453
+      }
+    ],
+    "upper_mask_p0": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5454
+      }
+    ],
+    "residual0_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5455
+      }
+    ],
+    "h0_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5456
+      }
+    ],
+    "delta0_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5457
+      }
+    ],
+    "p1_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5458
+      }
+    ],
+    "p1_full_norm2_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5459
+      }
+    ],
+    "p1_full_norm_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5464
+      }
+    ],
+    "p1_reduced_norm2_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5469
+      }
+    ],
+    "p1_reduced_norm_bits": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5474
+      }
+    ],
+    "lower_mask_p1": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5479
+      }
+    ],
+    "upper_mask_p1": [
+      {
+        "function": "refinement_capture_status_steps",
+        "line": 5480
+      }
+    ],
+    "residual1_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5490
+      }
+    ],
+    "h1_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5491
+      }
+    ],
+    "delta1_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5492
+      }
+    ],
+    "p2_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5493
+      }
+    ],
+    "p2_full_norm2_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5494
+      }
+    ],
+    "p2_full_norm_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5499
+      }
+    ],
+    "p2_reduced_norm2_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5504
+      }
+    ],
+    "p2_reduced_norm_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5509
+      }
+    ],
+    "lower_mask_p2": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5514
+      }
+    ],
+    "upper_mask_p2": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5515
+      }
+    ],
+    "remaining_radius_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5516
+      }
+    ],
+    "radius_gap_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5521
+      }
+    ],
+    "radius_tolerance_bits": [
+      {
+        "function": "refinement_capture_status_final_steps",
+        "line": 5522
+      }
+    ],
+    "inverse_t_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5567
+      }
+    ],
+    "inverse_denominator_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5574
+      }
+    ],
+    "inverse_z_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5581
+      }
+    ],
+    "ordered_norm_traces": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5588
+      }
+    ],
+    "partial_ordered_norms": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5595
+      }
+    ],
+    "factor_application_snapshot_1_h_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5534,
+        "dynamic_expansion": "ordinal in1..=2 and five actual tuple suffixes"
+      }
+    ],
+    "factor_application_snapshot_1_inverse_t_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5534,
+        "dynamic_expansion": "ordinal in1..=2 and five actual tuple suffixes"
+      }
+    ],
+    "factor_application_snapshot_1_inverse_denominator_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5534,
+        "dynamic_expansion": "ordinal in1..=2 and five actual tuple suffixes"
+      }
+    ],
+    "factor_application_snapshot_1_inverse_z_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5534,
+        "dynamic_expansion": "ordinal in1..=2 and five actual tuple suffixes"
+      }
+    ],
+    "factor_application_snapshot_1_delta_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5534,
+        "dynamic_expansion": "ordinal in1..=2 and five actual tuple suffixes"
+      }
+    ],
+    "factor_application_snapshot_2_h_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5534,
+        "dynamic_expansion": "ordinal in1..=2 and five actual tuple suffixes"
+      }
+    ],
+    "factor_application_snapshot_2_inverse_t_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5534,
+        "dynamic_expansion": "ordinal in1..=2 and five actual tuple suffixes"
+      }
+    ],
+    "factor_application_snapshot_2_inverse_denominator_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5534,
+        "dynamic_expansion": "ordinal in1..=2 and five actual tuple suffixes"
+      }
+    ],
+    "factor_application_snapshot_2_inverse_z_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5534,
+        "dynamic_expansion": "ordinal in1..=2 and five actual tuple suffixes"
+      }
+    ],
+    "factor_application_snapshot_2_delta_bits": [
+      {
+        "function": "refinement_capture_status_inverse_and_traces",
+        "line": 5534,
+        "dynamic_expansion": "ordinal in1..=2 and five actual tuple suffixes"
+      }
+    ]
+  },
+  "count": 68
+}

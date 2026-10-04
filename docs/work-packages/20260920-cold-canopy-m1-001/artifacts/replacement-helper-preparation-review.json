@@ -1,0 +1,30 @@
+{
+  "evidence_class": "Static: same-reviewer helper fix verification from /root/replacement_qa; parent records route and retained review scope, not final acceptance",
+  "reviewer": "/root/replacement_qa",
+  "independent_successor": true,
+  "preparation_disposition": "PASS",
+  "findings_fixed": [
+    "copy invocation-root capture-side helpers",
+    "active readiness/capture/ledger binding"
+  ],
+  "verified_deltas": {
+    "capture_payload.py": "byte-identical checkpoint03",
+    "reconstruct.py": "byte-identical checkpoint03",
+    "proof_inputs.py": "byte-identical checkpoint03",
+    "capture_once.py": "approval receipt name only: replacement-approved.json",
+    "protocol-draft.json": "readiness and capture deadlines only:2026-10-05T05:14:00+00:00",
+    "check.py": "deadline only:2026-10-05T05:14:00+00:00",
+    "run_metadata.py": "deadline only:2026-10-05T05:14:00+00:00"
+  },
+  "helpers": {
+    "capture_payload.py": "0c67e3ad69c2cae87eeae977e76b491767befc8c182c559a09104e01cc6b5af3",
+    "reconstruct.py": "a4cbce24fc47c169f9de336471b855d32283d6ccf7905f441d442c8f71759745",
+    "proof_inputs.py": "3744a45df5dadc1ef2b3e82cf24e4a3944e6181fe92fc0ad91ce5317d58cbc94",
+    "capture_once.py": "2699ef4d1fdc4a9fcf891c2658c9f203b73d9c77bfc96db8b2a474afb1ac672f",
+    "protocol-draft.json": "7ba7a23a309e615874849e6dd160e54109c6126b68cb31f659daa40ebb0f05db",
+    "check.py": "0552360bbfc725127fea3a05a5053bbbbfb757a95400c6ef0bed7c424d9d43ae",
+    "run_metadata.py": "dfb7f6cb44f7464f9472a9ab27b39ed1d7834fa68f31372b96f190a2ec0ed48d"
+  },
+  "approval_receipt_exists": false,
+  "scope_limit": "Preparation only. New controls whitelist, exact final source/build/proofs/custody/gates and both final reviews remain unmet. No capture authorized."
+}

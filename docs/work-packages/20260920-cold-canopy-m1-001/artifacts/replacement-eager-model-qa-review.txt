@@ -1,0 +1,20 @@
+Reviewer: /root/replacement_qa. Original same-reviewer response retained below.
+
+**Static + inspected-run evidence; bounded checkpoint only.** No Rust or physical workflow was run by this reviewer.
+
+### Findings
+
+- **HIGH — `m1_trust_region_stage1.rs:5023-5025, 5067-5310`: the oracle’s field universe is still implementation-owned.** `refinement_capture_inventory_public_fields()` delegates directly to `refinement_capture_public_field_registry()`, then drives the independent expected map. The oracle does independently expand row semantics for those keys, and union-key comparison detects a currently added output key. It does not retain an independently approved 68-key field universe, however: a coordinated registry/status change can add a field whose expected reach defaults to `naturally_unreached` without an inventory-semantic mapping. Bind the expected public key set directly to approved inventory/contract evidence, and fail on a key with no explicit expected-semantic disposition.
+
+- **HIGH — acknowledged but still blocking final C5: `m1_trust_region_stage1.rs:5652-6662`: numeric/null/range/cross-dependent invalid tuples are not covered by the exhaustive full-terminal mutation suite.** The suite toggles logical presence and compares complete maps, but it does not exercise invalid values/shapes/joins through `refinement_capture_terminal_complete`; those remain private-helper-only. This leaves required acceptance coverage for numeric domains, scalar/copy bit joins, marker ordinal, lineage count, inverse owner, and norm domain/role incomplete.
+
+### Verified checkpoint evidence
+
+- The five builder controls cover every refinement row/locator alternative and assert selected terminal, `refinement_capture_terminal_complete`, and whole-map equality.
+- The ten lambda/family mutation controls run all 68 public fields over every expanded locator, reject every mutation, and compare the entire resulting map. The separate partition control asserts all 107 refinement rows; WorkCap covers its two non-refinement rows; impossible-tuple control covers 25 descriptors.
+- All 30 selected inert tests passed against source `b2eb…051d` and binary `a3b4…13da`, with source-before/after identity unchanged. The no-run receipt passed in 95.272 seconds.
+- The largest current zero-lambda second-residual mutation test completed in 27.401 seconds within its fixed 30-second cap; do not treat this test cost or an upcoming by-reference lint cleanup as physical-day performance evidence. The 500/550µs completed-day target remains unmeasured.
+
+Non-blocking follow-up: persist the all-control raw outputs and coverage counts into the final exact-source evidence; they must be rerun after the queued model changes. The current 292 LSE Clippy diagnostics, including 62 unmatched, remain failing gates.
+
+I retain same-reviewer ownership for fixes to these findings and later final QA.

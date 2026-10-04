@@ -1,0 +1,19 @@
+Reviewer: /root/replacement_correctness. Original response retained below.
+
+Static first-model review of exact stage1 SHA-256 `641968041043bcc51b8f988448ac0cf18e48d78707b703d48273af2bdd754b3a`. Ran read-only SHA-256/diff inspection and inspected supplied `model-metadata.json` / `model-build-inputs.json`; no Rust command run by this reviewer.
+
+Findings:
+
+- **HIGH — completed norm validation has reversed scalar-join logic** at `m1_trust_region_stage1.rs:2960-2972`. Ordinary `p[0-2]_{full,free}` roles satisfy the three negated suffix checks, so `refinement_capture_norm_field_join` is skipped; wrong scalar norm bits can pass, especially for p1/p2. Conversely every completed zero-lambda role falls through to a join with `(None, None)`, which always fails, rejecting valid completed zero-lambda terminals. Correct the predicate so zero-lambda ordered roles omit scalar joins while every ordinary completed role requires the exact scalar join. `refinement_capture_resolved_prefix_content` at lines 2886-2926 duplicates p0 norm validation and masks this asymmetry for p0; consolidate this into one generic norm-content path.
+
+- **HIGH — deleting the macro also deleted refusal-side comparison predicates** at lines 2886-3016. The resolved path validates copied norm arithmetic but no longer proves that the observed norm took the recorded terminal guard. Lost predicates include p0/p1/p2 full norm `> original_trust_radius`, p0/p1 reduced norm `> reduced_face_radius`, and zero-lambda p1/p2 ordered norm `> original_trust_radius`. Only final reduced/closeness comparisons remain in `refinement_capture_final_radius_operands_join`. Restore these comparisons as resolved-model obligations selected from terminal metadata; do not rebuild a parallel stage matrix.
+
+- **HIGH — second factor-output terminals no longer validate the completed first snapshot** at lines 2981-2995. When `factor_output_ordinal == Some(2)`, the early return validates only the second prefix. The deleted macro required `first_complete`, including `refinement_capture_factor_snapshot_complete(trace, 1, ...)`, before checking the second prefix. Validate every prior completed ordinal before the current interrupted prefix, preserving exact H/inverse/delta and identity joins.
+
+Residual risk and missing tests:
+
+- The supplied release no-run and eight existing inert controls pass on whole source `1a128f6468727b870a2c2b234ae3be279b625859bd0b7ca029e92db617812338`, binary `6e514bbf…d1a2d`, with 567 pins/35 depfiles. Those controls do not exercise full terminal acceptance for these cases.
+- Full 107-row/all-locator/full-status/missing/stray controls remain pending and are required to expose the three defects above.
+- Static diff shows the old content macro was removed and acceptance/status now share the resolved model; the listed predicate/content losses must be corrected before this milestone can be assessed.
+
+No overall acceptance issued.

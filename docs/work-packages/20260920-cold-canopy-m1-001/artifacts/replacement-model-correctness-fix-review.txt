@@ -1,0 +1,19 @@
+Reviewer: /root/replacement_correctness. Original same-reviewer response retained below.
+
+Static/Ran: reviewed exact whole source `3ac9a8d3…d4a6`, stage1 `e8f3e689…66d52`, and supplied no-run/targeted-test receipts. This reviewer ran no Rust or physical workflow.
+
+Findings:
+
+- **HIGH — inherited exhaustive-control gap remains:** full 107-row/all-locator terminal acceptance, complete public-map values, unknown-group rejection, and same-trace missing/stray injections are still pending.
+- **MEDIUM — targeted fixtures bypass the public metadata seam:** builders call `refinement_capture_terminal_complete(trace, Some(&metadata))` without setting `trace.terminal_refusal`. They can pass while `refinement_capture_field_status_json(trace)` reports `missing_terminal_metadata`. The real caller at lines 1884-1896 safely extracts and passes the same trace-owned metadata, so no runtime mismatch was found. Attach matching terminal refusal metadata and compare the complete public map before counting these controls as C5 seam evidence.
+- **MEDIUM — zero-lambda ordinal-two states lack a direct targeted assertion:** static behavior is correct: ordinal-one leaves snapshot two absent; ordinal-two `BeforeInverse` makes snapshot one required and snapshot two interrupted; ordinal-two `AfterDelta` requires both. Preserve this in the exhaustive controls.
+
+Same-reviewer fix verification:
+
+- **Norm/scalar join: FIX VERIFIED.** Ordinary completed norms now require exact scalar joins; zero-lambda ordered roles correctly omit scalar copies. The duplicate p0 validator was removed.
+- **Refusing comparisons: FIX VERIFIED.** Model-owned `RefinementCaptureRefusingComparison` restores all p0/p1/p2 full, reduced, and zero-lambda rejecting-side predicates.
+- **Prior ordinal validation: FIX VERIFIED.** An ordinal-two factor-output terminal validates every completed earlier snapshot before its current prefix.
+
+Supplied execution evidence records release no-run PASS in 91.33s and all four targeted controls PASS on binary `0a5f9142…1985`, with 567 pins and 35 depfiles. The tests discriminate scalar mismatch, self-consistent non-refusing norms, completed zero-lambda acceptance, and corrupted ordinal-one snapshot content.
+
+The three original HIGH code findings are closed on this cut. No overall model acceptance is issued until the metadata/public-map seam and exhaustive controls are complete.

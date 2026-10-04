@@ -67,12 +67,12 @@
     "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-publication-fetch-recovery.json": "b116baa3200badd873ae6f70772ef74cf711d485dad5a8453a4a34529f9fd7e1",
     "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/trust-region-resumption-final-publication-01.json": "dffbf8458bcb6ee9d2b8553088c5f90f0cc8336845ef1743cce964d298fd2d39"
   },
-  "anchor_utc": null,
+  "anchor_utc": "2026-10-04T18:14:00+00:00",
   "carry_seconds": 496956.069712,
   "ceiling_seconds": 541334.92798,
-  "R_seconds": 44378.858268,
+  "R_seconds": 44378.85826800001,
   "extension_seconds_adopted_once": 43200,
-  "initial_head": "bc0c0f749",
+  "initial_head": "246c3b824f5c92afff5a0464813ff68f7b98aa7d",
   "previous_invocation": {
     "anchor_utc": "2026-10-04T04:18:00+00:00",
     "carry_seconds": 490296.069712,
@@ -703,19 +703,19 @@
     "2026-10-04T16:58:00+00:00",
     "2026-10-04T17:16:00+00:00"
   ],
-  "hard_deadline_utc": null,
-  "work_cutoff_utc": null,
-  "readiness_deadline_utc": null,
+  "hard_deadline_utc": "2026-10-05T06:14:00+00:00",
+  "work_cutoff_utc": "2026-10-05T05:14:00+00:00",
+  "readiness_deadline_utc": "2026-10-05T05:14:00+00:00",
   "final_check_reserve_start_utc": null,
-  "charged_through_utc": "2026-10-04T17:53:00+00:00",
-  "current_invocation_charge_seconds": 540,
-  "cumulative_charged_seconds": 496956.069712,
-  "remaining_seconds": 44378.858268,
-  "charge_method": "17:24\u201317:45 owner interval excluded except60s conservatively charged for intervening diagnostic reply;17:45\u201317:53 fully charged including review/preservation/commit/return; extend beyond17:53, no refund.",
+  "charged_through_utc": "2026-10-04T23:29:00+00:00",
+  "current_invocation_charge_seconds": 18900.0,
+  "cumulative_charged_seconds": 515856.069712,
+  "remaining_seconds": 25478.85826800001,
+  "charge_method": "Continuous concurrent wall once from18:14UTC through23:29UTC, including final preservation/commit/return reserve and lock-path reconciliation; extend if actual work exceeds23:29. No refund or new extension.",
   "source_authoring_stopped": true,
-  "source_authoring_stop_utc": "2026-10-04T17:21:00+00:00",
-  "stop_reason": "No cohesive C5/full-control change feasible in remaining core window; unchanged source fails independent acceptance",
-  "final_source_sha256": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+  "source_authoring_stop_utc": "2026-10-04T23:24:54.862162+00:00",
+  "stop_reason": "Replacement implementation and exact-source executed checks complete; both independent final reviews unavailable due tool thread capacity. Inherited LSE230/vegetation1 gates remain FAIL. Preserve HOLD; no authorized useful correction remains without independent route.",
+  "final_source_sha256": "65db8dd85aa101c528b8919313815bc315326f86ab79e31128cb0147e4306cec",
   "owner_directed_recovery": {
     "owner_instruction": "cull agents and continue",
     "anchor_utc": "2026-10-04T06:13:00+00:00",
@@ -794,7 +794,7 @@
   },
   "cohesive_replacement_authorization": {
     "owner_request": "scaffold one owner-adopted execution plan centered on the actual replacement, dispatch agent for review provide prompt for fresh agent to complete with realistic uninterrupted implementation allowance",
-    "status": "plan adopted; source execution awaits fresh invocation",
+    "status": "Executed implementation and checks; preserved HOLD with independent acceptance blocked, no new allowance.",
     "extension_seconds_adopted_once": 43200,
     "prior_ceiling_seconds": 498134.92798,
     "ceiling_seconds": 541334.92798,
@@ -830,5 +830,89 @@
     "readiness_deadline_utc": "2026-10-04T17:32:38.858268+00:00",
     "final_check_reserve_start_utc": "2026-10-04T17:22:38.858268+00:00"
   },
-  "schedule_state": "No active execution window; fresh invocation derives it once from cohesive_replacement_authorization and latest carry. Historical schedule archived, never replayed."
+  "schedule_state": "Terminal HOLD; fixed cutoff/deadline retained, no renewal and no physical slot use.",
+  "cohesive_replacement_execution": {
+    "anchor_utc": "2026-10-04T18:14:00+00:00",
+    "anchor_basis": "Conservative first-reading minute; first clock observation18:16:03UTC after initial reading.",
+    "carry_seconds": 496956.069712,
+    "initial_remaining_seconds": 44378.85826800001,
+    "window_seconds": 43200,
+    "extension_added_seconds": 0,
+    "inactive_owner_interval": [
+      "2026-10-04T17:53:00+00:00",
+      "2026-10-04T18:14:00+00:00"
+    ],
+    "initial_head": "246c3b824f5c92afff5a0464813ff68f7b98aa7d",
+    "readiness_binding_note": "Same preservation cutoff for seal, captures and reconstruction; no historical readiness formula. Capture still requires all prerequisites, remaining time and both final approvals.",
+    "reassessment_60_minutes": {
+      "at_utc": "2026-10-04T19:16:30.170607+00:00",
+      "decision": "Continue authorized scope: independent exhaustive acceptance/status/mutation controls, eager per-field resolved records, scoped lint correction, exact checks and same-reviewer closure. No renewal or scope expansion.",
+      "remaining_gaps": [
+        "Inventory builder currently samples range and partial-operation alternatives; no complete mutation suite yet",
+        "Resolved model still defers field-state selection to query methods",
+        "Final lint/proofs/custody/reviews pending"
+      ]
+    },
+    "reassessment_mutation_phase": {
+      "at_utc": "2026-10-04T20:15:57.245695+00:00",
+      "decision": "Continue bounded correction of free-ID-loss obligation erasure and independently specified marker-loss delta statuses, then complete controls and eager records. Fixed deadline unchanged; no scope expansion."
+    },
+    "last_preserved_checkpoint": {
+      "source_sha256": "65db8dd85aa101c528b8919313815bc315326f86ab79e31128cb0147e4306cec",
+      "receipt": "replacement-final-source.json",
+      "acceptance": "All31 inert controls and7structural helpers PASS; all scoped lint corrected; final independent reviews BLOCKED; inherited gates FAIL; HOLD."
+    },
+    "reassessment_eager_review_transfer": {
+      "at_utc": "2026-10-04T21:18:03.056278+00:00",
+      "decision": "Continue concrete same-scope reviewer corrections and all unmatched lint. Preserved unbuilt review-fix source before sole-writer successor transfer after explicit inability; no renewal.",
+      "last_all_control_pass_source": "b2eb742ba3941dd1df2a8f4758b311da15d974c76f9c2de183cc11826c51051d",
+      "transfer_source": "db12d955cf974e4db1e96f39effa5074d7eaeec912cbb360cbd9505e22540843",
+      "sole_writer": "/root/replacement_writer_closure",
+      "acceptance": "HOLD; both same reviewers require corrections; original physical slots remain0/0/0"
+    },
+    "historical_inherited_root_initial_head": "bc0c0f749",
+    "reassessment_consolidated_model": {
+      "at_utc": "2026-10-04T22:06:21.902998+00:00",
+      "decision": "Continue concrete authorized scoped lint extraction and mechanical fixes, then exact final checks/proofs and same-reviewer verification; no renewal or scope expansion.",
+      "evidence": "Model10 all31PASS, H selection consolidated; writer15 scoped lint45 before subsequent mechanical corrections.",
+      "performance": "Completed OFE-day cost, feasibility and gap remain unestablished; no physical evaluations authorized or run by this replacement."
+    },
+    "reassessment_control_extraction": {
+      "at_utc": "2026-10-04T22:48:35.519558+00:00",
+      "sole_writer": "/root/replacement_writer",
+      "revoked_writer": "/root/replacement_writer_closure",
+      "remaining_scoped_lints": 4,
+      "decision": "Continue bounded test-only control extraction with available pinned writer after two spawn capacity failures; same correctness reactivation also blocked. No independent acceptance or renewal.",
+      "review_obstruction": "agent thread limit reached",
+      "transfer_source": "936a93c810735c311e1936294ce652426cb11cd1cd5a4952c32217a9753fd2da"
+    },
+    "reassessment_final_quality_transfer": {
+      "at_utc": "2026-10-04T23:12:43.351607+00:00",
+      "sole_writer": "/root/replacement_writer_closure",
+      "revoked_writer": "/root/replacement_writer",
+      "source": "9ccfb6114da757d63d202623aa7394f0f035587d1cd49e7eaa371149d2e08ede",
+      "decision": "Continue final bounded test extraction corrections with available existing implementer; no renewal. Independent review remains tool-capacity blocked."
+    },
+    "previous_preserved_checkpoint_before_final": {
+      "source_sha256": "1e8c32e4543cad696aeba7309dfe04d1fb55238dd382c17ae9b591b5a8b4d349",
+      "receipt": "replacement-consolidated-model-checkpoint-source.json",
+      "acceptance": "All31 inert controls PASS; scoped lint and final proofs/reviews pending; HOLD."
+    },
+    "terminal_disposition": {
+      "at_utc": "2026-10-04T23:24:54.862162+00:00",
+      "final_validation": "replacement-final-validation.json",
+      "source_archive": "replacement-final-source.tar.gz",
+      "raw_evidence_archive": "replacement-final-evidence.tar.gz",
+      "physical_invocations": 0,
+      "independent_reviews": "BLOCKED: tool thread capacity",
+      "replacement_milestone": "IMPLEMENTED_AND_EXECUTED_ACCEPTANCE_BLOCKED"
+    },
+    "terminal_lock_reconciliation": {
+      "at_utc": "2026-10-04T23:26:51.911430+00:00",
+      "canonical_lock": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-branch-completeness-accounting.lock",
+      "finding": "Late parent bookkeeping used an extra .json.lock instead of the canonical .lock used by capture_once.py. No capture or concurrent ledger writer ran; all slots and consumption revalidated and terminal ledger atomically rewritten under canonical lock.",
+      "unused_empty_lock_removed": "docs/work-packages/20260920-cold-canopy-m1-001/artifacts/refusal-branch-completeness-accounting.json.lock",
+      "physical_invocations": 0
+    }
+  }
 }
