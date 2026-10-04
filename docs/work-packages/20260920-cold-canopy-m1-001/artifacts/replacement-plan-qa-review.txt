@@ -1,0 +1,117 @@
+Static planning review — independent QA/evidence reviewer (`/root/terminal_qa_recovered`)
+
+Scope
+
+Reviewed the top-level **Owner-adopted cohesive replacement execution plan — 2026-10-04**
+in `package.md`, the thin `replacement-execution-prompt.md`, and the primary checkpoint03
+final/pickup receipts. This is a plan-only review; it approves no source, check, binary,
+custody seal, readiness, or physical capture. I remain the same reviewer for later
+same-reviewer verification of affected fixes and final evidence.
+
+Findings
+
+HIGH — `package.md` time allowance section and `replacement-execution-prompt.md` state
+that the new 43,200-second extension “is already recorded” / “entered once” while the
+authoritative locked-ledger update is explicitly pending. The latest recorded ledger state
+still carries ceiling `498134.927980` and zero newly adopted extension. Before a fresh
+writer is launched, the parent must atomically record the owner-adopted extension exactly
+once, derive ceiling `541334.927980`, preserve prior carry and slots, and bind the ledger
+identity in the plan/prompt. Until then, the timing language is a draft dependency, not
+an executable allowance. It must not be used to derive a deadline, readiness, or capture
+window. This is an accounting/documentation blocker only; it does not challenge the
+owner's adopted 12-hour scope.
+
+No other blocking plan defect found. The plan prevents a repeat short cycle: it requires
+`W >= 39,600 s`, uses one first-work anchor and a hard deadline, reserves the final hour
+for preservation, charges concurrent activity once, and rejects automatic renewal or
+expired-readiness transfer. The 8-hour implementation, 3-hour validation/fix-review and
+1-hour preservation allocation is internally coherent, with the 8-hour boundary correctly
+described as a scheduling target rather than a partial-approval boundary.
+
+Non-blocking QA follow-ups
+
+- Source recovery is sufficiently concrete: authenticate the retained mutable source against
+  the 772-entry checkpoint03 receipt/source aggregate
+  `8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4`, reconstruct only
+  from the retained authenticated archive if absent, and preserve frozen copies. The compiled
+  binary remains unapproved.
+- C5 acceptance is correctly complete: one obligation model must replace the macro/prefix
+  reach authority, and controls must cover every actual locator alternative in all 107
+  refinement rows, two separately exercised WorkCap rows, whole status-map values, and
+  required-member removal/stray-member injection. Existing eight controls and seven proofs
+  are retained only as narrow evidence.
+- The plan correctly separates the 10 in-scope unmatched LSE diagnostics from the 230 exact
+  inherited LSE and one vegetation diagnostic. The latter remain failed gates and prevent
+  whole-package/capture readiness; their persistence does not excuse the replacement work
+  or turn its delivered milestone into PASS.
+- The final reviewer route, serialized writer/reviewer phases, no-nested-agent constraint,
+  source-bound quality/proof/custody requirements, and fail-closed capture boundary are
+  adequate. Both reviewers must still review the stable final cut and their own fixes.
+
+Planning disposition
+
+CONDITIONALLY ACCEPTABLE AFTER THE PENDING LEDGER ENTRY. With that entry and exact identity
+recorded before invocation, this is a realistic continuous replacement plan rather than a
+replayed short window. It remains HOLD_NO_COMPLETED_DAY until all final acceptance gates,
+including inherited lint gates, actually pass.
+
+Same-reviewer verification — ledger authorization fix
+
+Static: verified the current `refusal-branch-completeness-accounting.json` after the
+17:48 UTC parent update. Its top-level `ceiling_seconds` is now `541334.927980`; the new
+top-level `cohesive_replacement_authorization` explicitly records
+`extension_seconds_adopted_once: 43200`, prior ceiling `498134.927980`, the 43,200-second
+maximum window, 39,600-second minimum launch window, and 28,800/10,800/3,600-second
+implementation/validation/preservation allocation. It retains W1/W2/W3 at 0/0/0 and says
+that an expired readiness does not transfer and a fresh invocation must not add the grant.
+
+The earlier nested `extension_seconds_adopted_once: 0` fields and historical 5,400-second
+entries describe prior invocations; they are not the current cohesive-replacement grant.
+The top-level historical `R_seconds` is likewise not a new executable window. The final
+authoring carry reconciliation is still pending, and no fresh anchor/deadline/readiness may
+be created until that update is bound before the local preservation commit/fresh invocation.
+
+PASS — the accounting/documentation blocker is fixed for the adopted grant. This verifies
+only the authorization record; it does not approve execution, source, checks, capture, or
+readiness.
+
+Same-reviewer verification — final authoring carry and planning disposition
+
+Static: verified `cohesive_replacement_plan_authoring` in the current locked ledger.
+Arithmetic is consistent: `496416.069712 + 480 + 60 = 496956.069712` charged seconds,
+and `541334.927980 - 496956.069712 = 44378.858268` remaining seconds. The 480-second
+17:45–17:53 planning charge and separately labelled 60-second conservative estimate for
+the intervening uninstrumented diagnostic reply are retained distinctly. Top-level slots
+remain W1/W2/W3 = 0/0/0. The authorization retains the once-only 43,200-second grant.
+
+The record expressly sets no source-execution/readiness anchor. Its historical top-level
+and nested deadline/R fields remain historical evidence only; a future invocation must
+reconcile this carry plus later work before deriving `W = min(43200, R)`. I did not
+independently execute the stated prompt byte-equality check, and it is not needed for this
+ledger arithmetic verification.
+
+FINAL PLAN PASS. No planning blocker remains. This PASS is limited to the owner-adopted
+replacement plan and its current accounting; it is not source acceptance, a successful
+validation gate, a sealed custody approval, readiness, or capture authorization.
+
+Same-reviewer verification — affected drafting corrections
+
+Static: verified the three corrected claims. The ledger archives prior root anchor, R and
+deadlines under `historical_root_schedule_before_cohesive_replacement`; its current
+`schedule_state` says no active execution window, with a fresh invocation deriving one once
+from the cohesive authorization and latest carry. This removes any possibility that a
+historical root schedule is treated as current.
+
+The capture boundary now explicitly says that fresh execution conditionally retains only
+the existing W1/W2/W3 authorization, adds no slot or retry, enumerates the required W1,
+W2, W3 order and exact support0 command protocol, and excludes historical source pickup,
+extension, anchor, readiness formula and timestamps. Final approval/seal and the new
+preservation cutoff remain prerequisites.
+
+The obligation/control milestone now includes the resolved `InapplicableZeroLambda` state
+and public `inapplicable_zero_lambda` status. This is a planning requirement, not evidence
+that the model or controls are implemented.
+
+PASS — these affected drafting corrections remove the identified plan ambiguity. This is
+an append-only same-reviewer verification of the correction; the earlier QA review did not
+identify the correctness review's three drafting issues. Planning-only limitations remain.

@@ -1,5 +1,248 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Owner-adopted cohesive replacement execution plan — 2026-10-04
+
+### Authorization, outcome and current state
+
+Owner requests: “scaffold one owner-adopted execution plan centered on the actual
+replacement, dispatch agent for review provide prompt for fresh agent to complete
+with realistic uninterrupted implementation allowance.” This adopts preparation
+and independent plan review now, and the bounded execution envelope below for a
+fresh agent when invoked. No Rust implementation or physical workflow runs in this
+planning turn. This section is the current execution entry point in the sole
+maintained package.md; the thin prompt only points here.
+
+Deliver a complete detached terminal-observation replacement: one resolved
+per-field obligation model driving terminal acceptance, application count, content
+validation and every public status, with independent exhaustive inert controls.
+Delete superseded reach/content selection logic. Retain HOLD_NO_COMPLETED_DAY until
+all required final acceptance is actually met. Distinguish replacement milestone
+acceptance from whole-package readiness; neither compilation nor this plan's review
+approves source. Targets remain500us CPU/550us wall per completed OFE-day,
+regimes750/1500/2500us CPU, century182.625s CPU/210s wall. Completed-day measured cost,
+runtime feasibility and target gap remain unestablished. No added physical evaluation
+or performance claim is authorized by this observation replacement.
+
+The implementation pickup is bc0c0f749 plus this plan and its review record.
+Source has not changed since checkpoint03. Authenticate the existing mutable root
+`/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source`
+against [final source receipt](artifacts/terminal-plan-recovery-final-source.json)
+and [pickup checks](artifacts/recovered-terminal-invocation-pickup.json). Reuse this
+one mutable copy if equal; reconstruct from the retained full archive if absent or
+investigate drift before overwriting. Frozen source remains immutable. Whole source
+8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4;
+stage1 d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8.
+[Final build/results](artifacts/terminal-plan-recovery-final.json) and its linked
+564-pin/35-depfile receipt bind the compiled, unapproved binary. Retain772source
+entries,190raw members, prior frozen cuts and candidate05's historical recovery gap.
+Authenticate once at pickup; repeat only affected identities after actual changes.
+
+### Time allowance and continuous execution
+
+Owner's requested realistic allowance is concretized as **one new43200charged-second
+(12hour) extension**, adopted here and entered once in the [original locked ledger](artifacts/refusal-branch-completeness-accounting.json)
+under `cohesive_replacement_authorization`.
+Prior ceiling498134.927980s becomes **541334.927980s**. This is new owner-directed
+scope scheduling, not a replay/refund of any old extension. Keep all prior consumption;
+charge this planning/review/preservation work and all later work. The fresh invocation
+must not add43200 again. Exclude only recorded inactive owner intervals.
+
+At fresh first reading, reconcile latest carry and set R=ceiling−carry and
+W=min(43200s,R). Record fixed first-work anchor, hard deadline=start+W and preservation
+cutoff=hard−3600s. Plan for8hours implementation,3hours validation/fix review and1hour
+preservation. Source/control work and reviewer-driven corrections are permitted
+until the preservation cutoff; **8hours is a scheduling target, not a stop or approval
+boundary**. If W<39600s (11hours), do not launch the major rewrite into another short
+window: preserve HOLD and report the actual deficit. Do not automatically renew.
+The nominal allowance is an engineering estimate for a large coupled replacement,
+not measured proof of deliverability. Inspect progress against substantive outputs.
+
+All reading, reasoning, setup, tests, orchestration, reviews and waits count concurrent
+wall once. No fresh window on compaction, agent transfer or internal checkpoint.
+At two unsuccessful correction cycles or60active minutes the orchestrator reassesses
+with the writer while continuing authorized work if a concrete in-scope next step
+exists; this is not an automatic handback or permission request. A checkpoint
+finding is a correction input. Final acceptance rejection or hard deadline preserves
+HOLD. In-scope corrections do not require another owner prompt. Commands stay<=180s
+and remaining deadline; run long work through bounded commands and preserved job
+identity, never replay a physical invocation. The last hour is preservation only.
+
+### One writer and substantive milestones
+
+Use repository pinned implementer/correctness/QA roles, at most two concurrent
+children, one source writer and no nested agents. Establish both independent routes
+and inherited finding ownership before edits, then park reviewers and give the
+writer a sustained implementation block. Reuse available reviewers; otherwise the
+explicit independent-successor rule applies. Authors, parent and architecture
+advisers cannot count as independent acceptance reviewers. Serialize writer/review
+phases; interruption is not deletion. Do not repeatedly retry unchanged capacity
+errors. Same reviewers verify their fixes and final affected evidence.
+
+The orchestrator owns integration and checks, not a second implementation. The writer
+owns the entire replacement across the coupled consumers. Required reading is current
+root/write-path guidance, this section, the directly bound latest reviews and affected
+source/authority. Historical proposals below are provenance, not a recursive bootstrap
+checklist. This section consolidates their current observation obligations and
+supersedes their pickup, phase scheduling and expired timing. Canonical science,
+explicit protected boundaries and acceptance are not weakened. If an omitted
+scientific obligation is discovered, it still binds; record it here once.
+
+1. **Resolve the model and replace consumers (target first4hours).** Inspect actual
+   operation/copy boundaries. Implement one resolved model that owns each serialized
+   field's required/interrupted/absent/`InapplicableZeroLambda` state (including
+   public `inapplicable_zero_lambda`), exact application count, per-ordinal
+   H/inverse/delta copies, generic-inverse owner, norm vector/domain/completion role
+   with scalar bindings, and refusing-comparison obligations. Terminal metadata is
+   an input resolved once; content validators do not reconstruct stage reach.
+   Preserve exact numeric/shape/bit/identity/free-ID/lineage/refusal checks. Missing
+   markers/operands must not erase required/interrupted expectations. Acceptance,
+   count and every public status consume this model. Delete the superseded content
+   macro/matrix, prefix selection and duplicate scalar/role switches. No wrapper,
+   rename, moved switch or status-only partial plan satisfies the milestone.
+   Obtain focused correctness feedback on the first substantive integrated cut;
+   keep working through its fixes. Do not freeze/archive every intermediate edit.
+2. **Deliver the independent oracle and full controls (target next4hours).** The
+   independent expected-status model consumes approved inventory semantics, rejects
+   unknown groups and never derives expectations from the implementation plan.
+   Build valid inert traces for EVERY actual locator alternative across107refinement
+   rows; account separately for2WorkCap rows and their applicable existing obligations.
+   For each trace call full terminal acceptance, compare the ENTIRE public map with
+   exact values including `inapplicable_zero_lambda`, then remove each required member and inject each applicable stray
+   member on the same trace and assert rejection plus full resulting statuses.
+   Bind coverage to inventory rows and locator alternatives, not just aggregate
+   counts; impossible tuple controls remain separately explicit. Include residual
+   zero/interior terms, H0 matrix/shift/free-ID joins, H1 inner/final-add, nonidentity
+   IDs, scratch domains, numeric/null/range/cross-dependent invalid tuples, completed
+   versus interrupted P0/Scratch/Final full/reduced norms, zero-lambda ordered/scalar
+   norms, both ordinals and zero-lambda ordinal2 before/after delta. Positive/false
+   scratch tuples are rejected only where forbidden. No sampling, plan oracle,
+   private-helper-only test or status-key existence substitutes. Preserve all four
+   verified checkpoint03 fixes and Interrupted-present stray rejection. The old
+   architecture assessment's resolved norm-role/scalar issues are historical.
+3. **Integrate quality, evidence and acceptance (target next3hours).** Correct all10
+   unmatched lint diagnostics through cohesive extraction without suppression or
+   relaxed limits. Run exact checks below, fix in-scope failures, regenerate affected
+   proofs and complete both final reviews on the same stable cut. Reviewers receive
+   source/evidence deltas and original findings, not a restarted historical audit.
+   Shared-record writes are serialized. Preserve a recoverable stable source before
+   any justified writer transfer or final disposition. If a milestone is incomplete,
+   report concrete missing behavior; do not label a partial schema change completion.
+
+### Authority, exclusions and validation
+
+This is detached default-off observation/test-only work. Preserve physical arithmetic,
+precision/order, work counters, error/event identity, per-face reset, full BVLS05
+ledger, historical double-seed mapping and observer failures. Error equality remains
+code/stage equality; diagnostic Debug differences remain documented. No numerical
+repair, surrogate physics, extra solver/evaluator call, production/main Rust adoption,
+fixture/tolerance/guard/cadence/dependency change, fallback, poison preflight, full day,
+campaign, timing sweep, new physical slot, branch switch or push. Canonical [LSE numerical authority](../../specifications/science-contracts/contracts/SC-LANDSURFACEENERGY-001/numerical-methods.md)
+BVLS-03/04 supplies correction order, interrupted/completed operations, radii,
+refusal and scratch/final distinctions; BVLS-05 supplies preserved structural-null
+identity/work obligations. [Vegetation M1 authority](../../specifications/science-contracts/contracts/SC-VEGETATION-001.md)
+supplies equilibrium inverse, guard/rollback and private-provider receipt obligations.
+These and touched A0/A1/A3 invariants remain binding; read affected definitions,
+guards and dependency clauses from actual mechanisms before edits. Unclear production impact triggers
+conservative validation escalation, not a silent test-only classification.
+
+Before builds inspect storage (last observation769MB free). Coordinate separate
+writable targets and authenticated Nix tools/environment/dependencies. Remove only
+proven generated caches after confirming source/binary/evidence recoverability; never
+remove unique source or reinterpret an untracked experiment as disposable.
+
+Required checks on exact final source: changed-file edition2024 rustfmt; release
+physical-stage no-run; ALL inert metadata controls with nonzero counts and the new
+exhaustive controls; matched warnings-denied release LSE --tests/physical-stage and
+vegetation --lib Clippy; affected schema/status/field/type/event/collection proofs.
+Use exact commands in final-results receipt and the recorded helpers with updated
+source bindings. Preserve raw failures and successes, source before/after, actual
+binary/tools/dependency pins and successful-build custody. Seven structural proofs
+and eight old tests remain narrow evidence, never completeness. Existing approved
+109-row inventory may be reused; independently expand its expected semantics.
+Retain schema-bound-draft.json and outcome-type-bound-draft.json conventions, exact
+status/key extraction and proof inputs, all output shape/bounds and collection caps;
+no post-result cap changes, dropped fields or truncation. Verify helper strict UTF8,
+separate stdout/payload limits, optimized-Python rejection and durable locked ledger
+binding before any seal. No production effect or authority-suite posture change is
+permitted to escape the current testing strategy and triggered anti-evasion guards.
+
+Known pre-existing gates are **LSE230exact inherited diagnostics and vegetation1**;
+10additional LSE diagnostics are within this replacement scope. Inherited failures
+remain FAIL, not waived, deferred or fixed by counts. This plan does not authorize
+unrelated231-diagnostic cleanup or promise whole-package readiness despite them.
+Complete the authorized replacement and its evidence even if those known inherited
+failures persist, then record HOLD and the exact remaining gate ownership. That is
+a delivered replacement milestone, not full source/capture acceptance. New unmatched
+failures are in-scope corrections. Do not stop replacement work merely because a
+known unchanged inherited gate is already failing.
+
+### Terminal disposition and capture boundary
+
+Both independent final reviewers must inspect the complete replacement, full controls,
+noninterference, helpers/proofs/checks and custody. Record their exact reviewed cut,
+findings and same-reviewer fixes. No final approval may be inferred from planning
+review, a successful build or an accepted partial milestone. Until every required
+capture gate is met, retain HOLD, original slots0/0/0 and no approved seal.
+
+Fresh invocation **conditionally retains the original W1/W2/W3 authorization**;
+it adds no physical slots or retries. Launch is permitted only if ALL inherited
+capture prerequisites actually pass, both final reviewers approve and the exact
+source/binary/helper/fixture/ledger receipt is sealed before the preservation cutoff.
+The fixed order is W1 A_cold_ice_day FULL/P0 (reuse original A reference), W2
+C_freeze_then_melt_day FULL/P2, W3 same C REDUCED/P0. Preserve original init/60s/support0,
+the authenticated direct binary, exact test
+`m1_coupled_tests::m1_refusal_capture_support0_ipc` with
+`--exact --ignored --nocapture --test-threads=1`, and its recorded argv/stdin payload.
+
+Only the immutable command/stdin/fixture, reservation, parsing and independent
+reconstruction clauses of the historical **Proposed execution contract — adopted
+only by future owner invocation** are incorporated for this conditional boundary.
+**Every historical source pickup, proposed extension, first-work anchor, readiness
+formula and timestamp in that section is excluded.** Current source and all timing
+come solely from this new plan and the reconciled original ledger; no additional
+owner invocation is required to use these conditional original slots within it.
+Keep one invocation each,30s each/90s aggregate, durable reservation before launch,
+no retry/reset/preflight, strict payload/UTF8/status integrity, independent reached-bit
+binary64 reconstruction with ordinary versus Dot2 order and all integrity stops.
+Both captures and reconstruction must finish before the preservation cutoff.
+Diagnosis authorizes no numerical fix. Failed prerequisites mean preserved HOLD,
+with explicit unmet acceptance; no capture may be used to diagnose the blockers.
+
+Stop with one scoped local commit of package/evidence and recoverable detached source;
+no push. Preserve unrelated dirty/staged work. Report replacement milestone status,
+remaining acceptance, measured versus unmeasured costs, source recovery location,
+checks/reviews and charged ledger. No automatic new continuation prompt or new phase
+allowance. At an explicit hard limit, preserve honestly incomplete work.
+
+### Plan review, authoring checks and pickup accounting
+
+Independent [correctness planning review](artifacts/replacement-plan-correctness-review.txt)
+and [QA planning review](artifacts/replacement-plan-qa-review.txt) assess this execution
+plan, not source acceptance. Same-reviewer corrections and final planning disposition
+are retained in those original responses. The [thin fresh-agent prompt](artifacts/replacement-execution-prompt.md)
+is byte-identical to `/tmp/openwepp_cold_canopy_m1_cohesive_replacement.md`.
+No source execution or capture readiness is established by this preparation.
+Both final planning reviews **PASS** after same-reviewer corrections. Correctness
+required explicit zero-lambda-inapplicable model/control states, coherent current
+ledger fields with old schedules archived, and unambiguous conditional capture
+protocol imports excluding every historical pickup/extension/timestamp. QA verified
+the recorded grant, final carry arithmetic and affected corrections. Original findings
+remain in the review artifacts. Ran prompt byte equality, current allowance/slot and
+no-active-schedule checks, plan-link integrity, scoped whitespace checks and all49
+unrelated path identity comparisons PASS. Terminal diff is limited to this plan,
+original ledger, thin prompt and two planning reviews. No Rust/build/test workflow ran.
+Scoped local preservation only; no push.
+
+Conservative planning anchor17:45UTC; charge through17:53UTC480s including reading,
+review/waits, edits, validation, preservation, commit and return. Add60s conservative
+estimated active cost for the intervening uninstrumented diagnostic reply; its precise
+active interval was not observed. Exclude the remainder of owner interval17:24–17:45.
+Total new charge540s: prior496416.069712s becomes **496956.069712s**, remaining
+**44378.858268s** under the newly adopted ceiling **541334.927980s**. Extend if actual
+work exceeds17:53; no refund. Original locked ledger retains all prior consumption
+and physical slots0/0/0. Fresh execution uses this latest carry plus later work;
+it does not adopt the43200s extension a second time or reuse an expired deadline.
+
 ## Recovered-terminal invocation disposition — HOLD, 2026-10-04
 
 **HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
