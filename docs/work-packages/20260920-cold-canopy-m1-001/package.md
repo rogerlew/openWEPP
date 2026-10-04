@@ -1,5 +1,141 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## HOLD disposition and recovered-terminal continuation proposal — 2026-10-04
+
+**HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
+Owner requests disposition and continuation-prompt authoring only. No source
+implementation, build, metadata/physical execution, readiness renewal or time
+extension is adopted. Targets remain500us CPU/550us wall per completed OFE-day,
+regimes750/1500/2500us CPU, century182.625s CPU/210s wall; completed-day cost,
+feasibility and target gap remain unestablished. W1/W2/W3 remain **0/0/0**.
+
+Pickup is local **b72a35804** plus this authoring record. Both final independent
+reviewers reject C5/full controls. Exact rustfmt and release no-run pass;8existing
+inert metadata controls and7structural proof scripts pass within their narrow
+scope. LSE Clippy fails240diagnostics with230exact inherited/10unmatched;
+vegetation Clippy fails1exact inherited. These results do not accept the source,
+complete the107-row controls or authorize captures. The final disposition below
+remains evidence. This package remains the sole maintained execution contract.
+
+### Proposed recovered-terminal continuation — future invocation only
+
+Upon future owner invocation, execute **Proposed terminal-plan continuation —
+future invocation only** below with its COMPLETE inherited scope and acceptance.
+This section supersedes only pickup, resolved narrow findings, actual reviewer
+capacity handling, and latest timing/accounting. No numerical repair, production/
+main Rust adoption, physics/arithmetic/precision/order/work-counter/fixture/guard/
+tolerance/cadence/dependency change, extra solver/evaluator call, poison preflight,
+full day, campaign, timing sweep, new physical slot, branch switch or push.
+Stop at independently reviewed diagnosis or preserved HOLD with scoped local commit.
+
+Authenticate [final results](artifacts/terminal-plan-recovery-final.json), the
+linked772-entry source archive/receipt,564build pins/35depfiles and190-member raw
+archive/receipt. Final whole source is
+**8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4**,
+stage1 **d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8**;
+frozen root is
+`/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source`.
+Binary **d80306cffbb6a33d8bfd8f8ed7d345ab67cc349e57763e846c62a045255650cc**
+is compiled, not approved. Recover one new durable mutable copy from authenticated
+final source; preserve prior partial01/checkpoint02/cut26 custody and the historical
+candidate05 recovery gap. Never edit frozen source or substitute an earlier binary.
+
+Before core edits establish both independent routes and inherited finding ownership.
+Prefer `/root/terminal_correctness_recovered` and `/root/terminal_qa_recovered`;
+if unavailable use the inherited explicit independent-successor rule in the same
+pinned roles. Neither parent, writer nor either architecture adviser may count
+as an independent reviewer. Same assigned reviewers verify fixes and exact final
+source/controls/helpers/proofs/custody. Availability is not approval.
+Inspect actual live capacity before dispatch: at most two concurrent children,
+one implementer/source writer, no nested agents. Serialize writer, adviser and
+review phases; interrupt/park the writer when both review slots are needed.
+Interruption is not deletion. Do not dispatch a third child or repeatedly retry
+an unchanged capacity failure. Reassess actual capacity first; retry only after
+a material capacity change, retaining the same reviewer when available. If either
+required route remains unavailable, preserve HOLD before source continuation.
+
+Retain the four same-reviewer verified narrow fixes: predecessor norm-role
+retention, scalar norm statuses derived from completed/partial plan roles,
+future-ordinal copy absence, and missing/mismatched markers scoped to copy-dependent
+fields. Preserve Interrupted-present stray rejection and C1–C4/noninterference
+only within proven scope. The main C5 blocker is unchanged: the content macro
+remains a second terminal reach authority, and exhaustive independent controls
+are absent. Existing8test passes do not narrow that obligation.
+
+Use the [bounded architecture assessment](artifacts/terminal-plan-recovery-architecture.txt)
+as direction, not authority or acceptance. Deliver the resolved per-field
+terminal/copy/norm/content obligation model and DELETE the superseded content
+matrix/prefix reach duplication. Resolve exact field states, application count,
+per-ordinal copies, generic-inverse owner, norm vector/domain/completed/interrupted
+roles with scalar bindings, and refusing-comparison obligations once. Acceptance,
+count and every public status consume that same model. Content validators retain
+all exact numeric/shape/bit/identity/lineage/refusing-comparison checks, consuming
+resolved obligations without a second terminal-to-field/role table. Missing markers
+or operands must not erase required/interrupted expectations. A wrapper, moved
+switch, partial enum, key-set check or another status-only handback is incomplete.
+Require cohesive milestones and inspect actual progress; the known missing data
+model is the authorized task, not a new authority requirement. Preserve exact
+source before any justified writer transfer, with acceptance and bounds unchanged.
+
+Complete independent inventory-group expansion rejecting unknown groups, valid
+inert traces for EVERY actual locator alternative across107refinement rows,2WorkCap
+rows separately accounted, full terminal acceptance, ENTIRE public status maps
+including values, and missing-required/stray-unexpected mutations of the same
+traces. Expectations must not come from the implementation plan. All inherited
+residual/H0/H1/free-ID/scratch/impossible-tuple and completed/interrupted norm,
+zero-lambda/ordinal/copy-boundary controls remain required without sampling.
+Correct the10unmatched lint diagnostics through cohesive extraction, without
+suppression, waiver or relaxed limits. Run exact changed-file edition2024 rustfmt,
+release physical-stage no-run, ALL inert metadata controls with nonzero counts,
+matched warnings-denied LSE tests/physical-stage and vegetation lib Clippy, and
+regenerated affected schema/status/field/type/event/collection proofs. Retain
+actual tool/environment/dependency/source identities, separate writable targets,
+raw failures and successful-build custody. Inherited lint failures remain failures.
+Inspect storage before builds; remove only proven generated caches within scope,
+preserving unique source/binaries/evidence. Structural bounds do not prove completeness.
+
+Both final independent approvals and the sealed exact-source/binary/helper/fixture/
+ledger receipt must precede readiness and any conditional ORIGINAL W1/W2/W3 release.
+Retain original persistent locked ledger, fixed order, original init/60s/support0,
+exact direct-binary argv/stdin, durable reservation before launch, one invocation
+each,30s each/90s aggregate, no preflight/reset/retry, strict payload/UTF8/status
+integrity and absolute deadlines. Independently reconstruct only reached operand
+bits in binary64 order, distinguishing ordinary/Dot2 arithmetic. Diagnosis grants
+no numerical fix. Missing final independence, failed final acceptance or missed
+readiness means preserved HOLD, even with unused balance.
+
+**No additional charged-time extension is proposed or adopted.** Ceiling remains
+**498134.927980s**; never replay a historical+5400 or expired readiness window.
+Future invocation reconciles this latest authoring carry plus all later active
+work, including reading, before computing R=ceiling−carry. If R<=1800s, preserve
+HOLD without core launch. Otherwise future invocation adopts one bounded window:
+hard deadline=start+R; work cutoff=hard−600s;
+readiness=start+min(4200s,R−1200s); core stop=readiness−600s.
+The final600s before readiness is reserved for exact checks/reviews/fix verification/
+sealing, not new core work. Commands<=180s and remaining deadline. Charge all
+reading/work/waits/concurrent wall once. No automatic renewal/refund/extension.
+At the authoring carry below, nominal core time is only398.858268s; completing the
+full inherited scope within it is **unestablished**, not promised or waived.
+
+Authoring accounting: conservative first-reading anchor **2026-10-04 16:52UTC**,
+charge through **16:58UTC**,360s including wording reviews, checks, preservation,
+local commit and return. Prior495576.069712s becomes **495936.069712s**, leaving
+**2198.858268s** under unchanged ceiling498134.927980s. Exclude only inactive owner
+interval06:40–16:52UTC. Extend if actual work exceeds16:58; no refund. Original
+locked ledger retains terminal execution/slots and adds this authoring carry.
+No build, metadata, proof-generator or physical workflow runs in this authoring turn.
+
+The [thin continuation prompt](artifacts/recovered-terminal-continuation-prompt.md)
+is byte-identical to `/tmp/openwepp_cold_canopy_m1_recovered_terminal_resumption.md`.
+[Correctness wording review](artifacts/recovered-terminal-wording-correctness.txt)
+and [QA wording review](artifacts/recovered-terminal-wording-qa.txt) both PASS without
+blockers; original responses are preserved. These are wording-only approvals,
+not source acceptance or readiness. Ran prompt byte equality, new links/inherited
+section reference, source/raw archive hashes,49unrelated path identities,
+accounting/slot checks and scoped diff whitespace PASS. Terminal authoring diff
+is limited to this package, thin prompt, two wording responses and the original
+locked-ledger authoring carry. Scoped local commit; no push.
+
 ## Recovered terminal-plan final disposition — HOLD, 2026-10-04
 
 **HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**

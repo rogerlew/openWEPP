@@ -750,5 +750,21 @@
     "source_authoring_stopped": true,
     "final_qa": "REJECT",
     "final_correctness": "REJECT"
+  },
+  "authoring_after_terminal_hold": {
+    "request": "HOLD disposition and continuation prompt authoring only",
+    "anchor_utc": "2026-10-04T16:52:00+00:00",
+    "charged_through_utc": "2026-10-04T16:58:00+00:00",
+    "charge_seconds": 360,
+    "prior_cumulative_seconds": 495576.069712,
+    "cumulative_charged_seconds": 495936.069712,
+    "remaining_seconds": 2198.858268,
+    "extension_seconds_adopted": 0,
+    "proposed_future_extension_seconds": 0,
+    "inactive_owner_decision_interval": [
+      "2026-10-04T06:40:00+00:00",
+      "2026-10-04T16:52:00+00:00"
+    ],
+    "note": "Authoring only; no execution/readiness/extension. Future explicit invocation reconciles newest carry and later work. Extend if authoring exceeds16:58; no refund."
   }
 }

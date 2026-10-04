@@ -1,0 +1,11 @@
+Static wording QA — /root/terminal_qa_recovered
+
+PASS. Reviewed only the new top-level `HOLD disposition and recovered-terminal continuation proposal — 2026-10-04`, its `Proposed recovered-terminal continuation — future invocation only` section, and `/tmp/openwepp_cold_canopy_m1_recovered_terminal_resumption.md`.
+
+The continuation wording preserves HOLD_NO_COMPLETED_DAY, the complete inherited C5/full-control, exact-gate, custody, independent-review, conditional-slot, and no-execution-now obligations. It correctly identifies pickup `b72a35804`, source `8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4`, stage1 `d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8`, binary `d80306cffbb6a33d8bfd8f8ed7d345ab67cc349e57763e846c62a045255650cc`, and the 772-source-entry, 564-build-pin/35-depfile, and 190-raw-member custody counts. It retains W1/W2/W3 at 0/0/0 and makes final approvals plus sealing prerequisites to any future capture.
+
+The timing and accounting text is arithmetically consistent: 495576.069712 + 360 = 495936.069712; 498134.927980 - 495936.069712 = 2198.858268; and 2198.858268 - 1800 = 398.858268 seconds nominal core time. It states the R<=1800 HOLD threshold, no extension/refund/replayed window, and explicitly labels feasibility within the nominal core time unestablished.
+
+Capacity wording accurately requires live-capacity inspection, at most two concurrent children, serialized writer/adviser/reviewer phases, no deletion claim, and no repeated unchanged-capacity retry. The prompt and repository artifact are byte-identical (SHA-256 `0f0a4a7e9d1afa6db94bb7a893495df57aa69002b66d8dbf3d1ed9f6c1034391`).
+
+This is wording approval only. It does not approve the rejected source, checks, custody seal, readiness, binary, or any physical capture.

@@ -1,0 +1,25 @@
+Static wording review only — /root/terminal_correctness_recovered
+
+PASS without wording blockers.
+
+Reviewed `HOLD disposition and recovered-terminal continuation proposal — 2026-10-04`, `Proposed recovered-terminal continuation — future invocation only`, and `/tmp/openwepp_cold_canopy_m1_recovered_terminal_resumption.md` against the preserved final source, both final rejection records, and the complete inherited terminal-plan scope.
+
+The wording preserves without narrowing:
+
+- HOLD_NO_COMPLETED_DAY and explicitly unestablished completed-day cost, runtime feasibility, and target gap.
+- The exact frozen source/binary/archive/build-input custody and the statement that the compiled binary is not approved.
+- Both independent correctness and QA routes before edits, same-reviewer fix/final ownership, adviser/author/parent exclusion, availability-not-approval, and fail-closed HOLD if either route is unavailable.
+- Actual two-child capacity, one source writer, serialized writer/adviser/review phases, no nested agents, no false thread-deletion claim, and no unchanged capacity retry.
+- All inherited C1-C5/science/noninterference obligations, with C1-C4 retained only within proven scope and the four narrow fixes retained without being promoted to C5 acceptance.
+- Replacement of the duplicated content/reach matrix by one resolved per-field terminal/copy/norm/content authority while preserving exact numeric, shape, bit, identity, lineage, refusing-comparison, domain, completed/interrupted, scalar, ordinal, and generic-inverse obligations.
+- Independent expectations, complete inert traces for every locator alternative across 107 refinement rows, separate accounting for 2 WorkCap rows, full terminal acceptance, entire public status-map values, and missing-required/stray-unexpected mutations on the same traces. No selected/key-set/implementation-plan oracle substitutes are permitted.
+- Correction of all 10 unmatched lint diagnostics without suppression/waiver, exact formatting/no-run/metadata/Clippy/proof/custody requirements, and truthful retention of inherited lint failures as failures.
+- Both final approvals and sealed exact-source/binary/helper/fixture/ledger receipt before readiness or any conditional ORIGINAL W1/W2/W3 release; slots remain 0/0/0 with no preflight, reset, or retry.
+- No numerical repair, physics/arithmetic/order/precision/work-counter/fixture/guard/tolerance/cadence/dependency change, extra solver/evaluator call, main Rust adoption, new physical slot, branch switch, or push.
+- Missing independence, failed final acceptance, missed readiness, or inability to finish within bounds returns preserved HOLD.
+
+The timing language is internally consistent: ceiling `498134.927980s`, authoring carry `495936.069712s`, remaining `2198.858268s`, and nominal core time `398.858268s`. It proposes no extension, replay, refund, or renewed historical window and explicitly states that completion feasibility within the short core window is unestablished, not promised or waived. Later active work remains chargeable before recomputing R.
+
+The thin prompt is byte-identical to its package artifact (SHA-256 `0f0a4a7e9d1afa6db94bb7a893495df57aa69002b66d8dbf3d1ed9f6c1034391`) and correctly delegates to the sole maintained package contract rather than abbreviating its acceptance requirements.
+
+This PASS approves wording only. It is not source acceptance, C5/full-control acceptance, build or proof approval, readiness renewal, custody sealing, or physical/capture authorization. No implementation, build, metadata, proof-generator, solver, evaluator, or physical workflow was performed by this reviewer.
