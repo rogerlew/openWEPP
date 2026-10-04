@@ -1,5 +1,144 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## HOLD disposition and final26 continuation proposal — 2026-10-04
+
+**HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
+Owner requested disposition and continuation authoring only. No implementation,
+build, physical execution, readiness renewal or allowance adoption occurs now.
+W1/W2/W3 remain **0/0/0**. Targets remain **500us CPU/550us wall per completed
+OFE-day**, regimes750/1500/2500us CPU, century182.625s CPU/210s wall; completed-day
+cost, feasibility and target gap remain **unestablished**.
+
+Pickup is local `6872bdfd9` plus this authoring record. The final26 disposition
+immediately below remains the evidence record. Compilation passes, but C5/full
+controls are rejected; final QA is missing; LSE Clippy fails with230 inherited and
+10 introduced diagnostics, vegetation with1 inherited. Final metadata and proofs
+were NOT RUN. The v26 bit-fixture correction is compiled, not retested. No source
+acceptance or capture receipt exists. The [thin prompt](artifacts/cut26-resumption-prompt.md)
+is byte-identical to `/tmp/openwepp_cold_canopy_m1_cut26_resumption.md`.
+This package is the sole maintained execution contract; the proposal below takes
+effect only upon future owner invocation. Wording review is not source approval.
+
+### Proposed final26 continuation — future invocation only
+
+Execute the complete inherited **Proposed Cut03 continuation**, **Proposed cut11
+continuation**, **Proposed reviewer succession and resumption**, **Proposed
+atomic-terminal execution contract** and **Proposed execution contract**. This
+section supersedes only stale pickup, resolved-defect descriptions, the erroneous
+blanket positive/false scratch assertion, and timing/allowance. All other scope,
+scientific acceptance, custody, checks and stop conditions remain binding.
+No numerical repair, production/main Rust adoption, physics/arithmetic/precision/
+operation-order/work-counter change, fixture/guard/tolerance/cadence/dependency
+change, extra evaluator/solver call, poison preflight, full day, campaign, timing
+sweep or new physical slot. Stop at independently reviewed diagnosis or preserved
+HOLD with scoped local commit; no push or branch switch.
+
+Authenticate [final results](artifacts/cut03-invocation-final.json), linked source,
+raw and successful-build receipts. Final26 whole source is
+`2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9`, stage1
+`990cffea5771a54f749691b106d75a4e442c0280550853124d3bdbfe9ef7eba6`;
+archive SHA `90e2adad40bc67041d9376cad0626cd5c02b8f1a81fa780e78aa6504f2753caf`.
+Frozen root is `/home/roger/openwepp-experiments/cold-canopy-m1-cut03-resumption-20261003/frozen/final26/source`.
+Binary SHA `95d6e9e790bb8f07ddcf6d47f1d617054943e83b3c7ec07379d9288f5d14df36`
+is compiled, not approved. Recover one new durable mutable copy from authenticated
+final26. Preserve772 source entries,560 build pins/35 depfiles,302 raw members,
+original reviews/failures, all older custody and candidate05's historical recovery
+gap. Changed source requires a new exact binary; earlier passes do not transfer.
+Freeze result-bearing handbacks; do not erase prior recoverable source.
+
+Before core edits establish both independent review routes and original-finding
+ownership. Prefer live `/root/cut03_correctness`; the final `/root/cut03_qa` route
+failed with `agent thread limit reached` and must not receive identical retries.
+If unavailable, establish an independent successor in the same pinned repository
+role with the original final26 and inherited C1–C5 findings, not the implementer,
+parent or design adviser. Missing routes => preserved HOLD before edits. Initial
+availability is not final review. Same assigned reviewers verify fixes and final
+source/helpers/controls/proofs/custody. Keep one implementer/source writer, at most
+two concurrent children, no nested agents. Partial handbacks are checkpoints, not
+completion. Require cohesive deliverables and early review of the shared model;
+reassess repeated non-delivery within existing bounds, preserving source before
+any writer transfer. No parent substitute for either final independent approval.
+
+Use the [original final26 correctness report](artifacts/cut03-invocation-final-correctness.txt)
+and [review history](artifacts/cut03-invocation-reviews.json) as defect ownership.
+First replace parallel acceptance/status reach and phase exceptions with ONE
+per-field terminal/copy descriptor: required/interrupted/absent state and actual
+operation/copy/norm-role expectations. Full terminal acceptance, expected count
+and every public field status must consume this authority. A count/ordinal wrapper
+or another presence-derived patch does not satisfy C5. Retain proven narrow fixes:
+real BeforeInverse/AfterInverse/AfterDelta markers; no None==None copy evidence;
+per-ordinal H/inverse/delta lineage; prior versus current application copies;
+generic legacy inverse association; corrected norm-prefix and bit fixtures.
+C1–C4/noninterference acceptance survives only within its proven scope.
+
+Finish controls for every actual locator alternative across107 refinement rows,
+with2 WorkCap rows separately accounted. Consume inventory `reached`, `absent`
+and `partial_roles` members. Construct inert expected traces; invoke full
+`refinement_capture_terminal_complete`, compare the COMPLETE public field_status
+map, then inject missing-required and stray-unexpected fields and check acceptance
+and statuses on the same traces. Cover residual zero/interior, H0 matrix/shift and
+slot-to-free-ID joins, H1 inner/final-add, nonidentity free IDs, scratch domains,
+all impossible numeric/null/range/cross-dependent complements. Positive/false
+ScratchBoxLower/Upper can be legitimate: reject only actually forbidden tuples,
+not blanket positive/false scratch. Cover completed comparisons and interrupted
+P0, Scratch and Final full/reduced norms, zero-lambda ordered/scalar norms,
+zero-lambda ordinal2 before/after delta and prior/current application distinction.
+No sampled locators, descriptor-text presence, private-helper-only checks or
+selected status keys substitute for this full acceptance scope.
+
+Clear all10 introduced lint defects by cohesive extraction without suppression,
+waivers or relaxed limits. Run exact edition2024 changed-file rustfmt, release
+physical-stage no-run, ALL inert metadata controls with nonzero selected counts,
+matched warnings-denied LSE tests/physical-stage and vegetation lib Clippy with
+separate targets and authenticated environment/tools/dependencies. Exact inherited
+230 LSE/1 vegetation failures remain failures; preserve matched diagnostics and
+raw outputs, never claim a lint pass from inherited classification or counts.
+Regenerate all affected schema/status/field/type/event/collection proofs including
+copy-boundary marker/status and mixed-norm controls. Interim8/8 proofs are not final
+acceptance. Preserve exact source before/after, binary and successful-build custody.
+Both final reviewers must approve all acceptance requirements and the sealed
+exact-source receipt BEFORE readiness; missing independence or failed acceptance
+stops HOLD without any physical preflight or capture.
+
+Only after those prerequisites may the ORIGINAL locked persistent ledger release
+W1 A_cold_ice_day FULL/P0 (reuse original A), W2 C_freeze_then_melt_day FULL/P2,
+W3 same C REDUCED/P0 in order. Keep original init/60s/support0, exact direct binary
+argv/stdin contract, durable reservation before launch, one invocation each,
+30s each/90s aggregate, strict payload/UTF8/status integrity and absolute deadlines.
+No retries, preflight, reset or extra slots; remaining independent slots remain
+subject to inherited integrity stops. Reconstruct reached operand bits independently
+in binary64 order, distinguishing ordinary and Dot2 arithmetic; do not compute
+unreached stages or manufacture witnesses. Diagnosis does not authorize a fix.
+
+**NEW proposal, not adopted now:** future invocation adds **5400 charged seconds
+exactly once** to adopted ceiling492734.927980s, yielding **498134.927980s**.
+This is distinct from the already consumed prior extension, not its replay or a
+refund. If already invoked, retain its consumed ledger and never add again.
+Reconcile latest authoring carry plus later active work at first work, including
+reading. Let R=adopted ceiling minus latest carry. If R<=1800s preserve HOLD without
+core launch. Otherwise hard deadline=start+R; work cutoff=hard−600s;
+readiness=start+min(4200s,R−1200s); core stop=readiness−600s. The600s before readiness
+is for exact checks/reviews/fix verification/sealing, not new core implementation.
+Every command<=180s and remaining deadline. Charge reading/work/waits/concurrent
+wall once. No automatic renewal, extension or retry; missed readiness or unmet
+acceptance => preserved HOLD. A larger proposal does not guarantee feasibility.
+Without future invocation/adoption do not resume this stopped execution.
+
+Authoring accounting: conservative anchor **2026-10-04 01:51UTC**, charge through
+**02:02UTC** (660s including reviews, validation, local commit and return).
+Prior489636.069712s becomes **490296.069712s**, unchanged adopted ceiling
+**492734.927980s**, remaining **2438.858268s**. Only inactive owner interval
+2026-10-03 21:29UTC to2026-10-04 01:51UTC is excluded. Extend if work exceeds02:02;
+no refund. The original locked ledger retains terminal execution and slots and
+adds this authoring carry. [Static wording reviews](artifacts/cut26-resumption-wording-review.json):
+`/root/cut03_correctness` and `/root/cut26_wording_qa` both ACCEPT without blockers;
+these are wording-only reviews, not final source QA. Ran prompt byte equality,
+source/raw archive hashes, original correctness-report hash,49 unrelated-path
+hashes, new links/inherited section references, accounting arithmetic and scoped
+diff whitespace PASS. No builds, metadata, proofs or physical workflows ran.
+Terminal authoring diff contains only this package record, thin prompt, wording
+review evidence and locked-ledger carry; scoped local commit only, no push.
+
 ## Cut03 continuation disposition — HOLD, 2026-10-03
 
 **HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**

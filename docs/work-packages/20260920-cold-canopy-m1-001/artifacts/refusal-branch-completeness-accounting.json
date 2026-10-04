@@ -289,5 +289,22 @@
   "inactive_owner_decision_interval": "19:45\u201320:33UTC",
   "source_authoring_stopped": true,
   "stop_reason": "Final QA reactivation thread-limit failure; independent final correctness rejects C5/full controls",
-  "final_source_sha256": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9"
+  "final_source_sha256": "2bddbb915ea6b00b96353d5c40633cbaede0e32648b2ea20a7649e305c446db9",
+  "authoring_after_terminal_hold": {
+    "request": "HOLD disposition and continuation prompt authoring only",
+    "anchor_utc": "2026-10-04T01:51:00+00:00",
+    "charged_through_utc": "2026-10-04T02:02:00+00:00",
+    "charge_seconds": 660,
+    "prior_cumulative_seconds": 489636.069712,
+    "cumulative_charged_seconds": 490296.069712,
+    "remaining_seconds": 2438.858268,
+    "extension_seconds_adopted": 0,
+    "proposed_future_extension_seconds": 5400,
+    "proposed_future_ceiling_seconds": 498134.92798,
+    "inactive_owner_decision_interval": [
+      "2026-10-03T21:29:00+00:00",
+      "2026-10-04T01:51:00+00:00"
+    ],
+    "note": "No current execution/readiness/extension. Extend if work exceeds02:02; no refund. Future explicit invocation may adopt new proposal once."
+  }
 }

@@ -1,0 +1,35 @@
+{
+  "evidence_class": "Static wording reviews; not source acceptance or physical approval",
+  "correctness": {
+    "reviewer": "/root/cut03_correctness",
+    "result": "ACCEPT",
+    "response": "ACCEPT — Static wording-fidelity review only. The new package section and thin prompt preserve final26 HOLD, the unified per-field C5 descriptor requirement, inventory `reached`/`absent`/`partial_roles` consumption with full terminal/public-status joins, remaining norm/zero-ordinal2/impossible-tuple controls, introduced-lint/proof/custody obligations, and both independent final approvals. They accurately retain narrow accepted fixes and C1-C4/noninterference limits, state final QA is missing, prohibit capture/preflight pending closure, and clearly label +5400s/timing as a future proposal not adopted by authoring. No blocker; no source/capture approval implied."
+  },
+  "qa": {
+    "reviewer": "/root/cut26_wording_qa",
+    "role": "rust_qa_reviewer",
+    "result": "ACCEPT",
+    "response": "Static wording QA — ACCEPT. No blockers found in the new top section of package.md or cut26-resumption-prompt.md. The text faithfully preserves final26’s HOLD basis: C5 rejection, incomplete boundary controls, 10 introduced LSE lint diagnostics, uncompleted final QA, NOT RUN metadata/proofs, no capture approval, and W1/W2/W3 at 0/0/0. It requires the full shared descriptor and inventory-driven acceptance/status controls before readiness and retains both independent final approvals. Timing arithmetic is consistent: 489636.069712 + 660 = 490296.069712; remaining under the unchanged 492734.927980 ceiling is 2438.858268 seconds. A future-only +5400 proposal yields 498134.927980 seconds and is explicitly not adopted now. The prompt is byte-identical to its declared /tmp source. Non-blocking debt/follow-up: final source QA, corrected controls, lint remediation, final metadata/proofs, custody, and any physical readiness remain pending by design."
+  },
+  "ran": {
+    "prompt_byte_equality": "PASS",
+    "unrelated_path_hashes_49": "PASS",
+    "source_archive_sha256": "90e2adad40bc67041d9376cad0626cd5c02b8f1a81fa780e78aa6504f2753caf",
+    "source_archive_match": "PASS",
+    "raw_archive_match": "PASS",
+    "original_final_correctness_sha256": "ac576153a5ac939cc2fd8499dea64450697ca7dca3e0a81bdf0813cb30c0c37f",
+    "links_and_inherited_section_references": "PASS",
+    "accounting_arithmetic": "PASS",
+    "diff_whitespace": "PASS"
+  },
+  "not_run": [
+    "builds",
+    "metadata controls",
+    "source acceptance reviews",
+    "proof generation",
+    "physical execution"
+  ],
+  "prompt_sha256": "c706ad7f76601665ceaf18e13b380e7f4cc6f6fe8521f1ad7d77cbb8a29d40a5",
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "extension_adopted_seconds": 0
+}
