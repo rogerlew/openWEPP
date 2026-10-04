@@ -1,5 +1,159 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## HOLD disposition and terminal-plan continuation proposal — 2026-10-04
+
+**HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
+Owner requests disposition and continuation-prompt authoring only. No implementation,
+build, metadata/physical execution, readiness renewal or time extension is adopted.
+Targets remain500us CPU/550us wall per completed OFE-day, regimes750/1500/2500us CPU,
+century182.625s CPU/210s wall. Completed-day cost, feasibility and target gap remain
+unestablished. W1/W2/W3 remain **0/0/0**, with no approved capture receipt.
+
+Pickup is local **b9a113e5a** plus this authoring record. Both final reviewers reject
+C5/full controls. Release no-run passes; rustfmt fails; LSE Clippy fails with230
+exact inherited/10 unmatched diagnostics and vegetation with1 inherited. Seven
+structural proof scripts pass but final metadata was NOT RUN after the stop.
+The final disposition below remains evidence; this proposal supplies no source
+acceptance. The [thin prompt](artifacts/terminal-plan-resumption-prompt.md) is
+byte-identical to `/tmp/openwepp_cold_canopy_m1_terminal_plan_resumption.md`.
+This package remains the sole maintained execution contract.
+
+### Proposed terminal-plan continuation — future invocation only
+
+Upon future owner invocation, execute the complete inherited **Proposed final26
+continuation**, **Proposed Cut03 continuation**, **Proposed cut11 continuation**,
+**Proposed reviewer succession and resumption**, **Proposed atomic-terminal execution
+contract** and **Proposed execution contract**. This section supersedes only stale
+pickup, resolved-defect descriptions, reviewer availability, and timing/allowance.
+All remaining scope, science, acceptance, custody and stopping conditions bind.
+No numerical repair, physics/arithmetic/precision/order/work-counter change,
+fixture/guard/tolerance/cadence/dependency change, extra solver/evaluator call,
+poison preflight, full day, campaign, timing sweep, production/main Rust adoption,
+new physical slot, branch switch or push. Stop at independently reviewed diagnosis
+or preserved HOLD with a scoped local commit.
+
+Authenticate [final results](artifacts/cut26-invocation-final.json) and linked
+source/raw/successful-build receipts. Whole source
+**b5274ad01ab31ad22f501763874e54f3a083c5db5473ad03bc94da8ef971e1e5**,
+stage1 **0d76afc4b08077bfc21b86ade2be73450bfc1eb1d99499d9d93890e6a83957ad**,
+archive **dc4c89c24465f8d59a440996da516657f4777ce1522c3716e3c4391319dbd358**;
+frozen root is
+`/home/roger/openwepp-experiments/cold-canopy-m1-cut26-resumption-20261004/frozen/final/source`.
+Binary **fc306c1b4ea49e47f680b860efdf1e1e7f4ac8f6311d488b7eb61d1126251e57**
+is compiled, not approved. Preserve772 source entries,560 build pins/35 depfiles,
+292 raw members, original review responses/failures, all prior custody and the
+historical candidate05 recovery gap. Recover one new durable mutable copy from
+authenticated final source; never edit a frozen tree or substitute an older binary.
+
+Establish both independent routes and finding ownership BEFORE core edits. Prefer
+live `/root/cut26_correctness` and `/root/cut26_qa`, which delivered final rejections;
+missing final independence was not the last invocation's failure. If unavailable,
+use the inherited explicit independent-successor rule in the same pinned roles,
+with original C1–C5 and final source/QA/addendum findings. Neither an author nor
+`/root/cut26_architecture_advice` nor another material design adviser may satisfy
+acceptance. Initial availability is not approval; same assigned reviewers verify
+fixes and exact final source/helpers/controls/proofs/custody. No parent substitution
+or identical retry after a route-capacity failure. Missing routes => preserved HOLD.
+
+Keep one implementer/source writer, at most two concurrent children, no nested
+agents. Require a cohesive implementation handback; naming changes, moved methods,
+partial plans, successful formatting or a turn-ending partial report do not finish
+an assigned deliverable. Continue in-scope work through corrections; reassess
+repeated non-delivery using concrete evidence and preserve exact source before any
+writer transfer. Checkpoint findings are correction inputs within the same bounds;
+failed final acceptance or missed readiness is the owner stop. Do not promote an
+incomplete checkpoint into final approval or silently narrow its requirements.
+
+First close the actual architectural blocker recorded in the
+[final correctness report](artifacts/cut26-invocation-final-correctness.txt): replace
+the renamed terminal-content phase matrix and independent reach/norm switches with
+ONE per-field terminal/copy/norm-role authority. The plan must own exact application
+count, per-ordinal copies, generic inverse owner, actual completed/interrupted norm
+roles and scalar/operation boundaries, every field state, and selected content
+obligations. Acceptance, count and every public status consume it. Preserve exact
+numerical, shape, bit, identity, lineage and refusing-comparison content validation;
+those validators must not independently reconstruct stage-dependent field reach.
+Delete superseded duplicate/dead snapshot logic. Renaming the old matrix, passing
+`plan.metadata` into it, or moving a second stage table into a method is insufficient.
+Missing evidence must not change required/interrupted expectations into absent.
+Retain demonstrated count, factor-marker, real-plan control and norm-role fixes,
+and C1–C4/noninterference only within their proven scope.
+
+Complete the inherited full controls, not another semantic-group/key-set check.
+Independently expand each inventory row's `reached`, `absent`, completed/partial
+roles into complete expected public statuses; reject unknown semantic groups.
+Construct valid inert traces for every actual locator alternative across107
+refinement rows, with2 WorkCap rows separately accounted. Invoke full terminal
+acceptance, compare the ENTIRE public status map including VALUES, then inject
+missing-required and stray-unexpected fields and check both acceptance and statuses
+on those same traces. Expectations must be independent of the implementation plan.
+Retain all residual zero/interior, H0 matrix/shift/free-ID, H1 inner/final-add,
+nonidentity IDs, scratch-domain and impossible numeric/null/range/cross-dependent
+complements; positive/false scratch is rejected only where actually forbidden.
+Cover P0/Scratch/Final full/reduced completed comparisons versus interrupted norms,
+zero-lambda ordered/scalar norms, both copy ordinals and zero-lambda ordinal2
+before/after delta with prior/current application distinction. No private-helper
+oracle, sampled locator, group membership or status-key existence substitutes.
+
+Fix exact rustfmt and all10 unmatched/new lint diagnostics through cohesive
+extraction, without suppression/waiver/relaxed limits. Run exact edition2024
+changed-file rustfmt, release physical-stage no-run, ALL inert metadata controls
+with nonzero selected counts, and matched warnings-denied LSE tests/physical-stage
+and vegetation lib Clippy. Retain separate writable targets and authenticated
+actual tools/environment/dependencies; inherited230 LSE/1 vegetation failures remain
+failures, with actual diagnostic/source matching rather than counts. Coordinate
+builds; avoid duplicate debug/isolated targets that exhausted disk. Inspect storage
+before launching; clean only proven generated caches within scope, preserving
+unique source/binaries/evidence and all receipts. Disk pressure is not a waiver.
+Regenerate affected schema/status/field/type/event/collection proofs against final
+source, including copy-boundary and mixed-norm controls. Prior seven structural
+passes are not scientific completeness or final-source approval. Current governing
+repository guidance applies; archived AGENTS snapshots do not reinstate the
+withdrawn automatic3k-line closure requirement or authorize unrelated refactoring.
+
+Both final independent approvals and the sealed exact-source/binary/helper/fixture/
+ledger receipt are required BEFORE readiness and any capture. Only then may the
+ORIGINAL locked ledger release W1 A_cold_ice_day FULL/P0 (reuse original A),
+W2 C_freeze_then_melt_day FULL/P2, W3 same C REDUCED/P0, in order. Preserve original
+init/60s/support0, exact direct-binary argv/stdin, durable reservation before launch,
+one invocation each,30s each/90s aggregate, no retry/reset/preflight, strict output/
+UTF8/status integrity and absolute deadlines. Independently reconstruct only reached
+operand bits in binary64 operation order, distinguishing ordinary/Dot2 arithmetic;
+never manufacture witnesses or evaluate unreached stages. Diagnosis authorizes no fix.
+
+**No additional charged-time extension is proposed.** Ceiling remains
+**498134.927980s**; the last+5400 was already adopted and must never be replayed.
+Future invocation reconciles this latest authoring carry plus all later active
+work, including reading, before computing R=ceiling−carry. If R<=1800s preserve
+HOLD without core launch. Otherwise that future invocation adopts one bounded
+window: hard deadline=start+R; work cutoff=hard−600s;
+readiness=start+min(4200s,R−1200s); core stop=readiness−600s. The final600s before
+readiness is for exact checks/reviews/fix verification/sealing, not new core work.
+Every command<=180s and remaining deadline. Charge reading/work/waits/concurrent
+wall once. Missing independence, failed final acceptance or missed readiness =>
+preserved HOLD. No automatic renewal, refund, extra slot or inferred extension.
+A positive window does not establish feasibility; without future invocation do not
+resume this stopped execution.
+
+Authoring accounting: conservative first-reading anchor **2026-10-04 05:11UTC**,
+charge through **05:18UTC**,420s including wording reviews, checks, preservation,
+local commit and return. Prior492696.069712s becomes **493116.069712s**, leaving
+**5018.858268s** under unchanged ceiling498134.927980s. Exclude only inactive owner
+interval04:58–05:11UTC. Extend if actual work exceeds05:18; no refund. Original
+locked ledger retains terminal execution/slots and adds this authoring carry.
+Static wording review and authoring checks are recorded separately; neither renews
+source approval or changes HOLD. No build, metadata, proof or physical workflow
+runs in this authoring turn.
+
+[Static wording reviews](artifacts/terminal-plan-resumption-wording-review.json):
+`/root/cut26_correctness` and `/root/cut26_qa` both PASS without findings; original
+responses are preserved. These are wording-only approvals, not source acceptance.
+Ran prompt byte equality, source/raw archive hashes,49 unrelated-path identities,
+new links/inherited section references, accounting arithmetic and scoped diff
+whitespace PASS. Terminal authoring diff is limited to this package, thin prompt,
+wording review evidence and locked-ledger authoring carry. Scoped local commit;
+no push.
+
 ## Final26 invocation disposition — HOLD, 2026-10-04
 
 **HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**

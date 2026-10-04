@@ -603,5 +603,21 @@
       "note": "No current execution/readiness/extension. Extend if work exceeds02:02; no refund. Future explicit invocation may adopt new proposal once."
     }
   },
-  "source_authoring_stop_utc": "2026-10-04T04:49:00+00:00"
+  "source_authoring_stop_utc": "2026-10-04T04:49:00+00:00",
+  "authoring_after_terminal_hold": {
+    "request": "HOLD disposition and continuation prompt authoring only",
+    "anchor_utc": "2026-10-04T05:11:00+00:00",
+    "charged_through_utc": "2026-10-04T05:18:00+00:00",
+    "charge_seconds": 420,
+    "prior_cumulative_seconds": 492696.069712,
+    "cumulative_charged_seconds": 493116.069712,
+    "remaining_seconds": 5018.858268,
+    "extension_seconds_adopted": 0,
+    "proposed_future_extension_seconds": 0,
+    "inactive_owner_decision_interval": [
+      "2026-10-04T04:58:00+00:00",
+      "2026-10-04T05:11:00+00:00"
+    ],
+    "note": "No implementation/execution/readiness/extension. Future explicit invocation may adopt proposed bounded window using newest carry. Extend if work exceeds05:18; no refund."
+  }
 }

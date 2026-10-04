@@ -1,0 +1,34 @@
+{
+  "scope": "HOLD disposition and future-only continuation prompt authoring; no execution/readiness/extension",
+  "reviews": {
+    "correctness": {
+      "reviewer": "/root/cut26_correctness",
+      "scope": "Static wording fidelity only; unchanged source remains rejected",
+      "verdict": "PASS",
+      "original_response": "Static: wording-fidelity review only. No source approval, build, metadata/proof execution, solver/evaluator call, physical workflow, or readiness renewal.\n\nFindings\n\nNone.\n\nVerified wording fidelity\n\n- The package and thin prompt preserve HOLD_NO_COMPLETED_DAY and authorize disposition/prompt authoring only. The continuation remains explicitly future-invocation-only; without future owner invocation, work does not resume.\n- The final correctness blockers are stated without narrowing: the renamed terminal-content reach/phase authority remains parallel; the 107-row inventory lacks complete inert traces, full terminal acceptance, complete status-value comparisons, and missing/stray injections; norm/copy/scalar obligations and duplicate/dead logic remain in scope.\n- Demonstrated fixes are retained only within reviewed scope: exact 0/1/2 count, factor-marker/real-plan controls, concrete norm roles, status keys, C1-C4, and static noninterference. Structural proofs, compilation, and selected controls are not promoted to source acceptance.\n- Custody matches the authenticated final record: whole source b5274ad01ab31ad22f501763874e54f3a083c5db5473ad03bc94da8ef971e1e5; stage1 0d76afc4b08077bfc21b86ade2be73450bfc1eb1d99499d9d93890e6a83957ad; source archive dc4c89c24465f8d59a440996da516657f4777ce1522c3716e3c4391319dbd358; compiled-unapproved binary fc306c1b4ea49e47f680b860efdf1e1e7f4ac8f6311d488b7eb61d1126251e57; 772 source entries, 560 build pins, 35 depfiles, and 292 raw members.\n- Both independent pinned reviewer roles and original/final finding ownership must exist before edits. Authors, the named architecture adviser, and any other material design adviser are excluded; initial availability is not approval, parent substitution is forbidden, and the same assigned reviewers retain fix/final verification.\n- Inherited scope, science, acceptance, custody, stopping conditions, original slots, and exact capture contract remain binding. W1/W2/W3 remain 0/0/0; no new physical slot, preflight, reset, retry, numerical repair, production adoption, branch switch, or push is authorized.\n- No charged-time extension is proposed or adopted. Ceiling remains 498134.927980s and the prior +5400 cannot be replayed. Arithmetic is exact: 492696.069712s + 420s = 493116.069712s; 498134.927980s - 493116.069712s = 5018.858268s. The 05:11-05:18 authoring interval is 420s. Future timing is correctly recomputed from R with hard=start+R, work cutoff=hard-600s, readiness=start+min(4200s,R-1200s), and core stop=readiness-600s; no prior window is reused.\n- `/tmp/openwepp_cold_canopy_m1_terminal_plan_resumption.md` is byte-identical to `artifacts/terminal-plan-resumption-prompt.md` (SHA-256 88f0b89ddf051f3bc2412134485a5a285044d24c162edf24176354dab2e62e03). Pickup `b9a113e5a` matches repository HEAD before this authoring record.\n\nResidual risk\n\nThis PASS applies only to proposal/prompt fidelity. The unchanged final source remains rejected, and the future proposal does not establish runtime feasibility, scientific acceptance, source approval, or capture readiness.\n\nDisposition\n\nPASS wording fidelity; no blocker to preserving this HOLD disposition and future continuation prompt. No source or execution approval is supplied.\n",
+      "response_sha256": "50d24b4892452d1868fce8e2422d775e869b515c4f0e75c7a7e05e3d1c22e37d"
+    },
+    "qa": {
+      "reviewer": "/root/cut26_qa",
+      "scope": "Static wording fidelity only; unchanged source remains rejected",
+      "verdict": "PASS",
+      "original_response": "Static wording/fidelity review \u2014 /root/cut26_qa\n\nScope: the new top-level `HOLD disposition and terminal-plan continuation proposal \u2014 2026-10-04`, its proposed future continuation, and `/tmp/openwepp_cold_canopy_m1_terminal_plan_resumption.md`. No source, build, metadata, proof, helper, ledger, solver, or physical workflow was run by this reviewer.\n\nPASS for bounded wording fidelity. The thin prompt is byte-identical to `artifacts/terminal-plan-resumption-prompt.md`. The record accurately retains HOLD_NO_COMPLETED_DAY, W1/W2/W3 0/0/0, no capture approval, final source `b5274ad01ab31ad22f501763874e54f3a083c5db5473ad03bc94da8ef971e1e5`, compiled-but-unapproved binary, release no-run PASS, rustfmt failure, LSE Clippy 240/230-exact-inherited/10-unmatched, vegetation 1 inherited failure, seven structural proof passes, and final metadata NOT RUN after the rejection stop.\n\nThe proposed continuation preserves the blocking C5 requirements: one per-field terminal/copy/norm-role authority and valid inert all-row trace/full-status/missing-and-stray controls. It correctly records that semantic-group/key presence and inertness are insufficient. It retains the helper/custody sealing and dual independent-review prerequisites before any original capture, storage discipline after prior generated-cache pressure, original slot order and no-preflight/no-retry rules. It correctly withdraws the stale automatic 3k-line closure assertion through the QA addendum while retaining the concrete duplicate-authority maintainability defect.\n\nTiming/accounting wording is coherent: no new extension; ceiling 498134.927980s; carry493116.069712s through05:18UTC; remaining5018.858268s; a future invocation must reconcile later active work before deriving a new bounded window. This authoring record grants no current implementation, readiness, metadata, binary, custody, source, or capture approval.\n",
+      "response_sha256": "cc5368c2af90cf8feb90dbaa2ab2ce6c7d229ec406b71a5a3af4f3e9dd719838"
+    }
+  },
+  "checks": {
+    "prompt_byte_equality": "PASS",
+    "source_raw_archive_hashes": "PASS",
+    "unrelated_paths_unchanged": 49,
+    "links_and_inherited_sections": "PASS",
+    "accounting": "PASS",
+    "slots": "0/0/0",
+    "scoped_diff_whitespace": "PASS"
+  },
+  "authoring_charge_through_utc": "2026-10-04T05:18:00+00:00",
+  "authoring_charge_seconds": 420,
+  "cumulative_charged_seconds": 493116.069712,
+  "ceiling_seconds": 498134.92798,
+  "remaining_seconds": 5018.858268,
+  "extension_seconds": 0
+}
