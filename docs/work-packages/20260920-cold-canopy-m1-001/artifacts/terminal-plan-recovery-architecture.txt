@@ -1,0 +1,36 @@
+Static: adviser assessment only; no acceptance review. Ran: source reads and SHA-256 only. No builds, tests, proofs, or physical workflows. Last observed mutable stage1 SHA was `b6e09a3cf11ff5ee3d837978286ab41081472337cfa935948bfdc6d6b33aa0f2`; source changed during inspection.
+
+The correction is technically identifiable, but **full deliverability before the core stop is unestablished**. Removing the macro alone would discard content obligations. Keeping it behind a plan wrapper preserves C5.
+
+Two concrete inconsistencies make another cosmetic correction unsafe:
+
+- `refinement_capture_terminal_norm_roles` defaults to empty roles for First residual/factor/update/active terminals and analogous Second terminals. The content matrix requires completed predecessor p0 norms—and p1 norms for Second. The new plan-bounded collection check consequently rejects those required predecessor traces.
+- `field_required` still requires scalar copies during interrupted norms: for example, `p0_reduced_norm*_bits` at `P0ReducedRadius`, whereas the macro requires their absence for an interrupted norm. Similar duplicate boundaries remain for scratch/final norms.
+
+The smallest coherent architecture correction is this replacement sequence:
+
+1. **Make `RefinementCaptureTerminalPlan` contain resolved obligations.** Resolve terminal metadata and the explicit factor-copy marker once into field states, application count, per-ordinal H/inverse/delta states, generic-inverse owner, norm obligations, and an optional refusing-comparison obligation. Retain metadata as operands only. Missing/wrong markers must fail completeness without converting required copies to absent.
+
+2. **Complete norm obligations before changing consumers.** Every norm obligation needs role, vector source (`p0/p1/p2`), domain (`full/free`), completed/interrupted state, and scalar-copy bindings. Include all completed predecessor roles. Derive both scalar statuses and collection statuses from these obligations; delete the separate norm-scalar stage matches in `field_required`. Interrupted operations require the partial witness while their uncompleted scalar copies remain absent.
+
+3. **Replace `refinement_capture_terminal_content_complete` and delete `refinement_capture_terminal_content_obligations!`.** The replacement should iterate the resolved obligations:
+   - completed norm → existing exact-norm validator and applicable scalar bit joins;
+   - interrupted norm → existing exact-partial-norm validator;
+   - copied factor member → exact shape/identity/bit join;
+   - generic inverse → join to the plan-selected ordinal;
+   - selected comparison → existing exact rejecting-side comparison, including reduced-radius/closeness operands;
+   - common operands/masks/live-state → existing structure and lineage checks.
+
+   These validators may inspect required operands and reject missing data, but must not switch on stage/position to choose which fields exist. A fixed role-to-vector mapping is acceptable; a second terminal-to-role mapping is not.
+
+4. **Split the remaining prefix helpers into content checks.** In particular, `refinement_capture_factor_output_prefix`, `refinement_capture_factor_snapshot_complete`, and first/second residual-prefix helpers currently mix copy presence with content. Preserve their identity, shape, ordering and bit joins; move copy-selection and generic-inverse ownership into the plan. Remove superseded `no_p1`, `no_p2`, prefix-norm and phase-flag plumbing after their obligations have replacements.
+
+5. **Make acceptance and every public status consume the same resolved plan.** Acceptance performs locator validity, field-state/presence consistency, exact application count and content obligations. Status formatting projects the same states. Constructing a new plan per field is unnecessary and makes marker/ownership consistency harder to audit.
+
+6. **Implement the independent controls as a separate deliverable.** Expand inventory groups with an explicit exhaustive dictionary that rejects unknown groups; create expected complete status maps independently of the plan. Build inert traces from those expectations, then call full acceptance and compare every status value. Reuse the actual locator expansion, retaining nonidentity IDs and cross-dependent tuples. Each missing-required/stray-unexpected mutation must rerun both acceptance and the complete status comparison. Neither plan-derived fixture population nor merely testing the new obligation dispatcher supplies the independent oracle.
+
+At the observed clock, approximately **23 minutes remained until 06:43:38.858268Z**. The source still lacks the obligation representation, complete inert-trace builder, independent group expansion, and full-map mutation controls. Consequently, there is **no evidence supporting a promise that the complete acceptance deliverable fits**. This is an execution-feasibility limitation, not scientific impossibility.
+
+Recommend giving the existing implementer this cohesive replacement sequence within the unchanged stop. Preserve any completed architectural increment, but keep C5 and full-control acceptance open until both are demonstrated. Do not spend the remaining allowance on another macro rename or partial schema test. Final review/check time remains reserved; incomplete controls mean HOLD and no W1/W2/W3.
+
+No new scientific-method decision or budget relaxation is needed or recommended. The orchestrator’s remaining decision is whether the implementer can commit to this concrete replacement within the existing core window; this advice grants no successor scope or acceptance.

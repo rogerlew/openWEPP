@@ -1,0 +1,185 @@
+{
+  "evidence_class": "Ran exact-source rustfmt/release no-run/8inert metadata controls/Clippy/7offline structural proof scripts, custody checks. Static independent correctness and QA final reviews. No physical workflow.",
+  "disposition": "HOLD_NO_COMPLETED_DAY",
+  "classification": "class(c), insufficient evidence/runtime feasibility",
+  "stop_reason": "Both final reviewers reject C5/full controls; required lint gates fail",
+  "final_source_root": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source",
+  "source_sha256": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+  "stage1_sha256": "d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8",
+  "source_archive_sha256": "d5560a321ea9df981817929771e97e35a1d4e269a678cc04f9facb305211c594",
+  "source_entries": 772,
+  "binary_path": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/target-candidate/release/deps/openwepp_land_surface_energy-70194d0f8e103327",
+  "binary_sha256": "d80306cffbb6a33d8bfd8f8ed7d345ab67cc349e57763e846c62a045255650cc",
+  "build_pins": 564,
+  "depfiles": 35,
+  "raw_archive_sha256": "b7a12d78811374b1e931a917b8f0181a3ecc692deb5143526d01c36a7c1104a6",
+  "raw_members": 190,
+  "checks": {
+    "rustfmt": {
+      "command": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/target-format",
+      "start_utc": "2026-10-04T06:28:56.231601+00:00",
+      "source_before": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 0,
+      "elapsed_seconds": 0.21588893979787827,
+      "source_after": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "no-run": {
+      "command": [
+        "cargo",
+        "test",
+        "--release",
+        "--no-run",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--features",
+        "m1-trust-region-physical-stage"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/target-candidate",
+      "start_utc": "2026-10-04T06:28:56.246468+00:00",
+      "source_before": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 0,
+      "elapsed_seconds": 134.94487630901858,
+      "source_after": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d65cd730f1f3e3304bf033a8b30023e7e4028a2fafedb3f6673c6f813a8afa22"
+    },
+    "lse-clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-land-surface-energy",
+        "--tests",
+        "--features",
+        "m1-trust-region-physical-stage",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/target-lint-lse",
+      "start_utc": "2026-10-04T06:28:56.214554+00:00",
+      "source_before": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 101,
+      "elapsed_seconds": 21.81459037028253,
+      "source_after": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "689f9c525bdb4c0f7d65a8a0378bf8f675536598f54d0c40c9f2c5bdfa8819c3"
+    },
+    "vegetation-clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--no-deps",
+        "-p",
+        "openwepp-vegetation",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source",
+      "target": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/target-lint-vegetation",
+      "start_utc": "2026-10-04T06:31:40.456219+00:00",
+      "source_before": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+      "physical_invocations": 0,
+      "timeout_seconds": 170,
+      "exit": 101,
+      "elapsed_seconds": 9.245965966954827,
+      "source_after": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
+      "source_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "32f19cd22b1fff20b2d8fd9fa71b00c84af76c088ed73f6062baa832c9287680"
+    }
+  },
+  "metadata": {
+    "tests": 8,
+    "passed": 8,
+    "record": "/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/checks/metadata.json",
+    "limitation": "Existing narrow controls only; NOT full107-row acceptance/status/injections"
+  },
+  "proofs": {
+    "scripts": 7,
+    "passed": 7,
+    "fields": 298,
+    "payload_bound_bytes": 36852930,
+    "limitation": "Structural only; not full scientific/source approval"
+  },
+  "lint": {
+    "lse": {
+      "exit": 101,
+      "diagnostics": 240,
+      "exact_inherited": 230,
+      "unmatched": 10
+    },
+    "vegetation": {
+      "exit": 101,
+      "diagnostics": 1,
+      "exact_inherited": 1
+    }
+  },
+  "reviews": {
+    "correctness": "REJECT",
+    "qa": "REJECT",
+    "narrow_checkpoint03_fixes": "four fixes verified by same correctness reviewer; no full acceptance",
+    "routes": "recovered successfully by serializing child phases; no deletion capability claimed"
+  },
+  "remaining_requirements": [
+    "C5 single complete content/reach/norm/copy authority",
+    "Full107row all-locator traces/fullstatusvalues/missingstray controls",
+    "10unmatched LSE lint diagnostics",
+    "Both final approvals and seal"
+  ],
+  "physical_invocations": 0,
+  "slots": {
+    "W1": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W2": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    },
+    "W3": {
+      "reserved": 0,
+      "invocations": 0,
+      "elapsed_seconds": 0
+    }
+  },
+  "capture_approved": false,
+  "source_authoring_stop_utc": "2026-10-04T06:31:00+00:00",
+  "main_rust_adoption": false,
+  "push": false,
+  "unrelated_paths_unchanged": 49,
+  "charged_through_utc": "2026-10-04T06:40:00+00:00",
+  "recovery_charge_seconds": 1620,
+  "current_invocation_charge_seconds": 2460,
+  "cumulative_charged_seconds": 495576.069712,
+  "remaining_seconds": 2558.858268,
+  "ceiling_seconds": 498134.92798
+}

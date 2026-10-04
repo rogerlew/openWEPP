@@ -1,5 +1,151 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Recovered terminal-plan final disposition — HOLD, 2026-10-04
+
+**HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
+Review capacity was recovered and both independent reviewers completed final
+acceptance. Both **REJECT C5/full controls**; this stop is failed acceptance, not
+missing reviewers. Targets remain500us CPU/550us wall per completed OFE-day,
+regimes750/1500/2500us CPU, century182.625s CPU/210s wall. Completed-day cost,
+feasibility and target gap remain unestablished. W1/W2/W3 remain **0/0/0**;
+no preflight, physical capture, approved receipt or retry.
+
+[Final results](artifacts/terminal-plan-recovery-final.json) bind the exact final
+candidate. Ran edition2024 rustfmt **PASS0.216s**, release physical-stage no-run
+**PASS134.945s**, and all8existing explicitly inspected inert metadata controls
+**PASS8/8**, each selecting1test with unchanged source/binary. These existing
+controls remain narrower than the required107-row all-locator full-trace/terminal-
+acceptance/entire-status-value/missing-and-stray controls, which are **not delivered**.
+LSE warnings-denied Clippy **FAIL240 diagnostics:230exact inherited/10unmatched**;
+vegetation warnings-denied Clippy **FAIL1exact inherited**. No failed command is
+converted to PASS by inherited classification, and no lint requirement is waived.
+
+Ran7offline structural proof scripts **PASS7/7**,298fields with no unmapped paths
+or unresolved table entries; payload36,852,930bytes within67,108,864, outcome331,670,
+collections6/6/2. Unchanged1402event bound remains structural evidence only.
+Final source inventory binding and schema/helper hashes are explicit; these proofs
+are not full scientific/content/status acceptance. All original failures remain.
+Checkpoint02 preserves no-run PASS132.316s, rustfmt FAIL,6metadata PASS/1FAIL and
+its separate binary/build receipt; no checkpoint result substitutes for final.
+
+The [same correctness reviewer](artifacts/terminal-plan-recovery-final-correctness.txt)
+verifies four narrow corrections: complete predecessor norm role retention,
+plan-derived interrupted scalar norm states, future-ordinal copy absence, and
+missing/mismatched marker scope. Its [checkpoint fix review](artifacts/terminal-plan-recovery-correctness-checkpoint03.txt)
+and [original checkpoint findings](artifacts/terminal-plan-recovery-correctness-checkpoint02.txt)
+remain attributable. Interrupted-present evidence now reports contradictory stray
+presence, fixing the executed factor-boundary failure without weakening assertions.
+C1–C4 and static test-only production noninterference remain accepted only within
+reviewed scope. [Final QA](artifacts/terminal-plan-recovery-final-qa.txt) verifies
+inert selectors and inspected check/custody evidence but rejects full acceptance.
+
+The central content macro remains a second stage/reach authority. Repeated partial
+handbacks prompted a [bounded architectural assessment](artifacts/terminal-plan-recovery-architecture.txt)
+and a concrete replacement sequence. The writer delivered status/copy/norm fixes
+and formatting but no cohesive obligation model or full controls. Parent stopped
+source authoring at06:31UTC and submitted the unchanged frozen candidate for full
+final review; neither incomplete scope nor narrow passing checks were promoted
+to acceptance. Both final rejections invoke the owner HOLD stop. No source repair
+or workflow continuation followed final rejection. No numerical repair, main Rust
+adoption, branch switch or push occurred.
+
+[Route evidence](artifacts/terminal-plan-recovery-routes.json): no deletion control
+was exposed, so no thread culling/deletion is claimed. One reactivation request
+was made while writer and adviser occupied both child slots; interrupting the
+writer freed capacity and the same QA route resumed. Correctness and QA then
+completed checkpoint/final reviews in serialized phases within the two-child
+limit. The initial capacity interpretation was corrected; unavailable independence
+is not this recovered run's final failure. Adviser did not count as a reviewer.
+
+Final whole source **8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4**,
+stage1 **d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8**,
+is recoverable from the [full source archive](artifacts/terminal-plan-recovery-final-source.tar.gz)
+and [772-entry receipt](artifacts/terminal-plan-recovery-final-source.json), with
+durable root `/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source`.
+The [supplementary zero-context diff](artifacts/terminal-plan-recovery-final.patch)
+is against authenticated cut26 final; apply with `--unidiff-zero`. Binary
+**d80306cffbb6a33d8bfd8f8ed7d345ab67cc349e57763e846c62a045255650cc** is compiled,
+not approved, and retained in sibling target-candidate with
+[564pins/35depfiles successful-build custody](artifacts/terminal-plan-recovery-final-build-inputs.json).
+The [190-member raw archive](artifacts/terminal-plan-recovery-raw.tar.gz) and
+[receipt](artifacts/terminal-plan-recovery-raw.json) preserve intermediates,
+checks/failures, helpers, proofs and reviewer/adviser responses. Earlier partial01,
+cut26 custody and the historical candidate05 recovery gap remain unchanged.
+All49unrelated dirty/untracked path identities are preserved; no cache deletion.
+
+Accounting retains prior493956.069712s and adds conservative06:13–06:40UTC
+recovery charge **1620s**, including reading/work/waits/concurrent wall once,
+checks/reviews, preservation, local commit and return. Cumulative
+**495576.069712s**, remaining **2558.858268s**, ceiling **498134.927980s** unchanged.
+Exclude only inactive owner interval06:04–06:13UTC; original840s invocation charge
+is retained, yielding2460s combined invocation/recovery charge. Extend if work
+exceeds06:40; no refund, extension, slot reset or readiness renewal. Original
+locked ledger preserves all prior accounting. This execution is stopped; unused
+balance supplies no automatic continuation. Scoped preservation is local only.
+
+## Owner-directed agent recovery and continuation — 2026-10-04
+
+Owner requests **“cull agents and continue.”** Continue the same authorized
+terminal-plan scope from preserved partial01; no acceptance, time, physical slot,
+science or custody requirement is waived. Targets remain500us CPU/550us wall per
+completed OFE-day, regimes750/1500/2500us CPU, century182.625s CPU/210s wall;
+completed-day cost, feasibility and gap remain unestablished. W1/W2/W3 remain0/0/0.
+
+[Recovery record](artifacts/terminal-plan-recovery-start.json): runtime exposes
+interruption but no thread deletion. Old writer was already interrupted and QA
+completed; interruption does not establish culling/deletion. Old QA reactivation
+failed `agent thread limit reached`; no identical retry. Fresh independent
+successors `/root/terminal_correctness_recovered` and `/root/terminal_qa_recovered`
+accepted inherited findings and same-reviewer fix/final ownership BEFORE resumed
+source edits. Initial availability is not approval. Sole prior implementer
+`/root/terminal_implementer` successfully resumed the existing mutable copy;
+partial01 remains immutable and recoverable. No parent review substitution.
+
+Conservative recovery anchor06:13UTC; prior carry493956.069712s, unchanged
+ceiling498134.927980s. Exclude only inactive owner interval06:04–06:13UTC; add
+all recovery reading/work/waits/concurrent wall once. No extension, refund or
+new readiness window: preserve original core stop06:43:38.858268UTC,
+readiness06:53:38.858268UTC, work cutoff07:03:38.858268UTC,
+hard deadline07:13:38.858268UTC. All commands<=180s and remaining deadline.
+
+Implementation intent, full per-field authority/all-row full-control acceptance,
+exact checks/proofs/custody, independent reviews and conditional original slots
+remain as adopted below. No numerical repair, main Rust adoption, branch switch
+or push. Final independence, full acceptance and a sealed exact-source receipt
+remain prerequisites to captures; otherwise preserve HOLD and scoped local commit.
+
+### Recovery checkpoint and reassessment
+
+Runtime capacity correction: the second QA reactivation attempt occurred while
+writer and adviser occupied both available child slots. Parent interrupted the
+writer, then the same QA route resumed successfully under changed capacity.
+This restores review availability; it does not supply final approval. Review,
+advice and writer phases are serialized within two concurrent children.
+
+Ran checkpoint02 exact release no-run PASS132.316s, unchanged source,564build pins/
+35depfiles and retained new binary. Exact rustfmt FAIL; writer applied authenticated
+edition2024 formatting to mutable source afterward. Seven selected inert metadata
+controls execute6PASS/1FAIL: factor-output before-inverse expects contradictory
+stray presence but sees captured. Same writer corrected the actual Interrupted
+status projection; correction not yet verified. Checkpoint QA retains C5/full-control
+blockers; this is correction input, not final acceptance. Final all-controls runner
+now additionally permits the independently inspectable inert semantic-group test;
+its selector change requires final QA verification. No capture/physical invocation.
+
+Repeated partial implementer handbacks preserve stage1
+`6e59b4f6b37498caa5a9f0db2d8df13723fa68655fed2e118bcdddab72e11d14`:
+phase arguments, duplicate norm role switch and dead snapshot early return removed.
+The attempted content-case wrapper was recognized as insufficient and reverted.
+No coherent authority replacement or complete all-row controls were delivered.
+This is a checkpoint, not completed scope or final acceptance. Named architecture
+adviser `/root/terminal_architecture_recovery` assesses a bounded concrete correction
+for the duplicated content/reach blocker; adviser cannot satisfy independent review.
+Checkpoint02 whole source32b47590ddebb609aa90f633ab720ee8e1c26945068536d9c54f73b6e3299643
+is frozen with772entries/archive before checks at the existing root's
+`frozen/checkpoint02/source`. Parent launched only exact rustfmt and release
+physical-stage no-run against that frozen source; results pending. No physical
+workflow or metadata preflight. Scope, original cutoffs and acceptance remain fixed.
+
 ## Terminal-plan invocation disposition — HOLD, 2026-10-04
 
 **HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**

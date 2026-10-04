@@ -1,0 +1,28 @@
+{
+  "owner_instruction": "cull agents and continue",
+  "anchor_utc": "2026-10-04T06:13:00+00:00",
+  "prior_cumulative_charged_seconds": 493956.069712,
+  "ceiling_seconds": 498134.92798,
+  "extension_seconds": 0,
+  "inactive_owner_interval": [
+    "2026-10-04T06:04:00+00:00",
+    "2026-10-04T06:13:00+00:00"
+  ],
+  "old_thread_actions": [
+    "terminal_qa interrupt returned completed",
+    "terminal_implementer interrupt returned interrupted"
+  ],
+  "thread_deletion_available": false,
+  "qa_reactivation_failure": "agent thread limit reached",
+  "correctness_successor": "/root/terminal_correctness_recovered",
+  "qa_successor": "/root/terminal_qa_recovered",
+  "both_accepted_ownership_before_resumed_edits": true,
+  "implementer": "/root/terminal_implementer",
+  "implementer_reactivation": "SUCCESS",
+  "core_stop_utc": "2026-10-04T06:43:38.858268+00:00",
+  "readiness_deadline_utc": "2026-10-04T06:53:38.858268+00:00",
+  "work_cutoff_utc": "2026-10-04T07:03:38.858268+00:00",
+  "hard_deadline_utc": "2026-10-04T07:13:38.858268+00:00",
+  "physical_invocations": 0,
+  "capture_approved": false
+}

@@ -1,0 +1,21 @@
+{
+  "owner_instruction": "cull agents and continue",
+  "tool_control_limit": "interrupt available; no thread-deletion control exposed",
+  "initial_qa_reactivation": "agent thread limit reached",
+  "fresh_successors": [
+    "/root/terminal_correctness_recovered",
+    "/root/terminal_qa_recovered"
+  ],
+  "checkpoint_qa_reactivation_failure": "agent thread limit reached while writer and adviser occupied both child slots",
+  "capacity_correction": "interrupted writer; same QA reactivation succeeded; serial phases thereafter",
+  "correctness_same_reviewer_checkpoint02_and03": "successful",
+  "qa_same_reviewer_checkpoint02": "successful",
+  "writer_status": "stopped at d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8",
+  "final_reviews": {
+    "correctness": "REJECT",
+    "qa": "REJECT",
+    "both_routes_successfully_completed": true
+  },
+  "thread_deletion_claimed": false,
+  "parent_approval_substitution": false
+}

@@ -1,0 +1,37 @@
+Static: frozen checkpoint02 source-control review against frozen partial01. Ran: source receipt/archive/stage1 SHA-256 authentication and read-only diff inspection only. No Rust build, test, lint, metadata control, proof generator, solver, evaluator, capture helper, or physical workflow was run by this reviewer.
+
+Reviewed identity and scope
+
+- Reviewer: /root/terminal_correctness_recovered, independent correctness successor; inherited C1-C5, lineage/noninterference, and same-reviewer fix/final ownership retained.
+- Frozen source: /home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint02/source
+- Receipt whole-source SHA-256: 32b47590ddebb609aa90f633ab720ee8e1c26945068536d9c54f73b6e3299643
+- Stage1 SHA-256: 6e59b4f6b37498caa5a9f0db2d8df13723fa68655fed2e118bcdddab72e11d14
+- Archive SHA-256: fceadf1b4963b680b10412f8cab836e419fcdfcce782a36eb6facc22e22d1da0
+- The partial01-to-checkpoint02 tree diff changes only crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs. This is a serialized checkpoint review, not final acceptance; the full C5/control deliverable remains open.
+
+Findings
+
+HIGH - The new plan-derived norm allow-list rejects valid predecessor norms for most post-norm terminals. `refinement_capture_norm_roles_are_plan_bounded` now correctly consults only `plan.completed_norm_roles` and `plan.partial_norm_roles` (m1_trust_region_stage1.rs:3380-3431), but `refinement_capture_terminal_norm_roles` supplies roles only for the norm/radius stages enumerated at lines 4314-4398 and returns empty arrays for FactorApplicationOutput, CoordinateUpdate, first/second residual Dot2 stages, ActiveFinite/ActiveEquality, ScratchBoxLower/Upper, FinalBoxLower/Upper, and positive-lambda FinalInstallEquality. Those terminals legitimately retain predecessor norm traces: the content obligations use `$common`/`p0_norms` for first-correction stages (lines 2088-2147), `$first_complete`/`p1_norms` for second-correction stages (lines 2248-2303), and require completed p0/p1 prefixes even before p2 norms. With empty plan arrays, any such predecessor entry fails `all(|entry| allowed(entry.role))`; the public `ordered_norm_traces` state is also Absent and becomes `contradictory_stray_presence`. This is the adviser's predecessor-role defect and a concrete acceptance/status regression introduced by centralizing the allowed set before the plan was made complete.
+
+HIGH - Interrupted scalar norm statuses still do not derive from the plan's role state. `field_state` special-cases only the `partial_ordered_norms` collection (lines 3862-3867), while each scalar p0/p1/p2 full/reduced norm field is selected by a separate stage/reason match in `field_required` (lines 4200-4243). Consequently valid interrupted operations are misreported: non-FinalRadius P0FullRadius and FinalFullRadius scalar fields become `naturally_unreached`; P0ReducedRadius, ScratchFullRadius/ScratchReducedRadius, and FinalReducedRadius partial scalar fields become `missing_instrumentation`. The content obligations explicitly require those scalar copies absent with an exact partial trace (lines 2027-2032, 2061-2069, 2178-2186, 2215-2223, 2322-2330, 2376-2385). Because descriptor completion rejects `missing_instrumentation`, some valid interrupted traces cannot pass, while others publish the wrong `naturally_unreached` value. Completed/partial role arrays therefore remain incomplete status authority.
+
+HIGH - Removing the dead snapshot catch-all exposes incorrect future-ordinal copy states at first-application FactorApplicationOutput terminals. The removed early branch is structurally correct cleanup, but `factor_field_state` maps every `snapshot_2_*` and `delta1_bits` name to target ordinal 2 without first requiring `target <= current ordinal` (lines 3940-3974). When the current ordinal is 1, a BeforeInverse/AfterInverse/AfterDelta marker therefore makes second-snapshot inverse/delta fields and `delta1_bits` Interrupted or Required instead of Absent. At AfterInverse or AfterDelta, absent future fields become `missing_instrumentation`; before those boundaries they become `interrupted`. The old catch-all kept second-snapshot fields Absent when `expected_application_count < 2`, so this is a concrete copy/status regression from the checkpoint02 dead-branch correction. The selected factor control exercises ordinal 2 after advancing the metadata but does not assert the complete ordinal-1 future-field map.
+
+MEDIUM - Missing or mismatched factor-output markers corrupt unrelated public statuses. At FactorApplicationOutput, `factor_field_state` returns Required for every name as soon as the marker is missing or its ordinal differs (lines 3934-3939), before limiting the decision to copy-bound fields. Thus an injected missing marker can mark unrelated future fields such as p2/masks/radius values and `reservation_denial_owner` as `missing_instrumentation` rather than preserving their typed Absent state. The package requires the entire status map, including values, on missing/stray injections; the existing selected test asserts only a few marker/H/inverse entries. This broad fallback must be bounded to fields whose copy state actually depends on the marker.
+
+Narrow correction verification
+
+- The duplicated metadata-derived `allowed` norm matrix from partial01 is removed. The validator now consumes the plan arrays, and its exact-once checks cover their union. This structural correction is accepted narrowly, but behavior cannot be accepted until the plan includes every predecessor and current completed/partial role.
+- The unreachable broad `factor_application_snapshot_*` return in `field_required` is removed, so the explicit snapshot arms are reachable outside FactorApplicationOutput. The cleanup is accepted narrowly; the current FactorApplicationOutput ordinal handling introduces the blocker above.
+- Obsolete phase arguments were removed from inverse/norm status insertion calls, matching the descriptor-based status API.
+- No production arithmetic, unit conversion, guard/clamp order, cadence, tolerance, serialization, or runtime path change appears in the checkpoint02 delta. C1-C4 and production noninterference remain accepted only within this static checkpoint scope.
+
+Residual risk and missing evidence
+
+- Full C5 remains open: one complete per-field terminal/copy/norm/content authority and the independent 107-row all-locator full-trace, full-status-value, missing/stray controls are not established by this checkpoint.
+- The forthcoming cohesive obligations must prove predecessor roles for every later terminal, Interrupted scalar statuses for each partial norm boundary, first-application absence of all second-ordinal copies, and exact missing/mismatched-marker status values across the complete public map.
+- No build or executable evidence was requested or produced by this review. Final exact format/lint/no-run/metadata/proofs/custody and independent QA remain required before any final approval.
+
+Disposition
+
+REJECT checkpoint02 as a final C5/control deliverable; retain same-reviewer fix ownership. The narrow allowed-set and dead-snapshot structural corrections are recognized, but the concrete norm/copy/status regressions above require correction. This checkpoint review supplies no final source approval, readiness, or physical-capture authorization.

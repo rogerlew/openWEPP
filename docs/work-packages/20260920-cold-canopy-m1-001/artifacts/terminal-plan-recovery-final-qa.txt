@@ -1,0 +1,28 @@
+Static + inspected-run-evidence final QA review — /root/terminal_qa_recovered
+
+Reviewed candidate
+
+Reviewed frozen checkpoint03 source `/home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source`, whole-source SHA-256 `8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4`, and stage1 SHA-256 `d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8`. The verified source archive is `d5560a321ea9df981817929771e97e35a1d4e269a678cc04f9facb305211c594`; the successful no-run binary is `d80306cffbb6a33d8bfd8f8ed7d345ab67cc349e57763e846c62a045255650cc` with 564 pins and 35 depfiles recorded in `build-inputs.json`.
+
+No source, helper, configuration, protocol, ledger, or package edit was made by this reviewer. No build, test, metadata, or physical workflow was run by this reviewer.
+
+Findings
+
+HIGH — `crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2001, 3264, 3299, 3355`: C5's single complete per-field terminal/copy/norm-role authority remains unmet. Checkpoint03 improves the plan-owned scalar-norm states and copy-boundary classification, but `refinement_capture_terminal_complete` still delegates operand/content requirements to the independent `refinement_capture_terminal_content_obligations!` prefix matrix. That macro remains a separate stage/copy model from the descriptor/public-status model. The required cohesive replacement was not delivered.
+
+HIGH — `crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:4417, 4640, 5627`: the eight selected metadata controls are inert and their whitelist in `run_metadata.py` is appropriately explicit, including `m1_refinement_inventory_semantic_groups_control`. They still do not supply the required full control: no valid inert trace is constructed for every one of the 107 refinement rows and locator alternatives; no row invokes `refinement_capture_terminal_complete`; no complete public `field_status` map is compared by values to an independent expected map; and no missing-required or stray-unexpected injection is performed. `refinement_capture_assert_full_public_status_map` checks only the fixed key set.
+
+HIGH — required warnings-denied lint gates remain failed. Supplied checkpoint03 evidence records LSE Clippy exit 101 with 240 diagnostics, only 230 exact inherited matches and 10 unmatched diagnostics; vegetation Clippy also exits 101 with one matched inherited diagnostic. The latter's classification does not turn a failed required command into PASS. No suppression or accepted waiver is present.
+
+HIGH — no sealed approval/custody receipt exists. `terminal-plan-approved.json` is absent, so `capture_once.py` remains fail-closed before any reservation or launch. Therefore neither this review nor the successful no-run build, seven structural proofs, or eight narrow metadata passes authorize source readiness, binary approval, custody sealing, or capture.
+
+Non-blocking debt / retained evidence
+
+- Supplied receipts show exact edition-2024 rustfmt PASS and release physical-stage `cargo test --no-run` PASS in 134.945 seconds against the reviewed source, with zero physical invocations.
+- The seven proof receipts report 298 fields and a 36,852,930-byte structural payload bound. `schema-bound-draft.json` labels that result `DRAFT_NOT_APPROVED`; it is not source-completeness evidence.
+- The selected metadata runner admits only its eight named tests and records a stable source/binary before and after each. This establishes bounded inert execution, not exhaustive acceptance behavior.
+- Helper/protocol hashes and the original ledger remain reviewable custody inputs, but must be rebound only in a future sealed exact-source receipt after both final reviews and all required gates pass.
+
+Disposition
+
+REJECT / HOLD_NO_COMPLETED_DAY. I retain same-reviewer ownership of the full C5 controls, helper/custody, gates, and proof verification for a later exact source. This rejection grants no source, metadata, custody, binary, readiness, or W1/W2/W3 capture approval.

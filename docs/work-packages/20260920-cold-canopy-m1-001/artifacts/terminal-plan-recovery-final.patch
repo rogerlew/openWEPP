@@ -1,0 +1,567 @@
+--- /home/roger/openwepp-experiments/cold-canopy-m1-cut26-resumption-20261004/frozen/final/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs	2026-10-03 21:46:41.957755088 -0700
++++ /home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs	2026-10-03 23:27:02.053183396 -0700
+@@ -28,0 +29 @@
++        JacobiFactor, LambdaProjection, LambdaTrace, RefinementWorkLedger,
+@@ -31 +32 @@
+-        svd_lambda_ball, JacobiFactor, LambdaProjection, LambdaTrace, RefinementWorkLedger,
++        svd_lambda_ball,
+@@ -384 +385 @@
+-        m1_trust_region_refinement_retained_face_for_test, RefinementRetainedFaceObservation,
++        RefinementRetainedFaceObservation, m1_trust_region_refinement_retained_face_for_test,
+@@ -523,5 +524,7 @@
+-        assert!(operation["lambda_times_p"]
+-            .as_array()
+-            .expect("retained lambda shift")
+-            .iter()
+-            .any(|value| value.as_str().expect("captured bit") != "0000000000000000"));
++        assert!(
++            operation["lambda_times_p"]
++                .as_array()
++                .expect("retained lambda shift")
++                .iter()
++                .any(|value| value.as_str().expect("captured bit") != "0000000000000000")
++        );
+@@ -554,2 +557,2 @@
+-    fn m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation(
+-    ) {
++    fn m1_trust_region_refinement_bvls04_expected_red_unequal_radii_closeness_failures_work_and_isolation()
++     {
+@@ -604,2 +607,6 @@
+-        m1_trust_region_bvls03_signed_zero_for_test, m1_trust_region_bvls04_analytic_for_test,
+-        m1_trust_region_bvls04_poison_for_test, m1_trust_region_bvls04_shifted_inverse_for_test,
++        M1TrustRegionBvls04AnalyticInput, M1TrustRegionBvls04Poison,
++        M1TrustRegionBvls04PoisonObservation, M1TrustRegionBvls04Reservation,
++        M1TrustRegionBvls04ReservationOwner, M1TrustRegionBvls04ShiftedInverseInput,
++        RefinementRetainedFaceObservation, m1_trust_region_bvls03_signed_zero_for_test,
++        m1_trust_region_bvls04_analytic_for_test, m1_trust_region_bvls04_poison_for_test,
++        m1_trust_region_bvls04_shifted_inverse_for_test,
+@@ -607,4 +614 @@
+-        m1_trust_region_refinement_retained_face_for_test, M1TrustRegionBvls04AnalyticInput,
+-        M1TrustRegionBvls04Poison, M1TrustRegionBvls04PoisonObservation,
+-        M1TrustRegionBvls04Reservation, M1TrustRegionBvls04ReservationOwner,
+-        M1TrustRegionBvls04ShiftedInverseInput, RefinementRetainedFaceObservation,
++        m1_trust_region_refinement_retained_face_for_test,
+@@ -675,2 +679,2 @@
+-    fn m1_trust_region_refinement_bvls04_expected_red_nonsymmetric_factor_order_and_coordinate_join(
+-    ) {
++    fn m1_trust_region_refinement_bvls04_expected_red_nonsymmetric_factor_order_and_coordinate_join()
++     {
+@@ -708,2 +712,2 @@
+-    fn m1_trust_region_refinement_bvls04_expected_red_m4_factor_order_changes_binary64_accumulation(
+-    ) {
++    fn m1_trust_region_refinement_bvls04_expected_red_m4_factor_order_changes_binary64_accumulation()
++     {
+@@ -3384,47 +3388,2 @@
+-    use super::{
+-        M1TrustRegionCorrectionPosition as Position, M1TrustRegionRefinementGuardStage as Stage,
+-    };
+-    let metadata = plan.metadata;
+-    let allowed: &[&str] = match (
+-        metadata.correction_position,
+-        metadata.lambda == 0.0,
+-        metadata.guard_stage,
+-    ) {
+-        (None, true, Stage::OrderedNorm) => &["p0_zero_lambda_eligibility"],
+-        (None, false, Stage::P0FullRadius) => &["p0_full"],
+-        (None, false, Stage::P0ReducedRadius) => &["p0_full", "p0_free"],
+-        (None, _, _) => &[],
+-        (Some(Position::First), true, Stage::OrderedNorm | Stage::RadiusComparison) => {
+-            &["p0_zero_lambda_eligibility", "p1_zero_lambda_scratch"]
+-        }
+-        (Some(Position::First), true, _) => &["p0_zero_lambda_eligibility"],
+-        (Some(Position::First), false, Stage::ScratchFullRadius) => {
+-            &["p0_full", "p0_free", "p1_full"]
+-        }
+-        (Some(Position::First), false, Stage::ScratchReducedRadius) => {
+-            &["p0_full", "p0_free", "p1_full", "p1_free"]
+-        }
+-        (Some(Position::First), false, _) => &["p0_full", "p0_free"],
+-        (
+-            Some(Position::Second),
+-            true,
+-            Stage::OrderedNorm | Stage::RadiusComparison | Stage::FinalInstallEquality,
+-        ) => &[
+-            "p0_zero_lambda_eligibility",
+-            "p1_zero_lambda_scratch",
+-            "p2_zero_lambda_final",
+-        ],
+-        (Some(Position::Second), true, _) => {
+-            &["p0_zero_lambda_eligibility", "p1_zero_lambda_scratch"]
+-        }
+-        (Some(Position::Second), false, Stage::FinalFullRadius) => {
+-            &["p0_full", "p0_free", "p1_full", "p1_free", "p2_full"]
+-        }
+-        (
+-            Some(Position::Second),
+-            false,
+-            Stage::FinalReducedRadius | Stage::FinalRadiusCloseness | Stage::FinalInstallEquality,
+-        ) => &[
+-            "p0_full", "p0_free", "p1_full", "p1_free", "p2_full", "p2_free",
+-        ],
+-        (Some(Position::Second), false, _) => &["p0_full", "p0_free", "p1_full", "p1_free"],
++    let allowed = |role: &str| {
++        plan.completed_norm_roles.contains(&role) || plan.partial_norm_roles.contains(&role)
+@@ -3461,4 +3420 @@
+-    trace
+-        .ordered_norms
+-        .iter()
+-        .all(|entry| allowed.contains(&entry.role))
++    trace.ordered_norms.iter().all(|entry| allowed(entry.role))
+@@ -3468,2 +3424,6 @@
+-            .all(|entry| allowed.contains(&entry.role))
+-        && allowed.iter().all(|role| exact_once(role))
++            .all(|entry| allowed(entry.role))
++        && plan
++            .completed_norm_roles
++            .iter()
++            .chain(plan.partial_norm_roles)
++            .all(|role| exact_once(role))
+@@ -3789 +3748,0 @@
+-    _legacy_phase: u8,
+@@ -3798 +3757 @@
+-                "captured"
++                "contradictory_stray_presence"
+@@ -3876 +3835 @@
+-        roles: &[&str],
++        _roles: &[&str],
+@@ -3889,6 +3848,11 @@
+-        let positive_only = roles.iter().any(|role| {
+-            matches!(
+-                *role,
+-                "p0_full" | "p0_free" | "p1_full" | "p1_free" | "p2_full" | "p2_free"
+-            )
+-        });
++        if let Some(role) = refinement_capture_scalar_norm_role(name) {
++            return if metadata.lambda == 0.0 {
++                RefinementCaptureTerminalFieldState::InapplicableZeroLambda
++            } else if self.completed_norm_roles.contains(&role) {
++                RefinementCaptureTerminalFieldState::Required
++            } else if self.partial_norm_roles.contains(&role) {
++                RefinementCaptureTerminalFieldState::Interrupted
++            } else {
++                RefinementCaptureTerminalFieldState::Absent
++            };
++        }
+@@ -3896,2 +3860 @@
+-            && (positive_only
+-                || name.starts_with('h')
++            && (name.starts_with('h')
+@@ -3918 +3881 @@
+-        } else if self.field_content_required(trace, name) {
++        } else if self.field_required(trace, name) {
+@@ -3935,10 +3898,19 @@
+-        self.metadata.guard_stage == Stage::FactorApplicationOutput
+-            && (matches!(
+-                name,
+-                "inverse_t_bits"
+-                    | "inverse_denominator_bits"
+-                    | "inverse_z_bits"
+-                    | "delta0_bits"
+-                    | "delta1_bits"
+-            ) || name.starts_with("factor_application_snapshot_")
+-                && (name.contains("_inverse_") || name.ends_with("_delta_bits")))
++        if self.metadata.guard_stage != Stage::FactorApplicationOutput {
++            return false;
++        }
++        let Some(ordinal) = self.factor_output_ordinal else {
++            return false;
++        };
++        let target = if matches!(
++            name,
++            "inverse_t_bits" | "inverse_denominator_bits" | "inverse_z_bits"
++        ) {
++            ordinal
++        } else if name.contains("snapshot_1_") || name == "delta0_bits" {
++            1
++        } else if name.contains("snapshot_2_") || name == "delta1_bits" {
++            2
++        } else {
++            return false;
++        };
++        target <= ordinal
+@@ -3958 +3930 @@
+-            return if self.field_content_required(trace, name) {
++            return if self.field_required(trace, name) {
+@@ -3975,0 +3948,22 @@
++        let generic_inverse = matches!(
++            name,
++            "inverse_t_bits" | "inverse_denominator_bits" | "inverse_z_bits"
++        );
++        let declared_target = if generic_inverse {
++            ordinal
++        } else if name.contains("snapshot_1_") || name == "delta0_bits" {
++            1
++        } else if name.contains("snapshot_2_") || name == "delta1_bits" {
++            2
++        } else {
++            return if self.field_required(trace, name) {
++                RefinementCaptureTerminalFieldState::Required
++            } else {
++                RefinementCaptureTerminalFieldState::Absent
++            };
++        };
++        // Future applications are not part of this terminal.  A missing
++        // marker must never promote their absent observations to required.
++        if declared_target > ordinal {
++            return RefinementCaptureTerminalFieldState::Absent;
++        }
+@@ -3982,4 +3975,0 @@
+-        let generic_inverse = matches!(
+-            name,
+-            "inverse_t_bits" | "inverse_denominator_bits" | "inverse_z_bits"
+-        );
+@@ -3991,4 +3980,0 @@
+-        } else if name.contains("snapshot_1_") || name == "delta0_bits" {
+-            1
+-        } else if name.contains("snapshot_2_") || name == "delta1_bits" {
+-            2
+@@ -3996 +3982 @@
+-            ordinal
++            declared_target
+@@ -4016 +4002 @@
+-            _ => self.field_content_required(trace, name),
++            _ => self.field_required(trace, name),
+@@ -4025,0 +4012,16 @@
++/// Scalar norm observations are projections of resolved norm obligations.  A
++/// guard interrupted inside a norm owns an interrupted scalar state; it is not
++/// silently relabelled absent because the scalar copy was never produced.
++#[cfg(test)]
++fn refinement_capture_scalar_norm_role(name: &str) -> Option<&'static str> {
++    match name {
++        "p0_full_norm2_bits" | "p0_full_norm_bits" => Some("p0_full"),
++        "p0_reduced_norm2_bits" | "p0_reduced_norm_bits" => Some("p0_free"),
++        "p1_full_norm2_bits" | "p1_full_norm_bits" => Some("p1_full"),
++        "p1_reduced_norm2_bits" | "p1_reduced_norm_bits" => Some("p1_free"),
++        "p2_full_norm2_bits" | "p2_full_norm_bits" => Some("p2_full"),
++        "p2_reduced_norm2_bits" | "p2_reduced_norm_bits" => Some("p2_free"),
++        _ => None,
++    }
++}
++
+@@ -4042 +4044 @@
+-    fn field_content_required(self, trace: &RefinementObservationTrace, name: &str) -> bool {
++    fn field_required(self, trace: &RefinementObservationTrace, name: &str) -> bool {
+@@ -4050,4 +4051,0 @@
+-        if name.starts_with("factor_application_snapshot_") {
+-            return name.contains("_1_") && expected_applications >= 1
+-                || name.contains("_2_") && expected_applications >= 2;
+-        }
+@@ -4246,46 +4244,2 @@
+-            "p0_full_norm2_bits" | "p0_full_norm_bits" => {
+-                metadata.lambda > 0.0
+-                    && (metadata.correction_position.is_some()
+-                        || matches!(stage, Stage::P0ReducedRadius)
+-                        || matches!(stage, Stage::P0FullRadius)
+-                            && metadata.reason == super::M1TrustRegionRefinementReason::FinalRadius)
+-            }
+-            "p0_reduced_norm2_bits" | "p0_reduced_norm_bits" => {
+-                metadata.lambda > 0.0
+-                    && (metadata.correction_position.is_some()
+-                        || matches!(stage, Stage::P0ReducedRadius))
+-            }
+-            "p1_full_norm2_bits" | "p1_full_norm_bits" => match metadata.correction_position {
+-                Some(Position::Second) if metadata.lambda > 0.0 => true,
+-                Some(Position::First) if metadata.lambda > 0.0 => matches!(
+-                    stage,
+-                    Stage::ScratchFullRadius | Stage::ScratchReducedRadius
+-                ),
+-                _ => false,
+-            },
+-            "p1_reduced_norm2_bits" | "p1_reduced_norm_bits" => {
+-                match metadata.correction_position {
+-                    Some(Position::Second) if metadata.lambda > 0.0 => true,
+-                    Some(Position::First) if metadata.lambda > 0.0 => {
+-                        matches!(stage, Stage::ScratchReducedRadius)
+-                    }
+-                    _ => false,
+-                }
+-            }
+-            "p2_full_norm2_bits" | "p2_full_norm_bits" => {
+-                metadata.lambda > 0.0
+-                    && (matches!(
+-                        stage,
+-                        Stage::FinalReducedRadius | Stage::FinalRadiusCloseness
+-                    ) || stage == Stage::FinalFullRadius
+-                        && metadata.reason == super::M1TrustRegionRefinementReason::FinalRadius)
+-            }
+-            "p2_reduced_norm2_bits" | "p2_reduced_norm_bits" => {
+-                metadata.lambda > 0.0
+-                    && matches!(
+-                        stage,
+-                        Stage::FinalReducedRadius | Stage::FinalRadiusCloseness
+-                    )
+-            }
+-            "ordered_norm_traces" => refinement_capture_norm_trace_reached(metadata, false),
+-            "partial_ordered_norms" => refinement_capture_norm_trace_reached(metadata, true),
++            "ordered_norm_traces" => !self.completed_norm_roles.is_empty(),
++            "partial_ordered_norms" => !self.partial_norm_roles.is_empty(),
+@@ -4297,42 +4250,0 @@
+-#[cfg(test)]
+-fn refinement_capture_norm_trace_reached(
+-    metadata: &super::M1TrustRegionRefinementFailureMetadata,
+-    partial: bool,
+-) -> bool {
+-    use super::{M1TrustRegionRefinementGuardStage as Stage, M1TrustRegionRefinementReason};
+-    let comparison = matches!(
+-        metadata.guard_stage,
+-        Stage::RadiusComparison | Stage::FinalRadiusCloseness | Stage::FinalInstallEquality
+-    ) || matches!(
+-        metadata.reason,
+-        M1TrustRegionRefinementReason::FinalRadius | M1TrustRegionRefinementReason::ScratchRadius
+-    );
+-    if !partial
+-        && matches!(
+-            metadata.guard_stage,
+-            Stage::P0ReducedRadius
+-                | Stage::ScratchFullRadius
+-                | Stage::ScratchReducedRadius
+-                | Stage::FinalFullRadius
+-                | Stage::FinalReducedRadius
+-        )
+-        || metadata.guard_stage == Stage::OrderedNorm && metadata.correction_position.is_some()
+-    {
+-        return true;
+-    }
+-    if comparison {
+-        return !partial;
+-    }
+-    partial
+-        && matches!(
+-            metadata.guard_stage,
+-            Stage::P0FullRadius
+-                | Stage::P0ReducedRadius
+-                | Stage::ScratchFullRadius
+-                | Stage::ScratchReducedRadius
+-                | Stage::FinalFullRadius
+-                | Stage::FinalReducedRadius
+-                | Stage::OrderedNorm
+-        )
+-}
+-
+@@ -4485,0 +4398,10 @@
++        // Every terminal after the initial p0 route inherits the completed
++        // predecessor norms.  These are resolved plan obligations, never
++        // inferred from the optional scalar copies in a witness.
++        (Some(Position::First), false, _) => (&["p0_full", "p0_free"], &[]),
++        (Some(Position::First), true, _) => (&["p0_zero_lambda_eligibility"], &[]),
++        (Some(Position::Second), false, _) => (&["p0_full", "p0_free", "p1_full", "p1_free"], &[]),
++        (Some(Position::Second), true, _) => (
++            &["p0_zero_lambda_eligibility", "p1_zero_lambda_scratch"],
++            &[],
++        ),
+@@ -5438 +5359,0 @@
+-    phase: u8,
+@@ -5444 +5365 @@
+-            refinement_capture_field_status(trace, name, present, phase, roles).into(),
++            refinement_capture_field_status(trace, name, present, roles).into(),
+@@ -5455,2 +5376,2 @@
+-        ($n:literal,$p:expr,$phase:expr) => {
+-            refinement_capture_status_insert(fields, trace, $n, $p, $phase, &[])
++        ($n:literal,$p:expr) => {
++            refinement_capture_status_insert(fields, trace, $n, $p, &[])
+@@ -5459,14 +5380,10 @@
+-    put!("free_ids", trace.face_free_ids.is_some(), 0);
+-    put!("factor_order", trace.factor_order.is_some(), 0);
+-    put!("factor_a_bits", trace.factor_a.is_some(), 0);
+-    put!("factor_v_bits", trace.factor_v.is_some(), 0);
+-    put!("factor_sigma_bits", trace.factor_sigma.is_some(), 0);
+-    put!(
+-        "weighted_residual_bits",
+-        trace.weighted_residual.is_some(),
+-        0
+-    );
+-    put!("weighted_matrix_bits", trace.weighted_matrix.is_some(), 0);
+-    put!("scaled_lower_bits", trace.scaled_lower_bits.is_some(), 0);
+-    put!("scaled_upper_bits", trace.scaled_upper_bits.is_some(), 0);
+-    put!("lambda_bits", trace.lambda_bits.is_some(), 0);
++    put!("free_ids", trace.face_free_ids.is_some());
++    put!("factor_order", trace.factor_order.is_some());
++    put!("factor_a_bits", trace.factor_a.is_some());
++    put!("factor_v_bits", trace.factor_v.is_some());
++    put!("factor_sigma_bits", trace.factor_sigma.is_some());
++    put!("weighted_residual_bits", trace.weighted_residual.is_some());
++    put!("weighted_matrix_bits", trace.weighted_matrix.is_some());
++    put!("scaled_lower_bits", trace.scaled_lower_bits.is_some());
++    put!("scaled_upper_bits", trace.scaled_upper_bits.is_some());
++    put!("lambda_bits", trace.lambda_bits.is_some());
+@@ -5475,2 +5392 @@
+-        trace.reduced_face_radius_bits.is_some(),
+-        0
++        trace.reduced_face_radius_bits.is_some()
+@@ -5478,5 +5394,5 @@
+-    put!("live_state_entry_bits", trace.live_state_entry.is_some(), 0);
+-    put!("live_state_exit_bits", trace.live_state_exit.is_some(), 0);
+-    put!("lower_mask_exit", trace.lower_mask_exit.is_some(), 0);
+-    put!("upper_mask_exit", trace.upper_mask_exit.is_some(), 0);
+-    put!("factor_identity", trace.factor_identity.is_some(), 3);
++    put!("live_state_entry_bits", trace.live_state_entry.is_some());
++    put!("live_state_exit_bits", trace.live_state_exit.is_some());
++    put!("lower_mask_exit", trace.lower_mask_exit.is_some());
++    put!("upper_mask_exit", trace.upper_mask_exit.is_some());
++    put!("factor_identity", trace.factor_identity.is_some());
+@@ -5485,2 +5401 @@
+-        !trace.factor_application_identities.is_empty(),
+-        4
++        !trace.factor_application_identities.is_empty()
+@@ -5490,2 +5405 @@
+-        !trace.factor_application_snapshots.is_empty(),
+-        4
++        !trace.factor_application_snapshots.is_empty()
+@@ -5495,2 +5409 @@
+-        trace.factor_output_copy_boundary.is_some(),
+-        4
++        trace.factor_output_copy_boundary.is_some()
+@@ -5498 +5411 @@
+-    put!("factor_applications", trace.factor_applications > 0, 4);
++    put!("factor_applications", trace.factor_applications > 0);
+@@ -5501,2 +5414 @@
+-        trace.eligibility_scalar_operations.is_some(),
+-        2
++        trace.eligibility_scalar_operations.is_some()
+@@ -5506,2 +5418 @@
+-        trace.eligibility_guard_events.is_some(),
+-        2
++        trace.eligibility_guard_events.is_some()
+@@ -5511,2 +5422 @@
+-        trace.reservation_denial_owner.is_some(),
+-        2
++        trace.reservation_denial_owner.is_some()
+@@ -5521,2 +5431,2 @@
+-    macro_rules! put { ($n:literal,$p:expr,$phase:expr,[$($r:literal),*]) => { refinement_capture_status_insert(fields, trace, $n, $p, $phase, &[$($r),*]) }; }
+-    put!("p0_bits", trace.p0.is_some(), 1, []);
++    macro_rules! put { ($n:literal,$p:expr,[$($r:literal),*]) => { refinement_capture_status_insert(fields, trace, $n, $p, &[$($r),*]) }; }
++    put!("p0_bits", trace.p0.is_some(), []);
+@@ -5526 +5435,0 @@
+-        2,
+@@ -5532 +5440,0 @@
+-        2,
+@@ -5538 +5445,0 @@
+-        2,
+@@ -5544 +5450,0 @@
+-        2,
+@@ -5547,6 +5453,6 @@
+-    put!("lower_mask_p0", trace.lower_mask_p0.is_some(), 1, []);
+-    put!("upper_mask_p0", trace.upper_mask_p0.is_some(), 1, []);
+-    put!("residual0_bits", trace.residual0.is_some(), 3, []);
+-    put!("h0_bits", trace.h0.is_some(), 4, []);
+-    put!("delta0_bits", trace.delta0.is_some(), 5, []);
+-    put!("p1_bits", trace.p1.is_some(), 6, []);
++    put!("lower_mask_p0", trace.lower_mask_p0.is_some(), []);
++    put!("upper_mask_p0", trace.upper_mask_p0.is_some(), []);
++    put!("residual0_bits", trace.residual0.is_some(), []);
++    put!("h0_bits", trace.h0.is_some(), []);
++    put!("delta0_bits", trace.delta0.is_some(), []);
++    put!("p1_bits", trace.p1.is_some(), []);
+@@ -5556 +5461,0 @@
+-        7,
+@@ -5562 +5466,0 @@
+-        7,
+@@ -5568 +5471,0 @@
+-        7,
+@@ -5574 +5476,0 @@
+-        7,
+@@ -5577,2 +5479,2 @@
+-    put!("lower_mask_p1", trace.lower_mask_p1.is_some(), 6, []);
+-    put!("upper_mask_p1", trace.upper_mask_p1.is_some(), 6, []);
++    put!("lower_mask_p1", trace.lower_mask_p1.is_some(), []);
++    put!("upper_mask_p1", trace.upper_mask_p1.is_some(), []);
+@@ -5587,5 +5489,5 @@
+-    macro_rules! put { ($n:literal,$p:expr,$phase:expr,[$($r:literal),*]) => { refinement_capture_status_insert(fields, trace, $n, $p, $phase, &[$($r),*]) }; }
+-    put!("residual1_bits", trace.residual1.is_some(), 8, []);
+-    put!("h1_bits", trace.h1.is_some(), 9, []);
+-    put!("delta1_bits", trace.delta1.is_some(), 10, []);
+-    put!("p2_bits", trace.p2.is_some(), 11, []);
++    macro_rules! put { ($n:literal,$p:expr,[$($r:literal),*]) => { refinement_capture_status_insert(fields, trace, $n, $p, &[$($r),*]) }; }
++    put!("residual1_bits", trace.residual1.is_some(), []);
++    put!("h1_bits", trace.h1.is_some(), []);
++    put!("delta1_bits", trace.delta1.is_some(), []);
++    put!("p2_bits", trace.p2.is_some(), []);
+@@ -5595 +5496,0 @@
+-        12,
+@@ -5601 +5501,0 @@
+-        12,
+@@ -5607 +5506,0 @@
+-        12,
+@@ -5613 +5511,0 @@
+-        12,
+@@ -5616,2 +5514,2 @@
+-    put!("lower_mask_p2", trace.lower_mask_p2.is_some(), 11, []);
+-    put!("upper_mask_p2", trace.upper_mask_p2.is_some(), 11, []);
++    put!("lower_mask_p2", trace.lower_mask_p2.is_some(), []);
++    put!("upper_mask_p2", trace.upper_mask_p2.is_some(), []);
+@@ -5621 +5518,0 @@
+-        12,
+@@ -5624 +5521 @@
+-    put!("radius_gap_bits", trace.radius_gap.is_some(), 12, []);
++    put!("radius_gap_bits", trace.radius_gap.is_some(), []);
+@@ -5628 +5524,0 @@
+-        12,
+@@ -5643 +5538,0 @@
+-        let phase = if ordinal == 1 { 4 } else { 9 };
+@@ -5668,5 +5562,0 @@
+-                if suffix == "delta_bits" {
+-                    phase + 1
+-                } else {
+-                    phase
+-                },
+@@ -5682 +5571,0 @@
+-        4,
+@@ -5690 +5578,0 @@
+-        4,
+@@ -5698 +5585,0 @@
+-        4,
+@@ -5706 +5592,0 @@
+-        2,
+@@ -5714 +5599,0 @@
+-        2,
+@@ -5872,13 +5757,15 @@
+-        serde_json::json!(trace
+-            .ordered_norms
+-            .iter()
+-            .map(|norm| serde_json::json!({
+-                "role": norm.role,
+-                "coordinate_ids": norm.coordinate_ids,
+-                "value_bits": norm.value_bits,
+-                "square_bits": norm.square_bits,
+-                "running_sum_bits": norm.running_sum_bits,
+-                "norm2_bits": norm.norm2_bits,
+-                "norm_bits": norm.norm_bits,
+-            }))
+-            .collect::<Vec<_>>()),
++        serde_json::json!(
++            trace
++                .ordered_norms
++                .iter()
++                .map(|norm| serde_json::json!({
++                    "role": norm.role,
++                    "coordinate_ids": norm.coordinate_ids,
++                    "value_bits": norm.value_bits,
++                    "square_bits": norm.square_bits,
++                    "running_sum_bits": norm.running_sum_bits,
++                    "norm2_bits": norm.norm2_bits,
++                    "norm_bits": norm.norm_bits,
++                }))
++                .collect::<Vec<_>>()
++        ),
+@@ -16343,0 +16231 @@
++        M1TrustRegionRefinementGuardStage, RefinementDot2Counters, RefinementDot2Reason,
+@@ -16345,2 +16233 @@
+-        refinement_dot2_two_sum, M1TrustRegionRefinementGuardStage, RefinementDot2Counters,
+-        RefinementDot2Reason,
++        refinement_dot2_two_sum,
+@@ -16631,0 +16519 @@
++        RefinementEligibilityProbe, RefinementRetainedFaceObservation, RefinementWorkReservation,
+@@ -16633,2 +16521 @@
+-        m1_trust_region_refinement_retained_face_for_test, RefinementEligibilityProbe,
+-        RefinementRetainedFaceObservation, RefinementWorkReservation,
++        m1_trust_region_refinement_retained_face_for_test,
+@@ -16637,0 +16525 @@
++        RefinementMutationScope, RefinementRawCandidateMutation,
+@@ -16639 +16527 @@
+-        refinement_solve_captured_face, RefinementMutationScope, RefinementRawCandidateMutation,
++        refinement_solve_captured_face,
+@@ -17438 +17326,3 @@
+-            vec![0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
++            vec![
++                0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
++            ]

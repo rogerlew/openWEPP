@@ -1,0 +1,37 @@
+Static: same-reviewer checkpoint03 fix verification against frozen checkpoint02. Ran: source receipt/archive/stage1 SHA-256 authentication and read-only diff inspection only. Inspected the supplied exact rustfmt receipt; this reviewer ran no Rust build, test, lint, metadata control, proof generator, solver, evaluator, capture helper, or physical workflow.
+
+Reviewed identity and scope
+
+- Reviewer: /root/terminal_correctness_recovered; inherited C1-C5, lineage/noninterference, and same-reviewer fix/final ownership retained.
+- Frozen checkpoint03 source: /home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source
+- Receipt whole-source SHA-256: 8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4
+- Stage1 SHA-256: d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8
+- Archive SHA-256: d5560a321ea9df981817929771e97e35a1d4e269a678cc04f9facb305211c594
+- The checkpoint02-to-checkpoint03 tree diff changes only crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs. This review is limited to the four checkpoint02 findings. Full macro replacement and exhaustive controls remain pending and are not accepted here.
+
+Findings
+
+No new blocking correctness defect was found in the assigned four-fix delta.
+
+Accepted narrow fixes
+
+1. Predecessor norm roles: FIX VERIFIED. `refinement_capture_terminal_norm_roles` now retains the specific current completed/partial norm cases and adds typed fallback obligations for every later First/Second positive- and zero-lambda terminal (m1_trust_region_stage1.rs:4399-4407). Those arrays feed both the centralized allowed-role validator (lines 3384-3431) and `ordered_norm_traces` status. Valid p0 and p0/p1 predecessor traces are no longer rejected as unplanned or published as contradictory stray presence.
+
+2. Interrupted scalar norm statuses: FIX VERIFIED. `refinement_capture_scalar_norm_role` maps every public p0/p1/p2 full/reduced scalar pair to its plan role (lines 4012-4025), and `field_state` now projects completed roles as Required, partial roles as Interrupted, and unselected roles as Absent before witness presence is considered (lines 3848-3857). The parallel stage/reason scalar match was deleted. Present data for an Interrupted field is now `contradictory_stray_presence`, while absent data is `interrupted` (lines 3755-3760), matching the content obligations' partial-norm boundary.
+
+3. Future-ordinal copy states: FIX VERIFIED. `factor_field_state` resolves the declared target and returns Absent whenever it exceeds the current terminal ordinal before consulting the marker (lines 3948-3969). `factor_interrupted` applies the same `target <= ordinal` bound (lines 3896-3917). First-application terminals therefore cannot promote second-snapshot inverse/delta fields or `delta1_bits` to Interrupted/Required.
+
+4. Missing/mismatched marker scope: FIX VERIFIED. Non-copy fields now return through `field_required` before marker handling (lines 3952-3963); only current/prior copy-dependent fields reach the missing/mismatched-marker Required fallback (lines 3970-3974). Unrelated future p2/mask/radius/reservation statuses preserve their typed state, while the selected copy marker and affected copies still fail closed as instrumentation loss.
+
+No regression was found in completed versus partial role exclusivity, prior/current generic inverse ownership at ordinal two, zero-lambda inapplicability, or snapshot H ordinal handling within this static diff. The general Interrupted-present change is consistent with these boundaries because a completed prior generic inverse is classified Required before the Interrupted fallback.
+
+Residual risk and missing evidence
+
+- The inherited HIGH C5 blocker remains open by explicit checkpoint scope: `refinement_capture_terminal_content_obligations!` and the surrounding trace-derived prefix booleans have not yet been replaced by the one complete plan-owned content authority.
+- The independent 107-row all-locator full-trace, terminal-acceptance, entire status-value, and missing/stray controls remain pending. Existing selected controls do not directly assert all four repaired boundaries, especially every predecessor stage, all interrupted scalar pairs, ordinal-1 future fields, and unrelated fields under missing/mismatched marker injection.
+- Supplied `rustfmt --check --edition 2024` receipt PASSes on exact source 8598cc16...e6a4 with no source drift. No-run and warnings-denied Clippy were still running when this review was assigned and are not part of this static verdict.
+- Final helpers/proofs/custody and independent QA remain required. C1-C4 and production noninterference remain accepted only within unchanged static scope.
+
+Disposition
+
+ACCEPT the four checkpoint02 fixes narrowly for continuation to the macro-replacement/full-control milestone. This is not final C5 acceptance, final-source approval, readiness, or physical-capture authorization. Same-reviewer fix/final ownership is retained.
