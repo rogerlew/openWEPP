@@ -1,0 +1,36 @@
+Static: final same-source correctness/source-control review of the unchanged recovered-terminal pickup. Ran: local SHA-256 of the frozen stage1 source and read-only inspection of the source, package acceptance, prior attributable reviews, writer feasibility response, and supplied pickup/custody/check receipts only. This reviewer ran no Rust build, test, lint, metadata control, proof generator, solver, evaluator, capture helper, or physical workflow.
+
+Reviewed identity and scope
+
+- Reviewer: /root/terminal_correctness_recovered; inherited C1-C5, lineage/noninterference, and same-reviewer exact-source fix/final ownership retained without waiver.
+- Frozen reviewed source: /home/roger/openwepp-experiments/cold-canopy-m1-terminal-plan-20261004/frozen/checkpoint03/source
+- Unchanged recovered mutable copy assessed by the writer: /home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source
+- Receipt whole-source SHA-256: 8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4
+- Stage1 SHA-256 independently observed: d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8
+- Source archive SHA-256: d5560a321ea9df981817929771e97e35a1d4e269a678cc04f9facb305211c594
+- Supplied pickup receipt verifies all 772 filesystem entries, all 190 raw-member content hashes, 564 build pins with no failure, and 35 recorded depfiles. It records `mutable_source_unchanged: true`. The writer returned without source edits and retained the four narrow checkpoint03 fixes as resolved.
+
+Findings
+
+HIGH - Inherited C5 remains unsatisfied because terminal reach/content authority is still duplicated. `refinement_capture_terminal_complete` consumes the plan-derived public descriptor map and separately calls `refinement_capture_terminal_content_complete` (`crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3210-3272`). That second path derives p1/p2 presence, first/second start/completion, factor shapes, deltas and absence flags directly from the trace (lines 3299-3353), then invokes `refinement_capture_terminal_content_obligations!`. The macro independently switches on correction position and guard stage to require or forbid the same public observations (lines 2001-2465), including p0 norm absence, p1/p2 reach, factor/copy progression, and completed/interrupted norm content. `RefinementCaptureTerminalPlan` contains only metadata, application count, factor-output ordinal, and completed/partial norm-role lists (lines 4257-4301); it does not own the complete per-field content/reach obligations. The descriptor/status path and the macro can therefore silently diverge. This substantial duplicate authority violates the required one complete per-field terminal/copy/norm/content model.
+
+HIGH - The required independent 107-row full-trace/full-status control remains absent. `m1_refinement_atomic_terminal_inventory_schema_control` reads 107 refinement rows plus 2 WorkCap rows, expands locator variants, builds a mostly default trace, and calls only `refinement_capture_selected_terminal_kind` (lines 4417-4607, especially 4532-4535 and 4582-4595). It never constructs each row's complete inert trace, invokes `refinement_capture_terminal_complete`, compares every public status value to an independent expected map, or performs missing-required and stray-unexpected mutations on the same trace. `m1_refinement_inventory_semantic_groups_control` merely accumulates arbitrary group strings and asserts a few set members (lines 4640-4692); it does not reject unknown groups or expand them into exhaustive expected field states. `refinement_capture_assert_full_public_status_map` verifies only key count and key presence (lines 5627-5708) and is called only by selected factor-boundary and mixed-norm controls at lines 5053 and 5285. The eight recorded metadata passes therefore remain narrow and do not satisfy the mandated all-row acceptance/status/injection evidence.
+
+MEDIUM - The exact warnings-denied LSE Clippy requirement remains failed with 10 unmatched diagnostics in the changed file. The supplied exact-source comparison identifies `too_many_lines` at lines 2669, 4044, 4417, 4804 and 5002; `unnested_or_patterns` at line 3283; `match_same_arms` at lines 4064, 4065 and 4076; and `if_not_else` at line 4447. The command exits 101 with 240 candidate diagnostics, 230 exact inherited matches and 10 requiring source review. Exact inheritance classification preserves provenance but does not satisfy the explicit requirement to correct these unmatched diagnostics without suppression, waiver, or relaxed limits.
+
+Accepted and preserved scope
+
+- The four same-reviewer checkpoint03 fixes remain verified: predecessor norm-role retention, interrupted scalar norm statuses derived from plan roles, future-ordinal copy absence, and missing/mismatched marker handling bounded to copy-dependent fields.
+- C1-C4 and static production noninterference remain accepted only within their unchanged previously reviewed scope. The recovered invocation made no source edit, so no affected acceptance claim is reopened or extended.
+- Supplied prior exact-source evidence retains edition-2024 rustfmt PASS, release physical-stage no-run PASS, eight narrow metadata controls PASS and seven structural proof scripts PASS. These results establish only their recorded narrow or structural claims; no command was rerun in the recovered invocation.
+
+Residual risk and missing evidence
+
+- No complete source evidence binds every inventory row and locator alternative to one terminal/copy/norm/content model.
+- Full terminal acceptance, complete status-value comparison, unknown-group rejection, and same-trace missing/stray injection remain absent for the required completed, interrupted, zero-lambda, ordinal and copy-boundary cases.
+- The writer's feasibility assessment concludes that no safe cohesive source increment fit the unchanged core stop. That is an execution-feasibility conclusion, not scientific impossibility and not acceptance of the incomplete source.
+- Both final approvals and sealed approval/custody remain absent. W1/W2/W3 remain 0/0/0; no physical build, capture, preflight, reset, or retry is authorized by this review.
+
+Disposition
+
+REJECT / HOLD_NO_COMPLETED_DAY. The unchanged recovered-terminal source still fails inherited C5, exhaustive independent control acceptance, and the unmatched-lint requirement. Preserve the owner stop and HOLD. The four narrow fix verifications and bounded C1-C4/noninterference acceptance remain intact, but no final correctness approval, readiness, metadata/capture promotion, or W1/W2/W3 authorization is issued.

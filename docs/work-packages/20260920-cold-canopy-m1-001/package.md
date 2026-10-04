@@ -1,5 +1,93 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Recovered-terminal invocation disposition — HOLD, 2026-10-04
+
+**HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**
+Full C5 and exhaustive controls were not delivered. The sole implementer assessed
+that no safe cohesive replacement could fit the remaining core window and made
+**no source edits**. This is bounded execution infeasibility, not scientific
+impossibility. Targets remain500us CPU/550us wall per completed OFE-day,
+regimes750/1500/2500us CPU and century182.625s CPU/210s wall; completed-day cost,
+feasibility and target gap remain unestablished. W1/W2/W3 remain **0/0/0**.
+
+[Implementer evidence](artifacts/recovered-terminal-invocation-feasibility.txt)
+identifies the unresolved complete obligation model, duplicate content reach,
+independent107-row all-locator terminal/full-status-value/injection controls and
+10unmatched lint diagnostics. Four checkpoint03 fixes remain resolved; the earlier
+architecture assessment's corresponding observations are historical, not renewed
+defects. There is no partial code change to accept or adopt.
+
+Ran [custody authentication](artifacts/recovered-terminal-invocation-pickup.json):
+all772 frozen and mutable source entries match, source/raw archive hashes match,
+all190raw member contents match, all564build-input pins and the compiled binary
+match.35depfiles are retained in the original successful-build receipt. New mutable
+source is unchanged; the existing committed source archive/receipt remains its
+exact recovery source, so no duplicate archive is necessary. Prior partial01,
+checkpoint02, cut26 and candidate05's historical recovery gap remain unchanged.
+Storage was inspected; no caches were deleted.
+
+No new rustfmt, release build, metadata controls, Clippy, proof generator or physical
+workflow was run. Prior exact-source rustfmt/no-run/8metadata/7structural passes
+remain only their recorded narrow evidence; required LSE/vegetation lint failures,
+full controls and final source acceptance remain unmet. No receipt was approved
+or sealed for capture, and no slot was reserved, reset or retried. No numerical
+repair, main Rust adoption, branch switch or push.
+
+Final [correctness review](artifacts/recovered-terminal-invocation-correctness.txt)
+and [QA review](artifacts/recovered-terminal-invocation-qa.txt) reject acceptance of
+the unchanged source. Both are independent successors established before writer
+assessment; original responses are retained. QA corrected its initial attribution
+of checkpoint02 formatting failure to checkpoint03 after inspecting exact final
+evidence; checkpoint03 formatting remains PASS. These reviews authorize no capture.
+
+Accounting conservatively charges17:16–17:24UTC **480s**, including all reading,
+work/waits/concurrent wall once, review, preservation, scoped local commit and return.
+Prior495936.069712s becomes **496416.069712s**, leaving **1718.858268s** under unchanged
+ceiling498134.927980s. Extend if actual work exceeds17:24; no refund or extension.
+Original locked ledger retains slots0/0/0. Remaining balance is now below the
+continuation's1800s core-launch threshold; it supplies no automatic continuation.
+Ran terminal scoped whitespace/link checks and verified all49 unrelated initial
+dirty/untracked path identities unchanged. Terminal diff contains only this package,
+original accounting ledger and four invocation evidence artifacts. No Rust change.
+Preservation is local only; no push.
+
+## Recovered-terminal owner invocation — 2026-10-04 17:16UTC
+
+Owner invoked `/tmp/openwepp_cold_canopy_m1_recovered_terminal_resumption.md`.
+The complete recovered-terminal and inherited scope/acceptance below is adopted;
+no extension, acceptance relaxation or new physical slot. Pickup is e802c83d6
+(b72a35804 plus authoring). Targets remain500us CPU/550us wall per completed
+OFE-day, regimes750/1500/2500us CPU and century182.625s CPU/210s wall;
+completed-day feasibility/cost/gap remain unestablished. HOLD remains until acceptance.
+
+Conservative first-reading anchor17:16UTC; prior carry495936.069712s, R2198.858268s,
+ceiling498134.927980s. Charge all reading/work/waits/concurrent wall once, with no
+refund. Exclude inactive owner interval16:58–17:16UTC. Core stop17:22:38.858268UTC,
+readiness17:32:38.858268UTC, work cutoff17:42:38.858268UTC,
+hard deadline17:52:38.858268UTC. Commands<=180s and remaining deadline.
+
+Intent before source edits: one delegated writer in the authenticated new mutable
+copy delivers the complete per-field authority and independent all-row full controls,
+plus unmatched lint corrections, within core stop. Exact prescribed formatting,
+no-run/metadata/Clippy/proofs/custody and two final reviews remain required; incomplete
+source is preserved HOLD, never promoted to capture readiness. No main Rust adoption,
+numerical repair, branch switch or push. Parent edits only package/evidence/ledger.
+
+Both new independent successor routes `/root/terminal_correctness_recovered` and
+`/root/terminal_qa_recovered` accepted inherited finding and same-reviewer fix/final
+ownership before core edits. Prior conversations are absent from this session.
+QA was interrupted after acceptance to serialize writer phase within two child slots;
+interruption is not deletion. Availability is not approval.
+
+Ran [pickup authentication](artifacts/recovered-terminal-invocation-pickup.json):
+772 source entries, source/raw archive hashes, all564 build pins and compiled binary
+match.35depfiles remain recorded. Raw archive has190members; source archive has765
+members, distinct from the772-entry filesystem receipt. New mutable root:
+`/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source`.
+Frozen checkpoint03 and all prior custody remain intact. Storage769MB available;
+no cache deletion or build launched. Full delivery within the remaining short core
+window remains unestablished.
+
 ## HOLD disposition and recovered-terminal continuation proposal — 2026-10-04
 
 **HOLD_NO_COMPLETED_DAY, class(c), insufficient evidence/runtime feasibility.**

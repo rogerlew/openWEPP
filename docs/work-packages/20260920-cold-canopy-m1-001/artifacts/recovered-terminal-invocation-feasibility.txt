@@ -1,0 +1,36 @@
+Static feasibility assessment — 2026-10-04T17:21:13Z
+
+Result: no safe cohesive source increment fits the recovered-terminal core stop.
+
+Source inspected (no source edits):
+  /home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source
+  detached source receipt: 772 filesystem entries; 765 source-archive members
+  receipt whole-source SHA-256: 8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4
+  stage1 SHA-256 observed: d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8
+  stage2 controls SHA-256 observed: a2ae4076ee0c5bed62e4835ca28dc58fa46166292deeec00e20f1e9de9da0fd7
+  both match terminal-plan-recovery-final-source.json (entries 457–458).
+
+The source still contains refinement_capture_terminal_content_obligations! at
+stage1 lines 2001–2465, a second terminal-to-content reach matrix.  The present
+RefinementCaptureTerminalPlan at lines 4257–4301 holds only metadata,
+application count, factor-output ordinal, and role lists; it does not resolve
+the required per-field terminal/copy/norm/content obligations.  Acceptance
+still dispatches to the macro (about lines 3301–3380), while public field status
+derives separate field-state decisions (about lines 3753–4167).  Existing
+inventory controls cover group/locator structure but do not supply the required
+independent inert trace, full acceptance, every-public-status-map, and
+missing/stray mutation controls for all 107 refinement rows (controls begin at
+about line 4417 and include locator controls at 4698 onward).
+
+Consequently, deleting the macro, wrapping it, moving its switch, or adding a
+status-only test would leave C5 unfulfilled.  A cohesive correction requires a
+resolved obligation representation consumed once by acceptance and status,
+replacement content validation using that representation, deletion of the
+superseded matrix/prefix selection, and independent exhaustive controls.  That
+cannot be implemented and checked safely in the remaining core window.
+
+The four narrow checkpoint03 norm/scalar repairs are retained and are not
+reported as current defects.  No builds or tests were run: owner instruction
+prohibited builds while storage was constrained, and no source change exists to
+validate.  Package acceptance remains HOLD; full controls, source checks, and
+required reviews remain unmet.

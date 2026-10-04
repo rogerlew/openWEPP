@@ -1,0 +1,71 @@
+Static + inspected prior run evidence — independent successor QA review (`/root/terminal_qa_recovered`)
+
+Scope and custody
+
+Reviewed the unchanged recovered mutable source at
+`/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source`.
+The authenticated pickup receipt records 772 verified source entries, source aggregate
+SHA-256 `8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4`,
+765 archived source members, 190 raw-evidence members, 564 passing build-input pins,
+35 recorded depfiles, and compiled binary SHA-256
+`d80306cffbb6a33d8bfd8f8ed7d345ab67cc349e57763e846c62a045255650cc`.
+The receipt declares `mutable_source_unchanged: true`; the reviewed stage1 source file
+is still `d02a671adefb03b335e00a01c0aad84aeb64c758f37e603ef3d9003c860c45a8`.
+No source, helper, fixture, configuration, ledger, or package record was edited by this
+reviewer. No build or physical workflow was run.
+
+This is the same independent QA successor responsible for the inherited full-controls,
+helper/proof, custody, and final/fix-verification scope. Earlier helper/custody preparation
+is reusable only for the unchanged helpers and its stated fail-closed scope. Checkpoint03
+metadata controls and structural proof scripts are reusable only as inspected narrow
+evidence; they do not establish full terminal acceptance, complete public-status behavior,
+or current passing lint/format gates. Same-reviewer final verification remains required
+after any source/control/helper/proof/custody change.
+
+Findings
+
+HIGH — `crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:2001`,
+`3210`, and `4640`: C5 full-controls acceptance remains unmet. The terminal-content macro
+and prefix/plan content check remain a second terminal-reach/content authority alongside
+the descriptor/status path. `m1_refinement_inventory_semantic_groups_control` still only
+aggregates inventory group strings and checks selected representatives. It does not project
+every one of the 107 refinement rows into an inert trace, compare full terminal acceptance
+and every public status-map value, or inject missing-required and stray-unexpected fields
+against those same traces. The two WorkCap rows are only counted, not separately exercised.
+The existing test is metadata-only and does not call the evaluator/capture path; its prior
+pass cannot prove the missing behavior.
+
+HIGH — required lint gates remain failed. Source-bound checkpoint03 evidence records
+warnings-denied release LSE Clippy exit 101 with 240 diagnostics (230 exact inherited and
+10 unmatched), and vegetation library Clippy exit 101 (1 exact inherited diagnostic). The
+release physical-stage no-run build and eight inert metadata controls passed only in their
+limited scopes. No matched warnings-denied LSE Clippy or vegetation Clippy result exists,
+and inherited classification does not convert failed gates into PASS.
+
+Correction note — the prior version of this review incorrectly attributed a rustfmt exit 1
+to checkpoint03. That failure is historical checkpoint02 evidence, bound to source
+`32b47590ddebb609aa90f633ab720ee8e1c26945068536d9c54f73b6e3299643`.
+`terminal-plan-recovery-final.json` and checkpoint03 `checks/rustfmt.json` instead bind
+`rustfmt --check --edition 2024` PASS (exit 0, 0.21588893979787827 s) to the unchanged
+checkpoint03 aggregate `8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4`.
+Format is therefore reusable PASS evidence for this unchanged pickup and is withdrawn as
+a blocker. This correction does not affect the C5 or lint findings.
+
+HIGH — no sealed final acceptance/custody receipt exists because the unchanged source still
+fails C5 and required quality gates. The compiled binary is not approved. The helper's
+fail-closed approval prerequisite therefore cannot be satisfied; no readiness or W1/W2/W3
+capture approval follows.
+
+Non-blocking retained evidence / follow-up
+
+The checkpoint03 schema/status/field/type/event/collection proof receipts exited zero on
+their pinned stage1 source, and the pickup verifies their archive/build-input custody.
+They remain useful structural evidence only. Regenerate and same-reviewer verify affected
+proofs, full controls, gate results, helper bindings, exact source/binary/fixture/ledger
+identity, and a sealed receipt only after a cohesive corrected cut exists.
+
+Disposition
+
+REJECT / HOLD_NO_COMPLETED_DAY. The writer made no source edits and the final correctness
+route also rejects the unchanged pickup. C5 full controls and mandatory lint acceptance are
+still blocking; final QA, custody, binary, readiness, and W1/W2/W3 approval are denied.

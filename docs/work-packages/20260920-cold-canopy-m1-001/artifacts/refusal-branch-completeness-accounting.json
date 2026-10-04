@@ -700,21 +700,21 @@
   "capture_approved": false,
   "disposition": "HOLD_NO_COMPLETED_DAY",
   "inactive_owner_decision_interval": [
-    "2026-10-04T05:18:00+00:00",
-    "2026-10-04T05:50:00+00:00"
+    "2026-10-04T16:58:00+00:00",
+    "2026-10-04T17:16:00+00:00"
   ],
-  "hard_deadline_utc": "2026-10-04T07:13:38.858268+00:00",
-  "work_cutoff_utc": "2026-10-04T07:03:38.858268+00:00",
-  "readiness_deadline_utc": "2026-10-04T06:53:38.858268+00:00",
-  "final_check_reserve_start_utc": "2026-10-04T06:43:38.858268+00:00",
-  "charged_through_utc": "2026-10-04T06:40:00+00:00",
-  "current_invocation_charge_seconds": 2460,
-  "cumulative_charged_seconds": 495576.069712,
-  "remaining_seconds": 2558.858268,
-  "charge_method": "Retain840s prior terminal-plan invocation charge through06:04; add1620s recovery charge06:13\u201306:40UTC including reading/work/waits/concurrent wall once, checks/reviews, preservation/local commit and return. Exclude only recorded inactive06:04\u201306:13 interval. Extend if work exceeds06:40; no refund/extension/readiness reset.",
+  "hard_deadline_utc": "2026-10-04T17:52:38.858268+00:00",
+  "work_cutoff_utc": "2026-10-04T17:42:38.858268+00:00",
+  "readiness_deadline_utc": "2026-10-04T17:32:38.858268+00:00",
+  "final_check_reserve_start_utc": "2026-10-04T17:22:38.858268+00:00",
+  "charged_through_utc": "2026-10-04T17:24:00+00:00",
+  "current_invocation_charge_seconds": 480,
+  "cumulative_charged_seconds": 496416.069712,
+  "remaining_seconds": 1718.858268,
+  "charge_method": "Retain latest authoring carry495936.069712s; charge conservative17:16\u201317:24UTC480s including reading/work/waits/concurrent wall once, reviews, preservation/local commit and return. Exclude inactive owner16:58\u201317:16UTC. Extend if work exceeds17:24; no refund/extension.",
   "source_authoring_stopped": true,
-  "source_authoring_stop_utc": "2026-10-04T06:31:00+00:00",
-  "stop_reason": "Both final independent reviewers reject C5/full controls; required lint gates fail",
+  "source_authoring_stop_utc": "2026-10-04T17:21:00+00:00",
+  "stop_reason": "No cohesive C5/full-control change feasible in remaining core window; unchanged source fails independent acceptance",
   "final_source_sha256": "8598cc16ffa8761bfebf0b8f7ad7601a53502a0ac40c7c0b064b53059589e6a4",
   "owner_directed_recovery": {
     "owner_instruction": "cull agents and continue",
@@ -766,5 +766,30 @@
       "2026-10-04T16:52:00+00:00"
     ],
     "note": "Authoring only; no execution/readiness/extension. Future explicit invocation reconciles newest carry and later work. Extend if authoring exceeds16:58; no refund."
+  },
+  "recovered_terminal_invocation": {
+    "owner_instruction": "execute /tmp/openwepp_cold_canopy_m1_recovered_terminal_resumption.md",
+    "anchor_utc": "2026-10-04T17:16:00+00:00",
+    "prior_cumulative_charged_seconds": 495936.069712,
+    "initial_remaining_seconds": 2198.858268,
+    "ceiling_seconds": 498134.92798,
+    "extension_seconds": 0,
+    "inactive_owner_interval": [
+      "2026-10-04T16:58:00+00:00",
+      "2026-10-04T17:16:00+00:00"
+    ],
+    "core_stop_utc": "2026-10-04T17:22:38.858268+00:00",
+    "readiness_deadline_utc": "2026-10-04T17:32:38.858268+00:00",
+    "work_cutoff_utc": "2026-10-04T17:42:38.858268+00:00",
+    "hard_deadline_utc": "2026-10-04T17:52:38.858268+00:00",
+    "physical_invocations": 0,
+    "capture_approved": false,
+    "charged_through_utc": "2026-10-04T17:24:00+00:00",
+    "charge_seconds": 480,
+    "cumulative_charged_seconds": 496416.069712,
+    "remaining_seconds": 1718.858268,
+    "disposition": "HOLD_NO_COMPLETED_DAY",
+    "source_changed": false,
+    "stop_reason": "No cohesive C5/full-control change feasible in remaining core window; unchanged source fails independent acceptance"
   }
 }
