@@ -1,5 +1,7 @@
 # Work Packages
 
+- [20261005 Cold-canopy M1 capture readiness](20261005-cold-canopy-capture-readiness-001/package.md): scaffold for detached inherited-lint clearance and the original bounded diagnostic captures; execution not started.
+
 - [20261005 Nix storage lifecycle](20261005-nix-storage-lifecycle-001/package.md): IMPLEMENTED / CLOSURE HOLD: tiny environment inputs, weekly retention and ~240 GiB verified snapshot reclamation; mandatory workspace correctness has failures.
 
 - [20260912 B01 WB14 available-source red witness](20260912-b01-wb14-available-source-red-witness-001/package.md): INCOMPLETE/HOLD after supplemental cycle ceiling; delegated overrun recorded at 5 cumulative failures against ceiling 4. Preflight and historical fixture retained; authentic invocation NOT RUN, source/cadence HOLD.

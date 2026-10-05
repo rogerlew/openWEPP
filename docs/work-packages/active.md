@@ -7,6 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is 
 
 | Package | Current entrypoint | Authorization boundary |
 | --- | --- | --- |
+| Cold-canopy M1 capture readiness (scaffold) | [record](20261005-cold-canopy-capture-readiness-001/package.md) | Preparation and publication only; execution NOT RUN. Proposed inherited-lint clearance followed by conditional original three diagnostic captures; no new time or physical slots, overall M1 HOLD. |
 | Nix storage lifecycle | [record](20261005-nix-storage-lifecycle-001/package.md) | Implemented and operational; ~240 GiB reclaimed with verified recovery. Closure HOLD on required full-workspace correctness failures. |
 | B01 WB14 ingress red regression (test-only complete) | [record](20260911-b01-wb14-verified-cadence-repair-001/package.md#bounded-checkpoint-disposition) | Exact E008 EXPECTED_RED; context/ordinary/18 precedence/4 raw-hash/formatting PASS reused. Lint-delta PASS under owner 2026-09-13 exception with independent correctness/QA acceptance; all Clippy runs remain FAIL. Broader cadence HOLD; ZERO runner/collector calls. |
 | B01 WB14 available-source red witness (complete limited witness) | [record](20260912-b01-wb14-available-source-red-witness-001/package.md) | Witness PASS after corrected checker, 75 named controls and distinct correctness/QA PASS. Runner FAIL, execution_valid=false; invocation1/1 exhausted. Failures8/9 preserved. No cadence/source adoption or broader qualification; raw custody retained. |

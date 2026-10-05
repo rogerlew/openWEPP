@@ -707,11 +707,11 @@
   "work_cutoff_utc": "2026-10-06T03:57:38.858268+00:00",
   "readiness_deadline_utc": null,
   "final_check_reserve_start_utc": "2026-10-06T03:57:38.858268+00:00",
-  "charged_through_utc": "2026-10-05T22:23:00+00:00",
-  "current_invocation_charge_seconds": 1740.0,
-  "cumulative_charged_seconds": 517656.069712,
-  "remaining_seconds": 23678.85826800001,
-  "charge_method": "Continuous concurrent wall once from21:54UTC Oct5 through22:23UTC, conservatively including final preservation/local commit/return; extend if actual work exceeds22:23, no refund or extension.",
+  "charged_through_utc": "2026-10-05T23:44:00+00:00",
+  "current_invocation_charge_seconds": 720,
+  "cumulative_charged_seconds": 518376.069712,
+  "remaining_seconds": 22958.85826800001,
+  "charge_method": "Owner-authorized scaffold/review/commit/push; includes conservative publication/return reserve and intervening why-failed/next-scope replies. Inactive owner interval excluded. Extend if work exceeds23:44; no refund or execution-window activation.",
   "source_authoring_stopped": true,
   "source_authoring_stop_utc": "2026-10-05T22:13:19.234706+00:00",
   "stop_reason": "Replacement milestone approved by both original independent reviewers after narrow public-completeness correction. Overall HOLD retained for inherited231lint failures and unmeasured completed-day cost; no physical authorization.",
@@ -830,7 +830,7 @@
     "readiness_deadline_utc": "2026-10-04T17:32:38.858268+00:00",
     "final_check_reserve_start_utc": "2026-10-04T17:22:38.858268+00:00"
   },
-  "schedule_state": "Terminal replacement milestone PASS; overall HOLD_NO_COMPLETED_DAY. Fixed allowance retained; no physical slot use or renewal.",
+  "schedule_state": "Terminal replacement milestone PASS / overall HOLD. Successor scaffold prepared only; no new execution anchor, allowance, capture approval or slot.",
   "cohesive_replacement_execution": {
     "anchor_utc": "2026-10-04T18:14:00+00:00",
     "anchor_basis": "Conservative first-reading minute; first clock observation18:16:03UTC after initial reading.",
@@ -966,5 +966,15 @@
       "physical_invocations": 0,
       "slots_unchanged": true
     }
+  },
+  "capture_readiness_preparation_20261005": {
+    "preparation_anchor_utc": "2026-10-05T23:35:00+00:00",
+    "charged_through_utc": "2026-10-05T23:44:00+00:00",
+    "preparation_seconds": 540,
+    "intervening_diagnostic_replies_conservative_seconds": 180,
+    "prior_cumulative_seconds": 517656.069712,
+    "added_seconds": 720,
+    "reason": "Owner-authorized scaffold/review/commit/push; includes conservative publication/return reserve and intervening why-failed/next-scope replies. Inactive owner interval excluded. Extend if work exceeds23:44; no refund or execution-window activation.",
+    "package": "20261005-cold-canopy-capture-readiness-001"
   }
 }
