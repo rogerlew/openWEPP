@@ -1,0 +1,79 @@
+[
+  {
+    "argv": [
+      "systemctl",
+      "--user",
+      "is-enabled",
+      "openwepp-nix-prune.timer"
+    ],
+    "exit": 0,
+    "stdout": "enabled\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "systemctl",
+      "--user",
+      "show",
+      "openwepp-nix-prune.timer",
+      "-p",
+      "ActiveState",
+      "-p",
+      "NextElapseUSecRealtime"
+    ],
+    "exit": 0,
+    "stdout": "ActiveState=active\nNextElapseUSecRealtime=Mon 2026-10-12 00:00:00 PDT\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "systemctl",
+      "--user",
+      "show",
+      "openwepp-nix-prune.service",
+      "-p",
+      "Result",
+      "-p",
+      "ExecMainStatus"
+    ],
+    "exit": 0,
+    "stdout": "Result=success\nExecMainStatus=0\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "loginctl",
+      "show-user",
+      "roger",
+      "-p",
+      "Linger"
+    ],
+    "exit": 0,
+    "stdout": "Linger=no\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "journalctl",
+      "--user",
+      "-u",
+      "openwepp-nix-prune.service",
+      "-n",
+      "20",
+      "--no-pager"
+    ],
+    "exit": 0,
+    "stdout": "Oct 05 14:12:15 ow-dev-01 systemd[6516]: Starting openwepp-nix-prune.service - Prune retired openWEPP staged Nix environments...\nOct 05 14:12:15 ow-dev-01 systemd[6516]: Finished openwepp-nix-prune.service - Prune retired openWEPP staged Nix environments.\n",
+    "stderr": ""
+  },
+  {
+    "installed_unit": "/home/roger/.config/systemd/user/openwepp-nix-prune.service",
+    "sha256": "06956f10b79e92622f4d9123b72c07464fd0f46b08679a59c69fb808b2b17fa9",
+    "matches_reviewed_source": true
+  },
+  {
+    "installed_unit": "/home/roger/.config/systemd/user/openwepp-nix-prune.timer",
+    "sha256": "962bf2c4cab1a59710a023b99c6480b92afbd40e9ae0ad79f66ebbdce7350174",
+    "matches_reviewed_source": true
+  }
+]

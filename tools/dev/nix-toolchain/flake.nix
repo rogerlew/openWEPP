@@ -45,7 +45,7 @@
         LLVM_PROFDATA = "${pkgs.llvmPackages_21.llvm}/bin/llvm-profdata";
 
         shellHook = ''
-          source ${./tools/dev/openwepp-env} || exit $?
+          source ${./openwepp-env} || exit $?
           printf 'openWEPP Nix shell\n'
           printf '  target:  %s\n' "$CARGO_TARGET_DIR"
           printf '  scratch: %s\n' "$TMPDIR"
@@ -63,14 +63,14 @@
                 rustc --version
                 cargo nextest --version
                 cargo deny --version
-                "$LLVM_COV" --version
-                "$LLVM_PROFDATA" --version
+                ${pkgs.llvmPackages_21.llvm}/bin/llvm-cov --version
+                ${pkgs.llvmPackages_21.llvm}/bin/llvm-profdata --version
                 python3.12 --version
                 uv --version
                 sccache --version
                 mold --version
                 git-lfs --version
-            shellcheck ${./tools/dev/openwepp-env} ${./tools/dev/check-host} ${./tools/dev/heavy}
+            shellcheck ${./openwepp-env}
                 touch "$out"
           '';
 

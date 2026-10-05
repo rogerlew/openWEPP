@@ -1,0 +1,63 @@
+{
+  "isolated_root": "/tmp/openwepp-real-pin-0c_awzu2",
+  "identity": "7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d",
+  "commands": [
+    {
+      "argv": [
+        "tools/dev/develop",
+        "true"
+      ],
+      "exit": 0,
+      "stdout": "openWEPP Nix shell\n  target:  /tmp/openwepp-real-pin-0c_awzu2/build/targets/nix-storage-pin-proof\n  scratch: /tmp/openwepp-roger-nix-storage-pin-proof\n  cache:   /tmp/openwepp-real-pin-0c_awzu2/build\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "tools/dev/nix-lifecycle",
+        "pin",
+        "7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d",
+        "qa-retention"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "this derivation will be built:\n  /nix/store/7xvqsvp39dihlnx0ww349rj742m5s9gs-nix-shell.drv\nbuilding '/nix/store/7xvqsvp39dihlnx0ww349rj742m5s9gs-nix-shell.drv'...\n"
+    },
+    {
+      "argv": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell"
+      ],
+      "exit": 0,
+      "stdout": "/tmp/openwepp-real-pin-0c_awzu2/state/pins/qa-retention-1-link -> /nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell\n/workdir/openWEPP/result -> /nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "tools/dev/nix-lifecycle",
+        "release",
+        "qa-retention"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell"
+      ],
+      "exit": 0,
+      "stdout": "/tmp/openwepp-real-pin-0c_awzu2/state/pins/qa-retention-1-link -> /nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell\n/workdir/openWEPP/result -> /nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell\n",
+      "stderr": ""
+    },
+    {
+      "remaining_pin_entries": [
+        "/tmp/openwepp-real-pin-0c_awzu2/state/pins/qa-retention-1-link"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "inventory": "legacy-snapshot-inventory.json",
+  "inventory_sha256": "69c3be1b7aabdf1d701f4ea22f9c51a18f4c48e0ba1128abded65442c591ec59",
+  "command": [
+    "nix-store",
+    "--query",
+    "--referrers",
+    "<each inventory path>"
+  ],
+  "checked_count": 183,
+  "positive_referrers": []
+}

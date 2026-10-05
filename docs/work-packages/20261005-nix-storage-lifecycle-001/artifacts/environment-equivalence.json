@@ -1,0 +1,7 @@
+{
+  "original_environment_sha256": "1822a5a72bcc4a0b0fe57eb8e4ecf3adaab203701862200b80aee8439e0790a6",
+  "final_environment_sha256": "c29d27cdf045dc225a1a41bd0873ce04c5a523bcf23644625325575d6e91358e",
+  "parsed_environment_equal": true,
+  "lock_bytes_equal_to_base": true,
+  "scope": "All print-dev-env fields, including compiler tools, shellHook, flags and bash functions; wrapper adds only own lifecycle metadata at entry."
+}

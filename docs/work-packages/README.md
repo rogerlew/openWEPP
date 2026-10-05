@@ -1,5 +1,7 @@
 # Work Packages
 
+- [20261005 Nix storage lifecycle](20261005-nix-storage-lifecycle-001/package.md): IMPLEMENTED / CLOSURE HOLD: tiny environment inputs, weekly retention and ~240 GiB verified snapshot reclamation; mandatory workspace correctness has failures.
+
 - [20260912 B01 WB14 available-source red witness](20260912-b01-wb14-available-source-red-witness-001/package.md): INCOMPLETE/HOLD after supplemental cycle ceiling; delegated overrun recorded at 5 cumulative failures against ceiling 4. Preflight and historical fixture retained; authentic invocation NOT RUN, source/cadence HOLD.
 
 - [20260911 B01 WB14 evidence interface design](20260911-b01-wb14-evidence-interface-design-001/package.md): INCOMPLETE; stopped at the owner’s two unsuccessful correction-cycle limit. The proposed evidence interface/test envelope is not implementation-ready or recommended for adoption.

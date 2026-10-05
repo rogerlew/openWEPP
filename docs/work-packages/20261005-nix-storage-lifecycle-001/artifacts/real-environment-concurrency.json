@@ -1,0 +1,78 @@
+[
+  {
+    "label": "both active",
+    "argv": [
+      "/workdir/openWEPP/tools/dev/nix-lifecycle",
+      "prune",
+      "--keep",
+      "0",
+      "--older-than-days",
+      "0"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "label": "second still active",
+    "argv": [
+      "/workdir/openWEPP/tools/dev/nix-lifecycle",
+      "prune",
+      "--keep",
+      "0",
+      "--older-than-days",
+      "0"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "label": "both retired",
+    "argv": [
+      "/workdir/openWEPP/tools/dev/nix-lifecycle",
+      "prune",
+      "--keep",
+      "0",
+      "--older-than-days",
+      "0"
+    ],
+    "exit": 0,
+    "stdout": "0 store paths deleted, 0.0 KiB freed\nretired 7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d\n",
+    "stderr": "finding garbage collector roots...\nremoving stale link from \"/nix/var/nix/gcroots/auto/b0wrb3bhn7m1ijv6y26yfzzgkc1amp10\" to \"/tmp/openwepp-nix-concurrency-cfuun24u/state/profiles/7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d-1-link\"\ndeleting specified paths...\nerror: Cannot delete path '/nix/store/ldzrsf9bl5w0dswwlim24pz2z29v9m8w-nix-shell-env' since it is still alive. To find out why, use: nix-store --query --roots and nix-store --query --referrers\nretired output remains live or referenced: /nix/store/ldzrsf9bl5w0dswwlim24pz2z29v9m8w-nix-shell-env\n"
+  },
+  {
+    "result": "PASS",
+    "same_identity": "7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d",
+    "staged_source_bytes": 5331,
+    "remaining_shared_store_output": "/nix/store/ldzrsf9bl5w0dswwlim24pz2z29v9m8w-nix-shell-env"
+  },
+  {
+    "child": "a",
+    "argv": [
+      "/workdir/openWEPP/tools/dev/develop",
+      "bash",
+      "-c",
+      "touch \"$1\"; while [ ! -e \"$2\" ]; do sleep 0.1; done",
+      "bash",
+      "/tmp/openwepp-nix-concurrency-wrsn1g75/a.ready",
+      "/tmp/openwepp-nix-concurrency-wrsn1g75/a.release"
+    ],
+    "exit": 0,
+    "output": "openWEPP Nix shell\n  target:  /tmp/openwepp-nix-concurrency-wrsn1g75/build/targets/nix-storage-real-a\n  scratch: /tmp/openwepp-roger-nix-storage-real-a\n  cache:   /tmp/openwepp-nix-concurrency-wrsn1g75/build\n"
+  },
+  {
+    "child": "b",
+    "argv": [
+      "/workdir/openWEPP/tools/dev/develop",
+      "bash",
+      "-c",
+      "touch \"$1\"; while [ ! -e \"$2\" ]; do sleep 0.1; done",
+      "bash",
+      "/tmp/openwepp-nix-concurrency-wrsn1g75/b.ready",
+      "/tmp/openwepp-nix-concurrency-wrsn1g75/b.release"
+    ],
+    "exit": 0,
+    "output": "waiting for another Nix process to finish fetching input 'path:/tmp/openwepp-nix-concurrency-wrsn1g75/cache/sources/7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d'...\nerror (ignored): SQLite database '/home/roger/.cache/nix/eval-cache-v6/148e8b47fc1d35ba7a2561183b0bc446d76c87a419134f0ffebebfa3d1ca7208.sqlite' is busy\nopenWEPP Nix shell\n  target:  /tmp/openwepp-nix-concurrency-wrsn1g75/build/targets/nix-storage-real-b\n  scratch: /tmp/openwepp-roger-nix-storage-real-b\n  cache:   /tmp/openwepp-nix-concurrency-wrsn1g75/build\n"
+  }
+]

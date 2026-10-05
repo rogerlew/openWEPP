@@ -111,6 +111,31 @@ An absent source directory triggers bounded inspection of retained recovery
 evidence; it does not by itself prove irrecoverable loss. Preserve explicit
 source-loss stop conditions while reporting any evidenced recovery route.
 
+### Development environment and cache lifecycle
+
+Enter Nix through `tools/dev/develop` as documented in
+[the development guide](../../tools/dev/README.md). The environment input is the
+small staged toolchain definition and helpers, not a snapshot of the simulation
+checkout. Preserve the lockfile and selected toolchain when changing packaging.
+Keep worktree/target isolation; it does not justify a new environment per source
+edit or a full source/evidence archive per shell invocation.
+
+The package executor owns retention as well as preservation. For an unfinished
+experiment that needs an exact Nix environment beyond the ordinary cache window,
+register a package-owned GC pin and record its identifier, reason and release
+condition in package.md. A tool path or hash in a receipt is not a GC root.
+Preserve old toolchains required by frozen experiments during migration; a new
+default environment does not replace those obligations.
+
+At handoff retain necessary pins; at closure release pins whose recovery/use
+obligations have ended, or record the outstanding reason and owner. Reusable
+source/evidence remains durable under the preceding recovery rule. Unpinned staged Nix environments have bounded retention under the development
+guide; this policy does not automatically prune Cargo build caches. Scheduled cleanup may act only on its explicitly owned
+cache/environment scope, respect active use and package pins, and fail closed on
+ambiguous ownership. Nix garbage eligibility alone does not prove source
+redundancy. Historical repository snapshots require verified recovery before
+removal; do not run broad host GC as a substitute for that classification.
+
 At handoff, preserve source and evidence durably and record whether each is local,
 committed or remotely published. Carry granted commit/push permissions; a pause
 does not revoke them or grant new ones. When publishing is authorized, include

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Validate development scripts that deliberately remain outside the flake input.
+set -euo pipefail
+
+openwepp_dev_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+shellcheck \
+    "$openwepp_dev_dir/openwepp-env" \
+    "$openwepp_dev_dir/check-host" \
+    "$openwepp_dev_dir/heavy" \
+    "$openwepp_dev_dir/develop" \
+    "$openwepp_dev_dir/nix-lifecycle" \
+    "$openwepp_dev_dir/tests/nix-lifecycle-test"

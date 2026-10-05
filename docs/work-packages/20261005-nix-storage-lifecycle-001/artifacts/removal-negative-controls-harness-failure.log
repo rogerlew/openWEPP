@@ -1,0 +1,125 @@
+...FFFFF
+======================================================================
+FAIL: test_source_outside_store_refused (__main__.RefusalControls.test_source_outside_store_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/test_snapshot_removal.py", line 67, in test_source_outside_store_refused
+    self.run_refusal('invalid source path')
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/test_snapshot_removal.py", line 34, in run_refusal
+    removal.main()
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/remove_verified_snapshots.py", line 34, in main
+    roots = subprocess.check_output(['nix-store', '--query', '--roots', pin['store_path']], text=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+AssertionError: Deletion must not run
+
+======================================================================
+FAIL: test_unverified_receipt_refused (__main__.RefusalControls.test_unverified_receipt_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/test_snapshot_removal.py", line 46, in test_unverified_receipt_refused
+    self.run_refusal('recovery receipt mismatch')
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/test_snapshot_removal.py", line 34, in run_refusal
+    removal.main()
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/remove_verified_snapshots.py", line 34, in main
+    roots = subprocess.check_output(['nix-store', '--query', '--roots', pin['store_path']], text=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+AssertionError: Deletion must not run
+
+======================================================================
+FAIL: test_wrong_archive_checksum_refused (__main__.RefusalControls.test_wrong_archive_checksum_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/test_snapshot_removal.py", line 58, in test_wrong_archive_checksum_refused
+    self.run_refusal('archive corruption')
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/test_snapshot_removal.py", line 34, in run_refusal
+    removal.main()
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/remove_verified_snapshots.py", line 34, in main
+    roots = subprocess.check_output(['nix-store', '--query', '--roots', pin['store_path']], text=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+AssertionError: Deletion must not run
+
+======================================================================
+FAIL: test_wrong_archive_path_refused (__main__.RefusalControls.test_wrong_archive_path_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/test_snapshot_removal.py", line 50, in test_wrong_archive_path_refused
+    self.run_refusal('recovery receipt mismatch')
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/test_snapshot_removal.py", line 34, in run_refusal
+    removal.main()
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/remove_verified_snapshots.py", line 34, in main
+    roots = subprocess.check_output(['nix-store', '--query', '--roots', pin['store_path']], text=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+AssertionError: Deletion must not run
+
+======================================================================
+FAIL: test_wrong_archive_size_refused (__main__.RefusalControls.test_wrong_archive_size_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/test_snapshot_removal.py", line 54, in test_wrong_archive_size_refused
+    self.run_refusal('archive size mismatch')
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/test_snapshot_removal.py", line 34, in run_refusal
+    removal.main()
+  File "/workdir/openWEPP/docs/work-packages/20261005-nix-storage-lifecycle-001/artifacts/remove_verified_snapshots.py", line 34, in main
+    roots = subprocess.check_output(['nix-store', '--query', '--roots', pin['store_path']], text=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/7arcs5m01sqm2sj7zk2yp4f5scym0mx3-python3-3.12.14/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+AssertionError: Deletion must not run
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.014s
+
+FAILED (failures=5)

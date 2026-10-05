@@ -1,0 +1,12 @@
+{
+  "exit_code": 100,
+  "tests_run": 4204,
+  "passed": 4013,
+  "failed": 190,
+  "timed_out": 1,
+  "skipped": 76,
+  "elapsed_seconds": 1494.022,
+  "disposition": "FAIL / CLOSURE HOLD",
+  "command": "RUST_MIN_STACK=67108864 tools/dev/develop tools/dev/heavy cargo nextest run --workspace --profile full",
+  "log": "final-full-workspace-nextest.log"
+}

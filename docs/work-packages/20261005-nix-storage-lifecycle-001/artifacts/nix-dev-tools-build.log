@@ -1,0 +1,18 @@
+got build log for '/nix/store/3ldals83azg8b2rkn7w31ayd9c697dig-openwepp-dev-tools-check.drv' from 'daemon'
+cargo 1.95.0 (f2d3ce0bd 2026-03-21)
+rustc 1.95.0 (59807616e 2026-04-14) (built from a source tarball)
+cargo-nextest 0.9.136
+release: 0.9.136
+host: x86_64-unknown-linux-gnu
+cargo-deny 0.19.6
+LLVM (http://llvm.org/):
+  LLVM version 21.1.8
+  Optimized build.
+LLVM (http://llvm.org/):
+  LLVM version 21.1.8
+  Optimized build.
+Python 3.12.14
+uv 0.11.21 (x86_64-unknown-linux-gnu)
+sccache 0.15.0
+mold 2.41.0 (compatible with GNU ld)
+git-lfs/3.7.1 (3.7.1; linux amd64; go 1.26.5)

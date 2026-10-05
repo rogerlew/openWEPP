@@ -1,0 +1,1622 @@
+openWEPP Nix shell
+  target:  /workdir/.cache/openwepp/targets/openWEPP-295c6e060aa9
+  scratch: /tmp/openwepp-roger-openWEPP-295c6e060aa9
+  cache:   /workdir/.cache/openwepp
+   Compiling openwepp-land-surface-energy v0.1.0 (/workdir/openWEPP/crates/openwepp-land-surface-energy)
+   Compiling openwepp-watershed-output v0.1.0 (/workdir/openWEPP/crates/openwepp-watershed-output)
+   Compiling openwepp-hillslope-output v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-output)
+   Compiling openwepp-vegetation v0.1.0 (/workdir/openWEPP/crates/openwepp-vegetation)
+   Compiling openwepp-summary-accumulator v0.1.0 (/workdir/openWEPP/crates/openwepp-summary-accumulator)
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+   Compiling openwepp-meteorology v0.1.0 (/workdir/openWEPP/crates/openwepp-meteorology)
+   Compiling openwepp-biogeochemistry v0.1.0 (/workdir/openWEPP/crates/openwepp-biogeochemistry)
+   Compiling openwepp-kernel-contract v0.1.0 (/workdir/openWEPP/crates/openwepp-kernel-contract)
+   Compiling openwepp-topology v0.1.0 (/workdir/openWEPP/crates/openwepp-topology)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+warning: field `ending_snow_hint` is never read
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs:1176:9
+     |
+1156 | pub(crate) struct CoveredTerminalTrialRequestV1 {
+     |                   ----------------------------- field in this struct
+...
+1176 |     pub ending_snow_hint: Option<CoveredTerminalEndingSnowHintV1>,
+     |         ^^^^^^^^^^^^^^^^
+     |
+     = note: `CoveredTerminalTrialRequestV1` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling openwepp-persisted-restart-v1 v0.1.0 (/workdir/openWEPP/crates/openwepp-persisted-restart-v1)
+   Compiling openwepp-runner v0.1.0 (/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/workdir/openWEPP)
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 05s
+────────────
+ Nextest run ID eec4fa67-a0c5-4624-854d-1208646ab7ab with nextest profile: full
+    Starting 4204 tests across 246 binaries (76 tests and 5 binaries skipped, including 28 tests and 5 binaries via profile.full.default-filter)
+        FAIL [   0.058s] (  38/4204) openwepp::assurance_v2_amendment_contract attribution_check_is_read_only_and_apply_is_layer_proportional
+  stdout ───
+
+    running 1 test
+    test attribution_check_is_read_only_and_apply_is_layer_proportional ... FAILED
+
+    failures:
+
+    failures:
+        attribution_check_is_read_only_and_apply_is_layer_proportional
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'attribution_check_is_read_only_and_apply_is_layer_proportional' (706624) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.038s] (  40/4204) openwepp::assurance_v2_amendment_contract implementation_rebind_adopts_only_the_finite_contract_surface
+  stdout ───
+
+    running 1 test
+    test implementation_rebind_adopts_only_the_finite_contract_surface ... FAILED
+
+    failures:
+
+    failures:
+        implementation_rebind_adopts_only_the_finite_contract_surface
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'implementation_rebind_adopts_only_the_finite_contract_surface' (706714) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.049s] (  42/4204) openwepp::assurance_v2_amendment_contract inspect_exposes_layered_identity_without_mutation
+  stdout ───
+
+    running 1 test
+    test inspect_exposes_layered_identity_without_mutation ... FAILED
+
+    failures:
+
+    failures:
+        inspect_exposes_layered_identity_without_mutation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'inspect_exposes_layered_identity_without_mutation' (706731) panicked at tests/integration/assurance_v2_amendment_contract.rs:251:50:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.042s] (  44/4204) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_declared_external_source_set
+  stdout ───
+
+    running 1 test
+    test manifest_adoption_accepts_complete_declared_external_source_set ... FAILED
+
+    failures:
+
+    failures:
+        manifest_adoption_accepts_complete_declared_external_source_set
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'manifest_adoption_accepts_complete_declared_external_source_set' (706774) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.039s] (  45/4204) openwepp::assurance_v2_amendment_contract manifest_adoption_accepts_complete_owned_internal_source_set
+  stdout ───
+
+    running 1 test
+    test manifest_adoption_accepts_complete_owned_internal_source_set ... FAILED
+
+    failures:
+
+    failures:
+        manifest_adoption_accepts_complete_owned_internal_source_set
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'manifest_adoption_accepts_complete_owned_internal_source_set' (706795) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.040s] (  47/4204) openwepp::assurance_v2_amendment_contract manifest_adoption_rejects_drift_owned_by_another_report
+  stdout ───
+
+    running 1 test
+    test manifest_adoption_rejects_drift_owned_by_another_report ... FAILED
+
+    failures:
+
+    failures:
+        manifest_adoption_rejects_drift_owned_by_another_report
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'manifest_adoption_rejects_drift_owned_by_another_report' (706810) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.056s] (  48/4204) openwepp::assurance_v2_amendment_contract manifest_adoption_admits_new_declared_external_local_content
+  stdout ───
+
+    running 1 test
+    test manifest_adoption_admits_new_declared_external_local_content ... FAILED
+
+    failures:
+
+    failures:
+        manifest_adoption_admits_new_declared_external_local_content
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'manifest_adoption_admits_new_declared_external_local_content' (706800) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.040s] (  49/4204) openwepp::assurance_v2_amendment_contract manifest_adoption_rejects_invalid_new_external_sources_without_mutation
+  stdout ───
+
+    running 1 test
+    test manifest_adoption_rejects_invalid_new_external_sources_without_mutation ... FAILED
+
+    failures:
+
+    failures:
+        manifest_adoption_rejects_invalid_new_external_sources_without_mutation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'manifest_adoption_rejects_invalid_new_external_sources_without_mutation' (706813) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.047s] (  50/4204) openwepp::assurance_v2_amendment_contract new_report_admission_checks_applies_and_repeats_as_no_op
+  stdout ───
+
+    running 1 test
+    test new_report_admission_checks_applies_and_repeats_as_no_op ... FAILED
+
+    failures:
+
+    failures:
+        new_report_admission_checks_applies_and_repeats_as_no_op
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'new_report_admission_checks_applies_and_repeats_as_no_op' (706821) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.039s] (  52/4204) openwepp::assurance_v2_amendment_contract production_generation_chain_and_recovery_inspection_are_current
+  stdout ───
+
+    running 1 test
+    test production_generation_chain_and_recovery_inspection_are_current ... FAILED
+
+    failures:
+
+    failures:
+        production_generation_chain_and_recovery_inspection_are_current
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'production_generation_chain_and_recovery_inspection_are_current' (706827) panicked at tests/integration/assurance_v2_amendment_contract.rs:627:55:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.050s] (  53/4204) openwepp::assurance_v2_amendment_contract report_source_adoption_rejects_noncanonical_unchanged_reset_repair
+  stdout ───
+
+    running 1 test
+    test report_source_adoption_rejects_noncanonical_unchanged_reset_repair ... FAILED
+
+    failures:
+
+    failures:
+        report_source_adoption_rejects_noncanonical_unchanged_reset_repair
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'report_source_adoption_rejects_noncanonical_unchanged_reset_repair' (706835) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.034s] (  56/4204) openwepp::assurance_v2_amendment_contract role_assignment_is_typed_receipted_and_idempotent
+  stdout ───
+
+    running 1 test
+    test role_assignment_is_typed_receipted_and_idempotent ... FAILED
+
+    failures:
+
+    failures:
+        role_assignment_is_typed_receipted_and_idempotent
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'role_assignment_is_typed_receipted_and_idempotent' (706847) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.035s] (  57/4204) openwepp::assurance_v2_amendment_contract stale_optional_generation_rejects_check_and_apply_without_writes
+  stdout ───
+
+    running 1 test
+    test stale_optional_generation_rejects_check_and_apply_without_writes ... FAILED
+
+    failures:
+
+    failures:
+        stale_optional_generation_rejects_check_and_apply_without_writes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'stale_optional_generation_rejects_check_and_apply_without_writes' (706849) panicked at tests/integration/assurance_v2_amendment_contract.rs:1543:80:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   2.387s] (  58/4204) openwepp::assurance_dossier_build_contract public_builder_stays_zero_report_while_validation_admits_internal_v2
+  stdout ───
+
+    running 1 test
+    test public_builder_stays_zero_report_while_validation_admits_internal_v2 ... FAILED
+
+    failures:
+
+    failures:
+        public_builder_stays_zero_report_while_validation_admits_internal_v2
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 12 filtered out; finished in 2.38s
+
+  stderr ───
+
+    thread 'public_builder_stays_zero_report_while_validation_admits_internal_v2' (706605) panicked at tests/integration/assurance_dossier_build_contract.rs:38:10:
+    run public and internal-source validate CLI: Invalid("SHA-256 mismatch for identified source 'docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md'")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [  10.845s] (  59/4204) openwepp::assurance_v2_assembly_contract canopy_named_and_all_builds_are_byte_equivalent_and_complete
+  stdout ───
+
+    running 1 test
+    test canopy_named_and_all_builds_are_byte_equivalent_and_complete ... FAILED
+
+    failures:
+
+    failures:
+        canopy_named_and_all_builds_are_byte_equivalent_and_complete
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 10.84s
+
+  stderr ───
+
+    thread 'canopy_named_and_all_builds_are_byte_equivalent_and_complete' (706953) panicked at tests/integration/assurance_v2_assembly_contract.rs:101:10:
+    build complete catalog: Invalid("report 'snow-and-frozen-soil-process-evaluation' is not current and cannot be assembled")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.038s] (  60/4204) openwepp::assurance_v2_assembly_contract malformed_duplicate_unsafe_link_and_inaccessible_figure_fail_closed
+  stdout ───
+
+    running 1 test
+    test malformed_duplicate_unsafe_link_and_inaccessible_figure_fail_closed ... FAILED
+
+    failures:
+
+    failures:
+        malformed_duplicate_unsafe_link_and_inaccessible_figure_fail_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'malformed_duplicate_unsafe_link_and_inaccessible_figure_fail_closed' (707463) panicked at tests/integration/assurance_v2_assembly_contract.rs:738:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.035s] (  61/4204) openwepp::assurance_v2_assembly_contract manifest_markdown_metadata_is_escaped_without_creating_external_links
+  stdout ───
+
+    running 1 test
+    test manifest_markdown_metadata_is_escaped_without_creating_external_links ... FAILED
+
+    failures:
+
+    failures:
+        manifest_markdown_metadata_is_escaped_without_creating_external_links
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'manifest_markdown_metadata_is_escaped_without_creating_external_links' (707465) panicked at tests/integration/assurance_v2_assembly_contract.rs:738:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.034s] (  62/4204) openwepp::assurance_v2_assembly_contract mtime_changes_do_not_affect_assembly_bytes
+  stdout ───
+
+    running 1 test
+    test mtime_changes_do_not_affect_assembly_bytes ... FAILED
+
+    failures:
+
+    failures:
+        mtime_changes_do_not_affect_assembly_bytes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'mtime_changes_do_not_affect_assembly_bytes' (707467) panicked at tests/integration/assurance_v2_assembly_contract.rs:738:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   1.758s] (  63/4204) openwepp::assurance_v2_assembly_contract real_cli_selects_v2_staging_without_weakening_zero_public_operations
+  stdout ───
+
+    running 1 test
+    test real_cli_selects_v2_staging_without_weakening_zero_public_operations ... FAILED
+
+    failures:
+
+    failures:
+        real_cli_selects_v2_staging_without_weakening_zero_public_operations
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 1.75s
+
+  stderr ───
+
+    thread 'real_cli_selects_v2_staging_without_weakening_zero_public_operations' (707469) panicked at tests/integration/assurance_v2_assembly_contract.rs:558:6:
+    build all reports through real CLI: Invalid("report 'snow-and-frozen-soil-process-evaluation' is not current and cannot be assembled")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   1.774s] (  64/4204) openwepp::assurance_v2_assembly_contract real_named_and_all_builds_are_deterministic_equivalent_and_checkable
+  stdout ───
+
+    running 1 test
+    test real_named_and_all_builds_are_deterministic_equivalent_and_checkable ... FAILED
+
+    failures:
+
+    failures:
+        real_named_and_all_builds_are_deterministic_equivalent_and_checkable
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 1.77s
+
+  stderr ───
+
+    thread 'real_named_and_all_builds_are_deterministic_equivalent_and_checkable' (707708) panicked at tests/integration/assurance_v2_assembly_contract.rs:37:10:
+    build all reports: Invalid("report 'snow-and-frozen-soil-process-evaluation' is not current and cannot be assembled")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.034s] (  67/4204) openwepp::assurance_v2_assembly_contract stale_missing_unit_precision_orphan_and_figure_drift_fail_closed
+  stdout ───
+
+    running 1 test
+    test stale_missing_unit_precision_orphan_and_figure_drift_fail_closed ... FAILED
+
+    failures:
+
+    failures:
+        stale_missing_unit_precision_orphan_and_figure_drift_fail_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'stale_missing_unit_precision_orphan_and_figure_drift_fail_closed' (707810) panicked at tests/integration/assurance_v2_assembly_contract.rs:738:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.049s] (  71/4204) openwepp::assurance_v2_normalization_contract apply_rebinds_complete_graph_builds_and_is_idempotent
+  stdout ───
+
+    running 1 test
+    test apply_rebinds_complete_graph_builds_and_is_idempotent ... FAILED
+
+    failures:
+
+    failures:
+        apply_rebinds_complete_graph_builds_and_is_idempotent
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'apply_rebinds_complete_graph_builds_and_is_idempotent' (707820) panicked at tests/integration/assurance_v2_normalization_contract.rs:250:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.033s] (  72/4204) openwepp::assurance_v2_normalization_contract check_detects_converter_diff_without_writing
+  stdout ───
+
+    running 1 test
+    test check_detects_converter_diff_without_writing ... FAILED
+
+    failures:
+
+    failures:
+        check_detects_converter_diff_without_writing
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'check_detects_converter_diff_without_writing' (707834) panicked at tests/integration/assurance_v2_normalization_contract.rs:250:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   2.961s] (  73/4204) openwepp::assurance_v2_normalization_contract current_report_is_american_english_and_check_is_read_only
+  stdout ───
+
+    running 1 test
+    test current_report_is_american_english_and_check_is_read_only ... FAILED
+
+    failures:
+
+    failures:
+        current_report_is_american_english_and_check_is_read_only
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 2.96s
+
+  stderr ───
+
+    thread 'current_report_is_american_english_and_check_is_read_only' (707836) panicked at tests/integration/assurance_v2_normalization_contract.rs:28:10:
+    current production DRAFT is normalized: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.035s] (  74/4204) openwepp::assurance_v2_normalization_contract equivalent_inputs_emit_identical_receipts
+  stdout ───
+
+    running 1 test
+    test equivalent_inputs_emit_identical_receipts ... FAILED
+
+    failures:
+
+    failures:
+        equivalent_inputs_emit_identical_receipts
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'equivalent_inputs_emit_identical_receipts' (707952) panicked at tests/integration/assurance_v2_normalization_contract.rs:250:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.035s] (  75/4204) openwepp::assurance_v2_normalization_contract lifecycle_review_and_packet_boundaries_fail_before_writing
+  stdout ───
+
+    running 1 test
+    test lifecycle_review_and_packet_boundaries_fail_before_writing ... FAILED
+
+    failures:
+
+    failures:
+        lifecycle_review_and_packet_boundaries_fail_before_writing
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'lifecycle_review_and_packet_boundaries_fail_before_writing' (707954) panicked at tests/integration/assurance_v2_normalization_contract.rs:250:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.068s] (  76/4204) openwepp::assurance_v2_planner_contract content_changes_select_expected_transitive_consumers
+  stdout ───
+
+    running 1 test
+    test content_changes_select_expected_transitive_consumers ... FAILED
+
+    failures:
+
+    failures:
+        content_changes_select_expected_transitive_consumers
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'content_changes_select_expected_transitive_consumers' (707956) panicked at tests/integration/assurance_v2_planner_contract.rs:448:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   1.385s] (  77/4204) openwepp::assurance_v2_planner_contract current_one_and_all_plans_are_equivalent_stable_and_cli_consumed
+  stdout ───
+
+    running 1 test
+    test current_one_and_all_plans_are_equivalent_stable_and_cli_consumed ... FAILED
+
+    failures:
+
+    failures:
+        current_one_and_all_plans_are_equivalent_stable_and_cli_consumed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 1.37s
+
+  stderr ───
+
+    thread 'current_one_and_all_plans_are_equivalent_stable_and_cli_consumed' (707958) panicked at tests/integration/assurance_v2_planner_contract.rs:46:5:
+    assertion `left == right` failed
+      left: Selected
+     right: Current
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.036s] (  78/4204) openwepp::assurance_v2_planner_contract malformed_authority_remains_an_explicit_blocker
+  stdout ───
+
+    running 1 test
+    test malformed_authority_remains_an_explicit_blocker ... FAILED
+
+    failures:
+
+    failures:
+        malformed_authority_remains_an_explicit_blocker
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'malformed_authority_remains_an_explicit_blocker' (707989) panicked at tests/integration/assurance_v2_planner_contract.rs:448:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.036s] (  79/4204) openwepp::assurance_v2_planner_contract manifest_method_figure_review_and_software_changes_select_the_report
+  stdout ───
+
+    running 1 test
+    test manifest_method_figure_review_and_software_changes_select_the_report ... FAILED
+
+    failures:
+
+    failures:
+        manifest_method_figure_review_and_software_changes_select_the_report
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'manifest_method_figure_review_and_software_changes_select_the_report' (707991) panicked at tests/integration/assurance_v2_planner_contract.rs:448:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.036s] (  80/4204) openwepp::assurance_v2_planner_contract mtime_only_change_does_not_change_plan_bytes
+  stdout ───
+
+    running 1 test
+    test mtime_only_change_does_not_change_plan_bytes ... FAILED
+
+    failures:
+
+    failures:
+        mtime_only_change_does_not_change_plan_bytes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'mtime_only_change_does_not_change_plan_bytes' (707993) panicked at tests/integration/assurance_v2_planner_contract.rs:448:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.035s] (  81/4204) openwepp::assurance_v2_planner_contract named_selection_isolated_and_all_plan_does_not_select_unrelated_report
+  stdout ───
+
+    running 1 test
+    test named_selection_isolated_and_all_plan_does_not_select_unrelated_report ... FAILED
+
+    failures:
+
+    failures:
+        named_selection_isolated_and_all_plan_does_not_select_unrelated_report
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'named_selection_isolated_and_all_plan_does_not_select_unrelated_report' (707995) panicked at tests/integration/assurance_v2_planner_contract.rs:448:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.038s] (  83/4204) openwepp::assurance_v2_planner_contract stale_consumer_cannot_mask_a_blocked_prerequisite
+  stdout ───
+
+    running 1 test
+    test stale_consumer_cannot_mask_a_blocked_prerequisite ... FAILED
+
+    failures:
+
+    failures:
+        stale_consumer_cannot_mask_a_blocked_prerequisite
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'stale_consumer_cannot_mask_a_blocked_prerequisite' (707999) panicked at tests/integration/assurance_v2_planner_contract.rs:448:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.036s] (  84/4204) openwepp::assurance_v2_planner_contract unavailable_declared_content_blocks_consumers_with_relative_reasons
+  stdout ───
+
+    running 1 test
+    test unavailable_declared_content_blocks_consumers_with_relative_reasons ... FAILED
+
+    failures:
+
+    failures:
+        unavailable_declared_content_blocks_consumers_with_relative_reasons
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'unavailable_declared_content_blocks_consumers_with_relative_reasons' (708001) panicked at tests/integration/assurance_v2_planner_contract.rs:448:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.049s] (  85/4204) openwepp::assurance_v2_planner_contract unavailable_or_unparseable_selected_manifest_produces_a_bounded_blocked_plan
+  stdout ───
+
+    running 1 test
+    test unavailable_or_unparseable_selected_manifest_produces_a_bounded_blocked_plan ... FAILED
+
+    failures:
+
+    failures:
+        unavailable_or_unparseable_selected_manifest_produces_a_bounded_blocked_plan
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'unavailable_or_unparseable_selected_manifest_produces_a_bounded_blocked_plan' (708003) panicked at tests/integration/assurance_v2_planner_contract.rs:448:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.038s] (  87/4204) openwepp::assurance_v2_publication_contract aliased_usersum_root_fails_closed
+  stdout ───
+
+    running 1 test
+    test aliased_usersum_root_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        aliased_usersum_root_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'aliased_usersum_root_fails_closed' (708060) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.035s] (  88/4204) openwepp::assurance_v2_publication_contract all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation
+  stdout ───
+
+    running 1 test
+    test all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation ... FAILED
+
+    failures:
+
+    failures:
+        all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation' (708062) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.040s] (  89/4204) openwepp::assurance_v2_publication_contract approval_conflicts_and_release_mismatch_fail_before_publication
+  stdout ───
+
+    running 1 test
+    test approval_conflicts_and_release_mismatch_fail_before_publication ... FAILED
+
+    failures:
+
+    failures:
+        approval_conflicts_and_release_mismatch_fail_before_publication
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'approval_conflicts_and_release_mismatch_fail_before_publication' (708064) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.040s] (  90/4204) openwepp::assurance_v2_publication_contract authority_bound_byte_negative_matrix_is_fail_closed
+  stdout ───
+
+    running 1 test
+    test authority_bound_byte_negative_matrix_is_fail_closed ... FAILED
+
+    failures:
+
+    failures:
+        authority_bound_byte_negative_matrix_is_fail_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'authority_bound_byte_negative_matrix_is_fail_closed' (708066) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.035s] (  91/4204) openwepp::assurance_v2_publication_contract bootstrap_empty_directory_fails_closed
+  stdout ───
+
+    running 1 test
+    test bootstrap_empty_directory_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        bootstrap_empty_directory_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'bootstrap_empty_directory_fails_closed' (708070) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.033s] (  92/4204) openwepp::assurance_v2_publication_contract bootstrap_unowned_readme_fails_closed
+  stdout ───
+
+    running 1 test
+    test bootstrap_unowned_readme_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        bootstrap_unowned_readme_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'bootstrap_unowned_readme_fails_closed' (708087) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.052s] (  93/4204) openwepp::assurance_v2_publication_contract canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+  stdout ───
+
+    running 1 test
+    test canonical_public_path_and_real_markdown_narrative_link_are_mandatory ... FAILED
+
+    failures:
+
+    failures:
+        canonical_public_path_and_real_markdown_narrative_link_are_mandatory
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'canonical_public_path_and_real_markdown_narrative_link_are_mandatory' (708089) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.043s] (  95/4204) openwepp::assurance_v2_publication_contract concurrent_reader_observes_only_complete_old_or_new_report_bytes
+  stdout ───
+
+    running 1 test
+    test concurrent_reader_observes_only_complete_old_or_new_report_bytes ... FAILED
+
+    failures:
+
+    failures:
+        concurrent_reader_observes_only_complete_old_or_new_report_bytes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'concurrent_reader_observes_only_complete_old_or_new_report_bytes' (708109) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.033s] (  98/4204) openwepp::assurance_v2_publication_contract every_precommit_fault_boundary_preserves_the_prior_public_generation
+  stdout ───
+
+    running 1 test
+    test every_precommit_fault_boundary_preserves_the_prior_public_generation ... FAILED
+
+    failures:
+
+    failures:
+        every_precommit_fault_boundary_preserves_the_prior_public_generation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'every_precommit_fault_boundary_preserves_the_prior_public_generation' (708133) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.053s] (  99/4204) openwepp::assurance_v2_publication_contract in_review_source_cannot_publish
+  stdout ───
+
+    running 1 test
+    test in_review_source_cannot_publish ... FAILED
+
+    failures:
+
+    failures:
+        in_review_source_cannot_publish
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'in_review_source_cannot_publish' (708135) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.046s] ( 100/4204) openwepp::assurance_v2_publication_contract missing_competence_fails_closed
+  stdout ───
+
+    running 1 test
+    test missing_competence_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        missing_competence_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'missing_competence_fails_closed' (708137) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.035s] ( 101/4204) openwepp::assurance_v2_publication_contract missing_independence_fails_closed
+  stdout ───
+
+    running 1 test
+    test missing_independence_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        missing_independence_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'missing_independence_fails_closed' (708139) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.055s] ( 102/4204) openwepp::assurance_v2_publication_contract missing_release_transfer_fails_closed
+  stdout ───
+
+    running 1 test
+    test missing_release_transfer_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        missing_release_transfer_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'missing_release_transfer_fails_closed' (708153) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.051s] ( 103/4204) openwepp::assurance_v2_publication_contract multi_report_production_snapshot_replays_complete_authority
+  stdout ───
+
+    running 1 test
+    test multi_report_production_snapshot_replays_complete_authority ... FAILED
+
+    failures:
+
+    failures:
+        multi_report_production_snapshot_replays_complete_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'multi_report_production_snapshot_replays_complete_authority' (708155) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.037s] ( 104/4204) openwepp::assurance_v2_publication_contract multiply_linked_staging_bytes_fail_before_publication
+  stdout ───
+
+    running 1 test
+    test multiply_linked_staging_bytes_fail_before_publication ... FAILED
+
+    failures:
+
+    failures:
+        multiply_linked_staging_bytes_fail_before_publication
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'multiply_linked_staging_bytes_fail_before_publication' (708157) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.040s] ( 105/4204) openwepp::assurance_v2_publication_contract named_publication_preserves_receipted_peer_and_all_mode_converges
+  stdout ───
+
+    running 1 test
+    test named_publication_preserves_receipted_peer_and_all_mode_converges ... FAILED
+
+    failures:
+
+    failures:
+        named_publication_preserves_receipted_peer_and_all_mode_converges
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'named_publication_preserves_receipted_peer_and_all_mode_converges' (708159) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.034s] ( 106/4204) openwepp::assurance_v2_publication_contract named_publication_rejects_unreceipted_prior_catalog_entries
+  stdout ───
+
+    running 1 test
+    test named_publication_rejects_unreceipted_prior_catalog_entries ... FAILED
+
+    failures:
+
+    failures:
+        named_publication_rejects_unreceipted_prior_catalog_entries
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'named_publication_rejects_unreceipted_prior_catalog_entries' (708161) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.034s] ( 107/4204) openwepp::assurance_v2_publication_contract narrative_drift_fails_closed
+  stdout ───
+
+    running 1 test
+    test narrative_drift_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        narrative_drift_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'narrative_drift_fails_closed' (708163) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.040s] ( 109/4204) openwepp::assurance_v2_publication_contract receipt_preparation_is_reused_only_when_bytes_match
+  stdout ───
+
+    running 1 test
+    test receipt_preparation_is_reused_only_when_bytes_match ... FAILED
+
+    failures:
+
+    failures:
+        receipt_preparation_is_reused_only_when_bytes_match
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'receipt_preparation_is_reused_only_when_bytes_match' (708168) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.053s] ( 110/4204) openwepp::assurance_v2_publication_contract reconstructed_production_snapshot_passes_and_forged_roots_fail
+  stdout ───
+
+    running 1 test
+    test reconstructed_production_snapshot_passes_and_forged_roots_fail ... FAILED
+
+    failures:
+
+    failures:
+        reconstructed_production_snapshot_passes_and_forged_roots_fail
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'reconstructed_production_snapshot_passes_and_forged_roots_fail' (708170) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.044s] ( 111/4204) openwepp::assurance_v2_publication_contract release_driver_persists_verified_v2_artifacts_and_discovery_sidecar
+  stdout ───
+
+    running 1 test
+    test release_driver_persists_verified_v2_artifacts_and_discovery_sidecar ... FAILED
+
+    failures:
+
+    failures:
+        release_driver_persists_verified_v2_artifacts_and_discovery_sidecar
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'release_driver_persists_verified_v2_artifacts_and_discovery_sidecar' (708172) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.047s] ( 114/4204) openwepp::assurance_v2_publication_contract simultaneous_publishers_serialize_and_converge_on_one_generation
+  stdout ───
+
+    running 1 test
+    test simultaneous_publishers_serialize_and_converge_on_one_generation ... FAILED
+
+    failures:
+
+    failures:
+        simultaneous_publishers_serialize_and_converge_on_one_generation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'simultaneous_publishers_serialize_and_converge_on_one_generation' (708179) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.055s] ( 115/4204) openwepp::assurance_v2_publication_contract special_files_on_public_and_immutable_surfaces_fail_closed
+  stdout ───
+
+    running 1 test
+    test special_files_on_public_and_immutable_surfaces_fail_closed ... FAILED
+
+    failures:
+
+    failures:
+        special_files_on_public_and_immutable_surfaces_fail_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'special_files_on_public_and_immutable_surfaces_fail_closed' (708181) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.047s] ( 116/4204) openwepp::assurance_v2_publication_contract staging_fifo_fails_closed
+  stdout ───
+
+    running 1 test
+    test staging_fifo_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        staging_fifo_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'staging_fifo_fails_closed' (708183) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.036s] ( 117/4204) openwepp::assurance_v2_publication_contract staging_symlink_fails_closed
+  stdout ───
+
+    running 1 test
+    test staging_symlink_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        staging_symlink_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'staging_symlink_fails_closed' (708185) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.049s] ( 118/4204) openwepp::assurance_v2_publication_contract stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication
+  stdout ───
+
+    running 1 test
+    test stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication ... FAILED
+
+    failures:
+
+    failures:
+        stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication' (708187) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.041s] ( 119/4204) openwepp::assurance_v2_publication_contract superseded_report_fails_closed
+  stdout ───
+
+    running 1 test
+    test superseded_report_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        superseded_report_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'superseded_report_fails_closed' (708189) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.039s] ( 120/4204) openwepp::assurance_v2_publication_contract synthetic_approved_fixture_publishes_idempotently_and_release_rejects_it
+  stdout ───
+
+    running 1 test
+    test synthetic_approved_fixture_publishes_idempotently_and_release_rejects_it ... FAILED
+
+    failures:
+
+    failures:
+        synthetic_approved_fixture_publishes_idempotently_and_release_rejects_it
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'synthetic_approved_fixture_publishes_idempotently_and_release_rejects_it' (708191) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.043s] ( 121/4204) openwepp::assurance_v2_publication_contract withdrawn_report_fails_closed
+  stdout ───
+
+    running 1 test
+    test withdrawn_report_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        withdrawn_report_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'withdrawn_report_fails_closed' (708193) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.039s] ( 122/4204) openwepp::assurance_v2_publication_contract wrong_principal_kind_fails_closed
+  stdout ───
+
+    running 1 test
+    test wrong_principal_kind_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        wrong_principal_kind_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'wrong_principal_kind_fails_closed' (708195) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.035s] ( 123/4204) openwepp::assurance_v2_publication_contract wrong_principal_role_fails_closed
+  stdout ───
+
+    running 1 test
+    test wrong_principal_role_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        wrong_principal_role_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'wrong_principal_role_fails_closed' (708197) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.039s] ( 124/4204) openwepp::assurance_v2_publication_contract wrong_principal_trust_domain_fails_closed
+  stdout ───
+
+    running 1 test
+    test wrong_principal_trust_domain_fails_closed ... FAILED
+
+    failures:
+
+    failures:
+        wrong_principal_trust_domain_fails_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'wrong_principal_trust_domain_fails_closed' (708201) panicked at tests/integration/assurance_v2_publication_contract.rs:1752:68:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.060s] ( 125/4204) openwepp::assurance_v2_source_contract content_schema_contract_and_report_versions_are_enforced
+  stdout ───
+
+    running 1 test
+    test content_schema_contract_and_report_versions_are_enforced ... FAILED
+
+    failures:
+
+    failures:
+        content_schema_contract_and_report_versions_are_enforced
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'content_schema_contract_and_report_versions_are_enforced' (708200) panicked at tests/integration/assurance_v2_source_contract.rs:662:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.042s] ( 126/4204) openwepp::assurance_v2_source_contract every_record_family_has_executable_field_consumption
+  stdout ───
+
+    running 1 test
+    test every_record_family_has_executable_field_consumption ... FAILED
+
+    failures:
+
+    failures:
+        every_record_family_has_executable_field_consumption
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'every_record_family_has_executable_field_consumption' (708204) panicked at tests/integration/assurance_v2_source_contract.rs:662:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.040s] ( 127/4204) openwepp::assurance_v2_source_contract named_validation_isolated_from_an_unselected_broken_report
+  stdout ───
+
+    running 1 test
+    test named_validation_isolated_from_an_unselected_broken_report ... FAILED
+
+    failures:
+
+    failures:
+        named_validation_isolated_from_an_unselected_broken_report
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'named_validation_isolated_from_an_unselected_broken_report' (708207) panicked at tests/integration/assurance_v2_source_contract.rs:662:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.041s] ( 129/4204) openwepp::assurance_v2_source_contract paths_symlinks_and_special_entries_fail_closed
+  stdout ───
+
+    running 1 test
+    test paths_symlinks_and_special_entries_fail_closed ... FAILED
+
+    failures:
+
+    failures:
+        paths_symlinks_and_special_entries_fail_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'paths_symlinks_and_special_entries_fail_closed' (708209) panicked at tests/integration/assurance_v2_source_contract.rs:662:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.056s] ( 132/4204) openwepp::assurance_v2_source_contract restricted_evidence_and_draft_lifecycle_contradictions_fail_closed
+  stdout ───
+
+    running 1 test
+    test restricted_evidence_and_draft_lifecycle_contradictions_fail_closed ... FAILED
+
+    failures:
+
+    failures:
+        restricted_evidence_and_draft_lifecycle_contradictions_fail_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'restricted_evidence_and_draft_lifecycle_contradictions_fail_closed' (708234) panicked at tests/integration/assurance_v2_source_contract.rs:662:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.051s] ( 133/4204) openwepp::assurance_v2_source_contract schema_required_nullable_fields_cannot_be_omitted
+  stdout ───
+
+    running 1 test
+    test schema_required_nullable_fields_cannot_be_omitted ... FAILED
+
+    failures:
+
+    failures:
+        schema_required_nullable_fields_cannot_be_omitted
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.04s
+
+  stderr ───
+
+    thread 'schema_required_nullable_fields_cannot_be_omitted' (708236) panicked at tests/integration/assurance_v2_source_contract.rs:662:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.057s] ( 134/4204) openwepp::assurance_v2_source_contract unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed
+  stdout ───
+
+    running 1 test
+    test unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed ... FAILED
+
+    failures:
+
+    failures:
+        unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.05s
+
+  stderr ───
+
+    thread 'unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed' (708238) panicked at tests/integration/assurance_v2_source_contract.rs:662:69:
+    called `Result::unwrap()` on an `Err` value: Drift("generated identity member changed: docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.061s] ( 182/4204) openwepp::c3_woody_v11_authority_contract typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit
+  stdout ───
+
+    running 1 test
+    test typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit ... FAILED
+
+    failures:
+
+    failures:
+        typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.06s
+
+  stderr ───
+
+    thread 'typed_semantic_authority_reconstructs_receipts_restart_and_atomic_commit' (708366) panicked at tests/integration/c3_woody_v11_authority_contract.rs:269:5:
+    full V10 surface binding drift
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   2.518s] ( 192/4204) openwepp::assurance_v2_source_contract real_source_and_cli_validate_named_and_all_deterministically
+  stdout ───
+
+    running 1 test
+    test real_source_and_cli_validate_named_and_all_deterministically ... FAILED
+
+    failures:
+
+    failures:
+        real_source_and_cli_validate_named_and_all_deterministically
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 2.51s
+
+  stderr ───
+
+    thread 'real_source_and_cli_validate_named_and_all_deterministically' (708213) panicked at tests/integration/assurance_v2_source_contract.rs:34:41:
+    validate all sources: Invalid("SHA-256 mismatch for identified source 'docs/specifications/science-contracts/contracts/SC-SNOWENERGY-001.md'")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+     SIGABRT [   1.914s] ( 214/4204) openwepp::cli01_runner_hillslope_integration cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest' (708453) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   1.585s] ( 216/4204) openwepp::cli01_runner_hillslope_integration cli01_contract_conformance_sidecar_policy_warns_on_unknown_discovery
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli01_contract_conformance_sidecar_policy_warns_on_unknown_discovery' (708580) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   1.753s] ( 219/4204) openwepp::cli03_runner_contract_derived_tests cli03_fixture_run_emits_required_and_configured_optional_outputs_with_manifest_checksums
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli03_fixture_run_emits_required_and_configured_optional_outputs_with_manifest_checksums' (709918) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   1.601s] ( 220/4204) openwepp::cli03_runner_contract_derived_tests cli03_fixture_run_publishes_retired_wb16_ealpha_provenance
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli03_fixture_run_publishes_retired_wb16_ealpha_provenance' (711407) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   1.608s] ( 222/4204) openwepp::cli03_runner_contract_derived_tests cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides' (712159) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   1.797s] ( 241/4204) openwepp::cli03_runner_contract_derived_tests cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows' (712229) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   1.736s] ( 242/4204) openwepp::cli03_runner_contract_derived_tests cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain' (712286) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   2.046s] ( 243/4204) openwepp::cli03_runner_contract_derived_tests cli03_mofe03_single_ofe_policy_disables_wave2_by_default
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli03_mofe03_single_ofe_policy_disables_wave2_by_default' (712375) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   2.055s] ( 244/4204) openwepp::cli03_runner_contract_derived_tests cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain' (712414) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   2.043s] ( 250/4204) openwepp::cli03_runner_contract_derived_tests cli03_mofe04_single_ofe_publication_reports_single_contributor_policy
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli03_mofe04_single_ofe_publication_reports_single_contributor_policy' (712490) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   2.000s] ( 256/4204) openwepp::cli03_runner_contract_derived_tests cli03_runtime_accepts_finite_daily_temperature_inversion_records
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli03_runtime_accepts_finite_daily_temperature_inversion_records' (712524) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+     SIGABRT [   2.003s] ( 257/4204) openwepp::cli04_runner_wat_parquet_contract_derived_tests cli04_fixture_run_emits_valid_wat_parquet_with_required_metadata_keys
+  stdout ───
+
+    running 1 test
+  stderr ───
+
+    thread 'cli04_fixture_run_emits_valid_wat_parquet_with_required_metadata_keys' (712551) has overflowed its stack
+    fatal runtime error: stack overflow, aborting
+
+    (test aborted with signal 6: SIGABRT)
+
+        SLOW [> 90.000s] (─────────) openwepp::assurance_v2_amendment_contract report_source_adoption_is_read_only_deterministic_and_invalidates_review_authority
+        SLOW [> 90.000s] (─────────) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+  Cancelling due to interrupt: 1 test still running
+      SIGINT [  99.714s] ( 260/4204) openwepp::cqr_quality_evidence_handoff_contract cqr_quality_evidence_self_test_passes
+────────────
+     Summary [ 191.873s] 260/4204 tests run: 171 passed (1 slow), 89 failed, 76 skipped
+warning: 3944/4204 tests were not run due to interrupt
+error: test run failed

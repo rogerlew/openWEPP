@@ -1,0 +1,128 @@
+{
+  "isolated_root": "/tmp/openwepp-real-pin-final-jgeooyi8",
+  "records": [
+    {
+      "argv": [
+        "tools/dev/develop",
+        "true"
+      ],
+      "exit": 0,
+      "stdout": "openWEPP Nix shell\n  target:  /tmp/openwepp-real-pin-final-jgeooyi8/build/targets/nix-storage-real-pin-final\n  scratch: /tmp/openwepp-roger-nix-storage-real-pin-final\n  cache:   /tmp/openwepp-real-pin-final-jgeooyi8/build\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "tools/dev/nix-lifecycle",
+        "pin",
+        "7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d",
+        "qa-retention"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell"
+      ],
+      "exit": 0,
+      "stdout": "/tmp/openwepp-real-pin-final-jgeooyi8/state/pins/qa-retention-1-link -> /nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell\n/tmp/openwepp-real-pin-0c_awzu2/state/pins/qa-retention-1-link -> /nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "tools/dev/nix-lifecycle",
+        "release",
+        "qa-retention"
+      ],
+      "exit": 2,
+      "stdout": "",
+      "stderr": "error: refusing tampered pin generation\n"
+    },
+    {
+      "argv": [
+        "tools/dev/nix-lifecycle",
+        "prune",
+        "--keep",
+        "0",
+        "--older-than-days",
+        "0"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "tools/dev/nix-lifecycle",
+        "release",
+        "qa-retention"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell"
+      ],
+      "exit": 0,
+      "stdout": "/tmp/openwepp-real-pin-0c_awzu2/state/pins/qa-retention-1-link -> /nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell\n",
+      "stderr": "removing stale link from \"/nix/var/nix/gcroots/auto/nbvnpxl9dp4szirkgqbls4r5c7zad0r1\" to \"/tmp/openwepp-real-pin-final-jgeooyi8/state/pins/qa-retention-1-link\"\n"
+    },
+    {
+      "argv": [
+        "tools/dev/nix-lifecycle",
+        "prune",
+        "--keep",
+        "0",
+        "--older-than-days",
+        "0"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "skip tampered profile generation for 7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d\n"
+    },
+    {
+      "argv": [
+        "tools/dev/nix-lifecycle",
+        "prune",
+        "--keep",
+        "0",
+        "--older-than-days",
+        "0"
+      ],
+      "exit": 0,
+      "stdout": "0 store paths deleted, 0.0 KiB freed\nretired 7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d\n",
+      "stderr": "finding garbage collector roots...\nremoving stale link from \"/nix/var/nix/gcroots/auto/nbczih6wd8vrhg1gbjbbpqxch3ay59kr\" to \"/tmp/openwepp-real-pin-final-jgeooyi8/state/profiles/7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d-1-link\"\ndeleting specified paths...\nerror: Cannot delete path '/nix/store/ldzrsf9bl5w0dswwlim24pz2z29v9m8w-nix-shell-env' since it is still alive. To find out why, use: nix-store --query --roots and nix-store --query --referrers\nretired output remains live or referenced: /nix/store/ldzrsf9bl5w0dswwlim24pz2z29v9m8w-nix-shell-env\n"
+    },
+    {
+      "argv": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/ldzrsf9bl5w0dswwlim24pz2z29v9m8w-nix-shell-env"
+      ],
+      "exit": 0,
+      "stdout": "/home/roger/.local/state/openwepp/nix/profiles/7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d-1-link -> /nix/store/ldzrsf9bl5w0dswwlim24pz2z29v9m8w-nix-shell-env\n/tmp/openwepp-real-pin-0c_awzu2/state/profiles/7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d-1-link -> /nix/store/ldzrsf9bl5w0dswwlim24pz2z29v9m8w-nix-shell-env\n{censored} -> /nix/store/ldzrsf9bl5w0dswwlim24pz2z29v9m8w-nix-shell-env\n",
+      "stderr": ""
+    },
+    {
+      "result": "PASS",
+      "identity": "7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d",
+      "pin_root_created_then_released": true,
+      "pinned_environment_retained": true,
+      "numeric_generations_removed": true,
+      "nonnumeric_sibling_preserved": true,
+      "tampered_pin_and_profile_candidates_preserved": true,
+      "pruned_profile_has_no_gc_roots": true,
+      "checkout_result_not_created": true
+    }
+  ]
+}

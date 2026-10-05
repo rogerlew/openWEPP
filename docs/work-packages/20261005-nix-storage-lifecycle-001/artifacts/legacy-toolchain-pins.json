@@ -1,0 +1,37 @@
+{
+  "owner": "20260920-cold-canopy-m1-001",
+  "source_receipt": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/tools.json",
+  "release_condition": "Only after frozen experiment exact toolchain custody obligation ends; no automatic expiry.",
+  "pins": [
+    {
+      "tool": "cargo",
+      "store_path": "/nix/store/cavxgwfb7l7akyvvqvnl39d6nw0wckgh-cargo-1.97.1",
+      "root": "/workdir/openwepp-recovery/nix-roots/cold-canopy-m1-20261005/cargo",
+      "resolved": "/nix/store/cavxgwfb7l7akyvvqvnl39d6nw0wckgh-cargo-1.97.1"
+    },
+    {
+      "tool": "rustc",
+      "store_path": "/nix/store/paaihvr59q1101200mabmk7y4yhw42g7-rustc-wrapper-1.97.1",
+      "root": "/workdir/openwepp-recovery/nix-roots/cold-canopy-m1-20261005/rustc",
+      "resolved": "/nix/store/paaihvr59q1101200mabmk7y4yhw42g7-rustc-wrapper-1.97.1"
+    },
+    {
+      "tool": "rustfmt",
+      "store_path": "/nix/store/k2hwcha2p1fy0v0py34vq3jyvwqk339p-rustfmt-1.97.1",
+      "root": "/workdir/openwepp-recovery/nix-roots/cold-canopy-m1-20261005/rustfmt",
+      "resolved": "/nix/store/k2hwcha2p1fy0v0py34vq3jyvwqk339p-rustfmt-1.97.1"
+    },
+    {
+      "tool": "cargo-clippy",
+      "store_path": "/nix/store/94wbbyb1fzp4cplfs9samki875k9ypg7-clippy-1.97.1",
+      "root": "/workdir/openwepp-recovery/nix-roots/cold-canopy-m1-20261005/cargo-clippy",
+      "resolved": "/nix/store/94wbbyb1fzp4cplfs9samki875k9ypg7-clippy-1.97.1"
+    },
+    {
+      "tool": "cc",
+      "store_path": "/nix/store/3d1c302vw7kc8a5vknhmn34c0pd7zm6m-gcc-wrapper-15.3.0",
+      "root": "/workdir/openwepp-recovery/nix-roots/cold-canopy-m1-20261005/cc",
+      "resolved": "/nix/store/3d1c302vw7kc8a5vknhmn34c0pd7zm6m-gcc-wrapper-15.3.0"
+    }
+  ]
+}

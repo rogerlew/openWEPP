@@ -1,0 +1,9 @@
+[Unit]
+Description=Weekly openWEPP staged Nix environment retention
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

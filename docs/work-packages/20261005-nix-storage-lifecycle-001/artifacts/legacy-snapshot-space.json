@@ -1,0 +1,7 @@
+{
+  "before_used_bytes": 469470089216,
+  "after_used_bytes": 211880488960,
+  "recovered_bytes": 257589600256,
+  "removed_paths": 183,
+  "scope": "Only inventoried, restored-and-verified openWEPP source snapshots"
+}

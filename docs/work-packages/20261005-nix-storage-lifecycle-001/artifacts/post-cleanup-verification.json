@@ -1,0 +1,53 @@
+{
+  "removed_source_count": 183,
+  "restore_samples_and_protected_tools": [
+    {
+      "original_source": "/nix/store/zx7lpdvyl0ad82ha0amxfi9hw2q321i9-source",
+      "archive": "/workdir/openwepp-recovery/nix-snapshots-20261005/zx7lpdvyl0ad82ha0amxfi9hw2q321i9-source.nar.zst",
+      "restored_nar_sha256": "3329294e1765dec357871ff1e0c1bbe408dc2a80085477f81c1bdfe64177b027",
+      "result": "PASS"
+    },
+    {
+      "original_source": "/nix/store/x87zax0b6hl91v31wr4l5j8wpnchy3gk-source",
+      "archive": "/workdir/openwepp-recovery/nix-snapshots-20261005/x87zax0b6hl91v31wr4l5j8wpnchy3gk-source.nar.zst",
+      "restored_nar_sha256": "f44109816c1e7e56838d1dea834396cf7656ccc41ae6525ddc54f54f4c71a128",
+      "result": "PASS"
+    },
+    {
+      "original_source": "/nix/store/nr032rf0avd0b3bginfc399y33mlffap-source",
+      "archive": "/workdir/openwepp-recovery/nix-snapshots-20261005/nr032rf0avd0b3bginfc399y33mlffap-source.nar.zst",
+      "restored_nar_sha256": "1e6951599559c12e64cfd603874bf89af55ebe8518b24563ed689712fc5f4779",
+      "result": "PASS"
+    },
+    {
+      "tool": "cargo",
+      "root": "/workdir/openwepp-recovery/nix-roots/cold-canopy-m1-20261005/cargo",
+      "executable_sha256": "431bc749d662c3b5356b52559d3c312cd8b25bb45969d099ec85c1b9dd972e17",
+      "result": "PASS"
+    },
+    {
+      "tool": "rustc",
+      "root": "/workdir/openwepp-recovery/nix-roots/cold-canopy-m1-20261005/rustc",
+      "executable_sha256": "d1e06b7c73a05d2c899ae69b0463aa0e3865dd45f929d7044972670b313998b1",
+      "result": "PASS"
+    },
+    {
+      "tool": "rustfmt",
+      "root": "/workdir/openwepp-recovery/nix-roots/cold-canopy-m1-20261005/rustfmt",
+      "executable_sha256": "04a0d1cead537f8aade9f00dd1f5ba8110669ccdcf4dd2ae203d7e72958d8ba7",
+      "result": "PASS"
+    },
+    {
+      "tool": "cargo-clippy",
+      "root": "/workdir/openwepp-recovery/nix-roots/cold-canopy-m1-20261005/cargo-clippy",
+      "executable_sha256": "f6f4f8fa5302ed7b60bdab48979b7f98b91e7cc5e47c2d809090b27d851385e1",
+      "result": "PASS"
+    },
+    {
+      "tool": "cc",
+      "root": "/workdir/openwepp-recovery/nix-roots/cold-canopy-m1-20261005/cc",
+      "executable_sha256": "9453ab25e5ba2cc7663d83a80d7f7970b2d2bb500b4bd56958085188f24df83e",
+      "result": "PASS"
+    }
+  ]
+}

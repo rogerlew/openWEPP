@@ -1,0 +1,46 @@
+[
+  {
+    "argv": [
+      "systemctl",
+      "--user",
+      "show",
+      "openwepp-nix-prune.service",
+      "-p",
+      "Result",
+      "-p",
+      "ExecMainStatus"
+    ],
+    "exit": 0,
+    "stdout": "Result=success\nExecMainStatus=0\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "systemctl",
+      "--user",
+      "is-enabled",
+      "openwepp-nix-prune.timer"
+    ],
+    "exit": 0,
+    "stdout": "enabled\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "systemctl",
+      "--user",
+      "show",
+      "openwepp-nix-prune.timer",
+      "-p",
+      "ActiveState",
+      "-p",
+      "NextElapseUSecRealtime"
+    ],
+    "exit": 0,
+    "stdout": "ActiveState=active\nNextElapseUSecRealtime=Mon 2026-10-12 00:00:00 PDT\n",
+    "stderr": ""
+  },
+  {
+    "lifecycle_sha256": "0876522493d48d5a3beb025ff69064bd21b797aed2eabfb41bb9868bb35744b4"
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "path": "/workdir/openWEPP/result",
+  "owned_test_target": "/nix/store/gaq2szm4di8gjcb4h1wk0ny5phd8565g-nix-shell",
+  "removed_symlink_only": true,
+  "store_output_preserved": true
+}

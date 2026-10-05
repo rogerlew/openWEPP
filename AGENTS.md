@@ -18,6 +18,12 @@
   `tools/agents/find-agents --all` for the full inventory and
   `docs/agent-guidance-map.md` for the current index.
 
+## Development Environment
+- Enter the pinned Nix environment with `tools/dev/develop`, not repository-root
+  `nix develop`; see `tools/dev/README.md` for small toolchain inputs and retention.
+- Package-owned environment pins and cache disposal follow
+  `docs/standards/bounded-agent-execution.md#development-environment-and-cache-lifecycle`.
+
 ## Local Python Environment
 - Repo-local Python tooling should use `.venv/bin/python`.
 - `.venv` is an untracked local environment; do not commit it.

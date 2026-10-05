@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Focused offline tests for source staging and bounded lifecycle deletion.
+set -euo pipefail
+
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
+temp="$(mktemp -d)"
+trap 'rm -rf -- "$temp"' EXIT
+mkdir -p "$temp/bin" "$temp/dev"
+cp -a "$repo_root/tools/dev/nix-toolchain" "$temp/dev/nix-toolchain"
+cp "$repo_root/tools/dev/openwepp-env" "$temp/dev/openwepp-env"
+cp "$repo_root/tools/dev/develop" "$temp/dev/develop"
+cp "$repo_root/tools/dev/nix-lifecycle" "$temp/dev/nix-lifecycle"
+
+cat >"$temp/bin/nix" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >>"$OPENWEPP_TEST_NIX_LOG"
+if [[ "$*" == *'--command false' ]]; then
+    exit 1
+fi
+if [[ "$*" == *'--command hold' ]]; then
+    touch "$OPENWEPP_TEST_HOLD_DIR/$BASHPID"
+    sleep 3
+fi
+EOF
+chmod +x "$temp/bin/nix"
+cat >"$temp/bin/nix-store" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >>"$OPENWEPP_TEST_NIX_STORE_LOG"
+EOF
+chmod +x "$temp/bin/nix-store"
+export PATH="$temp/bin:$PATH"
+export OPENWEPP_NIX_CACHE_ROOT="$temp/cache"
+export OPENWEPP_NIX_STATE_ROOT="$temp/state"
+export OPENWEPP_TEST_NIX_LOG="$temp/nix.log"
+export OPENWEPP_TEST_NIX_STORE_LOG="$temp/nix-store.log"
+export OPENWEPP_TEST_HOLD_DIR="$temp/holds"
+mkdir "$OPENWEPP_TEST_HOLD_DIR"
+
+"$temp/dev/develop" true
+first_stage="$(awk '{for (i=1;i<=NF;i++) if ($i ~ /\/sources\//) print $i}' "$temp/nix.log")"
+first_stage="${first_stage#path:}"
+[[ -d "$first_stage" ]]
+touch "$first_stage/unexpected-input"
+if "$temp/dev/develop" true; then
+    echo "wrapper accepted a corrupted staged input" >&2
+    exit 1
+fi
+rm "$first_stage/unexpected-input"
+"$temp/dev/develop" hold &
+hold_one=$!
+while (( $(find "$OPENWEPP_TEST_HOLD_DIR" -type f | wc -l) < 1 )); do sleep 0.01; done
+"$temp/dev/develop" hold &
+hold_two=$!
+while (( $(find "$OPENWEPP_TEST_HOLD_DIR" -type f | wc -l) < 2 )); do sleep 0.01; done
+"$temp/dev/nix-lifecycle" prune --keep 0 --older-than-days 0
+[[ -d "$first_stage" ]]
+wait "$hold_one"
+wait "$hold_two"
+: >"$temp/unrelated-rust-source"
+if "$temp/dev/develop" false; then
+    echo "wrapper did not preserve command failure" >&2
+    exit 1
+fi
+second_stage="$(tail -1 "$temp/nix.log" | awk '{for (i=1;i<=NF;i++) if ($i ~ /\/sources\//) print $i}')"
+second_stage="${second_stage#path:}"
+[[ "$first_stage" == "$second_stage" ]]
+printf '\n# helper change\n' >>"$temp/dev/openwepp-env"
+"$temp/dev/develop" true
+third_stage="$(tail -1 "$temp/nix.log" | awk '{for (i=1;i<=NF;i++) if ($i ~ /\/sources\//) print $i}')"
+third_stage="${third_stage#path:}"
+[[ "$third_stage" != "$first_stage" ]]
+
+id_active="$(basename "$third_stage")"
+id_old="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+id_pinned="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+mkdir -p "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_old" "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_pinned" "$OPENWEPP_NIX_STATE_ROOT/pins"
+touch -d '31 days ago' "$first_stage" "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_old"
+ln -s /nix/store/does-not-exist "$OPENWEPP_NIX_STATE_ROOT/profiles/$id_old"
+printf '%s\n' "$id_pinned" >"$OPENWEPP_NIX_STATE_ROOT/pins/keep.identity"
+ln -s /nix/store/does-not-exist "$OPENWEPP_NIX_STATE_ROOT/pins/keep"
+outside="$temp/outside"
+mkdir "$outside"
+touch "$outside/sentinel"
+id_unsafe="cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+ln -s "$outside" "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_unsafe"
+(
+    exec 9>"$OPENWEPP_NIX_STATE_ROOT/locks/$id_active.lock"
+    flock 9
+    touch "$temp/active-lock-held"
+    sleep 5
+) &
+lock_holder=$!
+while [[ ! -e "$temp/active-lock-held" ]]; do
+    sleep 0.01
+done
+"$temp/dev/nix-lifecycle" prune --keep 0
+wait "$lock_holder"
+[[ ! -e "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_old" ]]
+[[ -d "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_pinned" ]]
+[[ -d "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_active" ]]
+[[ -f "$outside/sentinel" ]]
+grep -q -- '--command true' "$temp/nix.log"
+grep -q -- '--command false' "$temp/nix.log"
+id_delete="dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+id_wrong="eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+mkdir -p "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_delete" "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_wrong"
+touch -d '31 days ago' "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_delete" "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_wrong"
+good_target="/nix/store/ffffffffffffffffffffffffffffffff-nix-shell-env"
+bad_target="/nix/store/ffffffffffffffffffffffffffffffff-not-an-environment"
+ln -s "$good_target" "$OPENWEPP_NIX_STATE_ROOT/profiles/$id_delete"
+ln -s "$bad_target" "$OPENWEPP_NIX_STATE_ROOT/profiles/$id_wrong"
+printf '%s\n' "$good_target" >"$OPENWEPP_NIX_STATE_ROOT/receipts/$id_delete.output"
+printf '%s\n' "$bad_target" >"$OPENWEPP_NIX_STATE_ROOT/receipts/$id_wrong.output"
+"$temp/dev/nix-lifecycle" prune --keep 0 --older-than-days 0
+grep -Fxq -- "--delete $good_target" "$OPENWEPP_TEST_NIX_STORE_LOG"
+[[ "$(wc -l <"$OPENWEPP_TEST_NIX_STORE_LOG")" == 1 ]]
+[[ -L "$OPENWEPP_NIX_STATE_ROOT/profiles/$id_wrong" ]]
+sentinel="$temp/leaf-sentinel"
+printf 'unchanged\n' >"$sentinel"
+id_leaf="9999999999999999999999999999999999999999999999999999999999999999"
+mkdir -p "$OPENWEPP_NIX_CACHE_ROOT/sources/$id_leaf"
+ln -s "$sentinel" "$OPENWEPP_NIX_STATE_ROOT/locks/$id_leaf.lock"
+if "$temp/dev/nix-lifecycle" prune --keep 0 --older-than-days 0; then
+    echo "lifecycle accepted a symlinked lock leaf" >&2
+    exit 1
+fi
+[[ "$(<"$sentinel")" == unchanged ]]
+chmod 0644 "$temp/dev/openwepp-env"
+if "$temp/dev/develop" true; then
+    echo "wrapper accepted a non-executable canonical helper" >&2
+    exit 1
+fi
+chmod 0755 "$temp/dev/openwepp-env"
+mv "$temp/dev/nix-toolchain" "$temp/dev/real-nix-toolchain"
+ln -s "$temp/dev/real-nix-toolchain" "$temp/dev/nix-toolchain"
+if "$temp/dev/develop" true; then
+    echo "wrapper accepted a symlinked manifest directory" >&2
+    exit 1
+fi
+printf 'nix lifecycle focused tests passed\n'

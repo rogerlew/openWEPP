@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+# Enter the small, content-addressed openWEPP development flake.
+set -euo pipefail
+
+openwepp_dev_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+openwepp_manifest_dir="$openwepp_dev_dir/nix-toolchain"
+openwepp_helper="$openwepp_dev_dir/openwepp-env"
+
+[[ -d "$openwepp_manifest_dir" && ! -L "$openwepp_manifest_dir" ]] || {
+    echo "error: refusing non-canonical toolchain manifest directory" >&2; exit 2;
+}
+
+for openwepp_required in flake.nix flake.lock; do
+    if [[ ! -f "$openwepp_manifest_dir/$openwepp_required" ]]; then
+        echo "error: missing toolchain input $openwepp_manifest_dir/$openwepp_required" >&2
+        exit 2
+    fi
+done
+[[ -f "$openwepp_helper" && ! -L "$openwepp_helper" ]] || {
+    echo "error: missing canonical toolchain helper $openwepp_helper" >&2; exit 2;
+}
+for openwepp_required in flake.nix flake.lock; do
+    openwepp_mode="$(stat -c %a -- "$openwepp_manifest_dir/$openwepp_required")"
+    if (( (8#$openwepp_mode & 8#111) != 0 )); then
+        echo "error: canonical toolchain input must not be executable: $openwepp_required" >&2
+        exit 2
+    fi
+done
+openwepp_helper_mode="$(stat -c %a -- "$openwepp_helper")"
+if (( (8#$openwepp_helper_mode & 8#111) == 0 )); then
+    echo "error: canonical shell helper must be executable" >&2
+    exit 2
+fi
+
+# This intentionally hashes only the staged flake, lock and shell helper.  In
+# particular, Rust sources and experimental evidence must not invalidate an
+# environment or cause Nix to copy the checkout into the store.
+openwepp_identity="$(
+    {
+        # Include the staging format: version 2 preserves the helper's
+        # executable mode, unlike the retired version-1 0600 staging format.
+        printf '%s\0' 'openwepp-toolchain-stage-v2-mode-0755'
+        for openwepp_required in flake.nix flake.lock openwepp-env; do
+            printf '%s\0' "$openwepp_required"
+            if [[ "$openwepp_required" == openwepp-env ]]; then
+                cat -- "$openwepp_helper"
+            else
+                cat -- "$openwepp_manifest_dir/$openwepp_required"
+            fi
+            printf '\0'
+        done
+    } | sha256sum | awk '{print $1}'
+)"
+
+openwepp_cache_base="${OPENWEPP_NIX_CACHE_ROOT:-${XDG_CACHE_HOME:-$HOME/.cache}/openwepp/nix-toolchains}"
+openwepp_state_base="${OPENWEPP_NIX_STATE_ROOT:-${XDG_STATE_HOME:-$HOME/.local/state}/openwepp/nix}"
+openwepp_stage="$openwepp_cache_base/sources/$openwepp_identity"
+openwepp_profile="$openwepp_state_base/profiles/$openwepp_identity"
+openwepp_stage_ref="path:$openwepp_stage"
+
+safe_mkdir() {
+    local target="$1" probe
+    # Inspect every existing ancestor before mkdir can traverse it.
+    probe="$target"
+    while [[ ! -e "$probe" && "$probe" != / ]]; do
+        probe="${probe%/*}"
+        [[ -n "$probe" ]] || probe=/
+    done
+    while [[ "$probe" != / ]]; do
+        [[ ! -L "$probe" ]] || { echo "error: refusing symlinked lifecycle ancestor: $probe" >&2; exit 2; }
+        probe="${probe%/*}"
+        [[ -n "$probe" ]] || probe=/
+    done
+    mkdir -p -- "$target"
+    probe="$target"
+    while [[ "$probe" != / ]]; do
+        [[ ! -L "$probe" ]] || { echo "error: refusing symlinked lifecycle ancestor: $probe" >&2; exit 2; }
+        probe="${probe%/*}"
+        [[ -n "$probe" ]] || probe=/
+    done
+}
+
+safe_mkdir "$openwepp_cache_base/sources"
+safe_mkdir "$openwepp_state_base/profiles"
+safe_mkdir "$openwepp_state_base/locks"
+safe_mkdir "$openwepp_state_base/receipts"
+
+safe_leaf() {
+    [[ ! -L "$1" && ( ! -e "$1" || -f "$1" ) ]] || {
+        echo "error: refusing unsafe lifecycle leaf: $1" >&2; exit 2;
+    }
+}
+
+# Claim the shared lifetime lock before touching staged data. A pruning process
+# must obtain this lock exclusively, so it cannot retire a source in this gap.
+safe_leaf "$openwepp_state_base/locks/$openwepp_identity.lock"
+exec {openwepp_env_lock_fd}>"$openwepp_state_base/locks/$openwepp_identity.lock"
+if ! flock --shared "$openwepp_env_lock_fd"; then
+    echo "error: unable to claim shared openWEPP environment lock" >&2
+    exit 75
+fi
+
+safe_leaf "$openwepp_cache_base/sources/.${openwepp_identity}.lock"
+exec {openwepp_stage_lock_fd}>"$openwepp_cache_base/sources/.${openwepp_identity}.lock"
+flock "$openwepp_stage_lock_fd"
+validate_stage() {
+    local file expected_mode entries size
+    [[ -d "$openwepp_stage" && ! -L "$openwepp_stage" ]] || return 1
+    entries="$(find "$openwepp_stage" -mindepth 1 -maxdepth 1 -printf '%f\n' | LC_ALL=C sort)"
+    [[ "$entries" == $'flake.lock\nflake.nix\nopenwepp-env' ]] || return 1
+    size="$(du -sb -- "$openwepp_stage" | awk '{print $1}')"
+    (( size < 1024 * 1024 )) || return 1
+    for file in flake.nix flake.lock openwepp-env; do
+        [[ -f "$openwepp_stage/$file" && ! -L "$openwepp_stage/$file" ]] || return 1
+        if [[ "$file" == openwepp-env ]]; then
+            cmp -s -- "$openwepp_helper" "$openwepp_stage/$file" || return 1
+        else
+            cmp -s -- "$openwepp_manifest_dir/$file" "$openwepp_stage/$file" || return 1
+        fi
+        expected_mode=600
+        [[ "$file" == openwepp-env ]] && expected_mode=755
+        [[ "$(stat -c %a -- "$openwepp_stage/$file")" == "$expected_mode" ]] || return 1
+    done
+}
+
+if [[ -e "$openwepp_stage" && ! -d "$openwepp_stage" || -L "$openwepp_stage" ]]; then
+    echo "error: refusing non-directory staged input $openwepp_stage" >&2; exit 2
+fi
+
+if [[ ! -d "$openwepp_stage" ]]; then
+    openwepp_tmp_stage="$(mktemp -d "$openwepp_cache_base/sources/.${openwepp_identity}.tmp.XXXXXX")"
+    trap 'rm -rf -- "$openwepp_tmp_stage"' EXIT
+    for openwepp_required in flake.nix flake.lock openwepp-env; do
+        if [[ "$openwepp_required" == openwepp-env ]]; then
+            install -m 0755 -- "$openwepp_helper" "$openwepp_tmp_stage/$openwepp_required"
+        else
+            install -m 0600 -- "$openwepp_manifest_dir/$openwepp_required" "$openwepp_tmp_stage/$openwepp_required"
+        fi
+    done
+    # rename(2) publishes the fully populated directory atomically. The lock
+    # also serializes wrappers that share this content identity.
+    mv -- "$openwepp_tmp_stage" "$openwepp_stage"
+    trap - EXIT
+fi
+if ! validate_stage; then
+    echo "error: staged toolchain input failed integrity validation: $openwepp_stage" >&2
+    exit 2
+fi
+# Retention measures last use, rather than the date this immutable input was
+# first staged. This happens while prune is excluded by the shared lock.
+touch -- "$openwepp_stage"
+flock -u "$openwepp_stage_lock_fd"
+exec {openwepp_stage_lock_fd}>&-
+
+export OPENWEPP_NIX_TOOLCHAIN_ID="$openwepp_identity"
+export OPENWEPP_NIX_STAGED_INPUT="$openwepp_stage"
+export OPENWEPP_NIX_PROFILE="$openwepp_profile"
+
+if (( $# == 0 )); then
+    nix develop --profile "$openwepp_profile" "$openwepp_stage_ref" &
+else
+    nix develop --profile "$openwepp_profile" "$openwepp_stage_ref" --command "$@" &
+fi
+openwepp_nix_pid=$!
+if wait "$openwepp_nix_pid"; then openwepp_nix_rc=0; else openwepp_nix_rc=$?; fi
+openwepp_profile_target="$(readlink -f -- "$openwepp_profile" 2>/dev/null || true)"
+if [[ "$openwepp_profile_target" == /nix/store/* && -e "$openwepp_profile_target" ]]; then
+    safe_leaf "$openwepp_state_base/receipts/$openwepp_identity.output"
+    openwepp_receipt_tmp="$(mktemp "$openwepp_state_base/receipts/.${openwepp_identity}.XXXXXX")"
+    printf '%s\n' "$openwepp_profile_target" >"$openwepp_receipt_tmp"
+    mv -- "$openwepp_receipt_tmp" "$openwepp_state_base/receipts/$openwepp_identity.output"
+fi
+exit "$openwepp_nix_rc"

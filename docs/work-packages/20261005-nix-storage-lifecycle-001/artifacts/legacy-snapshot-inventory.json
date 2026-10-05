@@ -1,0 +1,734 @@
+[
+  {
+    "path": "/nix/store/01szcipjf73sxljrsymi6ly378x7zyf2-source",
+    "allocated_bytes": 1627381760
+  },
+  {
+    "path": "/nix/store/0630anbbcgy13gicp0qagyg6103k8c0b-source",
+    "allocated_bytes": 3371454464
+  },
+  {
+    "path": "/nix/store/0820k35gb3d39kl7c81pfdvjf5n72as0-source",
+    "allocated_bytes": 3117752320
+  },
+  {
+    "path": "/nix/store/0c4g03zckf50rr7jdycxvxrgfy18gx3j-source",
+    "allocated_bytes": 1627152384
+  },
+  {
+    "path": "/nix/store/10ibrybpppx0g0x7wk9yrxxbfjxf06si-source",
+    "allocated_bytes": 3036635136
+  },
+  {
+    "path": "/nix/store/11d8sq6w3nh2gllq28sb0h9qkh62a058-source",
+    "allocated_bytes": 1119199232
+  },
+  {
+    "path": "/nix/store/138k1353r8vsd30bh48m94z2v5mfqgvd-source",
+    "allocated_bytes": 26644480
+  },
+  {
+    "path": "/nix/store/14wrm77rgwcb9fwn42qfak67i6awsi2j-source",
+    "allocated_bytes": 1120010240
+  },
+  {
+    "path": "/nix/store/194viw79lybvrimwqdx5v43yh94ssax4-source",
+    "allocated_bytes": 24469504
+  },
+  {
+    "path": "/nix/store/1qmrmbqahmnf1swyf0rs8sdxvbv1pgzs-source",
+    "allocated_bytes": 1627549696
+  },
+  {
+    "path": "/nix/store/1yc7ran6r19jl7w6xn306amfwq29wdqx-source",
+    "allocated_bytes": 3374510080
+  },
+  {
+    "path": "/nix/store/22wq8wvvnqks2vppm8qsxm8ybwa4dsgj-source",
+    "allocated_bytes": 1627164672
+  },
+  {
+    "path": "/nix/store/24izjv0ag19775mrf2x2zh3hwkfpb5r3-source",
+    "allocated_bytes": 3375132672
+  },
+  {
+    "path": "/nix/store/29n2z04a6n8g8p312xwyfks58nij0gnr-source",
+    "allocated_bytes": 1627160576
+  },
+  {
+    "path": "/nix/store/2dvpycfxjkhacp4l0sv8hxzpdapnksbd-source",
+    "allocated_bytes": 1119174656
+  },
+  {
+    "path": "/nix/store/2gi9gjik615g1k1wkqilwabqc2a88dky-source",
+    "allocated_bytes": 24469504
+  },
+  {
+    "path": "/nix/store/2pdgz63ark8fmdlnbdrmrd50fim7kk8f-source",
+    "allocated_bytes": 1422512128
+  },
+  {
+    "path": "/nix/store/38ib8c1vidxdyg6j41srs0394hw02qsy-source",
+    "allocated_bytes": 1120006144
+  },
+  {
+    "path": "/nix/store/3dr23yfgxcjq4csi3vpk414269gxc2mw-source",
+    "allocated_bytes": 1627140096
+  },
+  {
+    "path": "/nix/store/3l6ic961v9ppa5rpv9mji0lzn1lhibxp-source",
+    "allocated_bytes": 1627136000
+  },
+  {
+    "path": "/nix/store/40m4illrgp2rvmn243z0lg0inz8jrnj3-source",
+    "allocated_bytes": 1627414528
+  },
+  {
+    "path": "/nix/store/4137vglnl9nlvs040s2k19n5nlz4pg2f-source",
+    "allocated_bytes": 3371790336
+  },
+  {
+    "path": "/nix/store/426lyhmvcyirgmiq2hnv12hdi63wm9zh-source",
+    "allocated_bytes": 3036856320
+  },
+  {
+    "path": "/nix/store/495q8zalyzx7i5fp3sc7fijzwhh1gqd1-source",
+    "allocated_bytes": 1422516224
+  },
+  {
+    "path": "/nix/store/4frwr8q4yryqiviawjkmfxgpcjkcczv2-source",
+    "allocated_bytes": 1422512128
+  },
+  {
+    "path": "/nix/store/4gnhd520ja24f12w3f5h1akmmr94h2br-source",
+    "allocated_bytes": 1120006144
+  },
+  {
+    "path": "/nix/store/57bp3mwsc4xm79alama5xj0g0g0yy8kp-source",
+    "allocated_bytes": 1120014336
+  },
+  {
+    "path": "/nix/store/5988jaikdar3ww5gvxicqm1rmkj162xj-source",
+    "allocated_bytes": 1119154176
+  },
+  {
+    "path": "/nix/store/5icji59qdd61nfwzbfar57rk4xzg9k9w-source",
+    "allocated_bytes": 3374514176
+  },
+  {
+    "path": "/nix/store/5lv26xhfwlbg4mz39wirbrw8fc4jmjrb-source",
+    "allocated_bytes": 1119174656
+  },
+  {
+    "path": "/nix/store/5mh5kaqnyllyfzq70963vs8ak1s5w8z6-source",
+    "allocated_bytes": 1119174656
+  },
+  {
+    "path": "/nix/store/5s4yddw3bnnh2c9x007iw45ml7kiq0c1-source",
+    "allocated_bytes": 3370803200
+  },
+  {
+    "path": "/nix/store/5vsrx3jjpmssi4d855v47dsd56wvx814-source",
+    "allocated_bytes": 1627394048
+  },
+  {
+    "path": "/nix/store/64qi58x5c94djdxf8caz39ic7q5cc9h8-source",
+    "allocated_bytes": 24915968
+  },
+  {
+    "path": "/nix/store/6vs7wrag4jfvcz3zhi1nvkpdl7ji6ahy-source",
+    "allocated_bytes": 1422512128
+  },
+  {
+    "path": "/nix/store/73lb0ckggnzw7fj9cnnf1y6wx2p830xj-source",
+    "allocated_bytes": 24469504
+  },
+  {
+    "path": "/nix/store/77hswzap2grgy41c8mxq8g5liairrmj5-source",
+    "allocated_bytes": 1119141888
+  },
+  {
+    "path": "/nix/store/7lk257l9i027x6hgiikwdzm43lqmq5rd-source",
+    "allocated_bytes": 3374514176
+  },
+  {
+    "path": "/nix/store/7qvjr1ijwn8k4idy4dfz8sjnzc4jgqg1-source",
+    "allocated_bytes": 1120010240
+  },
+  {
+    "path": "/nix/store/7sa754h9h47m812w5r6gy74bipgid92a-source",
+    "allocated_bytes": 1120022528
+  },
+  {
+    "path": "/nix/store/7za9j8zqw2i5m79z5v2zvqlcfxdlxnyk-source",
+    "allocated_bytes": 1627373568
+  },
+  {
+    "path": "/nix/store/85i0zhax4l9ghmgbqwqk9qqb851687xr-source",
+    "allocated_bytes": 1627561984
+  },
+  {
+    "path": "/nix/store/89rxl5519r9y2857ymq18vbfcxkpv8d4-source",
+    "allocated_bytes": 1422483456
+  },
+  {
+    "path": "/nix/store/8fg03lyj51pidzf2y9jrnnidasirzxns-source",
+    "allocated_bytes": 1422503936
+  },
+  {
+    "path": "/nix/store/8lvvsgnp1ywlmwgmjdz47aaz7ywg5d6v-source",
+    "allocated_bytes": 1120006144
+  },
+  {
+    "path": "/nix/store/8w7gfc5qynvi8k04b6k8mpwiyhj3wvmc-source",
+    "allocated_bytes": 26644480
+  },
+  {
+    "path": "/nix/store/8x6mnfykxg06gif4n4h0yx2ama02bdhn-source",
+    "allocated_bytes": 1120002048
+  },
+  {
+    "path": "/nix/store/91nqwhm04q0ygiwn0kf3hry580ndgzdi-source",
+    "allocated_bytes": 24629248
+  },
+  {
+    "path": "/nix/store/91rrqhkaklmf51df2pq50k5qwgy0ph7b-source",
+    "allocated_bytes": 1627463680
+  },
+  {
+    "path": "/nix/store/964yjflmpi02f2c8k61v2pzxjh2jvnjf-source",
+    "allocated_bytes": 1120006144
+  },
+  {
+    "path": "/nix/store/97s3xj6991jawzvil9lajmwhm5pma3hy-source",
+    "allocated_bytes": 1627156480
+  },
+  {
+    "path": "/nix/store/9in7n88028kks58dblvc974r6x7xaapz-source",
+    "allocated_bytes": 1422520320
+  },
+  {
+    "path": "/nix/store/9kwf7y2dr2ri1rqxm4f8ya9dd1ps17m4-source",
+    "allocated_bytes": 26644480
+  },
+  {
+    "path": "/nix/store/9mq97qdab2cx5hink6dz1r5216fk1sbj-source",
+    "allocated_bytes": 26648576
+  },
+  {
+    "path": "/nix/store/9s9c5vyxzrbb5rx451qpgj7gkczgpb78-source",
+    "allocated_bytes": 1119170560
+  },
+  {
+    "path": "/nix/store/9wpgv5bx0nq71scc24935jx6zyff78yj-source",
+    "allocated_bytes": 1627140096
+  },
+  {
+    "path": "/nix/store/a0rjk3cih6x9fxfaqsr0mqd9ydgxnp5h-source",
+    "allocated_bytes": 24915968
+  },
+  {
+    "path": "/nix/store/a6kmi35hr6qcl4sr89jjyg0qagsy4spc-source",
+    "allocated_bytes": 1119166464
+  },
+  {
+    "path": "/nix/store/a6nsb6ngf564zc0xwk7mp6l2fd8pjq6h-source",
+    "allocated_bytes": 1627119616
+  },
+  {
+    "path": "/nix/store/a9bg75g9bj4s01v3b0dcq57r29s92vzm-source",
+    "allocated_bytes": 1120071680
+  },
+  {
+    "path": "/nix/store/ac7jf73nr4mh9j95cbpwvdcbh5k15cyk-source",
+    "allocated_bytes": 26644480
+  },
+  {
+    "path": "/nix/store/anvqyad0zzfdy7438admvqshjbp881ri-source",
+    "allocated_bytes": 1119170560
+  },
+  {
+    "path": "/nix/store/axhvg2mdm68yfxidp2lwif557l9d8bxs-source",
+    "allocated_bytes": 1120006144
+  },
+  {
+    "path": "/nix/store/ayx4zy2ac2piysl1sxcigazql49k00jy-source",
+    "allocated_bytes": 1120002048
+  },
+  {
+    "path": "/nix/store/b09wyx0wpvkvfg901xb6pvl1v39ls0ym-source",
+    "allocated_bytes": 1120018432
+  },
+  {
+    "path": "/nix/store/b7jpb20m91wcv63mkrhxpvcxk8affmdy-source",
+    "allocated_bytes": 1627385856
+  },
+  {
+    "path": "/nix/store/bi7qdkcq15f44d7z44skkk07j59qhmw7-source",
+    "allocated_bytes": 3371761664
+  },
+  {
+    "path": "/nix/store/bxvg6mw9afngyy2x4qz9pvcgrr48ijr0-source",
+    "allocated_bytes": 1119129600
+  },
+  {
+    "path": "/nix/store/c1k4qgcqijja3rv1xsagjsb1rwxs1jkv-source",
+    "allocated_bytes": 1119154176
+  },
+  {
+    "path": "/nix/store/ckgg42schbnj9pxm4m05hvx99b0q0jay-source",
+    "allocated_bytes": 26533888
+  },
+  {
+    "path": "/nix/store/ckmg6avvkl37hzjd8f5hzyyxzxaczbws-source",
+    "allocated_bytes": 1119195136
+  },
+  {
+    "path": "/nix/store/clas7caax30c6wbrmr36g7fyhinirnna-source",
+    "allocated_bytes": 1119186944
+  },
+  {
+    "path": "/nix/store/cryw9yxdn431f5dk01izxn6hjlwirw1m-source",
+    "allocated_bytes": 1119199232
+  },
+  {
+    "path": "/nix/store/cx0p33b4iy834f76g5dyk8ziii8g1425-source",
+    "allocated_bytes": 1119162368
+  },
+  {
+    "path": "/nix/store/di31n81804v2n55z81w47sk8cl38r7mp-source",
+    "allocated_bytes": 1119133696
+  },
+  {
+    "path": "/nix/store/diq7wnmwspd6mdy005bzaw84ncq89sdr-source",
+    "allocated_bytes": 24461312
+  },
+  {
+    "path": "/nix/store/djp6x2wdmnaddk29fm2lkwk5k6r95fh1-source",
+    "allocated_bytes": 1119145984
+  },
+  {
+    "path": "/nix/store/dk77f13sqj9q6svxjn3f9ah7pd5laxfr-source",
+    "allocated_bytes": 1627398144
+  },
+  {
+    "path": "/nix/store/dss6z324i646vc4vx5khvjxw6n5624mv-source",
+    "allocated_bytes": 3374518272
+  },
+  {
+    "path": "/nix/store/f4f44kimx270gdqzal4nlrinqxnl0iah-source",
+    "allocated_bytes": 1422499840
+  },
+  {
+    "path": "/nix/store/f654yfqb45kmd87shhashgfr98dpj2m7-source",
+    "allocated_bytes": 1627156480
+  },
+  {
+    "path": "/nix/store/ff0swxqplnwlrxz6x3b3i1ia4m9ml5j4-source",
+    "allocated_bytes": 26644480
+  },
+  {
+    "path": "/nix/store/fh53fyn3n1a1gah7plw3m3f0infksfsf-source",
+    "allocated_bytes": 1119137792
+  },
+  {
+    "path": "/nix/store/fl760fhdkl35q41cqlphlcyprwibdj0q-source",
+    "allocated_bytes": 1627095040
+  },
+  {
+    "path": "/nix/store/fldcf4y21gmgxj44k39jnc7y0b7s9qrg-source",
+    "allocated_bytes": 1422520320
+  },
+  {
+    "path": "/nix/store/fyg5r64dakbiip1fj6gzsm5n3m2n64x6-source",
+    "allocated_bytes": 26529792
+  },
+  {
+    "path": "/nix/store/gpci1dx0v1dbnmi6j1sm0wi170hynfs2-source",
+    "allocated_bytes": 24469504
+  },
+  {
+    "path": "/nix/store/gr6j4za9yb798lghfrgyhmh10nhscbrx-source",
+    "allocated_bytes": 1422508032
+  },
+  {
+    "path": "/nix/store/h699f0kw1ybxlg6hgmnwygzrmwaacrqf-source",
+    "allocated_bytes": 3375095808
+  },
+  {
+    "path": "/nix/store/h91d1jx668lmpbl86vgf224lymri1pyf-source",
+    "allocated_bytes": 3375575040
+  },
+  {
+    "path": "/nix/store/hfb13nzmlxripxjdr5jx1va6n3lrfxhv-source",
+    "allocated_bytes": 26542080
+  },
+  {
+    "path": "/nix/store/hysp3y4zg55p392imak1cm8j6m48q922-source",
+    "allocated_bytes": 1119141888
+  },
+  {
+    "path": "/nix/store/i3viqy0jngxzj5y3621qaazs16jc214k-source",
+    "allocated_bytes": 26546176
+  },
+  {
+    "path": "/nix/store/ibh3m5d9q297h1m82gnb34f8pfl5yhc5-source",
+    "allocated_bytes": 1627136000
+  },
+  {
+    "path": "/nix/store/icks9hjcy3ilv07dg5izx5gq50n7plp6-source",
+    "allocated_bytes": 1119170560
+  },
+  {
+    "path": "/nix/store/im7ayrqxqgrwa3jmgf1jhr2wm03s0aaw-source",
+    "allocated_bytes": 1627582464
+  },
+  {
+    "path": "/nix/store/iyc0s2dk24a6r5416x7d9jc8742l4p9g-source",
+    "allocated_bytes": 1422499840
+  },
+  {
+    "path": "/nix/store/j0synva8zxs49bmw0q38mk82g4xv2kmp-source",
+    "allocated_bytes": 3036667904
+  },
+  {
+    "path": "/nix/store/j2ihypx1hky2dd83qnwm6hm3cylqrbsq-source",
+    "allocated_bytes": 1120014336
+  },
+  {
+    "path": "/nix/store/jd9h0wcn4814f66dinkg6ycbrdqd4xk0-source",
+    "allocated_bytes": 1627369472
+  },
+  {
+    "path": "/nix/store/jgklj66x6dxhslmmdb212gl4lyy2pg3f-source",
+    "allocated_bytes": 1627365376
+  },
+  {
+    "path": "/nix/store/jh15mfm26kgkq0fzb7312acgih86aar2-source",
+    "allocated_bytes": 1627172864
+  },
+  {
+    "path": "/nix/store/jjs0dh3ngzl8jsmmn0ddbghji9h9g3zk-source",
+    "allocated_bytes": 1627463680
+  },
+  {
+    "path": "/nix/store/jnzjfyjhnf1bm03kwigvrpn2mimq8krd-source",
+    "allocated_bytes": 1627164672
+  },
+  {
+    "path": "/nix/store/jpa2vlydn9q0ww27a6qs7675rf95i7m2-source",
+    "allocated_bytes": 1466204160
+  },
+  {
+    "path": "/nix/store/k0bhyvq02wb1z2g2fa0k7ffcj97ygcqj-source",
+    "allocated_bytes": 3374497792
+  },
+  {
+    "path": "/nix/store/k7pbg0dxzyxvii4l6iriwvfl7cn94p6m-source",
+    "allocated_bytes": 1627549696
+  },
+  {
+    "path": "/nix/store/km8adgmw7xf6qhfss8s0vy4vpc8sid2n-source",
+    "allocated_bytes": 1627414528
+  },
+  {
+    "path": "/nix/store/kx589pky7rcp739203nq6v917gnxl2n9-source",
+    "allocated_bytes": 3376111616
+  },
+  {
+    "path": "/nix/store/l4famxr775qnnxk05sxbwq7sf6w311ai-source",
+    "allocated_bytes": 1422512128
+  },
+  {
+    "path": "/nix/store/lgzmaiaxxlxixfydc8nph49ghvb1i5v3-source",
+    "allocated_bytes": 24465408
+  },
+  {
+    "path": "/nix/store/lm3ic1z3l7yxn5b57nfg49ciws1s41rx-source",
+    "allocated_bytes": 1422483456
+  },
+  {
+    "path": "/nix/store/lnxm2nq4f356pp24lf73mir5ljbxb261-source",
+    "allocated_bytes": 3370819584
+  },
+  {
+    "path": "/nix/store/ly8xgdjk64z9v29ac730ab9iqsb73ww5-source",
+    "allocated_bytes": 1422516224
+  },
+  {
+    "path": "/nix/store/m1kgs048hsv75n98p2qnijbijscz121l-source",
+    "allocated_bytes": 26648576
+  },
+  {
+    "path": "/nix/store/m51i2jxk356bb823jvqfs7bmhmjrplm9-source",
+    "allocated_bytes": 26537984
+  },
+  {
+    "path": "/nix/store/m761da443awx2b82liykn15qmpxm2r7q-source",
+    "allocated_bytes": 1119182848
+  },
+  {
+    "path": "/nix/store/m8mbxidl94nxlqpnpjc6ydv259wx6s7m-source",
+    "allocated_bytes": 1627394048
+  },
+  {
+    "path": "/nix/store/mkdrc41abijafa3xgc2iqsvq2jjckns4-source",
+    "allocated_bytes": 1120014336
+  },
+  {
+    "path": "/nix/store/msrawh0iqc4srplpd2lg0ri6f9qccpan-source",
+    "allocated_bytes": 1627119616
+  },
+  {
+    "path": "/nix/store/n79w500yx1sijya1gv6v4s49jyv0hcj4-source",
+    "allocated_bytes": 3036880896
+  },
+  {
+    "path": "/nix/store/n8vmc56xi0ggw21yi6kwa13samb11gs1-source",
+    "allocated_bytes": 26537984
+  },
+  {
+    "path": "/nix/store/nav2pn56xwap008x65g1q0hfis1z8785-source",
+    "allocated_bytes": 3375591424
+  },
+  {
+    "path": "/nix/store/nfbblhc5lrwx5siv0ag2hsg7kj8qxc8x-source",
+    "allocated_bytes": 24469504
+  },
+  {
+    "path": "/nix/store/njygxq121w00c4v0j2cymi1vy4l9sdml-source",
+    "allocated_bytes": 1627373568
+  },
+  {
+    "path": "/nix/store/nr032rf0avd0b3bginfc399y33mlffap-source",
+    "allocated_bytes": 3117719552
+  },
+  {
+    "path": "/nix/store/nr6hjnjda2vq1549dd5wa03j4mxys02b-source",
+    "allocated_bytes": 1119154176
+  },
+  {
+    "path": "/nix/store/nxi7gajn7jh8y5fhhz1hajisviqs15xd-source",
+    "allocated_bytes": 1119162368
+  },
+  {
+    "path": "/nix/store/p3b4dx96vy4jqfsw24a1f0b8dmfk2jn7-source",
+    "allocated_bytes": 1119178752
+  },
+  {
+    "path": "/nix/store/plw6l4jig3f02862glwg7yjj3dfka5y5-source",
+    "allocated_bytes": 1119199232
+  },
+  {
+    "path": "/nix/store/pmnw9yfnizb1i6zbbp158p1zc9s0q8sz-source",
+    "allocated_bytes": 1120006144
+  },
+  {
+    "path": "/nix/store/pp43bp972w2vxfn6xn4mgf17d0617f0j-source",
+    "allocated_bytes": 26644480
+  },
+  {
+    "path": "/nix/store/pz8mvspna3cznrik0ms2i73r1sy1s1nc-source",
+    "allocated_bytes": 1627160576
+  },
+  {
+    "path": "/nix/store/q59v44fhpzbkkkc03sxpj9v15j9k7sk6-source",
+    "allocated_bytes": 26537984
+  },
+  {
+    "path": "/nix/store/q9rqy6kv42yz6a6iqwa0qbrc4dla02bn-source",
+    "allocated_bytes": 1119133696
+  },
+  {
+    "path": "/nix/store/qwc4mbrz82c92yxy9k6j3bp7ivgi95q3-source",
+    "allocated_bytes": 1422483456
+  },
+  {
+    "path": "/nix/store/qx288849232xmxkh83yh89x75s0l320h-source",
+    "allocated_bytes": 1119154176
+  },
+  {
+    "path": "/nix/store/rkz560n4fcxy1l1zh887p7hxsdyaad4d-source",
+    "allocated_bytes": 3370934272
+  },
+  {
+    "path": "/nix/store/rn7qmggq7pjj9hwwp8ic4zw7hf69yph3-source",
+    "allocated_bytes": 1627389952
+  },
+  {
+    "path": "/nix/store/rqp32gbj330diwpbkaplqqp0vln6vi70-source",
+    "allocated_bytes": 26533888
+  },
+  {
+    "path": "/nix/store/rryj6by91w8dqccmlnlw3aabm1dkyqcs-source",
+    "allocated_bytes": 3117723648
+  },
+  {
+    "path": "/nix/store/rs7l6p2c949pmgxhzqxgk0ljkqygb033-source",
+    "allocated_bytes": 3371503616
+  },
+  {
+    "path": "/nix/store/rv15msd5aw0n9dn2qhm6igmq1n51m1ay-source",
+    "allocated_bytes": 1120018432
+  },
+  {
+    "path": "/nix/store/s6djzsdwrir75ys4332r8h96pvxik88c-source",
+    "allocated_bytes": 26550272
+  },
+  {
+    "path": "/nix/store/sm4s18abvx6mlxmq6w8s48ckd79r9jlm-source",
+    "allocated_bytes": 3036635136
+  },
+  {
+    "path": "/nix/store/syswfkl15pmgaifn6x05vax7zw6ihyir-source",
+    "allocated_bytes": 1119125504
+  },
+  {
+    "path": "/nix/store/szh9d9nb0xrfhc6jjhkiaa42523z812p-source",
+    "allocated_bytes": 3370807296
+  },
+  {
+    "path": "/nix/store/v3nkn98lwqvrc6z7cdrqw7iwxmwf9lpg-source",
+    "allocated_bytes": 3371778048
+  },
+  {
+    "path": "/nix/store/v9ynr77lhfkdq0mc8df3qlnz6hncg0qw-source",
+    "allocated_bytes": 3034079232
+  },
+  {
+    "path": "/nix/store/vc644ynim0fiq9psmdmmfgh507k4ss3x-source",
+    "allocated_bytes": 1119162368
+  },
+  {
+    "path": "/nix/store/vcs4w3s19ibd6aa7rn0rd1j1v61n87xn-source",
+    "allocated_bytes": 1627561984
+  },
+  {
+    "path": "/nix/store/w57ag8w2mxkpd9njiv84krzmmsvxz8vb-source",
+    "allocated_bytes": 1119150080
+  },
+  {
+    "path": "/nix/store/waalgyhnn66a2v7wrmwni7vqc2i6cy5q-source",
+    "allocated_bytes": 26644480
+  },
+  {
+    "path": "/nix/store/wbhm0wy7wlpp05ydlclj9326fas4lfc7-source",
+    "allocated_bytes": 26648576
+  },
+  {
+    "path": "/nix/store/wlrb0xdfmwyvkva4lzzxc95jjlkvd2rr-source",
+    "allocated_bytes": 1422483456
+  },
+  {
+    "path": "/nix/store/ww7cdw75zjdgsyfd2mskj8rmzx4bccs1-source",
+    "allocated_bytes": 1120063488
+  },
+  {
+    "path": "/nix/store/x87zax0b6hl91v31wr4l5j8wpnchy3gk-source",
+    "allocated_bytes": 1120010240
+  },
+  {
+    "path": "/nix/store/x9pp29plbl306whzd01k83jxxn8mk0vn-source",
+    "allocated_bytes": 26640384
+  },
+  {
+    "path": "/nix/store/xcgys9khqhwm61b14imlg78649h0499y-source",
+    "allocated_bytes": 26644480
+  },
+  {
+    "path": "/nix/store/xjij9pkx0jh4pzrxf4qahvq8dmc04y4j-source",
+    "allocated_bytes": 1422487552
+  },
+  {
+    "path": "/nix/store/xr5qanl0p806x2xhqclhy5pq8a7mhrw7-source",
+    "allocated_bytes": 26529792
+  },
+  {
+    "path": "/nix/store/xrg5gx8kcx1aiisxlz5ym5lnhs3p8z6b-source",
+    "allocated_bytes": 3036602368
+  },
+  {
+    "path": "/nix/store/xzf24qw6m8d49z3slshbb8xmiq2623ly-source",
+    "allocated_bytes": 26640384
+  },
+  {
+    "path": "/nix/store/y77lf6077wb3hkwbn5lw9lnhqbww6p6k-source",
+    "allocated_bytes": 24461312
+  },
+  {
+    "path": "/nix/store/yczi98i778ykl27wscihys6fzha1pn21-source",
+    "allocated_bytes": 1120006144
+  },
+  {
+    "path": "/nix/store/ygbc59iah69k09gncx21i189d1mw72hm-source",
+    "allocated_bytes": 1466200064
+  },
+  {
+    "path": "/nix/store/yhxycs9pgcqcfm7zn7hznymkjqq69ssm-source",
+    "allocated_bytes": 1119178752
+  },
+  {
+    "path": "/nix/store/yll7agd21ppx1djg8j20czcjdpaqi3sz-source",
+    "allocated_bytes": 1627176960
+  },
+  {
+    "path": "/nix/store/ylzjkrp6k4lzw4wy2av1hx3db7lr2qz7-source",
+    "allocated_bytes": 24465408
+  },
+  {
+    "path": "/nix/store/ymgp32jv5h4knk1mww92ccmx9aa7g51l-source",
+    "allocated_bytes": 3374514176
+  },
+  {
+    "path": "/nix/store/yrjk3w8mrzvxmjhx6r6m1761645d67hd-source",
+    "allocated_bytes": 26644480
+  },
+  {
+    "path": "/nix/store/z05k10yfd9k9y5lizhznx5bvdh32szra-source",
+    "allocated_bytes": 1119166464
+  },
+  {
+    "path": "/nix/store/z213psyh9qg9dhbdjp5n00r35z3bby64-source",
+    "allocated_bytes": 1627389952
+  },
+  {
+    "path": "/nix/store/z4p7670ghajz4bavc5aak6b22nqfdn6n-source",
+    "allocated_bytes": 24440832
+  },
+  {
+    "path": "/nix/store/z68a1m1rknrw9kkyb0zg29p6056n31d7-source",
+    "allocated_bytes": 3033784320
+  },
+  {
+    "path": "/nix/store/z6b3rxybd3gv5i2i5bm739ilyjgdib64-source",
+    "allocated_bytes": 1422516224
+  },
+  {
+    "path": "/nix/store/z8qf77q1jmbbvmf6k8vmi12csihjx2jl-source",
+    "allocated_bytes": 1120006144
+  },
+  {
+    "path": "/nix/store/zf8d0nf2lr69aazng3zmh044ii7lnlx4-source",
+    "allocated_bytes": 1119186944
+  },
+  {
+    "path": "/nix/store/zhwmjfqjg7dw693flyyyqgxmmipvjkqq-source",
+    "allocated_bytes": 1627176960
+  },
+  {
+    "path": "/nix/store/zlcs7prgvmdz41n5lam15nmpdsv2q6aw-source",
+    "allocated_bytes": 1627164672
+  },
+  {
+    "path": "/nix/store/zmjjify5axyqzr1l6cka981ww9my2fy2-source",
+    "allocated_bytes": 1627578368
+  },
+  {
+    "path": "/nix/store/zx7lpdvyl0ad82ha0amxfi9hw2q321i9-source",
+    "allocated_bytes": 24416256
+  },
+  {
+    "path": "/nix/store/zy6bfi8xy3i1rvva7ymyj2sg76w838d3-source",
+    "allocated_bytes": 3036655616
+  }
+]

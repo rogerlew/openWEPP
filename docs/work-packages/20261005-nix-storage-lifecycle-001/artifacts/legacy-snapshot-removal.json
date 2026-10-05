@@ -1,0 +1,1283 @@
+[
+  {
+    "path": "/nix/store/01szcipjf73sxljrsymi6ly378x7zyf2-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/01szcipjf73sxljrsymi6ly378x7zyf2-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/0630anbbcgy13gicp0qagyg6103k8c0b-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/0630anbbcgy13gicp0qagyg6103k8c0b-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/0820k35gb3d39kl7c81pfdvjf5n72as0-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.9 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/0820k35gb3d39kl7c81pfdvjf5n72as0-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/0c4g03zckf50rr7jdycxvxrgfy18gx3j-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/0c4g03zckf50rr7jdycxvxrgfy18gx3j-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/10ibrybpppx0g0x7wk9yrxxbfjxf06si-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.8 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/10ibrybpppx0g0x7wk9yrxxbfjxf06si-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/11d8sq6w3nh2gllq28sb0h9qkh62a058-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/11d8sq6w3nh2gllq28sb0h9qkh62a058-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/138k1353r8vsd30bh48m94z2v5mfqgvd-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/138k1353r8vsd30bh48m94z2v5mfqgvd-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/14wrm77rgwcb9fwn42qfak67i6awsi2j-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/14wrm77rgwcb9fwn42qfak67i6awsi2j-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/194viw79lybvrimwqdx5v43yh94ssax4-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/194viw79lybvrimwqdx5v43yh94ssax4-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/1qmrmbqahmnf1swyf0rs8sdxvbv1pgzs-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/1qmrmbqahmnf1swyf0rs8sdxvbv1pgzs-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/1yc7ran6r19jl7w6xn306amfwq29wdqx-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/1yc7ran6r19jl7w6xn306amfwq29wdqx-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/22wq8wvvnqks2vppm8qsxm8ybwa4dsgj-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/22wq8wvvnqks2vppm8qsxm8ybwa4dsgj-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/24izjv0ag19775mrf2x2zh3hwkfpb5r3-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/24izjv0ag19775mrf2x2zh3hwkfpb5r3-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/29n2z04a6n8g8p312xwyfks58nij0gnr-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/29n2z04a6n8g8p312xwyfks58nij0gnr-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/2dvpycfxjkhacp4l0sv8hxzpdapnksbd-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/2dvpycfxjkhacp4l0sv8hxzpdapnksbd-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/2gi9gjik615g1k1wkqilwabqc2a88dky-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/2gi9gjik615g1k1wkqilwabqc2a88dky-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/2pdgz63ark8fmdlnbdrmrd50fim7kk8f-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/2pdgz63ark8fmdlnbdrmrd50fim7kk8f-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/38ib8c1vidxdyg6j41srs0394hw02qsy-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/38ib8c1vidxdyg6j41srs0394hw02qsy-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/3dr23yfgxcjq4csi3vpk414269gxc2mw-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/3dr23yfgxcjq4csi3vpk414269gxc2mw-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/3l6ic961v9ppa5rpv9mji0lzn1lhibxp-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/3l6ic961v9ppa5rpv9mji0lzn1lhibxp-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/40m4illrgp2rvmn243z0lg0inz8jrnj3-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/40m4illrgp2rvmn243z0lg0inz8jrnj3-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/4137vglnl9nlvs040s2k19n5nlz4pg2f-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/4137vglnl9nlvs040s2k19n5nlz4pg2f-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/426lyhmvcyirgmiq2hnv12hdi63wm9zh-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.8 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/426lyhmvcyirgmiq2hnv12hdi63wm9zh-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/495q8zalyzx7i5fp3sc7fijzwhh1gqd1-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/495q8zalyzx7i5fp3sc7fijzwhh1gqd1-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/4frwr8q4yryqiviawjkmfxgpcjkcczv2-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/4frwr8q4yryqiviawjkmfxgpcjkcczv2-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/4gnhd520ja24f12w3f5h1akmmr94h2br-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/4gnhd520ja24f12w3f5h1akmmr94h2br-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/57bp3mwsc4xm79alama5xj0g0g0yy8kp-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/57bp3mwsc4xm79alama5xj0g0g0yy8kp-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/5988jaikdar3ww5gvxicqm1rmkj162xj-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/5988jaikdar3ww5gvxicqm1rmkj162xj-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/5icji59qdd61nfwzbfar57rk4xzg9k9w-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/5icji59qdd61nfwzbfar57rk4xzg9k9w-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/5lv26xhfwlbg4mz39wirbrw8fc4jmjrb-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/5lv26xhfwlbg4mz39wirbrw8fc4jmjrb-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/5mh5kaqnyllyfzq70963vs8ak1s5w8z6-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/5mh5kaqnyllyfzq70963vs8ak1s5w8z6-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/5s4yddw3bnnh2c9x007iw45ml7kiq0c1-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/5s4yddw3bnnh2c9x007iw45ml7kiq0c1-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/5vsrx3jjpmssi4d855v47dsd56wvx814-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/5vsrx3jjpmssi4d855v47dsd56wvx814-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/64qi58x5c94djdxf8caz39ic7q5cc9h8-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.7 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/64qi58x5c94djdxf8caz39ic7q5cc9h8-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/6vs7wrag4jfvcz3zhi1nvkpdl7ji6ahy-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/6vs7wrag4jfvcz3zhi1nvkpdl7ji6ahy-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/73lb0ckggnzw7fj9cnnf1y6wx2p830xj-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/73lb0ckggnzw7fj9cnnf1y6wx2p830xj-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/77hswzap2grgy41c8mxq8g5liairrmj5-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/77hswzap2grgy41c8mxq8g5liairrmj5-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/7lk257l9i027x6hgiikwdzm43lqmq5rd-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/7lk257l9i027x6hgiikwdzm43lqmq5rd-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/7qvjr1ijwn8k4idy4dfz8sjnzc4jgqg1-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/7qvjr1ijwn8k4idy4dfz8sjnzc4jgqg1-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/7sa754h9h47m812w5r6gy74bipgid92a-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/7sa754h9h47m812w5r6gy74bipgid92a-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/7za9j8zqw2i5m79z5v2zvqlcfxdlxnyk-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/7za9j8zqw2i5m79z5v2zvqlcfxdlxnyk-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/85i0zhax4l9ghmgbqwqk9qqb851687xr-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/85i0zhax4l9ghmgbqwqk9qqb851687xr-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/89rxl5519r9y2857ymq18vbfcxkpv8d4-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/89rxl5519r9y2857ymq18vbfcxkpv8d4-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/8fg03lyj51pidzf2y9jrnnidasirzxns-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/8fg03lyj51pidzf2y9jrnnidasirzxns-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/8lvvsgnp1ywlmwgmjdz47aaz7ywg5d6v-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/8lvvsgnp1ywlmwgmjdz47aaz7ywg5d6v-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/8w7gfc5qynvi8k04b6k8mpwiyhj3wvmc-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/8w7gfc5qynvi8k04b6k8mpwiyhj3wvmc-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/8x6mnfykxg06gif4n4h0yx2ama02bdhn-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/8x6mnfykxg06gif4n4h0yx2ama02bdhn-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/91nqwhm04q0ygiwn0kf3hry580ndgzdi-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.5 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/91nqwhm04q0ygiwn0kf3hry580ndgzdi-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/91rrqhkaklmf51df2pq50k5qwgy0ph7b-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/91rrqhkaklmf51df2pq50k5qwgy0ph7b-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/964yjflmpi02f2c8k61v2pzxjh2jvnjf-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/964yjflmpi02f2c8k61v2pzxjh2jvnjf-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/97s3xj6991jawzvil9lajmwhm5pma3hy-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/97s3xj6991jawzvil9lajmwhm5pma3hy-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/9in7n88028kks58dblvc974r6x7xaapz-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/9in7n88028kks58dblvc974r6x7xaapz-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/9kwf7y2dr2ri1rqxm4f8ya9dd1ps17m4-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/9kwf7y2dr2ri1rqxm4f8ya9dd1ps17m4-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/9mq97qdab2cx5hink6dz1r5216fk1sbj-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/9mq97qdab2cx5hink6dz1r5216fk1sbj-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/9s9c5vyxzrbb5rx451qpgj7gkczgpb78-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/9s9c5vyxzrbb5rx451qpgj7gkczgpb78-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/9wpgv5bx0nq71scc24935jx6zyff78yj-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/9wpgv5bx0nq71scc24935jx6zyff78yj-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/a0rjk3cih6x9fxfaqsr0mqd9ydgxnp5h-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.7 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/a0rjk3cih6x9fxfaqsr0mqd9ydgxnp5h-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/a6kmi35hr6qcl4sr89jjyg0qagsy4spc-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/a6kmi35hr6qcl4sr89jjyg0qagsy4spc-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/a6nsb6ngf564zc0xwk7mp6l2fd8pjq6h-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/a6nsb6ngf564zc0xwk7mp6l2fd8pjq6h-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/a9bg75g9bj4s01v3b0dcq57r29s92vzm-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/a9bg75g9bj4s01v3b0dcq57r29s92vzm-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ac7jf73nr4mh9j95cbpwvdcbh5k15cyk-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ac7jf73nr4mh9j95cbpwvdcbh5k15cyk-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/anvqyad0zzfdy7438admvqshjbp881ri-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/anvqyad0zzfdy7438admvqshjbp881ri-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/axhvg2mdm68yfxidp2lwif557l9d8bxs-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/axhvg2mdm68yfxidp2lwif557l9d8bxs-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ayx4zy2ac2piysl1sxcigazql49k00jy-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ayx4zy2ac2piysl1sxcigazql49k00jy-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/b09wyx0wpvkvfg901xb6pvl1v39ls0ym-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/b09wyx0wpvkvfg901xb6pvl1v39ls0ym-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/b7jpb20m91wcv63mkrhxpvcxk8affmdy-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/b7jpb20m91wcv63mkrhxpvcxk8affmdy-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/bi7qdkcq15f44d7z44skkk07j59qhmw7-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/bi7qdkcq15f44d7z44skkk07j59qhmw7-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/bxvg6mw9afngyy2x4qz9pvcgrr48ijr0-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/bxvg6mw9afngyy2x4qz9pvcgrr48ijr0-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/c1k4qgcqijja3rv1xsagjsb1rwxs1jkv-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/c1k4qgcqijja3rv1xsagjsb1rwxs1jkv-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ckgg42schbnj9pxm4m05hvx99b0q0jay-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.3 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ckgg42schbnj9pxm4m05hvx99b0q0jay-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ckmg6avvkl37hzjd8f5hzyyxzxaczbws-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ckmg6avvkl37hzjd8f5hzyyxzxaczbws-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/clas7caax30c6wbrmr36g7fyhinirnna-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/clas7caax30c6wbrmr36g7fyhinirnna-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/cryw9yxdn431f5dk01izxn6hjlwirw1m-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/cryw9yxdn431f5dk01izxn6hjlwirw1m-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/cx0p33b4iy834f76g5dyk8ziii8g1425-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/cx0p33b4iy834f76g5dyk8ziii8g1425-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/di31n81804v2n55z81w47sk8cl38r7mp-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/di31n81804v2n55z81w47sk8cl38r7mp-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/diq7wnmwspd6mdy005bzaw84ncq89sdr-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/diq7wnmwspd6mdy005bzaw84ncq89sdr-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/djp6x2wdmnaddk29fm2lkwk5k6r95fh1-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/djp6x2wdmnaddk29fm2lkwk5k6r95fh1-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/dk77f13sqj9q6svxjn3f9ah7pd5laxfr-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/dk77f13sqj9q6svxjn3f9ah7pd5laxfr-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/dss6z324i646vc4vx5khvjxw6n5624mv-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/dss6z324i646vc4vx5khvjxw6n5624mv-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/f4f44kimx270gdqzal4nlrinqxnl0iah-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/f4f44kimx270gdqzal4nlrinqxnl0iah-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/f654yfqb45kmd87shhashgfr98dpj2m7-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/f654yfqb45kmd87shhashgfr98dpj2m7-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ff0swxqplnwlrxz6x3b3i1ia4m9ml5j4-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ff0swxqplnwlrxz6x3b3i1ia4m9ml5j4-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/fh53fyn3n1a1gah7plw3m3f0infksfsf-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/fh53fyn3n1a1gah7plw3m3f0infksfsf-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/fl760fhdkl35q41cqlphlcyprwibdj0q-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/fl760fhdkl35q41cqlphlcyprwibdj0q-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/fldcf4y21gmgxj44k39jnc7y0b7s9qrg-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/fldcf4y21gmgxj44k39jnc7y0b7s9qrg-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/fyg5r64dakbiip1fj6gzsm5n3m2n64x6-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.3 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/fyg5r64dakbiip1fj6gzsm5n3m2n64x6-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/gpci1dx0v1dbnmi6j1sm0wi170hynfs2-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/gpci1dx0v1dbnmi6j1sm0wi170hynfs2-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/gr6j4za9yb798lghfrgyhmh10nhscbrx-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/gr6j4za9yb798lghfrgyhmh10nhscbrx-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/h699f0kw1ybxlg6hgmnwygzrmwaacrqf-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/h699f0kw1ybxlg6hgmnwygzrmwaacrqf-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/h91d1jx668lmpbl86vgf224lymri1pyf-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/h91d1jx668lmpbl86vgf224lymri1pyf-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/hfb13nzmlxripxjdr5jx1va6n3lrfxhv-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.3 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/hfb13nzmlxripxjdr5jx1va6n3lrfxhv-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/hysp3y4zg55p392imak1cm8j6m48q922-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/hysp3y4zg55p392imak1cm8j6m48q922-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/i3viqy0jngxzj5y3621qaazs16jc214k-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.3 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/i3viqy0jngxzj5y3621qaazs16jc214k-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ibh3m5d9q297h1m82gnb34f8pfl5yhc5-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ibh3m5d9q297h1m82gnb34f8pfl5yhc5-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/icks9hjcy3ilv07dg5izx5gq50n7plp6-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/icks9hjcy3ilv07dg5izx5gq50n7plp6-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/im7ayrqxqgrwa3jmgf1jhr2wm03s0aaw-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/im7ayrqxqgrwa3jmgf1jhr2wm03s0aaw-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/iyc0s2dk24a6r5416x7d9jc8742l4p9g-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/iyc0s2dk24a6r5416x7d9jc8742l4p9g-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/j0synva8zxs49bmw0q38mk82g4xv2kmp-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.8 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/j0synva8zxs49bmw0q38mk82g4xv2kmp-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/j2ihypx1hky2dd83qnwm6hm3cylqrbsq-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/j2ihypx1hky2dd83qnwm6hm3cylqrbsq-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/jd9h0wcn4814f66dinkg6ycbrdqd4xk0-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/jd9h0wcn4814f66dinkg6ycbrdqd4xk0-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/jgklj66x6dxhslmmdb212gl4lyy2pg3f-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/jgklj66x6dxhslmmdb212gl4lyy2pg3f-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/jh15mfm26kgkq0fzb7312acgih86aar2-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/jh15mfm26kgkq0fzb7312acgih86aar2-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/jjs0dh3ngzl8jsmmn0ddbghji9h9g3zk-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/jjs0dh3ngzl8jsmmn0ddbghji9h9g3zk-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/jnzjfyjhnf1bm03kwigvrpn2mimq8krd-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/jnzjfyjhnf1bm03kwigvrpn2mimq8krd-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/jpa2vlydn9q0ww27a6qs7675rf95i7m2-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/jpa2vlydn9q0ww27a6qs7675rf95i7m2-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/k0bhyvq02wb1z2g2fa0k7ffcj97ygcqj-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/k0bhyvq02wb1z2g2fa0k7ffcj97ygcqj-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/k7pbg0dxzyxvii4l6iriwvfl7cn94p6m-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/k7pbg0dxzyxvii4l6iriwvfl7cn94p6m-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/km8adgmw7xf6qhfss8s0vy4vpc8sid2n-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/km8adgmw7xf6qhfss8s0vy4vpc8sid2n-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/kx589pky7rcp739203nq6v917gnxl2n9-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/kx589pky7rcp739203nq6v917gnxl2n9-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/l4famxr775qnnxk05sxbwq7sf6w311ai-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/l4famxr775qnnxk05sxbwq7sf6w311ai-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/lgzmaiaxxlxixfydc8nph49ghvb1i5v3-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/lgzmaiaxxlxixfydc8nph49ghvb1i5v3-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/lm3ic1z3l7yxn5b57nfg49ciws1s41rx-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/lm3ic1z3l7yxn5b57nfg49ciws1s41rx-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/lnxm2nq4f356pp24lf73mir5ljbxb261-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/lnxm2nq4f356pp24lf73mir5ljbxb261-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ly8xgdjk64z9v29ac730ab9iqsb73ww5-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ly8xgdjk64z9v29ac730ab9iqsb73ww5-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/m1kgs048hsv75n98p2qnijbijscz121l-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/m1kgs048hsv75n98p2qnijbijscz121l-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/m51i2jxk356bb823jvqfs7bmhmjrplm9-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.3 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/m51i2jxk356bb823jvqfs7bmhmjrplm9-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/m761da443awx2b82liykn15qmpxm2r7q-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/m761da443awx2b82liykn15qmpxm2r7q-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/m8mbxidl94nxlqpnpjc6ydv259wx6s7m-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/m8mbxidl94nxlqpnpjc6ydv259wx6s7m-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/mkdrc41abijafa3xgc2iqsvq2jjckns4-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/mkdrc41abijafa3xgc2iqsvq2jjckns4-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/msrawh0iqc4srplpd2lg0ri6f9qccpan-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/msrawh0iqc4srplpd2lg0ri6f9qccpan-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/n79w500yx1sijya1gv6v4s49jyv0hcj4-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.8 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/n79w500yx1sijya1gv6v4s49jyv0hcj4-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/n8vmc56xi0ggw21yi6kwa13samb11gs1-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.3 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/n8vmc56xi0ggw21yi6kwa13samb11gs1-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/nav2pn56xwap008x65g1q0hfis1z8785-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/nav2pn56xwap008x65g1q0hfis1z8785-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/nfbblhc5lrwx5siv0ag2hsg7kj8qxc8x-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/nfbblhc5lrwx5siv0ag2hsg7kj8qxc8x-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/njygxq121w00c4v0j2cymi1vy4l9sdml-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/njygxq121w00c4v0j2cymi1vy4l9sdml-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/nr032rf0avd0b3bginfc399y33mlffap-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.9 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/nr032rf0avd0b3bginfc399y33mlffap-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/nr6hjnjda2vq1549dd5wa03j4mxys02b-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/nr6hjnjda2vq1549dd5wa03j4mxys02b-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/nxi7gajn7jh8y5fhhz1hajisviqs15xd-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/nxi7gajn7jh8y5fhhz1hajisviqs15xd-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/p3b4dx96vy4jqfsw24a1f0b8dmfk2jn7-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/p3b4dx96vy4jqfsw24a1f0b8dmfk2jn7-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/plw6l4jig3f02862glwg7yjj3dfka5y5-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/plw6l4jig3f02862glwg7yjj3dfka5y5-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/pmnw9yfnizb1i6zbbp158p1zc9s0q8sz-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/pmnw9yfnizb1i6zbbp158p1zc9s0q8sz-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/pp43bp972w2vxfn6xn4mgf17d0617f0j-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/pp43bp972w2vxfn6xn4mgf17d0617f0j-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/pz8mvspna3cznrik0ms2i73r1sy1s1nc-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/pz8mvspna3cznrik0ms2i73r1sy1s1nc-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/q59v44fhpzbkkkc03sxpj9v15j9k7sk6-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.3 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/q59v44fhpzbkkkc03sxpj9v15j9k7sk6-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/q9rqy6kv42yz6a6iqwa0qbrc4dla02bn-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/q9rqy6kv42yz6a6iqwa0qbrc4dla02bn-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/qwc4mbrz82c92yxy9k6j3bp7ivgi95q3-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/qwc4mbrz82c92yxy9k6j3bp7ivgi95q3-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/qx288849232xmxkh83yh89x75s0l320h-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/qx288849232xmxkh83yh89x75s0l320h-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/rkz560n4fcxy1l1zh887p7hxsdyaad4d-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/rkz560n4fcxy1l1zh887p7hxsdyaad4d-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/rn7qmggq7pjj9hwwp8ic4zw7hf69yph3-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/rn7qmggq7pjj9hwwp8ic4zw7hf69yph3-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/rqp32gbj330diwpbkaplqqp0vln6vi70-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.3 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/rqp32gbj330diwpbkaplqqp0vln6vi70-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/rryj6by91w8dqccmlnlw3aabm1dkyqcs-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.9 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/rryj6by91w8dqccmlnlw3aabm1dkyqcs-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/rs7l6p2c949pmgxhzqxgk0ljkqygb033-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/rs7l6p2c949pmgxhzqxgk0ljkqygb033-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/rv15msd5aw0n9dn2qhm6igmq1n51m1ay-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/rv15msd5aw0n9dn2qhm6igmq1n51m1ay-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/s6djzsdwrir75ys4332r8h96pvxik88c-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.3 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/s6djzsdwrir75ys4332r8h96pvxik88c-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/sm4s18abvx6mlxmq6w8s48ckd79r9jlm-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.8 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/sm4s18abvx6mlxmq6w8s48ckd79r9jlm-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/syswfkl15pmgaifn6x05vax7zw6ihyir-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/syswfkl15pmgaifn6x05vax7zw6ihyir-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/szh9d9nb0xrfhc6jjhkiaa42523z812p-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/szh9d9nb0xrfhc6jjhkiaa42523z812p-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/v3nkn98lwqvrc6z7cdrqw7iwxmwf9lpg-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/v3nkn98lwqvrc6z7cdrqw7iwxmwf9lpg-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/v9ynr77lhfkdq0mc8df3qlnz6hncg0qw-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.8 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/v9ynr77lhfkdq0mc8df3qlnz6hncg0qw-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/vc644ynim0fiq9psmdmmfgh507k4ss3x-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/vc644ynim0fiq9psmdmmfgh507k4ss3x-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/vcs4w3s19ibd6aa7rn0rd1j1v61n87xn-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/vcs4w3s19ibd6aa7rn0rd1j1v61n87xn-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/w57ag8w2mxkpd9njiv84krzmmsvxz8vb-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/w57ag8w2mxkpd9njiv84krzmmsvxz8vb-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/waalgyhnn66a2v7wrmwni7vqc2i6cy5q-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/waalgyhnn66a2v7wrmwni7vqc2i6cy5q-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/wbhm0wy7wlpp05ydlclj9326fas4lfc7-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/wbhm0wy7wlpp05ydlclj9326fas4lfc7-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/wlrb0xdfmwyvkva4lzzxc95jjlkvd2rr-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/wlrb0xdfmwyvkva4lzzxc95jjlkvd2rr-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ww7cdw75zjdgsyfd2mskj8rmzx4bccs1-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ww7cdw75zjdgsyfd2mskj8rmzx4bccs1-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/x87zax0b6hl91v31wr4l5j8wpnchy3gk-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/x87zax0b6hl91v31wr4l5j8wpnchy3gk-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/x9pp29plbl306whzd01k83jxxn8mk0vn-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/x9pp29plbl306whzd01k83jxxn8mk0vn-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/xcgys9khqhwm61b14imlg78649h0499y-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/xcgys9khqhwm61b14imlg78649h0499y-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/xjij9pkx0jh4pzrxf4qahvq8dmc04y4j-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/xjij9pkx0jh4pzrxf4qahvq8dmc04y4j-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/xr5qanl0p806x2xhqclhy5pq8a7mhrw7-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.3 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/xr5qanl0p806x2xhqclhy5pq8a7mhrw7-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/xrg5gx8kcx1aiisxlz5ym5lnhs3p8z6b-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.8 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/xrg5gx8kcx1aiisxlz5ym5lnhs3p8z6b-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/xzf24qw6m8d49z3slshbb8xmiq2623ly-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/xzf24qw6m8d49z3slshbb8xmiq2623ly-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/y77lf6077wb3hkwbn5lw9lnhqbww6p6k-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/y77lf6077wb3hkwbn5lw9lnhqbww6p6k-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/yczi98i778ykl27wscihys6fzha1pn21-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/yczi98i778ykl27wscihys6fzha1pn21-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ygbc59iah69k09gncx21i189d1mw72hm-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ygbc59iah69k09gncx21i189d1mw72hm-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/yhxycs9pgcqcfm7zn7hznymkjqq69ssm-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/yhxycs9pgcqcfm7zn7hznymkjqq69ssm-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/yll7agd21ppx1djg8j20czcjdpaqi3sz-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/yll7agd21ppx1djg8j20czcjdpaqi3sz-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ylzjkrp6k4lzw4wy2av1hx3db7lr2qz7-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ylzjkrp6k4lzw4wy2av1hx3db7lr2qz7-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/ymgp32jv5h4knk1mww92ccmx9aa7g51l-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 3.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/ymgp32jv5h4knk1mww92ccmx9aa7g51l-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/yrjk3w8mrzvxmjhx6r6m1761645d67hd-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 23.4 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/yrjk3w8mrzvxmjhx6r6m1761645d67hd-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/z05k10yfd9k9y5lizhznx5bvdh32szra-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/z05k10yfd9k9y5lizhznx5bvdh32szra-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/z213psyh9qg9dhbdjp5n00r35z3bby64-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/z213psyh9qg9dhbdjp5n00r35z3bby64-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/z4p7670ghajz4bavc5aak6b22nqfdn6n-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/z4p7670ghajz4bavc5aak6b22nqfdn6n-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/z68a1m1rknrw9kkyb0zg29p6056n31d7-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.8 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/z68a1m1rknrw9kkyb0zg29p6056n31d7-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/z6b3rxybd3gv5i2i5bm739ilyjgdib64-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.3 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/z6b3rxybd3gv5i2i5bm739ilyjgdib64-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/z8qf77q1jmbbvmf6k8vmi12csihjx2jl-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/z8qf77q1jmbbvmf6k8vmi12csihjx2jl-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/zf8d0nf2lr69aazng3zmh044ii7lnlx4-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.0 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/zf8d0nf2lr69aazng3zmh044ii7lnlx4-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/zhwmjfqjg7dw693flyyyqgxmmipvjkqq-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/zhwmjfqjg7dw693flyyyqgxmmipvjkqq-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/zlcs7prgvmdz41n5lam15nmpdsv2q6aw-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/zlcs7prgvmdz41n5lam15nmpdsv2q6aw-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/zmjjify5axyqzr1l6cka981ww9my2fy2-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 1.5 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/zmjjify5axyqzr1l6cka981ww9my2fy2-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/zx7lpdvyl0ad82ha0amxfi9hw2q321i9-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 21.2 MiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/zx7lpdvyl0ad82ha0amxfi9hw2q321i9-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  },
+  {
+    "path": "/nix/store/zy6bfi8xy3i1rvva7ymyj2sg76w838d3-source",
+    "exit": 0,
+    "stdout": "1 store paths deleted, 2.8 GiB freed\n",
+    "stderr": "finding garbage collector roots...\ndeleting specified paths...\ndeleting '/nix/store/zy6bfi8xy3i1rvva7ymyj2sg76w838d3-source'\ndeleting unused links...\nnote: hard linking is currently saving -4.0 KiB\n",
+    "absent_after": true
+  }
+]

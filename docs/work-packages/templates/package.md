@@ -22,7 +22,9 @@ Review: none for editorial, one for bounded, two for consequential work.>
 
 ## Current state and evidence
 <Implemented work and next action. Commands/cwd/source/input identity, actual
-results and raw evidence links. Record material decisions here, not in a handoff.>
+results and raw evidence links. Record material decisions here, not in a handoff.
+When an exact Nix environment must outlive normal cache retention, include its
+package pin, reason and release condition; disposition it at closure.>
 
 ## Review and corrections
 <Attributable independent scope/findings/fix verification when required.

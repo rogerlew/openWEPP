@@ -1,0 +1,30 @@
+[
+  {
+    "child": "a",
+    "argv": [
+      "/workdir/openWEPP/tools/dev/develop",
+      "bash",
+      "-c",
+      "touch \"$1\"; while [ ! -e \"$2\" ]; do sleep 0.1; done",
+      "bash",
+      "/tmp/openwepp-nix-concurrency-cfuun24u/a.ready",
+      "/tmp/openwepp-nix-concurrency-cfuun24u/a.release"
+    ],
+    "exit": 0,
+    "output": "waiting for another Nix process to finish fetching input 'path:/tmp/openwepp-nix-concurrency-cfuun24u/cache/sources/7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d'...\nerror (ignored): SQLite database '/home/roger/.cache/nix/eval-cache-v6/174487f8d1fc14b1f33c1bad03aa46d4efef753e6711cb3875da6fee30efcb03.sqlite' is busy\nopenWEPP Nix shell\n  target:  /tmp/openwepp-nix-concurrency-cfuun24u/build/targets/nix-storage-real-a\n  scratch: /tmp/openwepp-roger-nix-storage-real-a\n  cache:   /tmp/openwepp-nix-concurrency-cfuun24u/build\n"
+  },
+  {
+    "child": "b",
+    "argv": [
+      "/workdir/openWEPP/tools/dev/develop",
+      "bash",
+      "-c",
+      "touch \"$1\"; while [ ! -e \"$2\" ]; do sleep 0.1; done",
+      "bash",
+      "/tmp/openwepp-nix-concurrency-cfuun24u/b.ready",
+      "/tmp/openwepp-nix-concurrency-cfuun24u/b.release"
+    ],
+    "exit": 0,
+    "output": "openWEPP Nix shell\n  target:  /tmp/openwepp-nix-concurrency-cfuun24u/build/targets/nix-storage-real-b\n  scratch: /tmp/openwepp-roger-nix-storage-real-b\n  cache:   /tmp/openwepp-nix-concurrency-cfuun24u/build\n"
+  }
+]

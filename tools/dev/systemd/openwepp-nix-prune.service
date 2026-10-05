@@ -1,0 +1,7 @@
+[Unit]
+Description=Prune retired openWEPP staged Nix environments
+
+[Service]
+Type=oneshot
+EnvironmentFile=%h/.config/openwepp/nix-lifecycle.env
+ExecStart=/bin/sh -c 'exec "$OPENWEPP_NIX_LIFECYCLE" prune --keep 2 --older-than-days 30'

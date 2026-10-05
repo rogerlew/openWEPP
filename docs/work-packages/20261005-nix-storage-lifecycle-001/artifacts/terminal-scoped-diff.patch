@@ -1,0 +1,304 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 3ee624536..1efc1787d 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -18,6 +18,12 @@
+   `tools/agents/find-agents --all` for the full inventory and
+   `docs/agent-guidance-map.md` for the current index.
+ 
++## Development Environment
++- Enter the pinned Nix environment with `tools/dev/develop`, not repository-root
++  `nix develop`; see `tools/dev/README.md` for small toolchain inputs and retention.
++- Package-owned environment pins and cache disposal follow
++  `docs/standards/bounded-agent-execution.md#development-environment-and-cache-lifecycle`.
++
+ ## Local Python Environment
+ - Repo-local Python tooling should use `.venv/bin/python`.
+ - `.venv` is an untracked local environment; do not commit it.
+diff --git a/docs/standards/bounded-agent-execution.md b/docs/standards/bounded-agent-execution.md
+index bb86b28ab..c693bb108 100644
+--- a/docs/standards/bounded-agent-execution.md
++++ b/docs/standards/bounded-agent-execution.md
+@@ -111,6 +111,31 @@ An absent source directory triggers bounded inspection of retained recovery
+ evidence; it does not by itself prove irrecoverable loss. Preserve explicit
+ source-loss stop conditions while reporting any evidenced recovery route.
+ 
++### Development environment and cache lifecycle
++
++Enter Nix through `tools/dev/develop` as documented in
++[the development guide](../../tools/dev/README.md). The environment input is the
++small staged toolchain definition and helpers, not a snapshot of the simulation
++checkout. Preserve the lockfile and selected toolchain when changing packaging.
++Keep worktree/target isolation; it does not justify a new environment per source
++edit or a full source/evidence archive per shell invocation.
++
++The package executor owns retention as well as preservation. For an unfinished
++experiment that needs an exact Nix environment beyond the ordinary cache window,
++register a package-owned GC pin and record its identifier, reason and release
++condition in package.md. A tool path or hash in a receipt is not a GC root.
++Preserve old toolchains required by frozen experiments during migration; a new
++default environment does not replace those obligations.
++
++At handoff retain necessary pins; at closure release pins whose recovery/use
++obligations have ended, or record the outstanding reason and owner. Reusable
++source/evidence remains durable under the preceding recovery rule. Unpinned staged Nix environments have bounded retention under the development
++guide; this policy does not automatically prune Cargo build caches. Scheduled cleanup may act only on its explicitly owned
++cache/environment scope, respect active use and package pins, and fail closed on
++ambiguous ownership. Nix garbage eligibility alone does not prove source
++redundancy. Historical repository snapshots require verified recovery before
++removal; do not run broad host GC as a substitute for that classification.
++
+ At handoff, preserve source and evidence durably and record whether each is local,
+ committed or remotely published. Carry granted commit/push permissions; a pause
+ does not revoke them or grant new ones. When publishing is authorized, include
+diff --git a/docs/work-packages/AGENTS.md b/docs/work-packages/AGENTS.md
+index bcbf1697d..a7e386349 100644
+--- a/docs/work-packages/AGENTS.md
++++ b/docs/work-packages/AGENTS.md
+@@ -127,6 +127,10 @@ agent, and at disposition. Record the actual source identity (base plus diff or
+ commit), relevant input identities and evidence needed for the claim. No routine
+ three-manifest scheme, self-hashes or hashes of signoff prose. Recheck actual state
+ on continuation; investigate relevant drift, not every historical dependency.
++For retained Nix environments, record package pin, reason and release condition;
++release obsolete pins at closure or name the continuing owner/obligation. Follow
++../standards/bounded-agent-execution.md#development-environment-and-cache-lifecycle
++and tools/dev/README.md. Cache eligibility never substitutes for source recovery.
+ active.md is a locator; README.md is searchable history, not duplicate live status.
+ 
+ File length and coverage/CRAP are maintenance signals, not automatic unrelated
+diff --git a/docs/work-packages/README.md b/docs/work-packages/README.md
+index c4169dcc3..c6cbb8bb4 100644
+--- a/docs/work-packages/README.md
++++ b/docs/work-packages/README.md
+@@ -1,5 +1,7 @@
+ # Work Packages
+ 
++- [20261005 Nix storage lifecycle](20261005-nix-storage-lifecycle-001/package.md): IMPLEMENTED / CLOSURE HOLD: tiny environment inputs, weekly retention and ~240 GiB verified snapshot reclamation; mandatory workspace correctness has failures.
++
+ - [20260912 B01 WB14 available-source red witness](20260912-b01-wb14-available-source-red-witness-001/package.md): INCOMPLETE/HOLD after supplemental cycle ceiling; delegated overrun recorded at 5 cumulative failures against ceiling 4. Preflight and historical fixture retained; authentic invocation NOT RUN, source/cadence HOLD.
+ 
+ - [20260911 B01 WB14 evidence interface design](20260911-b01-wb14-evidence-interface-design-001/package.md): INCOMPLETE; stopped at the owner’s two unsuccessful correction-cycle limit. The proposed evidence interface/test envelope is not implementation-ready or recommended for adoption.
+diff --git a/docs/work-packages/active.md b/docs/work-packages/active.md
+index 378118545..a75f673e7 100644
+--- a/docs/work-packages/active.md
++++ b/docs/work-packages/active.md
+@@ -7,6 +7,7 @@ This is the current owner-directed queue, not a claim every old catalog HOLD is
+ 
+ | Package | Current entrypoint | Authorization boundary |
+ | --- | --- | --- |
++| Nix storage lifecycle | [record](20261005-nix-storage-lifecycle-001/package.md) | Implemented and operational; ~240 GiB reclaimed with verified recovery. Closure HOLD on required full-workspace correctness failures. |
+ | B01 WB14 ingress red regression (test-only complete) | [record](20260911-b01-wb14-verified-cadence-repair-001/package.md#bounded-checkpoint-disposition) | Exact E008 EXPECTED_RED; context/ordinary/18 precedence/4 raw-hash/formatting PASS reused. Lint-delta PASS under owner 2026-09-13 exception with independent correctness/QA acceptance; all Clippy runs remain FAIL. Broader cadence HOLD; ZERO runner/collector calls. |
+ | B01 WB14 available-source red witness (complete limited witness) | [record](20260912-b01-wb14-available-source-red-witness-001/package.md) | Witness PASS after corrected checker, 75 named controls and distinct correctness/QA PASS. Runner FAIL, execution_valid=false; invocation1/1 exhausted. Failures8/9 preserved. No cadence/source adoption or broader qualification; raw custody retained. |
+ | B01 WB14 evidence interface design (incomplete, stopped) | [record](20260911-b01-wb14-evidence-interface-design-001/package.md) | Two unsuccessful correction cycles exhausted; implementation envelope not recommended for adoption. Source/cadence/release HOLD. |
+diff --git a/docs/work-packages/templates/package.md b/docs/work-packages/templates/package.md
+index d76e931b5..f3229b97d 100644
+--- a/docs/work-packages/templates/package.md
++++ b/docs/work-packages/templates/package.md
+@@ -22,7 +22,9 @@ Review: none for editorial, one for bounded, two for consequential work.>
+ 
+ ## Current state and evidence
+ <Implemented work and next action. Commands/cwd/source/input identity, actual
+-results and raw evidence links. Record material decisions here, not in a handoff.>
++results and raw evidence links. Record material decisions here, not in a handoff.
++When an exact Nix environment must outlive normal cache retention, include its
++package pin, reason and release condition; disposition it at closure.>
+ 
+ ## Review and corrections
+ <Attributable independent scope/findings/fix verification when required.
+diff --git a/flake.lock b/flake.lock
+deleted file mode 100644
+index eb9c76e03..000000000
+--- a/flake.lock
++++ /dev/null
+@@ -1,27 +0,0 @@
+-{
+-  "nodes": {
+-    "nixpkgs": {
+-      "locked": {
+-        "lastModified": 1786711500,
+-        "narHash": "sha256-QvnceIGTBeDvDd9oCn+GvdsnkquliuwbVgpiRH68qaQ=",
+-        "owner": "NixOS",
+-        "repo": "nixpkgs",
+-        "rev": "02e08985a27c65ffd33d434eeb2e660a2e4dc84d",
+-        "type": "github"
+-      },
+-      "original": {
+-        "owner": "NixOS",
+-        "ref": "nixos-26.05",
+-        "repo": "nixpkgs",
+-        "type": "github"
+-      }
+-    },
+-    "root": {
+-      "inputs": {
+-        "nixpkgs": "nixpkgs"
+-      }
+-    }
+-  },
+-  "root": "root",
+-  "version": 7
+-}
+diff --git a/flake.nix b/flake.nix
+deleted file mode 100644
+index 0b91ede78..000000000
+--- a/flake.nix
++++ /dev/null
+@@ -1,79 +0,0 @@
+-{
+-  description = "Reproducible openWEPP agent development environment";
+-
+-  inputs = {
+-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+-  };
+-
+-  outputs =
+-    { nixpkgs, ... }:
+-    let
+-      system = "x86_64-linux";
+-      pkgs = import nixpkgs { inherit system; };
+-
+-      devTools = with pkgs; [
+-        bashInteractive
+-        cargo
+-        cargo-deny
+-        cargo-nextest
+-        clang
+-        cmake
+-        git
+-        git-lfs
+-        gh
+-        hyperfine
+-        jq
+-        llvmPackages_21.llvm
+-        mold
+-        nixfmt
+-        pkg-config
+-        python312
+-        rustc
+-        rustfmt
+-        clippy
+-        sccache
+-        shellcheck
+-        uv
+-        util-linux
+-      ];
+-    in
+-    {
+-      devShells.${system}.default = pkgs.mkShell {
+-        packages = devTools;
+-        LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ];
+-        LLVM_COV = "${pkgs.llvmPackages_21.llvm}/bin/llvm-cov";
+-        LLVM_PROFDATA = "${pkgs.llvmPackages_21.llvm}/bin/llvm-profdata";
+-
+-        shellHook = ''
+-          source ${./tools/dev/openwepp-env} || exit $?
+-          printf 'openWEPP Nix shell\n'
+-          printf '  target:  %s\n' "$CARGO_TARGET_DIR"
+-          printf '  scratch: %s\n' "$TMPDIR"
+-          printf '  cache:   %s\n' "$OPENWEPP_CACHE_ROOT"
+-        '';
+-      };
+-
+-      checks.${system}.dev-tools =
+-        pkgs.runCommand "openwepp-dev-tools-check"
+-          {
+-            nativeBuildInputs = devTools;
+-          }
+-          ''
+-                cargo --version
+-                rustc --version
+-                cargo nextest --version
+-                cargo deny --version
+-                "$LLVM_COV" --version
+-                "$LLVM_PROFDATA" --version
+-                python3.12 --version
+-                uv --version
+-                sccache --version
+-                mold --version
+-                git-lfs --version
+-            shellcheck ${./tools/dev/openwepp-env} ${./tools/dev/check-host} ${./tools/dev/heavy}
+-                touch "$out"
+-          '';
+-
+-      formatter.${system} = pkgs.nixfmt;
+-    };
+-}
+diff --git a/tools/dev/README.md b/tools/dev/README.md
+index 00c9de743..584d5e4ef 100644
+--- a/tools/dev/README.md
++++ b/tools/dev/README.md
+@@ -4,9 +4,49 @@ Enter the shell from the checkout or worktree that owns the task:
+ 
+ ```bash
+ cd /path/to/openWEPP-worktree
+-nix develop
++tools/dev/develop
+ ```
+ 
++`tools/dev/develop` stages the versioned `nix-toolchain/flake.nix`, lock, and
++canonical `openwepp-env` shell helper under the user cache, then enters that staged flake. It never gives
++Nix the checkout as a flake input, so source and evidence edits do not create
++repository-sized Nix snapshots. The staged identity changes only when one of
++those three toolchain inputs changes. Pass a command after the wrapper to run
++it in the shell while retaining the checkout as the current directory:
++
++```bash
++tools/dev/develop cargo check --workspace
++```
++
++The wrapper creates a persistent profile for its content identity, which is a
++Nix GC root. Do not use `nix develop` at the repository root: the root flake
++was deliberately removed to prevent it from importing the checkout.
++
++## Toolchain lifecycle
++
++The lifecycle command manages only the wrapper's own staged inputs and profiles.
++It does not run `nix gc` or inspect/delete arbitrary store paths.
++
++```bash
++tools/dev/nix-lifecycle list
++tools/dev/nix-lifecycle pin <toolchain-id> pre-upgrade
++tools/dev/nix-lifecycle release pre-upgrade
++tools/dev/nix-lifecycle prune --keep 2 --older-than-days 30
++```
++
++Pins are separate persistent profiles. `prune` retains the newest two inactive,
++unpinned staged environments by default and only retires additional ones after
++30 days since their last wrapper use. Active or pinned environments always win. It removes matching files
++below the wrapper-owned cache and state directories. It deliberately does not
++follow a profile link into `/nix/store` without a recorded owned-output identity,
++and never invokes global garbage collection.
++
++The optional user-systemd templates in `tools/dev/systemd/` run that same scoped
++command weekly. Set `OPENWEPP_NIX_LIFECYCLE` to the absolute path of the chosen
++checkout's `tools/dev/nix-lifecycle` in
++`~/.config/openwepp/nix-lifecycle.env`, then install the two templates as user
++units and enable `openwepp-nix-prune.timer`.
++
+ The shell shares Cargo downloads, uv downloads, and the future sccache store,
+ but derives unique Cargo target and `/tmp` paths from the absolute worktree
+ path. It also records an atomic live-process ownership claim for that target. A
+@@ -17,8 +57,8 @@ Use one worktree per write-capable agent. If two independent tasks must operate
+ from the same checkout, give each one an explicit identity before entering:
+ 
+ ```bash
+-OPENWEPP_TASK_ID=review-a nix develop
+-OPENWEPP_TASK_ID=review-b nix develop
++OPENWEPP_TASK_ID=review-a tools/dev/develop
++OPENWEPP_TASK_ID=review-b tools/dev/develop
+ ```
+ 
+ Do not rely on `nix develop /path/to/flake` to select build identity: Nix keeps
+@@ -75,8 +115,10 @@ RUSTFLAGS="-C linker=clang -C link-arg=-fuse-ld=mold" cargo check --workspace
+ ## Validation
+ 
+ ```bash
+-nix fmt -- flake.nix
+-nix flake check
++tools/dev/develop nixfmt --check tools/dev/nix-toolchain/flake.nix
++tools/dev/develop sh -c 'nix flake check "path:$OPENWEPP_NIX_STAGED_INPUT"'
++tools/dev/develop tools/dev/check-nix-tooling
++tools/dev/tests/nix-lifecycle-test
+ tools/dev/check-host
+ ```
+ 

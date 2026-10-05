@@ -127,6 +127,10 @@ agent, and at disposition. Record the actual source identity (base plus diff or
 commit), relevant input identities and evidence needed for the claim. No routine
 three-manifest scheme, self-hashes or hashes of signoff prose. Recheck actual state
 on continuation; investigate relevant drift, not every historical dependency.
+For retained Nix environments, record package pin, reason and release condition;
+release obsolete pins at closure or name the continuing owner/obligation. Follow
+../standards/bounded-agent-execution.md#development-environment-and-cache-lifecycle
+and tools/dev/README.md. Cache eligibility never substitutes for source recovery.
 active.md is a locator; README.md is searchable history, not duplicate live status.
 
 File length and coverage/CRAP are maintenance signals, not automatic unrelated

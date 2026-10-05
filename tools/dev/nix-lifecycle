@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+# Manage only the content-addressed openWEPP development profiles and sources.
+set -euo pipefail
+
+openwepp_cache_base="${OPENWEPP_NIX_CACHE_ROOT:-${XDG_CACHE_HOME:-$HOME/.cache}/openwepp/nix-toolchains}"
+openwepp_state_base="${OPENWEPP_NIX_STATE_ROOT:-${XDG_STATE_HOME:-$HOME/.local/state}/openwepp/nix}"
+openwepp_sources="$openwepp_cache_base/sources"
+openwepp_profiles="$openwepp_state_base/profiles"
+openwepp_pins="$openwepp_state_base/pins"
+openwepp_locks="$openwepp_state_base/locks"
+openwepp_receipts="$openwepp_state_base/receipts"
+
+usage() {
+    cat >&2 <<'EOF'
+usage: tools/dev/nix-lifecycle list
+       tools/dev/nix-lifecycle pin <toolchain-id> <name>
+       tools/dev/nix-lifecycle release <name>
+       tools/dev/nix-lifecycle prune [--keep <count>] [--older-than-days <days>]
+
+Profiles are persistent Nix GC roots.  prune only retires inactive, unpinned
+openWEPP profiles and their matching staged inputs; it never runs nix gc. Its
+defaults retain the newest two eligible environments and require age >=30 days.
+EOF
+    exit 2
+}
+
+valid_id() { [[ "$1" =~ ^[0-9a-f]{64}$ ]]; }
+valid_name() { [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]]; }
+owned_dir() { [[ -d "$1" && ! -L "$1" ]]; }
+safe_leaf() { [[ ! -L "$1" && ( ! -e "$1" || -f "$1" ) ]] || { echo "error: refusing unsafe lifecycle leaf: $1" >&2; exit 2; }; }
+remove_generations() {
+    local prefix="$1" target="$2" generation suffix
+    local -a selected=()
+    shopt -s nullglob
+    for generation in "$prefix"-*-link; do
+        [[ -L "$generation" ]] || continue
+        suffix="${generation#"$prefix"-}"
+        suffix="${suffix%-link}"
+        [[ "$suffix" =~ ^[0-9]+$ ]] || continue
+        [[ "$(readlink -f -- "$generation" 2>/dev/null || true)" == "$target" ]] || return 1
+        selected+=("$generation")
+    done
+    for generation in "${selected[@]}"; do rm -f -- "$generation"; done
+}
+
+prepare() {
+    local path existing
+    for path in "$openwepp_sources" "$openwepp_profiles" "$openwepp_pins" "$openwepp_locks" "$openwepp_receipts"; do
+        existing="$path"
+        while [[ ! -e "$existing" && "$existing" != / ]]; do
+            existing="${existing%/*}"
+            [[ -n "$existing" ]] || existing=/
+        done
+        while [[ "$existing" != / ]]; do
+            [[ ! -L "$existing" ]] || { echo "error: refusing symlinked lifecycle ancestor: $existing" >&2; exit 2; }
+            existing="${existing%/*}"
+            [[ -n "$existing" ]] || existing=/
+        done
+    done
+    mkdir -p -- "$openwepp_sources" "$openwepp_profiles" "$openwepp_pins" "$openwepp_locks" "$openwepp_receipts"
+    for path in "$openwepp_sources" "$openwepp_profiles" "$openwepp_pins" "$openwepp_locks" "$openwepp_receipts"; do
+        while [[ "$path" != / ]]; do
+            [[ ! -L "$path" ]] || { echo "error: refusing symlinked lifecycle ancestor: $path" >&2; exit 2; }
+            path="${path%/*}"
+            [[ -n "$path" ]] || path=/
+        done
+    done
+}
+
+is_pinned() {
+    local id="$1" metadata
+    shopt -s nullglob
+    for metadata in "$openwepp_pins"/*.identity; do
+        [[ -f "$metadata" && ! -L "$metadata" ]] || continue
+        [[ "$(<"$metadata")" == "$id" ]] && return 0
+    done
+    return 1
+}
+
+is_active() {
+    local id="$1" fd
+    safe_leaf "$openwepp_locks/$id.lock"
+    exec {fd}>"$openwepp_locks/$id.lock"
+    if flock --nonblock "$fd"; then
+        flock -u "$fd"
+        exec {fd}>&-
+        return 1
+    fi
+    exec {fd}>&-
+    return 0
+}
+
+list() {
+    local path id state
+    shopt -s nullglob
+    for path in "$openwepp_sources"/* "$openwepp_profiles"/*; do
+        id="${path##*/}"
+        valid_id "$id" || continue
+        [[ "$path" == "$openwepp_sources"/* && -L "$path" ]] && continue
+        [[ "$path" == "$openwepp_profiles"/* && ! -L "$path" ]] && continue
+        state=inactive
+        is_active "$id" && state=active
+        is_pinned "$id" && state="$state,pinned"
+        printf '%s\t%s\t%s\n' "$id" "${path#"$openwepp_cache_base"/}" "$state"
+    done | sort -u
+}
+
+pin() {
+    local id="$1" name="$2" source profile metadata temp_metadata
+    if ! valid_id "$id" || ! valid_name "$name"; then
+        usage
+    fi
+    safe_leaf "$openwepp_state_base/pin-names.lock"
+    safe_leaf "$openwepp_locks/$id.lock"
+    exec {openwepp_pin_name_fd}>"$openwepp_state_base/pin-names.lock"
+    flock --exclusive "$openwepp_pin_name_fd"
+    exec {openwepp_pin_fd}>"$openwepp_locks/$id.lock"
+    flock --exclusive "$openwepp_pin_fd"
+    source="$openwepp_sources/$id"
+    profile="$openwepp_pins/$name"
+    metadata="$openwepp_pins/$name.identity"
+    owned_dir "$source" || { echo "error: unknown staged toolchain $id" >&2; exit 2; }
+    [[ ! -e "$profile" && ! -L "$profile" && ! -e "$metadata" && ! -L "$metadata" ]] || {
+        echo "error: pin name already exists: $name" >&2; exit 2;
+    }
+    nix build --no-link --profile "$profile" "path:$source#devShells.x86_64-linux.default"
+    temp_metadata="$(mktemp "$openwepp_pins/.${name}.identity.XXXXXX")"
+    printf '%s\n' "$id" >"$temp_metadata"
+    mv -- "$temp_metadata" "$metadata"
+    flock -u "$openwepp_pin_fd"
+    exec {openwepp_pin_fd}>&-
+    flock -u "$openwepp_pin_name_fd"
+    exec {openwepp_pin_name_fd}>&-
+}
+
+release() {
+    local name="$1" profile="$openwepp_pins/$1" metadata="$openwepp_pins/$1.identity" target
+    valid_name "$name" || usage
+    safe_leaf "$openwepp_state_base/pin-names.lock"
+    exec {openwepp_release_name_fd}>"$openwepp_state_base/pin-names.lock"
+    flock --exclusive "$openwepp_release_name_fd"
+    [[ -L "$profile" && -f "$metadata" && ! -L "$metadata" ]] || {
+        echo "error: no owned pin named $name" >&2; exit 2;
+    }
+    target="$(readlink -f -- "$profile" 2>/dev/null || true)"
+    [[ "$target" == /nix/store/* ]] || { echo "error: pin target is not a Nix store output" >&2; exit 2; }
+    # Nix profiles retain a generation GC root beside the alias. Remove only
+    # the exact numeric generation whose resolved target agrees with the alias.
+    remove_generations "$profile" "$target" || { echo "error: refusing tampered pin generation" >&2; exit 2; }
+    rm -f -- "$profile" "$metadata"
+    # Store output deletion requires a recorded, owned output identity. This
+    # tool has none yet, so profile release deliberately leaves store custody to
+    # an explicit later Nix operation rather than following an arbitrary link.
+    flock -u "$openwepp_release_name_fd"
+    exec {openwepp_release_name_fd}>&-
+}
+
+prune() {
+    local keep="$1" days="$2" path id retained=0 now mtime age fd target receipt
+    [[ "$keep" =~ ^[0-9]+$ && "$days" =~ ^[0-9]+$ ]] || usage
+    now="$(date +%s)"
+    shopt -s nullglob
+    while IFS= read -r -d '' path; do
+        id="${path##*/}"
+        valid_id "$id" || continue
+        owned_dir "$path" || { printf 'skip unsafe staged path %s\n' "$path" >&2; continue; }
+        safe_leaf "$openwepp_locks/$id.lock"
+        safe_leaf "$openwepp_receipts/$id.output"
+        exec {fd}>"$openwepp_locks/$id.lock"
+        if ! flock --nonblock --exclusive "$fd"; then
+            exec {fd}>&-
+            continue
+        fi
+        if is_pinned "$id"; then
+            flock -u "$fd"
+            exec {fd}>&-
+            continue
+        fi
+        if (( retained < keep )); then
+            retained=$((retained + 1))
+            flock -u "$fd"
+            exec {fd}>&-
+            continue
+        fi
+        mtime="$(stat -c %Y -- "$path")"
+        age=$(( (now - mtime) / 86400 ))
+        if (( age < days )); then
+            flock -u "$fd"
+            exec {fd}>&-
+            continue
+        fi
+        if [[ -L "$openwepp_profiles/$id" ]]; then
+            receipt="$openwepp_receipts/$id.output"
+            target="$(readlink -f -- "$openwepp_profiles/$id" 2>/dev/null || true)"
+            if [[ -f "$receipt" && ! -L "$receipt" && "$(<"$receipt")" == "$target" && "$target" =~ ^/nix/store/[0-9a-z]{32}-nix-shell-env$ ]]; then
+                if ! remove_generations "$openwepp_profiles/$id" "$target"; then
+                    printf 'skip tampered profile generation for %s\n' "$id" >&2
+                    flock -u "$fd"; exec {fd}>&-; continue
+                fi
+                rm -f -- "$openwepp_profiles/$id"
+                if ! nix-store --delete "$target"; then
+                    printf 'retired output remains live or referenced: %s\n' "$target" >&2
+                fi
+                rm -f -- "$receipt"
+            else
+                printf 'skip unproven profile output for %s\n' "$id" >&2
+            fi
+        fi
+        rm -rf -- "$path"
+        printf 'retired %s\n' "$id"
+        flock -u "$fd"
+        exec {fd}>&-
+    done < <(find "$openwepp_sources" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\0' | sort -z -nr | while IFS= read -r -d '' entry; do printf '%s\0' "${entry#* }"; done)
+}
+
+prepare
+case "${1:-}" in
+    list) [[ $# == 1 ]] || usage; list ;;
+    pin) [[ $# == 3 ]] || usage; pin "$2" "$3" ;;
+    release) [[ $# == 2 ]] || usage; release "$2" ;;
+    prune)
+        openwepp_keep=2
+        openwepp_days=30
+        shift
+        while (( $# > 0 )); do
+            case "$1" in
+                --keep) [[ $# -ge 2 ]] || usage; openwepp_keep="$2"; shift 2 ;;
+                --older-than-days) [[ $# -ge 2 ]] || usage; openwepp_days="$2"; shift 2 ;;
+                *) usage ;;
+            esac
+        done
+        prune "$openwepp_keep" "$openwepp_days"
+        ;;
+    *) usage ;;
+esac
