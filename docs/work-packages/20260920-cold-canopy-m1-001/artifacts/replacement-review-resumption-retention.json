@@ -1,0 +1,103 @@
+{
+  "evidence_class": "Ran: package-owned indirect Nix GC roots for exact authenticated legacy tools; no shell/build/source change",
+  "utc": "2026-10-05T21:59:49.296580+00:00",
+  "owner": "20260920-cold-canopy-m1-001 package executor",
+  "pin_id": "cold-canopy-m1-replacement-legacy-tools",
+  "reason": "Frozen model13 source/binary/check recovery and same-reviewer correction obligations require recorded legacy toolchain; current staged profiles do not retain these store paths.",
+  "release_condition": "Package executor may remove only these named roots when final source/build reproduction obligations for this exact toolchain have ended or a verified equivalent package retention replaces them; no host GC.",
+  "roots": [
+    {
+      "tool": "cargo",
+      "store_path": "/nix/store/cavxgwfb7l7akyvvqvnl39d6nw0wckgh-cargo-1.97.1",
+      "gc_root": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/cargo",
+      "argv": [
+        "nix-store",
+        "--add-root",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/cargo",
+        "--indirect",
+        "--realise",
+        "/nix/store/cavxgwfb7l7akyvvqvnl39d6nw0wckgh-cargo-1.97.1"
+      ],
+      "exit": 0,
+      "stdout": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/cargo\n",
+      "stderr": ""
+    },
+    {
+      "tool": "rustc",
+      "store_path": "/nix/store/paaihvr59q1101200mabmk7y4yhw42g7-rustc-wrapper-1.97.1",
+      "gc_root": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/rustc",
+      "argv": [
+        "nix-store",
+        "--add-root",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/rustc",
+        "--indirect",
+        "--realise",
+        "/nix/store/paaihvr59q1101200mabmk7y4yhw42g7-rustc-wrapper-1.97.1"
+      ],
+      "exit": 0,
+      "stdout": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/rustc\n",
+      "stderr": ""
+    },
+    {
+      "tool": "rustfmt",
+      "store_path": "/nix/store/k2hwcha2p1fy0v0py34vq3jyvwqk339p-rustfmt-1.97.1",
+      "gc_root": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/rustfmt",
+      "argv": [
+        "nix-store",
+        "--add-root",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/rustfmt",
+        "--indirect",
+        "--realise",
+        "/nix/store/k2hwcha2p1fy0v0py34vq3jyvwqk339p-rustfmt-1.97.1"
+      ],
+      "exit": 0,
+      "stdout": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/rustfmt\n",
+      "stderr": ""
+    },
+    {
+      "tool": "cargo-clippy",
+      "store_path": "/nix/store/94wbbyb1fzp4cplfs9samki875k9ypg7-clippy-1.97.1",
+      "gc_root": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/cargo-clippy",
+      "argv": [
+        "nix-store",
+        "--add-root",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/cargo-clippy",
+        "--indirect",
+        "--realise",
+        "/nix/store/94wbbyb1fzp4cplfs9samki875k9ypg7-clippy-1.97.1"
+      ],
+      "exit": 0,
+      "stdout": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/cargo-clippy\n",
+      "stderr": ""
+    },
+    {
+      "tool": "cc",
+      "store_path": "/nix/store/3d1c302vw7kc8a5vknhmn34c0pd7zm6m-gcc-wrapper-15.3.0",
+      "gc_root": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/cc",
+      "argv": [
+        "nix-store",
+        "--add-root",
+        "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/cc",
+        "--indirect",
+        "--realise",
+        "/nix/store/3d1c302vw7kc8a5vknhmn34c0pd7zm6m-gcc-wrapper-15.3.0"
+      ],
+      "exit": 0,
+      "stdout": "/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/retention/nix-tools/cc\n",
+      "stderr": ""
+    }
+  ],
+  "current_shell_retention": {
+    "toolchain_id": "7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d",
+    "owner": "cold-canopy-m1-review-shell",
+    "pin": "/home/roger/.cache/openwepp/nix-toolchains/pins/cold-canopy-m1-review-shell",
+    "command": [
+      "tools/dev/nix-lifecycle",
+      "pin",
+      "7225c606280be677d8b3ac062406cc8c002ad22cdef3bf4394e5fc4c8bfa8e4d",
+      "cold-canopy-m1-review-shell"
+    ],
+    "exit": 0,
+    "release_condition": "Release only after exact shell reproduction obligations end or verified replacement retention exists; no host GC."
+  }
+}

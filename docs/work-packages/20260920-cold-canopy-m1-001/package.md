@@ -1,5 +1,137 @@
 # COLD-CANOPY-M1 — executable thermodynamic integration
 
+## Replacement milestone accepted; overall HOLD — 2026-10-05
+
+**Outcome:** the owner-reopened review and necessary correction are complete.
+Both original independent reviewers approve the exact detached replacement:
+[correctness and HIGH fix verification](artifacts/replacement-reviewed-correctness.txt),
+[affected QA recheck](artifacts/replacement-reviewed-qa.txt). The thread-capacity
+obstruction is resolved for this resumption. **Overall HOLD_NO_COMPLETED_DAY remains.**
+Warnings-denied lint still fails with 230 LSE and one vegetation diagnostic, all
+exactly inherited; completed-day performance is unmeasured. Targets remain
+500 µs CPU / 550 µs wall per completed OFE-day, regime CPU budgets
+750 / 1500 / 2500 µs, and century budgets 182.625 s CPU / 210 s wall. Measured cost,
+feasibility and gap remain unestablished. No physical workflow was run; slots
+remain W1/W2/W3 0/0/0. No approved seal or main-Rust adoption exists.
+
+The final correction removes the remaining parallel W1/W2 completeness predicates.
+Public content completeness now consumes only the trace-owned typed terminal and
+the central resolved model. The independent protocol-match diagnostic retains its
+meaning. A new inert public-output control covers completed/interrupted W1,
+coordinate-5 positive/zero W2, all nine completeness keys, the full 68-field status
+map, and required-member removal with central and public rejection. Only detached
+Stage1 changed among 772 source entries; the physical suffix is byte-identical.
+No solver, physical ordering, precision, fixture, tolerance, dependency or cap
+changed. The sole writer stopped before both reviewers inspected this final cut.
+
+**Ran:** exact-source rustfmt and release no-run PASS; 32/32 inert controls PASS;
+107 terminal rows, 30,312 locator alternatives and 2,061,216 field-presence mutations
+retained, plus two WorkCap rows and 25 impossible descriptors. Seven structural
+helpers PASS with 298 mapped paths, no unresolved/missing mappings, and unchanged
+36,852,950-byte record bound below the 67,108,864-byte payload cap. Both matched
+Clippy commands remain FAIL (exit 101), with zero new unmatched diagnostics.
+Build duration is compilation evidence only, not a physical runtime measurement.
+[Final validation](artifacts/replacement-reviewed-validation.json) binds the
+[32-control index](artifacts/replacement-reviewed-results.json), authenticated
+64 control and eight check logs, 575 build pins and 35 depfiles.
+
+The recoverable final source is [archived](artifacts/replacement-reviewed-source.tar.gz)
+with [772-entry receipt](artifacts/replacement-reviewed-source.json): whole source
+`ccc6bb9fb084032a91f8e8c4b2c74a2cf1ed90a6a3a7d03bc226224683d1cbe5`, Stage1
+`6a0407f7e89be8ef97eff5325a004d8511f2b6795f692efc67528e2a5d5f896d`.
+Actual archive recovery was verified at
+`/workdir/.cache/openwepp/cold-canopy-m1-replacement-reviewed-recovery-20261005`.
+The [resumption evidence archive](artifacts/replacement-reviewed-evidence.tar.gz)
+and [member receipt](artifacts/replacement-reviewed-evidence.json) preserve final
+helpers, raw logs, proofs, environment and binary
+`e96469dc68d50e8dc85bf0266010535111f5a8fcd2e6030cbff07890aa3a9158`.
+Original model13 source/evidence archives remain immutable and referenced.
+
+Current `tools/dev/develop` was used with the authenticated retained compiler tools;
+release commands used `tools/dev/heavy`. The shell profile and legacy tool GC roots
+have package owners and release conditions in the
+[retention receipt](artifacts/replacement-review-resumption-retention.json).
+Confirmed wrapper friction: background shell entry consumes no heredoc stdin;
+passing a script file executed the environment probe correctly. No wrapper change
+was needed. Nonphysical runner changes are limited to the owner-approved cutoff
+and the new control whitelist; original bytes and exact deltas are retained.
+Capture/reconstruction guards remain unchanged.
+
+Terminal diff reconciliation: this resumption adds only package documentation,
+accounting and archived detached source/evidence. Main Rust and all 49 unrelated
+dirty/untracked paths are preserved. Validation is the authorized detached
+observation/inert-control increment; no campaign closure, release qualification,
+physical capture or completed-day claim is made. One scoped local resumption
+commit, no push. The original fixed allowance and final-hour preservation reserve
+remain unchanged; the locked ledger charges this entire active interval once.
+Next owner-directed work must address the recorded inherited lint blockers and
+bounded completed-day cost feasibility before any readiness or deployability claim.
+
+## Owner-reopened final review and corrections — 2026-10-05
+
+Owner approved reopening final review and necessary corrections after the machine
+restart, using the remaining recorded balance with **no additional allowance and
+no physical runs**. This section supersedes the expired execution schedule and
+prior thread-capacity blocker only. All source/science/acceptance boundaries of
+the adopted replacement remain binding. No major rewrite or inherited231-lint
+cleanup is authorized. Overall HOLD, slots0/0/0 and no approved seal remain.
+Targets remain500us CPU/550us wall per completed OFE-day, regimes750/1500/2500us CPU,
+century182.625s CPU/210s wall; measured completed-day cost, feasibility and gap remain
+unestablished. Final observation/control review does not measure those targets.
+
+Both original reviewers responded after restart and retained their finding/fix
+ownership. Resume correctness and QA on the stable final cut; no source writer is
+active during review. Authenticate the772-entry detached source against
+[final source receipt](artifacts/replacement-final-source.json): whole
+`65db8dd85aa101c528b8919313815bc315326f86ab79e31128cb0147e4306cec`, stage1
+`37f0c76fc7581a68e00d8604bb0d51c22aaee2208480397e788cadb562b6537c`.
+Pickup authentication PASS; all49unrelated path hashes remain unchanged.
+[Resumption pickup](artifacts/replacement-review-resumption-pickup.json) also verifies
+all1626preserved raw/helper/binary members and567build pins/35depfiles. Exact legacy
+tool GC roots are registered as `cold-canopy-m1-replacement-legacy-tools` under
+`ROOT/retention/nix-tools` ([retention receipt](artifacts/replacement-review-resumption-retention.json)).
+The package executor retains these because current staged profiles do not retain
+the recorded old store paths. Release only after exact-toolchain reproduction
+obligations end or verified replacement retention exists; no host GC.
+Main HEAD is `3fff9d0c7a29e15283d853536146eaaea1a39c6a`; intervening main changes are preserved.
+Use final model13 checks/proofs and preserved raw evidence as the primary evidence;
+reuse unchanged executed checks after identity validation, repeat affected checks
+if corrections change source/helpers. Parent owns integration/evidence, one pinned
+implementer owns any Rust correction, same reviewers verify their fixes. No nested
+agents and at most two concurrent children. One scoped local resumption commit;
+no branch switch or push.
+
+The original ceiling remains541,334.927980s. Prior consumption515,856.069712s is
+retained, plus a conservative60s for the uninstrumented intervening diagnostic
+reply. Exclude only inactive23:29UTC Oct4–21:54UTC Oct5. Anchor21:54UTC includes
+availability checks and the permission exchange, without resetting at owner yes.
+Carry515,916.069712s leaves25,418.858268s at that anchor. Fixed source/review cutoff
+**2026-10-06T03:57:38.858268+00:00**, hard deadline **2026-10-06T04:57:38.858268+00:00**; final3600s are
+preservation only. All reading/review/waits/checks/corrections charge concurrent
+wall once in the canonical locked ledger. No automatic renewal.
+
+### Resumed review findings and correction intent
+
+[Same-reviewer correctness](artifacts/replacement-resumed-correctness-review.txt)
+verifies all prior findings fixed but identifies one HIGH remaining replacement
+blocker: public `refusal_capture_completeness_json` still conjuncts model acceptance
+with legacy W1/W2 content predicates. An interrupted ScratchFullRadius norm can be
+model-complete yet publicly incomplete. [Same-reviewer QA](artifacts/replacement-resumed-qa-review.txt)
+passes its model13 milestone scope; that approval does not cover the forthcoming
+public-entry correction. Both retain overall HOLD for inherited lint failures and
+unmeasured completed-day cost, which remain outside this correction scope.
+
+Accepted narrow intent: make the centralized model the sole content-completeness
+predicate, delete superseded W1/W2 helpers, preserve public JSON keys and diagnostic
+`expected_terminal_match`, and add an inert public-producer regression covering
+completed/interrupted W1, positive/zero W2 and required-member removal with full
+status-map checks. One pinned writer changes only detached Stage1; no physical
+suffix or main Rust edits. Parent will update the bounded nonphysical runner's
+expired deadline and whitelist for the added control, preserve old helper bytes,
+then run exact format/release no-run/all inert controls, both matched lint commands
+and affected proofs. Both original reviewers verify the affected final source and
+evidence. The model13 source/evidence archives remain the recoverable pre-fix cut.
+
 ## Owner-adopted cohesive replacement execution plan — 2026-10-04
 
 ### Authorization, outcome and current state

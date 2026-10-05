@@ -1,0 +1,38 @@
+Reviewer: /root/replacement_correctness. Original response retained below.
+
+**Evidence class:** Static same-reviewer fix verification plus inspection of supplied `Ran` receipts. Reviewer ran no Rust or physical workflow.
+
+**Reviewed identity:** whole source `ccc6bb9fb084032a91f8e8c4b2c74a2cf1ed90a6a3a7d03bc226224683d1cbe5`; Stage1 `6a0407f7e89be8ef97eff5325a004d8511f2b6795f692efc67528e2a5d5f896d`; binary `e96469dc68d50e8dc85bf0266010535111f5a8fcd2e6030cbff07890aa3a9158`.
+
+### Findings
+
+No blocking correctness findings remain in the affected correction.
+
+### Same-reviewer HIGH fix verification
+
+**FIX VERIFIED.** [`m1_trust_region_stage1.rs:1880`](/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1880) now derives public completeness solely from trace-owned typed terminal metadata and `refinement_capture_terminal_complete`. Both legacy W1/W2 completion helpers were deleted, leaving no parallel acceptance consumer.
+
+The new control at [`m1_trust_region_stage1.rs:7658`](/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:7658) discriminates:
+
+- completed and interrupted positive-lambda W1 `ScratchFullRadius`;
+- coordinate-5 positive and zero-lambda W2 `FinalBoxLower`;
+- all nine public completeness keys and their exact values;
+- the complete 68-field status map; and
+- missing `residual0`, which causes centralized rejection, `missing_instrumentation`, and false public completeness while retaining the independent protocol match.
+
+The source diff is limited to removing the parallel conjunction/helpers and adding this control with two test helpers. The 772-entry comparison changes only Stage1. The physical suffix remains byte-identical with SHA-256 `4f8fc5a82fa5b3145ceb22f8120c2866c0016595ab2f950b53a89850bfcd2c47`.
+
+Supplied exact-cut evidence records:
+
+- format PASS and release no-run PASS in 97.497 seconds;
+- all 32 selected inert controls PASS, including the new seam control;
+- authenticated 64 control logs and eight check logs;
+- unchanged coverage of 107 rows, 30,312 locators, and 2,061,216 mutations;
+- seven structural proofs PASS with 298 mapped paths and no unresolved/missing mappings;
+- 575 build pins and 35 depfiles;
+- LSE 230/230 and vegetation 1/1 diagnostics exactly inherited, with zero new unmatched diagnostics; and
+- zero physical invocations.
+
+**Replacement milestone correctness disposition: APPROVED / NO CORRECTNESS BLOCKER** on this exact cut. The prior HIGH finding is closed.
+
+**Overall package disposition: HOLD_NO_COMPLETED_DAY.** The inherited 231 warnings-denied diagnostics remain FAIL, completed-day performance and target gap remain unmeasured, no physical capture ran, and no approval seal or main-Rust adoption exists.

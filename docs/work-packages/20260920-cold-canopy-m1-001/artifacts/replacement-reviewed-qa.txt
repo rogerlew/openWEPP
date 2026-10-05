@@ -1,0 +1,29 @@
+Reviewer: /root/replacement_qa. Original response retained below.
+
+**Static + inspected Ran evidence — affected review01 recheck.** Reviewed frozen source `ccc6bb…cbe5`; stage1 `6a0407…896d`; binary `e96469…9158`.
+
+### Findings
+
+- **HIGH — overall/capture blocker:** LSE and vegetation warnings-denied Clippy still exit 101. They contain only the 230 and 1 exact inherited diagnostics, respectively, with no new diagnostics. This blocks whole-package readiness, custody seal, and physical capture.
+- **HIGH — overall blocker:** completed-day performance remains unmeasured; the 500µs CPU / 550µs wall target remains unestablished.
+
+### Same-reviewer fix verification
+
+The correctness finding is fixed. [`m1_trust_region_stage1.rs`](/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1893) now derives public completeness solely from `refinement_capture_terminal_complete`; the duplicate W1/W2 predicates are deleted.
+
+The new `m1_refinement_public_completeness_model_control` covers W1 completed and interrupted ScratchFullRadius plus W2 positive/zero FinalBoxLower at coordinate 5. It asserts the exact nine-key completeness object, full 68-key status map, and centralized rejection/status result after removing a required member.
+
+The helper delta is limited to the owner-approved cutoff literals and the new control whitelist entry. No capture parser, cap, framing, optimized-Python, reservation, or reconstruction guard changed.
+
+Ran evidence binds the same source/binary:
+
+- 32/32 inert controls passed with no source drift.
+- Coverage remains 107 rows, 30,312 locators, and 2,061,216 mutations.
+- rustfmt and release no-run passed.
+- Seven proofs passed; 575 build pins, 35 depfiles, and authenticated raw logs are recorded.
+
+### QA disposition
+
+**PASS — affected seam correction and replacement milestone.** No new QA defect found in the narrowed review.
+
+**HOLD_NO_COMPLETED_DAY remains required** for inherited failing lint gates and missing physical performance/capture evidence.

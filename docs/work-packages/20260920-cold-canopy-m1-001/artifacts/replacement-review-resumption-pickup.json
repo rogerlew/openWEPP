@@ -1,0 +1,15 @@
+{
+  "evidence_class": "Ran: source archive authentication, all preserved raw/helper/binary hashes, build567pins/35depfiles and tool hashes; no numerical workflow rerun",
+  "utc": "2026-10-05T21:59:49.405446+00:00",
+  "source_sha256": "65db8dd85aa101c528b8919313815bc315326f86ab79e31128cb0147e4306cec",
+  "entries": 772,
+  "authenticated_evidence_members": 1626,
+  "mismatches": [],
+  "binary_sha256": "dda720267c05ffcaafb3b748aab7a9175d2744048f86992453fb33cf86431d86",
+  "build_pins": 567,
+  "depfiles": 35,
+  "source_receipt": "replacement-final-source.json",
+  "evidence_receipt": "replacement-final-evidence.json",
+  "retention_receipt": "replacement-review-resumption-retention.json",
+  "physical_invocations": 0
+}

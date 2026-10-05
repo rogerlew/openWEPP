@@ -1,0 +1,47 @@
+Reviewer: /root/replacement_correctness. Original response retained below.
+
+**Evidence class:** Static review of exact detached source; inspected supplied `Ran` receipts. Reviewer ran no Rust or physical workflow.
+
+**Reviewed identities:** whole source `65db8dd85aa101c528b8919313815bc315326f86ab79e31128cb0147e4306cec`; Stage1 `37f0c76fc7581a68e00d8604bb0d51c22aaee2208480397e788cadb562b6537c`; compiled test binary `dda720267c05ffcaafb3b748aab7a9175d2744048f86992453fb33cf86431d86`. The 772-entry source archive and 1,626-member evidence archive match their recorded archive hashes.
+
+### Finding
+
+- **HIGH — a legacy parallel acceptance path remains.** [`m1_trust_region_stage1.rs:1880`](/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:1880) computes public `refinement_complete` by conjoining the centralized `refinement_capture_terminal_complete` result with legacy W1/W2 predicates. Those duplicate predicates remain at [`m1_trust_region_stage1.rs:3384`](/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3384) and [`m1_trust_region_stage1.rs:3430`](/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:3430). This violates the adopted one-model requirement in package lines 58–61 and 133–144.
+
+  The paths can already disagree: a positive-lambda `ScratchFullRadius` arithmetic refusal has an interrupted `p1_full` norm under the resolved model, while `refinement_capture_w1_complete` requires completed `p1_full_norm2`, `p1_full_norm`, and a complete ordered norm. The 31 model13 controls exercise `refinement_capture_terminal_complete` directly and do not cover this public JSON completeness seam.
+
+  Correction should make `terminal_metadata_complete && refinement_capture_terminal_complete(...)` the sole `refinement_complete` predicate and delete both legacy helpers. Preserve the public completeness keys and meanings: `reached_prefix_complete`, `actual_branch_complete`, `missing_capture_is_incomplete`, `expected_terminal_match`, `actual_terminal_stage`, `actual_terminal_kind`, `actual_terminal_reason`, and `actual_correction_position`. `expected_terminal_match` may retain its W1/W2 protocol-specific check; it must not become another content-completeness authority.
+
+  Minimal inert seam evidence should call the public JSON producer and show:
+
+  - W1 `ScratchFullRadius` completed-radius and interrupted-arithmetic terminals report the centralized result.
+  - W2 positive and zero-lambda `FinalBoxLower` terminals report the centralized result.
+  - Removing one required member makes both centralized and public completeness false.
+  - The full 68-field public status map and all listed JSON keys remain unchanged.
+
+### Same-reviewer verification
+
+The earlier findings are otherwise resolved on this cut:
+
+- **Original three HIGH findings verified fixed:** scalar/norm joins are exact and zero-lambda scalar copies remain inapplicable; all full/reduced/zero-lambda refusing comparisons are model-owned and checked on the rejecting side; ordinal-two factor refusal validates the completed ordinal-one snapshot.
+- **Eager-model findings verified fixed:** scalar states derive from norm bindings; H locator ownership is stored in the resolved family and content checks its free-ID join; factor copy validation consumes resolved per-member states and generic inverse ownership; numeric/null/range/cross-dependent invalid tuples now reach full terminal rejection and public-map comparison.
+- **Control gaps verified closed:** trace-owned terminal metadata drives the public map; exhaustive evidence covers all 107 refinement rows, 30,312 locator alternatives, 2,061,216 presence mutations, two WorkCap rows, 25 impossible descriptors, and zero-lambda ordinal-two cases.
+
+The supplied model13 evidence records format PASS, release no-run PASS, all 31 selected inert controls PASS, seven structural proofs PASS, 567 pins/35 depfiles, and zero physical invocations. Clippy remains FAIL with 230 LSE and one vegetation diagnostic, all exactly inherited and zero unmatched candidate diagnostics. Static noninterference identifies only Stage1 changed and preserves the physical suffix from `fn refine_face_before_crossing` byte-for-byte.
+
+**Disposition:** replacement milestone remains **BLOCKED** on the HIGH correction and same-reviewer verification of its affected seam/control evidence. No other replacement-model correctness blocker was found in this pass. Overall package remains **HOLD_NO_COMPLETED_DAY** because inherited Clippy failures remain, completed-day performance is unmeasured, no physical capture ran, and no seal or main-Rust adoption exists.
+
+Exact inherited review/evidence artifacts inspected:
+
+- `replacement-model-correctness-review.txt`
+- `replacement-model-correctness-fix-review.txt`
+- `replacement-eager-model-correctness-review.txt`
+- `replacement-final-source.json`
+- `replacement-final-validation.json`
+- `replacement-final-results.json`
+- `replacement-final-evidence.json`
+- `checks/model13-coverage.json`
+- `checks/model13-noninterference.json`
+- `checks/model13-all-control-log-authentication.json`
+- `checks/model13-build-inputs.json`
+- `checks/model13-proofs/parent-inspection.json`

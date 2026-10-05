@@ -1,0 +1,21 @@
+Reviewer: /root/replacement_qa. Original response retained below.
+
+**Static + inspected Ran evidence.** Reviewed exact source `65db8d…06cec`; stage1 `37f0c7…6537c`.
+
+### Findings
+
+- **HIGH — overall/capture blocker:** required warnings-denied Clippy commands still fail: LSE has 230 exact inherited diagnostics and vegetation has 1 exact inherited diagnostic. There are **0 new diagnostics**, but both commands exit 101. This preserves `HOLD_NO_COMPLETED_DAY`; no seal, readiness, or physical capture approval.
+- **HIGH — overall blocker:** no completed-day CPU/wall measurement exists. The 500µs CPU / 550µs wall target and feasibility gap remain unestablished.
+
+### Same-reviewer fix verification
+
+- The former implementation-owned 68-key oracle universe is fixed. [`m1_trust_region_stage1.rs`](/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:5332) now retains a literal checkpoint03 key set, checks exact equality against the implementation registry, and requires explicit initial semantic classification.
+- The former numeric/null/range/cross-dependent gap is fixed. [`m1_trust_region_stage1.rs`](/home/roger/openwepp-experiments/cold-canopy-m1-recovered-terminal-20261004/source/crates/openwepp-land-surface-energy/src/m1_trust_region_stage1.rs:8966) starts each invalid tuple from an accepted full terminal, asserts rejection by `refinement_capture_terminal_complete`, and compares the whole public map. Locator, inverse-owner, lineage/count, copy-boundary, norm-domain/role, scalar-copy, and malformed-vector joins receive corresponding whole-map assertions.
+- The independent controls cover 107 refinement rows, 30,312 locator alternatives, and 2,061,216 field-presence mutations, with two WorkCap rows and the 25 impossible descriptors retained separately. All 31 controls passed, with authenticated raw control logs.
+- Exact-source rustfmt and release no-run passed. The model13 binary, 567 build pins, 35 depfiles, five tools, 772 source entries, and 1,626 preserved evidence members authenticate without mismatch. Helper protections remain bound; `status_keys.py` correctly handles the optional trace serializer path.
+
+### QA disposition
+
+**PASS — cohesive replacement milestone.** The resolved terminal model, independent expected-status oracle, exhaustive controls, and previously identified QA fixes satisfy the bounded replacement acceptance on this exact detached cut.
+
+**Overall disposition remains HOLD_NO_COMPLETED_DAY.** Failed inherited lint gates and absent physical performance/capture evidence prevent package-ready, custody-seal, and capture approval. No Rust, physical, or new validation command was run by this reviewer.
